@@ -939,7 +939,7 @@
         h('header', { className: 'rounded-2xl p-4 text-white', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #172554, ' + opMeta.color + ')', border: isContrast ? '2px solid #fbbf24' : 'none' } },
           h('div', { className: 'flex items-start gap-3' },
             ctx.icons && ctx.icons.ArrowLeft && h('button', { onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); }, className: 'rounded-lg p-2 bg-white/10', 'aria-label': t('stem.arithmetic.back_to_stem_tools', "Back to STEM tools") }, h(ctx.icons.ArrowLeft, { size: 18 })),
-            h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-blue-100' }, t('stem.arithmetic.concrete_visual_symbolic', "Concrete → visual → symbolic")), h('h1', { className: 'text-xl sm:text-2xl font-black' }, t('stem.arithmetic.arithmetic_strategy_studio', "🧮 Arithmetic Strategy Studio")), h('p', { className: 'mt-1 text-sm text-blue-50' }, t('stem.arithmetic.build_meaning_first_compare_strategies', "Build meaning first, compare strategies, and use estimation to check every result.")))
+            h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-widest text-blue-100' }, t('stem.arithmetic.concrete_visual_symbolic', "Concrete → visual → symbolic")), h('h1', { className: 'text-xl sm:text-2xl font-black' }, t('stem.arithmetic.arithmetic_strategy_studio', "🧮 Arithmetic Strategy Studio")), h('p', { className: 'mt-1 text-sm text-blue-50' }, t('stem.arithmetic.build_meaning_first_compare_strategies', "Build meaning first, compare strategies, and use estimation to check every result.")))
           )
         ),
         (tab === 'learn' || tab === 'practice') && renderOperationPicker(),

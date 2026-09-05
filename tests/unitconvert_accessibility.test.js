@@ -23,6 +23,6 @@ describe('Unit Converter text accessibility', () => {
     loadTool('stem_lab/stem_tool_unitconvert.js', 'unitConvert');
     const html = renderTool('unitConvert', { unitConvert: {} });
     expect(html).not.toMatch(/text-\[(?:[0-9])px\]/);
-    expect(html).toContain('text-[10px]');
+    expect(html).toContain('text-[0.625rem]');
   });
 });

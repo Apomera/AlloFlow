@@ -16604,10 +16604,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
       function StatCard(props) {
         return h('div', { className: 'bg-white rounded-xl shadow border border-slate-500 p-3 text-center' },
-          h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-700' }, props.label),
+          h('div', { className: 'text-[0.625rem] uppercase font-bold tracking-wider text-slate-700' }, props.label),
           h('div', { className: 'text-2xl font-black ' + (props.color || 'text-emerald-700') }, props.value),
-          props.unit && h('div', { className: 'text-[10px] text-slate-700' }, props.unit),
-          props.hint && h('div', { className: 'text-[10px] text-slate-700 mt-1 leading-snug' }, props.hint)
+          props.unit && h('div', { className: 'text-[0.625rem] text-slate-700' }, props.unit),
+          props.hint && h('div', { className: 'text-[0.625rem] text-slate-700 mt-1 leading-snug' }, props.hint)
         );
       }
 
@@ -16841,7 +16841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             }, '✓'),
             notReady && h('span', {
               'aria-hidden': true,
-              className: 'absolute top-2 right-2 z-10 bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md'
+              className: 'absolute top-2 right-2 z-10 bg-slate-700 text-white text-[0.625rem] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md'
             }, __alloT('stem.nutritionlab.soon', 'Soon')),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
@@ -16921,7 +16921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('span', { className: 'text-xl', 'aria-hidden': true }, step.icon),
                     h('span', { className: 'text-sm font-black text-slate-800' }, step.label)
                   ),
-                  h('div', { className: 'text-[11px] text-slate-700 leading-snug' }, step.hint)
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 leading-snug' }, step.hint)
                 );
               })
             )
@@ -16950,7 +16950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           h('section', { 'data-nutrition-practice-path': 'true', className: 'mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 p-4 text-white shadow-lg' },
             h('div', { className: 'grid gap-3 lg:grid-cols-[1.2fr_0.8fr]' },
               h('div', null,
-                h('div', { className: 'text-[10px] font-black uppercase text-emerald-200' }, __alloT('stem.nutritionlab.practice_path', 'Practice path')),
+                h('div', { className: 'text-[0.625rem] font-black uppercase text-emerald-200' }, __alloT('stem.nutritionlab.practice_path', 'Practice path')),
                 h('div', { className: 'text-xl font-black leading-tight' }, __alloT('stem.nutritionlab.practice_path_title', 'Start with a useful, low-pressure action')),
                 h('p', { className: 'mt-1 mb-3 text-xs leading-relaxed text-emerald-50/85' },
                   __alloT('stem.nutritionlab.practice_path_copy', 'The full library is still below. These four routes keep the first move concrete: build a private kit, decode a label, check hydration, or explore macro patterns.')),
@@ -16961,7 +16961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       className: 'min-h-[80px] rounded-xl border border-white/15 bg-white/10 p-3 text-left text-white transition hover:bg-white/15 active:scale-[0.99]' },
                       h('div', { className: 'text-lg' }, c.icon),
                       h('div', { className: 'text-xs font-black' }, c.title),
-                      h('div', { className: 'mt-1 text-[10px] leading-snug text-emerald-100/85' }, c.subtitle)
+                      h('div', { className: 'mt-1 text-[0.625rem] leading-snug text-emerald-100/85' }, c.subtitle)
                     );
                   })
                 )
@@ -16975,7 +16975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 ].map(function(card) {
                   return h('div', { key: card.label, className: 'rounded-xl border border-white/10 bg-slate-950/30 p-3 text-center' },
                     h('div', { className: 'text-lg font-black tabular-nums text-emerald-100' }, card.value),
-                    h('div', { className: 'text-[10px] font-black uppercase text-emerald-200/80' }, card.label)
+                    h('div', { className: 'text-[0.625rem] font-black uppercase text-emerald-200/80' }, card.label)
                   );
                 })
               )
@@ -17012,7 +17012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               ].map(function(term) {
                 return h('div', { key: term[0], className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' },
                   h('dt', { className: 'text-xs font-black text-slate-800' }, term[0]),
-                  h('dd', { className: 'text-[11px] text-slate-700 leading-snug mt-0.5' }, term[1])
+                  h('dd', { className: 'text-[0.6875rem] text-slate-700 leading-snug mt-0.5' }, term[1])
                 );
               })
             )
@@ -17095,7 +17095,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { className: 'flex-1 space-y-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.nutritionlab.energy_split', 'Energy split')),
               slices.map(pctRow),
-              h('p', { className: 'text-[11px] text-slate-700 italic mt-3 leading-relaxed' },
+              h('p', { className: 'text-[0.6875rem] text-slate-700 italic mt-3 leading-relaxed' },
                 __alloT('stem.nutritionlab.each_gram_of_carb_or_protein_gives_4_k', 'Each gram of carb or protein gives ~4 kcal; each gram of fat gives ~9 kcal. The split varies normally across meals — there\'s no single "right" ratio.'))
             )
           )
@@ -17126,7 +17126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
           h('div', { className: 'flex items-baseline justify-between mb-2 gap-2 flex-wrap' },
             h('div', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.nutritionlab.how_this_plate_stacks_against_a_typica', 'How this plate stacks against a typical day')),
-            h('div', { className: 'text-[11px] text-slate-700 italic' }, __alloT('stem.nutritionlab.informational_only_not_a_goal_per_meal', 'Informational only — not a goal per meal.'))
+            h('div', { className: 'text-[0.6875rem] text-slate-700 italic' }, __alloT('stem.nutritionlab.informational_only_not_a_goal_per_meal', 'Informational only — not a goal per meal.'))
           ),
           h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': __alloT('stem.nutritionlab.bar_chart_comparing_this_meal_s_nutrie', 'Bar chart comparing this meal\'s nutrients to typical adolescent daily reference intakes.') },
             // Background grid: 25%/50%/75%/100% of the typical daily target
@@ -17190,7 +17190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
           h('div', { className: 'flex items-center justify-between mb-3 gap-2 flex-wrap' },
             h('div', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.nutritionlab.compare_two_foods_side_by_side', '⚖️ Compare two foods side-by-side')),
-            h('div', { className: 'text-[11px] text-slate-700 italic' }, __alloT('stem.nutritionlab.no_good_bad_just_what_each_one_brings', 'No good/bad — just what each one brings.'))
+            h('div', { className: 'text-[0.6875rem] text-slate-700 italic' }, __alloT('stem.nutritionlab.no_good_bad_just_what_each_one_brings', 'No good/bad — just what each one brings.'))
           ),
           h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
             h('label', { className: 'text-xs font-bold text-slate-700' },
@@ -17214,7 +17214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               )
             )
           ),
-          h('div', { className: 'text-[11px] font-mono text-slate-700 mb-2' },
+          h('div', { className: 'text-[0.6875rem] font-mono text-slate-700 mb-2' },
             fA.name + ' — ' + fA.serving + '   vs   ' + fB.name + ' — ' + fB.serving
           ),
           h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img',
@@ -17354,8 +17354,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   },
                     h('div', { className: 'text-3xl mb-1', 'aria-hidden': true }, f.emoji),
                     h('div', { className: 'text-sm font-bold text-slate-800' }, f.name),
-                    h('div', { className: 'text-[10px] text-slate-700 mt-0.5' }, f.serving),
-                    h('div', { className: 'text-[10px] font-mono text-slate-700 mt-1' },
+                    h('div', { className: 'text-[0.625rem] text-slate-700 mt-0.5' }, f.serving),
+                    h('div', { className: 'text-[0.625rem] font-mono text-slate-700 mt-1' },
                       'C ' + f.c + 'g · P ' + f.p + 'g · F ' + f.f + 'g')
                   );
                 })
@@ -17380,7 +17380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                         h('span', { className: 'text-2xl', 'aria-hidden': true }, f.emoji),
                         h('div', { className: 'flex-1' },
                           h('div', { className: 'text-sm font-bold text-slate-800' }, f.name),
-                          h('div', { className: 'text-[11px] font-mono text-slate-700' },
+                          h('div', { className: 'text-[0.6875rem] font-mono text-slate-700' },
                             'C ' + f.c + 'g · P ' + f.p + 'g · F ' + f.f + 'g · fib ' + f.fib + 'g · ' + f.kcal + ' kcal')
                         ),
                         h('button', {
@@ -17555,7 +17555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 }, __alloT('stem.nutritionlab.show_on_3d_body', '🫀 Show on the 3D body'))
               );
             })(),
-            h('div', { className: 'text-[11px] text-slate-700 italic font-mono' },
+            h('div', { className: 'text-[0.6875rem] text-slate-700 italic font-mono' },
               'Source: ' + item.cite)
           );
         }
@@ -17611,19 +17611,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       h('div', { className: 'flex items-baseline gap-2 mb-2 flex-wrap' },
                         h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, n.emoji),
                         h('div', { className: 'flex-1 min-w-0' },
-                          h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: n.ink || n.stripe } }, n.why),
+                          h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: n.ink || n.stripe } }, n.why),
                           h('div', { className: 'text-base font-black text-slate-800', style: { lineHeight: 1.15 } }, n.name)
                         )
                       ),
                       // Cascade: Function → Symptom
                       h('div', { className: 'flex items-stretch gap-1.5' },
-                        h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#ecfdf5', color: '#064e3b', border: '1px solid #a7f3d0' } },
-                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider mb-0.5' }, __alloT('stem.nutritionlab.function', 'Function')),
+                        h('div', { className: 'flex-1 p-1.5 rounded text-[0.625rem] leading-snug', style: { background: '#ecfdf5', color: '#064e3b', border: '1px solid #a7f3d0' } },
+                          h('div', { className: 'text-[0.5rem] font-bold uppercase tracking-wider mb-0.5' }, __alloT('stem.nutritionlab.function', 'Function')),
                           n.function_
                         ),
                         h('span', { 'aria-hidden': 'true', className: 'self-center text-slate-600 font-bold' }, '→'),
-                        h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#fef2f2', color: '#7f1d1d', border: '1px solid #fecaca' } },
-                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider mb-0.5' }, __alloT('stem.nutritionlab.without_it', 'Without it')),
+                        h('div', { className: 'flex-1 p-1.5 rounded text-[0.625rem] leading-snug', style: { background: '#fef2f2', color: '#7f1d1d', border: '1px solid #fecaca' } },
+                          h('div', { className: 'text-[0.5rem] font-bold uppercase tracking-wider mb-0.5' }, __alloT('stem.nutritionlab.without_it', 'Without it')),
                           n.symptom
                         )
                       )
@@ -17670,7 +17670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 },
                   h('div', { className: 'text-3xl mb-1', 'aria-hidden': true }, item.emoji),
                   h('div', { className: 'text-sm font-bold text-slate-800' }, item.name),
-                  h('div', { className: 'text-[10px] text-slate-700 mt-1 line-clamp-2' },
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mt-1 line-clamp-2' },
                     item.function.length > 70 ? item.function.substring(0, 67) + '…' : item.function)
                 );
               })
@@ -17980,12 +17980,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           ),
           h('div', { className: 'flex justify-between items-end mb-1' },
             h('div', null,
-              h('div', { className: 'text-[10px] font-bold text-black' }, __alloT('stem.nutritionlab.amount_per_serving', 'Amount per serving')),
+              h('div', { className: 'text-[0.625rem] font-bold text-black' }, __alloT('stem.nutritionlab.amount_per_serving', 'Amount per serving')),
               h('div', { className: 'text-2xl font-black text-black' }, __alloT('stem.nutritionlab.calories', 'Calories'))
             ),
             h('div', { className: 'text-3xl font-black text-black' }, props.calories || lab.calories)
           ),
-          h('div', { className: 'border-t-4 border-black pt-1 text-right text-[10px] font-bold text-black' }, __alloT('stem.nutritionlab.daily_value', '% Daily Value*')),
+          h('div', { className: 'border-t-4 border-black pt-1 text-right text-[0.625rem] font-bold text-black' }, __alloT('stem.nutritionlab.daily_value', '% Daily Value*')),
           h('div', null,
             rows.map(function(r, i) {
               var pad = r.indentMore ? 'pl-8' : r.indent ? 'pl-4' : '';
@@ -18006,7 +18006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               );
             })
           ),
-          h('div', { className: 'mt-2 text-[9px] leading-tight text-black' },
+          h('div', { className: 'mt-2 text-[0.5625rem] leading-tight text-black' },
             __alloT('stem.nutritionlab.the_daily_value_dv_tells_you_how_much_', '* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.'))
         );
       }
@@ -18216,7 +18216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     ),
                     h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                       h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
-                      h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, totalCorrect + ' / ' + totalPicks)
+                      h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, totalCorrect + ' / ' + totalPicks)
                     )
                   ),
                   // Tier headline
@@ -18235,7 +18235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 ),
                 // Per-challenge checklist
                 h('div', { className: 'p-4 bg-white border-t border-emerald-200' },
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.all_five_challenges_decoded', '✓ All five challenges decoded')),
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.nutritionlab.all_five_challenges_decoded', '✓ All five challenges decoded')),
                   h('ul', { className: 'space-y-1 text-sm text-slate-800' },
                     LABELS.map(function(L) {
                       return h('li', { key: L.id, className: 'flex items-center gap-2' },
@@ -18392,20 +18392,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('div', { className: 'text-center' },
                       h('div', { className: 'text-5xl mb-1', 'aria-hidden': true }, '⚡'),
                       h('div', { className: 'font-mono font-bold text-slate-800' }, 'ATP'),
-                      h('div', { className: 'text-[10px] text-slate-700' }, 'charged')
+                      h('div', { className: 'text-[0.625rem] text-slate-700' }, 'charged')
                     ),
                     h('div', { className: 'flex flex-col items-center' },
                       h('span', { className: 'text-2xl', 'aria-hidden': true }, '→'),
-                      h('span', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, __alloT('stem.nutritionlab.releases_energy', 'releases energy'))
+                      h('span', { className: 'text-[0.625rem] text-slate-700 font-mono mt-1' }, __alloT('stem.nutritionlab.releases_energy', 'releases energy'))
                     ),
                     h('div', { className: 'text-center' },
                       h('div', { className: 'text-5xl mb-1', 'aria-hidden': true }, '🔋'),
                       h('div', { className: 'font-mono font-bold text-slate-800' }, __alloT('stem.nutritionlab.adp_pi', 'ADP + Pi')),
-                      h('div', { className: 'text-[10px] text-slate-700' }, 'discharged')
+                      h('div', { className: 'text-[0.625rem] text-slate-700' }, 'discharged')
                     ),
                     h('div', { className: 'flex flex-col items-center' },
                       h('span', { className: 'text-2xl', 'aria-hidden': true }, '↩'),
-                      h('span', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, __alloT('stem.nutritionlab.recharged_in_mitochondria', 'recharged in mitochondria'))
+                      h('span', { className: 'text-[0.625rem] text-slate-700 font-mono mt-1' }, __alloT('stem.nutritionlab.recharged_in_mitochondria', 'recharged in mitochondria'))
                     )
                   )
                 ),
@@ -18789,7 +18789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('circle', { cx: 0, cy: 23, r: 7, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 2 })
                   )
                 ),
-                h('p', { className: 'text-[11px] text-slate-700 mt-1 text-center' },
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1 text-center' },
                   __alloT('stem.nutritionlab.journey_now', 'Now:') + ' ' + stage.name + ' · ' + stage.time)
               );
             })(),
@@ -19131,7 +19131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { className: 'font-bold mb-2 ' + (myth.answer === picked ? 'text-emerald-900' : 'text-amber-900') },
                   myth.answer === picked ? '✓ Correct' : '⚠ Not quite — here\'s what the evidence says'),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' }, myth.explain),
-                h('div', { className: 'text-[11px] font-mono text-slate-700 italic' }, 'Sources: ' + myth.cite)
+                h('div', { className: 'text-[0.6875rem] font-mono text-slate-700 italic' }, 'Sources: ' + myth.cite)
               )
             ),
             // Nav
@@ -19313,7 +19313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, __alloT('stem.nutritionlab.important_caution', '⚠ Important caution')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.caution)
               ),
-              h('div', { className: 'text-[11px] font-mono text-slate-700 italic' }, 'Sources: ' + picked.cite)
+              h('div', { className: 'text-[0.6875rem] font-mono text-slate-700 italic' }, 'Sources: ' + picked.cite)
             ),
             !picked && h('div', { className: 'bg-slate-100 rounded-2xl border border-slate-300 p-5 text-center' },
               h('div', { className: 'text-3xl mb-2', 'aria-hidden': true }, '👆'),
@@ -20207,7 +20207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       h('div', { className: 'text-lg font-black text-slate-800' }, c.name),
                       h('div', { className: 'text-sm font-bold text-emerald-700' }, c.pay)
                     ),
-                    h('div', { className: 'text-[11px] uppercase tracking-wider text-slate-700 font-bold mb-1' }, c.time),
+                    h('div', { className: 'text-[0.6875rem] uppercase tracking-wider text-slate-700 font-bold mb-1' }, c.time),
                     h('div', { className: 'text-sm text-slate-800 mb-2' }, c.what),
                     h('div', { className: 'text-xs text-slate-700' },
                       h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.nutritionlab.how_to_get_there', 'How to get there: ')), c.how)
@@ -20249,7 +20249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                         h('div', { className: 'text-xs text-slate-700 font-mono' }, '📍 ' + p.loc)
                       ),
                       h('p', { className: 'text-sm text-slate-800 mb-1' }, p.what),
-                      h('div', { className: 'text-[11px] text-blue-700 font-mono' }, p.site)
+                      h('div', { className: 'text-[0.6875rem] text-blue-700 font-mono' }, p.site)
                     );
                   })
                 )
@@ -21116,7 +21116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   )
                 ),
 
-                h('p', { className: 'text-[11px] text-slate-700 italic mt-2 leading-relaxed' },
+                h('p', { className: 'text-[0.6875rem] text-slate-700 italic mt-2 leading-relaxed' },
                   __alloT('stem.nutritionlab.sources_institute_of_medicine_2005_die', 'Sources: Institute of Medicine (2005) Dietary Reference Intakes for Water, still cited by AAP and NIH ODS. Activity adder from NATA 2017 Position Statement on Fluid Replacement.'))
               )
             ),
@@ -21141,8 +21141,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                         (sel ? 'border-sky-600 ring-2 ring-sky-300 shadow-lg' : 'border-slate-300 hover:border-sky-400')
                     },
                       h('div', { style: { width: '100%', height: 36, background: c.hex, borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)' }, 'aria-hidden': 'true' }),
-                      h('div', { className: 'text-[11px] font-bold mt-1 text-slate-800' }, c.n + '. ' + c.label),
-                      h('div', { className: 'text-[10px] text-slate-700' }, c.status)
+                      h('div', { className: 'text-[0.6875rem] font-bold mt-1 text-slate-800' }, c.n + '. ' + c.label),
+                      h('div', { className: 'text-[0.625rem] text-slate-700' }, c.status)
                     );
                   })
                 ),
@@ -21168,7 +21168,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   h('li', null, __alloT('stem.nutritionlab.dry_lips_and_dry_mouth_are_real_signal', 'Dry lips and dry mouth are real signals — but skin "tenting" (slow snap-back) only shows up at moderate-to-severe dehydration.')),
                   h('li', null, __alloT('stem.nutritionlab.persistent_dark_urine_despite_drinking', 'Persistent dark urine despite drinking water? See a clinician — could be liver, medication, or blood-related.'))
                 ),
-                h('p', { className: 'text-[11px] italic text-slate-700 mt-2' },
+                h('p', { className: 'text-[0.6875rem] italic text-slate-700 mt-2' },
                   __alloT('stem.nutritionlab.if_you_find_yourself_using_water_to_fe', 'If you find yourself using water to feel "full" or override hunger, that is a body-cue mismatch worth talking about with a trusted adult. NEDA helpline: 1-800-931-2237.'))
               )
             ),
@@ -21189,15 +21189,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       ),
                       h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                         h('div', { className: 'rounded-lg bg-white p-2 border border-slate-500' },
-                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.sodium_4', 'Sodium')),
+                          h('div', { className: 'text-[0.5625rem] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.sodium_4', 'Sodium')),
                           h('div', { className: 'text-sm font-black text-slate-800' }, b.sodium + ' mg')
                         ),
                         h('div', { className: 'rounded-lg bg-white p-2 border border-slate-500' },
-                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.sugar', 'Sugar')),
+                          h('div', { className: 'text-[0.5625rem] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.sugar', 'Sugar')),
                           h('div', { className: 'text-sm font-black ' + (b.sugar >= 14 ? 'text-rose-700' : 'text-slate-800') }, b.sugar + ' g')
                         ),
                         h('div', { className: 'rounded-lg bg-white p-2 border border-slate-500' },
-                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.caffeine', 'Caffeine')),
+                          h('div', { className: 'text-[0.5625rem] uppercase font-bold text-slate-700' }, __alloT('stem.nutritionlab.caffeine', 'Caffeine')),
                           h('div', { className: 'text-sm font-black text-slate-800' }, b.caffeine + ' mg')
                         )
                       ),
@@ -21207,7 +21207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
                         h('span', { className: 'font-bold' }, __alloT('stem.nutritionlab.when_it_fits', 'When it fits: ')), b.when
                       ),
-                      h('div', { className: 'text-[10px] italic text-slate-700' }, 'Source: ' + b.source)
+                      h('div', { className: 'text-[0.625rem] italic text-slate-700' }, 'Source: ' + b.source)
                     );
                   })
                 )
@@ -21277,11 +21277,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     sweatRateMlHr < 1200 ? 'Moderate sweat rate — typical practice intensity. Sip steadily during, replace fully after.' :
                     'High sweat rate — common in heat or vigorous training. Plan electrolytes (sports drink or salty snack) plus water. NATA flags rates above 2 L/hr as a heat-illness risk if not replaced.'
                   ),
-                  h('p', { className: 'text-[11px] italic text-slate-700' },
+                  h('p', { className: 'text-[0.6875rem] italic text-slate-700' },
                     __alloT('stem.nutritionlab.replace_target_uses_nata_s_125_recomme', 'Replace target uses NATA\'s 125% recommendation (midpoint of the 100-150% guideline) to account for ongoing post-exercise sweat and urine loss.'))
                 ),
 
-                h('p', { className: 'text-[11px] text-slate-700 italic mt-2 leading-relaxed' },
+                h('p', { className: 'text-[0.6875rem] text-slate-700 italic mt-2 leading-relaxed' },
                   __alloT('stem.nutritionlab.sources_nata_2017_position_statement_o', 'Sources: NATA 2017 Position Statement on Fluid Replacement; ACSM Position Stand on Exercise and Fluid Replacement (2007).'))
               )
             ),
@@ -21500,7 +21500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('span', { 'aria-hidden': true, className: 'mr-1' }, r.icon),
             r.label,
             lit && h('span', { 'aria-hidden': true, className: 'ml-1' }, '●'),
-            o.count != null && h('span', { className: 'ml-1 text-[10px] font-mono text-slate-700' }, '(' + o.count + ')')
+            o.count != null && h('span', { className: 'ml-1 text-[0.625rem] font-mono text-slate-700' }, '(' + o.count + ')')
           );
         }
 
@@ -21551,8 +21551,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   ['2', __alloT('stem.nutritionlab.bm_step_2', 'Watch where it goes')],
                   ['3', __alloT('stem.nutritionlab.bm_step_3', 'Click an organ to ask what it needs')]
                 ].map(function (s) {
-                  return h('span', { key: s[0], className: 'inline-flex items-center gap-1.5 text-[11px] font-bold text-fuchsia-900 bg-white border border-fuchsia-200 rounded-full px-2.5 py-1' },
-                    h('span', { className: 'w-4 h-4 rounded-full bg-fuchsia-700 text-white text-[10px] flex items-center justify-center', 'aria-hidden': true }, s[0]),
+                  return h('span', { key: s[0], className: 'inline-flex items-center gap-1.5 text-[0.6875rem] font-bold text-fuchsia-900 bg-white border border-fuchsia-200 rounded-full px-2.5 py-1' },
+                    h('span', { className: 'w-4 h-4 rounded-full bg-fuchsia-700 text-white text-[0.625rem] flex items-center justify-center', 'aria-hidden': true }, s[0]),
                     s[1]);
                 })
               )
@@ -21573,7 +21573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 },
                   h('div', { className: 'text-sm font-black' },
                     h('span', { 'aria-hidden': true, className: 'mr-1.5' }, m.icon), m.label),
-                  h('div', { className: 'text-[11px] leading-snug ' + (on ? 'text-fuchsia-50' : 'text-slate-700') }, m.hint)
+                  h('div', { className: 'text-[0.6875rem] leading-snug ' + (on ? 'text-fuchsia-50' : 'text-slate-700') }, m.hint)
                 );
               })
             ),
@@ -21584,7 +21584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, viewerTitle),
                   h('div', { className: 'flex items-center gap-2' },
-                    h('span', { className: 'text-[11px] font-mono text-slate-700' }, seenCount + '/' + totalNutrients + ' ' + __alloT('stem.nutritionlab.bm_explored', 'explored')),
+                    h('span', { className: 'text-[0.6875rem] font-mono text-slate-700' }, seenCount + '/' + totalNutrients + ' ' + __alloT('stem.nutritionlab.bm_explored', 'explored')),
                     h('button', {
                       type: 'button', onClick: toggleLabels, 'aria-pressed': showLabels ? 'true' : 'false',
                       className: 'px-2.5 py-1 rounded-lg border-2 text-xs font-bold transition focus:outline-none focus:ring-2 ring-fuchsia-500/40 ' +
@@ -21620,7 +21620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     style: { background: 'rgba(15,23,42,0.85)', color: '#fde68a', border: '1px solid ' + flowColor }
                   }, legendText)
                 ),
-                h('p', { id: 'nutrition-bm-desc', className: 'text-[11px] text-slate-700' },
+                h('p', { id: 'nutrition-bm-desc', className: 'text-[0.6875rem] text-slate-700' },
                   __alloT('stem.nutritionlab.bm_desc_line', 'Glowing organs use the selected nutrient; dots trace the route from the gut. Drag or use the buttons to turn the figure. Click an organ to select it.')),
                 h('div', { role: 'group', 'aria-label': __alloT('stem.nutritionlab.bm_controls', '3D view controls'), className: 'flex flex-wrap gap-1.5' },
                   [['◀', __alloT('stem.nutritionlab.bm_rotate_left', 'Rotate left'), function () { NUTRI_BODY3D.nudge(-0.3, 0); }],
@@ -21661,7 +21661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.nutritionlab.bm_pick_heading', 'Pick a nutrient'), className: 'space-y-2.5' },
                     pickerGroups.map(function (g) {
                       return h('div', { key: g.id },
-                        h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, g.label),
+                        h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700 mb-1' }, g.label),
                         h('div', { className: 'flex flex-wrap gap-1.5' }, g.items.map(function (n) { return nutrientChip(n, g.id); }))
                       );
                     })
@@ -21679,7 +21679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('div', { className: 'flex items-start gap-3' },
                       h('span', { className: 'text-4xl', 'aria-hidden': true }, regionMeta.icon),
                       h('div', null,
-                        h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.bm_region', 'Body region')),
+                        h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.bm_region', 'Body region')),
                         h('h3', { className: 'text-xl font-black text-slate-800' }, regionMeta.label)
                       )
                     ),
@@ -21696,7 +21696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   h('div', { className: 'p-3 bg-rose-50 rounded-lg border border-rose-200' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, __alloT('stem.nutritionlab.bm_region_short', 'When supply runs short')),
                     h('div', { className: 'text-sm text-slate-800' }, regionMeta.short),
-                    h('div', { className: 'text-[11px] text-slate-700 italic mt-1' }, __alloT('stem.nutritionlab.bm_candidate_note', 'These are candidates, not a diagnosis. Symptoms have many causes; a doctor can test for a nutrient shortfall.'))
+                    h('div', { className: 'text-[0.6875rem] text-slate-700 italic mt-1' }, __alloT('stem.nutritionlab.bm_candidate_note', 'These are candidates, not a diagnosis. Symptoms have many causes; a doctor can test for a nutrient shortfall.'))
                   ),
                   h('div', null,
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.nutritionlab.bm_region_needs', 'Nutrients it depends on') + ' (' + regionNutrients.length + ')'),
@@ -21747,7 +21747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                       __alloT('stem.nutritionlab.bm_energy_headline_copy', 'Your brain is about 2% of your body weight and spends about 20% of your resting energy — and a teenage brain, still building connections, spends a larger share than an adult one. Thinking is expensive, and it is paid for out of what you eat.'))
                   ),
-                  h('p', { className: 'text-[11px] text-slate-700 italic' },
+                  h('p', { className: 'text-[0.6875rem] text-slate-700 italic' },
                     __alloT('stem.nutritionlab.bm_energy_source', 'Healthy-adult averages from Wang et al. (2010) and Brody, Nutritional Biochemistry. Real shares vary with body composition, age and health — these describe the pattern, not a person.')),
                   h('button', {
                     type: 'button', onClick: function () { goto('energyBalance'); },
@@ -21797,7 +21797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' },
                         __alloT('stem.nutritionlab.bm_compare_shared', 'Shared addresses') + ' (' + sets.shared.length + ')'),
                       rowList(sets.shared, 'used by both'),
-                      h('p', { className: 'text-[11px] text-slate-700 mt-2 leading-snug' },
+                      h('p', { className: 'text-[0.6875rem] text-slate-700 mt-2 leading-snug' },
                         __alloT('stem.nutritionlab.bm_compare_legend', 'On the figure these burn brightest; a region only one of them serves sits dim.'))
                     ),
                     pairNote && h('div', { className: 'p-3 rounded-lg bg-emerald-50 border border-emerald-200' },
@@ -21816,7 +21816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                         rowList(sets.onlyB, 'only this one')
                       )
                     ),
-                    h('p', { className: 'text-[11px] text-slate-700 italic' },
+                    h('p', { className: 'text-[0.6875rem] text-slate-700 italic' },
                       __alloT('stem.nutritionlab.bm_compare_footnote', 'Sharing an address does not make two nutrients interchangeable — they do different jobs once they arrive. Overlap tells you where a shortfall of either would be felt.'))
                   );
                 })(),
@@ -21846,7 +21846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   meta.function && h('div', { className: 'p-3 bg-slate-50 rounded-lg border border-slate-200' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.nutritionlab.bm_from_atlas', 'From the Micronutrient Atlas')),
                     h('div', { className: 'text-sm text-slate-800' }, meta.function),
-                    meta.cite && h('div', { className: 'text-[11px] text-slate-700 italic font-mono mt-1' }, 'Source: ' + meta.cite),
+                    meta.cite && h('div', { className: 'text-[0.6875rem] text-slate-700 italic font-mono mt-1' }, 'Source: ' + meta.cite),
                     h('button', {
                       type: 'button',
                       onClick: function () {
@@ -21886,7 +21886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { className: 'bg-gradient-to-br from-violet-50 to-fuchsia-50 border-2 border-violet-300 rounded-2xl p-5', 'data-nutrition-bm-predict': 'true' },
               h('div', { className: 'flex items-baseline justify-between gap-3 flex-wrap mb-2' },
                 h('h2', { className: 'text-base font-black text-violet-900' }, '🔮 ' + __alloT('stem.nutritionlab.bm_predict_title', 'Where does it go? Predict, then look')),
-                h('span', { className: 'text-[11px] font-mono text-slate-700' }, (quiz.done || 0) + ' ' + __alloT('stem.nutritionlab.bm_predict_done', 'predictions made'))
+                h('span', { className: 'text-[0.6875rem] font-mono text-slate-700' }, (quiz.done || 0) + ' ' + __alloT('stem.nutritionlab.bm_predict_done', 'predictions made'))
               ),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
                 __alloT('stem.nutritionlab.bm_predict_copy_a', 'Before looking at the figure:') + ' ',

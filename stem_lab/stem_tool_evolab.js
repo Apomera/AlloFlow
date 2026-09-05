@@ -353,7 +353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               missionItems.length > 0 && h('ol', { className: 'grid min-w-0 flex-1 grid-cols-1 gap-1 text-xs text-slate-700 sm:grid-cols-3' },
                 missionItems.map(function(item, index) {
                   return h('li', { key: index, className: 'flex items-start gap-2 rounded-lg border border-amber-200 bg-white/80 p-2' },
-                    h('span', { className: 'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-amber-700 text-[10px] font-black text-white' }, index + 1),
+                    h('span', { className: 'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-amber-700 text-[0.625rem] font-black text-white' }, index + 1),
                     h('span', null, item)
                   );
                 })
@@ -409,9 +409,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // Stat card — small reusable display block for numeric readouts.
       function StatCard(props) {
         return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-          h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, props.label),
+          h('div', { className: 'text-[0.625rem] uppercase font-bold tracking-wider text-slate-600' }, props.label),
           h('div', { className: 'text-2xl font-black ' + (props.color || 'text-emerald-700') }, props.value),
-          props.unit && h('div', { className: 'text-[10px] text-slate-600' }, props.unit)
+          props.unit && h('div', { className: 'text-[0.625rem] text-slate-600' }, props.unit)
         );
       }
 
@@ -421,7 +421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         return h('div', { className: 'bg-white rounded-xl p-3 shadow border border-slate-300' },
           h('label', { htmlFor: sliderId, className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
             h('span', null, props.label),
-            h('span', { className: 'normal-case text-[11px] font-semibold ' + (props.valueColor || 'text-emerald-700') }, props.valueText)
+            h('span', { className: 'normal-case text-[0.6875rem] font-semibold ' + (props.valueColor || 'text-emerald-700') }, props.valueText)
           ),
           h('input', {
             id: sliderId,
@@ -435,7 +435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             'aria-valuetext': props.valueText,
             className: 'w-full ' + (props.accent || 'accent-emerald-500')
           }),
-          props.hint && h('div', { className: 'text-[10px] text-slate-600 mt-1' }, props.hint)
+          props.hint && h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, props.hint)
         );
       }
 
@@ -746,7 +746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('span', { className: 'font-black text-slate-900 leading-tight' }, c.title)
                 ),
                 h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, c.subtitle),
-                h('div', { className: 'mt-3 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ' + (visited ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') },
+                h('div', { className: 'mt-3 inline-flex items-center rounded-full px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider ' + (visited ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') },
                   visited ? 'Explored' : 'Open next'
                 )
               )
@@ -773,16 +773,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', { className: 'mt-5 rounded-2xl border border-white/15 bg-white/10 p-3' },
                   h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
                     h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-emerald-100' }, 'Evolution loop'),
-                    h('div', { className: 'text-[11px] font-bold text-white/70' }, 'Cause -> population change')
+                    h('div', { className: 'text-[0.6875rem] font-bold text-white/70' }, 'Cause -> population change')
                   ),
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-5 gap-2' },
                     evoLoopSteps.map(function(step, idx) {
                       return h('div', { key: step.label, className: 'rounded-xl border border-white/10 bg-slate-950/25 p-2' },
                         h('div', { className: 'flex items-center gap-2' },
-                          h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-full bg-emerald-300 text-[11px] font-black text-emerald-950' }, idx + 1),
+                          h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-full bg-emerald-300 text-[0.6875rem] font-black text-emerald-950' }, idx + 1),
                           h('span', { className: 'text-xs font-black text-white leading-tight' }, step.label)
                         ),
-                        h('p', { className: 'mt-1 text-[11px] leading-snug text-emerald-50/75' }, step.desc)
+                        h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-emerald-50/75' }, step.desc)
                       );
                     })
                   )
@@ -795,7 +795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     { label: 'Path', value: activeTrack.label }
                   ].map(function(stat) {
                     return h('div', { key: stat.label, className: 'rounded-xl border border-white/15 bg-white/10 px-3 py-2' },
-                      h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-emerald-100/80' }, stat.label),
+                      h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-emerald-100/80' }, stat.label),
                       h('div', { className: 'text-lg font-black text-white truncate' }, stat.value)
                     );
                   })
@@ -1057,14 +1057,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             bars.map(function(b, i) {
               var pctH = Math.round(b.freq * 100);
               return h('div', { key: i, className: 'flex-1 flex flex-col items-center justify-end h-full' },
-                h('div', { className: 'text-[10px] font-bold text-slate-700 mb-1' }, (b.freq * 100).toFixed(1) + '%'),
+                h('div', { className: 'text-[0.625rem] font-bold text-slate-700 mb-1' }, (b.freq * 100).toFixed(1) + '%'),
                 h('div', {
                   className: 'w-full rounded-t-lg transition-all',
                   style: { height: pctH + '%', backgroundColor: b.color },
                   'aria-label': b.label + ' (' + b.desc + '): ' + (b.freq * 100).toFixed(1) + ' percent'
                 }),
                 h('div', { className: 'text-sm font-bold text-slate-800 mt-2' }, b.label),
-                h('div', { className: 'text-[9px] text-slate-600' }, b.desc)
+                h('div', { className: 'text-[0.5625rem] text-slate-600' }, b.desc)
               );
             })
           );
@@ -1081,7 +1081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-gradient-to-br from-cyan-700 to-blue-700 rounded-2xl p-5 text-white shadow-lg text-center' },
               h('div', { className: 'text-3xl font-black mb-1', style: { fontFamily: 'serif' } }, t('stem.evolab.p_2pq_q_1', 'p² + 2pq + q² = 1')),
               h('div', { className: 'text-sm opacity-95 mb-2' }, t('stem.evolab.hwe_expected_random_mating', 'Under random mating, p², 2pq, and q² are the expected genotype proportions for the current allele frequencies.')),
-              h('div', { className: 'text-[12px] font-bold bg-white/15 rounded-lg px-3 py-1.5 inline-block' },
+              h('div', { className: 'text-[0.75rem] font-bold bg-white/15 rounded-lg px-3 py-1.5 inline-block' },
                 t('stem.evolab.hwe_track_allele_change', 'Your job: apply a modeled force, track whether p changes, and watch the expected genotype proportions recalculate.'))
             ),
             // ── How to use this calculator (collapsible primer) ──
@@ -1090,7 +1090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               className: 'rounded-xl border border-cyan-200 bg-cyan-50'
             },
               h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800' }, t('stem.evolab.how_to_use_this_calculator_click_to_to', '📜 How to use this calculator (click to toggle)')),
-              h('div', { className: 'px-3 pb-3 space-y-2 text-[11px] text-slate-700' },
+              h('div', { className: 'px-3 pb-3 space-y-2 text-[0.6875rem] text-slate-700' },
                 h('p', { className: 'leading-relaxed' },
                   h('strong', null, t('stem.evolab.hardy_weinberg_equilibrium', 'Hardy-Weinberg equilibrium')), t('stem.evolab.hwe_proportions_do_not_prove_stability', ' gives expected genotype proportions after random mating. Matching those proportions at one time point does not by itself prove that allele frequencies are stable; testing evolution requires comparing allele frequencies across generations. The classic baseline assumes:')),
                 h('ul', { className: 'list-disc list-inside space-y-1' },
@@ -1346,7 +1346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.allele_frequency_over_time', 'Allele Frequency Over Time')),
-                trials.length > 0 && h('div', { className: 'text-[10px] text-slate-600' }, 'Run #' + runId + ' · 5 parallel lineages')
+                trials.length > 0 && h('div', { className: 'text-[0.625rem] text-slate-600' }, 'Run #' + runId + ' · 5 parallel lineages')
               ),
               h('svg', {
                 viewBox: '0 0 ' + W + ' ' + H,
@@ -1393,7 +1393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     }, 'N = ' + n);
                   })
                 ),
-                h('div', { className: 'text-[10px] text-slate-600 mt-2' }, t('stem.evolab.smaller_populations_drift_harder_n_10_', 'Smaller populations drift harder. N=10 → most lineages fix within 50 generations. N=1000 → rarely fixes.'))
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-2' }, t('stem.evolab.smaller_populations_drift_harder_n_10_', 'Smaller populations drift harder. N=10 → most lineages fix within 50 generations. N=1000 → rarely fixes.'))
               ),
               h(LabeledSlider, {
                 label: t('stem.evolab.generations_to_run', 'Generations to Run'),
@@ -1796,12 +1796,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 );
               })
             ),
-            h('div', { className: 'flex justify-between text-[9px] text-slate-600 mt-1' },
+            h('div', { className: 'flex justify-between text-[0.5625rem] text-slate-600 mt-1' },
               h('span', null, '0.0'),
               h('span', null, '0.5'),
               h('span', null, '1.0')
             ),
-            h('div', { className: 'text-[10px] text-slate-600 mt-1 text-center' }, preset.traitLabel)
+            h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 text-center' }, preset.traitLabel)
           );
         };
 
@@ -2195,7 +2195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.population_by_beak_class', 'Population by Beak Class')),
-              h('div', { className: 'text-[10px] text-slate-600' }, pop.length + ' birds total')
+              h('div', { className: 'text-[0.625rem] text-slate-600' }, pop.length + ' birds total')
             ),
             h('div', { className: 'grid grid-cols-4 gap-2' },
               BEAK_CLASSES.map(function(cls, i) {
@@ -2204,7 +2204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('div', { className: 'text-3xl text-center mb-1' }, cls.icon),
                   h('div', { className: 'text-xs font-bold text-center text-slate-800' }, cls.label),
                   h('div', { className: 'text-2xl font-black text-center text-slate-900 mt-1' }, count),
-                  h('div', { className: 'text-[9px] text-slate-600 text-center' }, count === 1 ? 'bird' : 'birds')
+                  h('div', { className: 'text-[0.5625rem] text-slate-600 text-center' }, count === 1 ? 'bird' : 'birds')
                 );
               })
             )
@@ -2218,12 +2218,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.available_seeds_this_year', 'Available Seeds This Year')),
-              h('div', { className: 'text-[10px] font-bold ' + (drought ? 'text-rose-700' : 'text-emerald-700') }, drought ? '🌵 DROUGHT' : '🌱 Normal year')
+              h('div', { className: 'text-[0.625rem] font-bold ' + (drought ? 'text-rose-700' : 'text-emerald-700') }, drought ? '🌵 DROUGHT' : '🌱 Normal year')
             ),
             h('div', { className: 'space-y-1' },
               SEED_TYPES.map(function(st) {
                 var pct = total > 0 ? (seeds[st.id] / total) * 100 : 0;
-                return h('div', { key: st.id, className: 'flex items-center gap-2 text-[11px]' },
+                return h('div', { key: st.id, className: 'flex items-center gap-2 text-[0.6875rem]' },
                   h('div', { className: 'w-32 text-slate-700' }, st.label),
                   h('div', { className: 'flex-1 h-4 bg-slate-100 rounded overflow-hidden' },
                     h('div', { style: { width: pct + '%', backgroundColor: st.color, height: '100%' } })
@@ -2232,7 +2232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 );
               })
             ),
-            h('div', { className: 'text-[10px] text-slate-600 mt-2' },
+            h('div', { className: 'text-[0.625rem] text-slate-600 mt-2' },
               drought ? 'In drought, soft seeds are gone. Only birds with beaks ≥10mm can crack the remaining hard seeds.' : 'Normal year — abundant soft seeds favor small-beaked birds (cheaper to crack).')
           );
         };
@@ -2257,7 +2257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.mean_beak_depth_over_years', 'Mean Beak Depth Over Years')),
-              h('div', { className: 'flex gap-3 text-[10px]' },
+              h('div', { className: 'flex gap-3 text-[0.625rem]' },
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#f59e0b', display: 'inline-block' } }),
                   h('span', { className: 'text-slate-700' }, t('stem.evolab.your_sim', 'Your sim'))
@@ -2545,7 +2545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 CLADES.map(function(c) {
                   return h('div', { key: c.id, className: 'p-2 rounded-lg text-xs', style: { backgroundColor: c.color + '22', borderLeft: '3px solid ' + c.color } },
                     h('div', { className: 'font-bold text-slate-800' }, c.label),
-                    showHints && h('div', { className: 'text-[10px] text-slate-600 mt-1' }, c.tip)
+                    showHints && h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, c.tip)
                   );
                 })
               )
@@ -2564,7 +2564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       h('span', { className: 'text-3xl' }, o.icon),
                       h('div', { className: 'flex-1' },
                         h('div', { className: 'font-bold text-slate-800' }, o.name),
-                        h('div', { className: 'text-[10px] text-slate-600 italic' }, o.note)
+                        h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, o.note)
                       ),
                       checked && (isCorrect ? h('span', { className: 'text-2xl', 'aria-label': t('stem.evolab.correct_2', 'Correct') }, '✓') : isWrong ? h('span', { className: 'text-2xl', 'aria-label': t('stem.evolab.incorrect', 'Incorrect') }, '✗') : null)
                     ),
@@ -2577,7 +2577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       h('option', { value: '' }, t('stem.evolab.select_clade', '— Select clade —')),
                       CLADES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.label); })
                     ),
-                    isWrong && SURPRISES[o.id] && h('div', { className: 'mt-2 p-2 bg-rose-100 border border-rose-300 rounded text-[11px] text-rose-900' },
+                    isWrong && SURPRISES[o.id] && h('div', { className: 'mt-2 p-2 bg-rose-100 border border-rose-300 rounded text-[0.6875rem] text-rose-900' },
                       h('strong', null, t('stem.evolab.why', '💡 Why: ')), SURPRISES[o.id]
                     )
                   );
@@ -2781,7 +2781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex flex-col items-center'
           },
             h('h3', { className: 'text-sm font-bold text-slate-800' }, label),
-            h('div', { className: 'text-[10px] text-slate-600 mb-1' }, useDesc),
+            h('div', { className: 'text-[0.625rem] text-slate-600 mb-1' }, useDesc),
             h('svg', {
               viewBox: '0 0 200 200',
               className: 'w-full max-w-[180px] h-44',
@@ -3247,9 +3247,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('h2', { className: 'text-lg font-black mt-1' }, t('stem.evolab.spot_the_misconception', 'Spot the misconception'))
                 ),
                 h('div', { className: 'text-right' },
-                  h('div', { className: 'text-[11px] opacity-80' }, t('stem.evolab.score_2', 'Score')),
+                  h('div', { className: 'text-[0.6875rem] opacity-80' }, t('stem.evolab.score_2', 'Score')),
                   h('div', { className: 'text-2xl font-black' }, correctCount + ' / ' + totalAnswered),
-                  d.misconQuizBest && h('div', { className: 'text-[10px] opacity-80' }, 'Best: ' + d.misconQuizBest)
+                  d.misconQuizBest && h('div', { className: 'text-[0.625rem] opacity-80' }, 'Best: ' + d.misconQuizBest)
                 )
               ),
               // Progress bar
@@ -3634,7 +3634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.resistance_fraction_over_time', '📊 Resistance Fraction Over Time')),
-              h('div', { className: 'flex gap-3 text-[10px]' },
+              h('div', { className: 'flex gap-3 text-[0.625rem]' },
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#dc2626', display: 'inline-block' } }),
                   h('span', { className: 'text-slate-700' }, t('stem.evolab.resistant', '% resistant'))
@@ -4077,7 +4077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.trait_means_overlap_proxy_over_time', 'Trait Means + Overlap Proxy Over Time')),
-              h('div', { className: 'flex gap-3 text-[10px]' },
+              h('div', { className: 'flex gap-3 text-[0.625rem]' },
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#3b82f6', display: 'inline-block' } }),
                   h('span', null, t('stem.evolab.left_mean', 'Left mean'))
@@ -4573,7 +4573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.speed_coevolution_over_time', '📊 Speed Coevolution Over Time')),
-              h('div', { className: 'flex gap-3 text-[10px]' },
+              h('div', { className: 'flex gap-3 text-[0.625rem]' },
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#dc2626', display: 'inline-block' } }),
                   h('span', null, t('stem.evolab.predator_speed', 'Predator speed'))
@@ -4909,7 +4909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   },
                     h('div', { className: 'flex items-start justify-between gap-3 mb-1' },
                       h('div', null,
-                        h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-stone-600 flex items-center gap-2' },
+                        h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-stone-600 flex items-center gap-2' },
                           h('span', null, entry.year),
                           entry.country && h('span', { className: 'font-medium text-stone-500' }, '· ' + entry.country),
                           h('span', { className: 'px-1.5 py-0.5 rounded ' + tag.color + ' font-bold' }, tag.label)
@@ -5188,7 +5188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.temperature_tolerance_population', 'Temperature, Tolerance, & Population')),
-              h('div', { className: 'flex gap-3 text-[10px]' },
+              h('div', { className: 'flex gap-3 text-[0.625rem]' },
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#dc2626', display: 'inline-block' } }),
                   h('span', null, t('stem.evolab.temp', 'Temp'))
@@ -5215,7 +5215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               hist.length > 1 && h('path', { d: meanPath, stroke: '#3b82f6', strokeWidth: 2, fill: 'none' }),
               hist.length > 1 && h('path', { d: popPath, stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '3,2', fill: 'none' })
             ),
-            h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.evolab.when_temperature_red_and_tolerance_mea', 'When temperature (red) and tolerance mean (blue) move together, the population is adapting. When they DIVERGE, the population is in trouble.'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, t('stem.evolab.when_temperature_red_and_tolerance_mea', 'When temperature (red) and tolerance mean (blue) move together, the population is adapting. When they DIVERGE, the population is in trouble.'))
           );
         };
 
@@ -5282,7 +5282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 }),
                 h('span', { className: 'text-2xl' }, '🔥')
               ),
-              h('div', { className: 'text-[10px] text-slate-600 mt-2 italic' }, t('stem.evolab.slide_slowly_while_the_simulation_runs', 'Slide slowly while the simulation runs to let the population catch up. Slide fast to force extinction.'))
+              h('div', { className: 'text-[0.625rem] text-slate-600 mt-2 italic' }, t('stem.evolab.slide_slowly_while_the_simulation_runs', 'Slide slowly while the simulation runs to let the population catch up. Slide fast to force extinction.'))
             ),
             // Mutation rate slider
             h(LabeledSlider, {
@@ -5529,7 +5529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.showiness_over_rounds', 'Showiness Over Rounds')),
-              h('div', { className: 'flex gap-3 text-[10px]' },
+              h('div', { className: 'flex gap-3 text-[0.625rem]' },
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#ec4899', display: 'inline-block' } }),
                   h('span', null, t('stem.evolab.mean', 'Mean'))
@@ -6036,7 +6036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('text', { x: 4, y: H - padB + 4, fontSize: '9', fill: '#475569' }, '0s'),
               bars
             ),
-            h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.evolab.bars_get_taller_slower_as_the_prey_bec', 'Bars get TALLER (slower) as the prey become better camouflaged.'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, t('stem.evolab.bars_get_taller_slower_as_the_prey_bec', 'Bars get TALLER (slower) as the prey become better camouflaged.'))
           );
         };
 
@@ -7112,7 +7112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   'aria-label': 'Prediction ' + (i + 1) + ': ' + prompt,
                   className: 'w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
                 }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, predictions[i] && predictions[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, predictions[i] && predictions[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
               );
             })
           );
@@ -7264,7 +7264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('section', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, t('stem.evolab.evidence_notebook', '📓 Interpretation notebook')),
-                h('div', { className: 'text-[10px] font-bold text-amber-800 bg-white border border-amber-300 rounded-full px-2 py-1' }, t('stem.evolab.saved_during_lab_visits', 'Saved during lab visits'))
+                h('div', { className: 'text-[0.625rem] font-bold text-amber-800 bg-white border border-amber-300 rounded-full px-2 py-1' }, t('stem.evolab.saved_during_lab_visits', 'Saved during lab visits'))
               ),
               h('p', { className: 'text-sm text-slate-700 mb-3' }, t('stem.evolab.record_numbers_not_just_impressions', 'Captured values are filled automatically the first time. Add context, revise the interpretation, and note surprises or model limits in your own words.')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -7287,7 +7287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       placeholder: field.prompt,
                       className: 'w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-400'
                     }),
-                    required && h('div', { className: 'mt-1 text-[10px] ' + (complete ? 'font-bold text-emerald-700' : 'text-slate-600') }, complete ? '✓ Evidence recorded' : 'Add at least 10 characters')
+                    required && h('div', { className: 'mt-1 text-[0.625rem] ' + (complete ? 'font-bold text-emerald-700' : 'text-slate-600') }, complete ? '✓ Evidence recorded' : 'Add at least 10 characters')
                   );
                 })
               )
@@ -7362,12 +7362,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-slate-200', 'aria-hidden': true },
                 h('div', { className: 'h-full rounded-full bg-emerald-600 transition-all', style: { width: explanationPct + '%' } })
               ),
-              h('div', { className: 'mt-2 text-[11px] text-slate-600' }, 'Verdict + Compare + Explain + Apply')
+              h('div', { className: 'mt-2 text-[0.6875rem] text-slate-600' }, 'Verdict + Compare + Explain + Apply')
             ),
             scenario.reflectPrompts.map(function(prompt, i) {
               return h('div', { key: i, className: 'mb-3' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-2' },
-                  h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-[10px] text-white' }, i + 1),
+                  h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-[0.625rem] text-white' }, i + 1),
                   h('span', null, reflectionLabels[i] || ('Reflection ' + (i + 1)))
                 ),
                 h('div', { className: 'text-sm text-slate-700 mb-2 italic' }, prompt),
@@ -7379,7 +7379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   'aria-label': 'Reflection ' + (i + 1) + ': ' + prompt,
                   className: 'w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
                 }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, reflections[i] && reflections[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, reflections[i] && reflections[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
               );
             })
           );
@@ -7525,7 +7525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   return h('div', { key: i, className: 'flex items-center flex-1 ' + (i === STEPS.length - 1 ? '' : 'after:flex-1') },
                     h('div', { className: 'flex flex-col items-center flex-1' },
                       h('div', { 'aria-current': isCurrent ? 'step' : undefined, className: 'w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm ' + (isCurrent ? 'bg-emerald-700 text-white shadow' : isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-600') }, isDone ? '✓' : (i + 1)),
-                      h('div', { className: 'text-[10px] font-bold mt-1 ' + (isCurrent ? 'text-emerald-700' : 'text-slate-600') }, stepName)
+                      h('div', { className: 'text-[0.625rem] font-bold mt-1 ' + (isCurrent ? 'text-emerald-700' : 'text-slate-600') }, stepName)
                     ),
                     i < STEPS.length - 1 && h('div', { 'aria-hidden': true, className: 'h-0.5 flex-1 ' + (i < step ? 'bg-emerald-300' : 'bg-slate-200') })
                   );
@@ -7733,7 +7733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   return null;
                 })()
               ),
-              h('div', { className: 'text-[10px] text-slate-600 mt-2' }, t('stem.evolab.you_don_t_have_to_follow_this_order_ea', 'You don\'t have to follow this order. Each module is self-contained. But each module\'s ending suggestion points to the next one in this sequence.'))
+              h('div', { className: 'text-[0.625rem] text-slate-600 mt-2' }, t('stem.evolab.you_don_t_have_to_follow_this_order_ea', 'You don\'t have to follow this order. Each module is self-contained. But each module\'s ending suggestion points to the next one in this sequence.'))
             ),
             // Three suggested learning arcs
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
@@ -7927,7 +7927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     ),
                     h('div', { className: 'flex flex-wrap gap-1 pl-7' },
                       matching.map(function(s) {
-                        return h('span', { key: s.id, className: 'inline-block px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 font-mono text-[10px] font-bold' }, s.id);
+                        return h('span', { key: s.id, className: 'inline-block px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 font-mono text-[0.625rem] font-bold' }, s.id);
                       })
                     )
                   );

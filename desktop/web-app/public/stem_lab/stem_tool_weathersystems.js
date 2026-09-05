@@ -5853,7 +5853,7 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'flex min-w-0 flex-1 items-center gap-3' },
                 h('div', { className: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xl shadow-lg', 'aria-hidden': true }, '\uD83C\uDFC5'),
                 h('div', { className: 'min-w-0' },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + indigoAccentClass }, 'Career pathway'),
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-widest ' + indigoAccentClass }, 'Career pathway'),
                   h('h3', { id: 'meteorologist-badges-title', className: 'text-sm font-black' }, 'Meteorologist Badge Board'),
                   h('p', { className: 'text-xs leading-snug ' + mutedClass }, nextBadge ? 'Next: ' + nextBadge.title + ' - ' + nextBadge.detail : 'All badges earned - keep testing new weather stories!')
                 )
@@ -5871,7 +5871,7 @@ var geographyGroup = new THREE.Group();
               return h('div', { key: badge.id, role: 'listitem', 'aria-label': badge.title + (badge.complete ? ' earned' : ' in progress'), className: 'rounded-xl border p-3 transition-colors motion-reduce:transition-none ' + (badge.complete ? (dark ? 'border-amber-400/40 bg-amber-400/10' : 'border-amber-200 bg-amber-50') : (dark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white/80')) },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('span', { className: 'text-xl ' + (badge.complete ? '' : 'grayscale opacity-60'), 'aria-hidden': true }, badge.icon),
-                  h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (badge.complete ? 'bg-amber-300 text-amber-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, badge.complete ? '\u2713 Earned' : badge.progress)
+                  h('span', { className: 'rounded-full px-2 py-0.5 text-[0.6875rem] font-black ' + (badge.complete ? 'bg-amber-300 text-amber-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, badge.complete ? '\u2713 Earned' : badge.progress)
                 ),
                 h('p', { className: 'mt-2 text-xs font-black' }, badge.title),
                 h('p', { className: 'mt-1 text-xs leading-snug ' + mutedClass }, badge.detail)
@@ -5930,7 +5930,7 @@ var geographyGroup = new THREE.Group();
               ),
               h('div', { className: 'min-w-[150px] text-right' },
                 h('p', { className: 'text-sm font-black ' + tealAccentClass }, completedCount + ' of ' + stages.length + ' stages'),
-                h('p', { className: 'text-[11px] font-bold ' + mutedClass }, nextStage ? 'Next: ' + nextStage.label : 'Cycle complete'),
+                h('p', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, nextStage ? 'Next: ' + nextStage.label : 'Cycle complete'),
                 h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-teal-100'), role: 'progressbar', 'aria-label': 'Weather investigation pathway progress', 'aria-valuemin': 0, 'aria-valuemax': stages.length, 'aria-valuenow': completedCount },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all motion-reduce:transition-none', style: { width: (completedCount / stages.length * 100) + '%' } })
                 )
@@ -5953,10 +5953,10 @@ var geographyGroup = new THREE.Group();
                 },
                   h('div', { className: 'flex items-start justify-between gap-2' },
                     h('span', { className: 'text-xl', 'aria-hidden': true }, stage.icon),
-                    h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (stage.complete ? 'bg-emerald-300 text-emerald-950' : recommended ? 'bg-sky-300 text-sky-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-white text-slate-700')) }, stage.complete ? 'Done' : recommended ? 'Next' : String(index + 1))
+                    h('span', { className: 'rounded-full px-2 py-0.5 text-[0.6875rem] font-black ' + (stage.complete ? 'bg-emerald-300 text-emerald-950' : recommended ? 'bg-sky-300 text-sky-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-white text-slate-700')) }, stage.complete ? 'Done' : recommended ? 'Next' : String(index + 1))
                   ),
                   h('span', { className: 'mt-2 block text-xs font-black' }, stage.label),
-                  h('span', { className: 'mt-1 block text-[11px] leading-snug opacity-85' }, stage.detail)
+                  h('span', { className: 'mt-1 block text-[0.6875rem] leading-snug opacity-85' }, stage.detail)
                 )
               );
             }))
@@ -6076,7 +6076,7 @@ var geographyGroup = new THREE.Group();
             ? 'Only ' + spread + '°C of cooling separates this air from saturation, so cloud or fog formation is favoured where air is lifted.'
             : 'This air must cool ' + spread + '°C to reach its dew point. Until then it stays unsaturated and cloud is less likely.');
         return h('div', { className: 'mt-3 rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50'), 'data-weather-saturation-diagram': true },
-          h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, band === 'K-2' ? 'How close to cloudy?' : 'Distance to saturation'),
+          h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + skyAccentClass }, band === 'K-2' ? 'How close to cloudy?' : 'Distance to saturation'),
           h('svg', {
             viewBox: '0 0 700 96', className: 'mt-1 h-auto w-full', role: 'img',
             'aria-label': 'Temperature axis from ' + axisLow + ' to ' + axisHigh + ' degrees Celsius. Dew point is ' + dewPoint + ' degrees and air temperature is ' + temperature + ' degrees, a spread of ' + spread + ' degrees. ' + caption
@@ -6369,7 +6369,7 @@ var geographyGroup = new THREE.Group();
                 ['Barbs', 'Wind speed in knots', barb.calm ? 'calm' : barb.rounded + ' kt = ' + barbWords]
               ].map(function (row) {
                 return h('div', { key: row[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, row[0]),
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + skyAccentClass }, row[0]),
                   h('p', { className: 'text-xs font-bold' }, row[1]),
                   h('p', { className: 'text-xs ' + mutedClass }, row[2])
                 );
@@ -6492,7 +6492,7 @@ var geographyGroup = new THREE.Group();
           return Object.assign({}, row, { actionId: actionId, action: actionText[actionId] || actionId });
         });
         return h('div', { className: 'mt-3 rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-sky-200 bg-sky-50'), 'data-weather-readiness-guide': true },
-          h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, band === 'K-2' ? 'What should we do?' : 'Matching a hazard to an action'),
+          h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + skyAccentClass }, band === 'K-2' ? 'What should we do?' : 'Matching a hazard to an action'),
           h('p', { className: 'mt-1 text-xs ' + mutedClass }, band === 'K-2' ? 'Different weather needs a different safe choice.' : 'Each hazard calls for a different response because each one puts people at risk in a different way. Decide which hazard the evidence supports, then match it.'),
           h('ul', { className: 'mt-2 space-y-1.5' }, rows.map(function (row) {
             // The arrow rides with the action text rather than living in its own column, so
@@ -6508,11 +6508,11 @@ var geographyGroup = new THREE.Group();
                   h('span', { className: 'mr-1 ' + mutedClass, 'aria-hidden': 'true' }, '→'),
                   row.action
                 ),
-                band !== 'K-2' && h('span', { className: 'mt-0.5 block text-[11px] leading-relaxed ' + mutedClass }, row.why)
+                band !== 'K-2' && h('span', { className: 'mt-0.5 block text-[0.6875rem] leading-relaxed ' + mutedClass }, row.why)
               )
             );
           })),
-          h('p', { className: 'mt-2 text-[11px] leading-relaxed ' + mutedClass }, 'These are classroom reasoning pairings for this lab. Real school decisions follow your district emergency plan and official National Weather Service warnings.')
+          h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed ' + mutedClass }, 'These are classroom reasoning pairings for this lab. Real school decisions follow your district emergency plan and official National Weather Service warnings.')
         );
       }
 
@@ -7207,7 +7207,7 @@ var geographyGroup = new THREE.Group();
             ),
             h('div', { className: 'rounded-xl px-3 py-2 text-center ' + featureChip },
               h('p', { className: 'text-xl font-black ' + storyEyebrow }, 'T +' + state.simHour),
-              h('p', { className: 'text-[11px] font-bold uppercase tracking-wide ' + featureMuted }, state.simHour === 0 ? 'Starting conditions' : state.simHour < 6 ? 'Early evolution' : state.simHour < 12 ? 'Developing pattern' : 'Later outlook')
+              h('p', { className: 'text-[0.6875rem] font-bold uppercase tracking-wide ' + featureMuted }, state.simHour === 0 ? 'Starting conditions' : state.simHour < 6 ? 'Early evolution' : state.simHour < 12 ? 'Developing pattern' : 'Later outlook')
             )
           ),
           h('div', { className: 'p-4' },
@@ -7223,7 +7223,7 @@ var geographyGroup = new THREE.Group();
               return h('article', { key: card.id, className: 'relative rounded-xl border p-4 ' + (currentCard ? (dark ? 'border-cyan-300/50 bg-cyan-400/10 shadow-lg shadow-cyan-950/30' : 'border-cyan-300 bg-cyan-50 shadow-md') : (dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')) },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('div', null,
-                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + (currentCard ? storyEyebrow : featureFaint) }, card.eyebrow),
+                    h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + (currentCard ? storyEyebrow : featureFaint) }, card.eyebrow),
                     h('p', { className: 'mt-1 text-base font-black' }, 'T +' + card.hour + ' hours')
                   ),
                   h('span', { className: 'text-xl', 'aria-hidden': true }, card.icon)
@@ -7251,11 +7251,11 @@ var geographyGroup = new THREE.Group();
               }).join(' ');
               return h('div', { key: track.id, className: 'rounded-xl border p-2 ' + (dark ? 'border-white/10 bg-black/20' : 'border-slate-200 bg-white/75') },
                 h('div', { className: 'flex items-baseline justify-between gap-2' },
-                  h('p', { className: 'flex items-center gap-1.5 text-[11px] font-black' },
+                  h('p', { className: 'flex items-center gap-1.5 text-[0.6875rem] font-black' },
                     h('span', { className: 'inline-block h-2 w-2 rounded-full', style: { backgroundColor: track.color }, 'aria-hidden': 'true' }),
                     track.label
                   ),
-                  h('p', { className: 'text-[11px] font-black tabular-nums ' + (dark ? 'text-cyan-100' : 'text-slate-900') }, now[track.id] + track.unit)
+                  h('p', { className: 'text-[0.6875rem] font-black tabular-nums ' + (dark ? 'text-cyan-100' : 'text-slate-900') }, now[track.id] + track.unit)
                 ),
                 h('svg', {
                   viewBox: '0 0 200 48', className: 'mt-1 h-auto w-full', role: 'img',
@@ -7272,7 +7272,7 @@ var geographyGroup = new THREE.Group();
                   }),
                   h('circle', { cx: round(sparkX(state.simHour), 1), cy: round(sparkY(now[track.id]), 1), r: 4, fill: track.color, stroke: dark ? '#0b1220' : '#ffffff', strokeWidth: 2 })
                 ),
-                h('div', { className: 'flex justify-between text-[10px] font-bold ' + featureFaint },
+                h('div', { className: 'flex justify-between text-[0.625rem] font-bold ' + featureFaint },
                   h('span', null, 'T +0'),
                   h('span', { className: 'tabular-nums' }, round(low, 1) + ' to ' + round(high, 1) + track.unit),
                   h('span', null, 'T +24')
@@ -7282,7 +7282,7 @@ var geographyGroup = new THREE.Group();
             h('div', { className: 'mt-4 flex items-start gap-3 rounded-xl border p-3 ' + (dark ? 'border-amber-300/20 bg-amber-300/10' : 'border-amber-300 bg-amber-50') },
               h('span', { className: 'text-xl', 'aria-hidden': true }, '\uD83D\uDC41\uFE0F'),
               h('div', null,
-                h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + (dark ? 'text-amber-300' : 'text-amber-800') }, 'Evidence cue'),
+                h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + (dark ? 'text-amber-300' : 'text-amber-800') }, 'Evidence cue'),
                 h('p', { className: 'mt-1 text-xs font-bold leading-relaxed' }, watchCue)
               )
             ),
@@ -7316,35 +7316,35 @@ var geographyGroup = new THREE.Group();
         return h('section', { className: panelClass + ' overflow-hidden', 'data-weather-visual-scene-studio': true, 'aria-labelledby': 'visual-scene-studio-title' },
           h('div', { className: 'flex items-start justify-between gap-2 border-b p-3 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
             h('div', null,
-              h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + violetAccentClass }, 'Map appearance'),
+              h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-widest ' + violetAccentClass }, 'Map appearance'),
               h('h3', { id: 'visual-scene-studio-title', className: 'text-xs font-black uppercase tracking-wide' }, 'Visual Scene Studio')
             ),
-            h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black ' + (activePreset ? (dark ? 'bg-violet-950 text-violet-300' : 'bg-violet-100 text-violet-800') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')), role: 'status', 'aria-live': 'polite' }, activePreset ? activePreset.label : 'Custom mix')
+            h('span', { className: 'rounded-full px-2 py-1 text-[0.6875rem] font-black ' + (activePreset ? (dark ? 'bg-violet-950 text-violet-300' : 'bg-violet-100 text-violet-800') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')), role: 'status', 'aria-live': 'polite' }, activePreset ? activePreset.label : 'Custom mix')
           ),
           h('div', { className: 'p-3' },
             h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Weather map visual presets' }, presets.map(function (preset) {
               var selected = activePreset && activePreset.id === preset.id;
               return h('button', { key: preset.id, type: 'button', onClick: function () { applyVisualPreset(preset); }, 'aria-pressed': !!selected, className: 'min-h-16 rounded-xl border p-3 text-left transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-violet-400 bg-violet-600 text-white shadow-md' : (dark ? 'border-slate-700 bg-slate-950/60 hover:border-violet-500/50 hover:bg-slate-800' : 'border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50')) },
                 h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, preset.icon), h('span', { className: 'text-xs font-black' }, preset.label)),
-                h('p', { className: 'mt-1 text-[11px] leading-snug ' + (selected ? 'text-violet-100' : mutedClass) }, preset.detail)
+                h('p', { className: 'mt-1 text-[0.6875rem] leading-snug ' + (selected ? 'text-violet-100' : mutedClass) }, preset.detail)
               );
             })),
             h('div', { className: 'mt-3 border-t pt-3 ' + (dark ? 'border-slate-700' : 'border-sky-100') },
               h('div', { className: 'mb-1 flex items-center justify-between gap-2' },
-                h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, 'Fine-tune layers'),
-                h('span', { className: 'text-[11px] ' + mutedClass }, layers.filter(function (layer) { return layer.value; }).length + '/4 visible')
+                h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + skyAccentClass }, 'Fine-tune layers'),
+                h('span', { className: 'text-[0.6875rem] ' + mutedClass }, layers.filter(function (layer) { return layer.value; }).length + '/4 visible')
               ),
               layers.map(function (layer) {
                 return h('label', { key: layer.id, className: 'flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors motion-reduce:transition-none ' + (dark ? 'hover:bg-slate-800' : 'hover:bg-sky-50') },
                   h('span', { className: 'flex items-center gap-2' },
                     h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-md ' + (layer.value ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-700') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')), 'aria-hidden': true }, layer.icon),
-                    h('span', null, h('span', { className: 'block text-xs font-black' }, layer.label), h('span', { className: 'block text-[11px] ' + mutedClass }, layer.detail))
+                    h('span', null, h('span', { className: 'block text-xs font-black' }, layer.label), h('span', { className: 'block text-[0.6875rem] ' + mutedClass }, layer.detail))
                   ),
                   h('input', { type: 'checkbox', checked: layer.value, onChange: function (event) { var patch = {}; patch[layer.id] = event.target.checked; update(patch); }, className: 'h-6 w-6 ' + layer.accent, 'aria-label': layer.label })
                 );
               })
             ),
-            h('p', { className: 'mt-2 rounded-lg p-2 text-[11px] leading-relaxed ' + (dark ? 'bg-slate-950/70 text-slate-400' : 'bg-sky-50 text-slate-600') }, 'Visual presets change only the displayed layers. Weather measurements and model outcomes stay the same.')
+            h('p', { className: 'mt-2 rounded-lg p-2 text-[0.6875rem] leading-relaxed ' + (dark ? 'bg-slate-950/70 text-slate-400' : 'bg-sky-50 text-slate-600') }, 'Visual presets change only the displayed layers. Weather measurements and model outcomes stay the same.')
           )
         );
       }
@@ -7504,7 +7504,7 @@ var geographyGroup = new THREE.Group();
                       : { right: '50%', width: magnitude + '%', backgroundColor: metric.color }
                   })
                 ),
-                h('div', { className: 'mt-1 flex justify-between text-[10px] font-bold ' + mutedClass, 'aria-hidden': 'true' },
+                h('div', { className: 'mt-1 flex justify-between text-[0.625rem] font-bold ' + mutedClass, 'aria-hidden': 'true' },
                   h('span', null, 'falling'),
                   h('span', null, 'rising')
                 ),
@@ -7593,15 +7593,15 @@ var geographyGroup = new THREE.Group();
               return h('article', { key: metric.id, className: 'rounded-xl border p-3 ' + (dark ? 'border-white/10 bg-black/15' : 'border-white bg-white/80') },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('p', { className: 'text-xs font-black' }, metric.label),
-                  h('span', { className: 'text-[11px] font-bold ' + mutedClass }, differenceText(metric))
+                  h('span', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, differenceText(metric))
                 ),
                 h('div', { className: 'mt-3 space-y-3' },
                   h('div', null,
-                    h('div', { className: 'mb-1 flex items-center justify-between gap-2 text-[11px] font-bold' }, h('span', { className: dark ? 'text-cyan-300' : 'text-cyan-800' }, activeName), h('span', null, metric.active + metric.unit)),
+                    h('div', { className: 'mb-1 flex items-center justify-between gap-2 text-[0.6875rem] font-bold' }, h('span', { className: dark ? 'text-cyan-300' : 'text-cyan-800' }, activeName), h('span', null, metric.active + metric.unit)),
                     h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-cyan-100'), 'aria-hidden': true }, h('div', { className: 'h-full rounded-full bg-cyan-500', style: { width: barWidth(metric.active, metric) + '%' } }))
                   ),
                   h('div', null,
-                    h('div', { className: 'mb-1 flex items-center justify-between gap-2 text-[11px] font-bold' }, h('span', { className: dark ? 'text-fuchsia-300' : 'text-fuchsia-800' }, otherName), h('span', null, metric.comparison + metric.unit)),
+                    h('div', { className: 'mb-1 flex items-center justify-between gap-2 text-[0.6875rem] font-bold' }, h('span', { className: dark ? 'text-fuchsia-300' : 'text-fuchsia-800' }, otherName), h('span', null, metric.comparison + metric.unit)),
                     h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-fuchsia-100'), 'aria-hidden': true }, h('div', { className: 'h-full rounded-full bg-fuchsia-500', style: { width: barWidth(metric.comparison, metric) + '%' } }))
                   )
                 )
@@ -7700,17 +7700,17 @@ var geographyGroup = new THREE.Group();
                 'data-weather-snapshot-rail': true
               },
                 h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, 'Live atmospheric snapshot'),
-                  h('span', { className: 'text-[10px] font-bold ' + mutedClass }, 'T+' + state.simHour + ' h · ' + station.name)
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + skyAccentClass }, 'Live atmospheric snapshot'),
+                  h('span', { className: 'text-[0.625rem] font-bold ' + mutedClass }, 'T+' + state.simHour + ' h · ' + station.name)
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-5' }, mapSnapshot.map(function (metric) {
                   return h('div', {
                     key: metric.label,
                     className: 'min-w-0 rounded-lg border px-2.5 py-2 ' + (dark ? 'border-slate-700 bg-slate-900/70' : 'border-sky-100 bg-white')
                   },
-                    h('p', { className: 'truncate text-[10px] font-black uppercase tracking-wide ' + skyAccentClass }, metric.label),
+                    h('p', { className: 'truncate text-[0.625rem] font-black uppercase tracking-wide ' + skyAccentClass }, metric.label),
                     h('p', { className: 'mt-1 truncate text-sm font-black tabular-nums' }, metric.value),
-                    h('p', { className: 'mt-0.5 truncate text-[10px] ' + mutedClass }, metric.note),
+                    h('p', { className: 'mt-0.5 truncate text-[0.625rem] ' + mutedClass }, metric.note),
                     metric.meter == null ? null : h('div', {
                       className: 'mt-1.5 h-1.5 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-sky-100'),
                       role: 'progressbar',
@@ -7932,22 +7932,22 @@ var geographyGroup = new THREE.Group();
               ),
               h('div', { className: 'text-right' },
                 h('span', { className: 'inline-block rounded-full px-3 py-1.5 text-xs font-black ' + (provenanceStatus.current ? (dark ? 'bg-emerald-300/15 text-emerald-200' : 'bg-emerald-100 text-emerald-900') : (dark ? 'bg-amber-300/15 text-amber-200' : 'bg-amber-100 text-amber-900')) }, provenanceStatus.label),
-                h('p', { className: 'mt-1 text-[11px] font-bold ' + violetAccentClass }, terrainEvidence.signalLabel)
+                h('p', { className: 'mt-1 text-[0.6875rem] font-bold ' + violetAccentClass }, terrainEvidence.signalLabel)
               )
             ),
             h('div', { className: 'mt-3 grid grid-cols-3 gap-2' },
               [['Terrain relief', terrainEvidence.relief + ' m'], ['Rise to site', (terrainEvidence.riseToSite > 0 ? '+' : '') + terrainEvidence.riseToSite + ' m'], ['After site', (terrainEvidence.changeAfterSite > 0 ? '+' : '') + terrainEvidence.changeAfterSite + ' m']].map(function (metric) {
-                return h('div', { key: metric[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-black/20' : 'bg-white') }, h('p', { className: 'text-[11px] ' + mutedClass }, metric[0]), h('p', { className: 'mt-1 text-sm font-black' }, metric[1]));
+                return h('div', { key: metric[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-black/20' : 'bg-white') }, h('p', { className: 'text-[0.6875rem] ' + mutedClass }, metric[0]), h('p', { className: 'mt-1 text-sm font-black' }, metric[1]));
               })
             ),
             !provenanceStatus.current && h('p', { className: 'mt-3 rounded-lg border border-amber-300/30 bg-amber-300/10 p-3 text-xs font-bold ' + (dark ? 'text-amber-100' : 'text-amber-900'), role: 'alert', 'data-weather-terrain-evidence-warning': true }, provenanceStatus.detail + ' It will not count toward forecast readiness or verification.'),
-            provenanceStatus.current && h('p', { className: 'mt-3 text-[11px] font-bold ' + (dark ? 'text-emerald-200' : 'text-emerald-800'), 'data-weather-terrain-evidence-current': true }, provenanceStatus.detail),
+            provenanceStatus.current && h('p', { className: 'mt-3 text-[0.6875rem] font-bold ' + (dark ? 'text-emerald-200' : 'text-emerald-800'), 'data-weather-terrain-evidence-current': true }, provenanceStatus.detail),
             h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, terrainEvidence.summary),
             terrainEvidence.investigationNote && h('div', { className: 'mt-3 rounded-lg border p-3 ' + (dark ? 'border-cyan-300/25 bg-cyan-300/10' : 'border-cyan-200 bg-cyan-50'), 'data-weather-geographic-note-handoff': true },
-              h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + cyanAccentClass }, 'Mapped evidence note carried into reasoning'),
+              h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + cyanAccentClass }, 'Mapped evidence note carried into reasoning'),
               h('p', { className: 'mt-1 text-xs leading-relaxed ' + (dark ? 'text-slate-100' : 'text-slate-800') }, terrainEvidence.investigationNote)
             ),
-            h('p', { className: 'mt-2 text-[11px] ' + mutedClass }, 'Transect: ' + terrainEvidence.upwindDirection + ' upwind to ' + terrainEvidence.downwindDirection + ' downwind. Use with moisture, stability, and pressure evidence; terrain alone is not a forecast.'),
+            h('p', { className: 'mt-2 text-[0.6875rem] ' + mutedClass }, 'Transect: ' + terrainEvidence.upwindDirection + ' upwind to ' + terrainEvidence.downwindDirection + ' downwind. Use with moisture, stability, and pressure evidence; terrain alone is not a forecast.'),
             h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveSceneMode: 'geographic', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); if (announce) announce('Geographic 3D terrain evidence reopened.'); }, className: buttonClass + ' mt-3' }, 'Review terrain evidence')
           );
         }
@@ -8000,7 +8000,7 @@ var geographyGroup = new THREE.Group();
               ),
               h('div', { className: 'min-w-[110px] text-right' },
                 h('p', { className: 'text-sm font-black ' + (dark ? 'text-teal-300' : 'text-teal-800') }, completed + ' of 3'),
-                h('p', { className: 'text-[11px] font-bold ' + mutedClass }, completed === 3 ? 'CER structure ready' : 'parts ready'),
+                h('p', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, completed === 3 ? 'CER structure ready' : 'parts ready'),
                 h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), role: 'progressbar', 'aria-label': 'Claim Evidence Reasoning completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completed },
                   h('div', { className: 'h-full rounded-full bg-teal-500 transition-all motion-reduce:transition-none', style: { width: (completed / 3 * 100) + '%' } })
                 )
@@ -8012,10 +8012,10 @@ var geographyGroup = new THREE.Group();
                 return h('article', { key: step.id, className: 'rounded-lg border p-3 ' + (step.complete ? (dark ? 'border-emerald-400/25 bg-emerald-400/10' : 'border-emerald-200 bg-emerald-50') : (dark ? 'border-slate-700 bg-slate-950/50' : 'border-slate-200 bg-white')) },
                   h('div', { className: 'flex items-center justify-between gap-2' },
                     h('span', { className: 'text-lg', 'aria-hidden': true }, step.icon),
-                    h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (step.complete ? 'bg-emerald-300 text-emerald-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, step.complete ? 'Ready' : 'Build')
+                    h('span', { className: 'rounded-full px-2 py-0.5 text-[0.6875rem] font-black ' + (step.complete ? 'bg-emerald-300 text-emerald-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, step.complete ? 'Ready' : 'Build')
                   ),
                   h('p', { className: 'mt-2 text-xs font-black' }, step.label),
-                  h('p', { className: 'mt-1 text-[11px] leading-snug ' + mutedClass }, step.detail)
+                  h('p', { className: 'mt-1 text-[0.6875rem] leading-snug ' + mutedClass }, step.detail)
                 );
               })),
               h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Claim Evidence Reasoning sentence frames' }, frames.map(function (frame) {
@@ -8027,7 +8027,7 @@ var geographyGroup = new THREE.Group();
                   className: 'min-h-20 rounded-lg border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 ' + (dark ? 'border-teal-500/30 bg-teal-400/10 hover:bg-teal-400/15' : 'border-teal-200 bg-white hover:bg-teal-100')
                 },
                   h('span', { className: 'block text-xs font-black ' + (dark ? 'text-teal-300' : 'text-teal-800') }, frame.label),
-                  h('span', { className: 'mt-1 block text-[11px] leading-snug ' + mutedClass }, frame.text)
+                  h('span', { className: 'mt-1 block text-[0.6875rem] leading-snug ' + mutedClass }, frame.text)
                 );
               }))
             )
@@ -8038,7 +8038,7 @@ var geographyGroup = new THREE.Group();
             return h('div', { key: item.id, className: 'rounded-xl border p-3 ' + (item.complete ? (dark ? 'border-emerald-300/30 bg-emerald-400/10' : 'border-emerald-300 bg-emerald-50') : (dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')) },
               h('div', { className: 'flex items-start justify-between gap-2' },
                 h('span', { className: 'text-lg', 'aria-hidden': true }, item.icon),
-                h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (item.complete ? 'bg-emerald-300 text-emerald-950' : (dark ? 'bg-white/10 text-slate-200' : 'bg-slate-100 text-slate-700')) }, item.complete ? 'Done' : item.status)
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[0.6875rem] font-black ' + (item.complete ? 'bg-emerald-300 text-emerald-950' : (dark ? 'bg-white/10 text-slate-200' : 'bg-slate-100 text-slate-700')) }, item.complete ? 'Done' : item.status)
               ),
               h('div', { className: 'mt-2 text-xs font-black leading-snug' }, item.label)
             );
@@ -8058,7 +8058,7 @@ var geographyGroup = new THREE.Group();
           });
           // Each label carries its own colour key, so a segment is never matched by hue alone.
           var scoreLabels = scoringWeights.map(function (weight) {
-            return h('div', { key: weight.label, className: 'flex items-center justify-between gap-2 text-[11px] ' + featureMuted },
+            return h('div', { key: weight.label, className: 'flex items-center justify-between gap-2 text-[0.6875rem] ' + featureMuted },
               h('span', { className: 'flex items-center gap-1.5' },
                 h('span', { className: 'inline-block h-2 w-2 shrink-0 rounded-full', style: { backgroundColor: weight.color }, 'aria-hidden': 'true' }),
                 weight.label
@@ -8075,7 +8075,7 @@ var geographyGroup = new THREE.Group();
               ),
               h('div', { className: 'rounded-xl px-3 py-2 text-center ' + featureChip },
                 h('div', { className: 'text-2xl font-black ' + (dark ? 'text-sky-300' : 'text-sky-800') }, forecastReadiness + '%'),
-                h('div', { className: 'text-[11px] font-bold uppercase tracking-wide ' + featureMuted }, forecastReadiness === 100 ? 'Ready to verify' : 'In progress')
+                h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wide ' + featureMuted }, forecastReadiness === 100 ? 'Ready to verify' : 'In progress')
               )
             ),
             h('div', { className: 'px-4 pt-3' },
@@ -8088,14 +8088,14 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'flex items-start gap-2 rounded-xl p-3 ' + featureInset },
                 h('span', { className: 'text-lg', 'aria-hidden': true }, nextReadinessItem ? '\uD83D\uDCA1' : '\u2705'),
                 h('div', null,
-                  h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, nextReadinessItem ? 'Your next move' : 'Forecast complete'),
+                  h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-sky-300' }, nextReadinessItem ? 'Your next move' : 'Forecast complete'),
                   h('p', { className: 'mt-0.5 text-xs font-bold' }, nextReadinessItem ? nextReadinessItem.label : 'All readiness signals are complete. Verify when ready.')
                 )
               ),
               h('div', { className: 'rounded-xl p-3 ' + featureInset, 'data-weather-scoring-guide': true },
                 h('div', { className: 'flex items-center justify-between gap-2' },
-                  h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Transparent scoring rubric'),
-                  h('span', { className: 'text-[11px] ' + featureFaint }, 'Reasoning: teacher/peer review')
+                  h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-sky-300' }, 'Transparent scoring rubric'),
+                  h('span', { className: 'text-[0.6875rem] ' + featureFaint }, 'Reasoning: teacher/peer review')
                 ),
                 h('div', { className: 'mt-2 flex h-2 overflow-hidden rounded-full ' + featureTrack }, scoreSegments),
                 h('div', { className: 'mt-2 grid grid-cols-2 gap-x-3 gap-y-1' }, scoreLabels)
@@ -8117,7 +8117,7 @@ var geographyGroup = new THREE.Group();
               ),
               h('div', { className: 'rounded-lg px-3 py-2 text-center ' + (dark ? 'bg-violet-950/60' : 'bg-violet-50') },
                 h('p', { className: 'text-xl font-black ' + violetAccentClass }, agreementCount + '/9'),
-                h('p', { className: 'text-[11px] font-bold ' + mutedClass }, 'agree on ' + labels[ensemble.dominantPrecip])
+                h('p', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, 'agree on ' + labels[ensemble.dominantPrecip])
               )
             ),
             // Ranked, with the agreeing category emphasised so the bars and the headline
@@ -8213,8 +8213,8 @@ var geographyGroup = new THREE.Group();
                 h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Save a future hour in geographic 3D, then refresh live weather near its valid time to calculate forecast error against the matching observation.')
               ),
               h('div', { className: 'flex gap-2 text-center' },
-                h('div', { className: 'rounded-lg px-3 py-2 ' + (dark ? 'bg-emerald-950/40' : 'bg-emerald-50') }, h('p', { className: 'text-lg font-black ' + emeraldAccentClass }, verifiedCount), h('p', { className: 'text-[10px] font-bold ' + mutedClass }, 'observed')),
-                h('div', { className: 'rounded-lg px-3 py-2 ' + (dark ? 'bg-violet-950/40' : 'bg-violet-50') }, h('p', { className: 'text-lg font-black ' + violetAccentClass }, pendingCount), h('p', { className: 'text-[10px] font-bold ' + mutedClass }, 'pending'))
+                h('div', { className: 'rounded-lg px-3 py-2 ' + (dark ? 'bg-emerald-950/40' : 'bg-emerald-50') }, h('p', { className: 'text-lg font-black ' + emeraldAccentClass }, verifiedCount), h('p', { className: 'text-[0.625rem] font-bold ' + mutedClass }, 'observed')),
+                h('div', { className: 'rounded-lg px-3 py-2 ' + (dark ? 'bg-violet-950/40' : 'bg-violet-50') }, h('p', { className: 'text-lg font-black ' + violetAccentClass }, pendingCount), h('p', { className: 'text-[0.625rem] font-bold ' + mutedClass }, 'pending'))
               )
             ),
             h('div', { className: 'p-4' },
@@ -8231,23 +8231,23 @@ var geographyGroup = new THREE.Group();
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', { className: 'min-w-0' },
                       h('p', { className: 'text-xs font-black' }, checkpoint.location || 'Saved location'),
-                      h('p', { className: 'mt-0.5 text-[11px] ' + mutedClass }, 'Forecast issued ' + (checkpoint.issuedAt || 'time unavailable') + ' | Valid ' + checkpoint.validAt + (checkpoint.timezone ? ' ' + checkpoint.timezone : '')),
+                      h('p', { className: 'mt-0.5 text-[0.6875rem] ' + mutedClass }, 'Forecast issued ' + (checkpoint.issuedAt || 'time unavailable') + ' | Valid ' + checkpoint.validAt + (checkpoint.timezone ? ' ' + checkpoint.timezone : '')),
                       h('p', { className: 'mt-1 text-xs font-bold' }, (predicted.condition || 'Conditions unavailable') + ' | ' + predicted.temperature + '\u00B0C | ' + cardinal(predicted.windDir) + ' ' + predicted.windSpeed + ' km/h')
                     ),
-                    h('span', { className: 'rounded-full px-2.5 py-1 text-[11px] font-black ' + (result.ready ? 'bg-emerald-700 text-white' : result.code === 'pending' ? 'bg-violet-700 text-white' : 'bg-amber-400 text-amber-950'), 'data-weather-checkpoint-status': result.code }, result.label)
+                    h('span', { className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-black ' + (result.ready ? 'bg-emerald-700 text-white' : result.code === 'pending' ? 'bg-violet-700 text-white' : 'bg-amber-400 text-amber-950'), 'data-weather-checkpoint-status': result.code }, result.label)
                   ),
                   result.ready && h('div', { className: 'mt-3', 'data-weather-forecast-error': true },
-                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + emeraldAccentClass }, 'Forecast error = forecast minus observation'),
+                    h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + emeraldAccentClass }, 'Forecast error = forecast minus observation'),
                     h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5' }, metricDefinitions.map(function (definition) {
                       var metric = result.metrics[definition.id];
                       return h('div', { key: definition.id, className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/55' : 'bg-white') },
-                        h('p', { className: 'text-[10px] leading-tight ' + mutedClass }, definition.label),
+                        h('p', { className: 'text-[0.625rem] leading-tight ' + mutedClass }, definition.label),
                         h('p', { className: 'mt-1 text-xs font-black tabular-nums' }, signedMetric(metric)),
                         biasBar(metric, definition),
-                        metric && h('p', { className: 'mt-0.5 text-[10px] ' + mutedClass }, 'Forecast ' + metric.forecast + metric.unit + ' | observed ' + metric.observed + metric.unit)
+                        metric && h('p', { className: 'mt-0.5 text-[0.625rem] ' + mutedClass }, 'Forecast ' + metric.forecast + metric.unit + ' | observed ' + metric.observed + metric.unit)
                       );
                     })),
-                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold ' + mutedClass, 'data-weather-bias-key': true },
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.625rem] font-bold ' + mutedClass, 'data-weather-bias-key': true },
                       h('span', null, 'Bar reads from the centre:'),
                       h('span', { className: 'inline-flex items-center gap-1' },
                         h('span', { className: 'inline-block h-2 w-4 rounded-full', style: { backgroundColor: seriesColor.precipPotential }, 'aria-hidden': 'true' }),
@@ -8259,7 +8259,7 @@ var geographyGroup = new THREE.Group();
                       )
                     ),
                     h('p', { className: 'mt-2 text-xs font-bold ' + (result.conditionMatch ? emeraldAccentClass : 'text-amber-500') }, (result.conditionMatch ? '✓ ' : '⚠ ') + (result.conditionMatch ? 'Condition category matched the observation.' : 'Condition category differed from the observation.')),
-                    h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + mutedClass }, 'Use the signed errors to identify bias: a positive temperature error means the forecast was too warm; a negative pressure error means it predicted pressure that was too low.')
+                    h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + mutedClass }, 'Use the signed errors to identify bias: a positive temperature error means the forecast was too warm; a negative pressure error means it predicted pressure that was too low.')
                   ),
                   !result.ready && h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, result.detail),
                   h('div', { className: 'mt-3 flex flex-wrap gap-2' },
@@ -8268,7 +8268,7 @@ var geographyGroup = new THREE.Group();
                   )
                 );
               })),
-              h('p', { className: 'mt-3 text-[11px] leading-relaxed ' + mutedClass }, 'Open-Meteo current and hourly values are model-derived weather data. This comparison supports learning about forecast error and revision; it is not an official verification product or safety forecast.')
+              h('p', { className: 'mt-3 text-[0.6875rem] leading-relaxed ' + mutedClass }, 'Open-Meteo current and hourly values are model-derived weather data. This comparison supports learning about forecast error and revision; it is not an official verification product or safety forecast.')
             )
           );
         }
@@ -8291,11 +8291,11 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'flex gap-2' },
                 h('div', { className: 'rounded-lg px-3 py-2 text-center ' + (dark ? 'bg-fuchsia-950/50' : 'bg-fuchsia-50') },
                   h('p', { className: 'text-lg font-black ' + fuchsiaAccentClass }, history.length),
-                  h('p', { className: 'text-[11px] font-bold ' + mutedClass }, history.length === 1 ? 'attempt' : 'attempts')
+                  h('p', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, history.length === 1 ? 'attempt' : 'attempts')
                 ),
                 h('div', { className: 'rounded-lg px-3 py-2 text-center ' + (dark ? 'bg-emerald-950/50' : 'bg-emerald-50') },
                   h('p', { className: 'text-lg font-black ' + emeraldAccentClass }, history.length ? Math.max.apply(null, history.map(function (entry) { return entry.score; })) : '--'),
-                  h('p', { className: 'text-[11px] font-bold ' + mutedClass }, 'best score')
+                  h('p', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, 'best score')
                 )
               )
             ),
@@ -8364,7 +8364,7 @@ var geographyGroup = new THREE.Group();
                 var isSupported = selected === question.correct;
                 var promptId = 'weather-reasoning-prompt-' + question.id;
                 return h('div', { key: question.id, role: 'listitem', className: 'rounded-xl border p-4 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + amberAccentClass }, 'Reasoning prompt ' + (index + 1)),
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-widest ' + amberAccentClass }, 'Reasoning prompt ' + (index + 1)),
                   h('h4', { className: 'mt-1 text-sm font-black' }, question.title),
                   h('p', { id: promptId, className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, question.prompt),
                   h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-labelledby': promptId }, question.options.map(function (option) {
@@ -8451,7 +8451,7 @@ var geographyGroup = new THREE.Group();
               // Feedback lands on the same structure the author assembled, so a review reads
               // as "this part is strong, work on that part" rather than an unrelated form.
               (strength || revisionMove) && h('div', { className: 'mb-4 rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/50' : 'border-slate-200 bg-white'), 'data-weather-peer-review-map': true },
-                h('p', { className: 'mb-1 text-[11px] font-black uppercase tracking-wide ' + indigoAccentClass }, 'Where this feedback lands'),
+                h('p', { className: 'mb-1 text-[0.6875rem] font-black uppercase tracking-wide ' + indigoAccentClass }, 'Where this feedback lands'),
                 cerStructureDiagram(
                   [
                     { id: 'claim', complete: true },
@@ -8463,7 +8463,7 @@ var geographyGroup = new THREE.Group();
                 (function () {
                   var mapped = cerReviewFocus(strength, revisionMove);
                   if (mapped.strength || mapped.focus) return null;
-                  return h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + mutedClass }, 'Readiness, uncertainty and transfer are worth reviewing too — they simply sit outside the claim-evidence-reasoning core shown here.');
+                  return h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + mutedClass }, 'Readiness, uncertainty and transfer are worth reviewing too — they simply sit outside the claim-evidence-reasoning core shown here.');
                 }())
               ),
               h('fieldset', { disabled: !unlocked },
@@ -8504,7 +8504,7 @@ var geographyGroup = new THREE.Group();
                   placeholder: band === 'K-2' ? 'I noticed... I wonder...' : 'I notice... I wonder... One next step is...',
                   className: inputClass + ' mt-2 min-h-[100px] resize-y disabled:cursor-not-allowed disabled:opacity-50'
                 }),
-                h('span', { id: 'weather-peer-feedback-count', className: 'mt-1 block text-right text-[11px] font-bold ' + (feedback.length >= feedbackTarget ? emeraldAccentClass : mutedClass) }, feedback.length + ' / ' + feedbackTarget + ' minimum characters')
+                h('span', { id: 'weather-peer-feedback-count', className: 'mt-1 block text-right text-[0.6875rem] font-bold ' + (feedback.length >= feedbackTarget ? emeraldAccentClass : mutedClass) }, feedback.length + ' / ' + feedbackTarget + ' minimum characters')
               ),
               h('div', { className: 'mt-4 flex flex-wrap items-center justify-between gap-3' },
                 h('p', { id: 'weather-peer-review-purpose', className: 'max-w-2xl text-xs leading-relaxed ' + mutedClass }, 'Review the reasoning, not the person. Do not enter names or sensitive information. Peer feedback is not a grade.'),
@@ -8617,7 +8617,7 @@ var geographyGroup = new THREE.Group();
                   placeholder: band === 'K-2' ? 'I wonder...' : 'I would investigate...',
                   className: inputClass + ' mt-2 min-h-[100px] resize-y disabled:cursor-not-allowed disabled:opacity-50'
                 }),
-                h('span', { id: 'weather-reflection-question-count', className: 'mt-1 block text-right text-[11px] font-bold ' + (question.length >= questionTarget ? emeraldAccentClass : mutedClass) }, question.length + ' / ' + questionTarget + ' minimum characters')
+                h('span', { id: 'weather-reflection-question-count', className: 'mt-1 block text-right text-[0.6875rem] font-bold ' + (question.length >= questionTarget ? emeraldAccentClass : mutedClass) }, question.length + ' / ' + questionTarget + ' minimum characters')
               ),
               h('div', { className: 'mt-4 flex flex-wrap items-center justify-between gap-3' },
                 h('p', { id: 'weather-reflection-purpose', className: 'max-w-2xl text-xs leading-relaxed ' + mutedClass }, 'This self-assessment describes learning readiness, not forecast accuracy or a grade.'),
@@ -8685,12 +8685,12 @@ var geographyGroup = new THREE.Group();
                 )
               ),
               h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4' }, communicationItems.map(function (item) {
-                return h('div', { key: item.label, className: 'rounded-lg border px-2 py-2 text-center text-[11px] font-black ' + (item.complete ? (dark ? 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200' : 'border-emerald-300 bg-emerald-50 text-emerald-900') : (dark ? 'border-white/10 bg-white/5 text-slate-400' : 'border-slate-200 bg-white/75 text-slate-500')) }, (item.complete ? '\u2713 ' : '') + item.label);
+                return h('div', { key: item.label, className: 'rounded-lg border px-2 py-2 text-center text-[0.6875rem] font-black ' + (item.complete ? (dark ? 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200' : 'border-emerald-300 bg-emerald-50 text-emerald-900') : (dark ? 'border-white/10 bg-white/5 text-slate-400' : 'border-slate-200 bg-white/75 text-slate-500')) }, (item.complete ? '\u2713 ' : '') + item.label);
               })),
               h('div', { className: 'mt-4 rounded-xl border p-4 ' + (dark ? 'border-cyan-300/20 bg-black/20' : 'border-cyan-200 bg-white'), role: 'status', 'aria-live': 'polite' },
                 h('div', { className: 'flex items-center justify-between gap-2' },
                   h('p', { className: 'text-xs font-black uppercase tracking-wide ' + (dark ? 'text-cyan-300' : 'text-cyan-800') }, communicationReady ? 'Broadcast script ready' : 'Live script builder'),
-                  h('span', { className: 'text-[11px] ' + featureFaint }, audience.label + ' audience')
+                  h('span', { className: 'text-[0.6875rem] ' + featureFaint }, audience.label + ' audience')
                 ),
                 h('p', { className: 'mt-2 text-sm font-bold leading-relaxed' }, script)
               ),
@@ -8778,7 +8778,7 @@ var geographyGroup = new THREE.Group();
                   placeholder: band === 'K-2' ? 'I think... because I noticed...' : 'I predict... My evidence is... This matters because...',
                   className: inputClass
                 }),
-                h('span', { id: 'weather-reasoning-count', className: 'mt-1 block text-right text-[11px] font-bold ' + (reasoningLength >= reasoningTarget ? emeraldAccentClass : mutedClass) }, reasoningLength + ' / ' + reasoningTarget + ' minimum characters')
+                h('span', { id: 'weather-reasoning-count', className: 'mt-1 block text-right text-[0.6875rem] font-bold ' + (reasoningLength >= reasoningTarget ? emeraldAccentClass : mutedClass) }, reasoningLength + ' / ' + reasoningTarget + ' minimum characters')
               ),
               h('button', { type: 'button', onClick: issueForecast, className: 'mt-4 min-h-11 w-full rounded-lg bg-sky-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors motion-reduce:transition-none hover:bg-sky-800 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83D\uDCE1 Verify forecast')
             )
@@ -9232,79 +9232,79 @@ var geographyGroup = new THREE.Group();
         var geographicFieldStep = geographicInvestigationStep(d.geographicInvestigationStep || defaultGeographicFieldStep);
         var tourSource = useLive ? (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'selected forecast hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'selected earlier hour' : 'live observation') : 'teaching model';
         var focusSpotlightBadge = !geographicMode && immersiveFocusSpotlight && h('div', { className: 'pointer-events-none w-[min(320px,100%)] rounded-2xl border px-3 py-2 text-center shadow-2xl backdrop-blur-md ' + (immersiveStageMode ? 'hidden xl:block ' : '') + focusSpotlightTheme.badge, 'data-weather-focus-spotlight-badge': immersiveFocus, role: 'status', 'aria-live': 'polite', 'aria-label': 'Visual spotlight: ' + focusDetail.label + '. ' + focusDetail.detail },
-                  h('p', { className: 'text-[9px] font-black uppercase tracking-[0.18em] ' + focusSpotlightTheme.eyebrow }, 'Visual spotlight'),
+                  h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[0.18em] ' + focusSpotlightTheme.eyebrow }, 'Visual spotlight'),
                   h('p', { className: 'mt-0.5 flex items-center justify-center gap-1.5 text-xs font-black text-white' }, h('span', { className: 'h-2 w-2 rounded-full shadow-[0_0_12px_currentColor]', style: { backgroundColor: focusSpotlightTheme.color }, 'aria-hidden': true }), focusDetail.label),
-                  h('p', { className: 'mt-0.5 truncate text-[9px] text-slate-300' }, focusDetail.detail)
+                  h('p', { className: 'mt-0.5 truncate text-[0.5625rem] text-slate-300' }, focusDetail.detail)
                 );
         var stageLegendPanel = immersiveStageMode && h('div', { className: 'pointer-events-auto w-full max-w-[300px] rounded-2xl border border-cyan-300/30 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-legend': true, role: 'region', 'aria-labelledby': 'weather-stage-legend-title' },
                   h('div', { className: 'flex items-start justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Scene legend'), h('h4', { id: 'weather-stage-legend-title', className: 'mt-0.5 text-xs font-black text-white' }, geographicMode ? 'Map + terrain layers' : 'Visible 3D channels')),
+                    h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Scene legend'), h('h4', { id: 'weather-stage-legend-title', className: 'mt-0.5 text-xs font-black text-white' }, geographicMode ? 'Map + terrain layers' : 'Visible 3D channels')),
                     h('div', { className: 'flex items-center gap-1.5' },
-                      h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100' }, stageLegendItems.filter(function (item) { return item.enabled; }).length + '/' + stageLegendItems.length + ' on'),
+                      h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[0.625rem] font-black text-cyan-100' }, stageLegendItems.filter(function (item) { return item.enabled; }).length + '/' + stageLegendItems.length + ' on'),
                       h('button', { type: 'button', onClick: function () { update({ immersiveStageLegendCollapsed: true }); }, 'aria-label': 'Collapse the scene legend', 'data-weather-stage-legend-toggle': 'collapse', className: 'flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-white/5 text-xs font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, '\u2212')
                     )
                   ),
                   h('div', { className: 'mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5' }, stageLegendItems.map(function (item) {
-                    return h('div', { key: item.id, className: 'flex min-w-0 items-center gap-1.5 text-[10px] ' + (item.enabled ? 'text-slate-100' : 'text-slate-500'), 'aria-label': item.label + ': ' + (item.enabled ? 'on' : 'off') + '. ' + item.detail },
+                    return h('div', { key: item.id, className: 'flex min-w-0 items-center gap-1.5 text-[0.625rem] ' + (item.enabled ? 'text-slate-100' : 'text-slate-500'), 'aria-label': item.label + ': ' + (item.enabled ? 'on' : 'off') + '. ' + item.detail },
                       h('span', { className: 'h-2.5 w-2.5 shrink-0 rounded-full border border-white/70', style: { backgroundColor: item.color, opacity: item.enabled ? 1 : 0.28 }, 'aria-hidden': true }),
                       h('span', { className: 'truncate' }, item.label)
                     );
                   })),
                   h('div', { className: 'mt-2 border-t border-white/10 pt-2', 'data-weather-stage-focus-controls': true, role: 'group', 'aria-label': '3D layer focus presets' },
-                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Quick focus'),
+                    h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Quick focus'),
                     h('div', { className: 'mt-1 grid grid-cols-2 gap-1' }, stageFocusOptions.map(function (option) {
                       var active = immersiveFocus === option.id;
-                      return h('button', { key: option.id, type: 'button', onClick: function () { applyImmersiveFocus(option.id); }, 'aria-pressed': active, className: 'min-h-11 rounded-lg border px-2 py-1.5 text-left text-[10px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10') }, option.label);
+                      return h('button', { key: option.id, type: 'button', onClick: function () { applyImmersiveFocus(option.id); }, 'aria-pressed': active, className: 'min-h-11 rounded-lg border px-2 py-1.5 text-left text-[0.625rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10') }, option.label);
                     })),
-                    !geographicMode && h('button', { type: 'button', onClick: toggleImmersiveFocusSpotlight, 'aria-pressed': immersiveFocusSpotlight, 'aria-label': (immersiveFocusSpotlight ? 'Turn off' : 'Turn on') + ' the visual focus spotlight', 'data-weather-focus-spotlight-toggle': 'stage', className: 'mt-2 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-[10px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveFocusSpotlight ? 'border-cyan-300/50 bg-cyan-300/15 text-cyan-100' : 'border-white/10 bg-white/5 text-slate-300') }, h('span', null, 'Visual spotlight'), h('span', { 'aria-hidden': true }, immersiveFocusSpotlight ? 'On' : 'Off'))
+                    !geographicMode && h('button', { type: 'button', onClick: toggleImmersiveFocusSpotlight, 'aria-pressed': immersiveFocusSpotlight, 'aria-label': (immersiveFocusSpotlight ? 'Turn off' : 'Turn on') + ' the visual focus spotlight', 'data-weather-focus-spotlight-toggle': 'stage', className: 'mt-2 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-[0.625rem] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveFocusSpotlight ? 'border-cyan-300/50 bg-cyan-300/15 text-cyan-100' : 'border-white/10 bg-white/5 text-slate-300') }, h('span', null, 'Visual spotlight'), h('span', { 'aria-hidden': true }, immersiveFocusSpotlight ? 'On' : 'Off'))
                   ),
-                  h('p', { className: 'mt-2 border-t border-white/10 pt-2 text-[10px] leading-relaxed text-slate-300' }, geographicMode ? 'These layers are geographic evidence or derived terrain context.' : 'Colored channels explain what the 3D scene is encoding; teaching layers are simplified, not direct measurements.')
+                  h('p', { className: 'mt-2 border-t border-white/10 pt-2 text-[0.625rem] leading-relaxed text-slate-300' }, geographicMode ? 'These layers are geographic evidence or derived terrain context.' : 'Colored channels explain what the 3D scene is encoding; teaching layers are simplified, not direct measurements.')
                 );
         var presenterPanel = immersivePresenterMode && h('div', { className: 'pointer-events-auto w-full max-w-[340px] self-end rounded-2xl border border-fuchsia-300/35 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-presenter-overlay': true, role: 'region', 'aria-labelledby': 'weather-presenter-title' },
                   h('div', { className: 'flex items-start justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, 'Presenter mode'), h('h4', { id: 'weather-presenter-title', className: 'mt-0.5 text-sm font-black text-white' }, geographicMode ? geographicFieldStep.label : tourStep.label)),
-                    h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, geographicMode ? (geographicFieldStep.index + 1) + '/' + geographicFieldStep.total : (tourStep.index + 1) + '/' + tourStep.total)
+                    h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, 'Presenter mode'), h('h4', { id: 'weather-presenter-title', className: 'mt-0.5 text-sm font-black text-white' }, geographicMode ? geographicFieldStep.label : tourStep.label)),
+                    h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[0.625rem] font-black text-fuchsia-100' }, geographicMode ? (geographicFieldStep.index + 1) + '/' + geographicFieldStep.total : (tourStep.index + 1) + '/' + tourStep.total)
                   ),
-                  h('p', { className: 'mt-3 text-[10px] font-black uppercase tracking-[0.14em] text-fuchsia-200' }, 'Teacher cue'),
+                  h('p', { className: 'mt-3 text-[0.625rem] font-black uppercase tracking-[0.14em] text-fuchsia-200' }, 'Teacher cue'),
                   h('p', { className: 'mt-1 text-sm font-black leading-relaxed text-white', 'data-weather-presenter-prompt': true }, geographicMode ? geographicFieldStep.prompt : tourStep.prompt),
                   h('div', { className: 'mt-3 rounded-xl border border-white/10 bg-white/5 p-2.5' },
-                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Evidence to notice'),
-                    h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200', 'data-weather-presenter-evidence': true }, geographicMode ? geographicFieldStep.evidence : tourStep.evidence)
+                    h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Evidence to notice'),
+                    h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200', 'data-weather-presenter-evidence': true }, geographicMode ? geographicFieldStep.evidence : tourStep.evidence)
                   ),
-                  h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'Source: ' + (geographicMode ? (regionalFieldStatus.current ? regionalWeatherLayer.label : 'Mapped observation') : tourSource) + '. Focus: ' + focusDetail.label + '.'),
+                  h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed text-slate-400' }, 'Source: ' + (geographicMode ? (regionalFieldStatus.current ? regionalWeatherLayer.label : 'Mapped observation') : tourSource) + '. Focus: ' + focusDetail.label + '.'),
                   immersiveCheckpointRunnerOpen && h('div', { className: 'mt-3 rounded-xl border border-emerald-300/25 bg-emerald-300/10 p-2.5', 'data-weather-checkpoint-runner': true, role: 'group', 'aria-labelledby': 'weather-checkpoint-runner-title' },
                     h('div', { className: 'flex items-start justify-between gap-2' },
-                      h('div', null, h('p', { id: 'weather-checkpoint-runner-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] text-emerald-200' }, 'Checkpoint runner'), h('p', { className: 'mt-1 text-[11px] font-black text-white' }, currentTourProgress.label)),
-                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100' }, tourRun.completedCount + '/' + tourRun.total + ' complete')
+                      h('div', null, h('p', { id: 'weather-checkpoint-runner-title', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-emerald-200' }, 'Checkpoint runner'), h('p', { className: 'mt-1 text-[0.6875rem] font-black text-white' }, currentTourProgress.label)),
+                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[0.625rem] font-black text-emerald-100' }, tourRun.completedCount + '/' + tourRun.total + ' complete')
                     ),
-                    h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-200' }, currentTourProgress.complete ? 'This checkpoint is marked complete. Move forward when the class is ready.' : tourStep.prompt),
-                    h('p', { className: 'mt-1 text-[10px] leading-relaxed text-emerald-100' }, tourStep.evidence),
+                    h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-200' }, currentTourProgress.complete ? 'This checkpoint is marked complete. Move forward when the class is ready.' : tourStep.prompt),
+                    h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-emerald-100' }, tourStep.evidence),
                     h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
-                      h('button', { type: 'button', disabled: tourRun.completedCount >= tourRun.total, onClick: advanceImmersiveCheckpointRunner, className: 'min-h-11 rounded-lg bg-emerald-300 px-2 py-2 text-[10px] font-black text-emerald-950 disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, tourRun.completedCount >= tourRun.total ? 'Run complete' : currentTourProgress.complete ? 'Next checkpoint' : 'Mark + next'),
-                      h('button', { type: 'button', onClick: resetImmersiveCheckpointRunner, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Reset run')
+                      h('button', { type: 'button', disabled: tourRun.completedCount >= tourRun.total, onClick: advanceImmersiveCheckpointRunner, className: 'min-h-11 rounded-lg bg-emerald-300 px-2 py-2 text-[0.625rem] font-black text-emerald-950 disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, tourRun.completedCount >= tourRun.total ? 'Run complete' : currentTourProgress.complete ? 'Next checkpoint' : 'Mark + next'),
+                      h('button', { type: 'button', onClick: resetImmersiveCheckpointRunner, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Reset run')
                     )
                   ),
-                  h('button', { type: 'button', onClick: toggleImmersivePresenterMode, className: 'mt-3 min-h-11 w-full rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-3 py-2 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Exit presenter mode')
+                  h('button', { type: 'button', onClick: toggleImmersivePresenterMode, className: 'mt-3 min-h-11 w-full rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-3 py-2 text-[0.625rem] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Exit presenter mode')
                 );
         var comparisonLegendPanel = !geographicMode && comparisonAnchorFeature && h('div', { className: 'pointer-events-none max-w-[280px] rounded-xl border border-fuchsia-300/45 bg-slate-950/90 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-comparison-legend': comparisonAnchorFeature.id, role: 'status', 'aria-label': '3D feature comparison. Anchor A: ' + comparisonAnchorFeature.label + '. Inspecting B: ' + selectedGlossaryFeature.label + '.' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, '3D feature comparison'),
-                  h('div', { className: 'mt-1.5 space-y-1.5 text-[10px] font-bold' },
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, '3D feature comparison'),
+                  h('div', { className: 'mt-1.5 space-y-1.5 text-[0.625rem] font-bold' },
                     h('div', { className: 'flex items-center gap-2 text-fuchsia-100' }, h('span', { className: 'h-2.5 w-2.5 rounded-sm border border-white bg-fuchsia-400', 'aria-hidden': true }), h('span', null, 'Anchor A: ' + comparisonAnchorFeature.label)),
                     h('div', { className: 'flex items-center gap-2 text-amber-100' }, h('span', { className: 'h-2.5 w-2.5 rounded-sm border border-white bg-amber-300', 'aria-hidden': true }), h('span', null, 'Inspecting B: ' + selectedGlossaryFeature.label))
                   ),
-                  comparisonAnchorFeature.id === selectedGlossaryFeature.id && h('p', { className: 'mt-1.5 text-[10px] text-slate-300' }, 'Select another scene feature to complete the comparison.')
+                  comparisonAnchorFeature.id === selectedGlossaryFeature.id && h('p', { className: 'mt-1.5 text-[0.625rem] text-slate-300' }, 'Select another scene feature to complete the comparison.')
                 );
         var hoverInspectorPanel = !geographicMode && hoveredGlossaryFeature && h('div', { className: 'pointer-events-none max-w-[260px] rounded-xl border border-cyan-200/50 bg-slate-950/90 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-hover-inspector': hoveredGlossaryFeature.id, role: 'status', 'aria-live': 'polite' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300' }, d.immersiveHoverInput === 'keyboard' ? 'Keyboard preview' : 'Under pointer'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-cyan-300' }, d.immersiveHoverInput === 'keyboard' ? 'Keyboard preview' : 'Under pointer'),
                   h('div', { className: 'mt-1 flex items-center gap-2' },
                     h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-200/30 bg-cyan-300/10 text-lg text-cyan-100', 'aria-hidden': true }, hoveredGlossaryFeature.icon),
-                    h('div', { className: 'min-w-0' }, h('p', { className: 'truncate text-xs font-black text-white' }, hoveredGlossaryFeature.label), h('p', { className: 'text-[10px] text-slate-400' }, hoveredGlossaryFeature.category))
+                    h('div', { className: 'min-w-0' }, h('p', { className: 'truncate text-xs font-black text-white' }, hoveredGlossaryFeature.label), h('p', { className: 'text-[0.625rem] text-slate-400' }, hoveredGlossaryFeature.category))
                   ),
-                  h('p', { className: 'mt-1.5 text-[10px] font-bold text-cyan-100' }, d.immersiveHoverInput === 'keyboard' ? 'Press Enter to explain and focus.' : 'Click to explain and focus.')
+                  h('p', { className: 'mt-1.5 text-[0.625rem] font-bold text-cyan-100' }, d.immersiveHoverInput === 'keyboard' ? 'Press Enter to explain and focus.' : 'Click to explain and focus.')
                 );
         var geographicCommandBar = geographicMode && h('div', { className: 'pointer-events-none w-full pr-11 sm:pr-0', 'data-weather-geographic-camera-controls': true },
                   h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/90 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': 'Geographic camera views', 'data-weather-geographic-command-bar': true },
-                    h('span', { className: 'px-2 text-[10px] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
+                    h('span', { className: 'px-2 text-[0.625rem] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
                     [
                       { id: 'region', icon: '\u25A7', label: 'Region' },
                       { id: 'local', icon: '\u2316', label: 'Local' },
@@ -9316,15 +9316,15 @@ var geographyGroup = new THREE.Group();
                         onClick: function () { setGeographicCameraPreset(view.id); },
                         'aria-label': view.label + ' camera view',
                         'aria-pressed': active,
-                        className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-40 ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
+                        className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[0.6875rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-40 ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
                       }, h('span', { className: 'text-sm', 'aria-hidden': true }, view.icon), h('span', null, view.label));
                     }),
                     fullscreenToggleButton()
                   )
                 );
         var geographicLegendPanel = geographicMode && h('div', { className: 'pointer-events-none rounded-lg border border-white/15 bg-slate-950/85 px-3 py-2 shadow-lg backdrop-blur-md', 'data-weather-geographic-legend': true, role: 'group', 'aria-label': 'Geographic layer legend' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-300' }, 'Map legend'),
-                  h('div', { className: 'mt-1.5 space-y-1 text-[10px] font-bold text-slate-100' },
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, 'Map legend'),
+                  h('div', { className: 'mt-1.5 space-y-1 text-[0.625rem] font-bold text-slate-100' },
                     h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'h-2.5 w-2.5 rounded-full border-2 border-white bg-amber-400', 'aria-hidden': true }), h('span', null, 'Observation site')),
                     h('div', { className: 'flex items-center gap-2 ' + (geographicStudyAreaVisible ? '' : 'opacity-45') }, h('span', { className: 'h-2.5 w-4 rounded-sm border-2 border-amber-300 bg-amber-300/10', 'aria-hidden': true }), h('span', null, 'Study area ' + (geographicStudyAreaVisible ? 'on' : 'off'))),
                     h('div', { className: 'flex items-center gap-2 ' + (geographicWindVisible ? '' : 'opacity-45') }, h('span', { className: 'text-sm leading-none text-sky-300', style: { transform: 'rotate(' + (geographicOverlays ? geographicOverlays.downwindBearing : 0) + 'deg)' }, 'aria-hidden': true }, '\u2191'), h('span', null, 'Downwind ' + (geographicWindVisible ? 'on' : 'off'))),
@@ -9332,43 +9332,43 @@ var geographyGroup = new THREE.Group();
                     geographicTerrainProbe && h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-400', 'aria-hidden': true }), h('span', null, 'Terrain sample'))
                   ),
                   regionalFieldLegend && h('div', { className: 'mt-2 border-t border-white/10 pt-2', 'data-weather-regional-map-legend': true, role: 'group', 'aria-label': regionalFieldLegend.label + ' legend for ' + d.geographicWeatherField.validAt },
-                    h('div', { className: 'flex items-center justify-between gap-3 text-[10px] font-black text-slate-100' }, h('span', null, regionalFieldLegend.label), h('span', null, d.geographicWeatherField.sampleCount + ' points')),
+                    h('div', { className: 'flex items-center justify-between gap-3 text-[0.625rem] font-black text-slate-100' }, h('span', null, regionalFieldLegend.label), h('span', null, d.geographicWeatherField.sampleCount + ' points')),
                     h('div', { className: 'mt-1 h-2 rounded-sm', style: { background: 'linear-gradient(90deg,' + regionalFieldLegend.palette.join(',') + ')' }, 'aria-hidden': true }),
-                    h('div', { className: 'mt-0.5 flex justify-between text-[10px] font-bold text-slate-300' },
+                    h('div', { className: 'mt-0.5 flex justify-between text-[0.625rem] font-bold text-slate-300' },
                       h('span', null, Number(regionalFieldLegend.min).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit),
                       h('span', null, Number(regionalFieldLegend.max).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit)
                     ),
-                    h('p', { className: 'mt-1 text-[10px] text-slate-400' }, 'Valid ' + d.geographicWeatherField.validAt + (d.geographicWeatherField.timezone ? ' ' + d.geographicWeatherField.timezone : ''))
+                    h('p', { className: 'mt-1 text-[0.625rem] text-slate-400' }, 'Valid ' + d.geographicWeatherField.validAt + (d.geographicWeatherField.timezone ? ' ' + d.geographicWeatherField.timezone : ''))
                   ),
                   h('div', { className: 'mt-2 flex items-center gap-2 border-t border-white/10 pt-1.5', 'data-weather-geographic-orientation': true, role: 'img', 'aria-label': geographicOrientation.label },
-                    h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/20 text-[11px] font-black text-slate-100', style: { transform: 'rotate(' + geographicOrientation.northRotation + 'deg)' }, 'aria-hidden': true }, '\u2191'),
-                    h('span', { className: 'text-[10px] font-bold text-slate-300' }, 'N | ' + geographicOrientation.label)
+                    h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/20 text-[0.6875rem] font-black text-slate-100', style: { transform: 'rotate(' + geographicOrientation.northRotation + 'deg)' }, 'aria-hidden': true }, '\u2191'),
+                    h('span', { className: 'text-[0.625rem] font-bold text-slate-300' }, 'N | ' + geographicOrientation.label)
                   ),
-                  h('p', { className: 'mt-1 text-[10px] font-bold text-slate-300', 'data-weather-geographic-telemetry': true }, 'Zoom ' + geographicViewport.zoom.toFixed(1) + ' | Tilt ' + Math.round(geographicViewport.pitch) + '\u00B0 | Bearing ' + Math.round(geographicViewport.bearing) + '\u00B0'),
-                  h('p', { id: 'weather-geographic-map-instructions', className: 'mt-2 max-w-[220px] border-t border-white/10 pt-1.5 text-[11px] leading-relaxed text-slate-300' }, 'Keyboard: focus the map, use arrow keys to pan and plus or minus to zoom. Use Sample map center to inspect terrain without a pointer.')
+                  h('p', { className: 'mt-1 text-[0.625rem] font-bold text-slate-300', 'data-weather-geographic-telemetry': true }, 'Zoom ' + geographicViewport.zoom.toFixed(1) + ' | Tilt ' + Math.round(geographicViewport.pitch) + '\u00B0 | Bearing ' + Math.round(geographicViewport.bearing) + '\u00B0'),
+                  h('p', { id: 'weather-geographic-map-instructions', className: 'mt-2 max-w-[220px] border-t border-white/10 pt-1.5 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Keyboard: focus the map, use arrow keys to pan and plus or minus to zoom. Use Sample map center to inspect terrain without a pointer.')
                 );
         // Stage-mode legend collapsed to a pill (its own toggle above expands it again).
-        var stageLegendPill = immersiveStageMode && d.immersiveStageLegendCollapsed === true && h('button', { type: 'button', onClick: function () { update({ immersiveStageLegendCollapsed: false }); }, 'aria-expanded': false, 'data-weather-stage-legend-toggle': 'expand', className: 'pointer-events-auto min-h-11 rounded-xl border border-cyan-300/30 bg-slate-950/90 px-3 py-2 text-[11px] font-black text-cyan-100 shadow-2xl backdrop-blur-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, 'Scene legend + focus \u25BE');
+        var stageLegendPill = immersiveStageMode && d.immersiveStageLegendCollapsed === true && h('button', { type: 'button', onClick: function () { update({ immersiveStageLegendCollapsed: false }); }, 'aria-expanded': false, 'data-weather-stage-legend-toggle': 'expand', className: 'pointer-events-auto min-h-11 rounded-xl border border-cyan-300/30 bg-slate-950/90 px-3 py-2 text-[0.6875rem] font-black text-cyan-100 shadow-2xl backdrop-blur-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, 'Scene legend + focus \u25BE');
         if (d.immersiveStageLegendCollapsed === true) stageLegendPanel = false;
         function fullscreenToggleButton() {
-          return h('button', { type: 'button', onClick: toggleImmersiveFullscreen, 'aria-pressed': immersiveFullscreen, 'data-weather-fullscreen-toggle': true, 'aria-label': immersiveFullscreen ? 'Exit the fullscreen 3D view' : 'Open the 3D view fullscreen', className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 ' + (immersiveFullscreen ? 'border-amber-300 bg-amber-300 text-amber-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10') }, h('span', { className: 'text-sm', 'aria-hidden': true }, immersiveFullscreen ? '\u2716' : '\u26F6'), h('span', null, immersiveFullscreen ? 'Exit fullscreen' : 'Fullscreen'));
+          return h('button', { type: 'button', onClick: toggleImmersiveFullscreen, 'aria-pressed': immersiveFullscreen, 'data-weather-fullscreen-toggle': true, 'aria-label': immersiveFullscreen ? 'Exit the fullscreen 3D view' : 'Open the 3D view fullscreen', className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[0.6875rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 ' + (immersiveFullscreen ? 'border-amber-300 bg-amber-300 text-amber-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10') }, h('span', { className: 'text-sm', 'aria-hidden': true }, immersiveFullscreen ? '\u2716' : '\u26F6'), h('span', null, immersiveFullscreen ? 'Exit fullscreen' : 'Fullscreen'));
         }
         return h('div', { className: 'mx-auto max-w-[1680px] space-y-4 p-3 sm:p-4', 'data-weather-immersive-lab': true, 'data-weather-stage-mode': immersiveStageMode ? 'on' : 'off', 'data-weather-presenter-mode': immersivePresenterMode ? 'on' : 'off', 'data-weather-scene-summary': immersiveSceneSummaryOpen ? 'on' : 'off', 'data-weather-checkpoint-runner': immersiveCheckpointRunnerOpen ? 'on' : 'off', 'data-weather-focus-spotlight': immersiveFocusSpotlight ? 'on' : 'off' },
           h('section', { className: 'overflow-hidden rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-slate-950 via-indigo-950/90 to-cyan-950 text-white shadow-2xl' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-4 sm:p-5' },
               h('div', { className: 'max-w-2xl' },
-                h('p', { className: 'text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300' }, 'Atmospheric analysis workspace'),
+                h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.22em] text-cyan-300' }, 'Atmospheric analysis workspace'),
                 h('h3', { className: 'mt-1 text-2xl font-black' }, 'Immersive 3D Weather Space'),
                 h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-300' }, geographicMode ? 'Explore the selected location with an open vector map, published administrative labels, hillshade, and 3D elevation. The highlighted site connects the geographic context to the live observation.' : 'A high-fidelity atmospheric digital twin for inspecting air masses, frontal structure, terrain, cloud layers, precipitation, wind vectors, and observation stations. Live observations can drive the scene while the Canvas map remains the evidence-analysis view.')
               ),
               h('div', { className: 'flex flex-wrap items-center gap-2', 'data-weather-immersive-status-bar': true, role: 'status', 'aria-label': geographicMode ? 'Geographic 3D status' : 'Conceptual 3D status' },
-                h('span', { className: 'rounded-full bg-cyan-300 px-3 py-1.5 text-[11px] font-black text-cyan-950' }, geographicMode ? (d.geographicMapReady ? '\u25CF Geographic layers ready' : '\u25CB Loading geographic layers') : (engineReady ? '\u25CF 3D engine ready' : '\u25CB Loading 3D engine')),
-                h('span', { className: 'rounded-full px-3 py-1.5 text-[11px] font-black ' + (geographicMode ? 'bg-emerald-300 text-emerald-950' : (xrAvailable ? 'bg-violet-300 text-violet-950' : 'bg-white/10 text-slate-300')) }, geographicMode ? 'Open geographic data' : (xrAvailable ? 'WebXR detected' : 'Desktop 3D available')),
-                h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-black text-slate-200', 'data-weather-geographic-terrain-capability': geographicMode ? geographicTerrainCapability.code : undefined }, geographicMode ? geographicTerrainCapability.label : (immersiveQuality === 'high' ? 'High fidelity' : immersiveQuality === 'balanced' ? 'Balanced quality' : 'Performance mode')),
-                h('button', { type: 'button', onClick: toggleImmersiveSceneSummary, 'aria-pressed': immersiveSceneSummaryOpen, 'aria-label': immersiveSceneSummaryOpen ? 'Hide text scene summary' : 'Open text scene summary', className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-1.5 text-[10px] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, immersiveSceneSummaryOpen ? 'Hide text summary' : 'Text summary'),
-                teacherMode && h('button', { type: 'button', onClick: toggleImmersiveCheckpointRunner, 'aria-pressed': immersiveCheckpointRunnerOpen, 'aria-label': immersiveCheckpointRunnerOpen ? 'Pause guided checkpoint run' : 'Start guided checkpoint run', className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-1.5 text-[10px] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, immersiveCheckpointRunnerOpen ? 'Pause run' : 'Start guided run'),
-                teacherMode && h('button', { type: 'button', onClick: toggleImmersivePresenterMode, 'aria-pressed': immersivePresenterMode, 'aria-label': immersivePresenterMode ? 'Exit presenter mode' : 'Open presenter mode', className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-3 py-1.5 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, immersivePresenterMode ? 'Exit presenter' : 'Presenter mode'),
-                h('button', { type: 'button', onClick: toggleImmersiveStageMode, 'aria-pressed': immersiveStageMode, 'aria-label': immersiveStageMode ? 'Exit 3D stage mode' : 'Enter 3D stage mode', className: 'min-h-11 rounded-lg border border-amber-300/35 bg-amber-300/10 px-3 py-1.5 text-[10px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, immersiveStageMode ? 'Exit stage mode' : 'Enter stage mode')
+                h('span', { className: 'rounded-full bg-cyan-300 px-3 py-1.5 text-[0.6875rem] font-black text-cyan-950' }, geographicMode ? (d.geographicMapReady ? '\u25CF Geographic layers ready' : '\u25CB Loading geographic layers') : (engineReady ? '\u25CF 3D engine ready' : '\u25CB Loading 3D engine')),
+                h('span', { className: 'rounded-full px-3 py-1.5 text-[0.6875rem] font-black ' + (geographicMode ? 'bg-emerald-300 text-emerald-950' : (xrAvailable ? 'bg-violet-300 text-violet-950' : 'bg-white/10 text-slate-300')) }, geographicMode ? 'Open geographic data' : (xrAvailable ? 'WebXR detected' : 'Desktop 3D available')),
+                h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[0.6875rem] font-black text-slate-200', 'data-weather-geographic-terrain-capability': geographicMode ? geographicTerrainCapability.code : undefined }, geographicMode ? geographicTerrainCapability.label : (immersiveQuality === 'high' ? 'High fidelity' : immersiveQuality === 'balanced' ? 'Balanced quality' : 'Performance mode')),
+                h('button', { type: 'button', onClick: toggleImmersiveSceneSummary, 'aria-pressed': immersiveSceneSummaryOpen, 'aria-label': immersiveSceneSummaryOpen ? 'Hide text scene summary' : 'Open text scene summary', className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-1.5 text-[0.625rem] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, immersiveSceneSummaryOpen ? 'Hide text summary' : 'Text summary'),
+                teacherMode && h('button', { type: 'button', onClick: toggleImmersiveCheckpointRunner, 'aria-pressed': immersiveCheckpointRunnerOpen, 'aria-label': immersiveCheckpointRunnerOpen ? 'Pause guided checkpoint run' : 'Start guided checkpoint run', className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-1.5 text-[0.625rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, immersiveCheckpointRunnerOpen ? 'Pause run' : 'Start guided run'),
+                teacherMode && h('button', { type: 'button', onClick: toggleImmersivePresenterMode, 'aria-pressed': immersivePresenterMode, 'aria-label': immersivePresenterMode ? 'Exit presenter mode' : 'Open presenter mode', className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-3 py-1.5 text-[0.625rem] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, immersivePresenterMode ? 'Exit presenter' : 'Presenter mode'),
+                h('button', { type: 'button', onClick: toggleImmersiveStageMode, 'aria-pressed': immersiveStageMode, 'aria-label': immersiveStageMode ? 'Exit 3D stage mode' : 'Enter 3D stage mode', className: 'min-h-11 rounded-lg border border-amber-300/35 bg-amber-300/10 px-3 py-1.5 text-[0.625rem] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, immersiveStageMode ? 'Exit stage mode' : 'Enter stage mode')
               )
             ),
             h('div', { className: 'grid gap-4 p-3 sm:p-5 ' + (immersiveStageMode ? 'xl:grid-cols-1' : 'xl:grid-cols-[minmax(0,1fr)_380px]'), 'data-weather-immersive-layout': immersiveStageMode ? 'stage' : 'control-rail' },
@@ -9376,46 +9376,46 @@ var geographyGroup = new THREE.Group();
                 h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: immersiveFullscreen ? 'block h-full min-h-[500px] w-full' : 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-describedby': !geographicMode ? 'weather-conceptual-3d-instructions' : undefined, 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Click or tap a scene object to explain it. Drag to orbit; scroll or pinch to zoom.' }),
                 immersiveStageMode && useLive && liveTimeline.length > 1 && h('div', { className: 'pointer-events-auto absolute bottom-3 left-3 right-3 z-30 rounded-2xl border border-violet-300/35 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-timeline': true, role: 'region', 'aria-labelledby': 'weather-stage-timeline-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-violet-200' }, 'Live timeline playback'), h('h4', { id: 'weather-stage-timeline-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Move the 3D scene through time')),
-                    h('span', { className: 'rounded-full border border-violet-300/30 bg-violet-300/10 px-2 py-1 text-[10px] font-black text-violet-100', role: 'status', 'aria-live': 'polite' }, timelineSelectionLabel)
+                    h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-violet-200' }, 'Live timeline playback'), h('h4', { id: 'weather-stage-timeline-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Move the 3D scene through time')),
+                    h('span', { className: 'rounded-full border border-violet-300/30 bg-violet-300/10 px-2 py-1 text-[0.625rem] font-black text-violet-100', role: 'status', 'aria-live': 'polite' }, timelineSelectionLabel)
                   ),
                   h('div', { className: 'mt-2 grid gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 sm:grid-cols-[minmax(0,1fr)_auto]', 'data-weather-stage-timeline-context': true },
-                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-violet-200' }, timelineInstrumentLabel + ' · ' + timelineStagePosition), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, timelineStageContext)),
-                    h('div', { className: 'self-center rounded-lg border border-violet-300/20 bg-violet-300/10 px-2.5 py-2 text-right' }, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.12em] text-violet-200' }, 'Scene time'), h('p', { className: 'mt-0.5 text-[11px] font-black text-white' }, timelineValidTimeDetail))
+                    h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-violet-200' }, timelineInstrumentLabel + ' · ' + timelineStagePosition), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200' }, timelineStageContext)),
+                    h('div', { className: 'self-center rounded-lg border border-violet-300/20 bg-violet-300/10 px-2.5 py-2 text-right' }, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.12em] text-violet-200' }, 'Scene time'), h('p', { className: 'mt-0.5 text-[0.6875rem] font-black text-white' }, timelineValidTimeDetail))
                   ),
                   h('div', { className: 'mt-2 rounded-xl border border-fuchsia-300/25 bg-fuchsia-300/10 p-2.5', 'data-weather-stage-timeline-comparison': true, role: 'group', 'aria-labelledby': 'weather-stage-timeline-comparison-title' },
                     h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                      h('div', null, h('p', { id: 'weather-stage-timeline-comparison-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] text-fuchsia-200' }, 'Compare hours'), h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, 'Pin a baseline to make the selected-hour change explicit.')),
-                      timelineComparisonPoint && h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, 'Baseline pinned')
+                      h('div', null, h('p', { id: 'weather-stage-timeline-comparison-title', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-fuchsia-200' }, 'Compare hours'), h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-300' }, 'Pin a baseline to make the selected-hour change explicit.')),
+                      timelineComparisonPoint && h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[0.625rem] font-black text-fuchsia-100' }, 'Baseline pinned')
                     ),
-                    h('label', { htmlFor: 'weather-stage-timeline-comparison', className: 'mt-2 block text-[10px] font-black text-fuchsia-100' }, 'Compare selected hour with',
-                      h('select', { id: 'weather-stage-timeline-comparison', value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-[11px] font-bold text-white focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' },
+                    h('label', { htmlFor: 'weather-stage-timeline-comparison', className: 'mt-2 block text-[0.625rem] font-black text-fuchsia-100' }, 'Compare selected hour with',
+                      h('select', { id: 'weather-stage-timeline-comparison', value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-[0.6875rem] font-bold text-white focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' },
                         h('option', { value: '' }, 'Choose a baseline hour'),
                         liveTimeline.map(function (point, index) { return h('option', { key: 'stage-compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
                       )
                     ),
                     timelineDelta ? h('div', { className: 'mt-2', role: 'status', 'aria-live': 'polite' },
-                      h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-fuchsia-100' }, 'Change since baseline'),
+                      h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-100' }, 'Change since baseline'),
                       h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3' }, [
                         ['Temperature', formatWeatherDelta(timelineDelta.temperature, '\u00B0C', 1)], ['Humidity', formatWeatherDelta(timelineDelta.humidity, '%', 0)], ['Pressure', formatWeatherDelta(timelineDelta.pressure, ' hPa', 1)],
                         ['Wind speed', formatWeatherDelta(timelineDelta.windSpeed, ' km/h', 1)], ['Wind direction', formatWeatherDelta(timelineDelta.windDirection, '\u00B0', 0)], ['Precipitation', formatWeatherDelta(timelineDelta.precipitation, ' mm', 1)]
-                      ].map(function (metric) { return h('div', { key: 'stage-delta-' + metric[0], className: 'rounded-lg border border-white/10 bg-slate-950/35 px-2 py-2' }, h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])); })),
-                      timelineDelta.conditionChanged && h('p', { className: 'mt-2 text-[10px] font-bold text-amber-100' }, 'Condition changed from ' + (timelineComparisonPoint.condition || 'the baseline') + ' to ' + (liveTimelinePoint.condition || 'the selected hour') + '.')
-                    ) : h('p', { className: 'mt-2 text-[10px] text-slate-400', role: 'status' }, 'Choose a different hour to reveal temperature, moisture, pressure, wind, and precipitation changes.')
+                      ].map(function (metric) { return h('div', { key: 'stage-delta-' + metric[0], className: 'rounded-lg border border-white/10 bg-slate-950/35 px-2 py-2' }, h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])); })),
+                      timelineDelta.conditionChanged && h('p', { className: 'mt-2 text-[0.625rem] font-bold text-amber-100' }, 'Condition changed from ' + (timelineComparisonPoint.condition || 'the baseline') + ' to ' + (liveTimelinePoint.condition || 'the selected hour') + '.')
+                    ) : h('p', { className: 'mt-2 text-[0.625rem] text-slate-400', role: 'status' }, 'Choose a different hour to reveal temperature, moisture, pressure, wind, and precipitation changes.')
                   ),
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Stage timeline playback controls' },
-                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Previous hour'),
-                    h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg bg-violet-300 px-3 py-2 text-[10px] font-black text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, d.liveWeatherTimelinePlaying ? 'Pause timeline' : 'Play timeline'),
-                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Next hour'),
-                    h('button', { type: 'button', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-2 text-[10px] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, 'Return to now')
+                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Previous hour'),
+                    h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg bg-violet-300 px-3 py-2 text-[0.625rem] font-black text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, d.liveWeatherTimelinePlaying ? 'Pause timeline' : 'Play timeline'),
+                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Next hour'),
+                    h('button', { type: 'button', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-2 text-[0.625rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, 'Return to now')
                   ),
-                  h('label', { htmlFor: 'weather-stage-timeline-slider', className: 'mt-2 block text-[10px] font-black text-violet-100' }, 'Selected hour', h('input', { id: 'weather-stage-timeline-slider', type: 'range', min: 0, max: liveTimeline.length - 1, step: 1, value: liveTimelineIndex, onChange: function (event) { setLiveWeatherTimelineIndex(event.target.value); }, 'aria-valuetext': timelineSelectionLabel + '. ' + timelineStageContext, className: 'mt-1 min-h-11 w-full accent-violet-300' }))
+                  h('label', { htmlFor: 'weather-stage-timeline-slider', className: 'mt-2 block text-[0.625rem] font-black text-violet-100' }, 'Selected hour', h('input', { id: 'weather-stage-timeline-slider', type: 'range', min: 0, max: liveTimeline.length - 1, step: 1, value: liveTimelineIndex, onChange: function (event) { setLiveWeatherTimelineIndex(event.target.value); }, 'aria-valuetext': timelineSelectionLabel + '. ' + timelineStageContext, className: 'mt-1 min-h-11 w-full accent-violet-300' }))
                 ),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-cyan-950/10 via-transparent to-slate-950/50', 'data-weather-conceptual-vignette': true, 'aria-hidden': true }),
                 !geographicMode && immersiveGuideOpen && selectedGlossaryFeature && selectedGlossaryFeature.overlay && h('div', { ref: immersiveCalloutRef, 'data-weather-feature-callout-anchor': 'projected', className: 'pointer-events-none absolute z-20 max-w-[220px] rounded-xl border border-cyan-200/40 bg-slate-950/90 px-3 py-2 text-left shadow-2xl backdrop-blur-md', style: { top: selectedGlossaryFeature.overlay.top, left: selectedGlossaryFeature.overlay.left, transform: 'translate(-8%, -50%)' }, 'data-weather-feature-callout': selectedGlossaryFeature.id, role: 'note', 'aria-label': selectedGlossaryFeature.label + '. ' + selectedGlossaryFeature.lookFor },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, d.immersiveObjectSelectionMethod === 'pointer' || d.immersiveObjectSelectionMethod === 'touch' ? 'Selected in 3D' : 'Scene feature'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-300' }, d.immersiveObjectSelectionMethod === 'pointer' || d.immersiveObjectSelectionMethod === 'touch' ? 'Selected in 3D' : 'Scene feature'),
                   h('p', { className: 'mt-0.5 text-xs font-black text-white' }, selectedGlossaryFeature.label),
-                  h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, selectedGlossaryFeature.lookFor)
+                  h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-300' }, selectedGlossaryFeature.lookFor)
                 ),
                 geographicMode && h('div', { ref: geographicMapRef, className: 'absolute inset-0 min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-geographic-map': true, role: 'region', 'aria-label': 'Interactive open geographic map and 3D terrain centered on ' + geographic.label + '. Use map controls, drag, or keyboard navigation to explore.', 'aria-describedby': 'weather-geographic-map-instructions' }),
                 geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-slate-950/20 via-transparent to-slate-950/45', 'data-weather-geographic-vignette': true, 'aria-hidden': true }),
@@ -9427,7 +9427,7 @@ var geographyGroup = new THREE.Group();
                 !geographicMode && h('div', { className: 'pointer-events-none absolute left-3 right-3 top-3 z-10 flex flex-col items-start gap-2', 'data-weather-stage-overlays': 'conceptual' },
                   h('div', { className: 'flex w-full flex-wrap items-start justify-between gap-2' },
                   h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': '3D camera views', 'data-weather-camera-controls': true, 'data-weather-conceptual-command-bar': true },
-                    h('span', { className: 'px-2 text-[10px] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
+                    h('span', { className: 'px-2 text-[0.625rem] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
                     [
                       { id: 'overview', icon: '\u25A7', label: 'Overview' },
                       { id: 'front', icon: '\u25B3', label: 'Front section' },
@@ -9441,7 +9441,7 @@ var geographyGroup = new THREE.Group();
                         onClick: function () { setImmersiveCameraPreset(view.id); },
                         'aria-label': view.label + ' camera view',
                         'aria-pressed': active,
-                        className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:opacity-40 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
+                        className: 'flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-[0.6875rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 disabled:opacity-40 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
                       }, h('span', { className: 'text-sm', 'aria-hidden': true }, view.icon), h('span', null, view.label));
                     }),
                     fullscreenToggleButton()
@@ -9462,7 +9462,7 @@ var geographyGroup = new THREE.Group();
                       return h('div', { key: metric[0], className: index === 3 ? 'flex items-center gap-2' : '' },
                         index === 3 && h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 text-base text-cyan-200', style: { transform: 'rotate(' + ((windDir + 180) % 360) + 'deg)' }, 'aria-hidden': true }, '\u2191'),
                         h('div', { className: 'min-w-0' },
-                          h('p', { className: 'truncate text-[11px] font-bold uppercase tracking-wide text-slate-400' }, metric[0]),
+                          h('p', { className: 'truncate text-[0.6875rem] font-bold uppercase tracking-wide text-slate-400' }, metric[0]),
                           h('p', { className: 'mt-0.5 truncate text-xs font-black text-white' }, metric[1])
                         )
                       );
@@ -9479,10 +9479,10 @@ var geographyGroup = new THREE.Group();
                   h('button', { type: 'button', onClick: function () { update({ geographicMapError: '', geographicMapAttempt: (d.geographicMapAttempt || 0) + 1 }); }, className: 'min-h-11 rounded-lg bg-emerald-300 px-4 py-2 text-sm font-black text-emerald-950' }, 'Retry loading'),
                   h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-end justify-between gap-2' },
-                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? timelineSelectionLabel + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
-                  h('div', { id: 'weather-conceptual-3d-instructions', className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[11px] text-slate-300 backdrop-blur-sm', 'data-weather-object-picking-hint': true }, 'Click or tap an object to explain | Drag to orbit | Scroll or pinch to zoom'),
+                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, useLive ? timelineSelectionLabel + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
+                  h('div', { id: 'weather-conceptual-3d-instructions', className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[0.6875rem] text-slate-300 backdrop-blur-sm', 'data-weather-object-picking-hint': true }, 'Click or tap an object to explain | Drag to orbit | Scroll or pinch to zoom'),
 h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4 py-3 text-left shadow-2xl backdrop-blur-md', 'data-weather-tour-overlay': true },
-                    h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300' }, '3D investigation step ' + (tourStep.index + 1) + ' of ' + tourStep.total),
+                    h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.18em] text-cyan-300' }, '3D investigation step ' + (tourStep.index + 1) + ' of ' + tourStep.total),
                     h('p', { className: 'mt-1 text-sm font-black text-white' }, tourStep.label),
                     h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, tourStep.prompt)
                   )
@@ -9490,13 +9490,13 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                 geographicMode && h('div', { className: 'pointer-events-none absolute bottom-8 left-3 right-3 z-10 rounded-2xl border border-white/15 bg-slate-950/90 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-auto sm:max-w-[560px]', 'data-weather-geographic-hud': true, role: 'group', 'aria-label': geographicObservationSummary(live) },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', { className: 'min-w-0' },
-                      h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300' }, 'Weather command display'),
+                      h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.18em] text-emerald-300' }, 'Weather command display'),
                       h('p', { className: 'mt-0.5 truncate text-sm font-black text-white' }, geographic.label),
-                      h('p', { className: 'mt-0.5 text-[11px] text-slate-400' }, geographic.latitude.toFixed(4) + ', ' + geographic.longitude.toFixed(4) + (geographic.elevation != null ? ' | Site ' + geographic.elevation + ' m' : ''))
+                      h('p', { className: 'mt-0.5 text-[0.6875rem] text-slate-400' }, geographic.latitude.toFixed(4) + ', ' + geographic.longitude.toFixed(4) + (geographic.elevation != null ? ' | Site ' + geographic.elevation + ' m' : ''))
                     ),
                     h('div', { className: 'flex flex-wrap justify-end gap-1.5' },
-                      h('span', { className: 'rounded-full border px-2.5 py-1 text-[11px] font-black ' + observationFreshnessClass, 'data-weather-observation-freshness': liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code, 'aria-label': timelineSelectionLabel }, timelineBadge),
-                      h('span', { className: 'rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[11px] font-black text-slate-100' }, live.condition)
+                      h('span', { className: 'rounded-full border px-2.5 py-1 text-[0.6875rem] font-black ' + observationFreshnessClass, 'data-weather-observation-freshness': liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code, 'aria-label': timelineSelectionLabel }, timelineBadge),
+                      h('span', { className: 'rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[0.6875rem] font-black text-slate-100' }, live.condition)
                     )
                   ),
                   h('div', { className: 'mt-3 flex items-center gap-3' },
@@ -9525,28 +9525,28 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                         ['Visibility', live.visibility != null ? Math.round(live.visibility / 100) / 10 + ' km' : 'Not reported']
                       ].map(function (metric) {
                         return h('div', { key: metric[0], className: 'min-w-0' },
-                          h('p', { className: 'truncate text-[11px] font-bold uppercase tracking-wide text-slate-400' }, metric[0]),
+                          h('p', { className: 'truncate text-[0.6875rem] font-bold uppercase tracking-wide text-slate-400' }, metric[0]),
                           h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])
                         );
                       })
                     )
                   ),
-                  geographicOverlays && h('div', { className: 'mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/10 pt-2 text-[11px]' },
+                  geographicOverlays && h('div', { className: 'mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/10 pt-2 text-[0.6875rem]' },
                     h('span', { className: 'font-black text-sky-200' }, 'FROM ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h'),
                     h('span', { className: 'font-black text-cyan-100' }, 'TO ' + cardinal(geographicOverlays.downwindBearing)),
                     h('span', { className: 'text-slate-400' }, (live.timelineRole === 'forecast' ? 'Forecast valid ' : live.timelineRole === 'earlier' ? 'Earlier hour ' : 'Observed ') + (live.validAt || live.observedAt || 'latest') + (live.timezone ? ' ' + live.timezone : '')),
                     h('span', { className: observationFreshness.current ? 'text-emerald-200' : observationFreshness.stale ? 'text-rose-200' : 'text-amber-200' }, (liveTimelinePoint && liveTimelinePoint.role !== 'current' ? timelineSelectionLabel : observationFreshness.detail))
                   ),
-                  geographicOverlays && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-400' }, geographicOverlays.windDistanceKm + ' km teaching vector scaled from the selected-hour wind speed; not a forecast footprint.'),
-                  geographicTerrainProbe && h('p', { className: 'mt-2 border-l-2 border-rose-300/60 pl-2 text-[11px] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site' + (geographicTerrainWind ? ' | ' + geographicTerrainWind.position : ''))
+                  geographicOverlays && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-400' }, geographicOverlays.windDistanceKm + ' km teaching vector scaled from the selected-hour wind speed; not a forecast footprint.'),
+                  geographicTerrainProbe && h('p', { className: 'mt-2 border-l-2 border-rose-300/60 pl-2 text-[0.6875rem] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site' + (geographicTerrainWind ? ' | ' + geographicTerrainWind.position : ''))
                 )
               ),
               immersiveStageMode && immersiveSceneSummaryOpen && h('section', { className: 'rounded-2xl border border-sky-300/25 bg-sky-950/25 p-4 text-slate-100 shadow-xl', 'data-weather-scene-summary-panel': true, role: 'region', 'aria-labelledby': 'weather-scene-summary-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
-                  h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-sky-300' }, 'Accessible scene view'), h('h4', { id: 'weather-scene-summary-title', className: 'mt-1 text-lg font-black' }, 'Text scene summary')),
-                  h('button', { type: 'button', onClick: toggleImmersiveSceneSummary, className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-2 text-[10px] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, 'Hide text summary')
+                  h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.18em] text-sky-300' }, 'Accessible scene view'), h('h4', { id: 'weather-scene-summary-title', className: 'mt-1 text-lg font-black' }, 'Text scene summary')),
+                  h('button', { type: 'button', onClick: toggleImmersiveSceneSummary, className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-2 text-[0.625rem] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, 'Hide text summary')
                 ),
-                h('p', { className: 'mt-2 max-w-3xl text-[11px] leading-relaxed text-slate-300' }, 'A structured, non-visual equivalent of the 3D scene. Values describe the selected hour; layer notes explain what the graphics encode.'),
+                h('p', { className: 'mt-2 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-300' }, 'A structured, non-visual equivalent of the 3D scene. Values describe the selected hour; layer notes explain what the graphics encode.'),
                 h('dl', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' }, [
                   ['Scene', sceneLabel],
                   ['Condition', sceneCondition],
@@ -9554,20 +9554,20 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   ['Selected time', useLive ? timelineSelectionLabel : 'T+' + state.simHour + ' hours'],
                   ['Focus', focusDetail.label],
                   ['Location', geographic.label]
-                ].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-white/10 bg-white/5 p-3' }, h('dt', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-sky-200' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, item[1])); })),
-                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Selected weather values' }, values.slice(0, 6).map(function (metric) { return h('div', { key: 'summary-' + metric[0], className: 'rounded-xl border border-white/10 bg-slate-950/35 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-base font-black tabular-nums text-white' }, metric[1])); })),
+                ].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-white/10 bg-white/5 p-3' }, h('dt', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-sky-200' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, item[1])); })),
+                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Selected weather values' }, values.slice(0, 6).map(function (metric) { return h('div', { key: 'summary-' + metric[0], className: 'rounded-xl border border-white/10 bg-slate-950/35 p-3' }, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-base font-black tabular-nums text-white' }, metric[1])); })),
                 h('div', { className: 'mt-3 rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-3' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Visible layer meanings'),
-                  h('ul', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' }, stageLegendItems.map(function (item) { return h('li', { key: 'summary-layer-' + item.id, className: 'flex items-start gap-2 text-[11px] leading-relaxed ' + (item.enabled ? 'text-slate-100' : 'text-slate-500') }, h('span', { className: 'mt-1 h-2.5 w-2.5 shrink-0 rounded-full border border-white/70', style: { backgroundColor: item.color, opacity: item.enabled ? 1 : 0.28 }, 'aria-hidden': true }), h('span', null, h('strong', { className: 'font-black' }, item.label + ' - ' + (item.enabled ? 'visible' : 'hidden')), h('span', null, ' - ' + item.detail))); }))
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Visible layer meanings'),
+                  h('ul', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' }, stageLegendItems.map(function (item) { return h('li', { key: 'summary-layer-' + item.id, className: 'flex items-start gap-2 text-[0.6875rem] leading-relaxed ' + (item.enabled ? 'text-slate-100' : 'text-slate-500') }, h('span', { className: 'mt-1 h-2.5 w-2.5 shrink-0 rounded-full border border-white/70', style: { backgroundColor: item.color, opacity: item.enabled ? 1 : 0.28 }, 'aria-hidden': true }), h('span', null, h('strong', { className: 'font-black' }, item.label + ' - ' + (item.enabled ? 'visible' : 'hidden')), h('span', null, ' - ' + item.detail))); }))
                 ),
-                selectedGlossaryFeature && h('p', { className: 'mt-3 rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/5 p-3 text-[11px] leading-relaxed text-fuchsia-100' }, h('strong', { className: 'font-black' }, selectedGlossaryFeature.label + ': '), selectedGlossaryFeature.definition),
-                h('p', { className: 'mt-3 text-[10px] leading-relaxed text-slate-400' }, geographicMode ? 'Geographic layers combine open map data, terrain, and derived weather evidence.' : 'Conceptual layers are teaching representations; they are not direct measurements or literal scale.')
+                selectedGlossaryFeature && h('p', { className: 'mt-3 rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/5 p-3 text-[0.6875rem] leading-relaxed text-fuchsia-100' }, h('strong', { className: 'font-black' }, selectedGlossaryFeature.label + ': '), selectedGlossaryFeature.definition),
+                h('p', { className: 'mt-3 text-[0.625rem] leading-relaxed text-slate-400' }, geographicMode ? 'Geographic layers combine open map data, terrain, and derived weather evidence.' : 'Conceptual layers are teaching representations; they are not direct measurements or literal scale.')
               ),
               h('aside', { hidden: immersiveStageMode, className: 'min-w-0 space-y-3', 'data-weather-immersive-control-rail': true },
                  h('section', { className: 'rounded-xl border border-cyan-300/25 bg-cyan-950/20 p-4', 'data-weather-audience-mode': immersiveAudienceMode },
                    h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
-                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, 'Audience focus'), h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, immersiveAudienceMode === 'teacher' ? 'Teacher tools expose capture, sharing, and provenance controls.' : 'Student focus keeps the investigation path and explanations in front.' )),
-                     h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-black text-cyan-100', 'data-weather-audience-label': true }, immersiveAudienceMode === 'teacher' ? 'Teacher mode' : 'Student mode')
+                     h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, 'Audience focus'), h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, immersiveAudienceMode === 'teacher' ? 'Teacher tools expose capture, sharing, and provenance controls.' : 'Student focus keeps the investigation path and explanations in front.' )),
+                     h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2.5 py-1 text-[0.625rem] font-black text-cyan-100', 'data-weather-audience-label': true }, immersiveAudienceMode === 'teacher' ? 'Teacher mode' : 'Student mode')
                    ),
                    h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive audience focus' },
                      h('button', { type: 'button', onClick: function () { setImmersiveAudienceMode('student'); }, 'aria-pressed': immersiveAudienceMode === 'student', className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveAudienceMode === 'student' ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, 'Student focus'),
@@ -9575,80 +9575,80 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                    )
                  ),
                  h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-scene-mode': true },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Immersive scene mode'),
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-emerald-300' }, 'Immersive scene mode'),
                   h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive scene mode' },
                     h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': !geographicMode, className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black ' + (!geographicMode ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u25C8'), h('span', null, 'Conceptual 3D')),
                     h('button', { type: 'button', disabled: !geographic.available, onClick: function () { update({ immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'observationSite', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': geographicMode, 'aria-describedby': 'weather-geographic-mode-help', className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40 ' + (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u231E'), h('span', null, 'Geographic terrain'))
                   ),
-                   h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.'),
+                   h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.'),
                    h('div', { className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-orientation-controls': true },
-                     h('div', { className: 'flex items-center justify-between gap-2' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-200' }, 'Orientation'), h('span', { className: 'text-[10px] font-bold text-slate-400', 'data-weather-orientation-status': true }, geographicMode ? geographicCameraPreset + ' map view' : immersiveCameraPreset + ' 3D view')),
+                     h('div', { className: 'flex items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-slate-200' }, 'Orientation'), h('span', { className: 'text-[0.625rem] font-bold text-slate-400', 'data-weather-orientation-status': true }, geographicMode ? geographicCameraPreset + ' map view' : immersiveCameraPreset + ' 3D view')),
                      !geographicMode && h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Conceptual 3D camera views' },
-                       ['overview', 'front', 'surface'].map(function (preset) { return h('button', { key: preset, type: 'button', onClick: function () { setImmersiveCameraPreset(preset); }, 'aria-pressed': immersiveCameraPreset === preset, className: 'min-h-11 rounded-lg border px-2 py-2 text-[10px] font-black capitalize focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveCameraPreset === preset ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, preset); })
+                       ['overview', 'front', 'surface'].map(function (preset) { return h('button', { key: preset, type: 'button', onClick: function () { setImmersiveCameraPreset(preset); }, 'aria-pressed': immersiveCameraPreset === preset, className: 'min-h-11 rounded-lg border px-2 py-2 text-[0.625rem] font-black capitalize focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveCameraPreset === preset ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, preset); })
                      ),
-                     h('button', { type: 'button', onClick: resetImmersiveOrientation, className: 'mt-2 min-h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, geographicMode ? 'Reset map orientation' : 'Reset 3D orientation')
+                     h('button', { type: 'button', onClick: resetImmersiveOrientation, className: 'mt-2 min-h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.6875rem] font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, geographicMode ? 'Reset map orientation' : 'Reset 3D orientation')
                    )
                  ),
 !geographicMode && h('section', { className: 'rounded-xl border border-cyan-300/25 bg-cyan-950/20 p-4', 'data-weather-immersive-tour': true },
                   h('div', { className: 'flex items-start justify-between gap-3' },
-                    h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, 'Guided investigation'), h('h4', { className: 'text-sm font-black' }, tourStep.label)),
+                    h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, 'Guided investigation'), h('h4', { className: 'text-sm font-black' }, tourStep.label)),
                     h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
-                      h('span', { className: 'rounded-full bg-cyan-300 px-2 py-1 text-[11px] font-black text-cyan-950' }, (tourStep.index + 1) + '/' + tourStep.total),
-                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100', 'data-weather-tour-progress': true, role: 'status', 'aria-label': 'Guided investigation progress' }, tourRun.completedCount + '/' + tourRun.total + ' complete')
+                      h('span', { className: 'rounded-full bg-cyan-300 px-2 py-1 text-[0.6875rem] font-black text-cyan-950' }, (tourStep.index + 1) + '/' + tourStep.total),
+                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[0.625rem] font-black text-emerald-100', 'data-weather-tour-progress': true, role: 'status', 'aria-label': 'Guided investigation progress' }, tourRun.completedCount + '/' + tourRun.total + ' complete')
                     )
                   ),
                   h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300', 'data-weather-tour-prompt': true }, tourStep.prompt),
-                  h('p', { className: 'mt-1 text-[11px] leading-relaxed text-cyan-100' }, tourStep.evidence),
+                  h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-cyan-100' }, tourStep.evidence),
                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive guided investigation steps' },
                     IMMERSIVE_TOUR_STEPS.map(function (step) {
                       var active = step.id === tourStep.id;
                       var progress = tourRun.steps.filter(function (item) { return item.id === step.id; })[0] || step;
                       return h('button', {
                         key: step.id, type: 'button', onClick: function () { openImmersiveTourStep(step.id); }, 'aria-pressed': active,
-                        className: 'min-h-11 rounded-lg border px-2 py-2 text-left text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
+                        className: 'min-h-11 rounded-lg border px-2 py-2 text-left text-[0.6875rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
                       }, (progress.complete ? '\u2713 ' : '') + step.label);
                     })
                   ),
-                  h('p', { className: 'mt-3 text-[11px] leading-relaxed ' + (currentTourProgress.complete ? 'text-emerald-100' : currentTourProgress.captureCount ? 'text-cyan-100' : 'text-slate-400'), role: 'status', 'aria-live': 'polite', 'data-weather-tour-status': true }, currentTourProgress.complete ? currentTourProgress.label + ' is marked complete.' : currentTourProgress.captureCount ? currentTourProgress.captureCount + ' evidence capture' + (currentTourProgress.captureCount === 1 ? '' : 's') + ' linked to this step. Review the prompt, then mark it complete.' : 'Use the prompt and add a note or discussion before marking this step complete.'),
+                  h('p', { className: 'mt-3 text-[0.6875rem] leading-relaxed ' + (currentTourProgress.complete ? 'text-emerald-100' : currentTourProgress.captureCount ? 'text-cyan-100' : 'text-slate-400'), role: 'status', 'aria-live': 'polite', 'data-weather-tour-status': true }, currentTourProgress.complete ? currentTourProgress.label + ' is marked complete.' : currentTourProgress.captureCount ? currentTourProgress.captureCount + ' evidence capture' + (currentTourProgress.captureCount === 1 ? '' : 's') + ' linked to this step. Review the prompt, then mark it complete.' : 'Use the prompt and add a note or discussion before marking this step complete.'),
                   h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
                     h('button', { type: 'button', onClick: function () { toggleImmersiveTourStepCompletion(tourStep.id); }, 'aria-pressed': currentTourProgress.complete, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (currentTourProgress.complete ? 'border-emerald-300/50 bg-emerald-300/15 text-emerald-100' : 'border-cyan-300/35 bg-cyan-300/10 text-cyan-100') }, currentTourProgress.complete ? 'Reopen this step' : 'Mark step complete'),
                     h('button', { type: 'button', onClick: function () { openImmersiveTourStep(tourStep.nextId); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Next investigation step')
                   ),
                   teacherMode && h('div', { className: 'mt-3 rounded-lg border border-violet-300/25 bg-violet-300/10 p-3', 'data-weather-tour-handoff': true, 'aria-labelledby': 'weather-tour-handoff-title' },
-                    h('p', { id: 'weather-tour-handoff-title', className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Teacher run brief'),
-                    h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, 'Copy or download the current scene, prompts, completion, evidence counts, and reflection for lesson plans or team handoff. Location stays excluded unless the sharing preference is enabled.'),
+                    h('p', { id: 'weather-tour-handoff-title', className: 'text-[0.625rem] font-black uppercase tracking-wide text-violet-200' }, 'Teacher run brief'),
+                    h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-300' }, 'Copy or download the current scene, prompts, completion, evidence counts, and reflection for lesson plans or team handoff. Location stays excluded unless the sharing preference is enabled.'),
                     h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
-                      h('button', { type: 'button', onClick: copyImmersiveTourHandoff, className: 'min-h-11 rounded-lg border border-violet-300/35 bg-violet-300/10 px-3 py-2 text-[10px] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Copy teacher brief'),
-                      h('button', { type: 'button', onClick: downloadImmersiveTourHandoff, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download teacher brief')
+                      h('button', { type: 'button', onClick: copyImmersiveTourHandoff, className: 'min-h-11 rounded-lg border border-violet-300/35 bg-violet-300/10 px-3 py-2 text-[0.625rem] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Copy teacher brief'),
+                      h('button', { type: 'button', onClick: downloadImmersiveTourHandoff, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download teacher brief')
                     )
                   ),
-                  h('label', { htmlFor: 'weather-immersive-reflection', className: 'mt-3 block text-[11px] font-black text-cyan-200' }, '3D evidence note',
+                  h('label', { htmlFor: 'weather-immersive-reflection', className: 'mt-3 block text-[0.6875rem] font-black text-cyan-200' }, '3D evidence note',
                     h('textarea', { id: 'weather-immersive-reflection', value: d.immersiveReflection || '', onChange: function (event) { update({ immersiveReflection: event.target.value }); }, rows: 3, placeholder: 'I think the ' + tourSource + ' suggests ___ because I observed ___.', className: 'mt-1 min-h-[92px] w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-normal text-white placeholder:text-slate-400 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' })
                   )
                 ),
                 h('section', { className: 'overflow-hidden rounded-xl border border-sky-300/30 bg-gradient-to-br from-sky-950/45 via-slate-950/25 to-violet-950/35', 'data-weather-immersive-explainer': true, 'aria-labelledby': 'weather-immersive-explainer-title' },
                   h('button', { type: 'button', onClick: toggleImmersiveGuide, 'aria-expanded': immersiveGuideOpen, 'aria-controls': 'weather-immersive-explainer-content', className: 'flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sky-200' },
-                    h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Visual literacy guide'), h('span', { id: 'weather-immersive-explainer-title', className: 'mt-0.5 block text-sm font-black text-white' }, 'What am I seeing?')),
-                    h('span', { className: 'rounded-full border border-sky-300/30 bg-sky-300/10 px-2.5 py-1 text-[11px] font-black text-sky-100', 'aria-hidden': true }, immersiveGuideOpen ? 'Hide' : 'Explain')
+                    h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[0.6875rem] font-black uppercase tracking-wide text-sky-300' }, 'Visual literacy guide'), h('span', { id: 'weather-immersive-explainer-title', className: 'mt-0.5 block text-sm font-black text-white' }, 'What am I seeing?')),
+                    h('span', { className: 'rounded-full border border-sky-300/30 bg-sky-300/10 px-2.5 py-1 text-[0.6875rem] font-black text-sky-100', 'aria-hidden': true }, immersiveGuideOpen ? 'Hide' : 'Explain')
                   ),
                   h('div', { id: 'weather-immersive-explainer-content', hidden: !immersiveGuideOpen },
                     immersiveGuideOpen && h('div', { className: 'border-t border-white/10 p-4' },
                       h('div', { className: 'rounded-xl border border-sky-300/20 bg-slate-950/55 p-3', 'data-weather-scene-narration': true, role: 'region', 'aria-label': 'Current 3D view description' },
                         h('div', { className: 'flex items-start justify-between gap-3' },
-                          h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Current-view description'), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, immersiveSceneNarration)),
-                          h('button', { type: 'button', onClick: describeImmersiveSceneToLearner, className: 'min-h-11 shrink-0 rounded-lg border border-sky-300/40 bg-sky-300/10 px-2 py-2 text-[11px] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200', 'aria-label': 'Read the current 3D scene description' }, 'Describe')
+                          h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-sky-300' }, 'Current-view description'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200' }, immersiveSceneNarration)),
+                          h('button', { type: 'button', onClick: describeImmersiveSceneToLearner, className: 'min-h-11 shrink-0 rounded-lg border border-sky-300/40 bg-sky-300/10 px-2 py-2 text-[0.6875rem] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200', 'aria-label': 'Read the current 3D scene description' }, 'Describe')
                         )
                       ),
                       !geographicMode && h('div', { className: 'mt-3 rounded-xl border border-cyan-300/25 bg-cyan-300/10 p-3', 'data-weather-object-selection-help': true },
-                        h('p', { className: 'text-[11px] font-black text-cyan-100' }, 'Inspect the scene directly'),
-                        h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, 'Pointer or touch: select an object in the 3D view. Dragging still orbits. Keyboard: use the scene object explorer buttons below for the same definitions and camera focus.'),
-                        h('p', { className: 'mt-2 text-[11px] font-bold text-cyan-100', 'data-weather-object-selection-status': true, role: 'status', 'aria-live': 'polite' }, immersiveObjectSelectionStatus)
+                        h('p', { className: 'text-[0.6875rem] font-black text-cyan-100' }, 'Inspect the scene directly'),
+                        h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200' }, 'Pointer or touch: select an object in the 3D view. Dragging still orbits. Keyboard: use the scene object explorer buttons below for the same definitions and camera focus.'),
+                        h('p', { className: 'mt-2 text-[0.6875rem] font-bold text-cyan-100', 'data-weather-object-selection-status': true, role: 'status', 'aria-live': 'polite' }, immersiveObjectSelectionStatus)
                       ),
                       h('div', { className: 'mt-3', 'data-weather-visual-encoding-guide': true },
-                        h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-200' }, 'How to read this visualization'),
-                        h('dl', { className: 'mt-2 grid grid-cols-2 gap-2' }, visualEncodingGuide.map(function (encoding) { return h('div', { key: encoding[0], className: 'rounded-lg bg-white/5 p-2' }, h('dt', { className: 'text-[10px] font-black text-white' }, encoding[0]), h('dd', { className: 'mt-0.5 text-[10px] leading-relaxed text-slate-400' }, encoding[1])); }))
+                        h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-200' }, 'How to read this visualization'),
+                        h('dl', { className: 'mt-2 grid grid-cols-2 gap-2' }, visualEncodingGuide.map(function (encoding) { return h('div', { key: encoding[0], className: 'rounded-lg bg-white/5 p-2' }, h('dt', { className: 'text-[0.625rem] font-black text-white' }, encoding[0]), h('dd', { className: 'mt-0.5 text-[0.625rem] leading-relaxed text-slate-400' }, encoding[1])); }))
                       ),
-                      h('label', { htmlFor: 'weather-immersive-glossary-search', className: 'mt-3 block text-[11px] font-black text-sky-100' }, 'Find a feature or term',
+                      h('label', { htmlFor: 'weather-immersive-glossary-search', className: 'mt-3 block text-[0.6875rem] font-black text-sky-100' }, 'Find a feature or term',
                         h('input', { id: 'weather-immersive-glossary-search', type: 'search', value: d.immersiveGlossaryQuery || '', onChange: function (event) { update({ immersiveGlossaryQuery: event.target.value }); }, placeholder: geographicMode ? 'Try terrain, wind, grid, buildings...' : 'Try front, cloud, wind, station...', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-xs text-white placeholder:text-slate-400 focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-300/40' })
                       ),
                       h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'data-weather-object-explorer': !geographicMode ? true : undefined, 'aria-label': geographicMode ? 'Geographic 3D feature glossary' : 'Conceptual 3D feature glossary and scene object explorer' },
@@ -9656,16 +9656,16 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                           var active = selectedGlossaryFeature.id === feature.id;
                           return h('button', { key: feature.id, type: 'button', onClick: function () { explainImmersiveFeature(feature.id); }, onFocus: function () { previewImmersiveFeature(feature.id, 'keyboard'); }, onBlur: function () { previewImmersiveFeature('', ''); }, onMouseEnter: function () { previewImmersiveFeature(feature.id, 'pointer'); }, onMouseLeave: function () { previewImmersiveFeature('', ''); }, 'aria-pressed': active, 'aria-describedby': active ? 'weather-immersive-feature-definition' : undefined, className: 'min-h-14 rounded-lg border px-3 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200 ' + (active ? (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-cyan-300 bg-cyan-300 text-cyan-950') : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10') },
                             h('span', { className: 'mr-1.5 text-sm', 'aria-hidden': true }, feature.icon),
-                            h('span', { className: 'text-[11px] font-black' }, feature.label),
-                            h('span', { className: 'mt-0.5 block text-[10px] opacity-75' }, feature.category)
+                            h('span', { className: 'text-[0.6875rem] font-black' }, feature.label),
+                            h('span', { className: 'mt-0.5 block text-[0.625rem] opacity-75' }, feature.category)
                           );
                         }),
-                        !filteredImmersiveGlossary.length && h('p', { className: 'col-span-2 rounded-lg border border-dashed border-white/15 p-3 text-center text-[11px] text-slate-300', role: 'status' }, 'No glossary terms match this search.')
+                        !filteredImmersiveGlossary.length && h('p', { className: 'col-span-2 rounded-lg border border-dashed border-white/15 p-3 text-center text-[0.6875rem] text-slate-300', role: 'status' }, 'No glossary terms match this search.')
                       ),
                       selectedGlossaryFeature && h('div', { className: 'mt-3 rounded-xl border border-white/10 bg-slate-950/55 p-2.5 shadow-lg', 'data-weather-inspector-view-controls': true, 'data-weather-inspector-active': immersiveInspectorPanel },
                         h('div', { className: 'flex flex-wrap items-center justify-between gap-2 px-1' },
-                          h('p', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-slate-300' }, 'Inspector view'),
-                          h('p', { className: 'text-[10px] font-bold text-cyan-200', role: 'status', 'aria-live': 'polite' }, 'Showing ' + immersiveInspectorPanelLabels[immersiveInspectorPanel])
+                          h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.15em] text-slate-300' }, 'Inspector view'),
+                          h('p', { className: 'text-[0.625rem] font-bold text-cyan-200', role: 'status', 'aria-live': 'polite' }, 'Showing ' + immersiveInspectorPanelLabels[immersiveInspectorPanel])
                         ),
                         h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4', role: 'group', 'aria-label': 'Immersive feature inspector views' },
                           [
@@ -9684,36 +9684,36 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                               'data-weather-inspector-view': panel.id,
                               className: 'flex min-h-11 items-center justify-between gap-1.5 rounded-lg border px-2 py-2 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/25 hover:bg-white/10')
                             },
-                              h('span', { className: 'flex min-w-0 items-center gap-1.5' }, h('span', { className: 'text-sm', 'aria-hidden': true }, panel.icon), h('span', { className: 'truncate text-[10px] font-black' }, panel.label)),
-                              h('span', { className: 'rounded-full border border-current/20 px-1.5 py-0.5 text-[8px] font-black opacity-80', 'aria-hidden': true }, panel.badge)
+                              h('span', { className: 'flex min-w-0 items-center gap-1.5' }, h('span', { className: 'text-sm', 'aria-hidden': true }, panel.icon), h('span', { className: 'truncate text-[0.625rem] font-black' }, panel.label)),
+                              h('span', { className: 'rounded-full border border-current/20 px-1.5 py-0.5 text-[0.5rem] font-black opacity-80', 'aria-hidden': true }, panel.badge)
                             );
                           })
                         )
                       ),
                       selectedGlossaryFeature && h('article', { id: 'weather-immersive-feature-definition', className: 'mt-3 rounded-xl border border-cyan-300/20 bg-slate-950/60 p-3', 'data-weather-feature-definition': selectedGlossaryFeature.id, 'aria-live': 'polite' },
-                        h('div', { className: 'flex items-start justify-between gap-3' }, h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, selectedGlossaryFeature.category), h('h5', { className: 'mt-0.5 text-sm font-black text-white' }, selectedGlossaryFeature.label)), h('span', { className: 'text-xl text-cyan-200', 'aria-hidden': true }, selectedGlossaryFeature.icon)),
+                        h('div', { className: 'flex items-start justify-between gap-3' }, h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-300' }, selectedGlossaryFeature.category), h('h5', { className: 'mt-0.5 text-sm font-black text-white' }, selectedGlossaryFeature.label)), h('span', { className: 'text-xl text-cyan-200', 'aria-hidden': true }, selectedGlossaryFeature.icon)),
                         h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-200' }, selectedGlossaryFeature.definition),
-                        h('dl', { id: 'weather-inspector-explain', hidden: immersiveInspectorPanel !== 'explain', className: 'mt-3 space-y-2 text-[11px]', 'data-weather-inspector-panel': 'explain', 'aria-label': 'Feature explanation' },
+                        h('dl', { id: 'weather-inspector-explain', hidden: immersiveInspectorPanel !== 'explain', className: 'mt-3 space-y-2 text-[0.6875rem]', 'data-weather-inspector-panel': 'explain', 'aria-label': 'Feature explanation' },
                           h('div', { className: 'border-l-2 border-sky-300/60 pl-2' }, h('dt', { className: 'font-black text-sky-200' }, 'Look for'), h('dd', { className: 'mt-0.5 leading-relaxed text-slate-300' }, selectedGlossaryFeature.lookFor)),
                           h('div', { className: 'border-l-2 border-violet-300/60 pl-2' }, h('dt', { className: 'font-black text-violet-200' }, 'Why it matters'), h('dd', { className: 'mt-0.5 leading-relaxed text-slate-300' }, selectedGlossaryFeature.why)),
                           h('div', { className: 'border-l-2 border-amber-300/60 pl-2' }, h('dt', { className: 'font-black text-amber-200' }, 'Evidence question'), h('dd', { className: 'mt-0.5 font-bold leading-relaxed text-slate-200' }, selectedGlossaryFeature.question))
                         ),
                         selectedFeatureEvidence && h('section', { id: 'weather-inspector-evidence', hidden: immersiveInspectorPanel !== 'evidence', className: 'mt-3 overflow-hidden rounded-xl border border-violet-300/25 bg-gradient-to-br from-violet-950/35 to-slate-950/45', 'data-weather-inspector-panel': 'evidence', 'data-weather-feature-evidence': selectedGlossaryFeature.id, 'aria-labelledby': 'weather-feature-evidence-title' },
                           h('div', { className: 'flex flex-wrap items-start justify-between gap-2 border-b border-white/10 px-3 py-2.5' },
-                            h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Evidence snapshot'), h('h6', { id: 'weather-feature-evidence-title', className: 'mt-0.5 text-xs font-black text-white' }, 'What supports this view right now?')),
-                            h('span', { className: 'rounded-full border border-violet-300/30 bg-violet-300/10 px-2 py-1 text-[10px] font-black text-violet-100', 'data-weather-feature-evidence-source': selectedFeatureEvidence.sourceKind }, selectedFeatureEvidence.sourceBadge)
+                            h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-violet-200' }, 'Evidence snapshot'), h('h6', { id: 'weather-feature-evidence-title', className: 'mt-0.5 text-xs font-black text-white' }, 'What supports this view right now?')),
+                            h('span', { className: 'rounded-full border border-violet-300/30 bg-violet-300/10 px-2 py-1 text-[0.625rem] font-black text-violet-100', 'data-weather-feature-evidence-source': selectedFeatureEvidence.sourceKind }, selectedFeatureEvidence.sourceBadge)
                           ),
-                          h('p', { className: 'px-3 pt-2 text-[10px] font-bold text-slate-400', 'data-weather-feature-evidence-time': true }, selectedFeatureEvidence.sourceLabel),
+                          h('p', { className: 'px-3 pt-2 text-[0.625rem] font-bold text-slate-400', 'data-weather-feature-evidence-time': true }, selectedFeatureEvidence.sourceLabel),
                           h('dl', { className: 'grid grid-cols-2 gap-2 p-3', 'aria-label': selectedGlossaryFeature.label + ' current evidence values' }, selectedFeatureEvidence.metrics.map(function (metric) {
                             return h('div', { key: metric.label, className: 'rounded-lg border border-white/10 bg-white/5 px-2.5 py-2', 'data-weather-evidence-kind': metric.kind },
                               h('div', { className: 'flex flex-wrap items-start justify-between gap-1.5' },
-                                h('dt', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, metric.label),
-                                h('span', { className: 'rounded-full border px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide ' + (evidenceKindClasses[metric.kind] || evidenceKindClasses.model), 'aria-label': (evidenceKindLabels[metric.kind] || 'Model') + ' value' }, evidenceKindLabels[metric.kind] || 'Model')
+                                h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, metric.label),
+                                h('span', { className: 'rounded-full border px-1.5 py-0.5 text-[0.5rem] font-black uppercase tracking-wide ' + (evidenceKindClasses[metric.kind] || evidenceKindClasses.model), 'aria-label': (evidenceKindLabels[metric.kind] || 'Model') + ' value' }, evidenceKindLabels[metric.kind] || 'Model')
                               ),
-                              h('dd', { className: 'mt-1 text-[11px] font-black text-white' }, metric.value)
+                              h('dd', { className: 'mt-1 text-[0.6875rem] font-black text-white' }, metric.value)
                             );
                           })),
-                          h('div', { className: 'space-y-2 border-t border-white/10 px-3 py-3 text-[10px] leading-relaxed' },
+                          h('div', { className: 'space-y-2 border-t border-white/10 px-3 py-3 text-[0.625rem] leading-relaxed' },
                             h('div', { className: 'border-l-2 border-emerald-300/60 pl-2', 'data-weather-evidence-interpretation': true }, h('p', { className: 'font-black text-emerald-200' }, 'What the evidence supports'), h('p', { className: 'mt-0.5 text-slate-300' }, selectedFeatureEvidence.interpretation)),
                             h('div', { className: 'border-l-2 border-cyan-300/60 pl-2', 'data-weather-evidence-encoding': true }, h('p', { className: 'font-black text-cyan-200' }, 'How the 3D view encodes it'), h('p', { className: 'mt-0.5 text-slate-300' }, selectedFeatureEvidence.encoding)),
                             h('div', { className: 'border-l-2 border-amber-300/60 pl-2', 'data-weather-evidence-limitation': true }, h('p', { className: 'font-black text-amber-200' }, 'What this cannot prove'), h('p', { className: 'mt-0.5 text-slate-300' }, selectedFeatureEvidence.limitation))
@@ -9721,28 +9721,28 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                         ),
                         h('section', { id: 'weather-inspector-compare', hidden: immersiveInspectorPanel !== 'compare', className: 'mt-3 overflow-hidden rounded-xl border border-fuchsia-300/25 bg-gradient-to-br from-fuchsia-950/30 via-slate-950/45 to-amber-950/20', 'data-weather-inspector-panel': 'compare', 'data-weather-feature-compare-workspace': true, 'aria-labelledby': 'weather-feature-compare-title' },
                           h('div', { className: 'flex flex-wrap items-start justify-between gap-2 border-b border-white/10 px-3 py-2.5' },
-                            h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-fuchsia-200' }, 'Compare in 3D'), h('h6', { id: 'weather-feature-compare-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Feature comparison workspace')),
-                            comparisonAnchorFeature && h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, 'Anchor A set')
+                            h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-200' }, 'Compare in 3D'), h('h6', { id: 'weather-feature-compare-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Feature comparison workspace')),
+                            comparisonAnchorFeature && h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[0.625rem] font-black text-fuchsia-100' }, 'Anchor A set')
                           ),
                           !comparisonAnchorFeature && h('div', { className: 'p-3' },
-                            h('p', { className: 'text-[10px] leading-relaxed text-slate-300' }, 'Pin the current feature as anchor A. Then select another object or glossary term to inspect as B.'),
+                            h('p', { className: 'text-[0.625rem] leading-relaxed text-slate-300' }, 'Pin the current feature as anchor A. Then select another object or glossary term to inspect as B.'),
                             h('button', { type: 'button', onClick: function () { pinImmersiveComparison(selectedGlossaryFeature.id); }, className: 'mt-2 min-h-11 w-full rounded-lg border border-fuchsia-300/40 bg-fuchsia-300/15 px-3 py-2 text-xs font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Pin ' + selectedGlossaryFeature.label + ' as anchor A')
                           ),
                           comparisonAnchorFeature && comparisonAnchorFeature.id === selectedGlossaryFeature.id && h('div', { className: 'p-3', 'data-weather-comparison-pending': comparisonAnchorFeature.id },
-                            h('p', { className: 'text-[10px] font-black text-fuchsia-100' }, comparisonAnchorFeature.label + ' is pinned as anchor A.'),
-                            h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, 'Select another feature in the 3D scene or object explorer. It will become inspecting feature B.'),
+                            h('p', { className: 'text-[0.625rem] font-black text-fuchsia-100' }, comparisonAnchorFeature.label + ' is pinned as anchor A.'),
+                            h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-300' }, 'Select another feature in the 3D scene or object explorer. It will become inspecting feature B.'),
                             h('div', { className: 'mt-2 flex flex-wrap gap-2' },
-                              h('button', { type: 'button', onClick: clearImmersiveComparison, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear comparison')
+                              h('button', { type: 'button', onClick: clearImmersiveComparison, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear comparison')
                             )
                           ),
                           featureComparison && comparisonAnchorEvidence && selectedFeatureEvidence && h('div', { className: 'p-3', 'data-weather-feature-comparison': comparisonAnchorFeature.id + ':' + selectedGlossaryFeature.id },
                             h('div', { className: 'rounded-lg border px-3 py-2 ' + (featureComparison.direct ? 'border-emerald-300/25 bg-emerald-300/10' : 'border-slate-300/15 bg-white/5'), 'data-weather-comparison-relationship': featureComparison.relationshipDirection },
                               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                                h('p', { className: 'text-[10px] font-black uppercase tracking-wide ' + (featureComparison.direct ? 'text-emerald-200' : 'text-slate-300') }, featureComparison.direct ? 'Direct relationship in this guide' : 'Compare before connecting'),
-                                h('span', { className: 'rounded-full border border-white/10 bg-slate-950/35 px-2 py-0.5 text-[9px] font-black text-slate-200' }, featureComparison.direct ? 'RELATED' : 'NO DIRECT CLAIM')
+                                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (featureComparison.direct ? 'text-emerald-200' : 'text-slate-300') }, featureComparison.direct ? 'Direct relationship in this guide' : 'Compare before connecting'),
+                                h('span', { className: 'rounded-full border border-white/10 bg-slate-950/35 px-2 py-0.5 text-[0.5625rem] font-black text-slate-200' }, featureComparison.direct ? 'RELATED' : 'NO DIRECT CLAIM')
                               ),
-                              h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-200' }, featureComparison.relationshipSummary),
-                              h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, featureComparison.categorySummary)
+                              h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-200' }, featureComparison.relationshipSummary),
+                              h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-400' }, featureComparison.categorySummary)
                             ),
                             h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
                               [
@@ -9751,147 +9751,147 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                               ].map(function (side) {
                                 var isAnchor = side.role === 'Anchor A';
                                 return h('article', { key: side.role, className: 'rounded-xl border p-3 ' + (isAnchor ? 'border-fuchsia-300/30 bg-fuchsia-300/5' : 'border-amber-300/30 bg-amber-300/5'), 'data-weather-comparison-side': isAnchor ? 'anchor' : 'focus' },
-                                  h('p', { className: 'text-[9px] font-black uppercase tracking-wide ' + (isAnchor ? 'text-fuchsia-200' : 'text-amber-200') }, side.role),
+                                  h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-wide ' + (isAnchor ? 'text-fuchsia-200' : 'text-amber-200') }, side.role),
                                   h('div', { className: 'mt-1 flex items-center gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, side.feature.icon), h('h6', { className: 'text-xs font-black text-white' }, side.feature.label)),
-                                  h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, side.feature.definition),
-                                  h('p', { className: 'mt-2 text-[9px] font-black uppercase tracking-wide text-slate-400' }, side.evidence.sourceBadge),
+                                  h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-300' }, side.feature.definition),
+                                  h('p', { className: 'mt-2 text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, side.evidence.sourceBadge),
                                   h('dl', { className: 'mt-1 space-y-1.5' }, side.evidence.metrics.slice(0, 2).map(function (metric) {
-                                    return h('div', { key: metric.label, className: 'flex items-baseline justify-between gap-2 rounded-md bg-slate-950/35 px-2 py-1.5' }, h('dt', { className: 'text-[9px] text-slate-400' }, metric.label), h('dd', { className: 'text-right text-[10px] font-black text-white' }, metric.value));
+                                    return h('div', { key: metric.label, className: 'flex items-baseline justify-between gap-2 rounded-md bg-slate-950/35 px-2 py-1.5' }, h('dt', { className: 'text-[0.5625rem] text-slate-400' }, metric.label), h('dd', { className: 'text-right text-[0.625rem] font-black text-white' }, metric.value));
                                   })),
-                                  h('p', { className: 'mt-2 text-[10px] leading-relaxed text-emerald-100' }, side.evidence.interpretation),
-                                  h('p', { className: 'mt-1 text-[10px] leading-relaxed text-amber-100' }, 'Limit: ' + side.evidence.limitation)
+                                  h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed text-emerald-100' }, side.evidence.interpretation),
+                                  h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-amber-100' }, 'Limit: ' + side.evidence.limitation)
                                 );
                               })
                             ),
                             h('div', { className: 'mt-3 rounded-lg border border-sky-300/20 bg-sky-300/10 px-3 py-2', 'data-weather-comparison-question': true },
-                              h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-200' }, 'Compare and explain'),
-                              h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed text-slate-200' }, featureComparison.comparisonQuestion)
+                              h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-sky-200' }, 'Compare and explain'),
+                              h('p', { className: 'mt-1 text-[0.625rem] font-bold leading-relaxed text-slate-200' }, featureComparison.comparisonQuestion)
                             ),
                             h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
-                              h('button', { type: 'button', onClick: function () { pinImmersiveComparison(selectedGlossaryFeature.id); }, className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-2 py-2 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Make B the new anchor'),
-                              h('button', { type: 'button', onClick: clearImmersiveComparison, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear comparison')
+                              h('button', { type: 'button', onClick: function () { pinImmersiveComparison(selectedGlossaryFeature.id); }, className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-2 py-2 text-[0.625rem] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Make B the new anchor'),
+                              h('button', { type: 'button', onClick: clearImmersiveComparison, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear comparison')
                             )
                           ),
                           h('p', { className: 'sr-only', role: 'status', 'aria-live': 'polite', 'data-weather-comparison-status': true }, immersiveComparisonStatus)
                         ),
                         h('section', { id: 'weather-inspector-connections', hidden: immersiveInspectorPanel !== 'connections', className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-inspector-panel': 'connections', 'data-weather-feature-connections': selectedGlossaryFeature.id, 'aria-labelledby': 'weather-feature-connections-title' },
-                          h('p', { id: 'weather-feature-connections-title', className: 'text-[10px] font-black uppercase tracking-wide text-emerald-200' }, 'Connected processes'),
-                          h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Follow a relationship to inspect how weather-system parts work together.'),
+                          h('p', { id: 'weather-feature-connections-title', className: 'text-[0.625rem] font-black uppercase tracking-wide text-emerald-200' }, 'Connected processes'),
+                          h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-400' }, 'Follow a relationship to inspect how weather-system parts work together.'),
                           h('div', { className: 'mt-2 space-y-2' },
                             connectedGlossaryFeatures.map(function (connection) {
                               return h('button', { key: connection.id, type: 'button', onClick: function () { explainImmersiveFeature(connection.id); }, onFocus: function () { previewImmersiveFeature(connection.id, 'keyboard'); }, onBlur: function () { previewImmersiveFeature('', ''); }, onMouseEnter: function () { previewImmersiveFeature(connection.id, 'pointer'); }, onMouseLeave: function () { previewImmersiveFeature('', ''); }, className: 'flex min-h-12 w-full items-start gap-2 rounded-lg border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-left hover:border-emerald-300/45 hover:bg-emerald-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200', 'aria-label': 'Explore ' + connection.label + '. ' + connection.relation },
                                 h('span', { className: 'mt-0.5 text-sm text-emerald-200', 'aria-hidden': true }, connection.icon),
-                                h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[11px] font-black text-emerald-100' }, connection.label), h('span', { className: 'mt-0.5 block text-[10px] leading-relaxed text-slate-400' }, connection.relation))
+                                h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[0.6875rem] font-black text-emerald-100' }, connection.label), h('span', { className: 'mt-0.5 block text-[0.625rem] leading-relaxed text-slate-400' }, connection.relation))
                               );
                             }),
-                            !connectedGlossaryFeatures.length && h('p', { className: 'rounded-lg border border-dashed border-white/15 px-3 py-3 text-[10px] leading-relaxed text-slate-300', role: 'status' }, 'No curated process connection is listed for this feature yet. Compare it with another feature to investigate possible relationships without assuming causation.')
+                            !connectedGlossaryFeatures.length && h('p', { className: 'rounded-lg border border-dashed border-white/15 px-3 py-3 text-[0.625rem] leading-relaxed text-slate-300', role: 'status' }, 'No curated process connection is listed for this feature yet. Compare it with another feature to investigate possible relationships without assuming causation.')
                           )
                         ),
                         h('button', { type: 'button', disabled: geographicMode && !d.geographicMapReady, onClick: function () { explainImmersiveFeature(selectedGlossaryFeature.id); }, className: 'mt-3 min-h-11 w-full rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50' }, geographicMode ? 'Focus map and evidence layers' : 'Focus 3D camera and layers')
                       ),
-                      h('p', { className: 'mt-3 text-[10px] leading-relaxed text-slate-400' }, 'Glossary definitions explain the visual encoding and science idea. They do not turn teaching graphics or model output into direct observations.')
+                      h('p', { className: 'mt-3 text-[0.625rem] leading-relaxed text-slate-400' }, 'Glossary definitions explain the visual encoding and science idea. They do not turn teaching graphics or model output into direct observations.')
                     )
                   )
                 ),
                  h('section', { className: 'rounded-xl border border-sky-300/25 bg-sky-950/15 p-4', 'data-weather-accessible-data-table': true, 'aria-labelledby': 'weather-accessible-data-title' },
                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Accessible data view'), h('h4', { id: 'weather-accessible-data-title', className: 'mt-1 text-sm font-black' }, 'Read the selected evidence as data')),
-                     h('button', { type: 'button', onClick: function () { update({ immersiveDataTableOpen: !d.immersiveDataTableOpen }); }, 'aria-expanded': !!d.immersiveDataTableOpen, 'aria-controls': 'weather-accessible-data-content', className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-2 text-[11px] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, d.immersiveDataTableOpen ? 'Hide table' : 'Show table')
+                     h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-sky-300' }, 'Accessible data view'), h('h4', { id: 'weather-accessible-data-title', className: 'mt-1 text-sm font-black' }, 'Read the selected evidence as data')),
+                     h('button', { type: 'button', onClick: function () { update({ immersiveDataTableOpen: !d.immersiveDataTableOpen }); }, 'aria-expanded': !!d.immersiveDataTableOpen, 'aria-controls': 'weather-accessible-data-content', className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-2 text-[0.6875rem] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, d.immersiveDataTableOpen ? 'Hide table' : 'Show table')
                    ),
                    h('div', { id: 'weather-accessible-data-content', hidden: !d.immersiveDataTableOpen },
                      d.immersiveDataTableOpen && h('div', { className: 'mt-3 overflow-x-auto rounded-lg border border-white/10' },
-                       h('table', { className: 'w-full min-w-[320px] text-left text-[11px]', 'data-weather-accessible-data': true },
+                       h('table', { className: 'w-full min-w-[320px] text-left text-[0.6875rem]', 'data-weather-accessible-data': true },
                          h('caption', { className: 'sr-only' }, selectedGlossaryFeature ? selectedGlossaryFeature.label + ' evidence values' : 'Selected weather evidence values'),
                          h('thead', null, h('tr', { className: 'border-b border-white/10 bg-white/5' }, h('th', { scope: 'col', className: 'px-3 py-2 font-black text-slate-300' }, 'Measure'), h('th', { scope: 'col', className: 'px-3 py-2 font-black text-slate-300' }, 'Value'), h('th', { scope: 'col', className: 'px-3 py-2 font-black text-slate-300' }, 'Evidence type'))),
                          h('tbody', null, immersiveDataTableRows.map(function (row) { return h('tr', { key: row.label, className: 'border-b border-white/5 last:border-0' }, h('th', { scope: 'row', className: 'px-3 py-2 font-bold text-slate-200' }, row.label), h('td', { className: 'px-3 py-2 font-black text-white' }, row.value), h('td', { className: 'px-3 py-2 text-slate-400' }, row.kind)); }))
                        )
                      )
                    ),
-                   h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'This table is the non-3D alternative for reading the same selected evidence with a keyboard, screen reader, or low-powered device.')
+                   h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed text-slate-400' }, 'This table is the non-3D alternative for reading the same selected evidence with a keyboard, screen reader, or low-powered device.')
                  ),
                  h('section', { hidden: !teacherMode, className: 'rounded-xl border border-amber-300/25 bg-amber-950/15 p-4', 'data-weather-evidence-capture-workspace': true, 'aria-labelledby': 'weather-evidence-capture-title' },
                    h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-amber-300' }, 'Teacher evidence desk'), h('h4', { id: 'weather-evidence-capture-title', className: 'mt-1 text-sm font-black' }, 'Capture and share this investigation')),
-                     h('span', { className: 'rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[10px] font-black text-amber-100' }, immersiveEvidenceCaptures.length + '/12 saved')
+                     h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-amber-300' }, 'Teacher evidence desk'), h('h4', { id: 'weather-evidence-capture-title', className: 'mt-1 text-sm font-black' }, 'Capture and share this investigation')),
+                     h('span', { className: 'rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[0.625rem] font-black text-amber-100' }, immersiveEvidenceCaptures.length + '/12 saved')
                    ),
-                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Captures preserve the location, selected hour, evidence source, feature, camera focus, values, note, and limitation so students can explain what they observed.'),
+                   h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Captures preserve the location, selected hour, evidence source, feature, camera focus, values, note, and limitation so students can explain what they observed.'),
                    h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4' },
-                     h('button', { type: 'button', onClick: captureImmersiveEvidence, className: 'min-h-11 rounded-lg bg-amber-300 px-3 py-2 text-[11px] font-black text-amber-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Capture current view'),
-                     h('button', { type: 'button', onClick: copyImmersiveSessionLink, className: 'min-h-11 rounded-lg border border-amber-300/40 bg-amber-300/10 px-3 py-2 text-[11px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, 'Copy share link'),
-                      h('button', { type: 'button', onClick: downloadImmersiveSession, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download session JSON'),
-                     h('label', { htmlFor: 'weather-immersive-session-import', className: 'flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-center text-[11px] font-black text-slate-100 hover:bg-white/10 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-200' }, 'Import session JSON', h('input', { id: 'weather-immersive-session-import', type: 'file', accept: '.json,application/json', onChange: importImmersiveSessionFile, className: 'sr-only' }))
+                     h('button', { type: 'button', onClick: captureImmersiveEvidence, className: 'min-h-11 rounded-lg bg-amber-300 px-3 py-2 text-[0.6875rem] font-black text-amber-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Capture current view'),
+                     h('button', { type: 'button', onClick: copyImmersiveSessionLink, className: 'min-h-11 rounded-lg border border-amber-300/40 bg-amber-300/10 px-3 py-2 text-[0.6875rem] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, 'Copy share link'),
+                      h('button', { type: 'button', onClick: downloadImmersiveSession, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download session JSON'),
+                     h('label', { htmlFor: 'weather-immersive-session-import', className: 'flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-center text-[0.6875rem] font-black text-slate-100 hover:bg-white/10 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-200' }, 'Import session JSON', h('input', { id: 'weather-immersive-session-import', type: 'file', accept: '.json,application/json', onChange: importImmersiveSessionFile, className: 'sr-only' }))
                     ),
-                   h('label', { className: 'mt-3 flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold text-slate-200' }, h('input', { type: 'checkbox', checked: d.immersiveShareIncludeLocation === true, onChange: function (event) { update({ immersiveShareIncludeLocation: event.target.checked }); }, className: 'h-5 w-5 accent-amber-300' }), h('span', null, 'Include location and coordinates in share links')),
-                   h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'Share links stay in the URL hash and are not uploaded. Location is excluded by default; session downloads include the full local context.'),
+                   h('label', { className: 'mt-3 flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[0.625rem] font-bold text-slate-200' }, h('input', { type: 'checkbox', checked: d.immersiveShareIncludeLocation === true, onChange: function (event) { update({ immersiveShareIncludeLocation: event.target.checked }); }, className: 'h-5 w-5 accent-amber-300' }), h('span', null, 'Include location and coordinates in share links')),
+                   h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed text-slate-400' }, 'Share links stay in the URL hash and are not uploaded. Location is excluded by default; session downloads include the full local context.'),
                    h('div', { className: 'mt-3 rounded-lg border border-sky-300/20 bg-sky-300/10 p-3', 'data-weather-local-persistence': true },
-                     h('label', { className: 'flex min-h-11 items-center gap-2 text-[10px] font-black text-sky-100' }, h('input', { type: 'checkbox', checked: d.immersiveLocalPersistenceEnabled !== false, onChange: function (event) { setImmersiveLocalPersistenceEnabled(event.target.checked); }, className: 'h-5 w-5 accent-sky-300' }), h('span', null, 'Remember this workspace on this device')),
-                     h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Presets, guided progress, reflections, captures, and selected weather context autosave locally. Nothing is uploaded; clear the device copy before switching users.'),
-                     h('button', { type: 'button', onClick: clearImmersiveLocalWorkspace, disabled: d.immersiveLocalPersistenceEnabled === false, className: 'mt-2 min-h-11 rounded-lg border border-sky-300/30 bg-sky-300/10 px-3 py-2 text-[10px] font-black text-sky-100 disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, 'Clear local copy'),
-                     d.immersiveLocalSaveStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-sky-100', role: 'status', 'aria-live': 'polite', 'data-weather-local-persistence-status': true }, d.immersiveLocalSaveStatus)
+                     h('label', { className: 'flex min-h-11 items-center gap-2 text-[0.625rem] font-black text-sky-100' }, h('input', { type: 'checkbox', checked: d.immersiveLocalPersistenceEnabled !== false, onChange: function (event) { setImmersiveLocalPersistenceEnabled(event.target.checked); }, className: 'h-5 w-5 accent-sky-300' }), h('span', null, 'Remember this workspace on this device')),
+                     h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-400' }, 'Presets, guided progress, reflections, captures, and selected weather context autosave locally. Nothing is uploaded; clear the device copy before switching users.'),
+                     h('button', { type: 'button', onClick: clearImmersiveLocalWorkspace, disabled: d.immersiveLocalPersistenceEnabled === false, className: 'mt-2 min-h-11 rounded-lg border border-sky-300/30 bg-sky-300/10 px-3 py-2 text-[0.625rem] font-black text-sky-100 disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, 'Clear local copy'),
+                     d.immersiveLocalSaveStatus && h('p', { className: 'mt-2 text-[0.625rem] font-bold text-sky-100', role: 'status', 'aria-live': 'polite', 'data-weather-local-persistence-status': true }, d.immersiveLocalSaveStatus)
                    ),
-                   d.immersiveSessionStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-amber-100', role: 'status', 'aria-live': 'polite', 'data-weather-session-status': true }, d.immersiveSessionStatus),
-                   d.immersiveEvidenceStatus && h('p', { className: 'mt-1 text-[10px] text-slate-400', role: 'status', 'aria-live': 'polite', 'data-weather-evidence-capture-status': true }, d.immersiveEvidenceStatus),
+                   d.immersiveSessionStatus && h('p', { className: 'mt-2 text-[0.625rem] font-bold text-amber-100', role: 'status', 'aria-live': 'polite', 'data-weather-session-status': true }, d.immersiveSessionStatus),
+                   d.immersiveEvidenceStatus && h('p', { className: 'mt-1 text-[0.625rem] text-slate-400', role: 'status', 'aria-live': 'polite', 'data-weather-evidence-capture-status': true }, d.immersiveEvidenceStatus),
                    immersiveEvidenceReview.count > 0 && h('div', { className: 'mt-3 flex flex-wrap gap-2', role: 'status', 'aria-live': 'polite', 'data-weather-evidence-review-summary': true },
-                     h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100' }, immersiveEvidenceReview.readyCount + '/' + immersiveEvidenceReview.count + ' ready to hand off'),
-                     immersiveEvidenceReview.noteCount > 0 && h('span', { className: 'rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[10px] font-black text-amber-100' }, immersiveEvidenceReview.noteCount + ' need learner notes'),
-                     immersiveEvidenceReview.redactedCount > 0 && h('span', { className: 'rounded-full border border-slate-300/20 bg-slate-300/10 px-2 py-1 text-[10px] font-black text-slate-200' }, immersiveEvidenceReview.redactedCount + ' location-redacted')
+                     h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[0.625rem] font-black text-emerald-100' }, immersiveEvidenceReview.readyCount + '/' + immersiveEvidenceReview.count + ' ready to hand off'),
+                     immersiveEvidenceReview.noteCount > 0 && h('span', { className: 'rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[0.625rem] font-black text-amber-100' }, immersiveEvidenceReview.noteCount + ' need learner notes'),
+                     immersiveEvidenceReview.redactedCount > 0 && h('span', { className: 'rounded-full border border-slate-300/20 bg-slate-300/10 px-2 py-1 text-[0.625rem] font-black text-slate-200' }, immersiveEvidenceReview.redactedCount + ' location-redacted')
                    ),
-                   immersiveEvidenceCaptures.length > 0 && h('div', { className: 'mt-3 space-y-2', 'data-weather-evidence-capture-list': true }, immersiveEvidenceCaptureVisible.map(function (capture) { var review = immersiveEvidenceCaptureReview(capture); return h('article', { key: capture.id, className: 'rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2' }, h('div', { className: 'flex items-start justify-between gap-2' }, h('p', { className: 'text-[10px] font-black text-white' }, capture.feature ? capture.feature.label : 'Weather view'), h('span', { className: 'text-[9px] text-slate-400' }, capture.source), h('span', { className: 'rounded-full border px-2 py-0.5 text-[9px] font-black ' + (review.ready ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-100' : 'border-amber-300/30 bg-amber-300/10 text-amber-100') }, review.ready ? 'Ready' : 'Needs review')), h('p', { className: 'mt-1 text-[10px] text-slate-300' }, capture.location && capture.location.label || 'Location redacted', ' | ', capture.validAt), h('p', { className: 'mt-1 text-[10px] text-slate-400' }, review.label), capture.note && h('p', { className: 'mt-1 text-[10px] italic leading-relaxed text-slate-400' }, '“' + capture.note + '”') , h('div', { className: 'mt-2 flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: function () { copyImmersiveEvidenceHandoff(capture); }, className: 'min-h-11 rounded-lg border border-amber-300/30 bg-amber-300/10 px-2.5 py-1.5 text-[10px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, 'Copy handoff'), h('button', { type: 'button', onClick: function () { downloadImmersiveEvidenceHandoff(capture); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download handoff'))); })),
-                   immersiveEvidenceCaptureList.length > 3 && h('button', { type: 'button', onClick: function () { update({ immersiveEvidenceCaptureShowAll: !d.immersiveEvidenceCaptureShowAll }); }, className: 'mt-3 min-h-11 rounded-lg border border-amber-300/25 bg-amber-300/10 px-3 py-2 text-[10px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, d.immersiveEvidenceCaptureShowAll ? 'Show latest 3 captures' : 'Show all ' + immersiveEvidenceCaptureList.length + ' captures'),
-                   immersiveEvidenceCaptures.length > 0 && h('button', { type: 'button', onClick: clearImmersiveEvidenceCaptures, className: 'mt-3 min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear saved captures')
+                   immersiveEvidenceCaptures.length > 0 && h('div', { className: 'mt-3 space-y-2', 'data-weather-evidence-capture-list': true }, immersiveEvidenceCaptureVisible.map(function (capture) { var review = immersiveEvidenceCaptureReview(capture); return h('article', { key: capture.id, className: 'rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2' }, h('div', { className: 'flex items-start justify-between gap-2' }, h('p', { className: 'text-[0.625rem] font-black text-white' }, capture.feature ? capture.feature.label : 'Weather view'), h('span', { className: 'text-[0.5625rem] text-slate-400' }, capture.source), h('span', { className: 'rounded-full border px-2 py-0.5 text-[0.5625rem] font-black ' + (review.ready ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-100' : 'border-amber-300/30 bg-amber-300/10 text-amber-100') }, review.ready ? 'Ready' : 'Needs review')), h('p', { className: 'mt-1 text-[0.625rem] text-slate-300' }, capture.location && capture.location.label || 'Location redacted', ' | ', capture.validAt), h('p', { className: 'mt-1 text-[0.625rem] text-slate-400' }, review.label), capture.note && h('p', { className: 'mt-1 text-[0.625rem] italic leading-relaxed text-slate-400' }, '“' + capture.note + '”') , h('div', { className: 'mt-2 flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: function () { copyImmersiveEvidenceHandoff(capture); }, className: 'min-h-11 rounded-lg border border-amber-300/30 bg-amber-300/10 px-2.5 py-1.5 text-[0.625rem] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, 'Copy handoff'), h('button', { type: 'button', onClick: function () { downloadImmersiveEvidenceHandoff(capture); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download handoff'))); })),
+                   immersiveEvidenceCaptureList.length > 3 && h('button', { type: 'button', onClick: function () { update({ immersiveEvidenceCaptureShowAll: !d.immersiveEvidenceCaptureShowAll }); }, className: 'mt-3 min-h-11 rounded-lg border border-amber-300/25 bg-amber-300/10 px-3 py-2 text-[0.625rem] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, d.immersiveEvidenceCaptureShowAll ? 'Show latest 3 captures' : 'Show all ' + immersiveEvidenceCaptureList.length + ' captures'),
+                   immersiveEvidenceCaptures.length > 0 && h('button', { type: 'button', onClick: clearImmersiveEvidenceCaptures, className: 'mt-3 min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear saved captures')
                  ),
                  h('section', { hidden: immersiveEvidenceCaptures.length < 2, className: 'mt-4 rounded-xl border border-cyan-300/25 bg-cyan-950/15 p-4', 'data-weather-capture-to-claim': true, 'aria-labelledby': 'weather-capture-to-claim-title' },
                    h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, 'Capture-to-Claim'), h('h4', { id: 'weather-capture-to-claim-title', className: 'mt-1 text-sm font-black' }, 'Compare observations and build an explanation')),
-                     h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100' }, immersiveEvidenceCaptures.length + ' captures available')
+                     h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, 'Capture-to-Claim'), h('h4', { id: 'weather-capture-to-claim-title', className: 'mt-1 text-sm font-black' }, 'Compare observations and build an explanation')),
+                     h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[0.625rem] font-black text-cyan-100' }, immersiveEvidenceCaptures.length + ' captures available')
                    ),
-                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Choose a baseline and a comparison capture. Use the measured changes as evidence, then explain what the pattern might mean and what remains uncertain.'),
+                   h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Choose a baseline and a comparison capture. Use the measured changes as evidence, then explain what the pattern might mean and what remains uncertain.'),
                    h('div', { className: 'mt-3 grid gap-3 sm:grid-cols-2' },
-                     h('label', { htmlFor: 'weather-capture-claim-primary', className: 'text-[11px] font-bold text-slate-200' }, 'Baseline capture', h('select', { id: 'weather-capture-claim-primary', value: immersiveCaptureClaimPrimary ? immersiveCaptureClaimPrimary.id : '', onChange: function (event) { setImmersiveCaptureClaimSelection('immersiveCaptureClaimPrimaryId', event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' }, immersiveEvidenceCaptureList.map(function (capture) { return h('option', { key: 'claim-primary-' + capture.id, value: capture.id }, (capture.feature && capture.feature.label || 'Weather view') + ' | ' + (capture.validAt || capture.capturedAt || 'Captured')); }))),
-                     h('label', { htmlFor: 'weather-capture-claim-comparison', className: 'text-[11px] font-bold text-slate-200' }, 'Comparison capture', h('select', { id: 'weather-capture-claim-comparison', value: immersiveCaptureClaimComparison ? immersiveCaptureClaimComparison.id : '', onChange: function (event) { setImmersiveCaptureClaimSelection('immersiveCaptureClaimComparisonId', event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' }, immersiveEvidenceCaptureList.map(function (capture) { return h('option', { key: 'claim-comparison-' + capture.id, value: capture.id }, (capture.feature && capture.feature.label || 'Weather view') + ' | ' + (capture.validAt || capture.capturedAt || 'Captured')); })))
+                     h('label', { htmlFor: 'weather-capture-claim-primary', className: 'text-[0.6875rem] font-bold text-slate-200' }, 'Baseline capture', h('select', { id: 'weather-capture-claim-primary', value: immersiveCaptureClaimPrimary ? immersiveCaptureClaimPrimary.id : '', onChange: function (event) { setImmersiveCaptureClaimSelection('immersiveCaptureClaimPrimaryId', event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' }, immersiveEvidenceCaptureList.map(function (capture) { return h('option', { key: 'claim-primary-' + capture.id, value: capture.id }, (capture.feature && capture.feature.label || 'Weather view') + ' | ' + (capture.validAt || capture.capturedAt || 'Captured')); }))),
+                     h('label', { htmlFor: 'weather-capture-claim-comparison', className: 'text-[0.6875rem] font-bold text-slate-200' }, 'Comparison capture', h('select', { id: 'weather-capture-claim-comparison', value: immersiveCaptureClaimComparison ? immersiveCaptureClaimComparison.id : '', onChange: function (event) { setImmersiveCaptureClaimSelection('immersiveCaptureClaimComparisonId', event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' }, immersiveEvidenceCaptureList.map(function (capture) { return h('option', { key: 'claim-comparison-' + capture.id, value: capture.id }, (capture.feature && capture.feature.label || 'Weather view') + ' | ' + (capture.validAt || capture.capturedAt || 'Captured')); })))
                    ),
                    immersiveCaptureClaimComparisonData ? h('div', { className: 'mt-3 rounded-lg border border-white/10 bg-slate-950/35 p-3', 'data-weather-capture-claim-result': true },
-                     h('p', { className: 'text-[11px] font-black text-cyan-100', role: 'status', 'aria-live': 'polite' }, immersiveCaptureClaimComparisonData.primaryLabel + ' → ' + immersiveCaptureClaimComparisonData.comparisonLabel + ': ' + immersiveCaptureClaimComparisonData.summary),
+                     h('p', { className: 'text-[0.6875rem] font-black text-cyan-100', role: 'status', 'aria-live': 'polite' }, immersiveCaptureClaimComparisonData.primaryLabel + ' → ' + immersiveCaptureClaimComparisonData.comparisonLabel + ': ' + immersiveCaptureClaimComparisonData.summary),
                      h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' },
-                       h('article', { className: 'rounded-lg border border-amber-300/25 bg-amber-300/10 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-amber-200' }, 'Claim'), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.claimPrompt)),
-                       h('article', { className: 'rounded-lg border border-emerald-300/25 bg-emerald-300/10 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-emerald-200' }, 'Evidence'), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.evidencePrompt)),
-                       h('article', { className: 'rounded-lg border border-violet-300/25 bg-violet-300/10 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Reasoning'), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.reasoningPrompt))
+                       h('article', { className: 'rounded-lg border border-amber-300/25 bg-amber-300/10 p-3' }, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-amber-200' }, 'Claim'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.claimPrompt)),
+                       h('article', { className: 'rounded-lg border border-emerald-300/25 bg-emerald-300/10 p-3' }, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-emerald-200' }, 'Evidence'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.evidencePrompt)),
+                       h('article', { className: 'rounded-lg border border-violet-300/25 bg-violet-300/10 p-3' }, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-violet-200' }, 'Reasoning'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.reasoningPrompt))
                      ),
                      h('div', { className: 'mt-3 flex flex-wrap gap-2' },
-                       h('button', { type: 'button', onClick: copyImmersiveCaptureClaimHandoff, className: 'min-h-11 rounded-lg border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[10px] font-black text-cyan-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, 'Copy CER handoff'),
-                       h('button', { type: 'button', onClick: downloadImmersiveCaptureClaimHandoff, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download CER handoff'),
-                       h('button', { type: 'button', onClick: openImmersiveCaptureClaimIn3D, className: 'min-h-11 rounded-lg bg-cyan-300 px-3 py-2 text-[10px] font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Open 3D comparison')
+                       h('button', { type: 'button', onClick: copyImmersiveCaptureClaimHandoff, className: 'min-h-11 rounded-lg border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[0.625rem] font-black text-cyan-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, 'Copy CER handoff'),
+                       h('button', { type: 'button', onClick: downloadImmersiveCaptureClaimHandoff, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download CER handoff'),
+                       h('button', { type: 'button', onClick: openImmersiveCaptureClaimIn3D, className: 'min-h-11 rounded-lg bg-cyan-300 px-3 py-2 text-[0.625rem] font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Open 3D comparison')
                      )
-                   ) : h('p', { className: 'mt-3 text-[11px] text-amber-100', role: 'status' }, 'Choose two different captures to build the comparison.')
+                   ) : h('p', { className: 'mt-3 text-[0.6875rem] text-amber-100', role: 'status' }, 'Choose two different captures to build the comparison.')
                  ),
                  h('section', { hidden: !teacherMode, className: 'mb-4 rounded-xl border border-fuchsia-300/25 bg-fuchsia-950/15 p-4', 'data-weather-lesson-presets': true, 'aria-labelledby': 'weather-lesson-presets-title' },
                    h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-fuchsia-300' }, 'Lesson presets'), h('h4', { id: 'weather-lesson-presets-title', className: 'mt-1 text-sm font-black' }, 'Save a repeatable 3D investigation')),
-                     h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, immersiveLessonPresets.length + '/8 saved')
+                     h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-fuchsia-300' }, 'Lesson presets'), h('h4', { id: 'weather-lesson-presets-title', className: 'mt-1 text-sm font-black' }, 'Save a repeatable 3D investigation')),
+                     h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[0.625rem] font-black text-fuchsia-100' }, immersiveLessonPresets.length + '/8 saved')
                    ),
-                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Presets stay local to this workspace and remember the scene mode, source, focus, camera, geography, and comparison setup. Save a named starting point for a lesson or station rotation.'),
+                   h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Presets stay local to this workspace and remember the scene mode, source, focus, camera, geography, and comparison setup. Save a named starting point for a lesson or station rotation.'),
                    h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]' },
-                     h('label', { htmlFor: 'weather-lesson-preset-name', className: 'text-[11px] font-bold text-slate-200' }, 'Preset name', h('input', { id: 'weather-lesson-preset-name', type: 'text', value: d.immersiveLessonPresetDraftName || '', onChange: function (event) { update({ immersiveLessonPresetDraftName: event.target.value }); }, placeholder: 'e.g. Front passage warm-up', maxLength: 80, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white placeholder:text-slate-500 focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' })),
-                     h('button', { type: 'button', onClick: saveImmersiveLessonPreset, className: 'min-h-11 self-end rounded-lg bg-fuchsia-300 px-3 py-2 text-[10px] font-black text-fuchsia-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Save current scene')
+                     h('label', { htmlFor: 'weather-lesson-preset-name', className: 'text-[0.6875rem] font-bold text-slate-200' }, 'Preset name', h('input', { id: 'weather-lesson-preset-name', type: 'text', value: d.immersiveLessonPresetDraftName || '', onChange: function (event) { update({ immersiveLessonPresetDraftName: event.target.value }); }, placeholder: 'e.g. Front passage warm-up', maxLength: 80, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white placeholder:text-slate-500 focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' })),
+                     h('button', { type: 'button', onClick: saveImmersiveLessonPreset, className: 'min-h-11 self-end rounded-lg bg-fuchsia-300 px-3 py-2 text-[0.625rem] font-black text-fuchsia-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Save current scene')
                    ),
-                   d.immersiveLessonPresetStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-fuchsia-100', role: 'status', 'aria-live': 'polite', 'data-weather-lesson-preset-status': true }, d.immersiveLessonPresetStatus),
-                   immersiveLessonPresets.length ? h('div', { className: 'mt-3 space-y-2', 'data-weather-lesson-preset-list': true }, immersiveLessonPresets.slice().reverse().map(function (preset) { return h('article', { key: preset.id, className: 'rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2' }, h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black text-white' }, preset.name), h('p', { className: 'mt-0.5 text-[10px] text-slate-400' }, immersiveLessonPresetDescription(preset))), immersiveLessonPresetActiveId === preset.id && h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[9px] font-black text-emerald-100' }, 'Active')), h('div', { className: 'mt-2 flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: function () { applyImmersiveLessonPreset(preset); }, className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-2.5 py-1.5 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Apply preset'), h('button', { type: 'button', onClick: function () { deleteImmersiveLessonPreset(preset); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Delete'))); })) : h('p', { className: 'mt-3 text-[10px] text-slate-400', role: 'status' }, 'No lesson presets saved yet.')
+                   d.immersiveLessonPresetStatus && h('p', { className: 'mt-2 text-[0.625rem] font-bold text-fuchsia-100', role: 'status', 'aria-live': 'polite', 'data-weather-lesson-preset-status': true }, d.immersiveLessonPresetStatus),
+                   immersiveLessonPresets.length ? h('div', { className: 'mt-3 space-y-2', 'data-weather-lesson-preset-list': true }, immersiveLessonPresets.slice().reverse().map(function (preset) { return h('article', { key: preset.id, className: 'rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2' }, h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[0.6875rem] font-black text-white' }, preset.name), h('p', { className: 'mt-0.5 text-[0.625rem] text-slate-400' }, immersiveLessonPresetDescription(preset))), immersiveLessonPresetActiveId === preset.id && h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[0.5625rem] font-black text-emerald-100' }, 'Active')), h('div', { className: 'mt-2 flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: function () { applyImmersiveLessonPreset(preset); }, className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-2.5 py-1.5 text-[0.625rem] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Apply preset'), h('button', { type: 'button', onClick: function () { deleteImmersiveLessonPreset(preset); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Delete'))); })) : h('p', { className: 'mt-3 text-[0.625rem] text-slate-400', role: 'status' }, 'No lesson presets saved yet.')
                  ),
                  h('section', { className: 'rounded-xl border border-white/10 bg-white/5 p-4', 'data-weather-immersive-source': true },
-                  h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? timelineSelectionLabel : 'Teaching model'))), h('span', { className: 'rounded-full border px-2 py-1 text-[11px] font-black ' + (useLive ? observationFreshnessClass : 'border-white/10 bg-white/10 text-slate-200'), 'data-weather-source-freshness': useLive ? (liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code) : 'model' }, geographicMode ? 'MAP \u2022 ' + timelineBadge : (useLive ? timelineBadge : 'MODEL'))),
+                  h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? timelineSelectionLabel : 'Teaching model'))), h('span', { className: 'rounded-full border px-2 py-1 text-[0.6875rem] font-black ' + (useLive ? observationFreshnessClass : 'border-white/10 bg-white/10 text-slate-200'), 'data-weather-source-freshness': useLive ? (liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code) : 'model' }, geographicMode ? 'MAP \u2022 ' + timelineBadge : (useLive ? timelineBadge : 'MODEL'))),
                   !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive weather data source' },
-                    h('button', { type: 'button', onClick: function () { update({ immersiveDataSource: 'model' }); }, 'aria-pressed': !useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black ' + (!useLive ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5') }, 'Teaching model'),
-                    h('button', { type: 'button', disabled: !live, onClick: function () { update({ immersiveDataSource: 'live' }); }, 'aria-pressed': useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black disabled:opacity-40 ' + (useLive ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5') }, live ? (observationFreshness.current ? 'Use live weather' : 'Use saved observation') : 'Load live weather')
+                    h('button', { type: 'button', onClick: function () { update({ immersiveDataSource: 'model' }); }, 'aria-pressed': !useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[0.6875rem] font-black ' + (!useLive ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5') }, 'Teaching model'),
+                    h('button', { type: 'button', disabled: !live, onClick: function () { update({ immersiveDataSource: 'live' }); }, 'aria-pressed': useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[0.6875rem] font-black disabled:opacity-40 ' + (useLive ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5') }, live ? (observationFreshness.current ? 'Use live weather' : 'Use saved observation') : 'Load live weather')
                   ),
                   useLive && liveTimeline.length > 1 && h('div', { className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-hourly-timeline': true, role: 'region', 'aria-labelledby': 'weather-hourly-timeline-title' },
                     h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                       h('div', null,
-                        h('p', { id: 'weather-hourly-timeline-title', className: 'text-[11px] font-black uppercase tracking-wide text-violet-200' }, 'Hourly weather timeline'),
-                        h('p', { className: 'mt-0.5 text-[11px] leading-relaxed text-slate-300', 'data-weather-hourly-selection': true, role: 'status', 'aria-live': 'polite' }, timelineSelectionLabel)
+                        h('p', { id: 'weather-hourly-timeline-title', className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-200' }, 'Hourly weather timeline'),
+                        h('p', { className: 'mt-0.5 text-[0.6875rem] leading-relaxed text-slate-300', 'data-weather-hourly-selection': true, role: 'status', 'aria-live': 'polite' }, timelineSelectionLabel)
                       ),
-                      h('span', { className: 'rounded-full border px-2 py-1 text-[11px] font-black ' + observationFreshnessClass }, liveTimelinePoint && liveTimelinePoint.role === 'current' ? 'NOW' : timelineBadge)
+                      h('span', { className: 'rounded-full border px-2 py-1 text-[0.6875rem] font-black ' + observationFreshnessClass }, liveTimelinePoint && liveTimelinePoint.role === 'current' ? 'NOW' : timelineBadge)
                     ),
-                    h('label', { htmlFor: 'weather-hourly-timeline-range', className: 'mt-3 block text-[11px] font-bold text-slate-200' }, 'Selected weather hour',
+                    h('label', { htmlFor: 'weather-hourly-timeline-range', className: 'mt-3 block text-[0.6875rem] font-bold text-slate-200' }, 'Selected weather hour',
                       h('input', {
                         id: 'weather-hourly-timeline-range',
                         type: 'range',
@@ -9908,36 +9908,36 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       })
                     ),
                      h('div', { className: 'mt-3 rounded-xl border border-violet-300/25 bg-violet-300/10 p-3', 'data-weather-timeline-comparison': true },
-                       h('label', { htmlFor: 'weather-timeline-comparison', className: 'block text-[11px] font-black text-violet-100' }, 'Compare selected hour with',
+                       h('label', { htmlFor: 'weather-timeline-comparison', className: 'block text-[0.6875rem] font-black text-violet-100' }, 'Compare selected hour with',
                          h('select', { id: 'weather-timeline-comparison', value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-white focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-300/40' },
                            h('option', { value: '' }, 'Choose a baseline hour'),
                            liveTimeline.map(function (point, index) { return h('option', { key: 'compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
                          )
                        ),
                        timelineDelta && h('div', { className: 'mt-2', role: 'status', 'aria-live': 'polite' },
-                         h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-100' }, 'Change since baseline'),
+                         h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-violet-100' }, 'Change since baseline'),
                          h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3' }, [
                            ['Temperature', formatWeatherDelta(timelineDelta.temperature, '°C', 1)], ['Humidity', formatWeatherDelta(timelineDelta.humidity, '%', 0)], ['Pressure', formatWeatherDelta(timelineDelta.pressure, ' hPa', 1)],
                            ['Wind speed', formatWeatherDelta(timelineDelta.windSpeed, ' km/h', 1)], ['Wind direction', formatWeatherDelta(timelineDelta.windDirection, '°', 0)], ['Precipitation', formatWeatherDelta(timelineDelta.precipitation, ' mm', 1)]
-                         ].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg border border-white/10 bg-slate-950/35 px-2 py-2' }, h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])); })),
-                         timelineDelta.conditionChanged && h('p', { className: 'mt-2 text-[10px] font-bold text-amber-100' }, 'Condition changed from ' + (timelineComparisonPoint.condition || 'the baseline') + ' to ' + (liveTimelinePoint.condition || 'the selected hour') + '.')
+                         ].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg border border-white/10 bg-slate-950/35 px-2 py-2' }, h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])); })),
+                         timelineDelta.conditionChanged && h('p', { className: 'mt-2 text-[0.625rem] font-bold text-amber-100' }, 'Condition changed from ' + (timelineComparisonPoint.condition || 'the baseline') + ' to ' + (liveTimelinePoint.condition || 'the selected hour') + '.')
                        )
                      ),
-                     h('div', { className: 'flex justify-between text-[11px] font-bold text-slate-400', 'aria-hidden': true },
+                     h('div', { className: 'flex justify-between text-[0.6875rem] font-bold text-slate-400', 'aria-hidden': true },
                       h('span', null, Math.abs(liveTimeline[0].offsetHours) + ' h earlier'),
                       h('span', null, 'Current'),
                       h('span', null, '+' + liveTimeline[liveTimeline.length - 1].offsetHours + ' h')
                     ),
                     h('div', { className: 'mt-2 grid grid-cols-4 gap-2', role: 'group', 'aria-label': 'Hourly weather playback controls' },
-                      h('button', { type: 'button', disabled: liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Previous weather hour' }, '\u22121 h'),
-                      h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg border border-violet-300/40 bg-violet-300/15 px-2 py-2 text-[11px] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, d.liveWeatherTimelinePlaying ? 'Pause' : 'Play'),
-                      h('button', { type: 'button', disabled: liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Next weather hour' }, '+1 h'),
-                      h('button', { type: 'button', disabled: !liveTimelinePoint || liveTimelinePoint.role === 'current', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-2 py-2 text-[11px] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-40' }, 'Now')
+                      h('button', { type: 'button', disabled: liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Previous weather hour' }, '\u22121 h'),
+                      h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg border border-violet-300/40 bg-violet-300/15 px-2 py-2 text-[0.6875rem] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, d.liveWeatherTimelinePlaying ? 'Pause' : 'Play'),
+                      h('button', { type: 'button', disabled: liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Next weather hour' }, '+1 h'),
+                      h('button', { type: 'button', disabled: !liveTimelinePoint || liveTimelinePoint.role === 'current', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-2 py-2 text-[0.6875rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-40' }, 'Now')
                     ),
-                    h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast model hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier model hour' : 'Current conditions') + ' | ' + live.condition + ' | ' + live.temperature + '\u00B0C | ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h | ' + live.precipitation + ' mm precipitation'),
+                    h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-400' }, (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast model hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier model hour' : 'Current conditions') + ' | ' + live.condition + ' | ' + live.temperature + '\u00B0C | ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h | ' + live.precipitation + ' mm precipitation'),
                     liveTimelinePoint && liveTimelinePoint.role === 'forecast' && h('button', { type: 'button', onClick: saveLiveForecastCheckpoint, className: 'mt-2 min-h-11 w-full rounded-lg border border-fuchsia-300/50 bg-fuchsia-300/15 px-3 py-2 text-xs font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200', 'data-weather-save-forecast-checkpoint': true }, 'Save forecast checkpoint for verification')
                   ),
-!geographicMode && h('label', { htmlFor: 'weather-immersive-geography', className: 'mt-3 block text-[11px] font-black text-cyan-200' }, 'Conceptual terrain base',
+!geographicMode && h('label', { htmlFor: 'weather-immersive-geography', className: 'mt-3 block text-[0.6875rem] font-black text-cyan-200' }, 'Conceptual terrain base',
                     h('select', {
                       id: 'weather-immersive-geography',
                       value: geography.id,
@@ -9947,8 +9947,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       geographyOptions.map(function (item) { return h('option', { key: item.id, value: item.id }, item.label); })
                     )
                   ),
-                  !geographicMode && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300', 'data-weather-geography-status': true }, geography.detail),
-                  !geographicMode && h('label', { htmlFor: 'weather-immersive-quality', className: 'mt-3 block text-[11px] font-black text-cyan-200' }, 'Rendering quality',
+                  !geographicMode && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300', 'data-weather-geography-status': true }, geography.detail),
+                  !geographicMode && h('label', { htmlFor: 'weather-immersive-quality', className: 'mt-3 block text-[0.6875rem] font-black text-cyan-200' }, 'Rendering quality',
                     h('select', {
                       id: 'weather-immersive-quality',
                       value: immersiveQuality,
@@ -9960,8 +9960,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       h('option', { value: 'high' }, 'High fidelity')
                     )
                   ),
-                  !geographicMode && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, immersiveQuality === 'high' ? 'Full terrain detail, atmospheric shading, soft shadows, and denser particles.' : immersiveQuality === 'balanced' ? 'Reduced geometry with full lighting and shadows.' : 'Lower pixel density and particle count for older devices.'),
-                  !geographicMode && h('label', { htmlFor: 'weather-immersive-focus', className: 'mt-3 block text-[11px] font-black text-cyan-200' }, 'Analysis focus',
+                  !geographicMode && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, immersiveQuality === 'high' ? 'Full terrain detail, atmospheric shading, soft shadows, and denser particles.' : immersiveQuality === 'balanced' ? 'Reduced geometry with full lighting and shadows.' : 'Lower pixel density and particle count for older devices.'),
+                  !geographicMode && h('label', { htmlFor: 'weather-immersive-focus', className: 'mt-3 block text-[0.6875rem] font-black text-cyan-200' }, 'Analysis focus',
                     h('select', {
                       id: 'weather-immersive-focus',
                       value: immersiveFocus,
@@ -9974,21 +9974,21 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       h('option', { value: 'stations' }, 'Surface observations')
                     )
                   ),
-                  !geographicMode && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-focus-status': true }, focusDetail.detail),
+                  !geographicMode && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-focus-status': true }, focusDetail.detail),
                   !geographicMode && h('button', { type: 'button', onClick: toggleImmersiveFocusSpotlight, 'aria-pressed': immersiveFocusSpotlight, 'aria-label': (immersiveFocusSpotlight ? 'Turn off' : 'Turn on') + ' the visual focus spotlight', 'data-weather-focus-spotlight-toggle': 'controls', className: 'mt-3 flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveFocusSpotlight ? focusSpotlightTheme.state : 'border-white/10 bg-white/5 text-slate-300') },
                     h('span', { className: 'flex min-w-0 items-center gap-2' },
                       h('span', { className: 'h-2.5 w-2.5 shrink-0 rounded-full shadow-[0_0_12px_currentColor]', style: { backgroundColor: focusSpotlightTheme.color }, 'aria-hidden': true }),
-                      h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[11px] font-black' }, 'Visual spotlight'), h('span', { className: 'block truncate text-[9px] font-medium opacity-80' }, 'Ground halo follows analysis focus'))
+                      h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[0.6875rem] font-black' }, 'Visual spotlight'), h('span', { className: 'block truncate text-[0.5625rem] font-medium opacity-80' }, 'Ground halo follows analysis focus'))
                     ),
-                    h('span', { className: 'shrink-0 rounded-full border border-current/30 px-2 py-1 text-[10px] font-black', 'aria-hidden': true }, immersiveFocusSpotlight ? 'On' : 'Off')
+                    h('span', { className: 'shrink-0 rounded-full border border-current/30 px-2 py-1 text-[0.625rem] font-black', 'aria-hidden': true }, immersiveFocusSpotlight ? 'On' : 'Off')
                   ),
                   geographicMode && h('div', { className: 'mt-3 rounded-xl border border-emerald-300/20 bg-slate-950/45 p-3', 'data-weather-geographic-analysis-lenses': true },
                     h('div', { className: 'flex items-center justify-between gap-3' },
                       h('div', null,
-                        h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Analysis view'),
-                        h('p', { className: 'mt-0.5 text-[11px] text-slate-400' }, 'Coordinate camera + evidence layers')
+                        h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-emerald-300' }, 'Analysis view'),
+                        h('p', { className: 'mt-0.5 text-[0.6875rem] text-slate-400' }, 'Coordinate camera + evidence layers')
                       ),
-                      h('span', { className: 'rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-black text-slate-200' }, geographicAnalysisLensDetail.label)
+                      h('span', { className: 'rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[0.6875rem] font-black text-slate-200' }, geographicAnalysisLensDetail.label)
                     ),
                     h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3', role: 'group', 'aria-label': 'Geographic analysis views' },
                       GEOGRAPHIC_ANALYSIS_LENSES.map(function (lens) {
@@ -10005,28 +10005,28 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                         },
                           h('span', { className: 'text-xl leading-none', 'aria-hidden': true }, lens.icon),
                           h('span', { className: 'min-w-0' },
-                            h('span', { className: 'block text-[11px] font-black leading-tight' }, lens.label),
-                            h('span', { className: 'mt-0.5 block text-[11px] leading-tight opacity-75' }, lensView.id.charAt(0).toUpperCase() + lensView.id.slice(1) + ' camera')
+                            h('span', { className: 'block text-[0.6875rem] font-black leading-tight' }, lens.label),
+                            h('span', { className: 'mt-0.5 block text-[0.6875rem] leading-tight opacity-75' }, lensView.id.charAt(0).toUpperCase() + lensView.id.slice(1) + ' camera')
                           )
                         );
                       })
                     ),
-                    h('p', { id: 'weather-geographic-analysis-status', className: 'mt-3 border-l-2 border-emerald-300/50 pl-2 text-[11px] leading-relaxed text-slate-300', role: 'status', 'aria-live': 'polite' }, geographicAnalysisLensDetail.detail)
+                    h('p', { id: 'weather-geographic-analysis-status', className: 'mt-3 border-l-2 border-emerald-300/50 pl-2 text-[0.6875rem] leading-relaxed text-slate-300', role: 'status', 'aria-live': 'polite' }, geographicAnalysisLensDetail.detail)
                   ),
                   geographicMode && h('div', { className: 'mt-4 flex items-center gap-2 border-t border-white/10 pt-3' },
                     h('span', { className: 'h-px flex-1 bg-white/10', 'aria-hidden': true }),
-                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-400' }, 'Fine-tune layers'),
+                    h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-slate-400' }, 'Fine-tune layers'),
                     h('span', { className: 'h-px flex-1 bg-white/10', 'aria-hidden': true })
                   ),
-                  geographicMode && h('label', { htmlFor: 'weather-geographic-exaggeration', className: 'mt-3 block text-[11px] font-black text-emerald-200' }, 'Terrain emphasis',
+                  geographicMode && h('label', { htmlFor: 'weather-geographic-exaggeration', className: 'mt-3 block text-[0.6875rem] font-black text-emerald-200' }, 'Terrain emphasis',
                     h('select', { id: 'weather-geographic-exaggeration', value: String(terrainExaggeration), disabled: !d.geographicMapReady || geographicTerrainAvailable === false, onChange: function (event) { setGeographicTerrainExaggeration(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40 disabled:cursor-not-allowed disabled:opacity-50' },
                       h('option', { value: '1' }, 'Natural elevation (1x)'),
                       h('option', { value: '1.35' }, 'Classroom emphasis (1.35x)'),
                       h('option', { value: '2' }, 'Strong emphasis (2x)')
                     ),
-                    geographicTerrainAvailable === false && h('span', { className: 'mt-1 block text-[11px] font-normal leading-relaxed text-amber-200', 'data-weather-terrain-degraded-help': true }, 'Terrain tiles did not load. The open vector map, study area, and wind overlays remain available.')
+                    geographicTerrainAvailable === false && h('span', { className: 'mt-1 block text-[0.6875rem] font-normal leading-relaxed text-amber-200', 'data-weather-terrain-degraded-help': true }, 'Terrain tiles did not load. The open vector map, study area, and wind overlays remain available.')
                   ),
-                  geographicMode && h('label', { htmlFor: 'weather-geographic-radius', className: 'mt-3 block text-[11px] font-black text-emerald-200' }, 'Study-area radius',
+                  geographicMode && h('label', { htmlFor: 'weather-geographic-radius', className: 'mt-3 block text-[0.6875rem] font-black text-emerald-200' }, 'Study-area radius',
                     h('select', { id: 'weather-geographic-radius', value: String(geographicStudyRadius), disabled: !d.geographicMapReady, onChange: function (event) { setGeographicStudyRadius(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40 disabled:cursor-not-allowed disabled:opacity-50' },
                       [5, 10, 25, 50].map(function (radius) { return h('option', { key: radius, value: String(radius) }, radius + ' km radius'); })
                     )
@@ -10043,57 +10043,57 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                         disabled: !d.geographicMapReady,
                         onClick: function () { setGeographicOverlayVisibility(layer.id, !layer.visible); },
                         'aria-pressed': layer.visible,
-                        className: 'flex min-h-16 flex-col items-center justify-center rounded-lg border px-2 py-2 text-center text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (layer.visible ? layer.activeClass : 'border-white/15 bg-white/5 text-slate-300')
+                        className: 'flex min-h-16 flex-col items-center justify-center rounded-lg border px-2 py-2 text-center text-[0.6875rem] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (layer.visible ? layer.activeClass : 'border-white/15 bg-white/5 text-slate-300')
                       },
                         h('span', { className: 'text-base leading-none', 'aria-hidden': true }, layer.icon),
                         h('span', { className: 'mt-1 leading-tight' }, layer.label),
-                        h('span', { className: 'mt-0.5 text-[11px] uppercase tracking-wide opacity-70', 'aria-hidden': true }, layer.visible ? 'On' : 'Off')
+                        h('span', { className: 'mt-0.5 text-[0.6875rem] uppercase tracking-wide opacity-70', 'aria-hidden': true }, layer.visible ? 'On' : 'Off')
                       );
                     })
                   ),
                   geographicMode && h('div', { className: 'mt-4 border-t border-white/10 pt-4', 'data-weather-regional-layer-stack': true, role: 'region', 'aria-labelledby': 'weather-regional-layer-title' },
                     h('div', { className: 'flex items-start justify-between gap-3' },
                       h('div', null,
-                        h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Professional layer stack'),
+                        h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-sky-300' }, 'Professional layer stack'),
                         h('h5', { id: 'weather-regional-layer-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Regional model field')
                       ),
-                      h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (regionalFieldStatus.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : regionalFieldStatus.code === 'missing' ? 'border-white/15 bg-white/5 text-slate-300' : 'border-amber-300/40 bg-amber-300/15 text-amber-100'), 'data-weather-regional-field-sync': regionalFieldStatus.code }, regionalFieldStatus.label)
+                      h('span', { className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black ' + (regionalFieldStatus.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : regionalFieldStatus.code === 'missing' ? 'border-white/15 bg-white/5 text-slate-300' : 'border-amber-300/40 bg-amber-300/15 text-amber-100'), 'data-weather-regional-field-sync': regionalFieldStatus.code }, regionalFieldStatus.label)
                     ),
-                    h('label', { htmlFor: 'weather-regional-layer-select', className: 'mt-3 block text-[11px] font-black text-sky-100' }, 'Active weather layer',
+                    h('label', { htmlFor: 'weather-regional-layer-select', className: 'mt-3 block text-[0.6875rem] font-black text-sky-100' }, 'Active weather layer',
                       h('select', { id: 'weather-regional-layer-select', value: regionalWeatherLayerId, disabled: !d.geographicMapReady, onChange: function (event) { setRegionalWeatherLayer(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-300/40 disabled:opacity-50' },
                         Object.keys(REGIONAL_WEATHER_LAYER_DEFINITIONS).map(function (id) { var definition = REGIONAL_WEATHER_LAYER_DEFINITIONS[id]; return h('option', { key: id, value: id }, definition.label); })
                       )
                     ),
                     h('button', { type: 'button', disabled: !d.geographicMapReady || !live || d.geographicWeatherFieldLoading, onClick: loadRegionalWeatherField, className: 'mt-2 min-h-11 w-full rounded-lg bg-sky-300 px-3 py-2 text-xs font-black text-sky-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50' }, d.geographicWeatherFieldLoading ? 'Loading 25-point field...' : regionalFieldStatus.current ? 'Refresh selected-hour field' : 'Load selected-hour field'),
-                    h('label', { htmlFor: 'weather-regional-layer-opacity', className: 'mt-3 block text-[11px] font-black text-sky-100' }, 'Layer opacity ' + Math.round(regionalFieldOpacity * 100) + '%',
+                    h('label', { htmlFor: 'weather-regional-layer-opacity', className: 'mt-3 block text-[0.6875rem] font-black text-sky-100' }, 'Layer opacity ' + Math.round(regionalFieldOpacity * 100) + '%',
                       h('input', { id: 'weather-regional-layer-opacity', type: 'range', min: 0.2, max: 0.85, step: 0.05, value: regionalFieldOpacity, disabled: !regionalFieldStatus.current, onChange: function (event) { setRegionalWeatherLayerOpacity(event.target.value); }, className: 'mt-1 min-h-11 w-full accent-sky-300 disabled:opacity-50' })
                     ),
                     regionalFieldLegend && h('div', { className: 'mt-2', 'data-weather-regional-control-legend': true },
                       h('div', { className: 'h-2 rounded-sm', style: { background: 'linear-gradient(90deg,' + regionalFieldLegend.palette.join(',') + ')' }, 'aria-hidden': true }),
-                      h('div', { className: 'mt-1 flex justify-between text-[10px] font-bold text-slate-300' }, h('span', null, Number(regionalFieldLegend.min).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit), h('span', null, Number(regionalFieldLegend.max).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit))
+                      h('div', { className: 'mt-1 flex justify-between text-[0.625rem] font-bold text-slate-300' }, h('span', null, Number(regionalFieldLegend.min).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit), h('span', null, Number(regionalFieldLegend.max).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit))
                     ),
-                    h('p', { className: 'mt-2 text-[11px] leading-relaxed ' + (d.geographicWeatherFieldError ? 'text-rose-200' : regionalFieldStatus.current ? 'text-emerald-100' : 'text-amber-100'), role: d.geographicWeatherFieldError ? 'alert' : 'status', 'aria-live': 'polite', 'data-weather-regional-field-status': true }, d.geographicWeatherFieldError || d.geographicWeatherFieldStatus || regionalFieldStatus.detail),
-                    h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'Open-Meteo model values sampled at 25 nearby coordinates. Cells visualize model-grid samples, not live radar or official warning boundaries. Refresh after changing time or location.')
+                    h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed ' + (d.geographicWeatherFieldError ? 'text-rose-200' : regionalFieldStatus.current ? 'text-emerald-100' : 'text-amber-100'), role: d.geographicWeatherFieldError ? 'alert' : 'status', 'aria-live': 'polite', 'data-weather-regional-field-status': true }, d.geographicWeatherFieldError || d.geographicWeatherFieldStatus || regionalFieldStatus.detail),
+                    h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed text-slate-400' }, 'Open-Meteo model values sampled at 25 nearby coordinates. Cells visualize model-grid samples, not live radar or official warning boundaries. Refresh after changing time or location.')
                   ),
                   geographicMode && h('button', {
                     type: 'button', disabled: !d.geographicMapReady || geographicBuildingsAvailable === false, onClick: function () { setGeographicBuildings(!geographicBuildings); },
                     'aria-pressed': geographicBuildings, 'aria-describedby': 'weather-geographic-buildings-help',
                     className: 'mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-xs font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (geographicBuildings ? 'border-emerald-300/60 bg-emerald-300/15 text-emerald-100' : 'border-white/15 bg-white/5 text-slate-200')
                   }, h('span', null, 'Real 3D buildings'), h('span', { 'aria-hidden': true }, !d.geographicMapReady ? 'Loading' : geographicBuildingsAvailable === false ? 'Unavailable' : geographicBuildings ? 'On' : 'Off')),
-                  geographicMode && h('p', { id: 'weather-geographic-buildings-help', className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, !d.geographicMapReady ? 'Map controls unlock after geographic terrain and evidence layers finish loading.' : geographicBuildingsAvailable === false ? 'The current open map style does not provide a compatible 3D building layer. Terrain and other evidence layers remain available.' : geographicBuildingsAvailable == null ? 'Checking the open map style for compatible OpenStreetMap building footprints.' : 'Compatible OpenStreetMap building footprints appear in the street-scale Site view.'),
-                  !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2' }, values.map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[11px] text-slate-300' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black' }, metric[1])); })),
-                  h('p', { className: 'mt-3 border-t border-white/10 pt-3 text-[11px] leading-relaxed text-slate-300' }, sceneCondition + (useLive ? ' | ' + timelineValidTimeDetail + '.' : '.'))
+                  geographicMode && h('p', { id: 'weather-geographic-buildings-help', className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, !d.geographicMapReady ? 'Map controls unlock after geographic terrain and evidence layers finish loading.' : geographicBuildingsAvailable === false ? 'The current open map style does not provide a compatible 3D building layer. Terrain and other evidence layers remain available.' : geographicBuildingsAvailable == null ? 'Checking the open map style for compatible OpenStreetMap building footprints.' : 'Compatible OpenStreetMap building footprints appear in the street-scale Site view.'),
+                  !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2' }, values.map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[0.6875rem] text-slate-300' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black' }, metric[1])); })),
+                  h('p', { className: 'mt-3 border-t border-white/10 pt-3 text-[0.6875rem] leading-relaxed text-slate-300' }, sceneCondition + (useLive ? ' | ' + timelineValidTimeDetail + '.' : '.'))
                 ),
                 geographicMode && h('section', { className: 'rounded-xl border border-emerald-300/25 bg-gradient-to-br from-emerald-950/35 to-sky-950/25 p-4', 'data-weather-geographic-investigation': true, 'aria-labelledby': 'weather-geographic-investigation-title' },
                   h('div', { className: 'flex items-start justify-between gap-3' },
                     h('div', null,
-                      h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Guided field investigation'),
+                      h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-emerald-300' }, 'Guided field investigation'),
                       h('h4', { id: 'weather-geographic-investigation-title', className: 'mt-1 text-sm font-black' }, geographicInvestigationPaused ? 'Custom exploration' : geographicFieldStep.label)
                     ),
-                    h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black ' + (geographicInvestigationPaused ? 'bg-amber-300 text-amber-950' : 'bg-emerald-300 text-emerald-950'), 'aria-label': geographicInvestigationPaused ? 'Guided investigation paused' : 'Step ' + (geographicFieldStep.index + 1) + ' of ' + geographicFieldStep.total }, geographicInvestigationPaused ? 'Paused' : (geographicFieldStep.index + 1) + '/' + geographicFieldStep.total)
+                    h('span', { className: 'rounded-full px-2 py-1 text-[0.6875rem] font-black ' + (geographicInvestigationPaused ? 'bg-amber-300 text-amber-950' : 'bg-emerald-300 text-emerald-950'), 'aria-label': geographicInvestigationPaused ? 'Guided investigation paused' : 'Step ' + (geographicFieldStep.index + 1) + ' of ' + geographicFieldStep.total }, geographicInvestigationPaused ? 'Paused' : (geographicFieldStep.index + 1) + '/' + geographicFieldStep.total)
                   ),
                   h('p', { id: 'weather-geographic-investigation-prompt', className: 'mt-3 text-xs font-bold leading-relaxed text-white', 'data-weather-geographic-investigation-prompt': true }, geographicInvestigationPaused ? 'Camera or evidence layers were adjusted manually.' : geographicFieldStep.prompt),
-                  h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (geographicInvestigationPaused ? 'text-amber-100' : 'text-emerald-100'), 'data-weather-geographic-investigation-status': geographicInvestigationPaused ? 'paused' : 'active' }, geographicInvestigationPaused ? 'Choose a numbered step or resume the previous step to restore its coordinated camera and layers.' : geographicFieldStep.evidence),
+                  h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + (geographicInvestigationPaused ? 'text-amber-100' : 'text-emerald-100'), 'data-weather-geographic-investigation-status': geographicInvestigationPaused ? 'paused' : 'active' }, geographicInvestigationPaused ? 'Choose a numbered step or resume the previous step to restore its coordinated camera and layers.' : geographicFieldStep.evidence),
                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Geographic field investigation steps' },
                     GEOGRAPHIC_INVESTIGATION_STEPS.map(function (step, index) {
                       var active = !geographicInvestigationPaused && step.id === geographicFieldStep.id;
@@ -10104,7 +10104,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                         onClick: function () { openGeographicInvestigationStep(step.id); },
                         'aria-pressed': active,
                         'aria-describedby': active ? 'weather-geographic-investigation-prompt' : undefined,
-                        className: 'min-h-12 rounded-lg border px-3 py-2 text-left text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:border-emerald-300/40 hover:bg-white/10')
+                        className: 'min-h-12 rounded-lg border px-3 py-2 text-left text-[0.6875rem] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 ' + (active ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:border-emerald-300/40 hover:bg-white/10')
                       },
                         h('span', { className: 'mr-1 opacity-70', 'aria-hidden': true }, (index + 1) + '.'),
                         step.label
@@ -10112,7 +10112,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     })
                   ),
                   h('button', { type: 'button', disabled: !d.geographicMapReady, onClick: function () { openGeographicInvestigationStep(geographicInvestigationPaused ? geographicFieldStep.id : geographicFieldStep.nextId); }, className: 'mt-3 min-h-11 w-full rounded-lg bg-emerald-300 px-3 py-2 text-xs font-black text-emerald-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50' }, geographicInvestigationPaused ? 'Resume ' + geographicFieldStep.label : geographicFieldStep.id === 'claim' ? 'Review investigation from the start' : 'Next mapped investigation step'),
-                  h('label', { htmlFor: 'weather-geographic-investigation-note', className: 'mt-3 block text-[11px] font-black text-emerald-200' }, 'Mapped evidence note',
+                  h('label', { htmlFor: 'weather-geographic-investigation-note', className: 'mt-3 block text-[0.6875rem] font-black text-emerald-200' }, 'Mapped evidence note',
                     h('textarea', {
                       id: 'weather-geographic-investigation-note',
                       value: d.geographicInvestigationNote || '',
@@ -10125,27 +10125,27 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   )
                 ),
                 geographicMode && h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-geographic-context': true },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Geographic evidence'),
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-emerald-300' }, 'Geographic evidence'),
                   h('h4', { className: 'mt-1 text-sm font-black' }, geographic.context || geographic.label),
                   h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300' }, 'Inspect elevation, water, roads, settlements, and published administrative labels. Select the observation-site marker to inspect live conditions, or select another map point to measure its natural elevation and compare it with the site. Ask how terrain or land-water contrasts could redirect wind, lift air, or concentrate precipitation.'),
-                  h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, 'The highlighted true-scale ring marks a ' + geographicStudyRadius + ' km study radius around the selected coordinates; it is not an administrative boundary.'),
-                  h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, 'The cyan line points downwind from the observed wind direction. Its teaching length is scaled from wind speed and is not a forecast path or impact area.'),
-                  h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, 'Camera telemetry updates after each move. Use the map-corner fullscreen control when the browser supports it.'),
+                  h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-400' }, 'The highlighted true-scale ring marks a ' + geographicStudyRadius + ' km study radius around the selected coordinates; it is not an administrative boundary.'),
+                  h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-400' }, 'The cyan line points downwind from the observed wind direction. Its teaching length is scaled from wind speed and is not a forecast path or impact area.'),
+                  h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-400' }, 'Camera telemetry updates after each move. Use the map-corner fullscreen control when the browser supports it.'),
                   h('div', { className: 'mt-4 border-t border-white/10 pt-3', 'data-weather-terrain-inspector': true, role: 'region', 'aria-labelledby': 'weather-terrain-inspector-title' },
                     h('div', { className: 'flex items-start justify-between gap-3' },
                       h('div', null,
-                        h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-rose-300' }, 'Interactive terrain inspector'),
+                        h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-rose-300' }, 'Interactive terrain inspector'),
                         h('h5', { id: 'weather-terrain-inspector-title', className: 'mt-1 text-xs font-black text-white' }, geographicTerrainProbe ? 'Selected ground comparison' : 'Select a ground point')
                       ),
-                      geographicTerrainProbe && h('span', { className: 'rounded-full bg-rose-300/15 px-2 py-1 text-[10px] font-black text-rose-100' }, geographicTerrainWind ? geographicTerrainWind.label + ' | ' + geographicTerrainProbe.relation : geographicTerrainProbe.relation)
+                      geographicTerrainProbe && h('span', { className: 'rounded-full bg-rose-300/15 px-2 py-1 text-[0.625rem] font-black text-rose-100' }, geographicTerrainWind ? geographicTerrainWind.label + ' | ' + geographicTerrainProbe.relation : geographicTerrainProbe.relation)
                     ),
-                    !geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Click or tap any map point away from the observation marker, or position the map and sample its center. The inspector will compare natural elevation, average slope, and position relative to the observed wind.'),
+                    !geographicTerrainProbe && h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Click or tap any map point away from the observation marker, or position the map and sample its center. The inspector will compare natural elevation, average slope, and position relative to the observed wind.'),
                     geographicTerrainProbe && h('div', { className: 'mt-3 grid grid-cols-3 gap-2' },
                       [
                         ['Natural elevation', Number(geographicTerrainProbe.elevation).toFixed(0) + ' m'],
                         ['Difference from site', (Number(geographicTerrainProbe.elevationDelta) > 0 ? '+' : '') + Number(geographicTerrainProbe.elevationDelta).toFixed(0) + ' m'],
                         ['Average grade', geographicTerrainWind ? (geographicTerrainWind.gradePercent > 0 ? '+' : '') + geographicTerrainWind.gradePercent.toFixed(2) + '%' : 'Not available']
-                      ].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[10px] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-xs font-black text-white' }, metric[1])); })
+                      ].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[0.625rem] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-xs font-black text-white' }, metric[1])); })
                     ),
                     terrainProbeGraphic && h('svg', { viewBox: '0 0 ' + terrainProbeGraphic.width + ' ' + terrainProbeGraphic.height, className: 'mt-3 h-auto w-full overflow-visible', role: 'img', 'aria-labelledby': 'weather-terrain-slope-title weather-terrain-slope-desc', 'data-weather-terrain-slope-graphic': true },
                       h('title', { id: 'weather-terrain-slope-title' }, 'Site-to-sample slope comparison'),
@@ -10168,12 +10168,12 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       h('text', { x: terrainProbeGraphic.sampleX, y: 96, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Sample ' + geographicTerrainProbe.direction),
                       geographicTerrainWind && h('text', { x: 160, y: 94, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, (geographicTerrainWind.gradePercent > 0 ? '+' : '') + geographicTerrainWind.gradePercent.toFixed(2) + '% average grade')
                     ),
-                    geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400', 'data-weather-terrain-probe-coordinates': true }, Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site | ' + Number(geographicTerrainProbe.latitude).toFixed(5) + ', ' + Number(geographicTerrainProbe.longitude).toFixed(5) + ' | Bearing ' + Number(geographicTerrainProbe.bearing).toFixed(1) + '\u00B0'),
-                    geographicTerrainProbe && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-400', 'data-weather-terrain-probe-provenance': true }, 'Source: Mapterhorn raster terrain rendered by MapLibre | Selection: ' + (d.geographicTerrainProbeMethod || 'Saved map point') + ' | Elevation and grade are approximate.'),
+                    geographicTerrainProbe && h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-400', 'data-weather-terrain-probe-coordinates': true }, Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site | ' + Number(geographicTerrainProbe.latitude).toFixed(5) + ', ' + Number(geographicTerrainProbe.longitude).toFixed(5) + ' | Bearing ' + Number(geographicTerrainProbe.bearing).toFixed(1) + '\u00B0'),
+                    geographicTerrainProbe && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-400', 'data-weather-terrain-probe-provenance': true }, 'Source: Mapterhorn raster terrain rendered by MapLibre | Selection: ' + (d.geographicTerrainProbeMethod || 'Saved map point') + ' | Elevation and grade are approximate.'),
                     geographicTerrainWind && h('div', { className: 'mt-3 border-l-2 border-rose-300/60 pl-3', 'data-weather-terrain-wind-analysis': true, role: 'status', 'aria-live': 'polite' },
-                      h('p', { className: 'text-[11px] font-black text-rose-200' }, geographicTerrainWind.signalLabel),
-                      h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Observed wind from ' + cardinal(live.windDir) + ' | ' + geographicTerrainWind.angularDifference.toFixed(1) + '\u00B0 from the upwind axis | ' + geographicTerrainWind.gradeLabel + ' (' + (geographicTerrainWind.slopeDegrees > 0 ? '+' : '') + geographicTerrainWind.slopeDegrees.toFixed(2) + '\u00B0)'),
-                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, geographicTerrainWind.interpretation)
+                      h('p', { className: 'text-[0.6875rem] font-black text-rose-200' }, geographicTerrainWind.signalLabel),
+                      h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-400' }, 'Observed wind from ' + cardinal(live.windDir) + ' | ' + geographicTerrainWind.angularDifference.toFixed(1) + '\u00B0 from the upwind axis | ' + geographicTerrainWind.gradeLabel + ' (' + (geographicTerrainWind.slopeDegrees > 0 ? '+' : '') + geographicTerrainWind.slopeDegrees.toFixed(2) + '\u00B0)'),
+                      h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, geographicTerrainWind.interpretation)
                     ),
                     h('div', { className: 'mt-3 grid gap-2 ' + (geographicTerrainProbe ? 'grid-cols-2' : 'grid-cols-1') },
                       h('button', { type: 'button', disabled: !d.geographicMapReady || geographicTerrainAvailable === false, onClick: sampleGeographicMapCenter, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-3 py-2 text-xs font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-50' }, 'Sample map center'),
@@ -10182,8 +10182,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   ),
                   geographicTransectVisible && geographicTerrainAvailable !== false && h('div', { className: 'mt-4 border-t border-white/10 pt-3', 'data-weather-terrain-profile': true },
                     h('div', { className: 'flex items-start justify-between gap-3' },
-                      h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-300' }, 'Wind-aligned terrain profile'), h('p', { className: 'mt-1 text-[11px] text-slate-300' }, '30 km cross-section from upwind to downwind')),
-                      terrainProfileChart && h('span', { className: 'rounded-full bg-violet-300/15 px-2 py-1 text-[10px] font-black text-violet-100' }, Math.round(terrainProfileChart.min) + '\u2013' + Math.round(terrainProfileChart.max) + ' m')
+                      h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-300' }, 'Wind-aligned terrain profile'), h('p', { className: 'mt-1 text-[0.6875rem] text-slate-300' }, '30 km cross-section from upwind to downwind')),
+                      terrainProfileChart && h('span', { className: 'rounded-full bg-violet-300/15 px-2 py-1 text-[0.625rem] font-black text-violet-100' }, Math.round(terrainProfileChart.min) + '\u2013' + Math.round(terrainProfileChart.max) + ' m')
                     ),
                     terrainProfileChart ? h('svg', { viewBox: '0 0 ' + terrainProfileChart.width + ' ' + terrainProfileChart.height, preserveAspectRatio: 'xMidYMid meet', className: 'mt-2 h-auto w-full overflow-visible', role: 'img', 'aria-labelledby': 'weather-terrain-profile-title weather-terrain-profile-desc', 'data-weather-terrain-profile-visual': true },
                       h('title', { id: 'weather-terrain-profile-title' }, 'Wind-aligned natural elevation profile'),
@@ -10209,26 +10209,26 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       h('text', { x: terrainProfileChart.left, y: terrainProfileChart.height - 8, fill: '#cbd5e1', fontSize: 9 }, 'Upwind ' + cardinal(live.windDir)),
                       h('text', { x: terrainProfileChart.siteX, y: terrainProfileChart.height - 8, fill: '#fcd34d', fontSize: 9, textAnchor: 'middle' }, 'Site'),
                       h('text', { x: terrainProfileChart.width - terrainProfileChart.right, y: terrainProfileChart.height - 8, fill: '#cbd5e1', fontSize: 9, textAnchor: 'end' }, 'Downwind ' + cardinal(geographicOverlays.downwindBearing))
-                    ) : h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300', role: 'status' }, d.geographicTerrainProfileStatus || 'Sampling natural terrain elevation after map tiles load...'),
-                    terrainProfileChart && h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, d.geographicTerrainProfileStatus || 'Natural elevation sampled from rendered terrain.'),
+                    ) : h('p', { className: 'mt-3 text-[0.6875rem] leading-relaxed text-slate-300', role: 'status' }, d.geographicTerrainProfileStatus || 'Sampling natural terrain elevation after map tiles load...'),
+                    terrainProfileChart && h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-400' }, d.geographicTerrainProfileStatus || 'Natural elevation sampled from rendered terrain.'),
                     terrainProfileAnalysis && h('div', { className: 'mt-3 grid grid-cols-3 gap-2', 'data-weather-terrain-analysis': true },
-                      [['Terrain relief', terrainProfileAnalysis.relief + ' m'], ['Rise to site', (terrainProfileAnalysis.riseToSite > 0 ? '+' : '') + terrainProfileAnalysis.riseToSite + ' m'], ['After site', (terrainProfileAnalysis.changeAfterSite > 0 ? '+' : '') + terrainProfileAnalysis.changeAfterSite + ' m']].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[10px] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-xs font-black text-white' }, metric[1])); })
+                      [['Terrain relief', terrainProfileAnalysis.relief + ' m'], ['Rise to site', (terrainProfileAnalysis.riseToSite > 0 ? '+' : '') + terrainProfileAnalysis.riseToSite + ' m'], ['After site', (terrainProfileAnalysis.changeAfterSite > 0 ? '+' : '') + terrainProfileAnalysis.changeAfterSite + ' m']].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[0.625rem] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-xs font-black text-white' }, metric[1])); })
                     ),
-                    terrainProfileAnalysis && h('p', { className: 'mt-3 text-[11px] font-black text-violet-200' }, terrainProfileAnalysis.signalLabel),
-                    terrainProfileAnalysis && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, terrainProfileAnalysis.interpretation),
-                    terrainProfileAnalysis && d.geographicTerrainEvidence && h('p', { className: 'mt-3 text-[10px] leading-relaxed text-emerald-200', 'data-weather-terrain-evidence-identity': true }, geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).detail),
+                    terrainProfileAnalysis && h('p', { className: 'mt-3 text-[0.6875rem] font-black text-violet-200' }, terrainProfileAnalysis.signalLabel),
+                    terrainProfileAnalysis && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, terrainProfileAnalysis.interpretation),
+                    terrainProfileAnalysis && d.geographicTerrainEvidence && h('p', { className: 'mt-3 text-[0.625rem] leading-relaxed text-emerald-200', 'data-weather-terrain-evidence-identity': true }, geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).detail),
                     terrainProfileAnalysis && h('button', { type: 'button', onClick: useGeographicTerrainEvidence, 'aria-pressed': (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1, className: 'mt-3 min-h-11 w-full rounded-lg border border-violet-300/50 bg-violet-300/15 px-3 py-2 text-xs font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).current ? 'Open forecast with terrain evidence' : (d.geographicTerrainEvidence ? 'Refresh terrain forecast evidence' : 'Use as forecast evidence'))
                   ),
                   geographicTerrainAvailable === false && h('div', { className: 'mt-4 border-l-2 border-amber-300/70 bg-amber-300/10 p-3', role: 'status', 'data-weather-terrain-degraded': true },
                     h('p', { className: 'text-xs font-black text-amber-100' }, 'Base map available; 3D terrain unavailable'),
-                    h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, 'Continue with published map labels, the true-scale study area, and the observed wind vector. Terrain sampling and terrain forecast evidence require a successful terrain-tile load.')
+                    h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Continue with published map labels, the true-scale study area, and the observed wind vector. Terrain sampling and terrain forecast evidence require a successful terrain-tile load.')
                   ),
-                  h('p', { className: 'mt-2 text-[11px] text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-geographic-status': true }, d.geographicMapStatus || 'Geographic layers are preparing.'),
-                  h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300', 'data-weather-map-attribution': true }, 'Map: ', h('a', { href: 'https://openfreemap.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenFreeMap'), ' with ', h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenStreetMap data'), '. 3D terrain: ', h('a', { href: 'https://tiles.mapterhorn.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'Mapterhorn'), '. Renderer: ', h('a', { href: 'https://maplibre.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'MapLibre'), '.', d.geographicWeatherField && h('span', null, ' Weather field: ', h('a', { href: 'https://open-meteo.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-sky-300 underline' }, 'Open-Meteo'), ' multi-location model values.'))
+                  h('p', { className: 'mt-2 text-[0.6875rem] text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-geographic-status': true }, d.geographicMapStatus || 'Geographic layers are preparing.'),
+                  h('p', { className: 'mt-3 text-[0.6875rem] leading-relaxed text-slate-300', 'data-weather-map-attribution': true }, 'Map: ', h('a', { href: 'https://openfreemap.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenFreeMap'), ' with ', h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenStreetMap data'), '. 3D terrain: ', h('a', { href: 'https://tiles.mapterhorn.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'Mapterhorn'), '. Renderer: ', h('a', { href: 'https://maplibre.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'MapLibre'), '.', d.geographicWeatherField && h('span', null, ' Weather field: ', h('a', { href: 'https://open-meteo.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-sky-300 underline' }, 'Open-Meteo'), ' multi-location model values.'))
                 ),
 
                 h('section', { className: 'rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4', 'data-weather-live-control': true },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Live weather connection'),
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-emerald-300' }, 'Live weather connection'),
                   h('h4', { className: 'text-sm font-black' }, 'Bring local conditions into 3D and maps'),
                   h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, 'Nothing loads automatically. Use device location, type a flexible location, or open separate address fields.'),
                   h('button', { type: 'button', onClick: requestDeviceWeather, disabled: !!d.liveWeatherLoading, className: 'mt-3 min-h-11 w-full rounded-lg bg-emerald-500 px-3 py-2 text-xs font-black text-emerald-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-50' }, d.liveWeatherLoading ? 'Connecting...' : '\uD83D\uDCCD Use my location'),
@@ -10238,7 +10238,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       h('input', { id: 'weather-location-quick', type: 'search', value: d.liveLocationQuery || '', onChange: function (event) { update({ liveLocationQuery: event.target.value }); }, placeholder: 'Boston, MA or 42.36, -71.06', autoComplete: 'off', inputMode: 'search', className: 'min-h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-black/30 px-3 py-2 text-xs text-white placeholder:text-slate-400 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' }),
                       h('button', { type: 'submit', disabled: !!d.liveWeatherLoading, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-white/10 px-3 py-2 text-xs font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:opacity-50' }, 'Search')
                     ),
-                    h('p', { id: 'weather-location-format-help', className: 'text-[11px] leading-relaxed text-slate-300' }, 'Accepts city, region, country, postal or ZIP code, or decimal coordinates. Examples: Paris, France; 02108; Tokyo Japan; 42.36 N, 71.06 W.')
+                    h('p', { id: 'weather-location-format-help', className: 'text-[0.6875rem] leading-relaxed text-slate-300' }, 'Accepts city, region, country, postal or ZIP code, or decimal coordinates. Examples: Paris, France; 02108; Tokyo Japan; 42.36 N, 71.06 W.')
                   ),
                   h('button', {
                     type: 'button',
@@ -10250,43 +10250,43 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   h('div', { id: 'weather-location-details', hidden: !d.liveLocationDetailsOpen },
                     d.liveLocationDetailsOpen && h('form', { className: 'mt-2 rounded-xl border border-white/15 bg-black/20 p-3', onSubmit: function (event) { event.preventDefault(); searchLiveWeather('structured'); }, 'aria-labelledby': 'weather-location-details-title' },
                       h('p', { id: 'weather-location-details-title', className: 'text-xs font-black text-white' }, 'Search with separate fields'),
-                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, 'Fill in any fields you know. City and country usually give the best match.'),
+                      h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Fill in any fields you know. City and country usually give the best match.'),
                       h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
-                        h('label', { htmlFor: 'weather-location-city', className: 'col-span-2 block text-[11px] font-bold text-emerald-100' }, 'City or locality',
+                        h('label', { htmlFor: 'weather-location-city', className: 'col-span-2 block text-[0.6875rem] font-bold text-emerald-100' }, 'City or locality',
                           h('input', { id: 'weather-location-city', type: 'text', value: d.liveLocationCity || '', onChange: function (event) { update({ liveLocationCity: event.target.value }); }, autoComplete: 'address-level2', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
                         ),
-                        h('label', { htmlFor: 'weather-location-region', className: 'block text-[11px] font-bold text-emerald-100' }, 'State, province, or region',
+                        h('label', { htmlFor: 'weather-location-region', className: 'block text-[0.6875rem] font-bold text-emerald-100' }, 'State, province, or region',
                           h('input', { id: 'weather-location-region', type: 'text', value: d.liveLocationRegion || '', onChange: function (event) { update({ liveLocationRegion: event.target.value }); }, autoComplete: 'address-level1', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
                         ),
-                        h('label', { htmlFor: 'weather-location-postal', className: 'block text-[11px] font-bold text-emerald-100' }, 'Postal or ZIP code',
+                        h('label', { htmlFor: 'weather-location-postal', className: 'block text-[0.6875rem] font-bold text-emerald-100' }, 'Postal or ZIP code',
                           h('input', { id: 'weather-location-postal', type: 'text', value: d.liveLocationPostalCode || '', onChange: function (event) { update({ liveLocationPostalCode: event.target.value }); }, autoComplete: 'postal-code', inputMode: 'text', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
                         ),
-                        h('label', { htmlFor: 'weather-location-country', className: 'col-span-2 block text-[11px] font-bold text-emerald-100' }, 'Country',
+                        h('label', { htmlFor: 'weather-location-country', className: 'col-span-2 block text-[0.6875rem] font-bold text-emerald-100' }, 'Country',
                           h('input', { id: 'weather-location-country', type: 'text', value: d.liveLocationCountry || '', onChange: function (event) { update({ liveLocationCountry: event.target.value }); }, autoComplete: 'country-name', className: 'mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-slate-950/70 px-3 py-2 text-xs font-normal text-white focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/40' })
                         )
                       ),
                       h('button', { type: 'submit', disabled: !!d.liveWeatherLoading, className: 'mt-3 min-h-11 w-full rounded-lg bg-emerald-400 px-3 py-2 text-xs font-black text-emerald-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50' }, 'Search these fields')
                     )
                   ),
-                  d.liveWeatherStatus && h('p', { className: 'mt-2 text-[11px] font-bold text-emerald-200', role: 'status', 'aria-live': 'polite' }, d.liveWeatherStatus),
-                  d.terrainEvidenceInvalidatedMessage && h('p', { className: 'mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 p-2 text-[11px] font-bold text-amber-100', role: 'status', 'aria-live': 'polite', 'data-weather-terrain-evidence-invalidated': true }, d.terrainEvidenceInvalidatedMessage),
-                  d.liveWeatherError && h('p', { className: 'mt-2 rounded-lg bg-rose-950/40 p-2 text-[11px] text-rose-200', role: 'alert' }, d.liveWeatherError),
-                  d.liveWeatherError && d.liveWeather && h('p', { className: 'mt-2 rounded-lg border border-amber-300/25 bg-amber-300/10 p-2 text-[11px] text-amber-100', role: 'status', 'data-weather-live-fallback': true }, 'Your last saved observation remains available for this lesson. Refresh when the network is available to replace it.'),
-                  live && h('p', { className: 'mt-2 text-[11px] text-slate-300' }, 'Source: ', h('a', { href: live.sourceUrl, target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, live.source), '. Coordinates are rounded and stored only with this local lab state.'),
-                  h('p', { className: 'mt-2 text-[11px] text-slate-400' }, 'Educational visualization only; not a safety or operational forecast.')
+                  d.liveWeatherStatus && h('p', { className: 'mt-2 text-[0.6875rem] font-bold text-emerald-200', role: 'status', 'aria-live': 'polite' }, d.liveWeatherStatus),
+                  d.terrainEvidenceInvalidatedMessage && h('p', { className: 'mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 p-2 text-[0.6875rem] font-bold text-amber-100', role: 'status', 'aria-live': 'polite', 'data-weather-terrain-evidence-invalidated': true }, d.terrainEvidenceInvalidatedMessage),
+                  d.liveWeatherError && h('p', { className: 'mt-2 rounded-lg bg-rose-950/40 p-2 text-[0.6875rem] text-rose-200', role: 'alert' }, d.liveWeatherError),
+                  d.liveWeatherError && d.liveWeather && h('p', { className: 'mt-2 rounded-lg border border-amber-300/25 bg-amber-300/10 p-2 text-[0.6875rem] text-amber-100', role: 'status', 'data-weather-live-fallback': true }, 'Your last saved observation remains available for this lesson. Refresh when the network is available to replace it.'),
+                  live && h('p', { className: 'mt-2 text-[0.6875rem] text-slate-300' }, 'Source: ', h('a', { href: live.sourceUrl, target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, live.source), '. Coordinates are rounded and stored only with this local lab state.'),
+                  h('p', { className: 'mt-2 text-[0.6875rem] text-slate-400' }, 'Educational visualization only; not a safety or operational forecast.')
                 ),
                 !geographicMode && h('section', { className: 'rounded-xl border border-violet-400/20 bg-violet-950/20 p-4', 'data-weather-vr-control': true },
-                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-300' }, 'WebXR bridge'),
+                  h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-300' }, 'WebXR bridge'),
                   h('h4', { className: 'text-sm font-black' }, 'Enter immersive VR'),
-                  h('p', { className: 'mt-1 text-[11px] text-slate-300' }, 'Requires HTTPS, WebXR, and a supported headset. Desktop orbit controls remain available.'),
+                  h('p', { className: 'mt-1 text-[0.6875rem] text-slate-300' }, 'Requires HTTPS, WebXR, and a supported headset. Desktop orbit controls remain available.'),
                   h('button', { type: 'button', onClick: enterWeatherVR, disabled: !engineReady || !!engineError, className: 'mt-3 w-full rounded-lg bg-violet-600 px-3 py-2 text-xs font-black text-white disabled:opacity-40' }, d.vrSessionActive ? 'VR session active' : 'Check headset and enter VR'),
-                  d.vrStatus && h('p', { className: 'mt-2 text-[11px] text-violet-200', role: 'status', 'aria-live': 'polite' }, d.vrStatus)
+                  d.vrStatus && h('p', { className: 'mt-2 text-[0.6875rem] text-violet-200', role: 'status', 'aria-live': 'polite' }, d.vrStatus)
                 )
               )
             )
           ),
           h('section', { className: panelClass + ' grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Immersive weather layer guide' },
-            (geographicMode ? [['Open vector map', 'Published roads, water, places, and boundaries'], [geographicStudyRadius + ' km study area', 'True-scale radius centered on the selected site'], ['Downwind vector', cardinal(geographicOverlays ? geographicOverlays.downwindBearing : 0) + ' from the live observation'], ['3D terrain/profile', 'Elevation, buildings, and a wind-aligned natural terrain cross-section']] : [['Terrain map', geography.label], ['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Arrows and particles', 'Wind and precipitation']]).map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black ' + (dark ? 'text-sky-300' : 'text-sky-700') }, item[0]), h('p', { className: 'mt-1 text-[11px] ' + mutedClass }, item[1])); })
+            (geographicMode ? [['Open vector map', 'Published roads, water, places, and boundaries'], [geographicStudyRadius + ' km study area', 'True-scale radius centered on the selected site'], ['Downwind vector', cardinal(geographicOverlays ? geographicOverlays.downwindBearing : 0) + ' from the live observation'], ['3D terrain/profile', 'Elevation, buildings, and a wind-aligned natural terrain cross-section']] : [['Terrain map', geography.label], ['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Arrows and particles', 'Wind and precipitation']]).map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black ' + (dark ? 'text-sky-300' : 'text-sky-700') }, item[0]), h('p', { className: 'mt-1 text-[0.6875rem] ' + mutedClass }, item[1])); })
           )
         );
       }
@@ -10641,7 +10641,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     ['Teacher press', alignment.press]
                   ].map(function (item) {
                     return h('div', { key: item[0], className: 'rounded-lg border p-3 ' + (dark ? 'border-violet-900 bg-slate-950/60' : 'border-violet-100 bg-white') },
-                      h('dt', { className: 'text-[11px] font-black uppercase tracking-widest ' + violetAccentClass }, item[0]),
+                      h('dt', { className: 'text-[0.6875rem] font-black uppercase tracking-widest ' + violetAccentClass }, item[0]),
                       h('dd', { className: 'mt-1 text-xs font-bold leading-relaxed ' + mutedClass }, item[1])
                     );
                   })
@@ -10761,7 +10761,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                 return h('div', { key: checkpoint.id, role: 'listitem', className: 'flex min-h-[220px] flex-col rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
                   h('div', { className: 'flex items-start justify-between gap-2' },
                     h('span', { className: 'text-xl', 'aria-hidden': true }, checkpoint.icon),
-                    h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black ' + statusClass }, status)
+                    h('span', { className: 'rounded-full px-2 py-1 text-[0.6875rem] font-black ' + statusClass }, status)
                   ),
                   h('h4', { className: 'mt-3 text-sm font-black' }, checkpoint.title),
                   h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, checkpoint.evidence),
@@ -10966,10 +10966,10 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                 return h('div', { key: criterion.id, role: 'listitem', className: 'rounded-xl border p-4 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
                   h('div', { className: 'flex items-start justify-between gap-3' },
                     h('div', null,
-                      h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + violetAccentClass }, 'Look-for ' + (index + 1)),
+                      h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-widest ' + violetAccentClass }, 'Look-for ' + (index + 1)),
                       h('h4', { className: 'mt-1 text-sm font-black' }, criterion.title)
                     ),
-                    h('span', { className: 'shrink-0 rounded-full px-2 py-1 text-[11px] font-black ' + (selected === 'secure' ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : selected === 'developing' ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-800') : selected === 'emerging' ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ratingLabel(selected))
+                    h('span', { className: 'shrink-0 rounded-full px-2 py-1 text-[0.6875rem] font-black ' + (selected === 'secure' ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : selected === 'developing' ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-800') : selected === 'emerging' ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ratingLabel(selected))
                   ),
                   h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, criterion.detail),
                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Rate ' + criterion.title }, ratingOptions.map(function (option) {

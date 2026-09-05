@@ -10,8 +10,8 @@ exports[`Lumen — focus subset (anti-cherry-picking) > focused state is structu
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -54,11 +54,11 @@ exports[`Lumen — focus subset (anti-cherry-picking) > focused state is structu
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): across these 6 of 10 probes, Measure rose ~1.86 units per step (95% interval +0.65 to +3.06; n=6, small).</p>
 </div>
@@ -273,7 +273,7 @@ exports[`Lumen — focus subset (anti-cherry-picking) > focused state is structu
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -283,7 +283,7 @@ exports[`Lumen — focus subset (anti-cherry-picking) > focused state is structu
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -297,8 +297,8 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -336,11 +336,11 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -441,7 +441,7 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -451,7 +451,7 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 <div id="lumen-present-overlay" role="dialog" aria-modal="true" aria-label="Lumen present mode" style="position:fixed;inset:0;z-index:50;background:linear-gradient(180deg,#ffffff 0%,#fffdf7 100%);overflow:auto;padding:28px 24px">
 <style>@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}</style>
 <div class="flex items-center gap-2 flex-wrap" style="max-width:960px;margin:0 auto 18px">
@@ -558,7 +558,7 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 </svg>
 </div>
 <p class="mt-3 text-sm text-slate-600">Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.</p>
-<p class="mt-4 text-[11px] text-slate-500">Present mode · max epistemic level L1. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.</p>
+<p class="mt-4 text-[0.6875rem] text-slate-500">Present mode · max epistemic level L1. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.</p>
 </div>
 </div>
 </div>"
@@ -574,8 +574,8 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -633,11 +633,11 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Over 10 check-ins, Measure went up — about 2.7 units a week. With only 10 points the true rate could be roughly 2.1 to 3.2 a week, so read this as a direction, not an exact number.</p>
 </div>
@@ -738,7 +738,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -748,7 +748,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -762,8 +762,8 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -801,11 +801,11 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -906,7 +906,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -916,7 +916,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -930,8 +930,8 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -989,11 +989,11 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)</p>
 </div>
@@ -1084,7 +1084,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <button class="mt-2 text-xs underline text-slate-600" aria-expanded="false" aria-controls="lumen-data-table">Show data table (the chart as a table)</button>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <button class="px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-700">Generate AI reading (hypotheses)</button>
-<span class="text-[10px] text-slate-500">AI reading · AI-generated — verify yourself.</span>
+<span class="text-[0.625rem] text-slate-500">AI reading · AI-generated — verify yourself.</span>
 </div>
 <div class="mt-2 p-2 rounded border" style="border-color:#b45309;background:#fffbeb">
 <div class="flex items-center gap-2 text-xs font-semibold" style="color:#b45309">
@@ -1101,7 +1101,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <span>Regression to the mean — early weeks were low. (null)</span>
 </li>
 </ul>
-<p class="mt-1 text-[10px] text-slate-500">the model&#x27;s own ranking of its guesses, not a measured probability. Regenerates each run. Export needs your sign-off.</p>
+<p class="mt-1 text-[0.625rem] text-slate-500">the model&#x27;s own ranking of its guesses, not a measured probability. Regenerates each run. Export needs your sign-off.</p>
 <div class="mt-1 text-xs">
 <span>
 <span class="text-amber-700 mr-2">⚠ Sign off before a formal export:</span>
@@ -1122,7 +1122,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -1132,7 +1132,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -1146,8 +1146,8 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1185,11 +1185,11 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -1309,7 +1309,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -1323,8 +1323,8 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1382,11 +1382,11 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -1463,7 +1463,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -1473,7 +1473,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -1487,8 +1487,8 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1546,11 +1546,11 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -1600,7 +1600,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -1610,7 +1610,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -1624,8 +1624,8 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1663,11 +1663,11 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -1906,7 +1906,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -1916,7 +1916,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -1930,8 +1930,8 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1989,11 +1989,11 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -2060,7 +2060,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -2070,7 +2070,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -2084,8 +2084,8 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2122,7 +2122,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <button class="px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100">⎘ Paste data</button>
 <label for="lumen-file-input" class="px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100 cursor-pointer">⇪ Import file</label>
 </div>
-<p class="mt-3 text-[11px] text-slate-500">Honest by design: fewer than 3 points yields a &quot;not enough data&quot; card, never a fake line. AI stays OFF until you raise the AI ceiling.</p>
+<p class="mt-3 text-[0.6875rem] text-slate-500">Honest by design: fewer than 3 points yields a &quot;not enough data&quot; card, never a fake line. AI stays OFF until you raise the AI ceiling.</p>
 </div>
 <div class="mt-3 flex items-end gap-2 flex-wrap" role="group" aria-label="Measure setup">
 <span class="text-xs text-slate-500 mr-1 self-center">Setup:</span>
@@ -2149,7 +2149,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <div class="mt-2">
 <button aria-expanded="false" aria-controls="lumen-bench-workspace" class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Benchmark workspace (verify external norms)…</button>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -2163,8 +2163,8 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2255,7 +2255,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <span>Practiced</span>
 </span>
 </div>
-<p class="mt-1 text-[11px] text-slate-500">Bars are per-cell means (descriptive); small cells (n&lt;3) are faded. Every point is in the data table.</p>
+<p class="mt-1 text-[0.6875rem] text-slate-500">Bars are per-cell means (descriptive); small cells (n&lt;3) are faded. Every point is in the data table.</p>
 </div>
 <svg id="lumen-chart-main" viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Grouped bar (mean per phase × series, same measure). baseline / cold: mean 44 (n=4, small); baseline / practiced: mean 56 (n=4, small); tier2 / cold: mean 57 (n=4, small); tier2 / practiced: mean 70.5 (n=4, small). Bars are per-cell means; small cells (n&lt;3) are faded — the data table lists every point.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#eef2f7" stroke-width="1">
@@ -2439,9 +2439,9 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -2455,8 +2455,8 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2514,11 +2514,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -2588,7 +2588,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -2602,8 +2602,8 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2661,11 +2661,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -2716,7 +2716,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -2726,7 +2726,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -2740,8 +2740,8 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2903,9 +2903,9 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -2919,8 +2919,8 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2958,15 +2958,15 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): n=1 — too few points to estimate a trend; no line drawn (need at least 3).</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -2990,8 +2990,8 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3051,11 +3051,11 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure and Comprehension move together (Pearson r=+1; 95% interval +0.99 to +1; n=10). This is association, not causation; an unmeasured third factor may drive both.</p>
 </div>
@@ -3105,7 +3105,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 </svg>
 <button class="mt-2 text-xs underline text-slate-600" aria-expanded="false" aria-controls="lumen-data-table">Show data table (the chart as a table)</button>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -3119,8 +3119,8 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3180,15 +3180,15 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): n=2 paired points — too few to estimate an association; no correlation reported (need at least 3).</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -3202,8 +3202,8 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3261,11 +3261,11 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
 </div>
@@ -3338,7 +3338,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -3348,7 +3348,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -3362,12 +3362,12 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div role="note" class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2" style="background:#6d28d9;color:#ffffff">
 <span>⚗ Synthetic practice data — NOT a real student.</span>
-<span class="font-normal text-[11px]" style="opacity:0.9">For exploring Lumen; marked on every chart + export, and blocked from a defensible formal export.</span>
+<span class="font-normal text-[0.6875rem]" style="opacity:0.9">For exploring Lumen; marked on every chart + export, and blocked from a defensible formal export.</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3425,14 +3425,14 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 </div>
 <div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2">
-<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<div class="inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
 <span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
-<button class="ml-auto text-[11px] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
+<button class="ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800" title="Copy the finding sentence — the level word and interval travel with it.">⧉ Copy finding</button>
 </div>
 <p class="text-sm text-slate-800 mt-1">Practice example — not a real student. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
-<p class="mt-1 text-[11px] font-semibold" style="color:#6d28d9">◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.</p>
+<p class="mt-1 text-[0.6875rem] font-semibold" style="color:#6d28d9">◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.</p>
 </div>
 <svg id="lumen-chart-main" viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Synthetic practice data — not a real student. Bar chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#eef2f7" stroke-width="1">
@@ -3508,7 +3508,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 </label>
 <button class="px-2 py-1 text-xs rounded border border-teal-600 text-teal-700 hover:bg-teal-50">Add</button>
 </div>
-<p class="mt-1 text-[10px] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
+<p class="mt-1 text-[0.625rem] italic text-slate-500">The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.</p>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
 <button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
@@ -3518,7 +3518,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <input type="checkbox"/>Include identifiable data (FERPA)</label>
 </div>
 <button class="mt-3 text-xs underline text-slate-600" aria-expanded="false">🔬 Learn: “should I trust a trend?” sandbox</button>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;
 
@@ -3532,8 +3532,8 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
-<span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
-<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
+<span class="text-[0.6875rem] text-slate-500 italic">honest data, made to share</span>
+<span class="text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3595,9 +3595,9 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 </label>
 </div>
 <div class="mt-3">
-<div class="text-[11px] font-semibold text-slate-600 mb-1">First 5 row(s) (of 6) — headers NEVER reach the AI surface:</div>
+<div class="text-[0.6875rem] font-semibold text-slate-600 mb-1">First 5 row(s) (of 6) — headers NEVER reach the AI surface:</div>
 <div class="overflow-x-auto">
-<table class="min-w-full text-[11px]">
+<table class="min-w-full text-[0.6875rem]">
 <thead>
 <tr>
 <th scope="col" class="px-2 py-1 text-left bg-slate-100 border border-slate-200 font-semibold text-slate-700">week</th>
@@ -3635,11 +3635,11 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 </table>
 </div>
 </div>
-<p class="mt-2 text-[10px] italic text-slate-500">Imported values land as L0 (verbatim echoes). Rows missing or non-numeric in the mapped x/y are reported on bind, never silently dropped. No AI call fires during ingest.</p>
+<p class="mt-2 text-[0.625rem] italic text-slate-500">Imported values land as L0 (verbatim echoes). Rows missing or non-numeric in the mapped x/y are reported on bind, never silently dropped. No AI call fires during ingest.</p>
 </div>
 <div class="mt-2">
 <button aria-expanded="false" aria-controls="lumen-bench-workspace" class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Benchmark workspace (verify external norms)…</button>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
+<p class="mt-3 text-[0.625rem] text-slate-700">Privacy &amp; honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.</p>
 </div>"
 `;

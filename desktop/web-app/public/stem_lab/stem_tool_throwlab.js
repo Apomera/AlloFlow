@@ -6625,40 +6625,40 @@ window.StemLab = window.StemLab || {
               return React.createElement('details', { className: 'mt-3 p-3 rounded-xl bg-slate-800 text-slate-100 border border-cyan-700 space-y-2', 'data-throwlab-inquiry-panel': 'true' },
                 React.createElement('summary', { className: 'text-sm font-black text-cyan-300', style: { cursor: 'pointer' } }, __alloT('stem.throwlab.throw_angle_discovery_summary', 'Throw angle discovery')),
                 React.createElement('h3', { className: 'text-sm font-black text-cyan-300' }, __alloT('stem.throwlab.throw_angle_discovery', '🎯 Throw angle discovery')),
-                React.createElement('p', { className: 'text-[11px] text-slate-300' }, __alloT('stem.throwlab.sliders_for_angle_velocity_spin_discre', 'Sliders for angle, velocity, spin. Discrete 4-state trajectory. No score, no reveal.')),
+                React.createElement('p', { className: 'text-[0.6875rem] text-slate-300' }, __alloT('stem.throwlab.sliders_for_angle_velocity_spin_discre', 'Sliders for angle, velocity, spin. Discrete 4-state trajectory. No score, no reveal.')),
                 React.createElement('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
                   React.createElement('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1' }, sm.desc),
-                  React.createElement('div', { className: 'text-[10px] text-slate-600 font-mono mt-1' }, 'Range ≈ ' + range.toFixed(1) + ' m')
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700 mt-1' }, sm.desc),
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-600 font-mono mt-1' }, 'Range ≈ ' + range.toFixed(1) + ' m')
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                   [{ k: 'angle', l: 'Angle (°)', mn: 10, mx: 80, st: 1 },
                    { k: 'velocity', l: 'Velocity (m/s)', mn: 5, mx: 50, st: 1 },
                    { k: 'spin', l: 'Spin (rpm)', mn: -200, mx: 200, st: 5 }].map(function(s) {
                     return React.createElement('div', { key: s.k },
-                      React.createElement('label', { htmlFor: 'th-' + s.k, className: 'block text-[10px] font-bold text-slate-200' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-cyan-300' }, iq[s.k])),
+                      React.createElement('label', { htmlFor: 'th-' + s.k, className: 'block text-[0.625rem] font-bold text-slate-200' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-cyan-300' }, iq[s.k])),
                       React.createElement('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.angle, v: iq.velocity, s: iq.spin, r: range.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-3 py-1 rounded bg-slate-700 text-[11px] font-bold text-slate-200 border border-slate-600' }, __alloT('stem.throwlab.log', '📋 Log')),
-                  React.createElement('button', { onClick: function() { setIQ({ angle: 45, velocity: 30, spin: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-3 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-300 border border-slate-600' }, __alloT('stem.throwlab.reset', '↺ Reset'))
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.angle, v: iq.velocity, s: iq.spin, r: range.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-3 py-1 rounded bg-slate-700 text-[0.6875rem] font-bold text-slate-200 border border-slate-600' }, __alloT('stem.throwlab.log', '📋 Log')),
+                  React.createElement('button', { onClick: function() { setIQ({ angle: 45, velocity: 30, spin: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-3 py-1 rounded bg-transparent text-[0.6875rem] font-semibold text-slate-300 border border-slate-600' }, __alloT('stem.throwlab.reset', '↺ Reset'))
                 ),
                 React.createElement('textarea', { 'aria-label': __alloT('stem.throwlab.hypothesis_label', 'Hypothesis about the throw trajectory'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.throwlab.hypothesis_why_is_45_special_what_abou', 'Hypothesis: Why is 45° special? What about with spin?'),
-                  className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-slate-500 rounded p-1 font-mono', rows: 2 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, __alloT('stem.throwlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200' },
+                  className: 'w-full text-[0.6875rem] bg-slate-900 text-slate-100 border border-slate-500 rounded p-1 font-mono', rows: 2 }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-1 rounded bg-amber-700/30 text-[0.6875rem] font-bold text-amber-300 border border-amber-700' }, __alloT('stem.throwlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-900/20 border border-amber-700 text-[0.6875rem] text-slate-200' },
                   React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
                     React.createElement('li', null, __alloT('stem.throwlab.real_quarterbacks_throw_at_lower_angle', 'Real quarterbacks throw at lower angles. Why?')),
                     React.createElement('li', null, __alloT('stem.throwlab.how_does_spin_magnus_effect_alter_traj', 'How does spin (Magnus effect) alter trajectory?')))),
-                React.createElement('label', { className: 'flex items-center gap-2 text-[11px] font-bold text-emerald-300 cursor-pointer' },
+                React.createElement('label', { className: 'flex items-center gap-2 text-[0.6875rem] font-bold text-emerald-300 cursor-pointer' },
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
                   __alloT('stem.throwlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && React.createElement('textarea', { 'aria-label': __alloT('stem.throwlab.explanation_label', 'Explain the throw trajectory physics'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.throwlab.explain_throw_trajectory_physics', 'Explain throw trajectory physics.'),
-                  className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-emerald-700 rounded p-1 font-mono mt-1', rows: 3 }),
-                React.createElement('div', { className: 'text-[10px] italic text-slate-400' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
+                  className: 'w-full text-[0.6875rem] bg-slate-900 text-slate-100 border border-emerald-700 rounded p-1 font-mono mt-1', rows: 3 }),
+                React.createElement('div', { className: 'text-[0.625rem] italic text-slate-400' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
               );
             })(),
             h('section', {

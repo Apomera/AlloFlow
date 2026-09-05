@@ -24,7 +24,7 @@ describe('Coordinate Grid text accessibility', () => {
     const html = renderTool('coordinate', { coordinate: {} });
     expect(html).not.toMatch(/text-\[(?:[0-9])px\]/);
     expect(html).not.toMatch(/font-size="(?:[0-9](?:\.[0-9]+)?)"/);
-    expect(html).toContain('text-[10px]');
+    expect(html).toContain('text-[0.625rem]');
   });
 
   it('names the grid visualization and exposes a keyboard coordinate-entry path', () => {

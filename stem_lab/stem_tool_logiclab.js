@@ -904,7 +904,7 @@ window.StemLab = window.StemLab || {
                         className: "rounded-xl border border-white/80 bg-white/85 p-3 shadow-sm",
                         style: { minHeight: 86 }
                       },
-                        React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wide text-slate-500" }, stat[0]),
+                        React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-slate-500" }, stat[0]),
                         React.createElement("div", { className: "mt-1 truncate text-sm font-black text-slate-950", title: String(stat[1]) }, stat[1]),
                         React.createElement("div", { className: "mt-1 text-xs font-bold text-violet-700" }, stat[2])
                       );
@@ -1420,7 +1420,7 @@ window.StemLab = window.StemLab || {
                       var falseCount = table.rows.length - trueCount;
                       var truePct = (trueCount / table.rows.length) * 100;
                       return React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-2 border border-slate-200" },
-                        React.createElement("div", { className: "flex items-center justify-between text-[11px] font-bold mb-1.5" },
+                        React.createElement("div", { className: "flex items-center justify-between text-[0.6875rem] font-bold mb-1.5" },
                           React.createElement("span", { className: "text-emerald-700" }, "\u2713 True: " + trueCount + " / " + table.rows.length + " rows"),
                           React.createElement("span", { className: "text-slate-500 font-mono" }, truePct.toFixed(0) + "% satisfied"),
                           React.createElement("span", { className: "text-red-600" }, "\u2717 False: " + falseCount + " / " + table.rows.length + " rows")
@@ -1483,7 +1483,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("div", { className: "text-lg font-black " + (isCompleted ? "text-emerald-600" : "text-violet-700") }, isCompleted ? "\u2714" : "L" + ch.level),
 
-                      React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-0.5" }, ch.title)
+                      React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-600 mt-0.5" }, ch.title)
 
                     );
 
@@ -1582,7 +1582,7 @@ window.StemLab = window.StemLab || {
 
                     ),
 
-                    activeCh.context && React.createElement("div", { className: "mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200 text-[11px] text-purple-700 italic flex items-center gap-1" },
+                    activeCh.context && React.createElement("div", { className: "mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200 text-[0.6875rem] text-purple-700 italic flex items-center gap-1" },
 
                       React.createElement("span", null, "\uD83E\uDD16"),
 
@@ -1758,9 +1758,9 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("div", { className: "font-bold text-violet-800 text-xs" }, rule.name),
 
-                      React.createElement("div", { className: "text-[11px] font-mono text-slate-600 mt-0.5" }, rule.form),
+                      React.createElement("div", { className: "text-[0.6875rem] font-mono text-slate-600 mt-0.5" }, rule.form),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5 italic" }, rule.eng)
+                      React.createElement("div", { className: "text-[0.6875rem] text-slate-600 mt-0.5 italic" }, rule.eng)
 
                     );
 
@@ -1774,14 +1774,14 @@ window.StemLab = window.StemLab || {
                       return React.createElement("button", {
                         "aria-label": t('stem.logiclab.hide_advanced_rules', "Hide advanced rules"),
                         onClick: function() { upd({ showAllRules: false }); },
-                        className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 border border-violet-300 hover:bg-violet-100 transition-all"
+                        className: "w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-violet-50 text-violet-600 border border-violet-300 hover:bg-violet-100 transition-all"
                       }, "🎯 Focus mode: show fewer rules");
                     }
                     if (hiddenCount > 0) {
                       return React.createElement("button", {
                         "aria-label": t('stem.logiclab.show_all_rules', "Show all inference rules"),
                         onClick: function() { upd({ showAllRules: true }); },
-                        className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-300 hover:bg-violet-50 transition-all"
+                        className: "w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-slate-50 text-slate-600 border border-slate-300 hover:bg-violet-50 transition-all"
                       }, "🔓 Show " + hiddenCount + " advanced rule" + (hiddenCount > 1 ? "s" : ""));
                     }
                     return null;
@@ -1789,7 +1789,7 @@ window.StemLab = window.StemLab || {
 
                   // Fallacy note — appears when a failed rule application matches a
                   // classic invalid move; cleared on the next valid step or reset.
-                  d.fallacyNote && React.createElement("div", { className: "p-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-[11px] leading-relaxed text-amber-900", role: "status" },
+                  d.fallacyNote && React.createElement("div", { className: "p-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-[0.6875rem] leading-relaxed text-amber-900", role: "status" },
                     React.createElement("span", { className: "font-black" }, "🚫 "),
                     d.fallacyNote
                   )
@@ -1814,7 +1814,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("span", { className: "font-black text-violet-800 text-sm" }, "Score: " + score),
                 React.createElement("span", { className: "text-violet-300 font-bold" }, "|"),
                 React.createElement("span", { className: "font-black text-amber-600 text-sm" }, "\uD83D\uDD25 Streak: " + streak + " (Best: " + bestStreak + ")"),
-                React.createElement("button", { "aria-label": t('stem.logiclab.reset_challenge_score', "Reset challenge score"), onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[11px] text-slate-600 hover:text-red-400 font-bold" }, t('stem.logiclab.reset_2', "Reset"))
+                React.createElement("button", { "aria-label": t('stem.logiclab.reset_challenge_score', "Reset challenge score"), onClick: function(){upd({score:0,streak:0,bestStreak:0});}, className: "ml-auto text-[0.6875rem] text-slate-600 hover:text-red-400 font-bold" }, t('stem.logiclab.reset_2', "Reset"))
               ),
 
               // Challenge type tabs
@@ -1860,7 +1860,7 @@ window.StemLab = window.StemLab || {
 
                 }),
 
-                userTopic && React.createElement("span", { className: "text-[11px] font-bold text-violet-500" }, t('stem.logiclab.ai_will_personalize', "AI will personalize \u2728"))
+                userTopic && React.createElement("span", { className: "text-[0.6875rem] font-bold text-violet-500" }, t('stem.logiclab.ai_will_personalize', "AI will personalize \u2728"))
 
               ),
 
@@ -1999,7 +1999,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-purple-900" }, t('stem.logiclab.ai_generated_is_this_argument_valid', "AI-Generated: Is this argument valid?")),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai', "\u2728 AI"))
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai', "\u2728 AI"))
 
                   ),
 
@@ -2287,7 +2287,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-purple-900" }, t('stem.logiclab.ai_mystery_3', "AI Mystery")),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai_2', "\u2728 AI"))
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai_2', "\u2728 AI"))
 
                   ),
 
@@ -2352,7 +2352,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("span", { className: "text-xs text-violet-400 font-bold" }, t('stem.logiclab.toggle_inputs_to_see_the_output_live', "Toggle inputs to see the output live"))
                 ),
                 // Binary-state legend — clarifies what the 1s and 0s on the wires mean
-                React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[11px] font-bold" },
+                React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[0.6875rem] font-bold" },
                   React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-emerald-700 text-white text-center leading-4" }, "1"), React.createElement("span", { className: "text-emerald-700" }, t('stem.logiclab.high_true_on', "HIGH · true · on"))),
                   React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-slate-300 text-slate-700 text-center leading-4" }, "0"), React.createElement("span", { className: "text-slate-500" }, t('stem.logiclab.low_false_off', "LOW · false · off")))
                 ),
@@ -2462,7 +2462,7 @@ window.StemLab = window.StemLab || {
                           upd({ mode:'truth', expression: fml });
                           if (addToast) addToast('Opened in Truth Table builder!','info');
                         },
-                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-800 font-bold rounded-full text-[11px]"
+                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-800 font-bold rounded-full text-[0.6875rem]"
                       }, t('stem.logiclab.open_in_truth_tables_2', "\uD83D\uDCCA Open in Truth Tables \u2192"))
                     )
                   );
@@ -2489,39 +2489,39 @@ window.StemLab = window.StemLab || {
               }[state];
               return React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
                 React.createElement('h3', { className: 'text-sm font-black text-violet-700' }, t('stem.logiclab.probability_logic_discovery', '🎲 Probability logic discovery')),
-                React.createElement('p', { className: 'text-[12px] text-slate-700' }, t('stem.logiclab.sliders_for_p_q_truth_probabilities_co', 'Sliders for P, Q truth probabilities, confidence threshold. Discrete 4-state inference outcome. No score, no reveal.')),
+                React.createElement('p', { className: 'text-[0.75rem] text-slate-700' }, t('stem.logiclab.sliders_for_p_q_truth_probabilities_co', 'Sliders for P, Q truth probabilities, confidence threshold. Discrete 4-state inference outcome. No score, no reveal.')),
                 React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   React.createElement('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'P(P)=' + iq.pTrue + '%, P(Q)=' + iq.qTrue + '%, P(P∧Q)=' + pAnd.toFixed(0) + '%, P(P∨Q)=' + pOr.toFixed(0) + '%')
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700 mt-1 font-mono' }, 'P(P)=' + iq.pTrue + '%, P(Q)=' + iq.qTrue + '%, P(P∧Q)=' + pAnd.toFixed(0) + '%, P(P∨Q)=' + pOr.toFixed(0) + '%')
                 ),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
                   [{ k: 'pTrue', l: 'P truth %' }, { k: 'qTrue', l: 'Q truth %' }, { k: 'threshold', l: 'Confidence %' }].map(function(s) {
                     return React.createElement('div', { key: s.k },
-                      React.createElement('label', { htmlFor: 'sl-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
+                      React.createElement('label', { htmlFor: 'sl-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
                       React.createElement('input', { id: 'sl-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pTrue, q: iq.qTrue, t: iq.threshold, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.logiclab.log', '📋 Log')),
-                  React.createElement('button', { onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.logiclab.reset_3', '↺ Reset'))
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pTrue, q: iq.qTrue, t: iq.threshold, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.logiclab.log', '📋 Log')),
+                  React.createElement('button', { onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.logiclab.reset_3', '↺ Reset'))
                 ),
                 React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q', 'Hypothesis: When does P(P∧Q) ≈ P(P)·P(Q)?'),
                   'aria-label': t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q', 'Probability logic hypothesis'),
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.logiclab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
+                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.logiclab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700' },
                   React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
                     React.createElement('li', null, t('stem.logiclab.independence_vs_correlation_when_does_', 'Independence vs correlation — when does each apply?')),
                     React.createElement('li', null, t('stem.logiclab.how_does_threshold_change_inference_ou', 'How does threshold change inference outcome?')))),
-                React.createElement('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                React.createElement('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.logiclab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.logiclab.explain_probability_logic', 'Explain probability logic.'),
                   'aria-label': t('stem.logiclab.explain_probability_logic', 'Explain probability logic'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                React.createElement('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.logiclab.design_note_discrete_4_state_inference', 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                React.createElement('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.logiclab.design_note_discrete_4_state_inference', 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.'))
               );
             })(),
 
@@ -2601,9 +2601,9 @@ window.StemLab = window.StemLab || {
                         className: "flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
                         onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth' }); if(addToast) addToast('Loaded in Truth Tables!','info'); }
                       },
-                        React.createElement("span", { className: "text-[11px] font-black text-violet-500 w-28 shrink-0" }, law[0]),
+                        React.createElement("span", { className: "text-[0.6875rem] font-black text-violet-500 w-28 shrink-0" }, law[0]),
                         React.createElement("code", { className: "font-mono text-xs text-violet-800 font-bold" }, law[1]),
-                        React.createElement("span", { className: "ml-auto text-violet-300 text-[11px]" }, "\u2192")
+                        React.createElement("span", { className: "ml-auto text-violet-300 text-[0.6875rem]" }, "\u2192")
                       );
                     })
                   )

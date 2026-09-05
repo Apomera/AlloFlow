@@ -1209,7 +1209,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-orange-300', 'aria-label': __alloT('stem.manipulatives.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-orange-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-orange-100 ring-1 ring-orange-200/30' }, 'Representation studio')
+                  h('span', { className: 'rounded-full bg-orange-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-orange-100 ring-1 ring-orange-200/30' }, 'Representation studio')
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, __alloT('stem.manipulatives.math_manipulatives', '\uD83E\uDDEE Math Manipulatives')),
                 h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-orange-100' }, 'Make number relationships visible, then connect concrete models to pictures and equations.'),
@@ -1223,7 +1223,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-orange-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-orange-200' }, metric.label)
                   );
                 })
               )
@@ -1246,9 +1246,9 @@ window.StemLab = window.StemLab || {
           streak >= 3 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak),
           h('div', { className: 'flex gap-1.5' },
             h('span', { className: 'text-xs font-bold text-emerald-700 self-center', style: { color: ctx.isContrast ? '#ffff00' : undefined } }, score.correct + '/' + score.total),
-            h('button', { 'aria-label': __alloT('stem.manipulatives.badges', 'Badges'), onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.badges', 'Badges'), onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd({ soundEnabled: !soundEnabled }); }, 'aria-label': soundEnabled ? 'Mute sound' : 'Enable sound', className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-            callGemini && h('button', { 'aria-label': aiLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': aiLoading, onClick: askAI, disabled: aiLoading, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (aiLoading ? 'bg-pink-100 border-pink-700 text-pink-700' : 'bg-pink-50 border-pink-700 text-pink-700 hover:bg-pink-100') }, aiLoading ? '\u23F3' : '\uD83E\uDD16 Tutor')
+            callGemini && h('button', { 'aria-label': aiLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': aiLoading, onClick: askAI, disabled: aiLoading, className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border transition-all ' + (aiLoading ? 'bg-pink-100 border-pink-700 text-pink-700' : 'bg-pink-50 border-pink-700 text-pink-700 hover:bg-pink-100') }, aiLoading ? '\u23F3' : '\uD83E\uDD16 Tutor')
           )
         ),
 
@@ -1261,8 +1261,8 @@ window.StemLab = window.StemLab || {
               return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-400 opacity-40') },
                 h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
-                  h('div', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
-                  h('div', { className: 'text-[11px] ' + (earned ? 'text-amber-600' : 'text-slate-600') }, __alloT('stem.manipulatives.' + (badge.id) + '_desc', badge.desc))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
+                  h('div', { className: 'text-[0.6875rem] ' + (earned ? 'text-amber-600' : 'text-slate-600') }, __alloT('stem.manipulatives.' + (badge.id) + '_desc', badge.desc))
                 )
               );
             })
@@ -1392,7 +1392,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-center mb-4' },
               h('span', { className: 'text-4xl font-bold text-orange-800 font-mono' + onHostInk }, totalValue.toLocaleString()),
               showExpanded && totalValue > 0 && h('div', { className: 'text-xs text-orange-800 font-mono mt-1' }, expandedForm(totalValue)),
-              showExpanded && totalValue > 0 && totalValue < 10000 && h('div', { className: 'text-[11px] text-orange-800 italic mt-0.5' }, '"' + numberWords(totalValue) + '"'),
+              showExpanded && totalValue > 0 && totalValue < 10000 && h('div', { className: 'text-[0.6875rem] text-orange-800 italic mt-0.5' }, '"' + numberWords(totalValue) + '"'),
               h('span', { className: 'text-2xl text-slate-600 mx-3' }, '='),
               // ── Solid blocks (WebGL) ──
               // Only offered where it teaches something the flat view cannot:
@@ -1408,7 +1408,7 @@ window.StemLab = window.StemLab || {
                       ? 'Switched to flat blocks.'
                       : 'Switched to solid 3D blocks. Turn a thousand block to count ten flats of depth.');
                   },
-                  className: 'px-3 py-1 text-[11px] font-bold rounded-lg border transition-colors ' + (b10Solid ? 'border-pink-400 bg-pink-600 text-white' : 'border-orange-300 bg-white text-orange-700 hover:bg-orange-50')
+                  className: 'px-3 py-1 text-[0.6875rem] font-bold rounded-lg border transition-colors ' + (b10Solid ? 'border-pink-400 bg-pink-600 text-white' : 'border-orange-300 bg-white text-orange-700 hover:bg-orange-50')
                 }, b10Solid ? '■ Solid blocks' : '▬ Flat blocks'),
                 b10Solid && [['Turn left', { rotY: b10Rot.rotY - 25 }], ['Turn right', { rotY: b10Rot.rotY + 25 }],
                              ['Tilt up', { rotX: Math.max(-88, b10Rot.rotX - 15) }], ['Tilt down', { rotX: Math.min(88, b10Rot.rotX + 15) }]]
@@ -1416,7 +1416,7 @@ window.StemLab = window.StemLab || {
                     return h('button', {
                       key: i, type: 'button', 'aria-label': b[0],
                       onClick: function() { upd({ b10Rot: Object.assign({}, b10Rot, b[1]) }); },
-                      className: 'w-8 h-7 text-[11px] rounded border border-orange-300 bg-white text-orange-700 hover:bg-orange-50'
+                      className: 'w-8 h-7 text-[0.6875rem] rounded border border-orange-300 bg-white text-orange-700 hover:bg-orange-50'
                     }, ['◀', '▶', '▲', '▼'][i]);
                   })
               ),
@@ -1448,7 +1448,7 @@ window.StemLab = window.StemLab || {
                 totalValue === 0 && h('span', { className: 'text-sm text-slate-600 italic' }, __alloT('stem.manipulatives.no_blocks', 'no blocks'))
               )
             ),
-            h('div', { className: 'flex items-center justify-center gap-4 mb-3 text-[11px] font-bold text-slate-600' },
+            h('div', { className: 'flex items-center justify-center gap-4 mb-3 text-[0.6875rem] font-bold text-slate-600' },
               h('span', null, __alloT('stem.manipulatives.cube_1000', '\u25A0 Cube = 1000')), h('span', null, __alloT('stem.manipulatives.flat_100', '\u25AC Flat = 100')), h('span', null, __alloT('stem.manipulatives.rod_10', '\u2503 Rod = 10')), h('span', null, __alloT('stem.manipulatives.unit_1', '\u25AA Unit = 1'))
             ),
             // Place value columns
@@ -1460,7 +1460,7 @@ window.StemLab = window.StemLab || {
             ),
             // Regrouping
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mt-1' },
-              h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center' }, __alloT('stem.manipulatives.regroup_ungroup', '\u21C4 Regroup / Ungroup')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center' }, __alloT('stem.manipulatives.regroup_ungroup', '\u21C4 Regroup / Ungroup')),
               h('div', { className: 'grid grid-cols-2 gap-2' },
                 regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10, '#c2410c', '#047857'),
                 regroupBtn('1 \u2503 \u2192 10 \u25AA', 'tens', 'ones', b10.tens >= 1, '#047857', '#c2410c'),
@@ -1470,20 +1470,20 @@ window.StemLab = window.StemLab || {
                 regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#be185d', '#1d4ed8')
               ),
               tradeComparison(),
-              h('p', { className: 'text-[11px] text-violet-700 text-center mt-1.5 italic' }, __alloT('stem.manipulatives.10_of_one_place_value_always_equals_1_', '\uD83D\uDCA1 10 of one place value always equals 1 of the next!'))
+              h('p', { className: 'text-[0.6875rem] text-violet-700 text-center mt-1.5 italic' }, __alloT('stem.manipulatives.10_of_one_place_value_always_equals_1_', '\uD83D\uDCA1 10 of one place value always equals 1 of the next!'))
             )
           ),
 
           // Difficulty selector
           h('div', { className: 'flex gap-1.5 items-center flex-wrap' },
-            h('span', { className: 'text-[11px] font-bold text-slate-600' + onHostInk }, 'Difficulty:'),
+            h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' + onHostInk }, 'Difficulty:'),
             [{ id: 'ones', label: '1\u20139', color: '#c2410c' }, { id: 'tens', label: '10\u201399', color: '#047857' }, { id: 'hundreds', label: '100\u2013999', color: '#1d4ed8' }, { id: 'thousands', label: '1K\u20139K', color: '#be185d' }, { id: 'any', label: 'Any', color: '#475569' }].map(function(dl) {
               return h('button', { 'aria-label': __alloT('stem.manipulatives.challenge_range', 'Challenge range: ') + dl.label, 'aria-pressed':diffLevel === dl.id, key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
-                className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'),
+                className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'),
                 style: diffLevel === dl.id ? { backgroundColor: dl.color } : {}
               }, dl.label);
             }),
-            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-orange-800 cursor-pointer ml-auto' + onHostInk },
+            h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-orange-800 cursor-pointer ml-auto' + onHostInk },
               h('input', { type: 'checkbox', checked: showExpanded, onChange: function() { upd({ showExpanded: !showExpanded }); }, className: 'accent-orange-600' }), __alloT('stem.manipulatives.expanded_form_2', 'Expanded Form'))
           ),
 
@@ -1542,7 +1542,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'text-center' },
             h('span', { className: 'text-4xl font-bold font-mono text-amber-800' + onHostInk }, abacusTotal.toLocaleString()),
             speedChallenge && h('div', { className: 'text-xs font-bold text-rose-500 mt-1' }, '\u23F1\uFE0F Target: ' + speedChallenge.target.toLocaleString() + ' \u2014 GO!'),
-            speedBest && h('span', { className: 'text-[11px] text-amber-500 ml-2' }, '\uD83C\uDFC6 Best: ' + speedBest.toFixed(1) + 's')
+            speedBest && h('span', { className: 'text-[0.6875rem] text-amber-500 ml-2' }, '\uD83C\uDFC6 Best: ' + speedBest.toFixed(1) + 's')
           ),
           // Abacus frame
           h('div', {
@@ -1591,7 +1591,7 @@ window.StemLab = window.StemLab || {
                       });
                     })
                   ),
-                  h('div', { className: 'text-[11px] font-bold mt-1', style: { color: rodColor } }, placeNames[rodIdx]),
+                  h('div', { className: 'text-[0.6875rem] font-bold mt-1', style: { color: rodColor } }, placeNames[rodIdx]),
                   h('div', { className: 'text-xs font-mono font-bold text-amber-900' }, val)
                 );
               })
@@ -1630,7 +1630,7 @@ window.StemLab = window.StemLab || {
 
           // Culture cards
           h('div', null,
-            h('button', { 'aria-label': __alloT('stem.manipulatives.toggle_cultural_context_panel', 'Toggle cultural context panel'), onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[11px] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-600') + 'transition-colors  hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
+            h('button', { 'aria-label': __alloT('stem.manipulatives.toggle_cultural_context_panel', 'Toggle cultural context panel'), onClick: function() { upd({ showCulture: !showCulture }); }, className: 'text-[0.6875rem] font-bold ' + (showCulture ? 'text-amber-600' : 'text-slate-600') + 'transition-colors  hover:text-amber-600' }, (showCulture ? '\u25B2' : '\u25BC') + ' \uD83C\uDF0F Abacus Around the World'),
             showCulture && h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
               abacusFacts.map(function(fact) {
                 return h('div', { key: fact.name, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
@@ -1762,7 +1762,7 @@ window.StemLab = window.StemLab || {
               h('p', null, '3\uFE0F\u20E3 ', h('strong', null, __alloT('stem.manipulatives.click_the_bottom_d_area', 'Click the bottom (D) area')), __alloT('stem.manipulatives.to_move_the_red_cursor', ' to move the red cursor.')),
               h('p', null, __alloT('stem.manipulatives.4_read_where_the', '4\uFE0F\u20E3 Read where the '), h('strong', null, __alloT('stem.manipulatives.cursor_crosses_both_scales', 'cursor crosses both scales')), __alloT('stem.manipulatives.the_readout_shows_exact_values', '. The readout shows exact values.'))
             ),
-            h('p', { className: 'text-[11px] text-amber-800 italic mt-1' }, __alloT('stem.manipulatives.nasa_engineers_used_slide_rules_for_ap', '\uD83D\uDE80 NASA engineers used slide rules for Apollo moon mission trajectories!'))
+            h('p', { className: 'text-[0.6875rem] text-amber-800 italic mt-1' }, __alloT('stem.manipulatives.nasa_engineers_used_slide_rules_for_ap', '\uD83D\uDE80 NASA engineers used slide rules for Apollo moon mission trajectories!'))
           )
         );
       }
@@ -1784,7 +1784,7 @@ window.StemLab = window.StemLab || {
 
           pvQuiz && h('div', { className: 'bg-white rounded-xl p-5 border-2 border-orange-200 shadow-sm' },
             h('div', { className: 'flex items-center gap-2 mb-3' },
-              h('span', { className: 'text-[11px] font-bold uppercase px-2 py-0.5 rounded-full ' + (
+              h('span', { className: 'text-[0.6875rem] font-bold uppercase px-2 py-0.5 rounded-full ' + (
                 pvQuiz.type === 'digit_place' ? 'bg-blue-100 text-blue-700' :
                 pvQuiz.type === 'expanded_to_standard' ? 'bg-green-100 text-green-700' :
                 pvQuiz.type === 'standard_to_expanded' ? 'bg-purple-100 text-purple-700' :
@@ -1825,8 +1825,8 @@ window.StemLab = window.StemLab || {
             ].map(function(cat) {
               return h('div', { key: cat.name, className: 'bg-orange-50 rounded-lg p-2 border border-orange-200 text-center' },
                 h('div', { className: 'text-base mb-0.5' }, cat.icon),
-                h('div', { className: 'text-[11px] font-bold text-orange-800' }, cat.name),
-                h('div', { className: 'text-[11px] text-orange-500' }, cat.desc)
+                h('div', { className: 'text-[0.6875rem] font-bold text-orange-800' }, cat.name),
+                h('div', { className: 'text-[0.6875rem] text-orange-500' }, cat.desc)
               );
             })
           ),
@@ -2030,7 +2030,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-5xl font-black ' + (net > 0 ? 'text-emerald-700' : net < 0 ? 'text-rose-700' : 'text-slate-600') },
               (net > 0 ? '+' : '') + net
             ),
-            zeroPairs > 0 && h('p', { className: 'text-[11px] text-slate-600 mt-1' },
+            zeroPairs > 0 && h('p', { className: 'text-[0.6875rem] text-slate-600 mt-1' },
               zeroPairs + ' zero pair' + (zeroPairs === 1 ? '' : 's') + ' (cancel each other out)'
             )
           ),
@@ -2045,14 +2045,14 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold text-amber-700 mb-2 text-center' }, '🟡 Yellow (positive): ' + counters.yellow),
               h('div', { className: 'flex flex-wrap gap-1 justify-center min-h-[80px]' },
                 counters.yellow === 0
-                  ? h('p', { className: 'text-[11px] italic text-slate-500 self-center' }, __alloT('stem.manipulatives.no_yellow_counters_yet', 'No yellow counters yet'))
+                  ? h('p', { className: 'text-[0.6875rem] italic text-slate-500 self-center' }, __alloT('stem.manipulatives.no_yellow_counters_yet', 'No yellow counters yet'))
                   : renderCounter(palette.counter2, counters.yellow, 'yellow')
               ),
               h('div', { className: 'flex gap-1 mt-2' },
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { yellow: counters.yellow + 1 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800' }, __alloT('stem.manipulatives.yellow', '+ Yellow')),
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800' }, __alloT('stem.manipulatives.yellow', '+ Yellow')),
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { yellow: counters.yellow + 5 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800' }, __alloT('stem.manipulatives.5', '+ 5'))
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800' }, __alloT('stem.manipulatives.5', '+ 5'))
               )
             ),
             h('div', {
@@ -2064,19 +2064,19 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold text-rose-700 mb-2 text-center' }, '🔴 Red (negative): ' + counters.red),
               h('div', { className: 'flex flex-wrap gap-1 justify-center min-h-[80px]' },
                 counters.red === 0
-                  ? h('p', { className: 'text-[11px] italic text-slate-500 self-center' }, __alloT('stem.manipulatives.no_red_counters_yet', 'No red counters yet'))
+                  ? h('p', { className: 'text-[0.6875rem] italic text-slate-500 self-center' }, __alloT('stem.manipulatives.no_red_counters_yet', 'No red counters yet'))
                   : renderCounter(palette.counter1, counters.red, 'red')
               ),
               h('div', { className: 'flex gap-1 mt-2' },
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { red: counters.red + 1 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700' }, __alloT('stem.manipulatives.red', '+ Red')),
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold bg-rose-600 text-white hover:bg-rose-700' }, __alloT('stem.manipulatives.red', '+ Red')),
                 h('button', { onClick: function() { upd({ counters: Object.assign({}, counters, { red: counters.red + 5 }) }); sfxClick(); },
-                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[11px] font-bold bg-rose-700 text-white hover:bg-rose-800' }, __alloT('stem.manipulatives.5_2', '+ 5'))
+                  className: 'transition-colors flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold bg-rose-700 text-white hover:bg-rose-800' }, __alloT('stem.manipulatives.5_2', '+ 5'))
               )
             )
           ),
           // Drag hint
-          (counters.red > 0 && counters.yellow > 0) && h('p', { className: 'text-[11px] text-center text-emerald-700 italic' },
+          (counters.red > 0 && counters.yellow > 0) && h('p', { className: 'text-[0.6875rem] text-center text-emerald-700 italic' },
             __alloT('stem.manipulatives.tip_drag_a_yellow_onto_the_red_box_or_', '✋ Tip: drag a yellow onto the red box (or vice versa) to remove a zero pair.')
           ),
           // Actions
@@ -2195,18 +2195,18 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-2xl font-black text-cyan-900 text-center mb-2' }, value),
             h('div', { className: 'min-h-[150px] flex flex-col items-center justify-end px-2' },
               value === 0
-                ? h('span', { className: 'text-[11px] italic text-slate-400' }, 'empty')
+                ? h('span', { className: 'text-[0.6875rem] italic text-slate-400' }, 'empty')
                 : disks.slice(0, Math.min(value, 12)),
-              value > 12 && h('span', { className: 'text-[10px] text-cyan-600 mt-2' }, '+ ' + (value - 12) + ' more')
+              value > 12 && h('span', { className: 'text-[0.625rem] text-cyan-600 mt-2' }, '+ ' + (value - 12) + ' more')
             ),
             h('div', { className: 'flex gap-1 mt-2' },
               h('button', {
                 onClick: function() { var nd = Object.assign({}, pvDisks); nd[place] = value + 1; upd({ pvDisks: nd }); sfxClick(); },
-                className: 'transition-colors flex-1 px-2 py-1 rounded text-[10px] font-bold bg-cyan-700 text-white hover:bg-cyan-800'
+                className: 'transition-colors flex-1 px-2 py-1 rounded text-[0.625rem] font-bold bg-cyan-700 text-white hover:bg-cyan-800'
               }, '+'),
               h('button', {
                 onClick: function() { var nd = Object.assign({}, pvDisks); nd[place] = Math.max(0, value - 1); upd({ pvDisks: nd }); sfxClick(); },
-                className: 'transition-colors flex-1 px-2 py-1 rounded text-[10px] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300'
+                className: 'transition-colors flex-1 px-2 py-1 rounded text-[0.625rem] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300'
               }, '−')
             )
           );
@@ -2346,7 +2346,7 @@ window.StemLab = window.StemLab || {
                 }, sc === null ? 'Off' : 'Skip ' + sc + 's');
               })
             ),
-            hundredsSkipCount && h('p', { className: 'text-[11px] text-green-700 italic mt-2' },
+            hundredsSkipCount && h('p', { className: 'text-[0.6875rem] text-green-700 italic mt-2' },
               'Blue cells are multiples of ' + hundredsSkipCount + '. There are ' + Math.floor(100 / hundredsSkipCount) + ' multiples between 1 and 100.'
             )
           ),
@@ -2561,8 +2561,8 @@ window.StemLab = window.StemLab || {
                   style: { borderColor: s.color }
                 },
                   h('div', { className: 'flex justify-center' }, pbSvg(s.id, s.color, 44)),
-                  h('p', { className: 'text-[10px] font-bold text-slate-700 mt-1' }, s.name),
-                  h('p', { className: 'text-[10px] text-slate-500 font-mono' }, s.fraction)
+                  h('p', { className: 'text-[0.625rem] font-bold text-slate-700 mt-1' }, s.name),
+                  h('p', { className: 'text-[0.625rem] text-slate-500 font-mono' }, s.fraction)
                 );
               })
             )
@@ -2571,10 +2571,10 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-xs font-bold text-purple-700' }, 'Workspace (' + patternBlocks.length + ' shapes):'),
               h('button', { onClick: function() { upd({ patternBlocks: [] }); },
-                className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_3', '↺ Clear'))
+                className: 'transition-colors px-2 py-1 rounded text-[0.625rem] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_3', '↺ Clear'))
             ),
             patternBlocks.length === 0
-              ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, __alloT('stem.manipulatives.empty_workspace_click_a_shape_above_to', 'Empty workspace. Click a shape above to add it. Click a workspace shape to remove it.'))
+              ? h('p', { className: 'text-[0.6875rem] italic text-slate-500 text-center py-4' }, __alloT('stem.manipulatives.empty_workspace_click_a_shape_above_to', 'Empty workspace. Click a shape above to add it. Click a workspace shape to remove it.'))
               : h('div', { className: 'flex flex-wrap gap-1 justify-center', style: { filter: 'drop-shadow(0 2px 2px rgba(15,23,42,0.25))' } },
                   patternBlocks.map(function(b, i) {
                     var shape = PB_SHAPES.find(function(s) { return s.id === b.type; });
@@ -2588,7 +2588,7 @@ window.StemLab = window.StemLab || {
                     }, pbSvg(b.type, shape.color, 56));
                   })
                 ),
-            patternBlocks.length > 0 && h('p', { className: 'text-[11px] text-purple-700 mt-2 text-center font-bold' },
+            patternBlocks.length > 0 && h('p', { className: 'text-[0.6875rem] text-purple-700 mt-2 text-center font-bold' },
               __alloT('stem.manipulatives.total_fractional_value_in_hexagons', 'Total fractional value (in hexagons): '), h('span', { className: 'font-mono' }, totalValue.toFixed(3)),
               totalValue === Math.floor(totalValue) && totalValue > 0 && ' = ' + totalValue + ' whole hexagon' + (totalValue === 1 ? '' : 's')
             )
@@ -2783,15 +2783,15 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'grid grid-cols-3 gap-2' },
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-sky-700' }, __alloT('stem.manipulatives.segments', 'Segments')),
+              h('p', { className: 'text-[0.625rem] font-bold text-sky-700' }, __alloT('stem.manipulatives.segments', 'Segments')),
               h('p', { className: 'text-xl font-black text-sky-900' }, geoboardSegments.length)
             ),
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-sky-700' }, __alloT('stem.manipulatives.perimeter_units', 'Perimeter (units)')),
+              h('p', { className: 'text-[0.625rem] font-bold text-sky-700' }, __alloT('stem.manipulatives.perimeter_units', 'Perimeter (units)')),
               h('p', { className: 'text-xl font-black text-sky-900' }, perimeter.toFixed(2))
             ),
             h('div', { className: 'bg-sky-50 rounded p-2 border border-sky-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-sky-700' }, __alloT('stem.manipulatives.grid_size', 'Grid size')),
+              h('p', { className: 'text-[0.625rem] font-bold text-sky-700' }, __alloT('stem.manipulatives.grid_size', 'Grid size')),
               h('p', { className: 'text-xl font-black text-sky-900' }, GB_SIZE + '×' + GB_SIZE)
             )
           ),
@@ -3013,10 +3013,10 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-xs font-bold text-amber-700' }, 'Workspace (' + cRods.length + ' rods, total length = ' + rodLengthsTotal + '):'),
               h('button', { onClick: function() { upd({ cRods: [] }); },
-                className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_5', '↺ Clear'))
+                className: 'transition-colors px-2 py-1 rounded text-[0.625rem] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_5', '↺ Clear'))
             ),
             cRods.length === 0
-              ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, __alloT('stem.manipulatives.no_rods_yet_click_a_colored_rod_above_', 'No rods yet. Click a colored rod above to add it.'))
+              ? h('p', { className: 'text-[0.6875rem] italic text-slate-500 text-center py-4' }, __alloT('stem.manipulatives.no_rods_yet_click_a_colored_rod_above_', 'No rods yet. Click a colored rod above to add it.'))
               : h('div', { className: 'space-y-1' },
                   cRods.map(function(r, i) {
                     return h('button', {
@@ -3034,7 +3034,7 @@ window.StemLab = window.StemLab || {
                     }, r.length);
                   })
                 ),
-            cRods.length >= 2 && h('p', { className: 'text-[11px] text-amber-700 italic mt-2 text-center' },
+            cRods.length >= 2 && h('p', { className: 'text-[0.6875rem] text-amber-700 italic mt-2 text-center' },
               'Equation: ' + cRods.map(function(r) { return r.length; }).join(' + ') + ' = ' + rodLengthsTotal
             )
           ),
@@ -3232,7 +3232,7 @@ window.StemLab = window.StemLab || {
                 return arr;
               })()
             ),
-            nbWhole === 10 && h('p', { className: 'text-[11px] italic text-pink-700 mt-2' },
+            nbWhole === 10 && h('p', { className: 'text-[0.6875rem] italic text-pink-700 mt-2' },
               __alloT('stem.manipulatives.the_make_ten_facts_are_the_gateway_to_', 'The "make-ten" facts are the gateway to all later regrouping. Doubles facts (1+1, 2+2, ...) are usually learned earliest.')
             )
           )
@@ -3527,7 +3527,7 @@ window.StemLab = window.StemLab || {
                                       } }));
                                     }
                                     groups.push(h('div', { key: 'g' + gI, className: 'bg-emerald-50 rounded p-2 border border-emerald-200' },
-                                      h('p', { className: 'text-[10px] font-bold text-emerald-700 mb-1' }, 'Group ' + (gI + 1)),
+                                      h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 mb-1' }, 'Group ' + (gI + 1)),
                                       h('div', null, grp)
                                     ));
                                   }
@@ -3651,10 +3651,10 @@ window.StemLab = window.StemLab || {
                   grouped[g].map(function(s, idx) {
                     return h('div', { key: g + '-' + idx, className: 'transition-colors p-3 hover:bg-purple-50' },
                       h('div', { className: 'flex items-start gap-2 mb-1' },
-                        h('span', { className: 'font-mono text-[11px] font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded' }, s.code),
+                        h('span', { className: 'font-mono text-[0.6875rem] font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded' }, s.code),
                         h('button', {
                           onClick: function() { switchMode(s.manip); upd({ aiInsight: '' }); },
-                          className: 'transition-colors text-[11px] font-bold text-purple-700 hover:text-purple-900 underline'
+                          className: 'transition-colors text-[0.6875rem] font-bold text-purple-700 hover:text-purple-900 underline'
                         }, '→ ' + (manipIcon[s.manip] || '') + ' ' + (manipLabel[s.manip] || s.manip))
                       ),
                       h('p', { className: 'text-xs text-slate-700' }, s.desc)
@@ -3760,7 +3760,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: saveCurrent,
                 className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-700 text-white hover:bg-slate-800' }, __alloT('stem.manipulatives.save', 'Save'))
             ),
-            _m.lastMode && h('p', { className: 'text-[11px] text-slate-500 italic mt-1' },
+            _m.lastMode && h('p', { className: 'text-[0.6875rem] text-slate-500 italic mt-1' },
               'Will snapshot the current state of: ' + (_m.lastMode || 'blocks')
             )
           ),
@@ -3770,8 +3770,8 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs font-bold text-slate-700' }, '📂 Saved (' + names.length + ')'),
               h('div', { className: 'flex gap-1' },
                 h('button', { onClick: exportConstr, disabled: names.length === 0,
-                  className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50' }, __alloT('stem.manipulatives.export_json', 'Export JSON')),
-                h('label', { className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer' },
+                  className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50' }, __alloT('stem.manipulatives.export_json', 'Export JSON')),
+                h('label', { className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer' },
                   __alloT('stem.manipulatives.import', 'Import'),
                   h('input', { type: 'file', accept: '.json,application/json',
                     onChange: function(e) { if (e.target.files && e.target.files[0]) importConstr(e.target.files[0]); },
@@ -3788,14 +3788,14 @@ window.StemLab = window.StemLab || {
                     return h('div', { key: n, className: 'py-2 flex items-center gap-2' },
                       h('div', { className: 'flex-1 min-w-0' },
                         h('p', { className: 'text-xs font-bold text-slate-800 truncate' }, n),
-                        h('p', { className: 'text-[10px] text-slate-500' },
+                        h('p', { className: 'text-[0.625rem] text-slate-500' },
                           (manipLabel && manipLabel[c.mode]) || c.mode, ' · ', fmtDate(c.savedAt))
                       ),
                       h('button', { onClick: function() { loadConstr(n); },
-                        className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200' },
+                        className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200' },
                         __alloT('stem.manipulatives.open', 'Open')),
                       h('button', { onClick: function() { deleteConstr(n); },
-                        className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' },
+                        className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' },
                         '✕')
                     );
                   })
@@ -4133,7 +4133,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-xl font-black text-purple-900' }, badgesCount + '/' + badgeDefs.length + ' (' + pct + '%)')
               )
             ),
-            h('div', { className: 'mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]' },
+            h('div', { className: 'mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[0.6875rem]' },
               h('div', { className: 'bg-slate-50 rounded p-2 text-center' },
                 h('p', { className: 'text-slate-600' }, __alloT('stem.manipulatives.blocks_solved', 'Blocks solved')),
                 h('p', { className: 'font-bold text-slate-900' }, blocksSolved)
@@ -4152,11 +4152,11 @@ window.StemLab = window.StemLab || {
               )
             ),
             // Mode-by-mode visited indicator
-            h('p', { className: 'text-[11px] font-bold text-slate-700 mt-3 mb-1' }, __alloT('stem.manipulatives.mode_coverage', 'Mode coverage:')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-slate-700 mt-3 mb-1' }, __alloT('stem.manipulatives.mode_coverage', 'Mode coverage:')),
             h('div', { className: 'flex flex-wrap gap-1' },
               ['blocks', 'abacus', 'slideRule', 'quiz', 'tenFrame', 'counters', 'pvDisks', 'hundredsChart', 'patternBlocks', 'geoboard', 'cRods', 'numberBonds'].map(function(mid) {
                 return h('span', { key: mid,
-                  className: 'px-2 py-0.5 rounded text-[10px] font-mono ' +
+                  className: 'px-2 py-0.5 rounded text-[0.625rem] font-mono ' +
                     (modesVisited[mid] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600 line-through')
                 }, mid);
               })
@@ -4184,13 +4184,13 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: 'lp' + i, className: 'p-3' },
                   h('div', { className: 'flex items-start justify-between gap-2 mb-1' },
                     h('div', null,
-                      h('span', { className: 'inline-block px-1.5 py-0.5 bg-slate-200 text-slate-700 text-[10px] font-bold rounded mr-2' }, 'Grade ' + lp.grade),
+                      h('span', { className: 'inline-block px-1.5 py-0.5 bg-slate-200 text-slate-700 text-[0.625rem] font-bold rounded mr-2' }, 'Grade ' + lp.grade),
                       h('span', { className: 'text-sm font-bold text-slate-800' }, lp.title)
                     ),
                     h('div', { className: 'flex gap-1' },
                       lp.manips.map(function(m) {
                         return h('button', { key: m, onClick: function() { switchMode(m); },
-                          className: 'transition-colors px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 whitespace-nowrap'
+                          className: 'transition-colors px-2 py-0.5 rounded text-[0.625rem] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 whitespace-nowrap'
                         }, '→ ' + m);
                       })
                     )
@@ -4198,7 +4198,7 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-xs text-slate-700 mb-1' }, lp.desc),
                   h('div', { className: 'flex gap-1 flex-wrap' },
                     lp.standards.map(function(s) {
-                      return h('span', { key: s, className: 'font-mono text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded' }, s);
+                      return h('span', { key: s, className: 'font-mono text-[0.625rem] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded' }, s);
                     })
                   )
                 );
@@ -4210,17 +4210,17 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.manipulatives.accessibility_settings', '⚙️ Accessibility settings:')),
             h('div', { className: 'space-y-2' },
               h('div', null,
-                h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.manipulatives.color_palette_applies_to_counters_rods', 'Color palette (applies to counters, rods, geoboard, ten frame):')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.manipulatives.color_palette_applies_to_counters_rods', 'Color palette (applies to counters, rods, geoboard, ten frame):')),
                 h('div', { className: 'flex gap-1 flex-wrap' },
                   Object.keys(MANIP_PALETTES).map(function(pid) {
                     return h('button', { key: pid, onClick: function() { upd({ paletteId: pid }); },
-                      className: 'px-2.5 py-1 rounded text-[11px] font-bold transition-all ' +
+                      className: 'px-2.5 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                         (paletteId === pid ? 'bg-slate-700 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100')
                     }, MANIP_PALETTES[pid].name);
                   })
                 )
               ),
-              h('label', { className: 'flex items-center gap-2 text-[11px] text-slate-700' },
+              h('label', { className: 'flex items-center gap-2 text-[0.6875rem] text-slate-700' },
                 h('input', { type: 'checkbox', checked: soundEnabled,
                   onChange: function() { upd({ soundEnabled: !soundEnabled }); }, className: 'accent-slate-600' }),
                 __alloT('stem.manipulatives.sound_effects', 'Sound effects')
@@ -4383,9 +4383,9 @@ window.StemLab = window.StemLab || {
             ),
             crChallenge && h('div', { className: 'space-y-3' },
               h('div', { className: 'flex items-center justify-between' },
-                h('span', { className: 'inline-block px-2 py-0.5 bg-amber-100 text-amber-800 text-[11px] font-bold rounded' }, crChallenge.cat),
+                h('span', { className: 'inline-block px-2 py-0.5 bg-amber-100 text-amber-800 text-[0.6875rem] font-bold rounded' }, crChallenge.cat),
                 h('button', { onClick: chJumpToManip,
-                  className: 'transition-colors text-[11px] text-blue-600 hover:text-blue-800 underline' },
+                  className: 'transition-colors text-[0.6875rem] text-blue-600 hover:text-blue-800 underline' },
                   '→ open the ' + crChallenge.cat + ' manipulative')
               ),
               h('p', { className: 'text-base font-bold text-slate-800 px-2 py-3 bg-amber-50 rounded-lg border border-amber-200' },
@@ -4417,9 +4417,9 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1.5' },
               cats.map(function(c) {
                 return h('div', { key: c, className: 'bg-amber-50 rounded p-2 text-center border border-amber-100' },
-                  h('p', { className: 'text-[10px] font-bold text-amber-800' }, c),
+                  h('p', { className: 'text-[0.625rem] font-bold text-amber-800' }, c),
                   h('p', { className: 'text-base font-black text-amber-900' }, catCounts[c]),
-                  h('p', { className: 'text-[10px] text-amber-600' }, catCounts[c] === 1 ? 'problem type' : 'problem types')
+                  h('p', { className: 'text-[0.625rem] text-amber-600' }, catCounts[c] === 1 ? 'problem type' : 'problem types')
                 );
               })
             )
@@ -4708,7 +4708,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
                   h('p', { className: 'text-base font-bold text-cyan-900' }, g.term),
                   h('button', { onClick: function() { switchMode(g.manip); },
-                    className: 'transition-colors ml-auto text-[10px] font-bold bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded hover:bg-cyan-200' },
+                    className: 'transition-colors ml-auto text-[0.625rem] font-bold bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded hover:bg-cyan-200' },
                     '→ try in ' + g.manip)
                 ),
                 h('p', { className: 'text-sm text-slate-800 mb-1' }, g.def),
@@ -4990,7 +4990,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('p', { className: 'text-lg font-black text-pink-900' }, pCurrent.title)
               ),
-              h('span', { className: 'inline-block px-2 py-0.5 text-[10px] font-bold rounded ' +
+              h('span', { className: 'inline-block px-2 py-0.5 text-[0.625rem] font-bold rounded ' +
                 (pCurrent.difficulty === 'easy' ? 'bg-emerald-100 text-emerald-800' :
                  pCurrent.difficulty === 'medium' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')
               }, pCurrent.difficulty)
@@ -5001,7 +5001,7 @@ window.StemLab = window.StemLab || {
               pCurrent.tools.map(function(t, i) {
                 return h('button', { key: t,
                   onClick: function() { switchMode(t); },
-                  className: 'transition-colors inline-block px-2 py-0.5 mx-0.5 bg-pink-100 text-pink-800 rounded hover:bg-pink-200 text-[11px] font-bold'
+                  className: 'transition-colors inline-block px-2 py-0.5 mx-0.5 bg-pink-100 text-pink-800 rounded hover:bg-pink-200 text-[0.6875rem] font-bold'
                 }, t);
               })
             ),
@@ -5050,7 +5050,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: 'pn' + i,
                   onClick: function() { upd({ puzzleIdx: i, puzzleShowHint: false, puzzleShowAns: false }); },
                   title: p.title,
-                  className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+                  className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                     (i === pIdx ? 'bg-pink-700 text-white' : 'bg-white border border-pink-300 text-pink-700 hover:bg-pink-100')
                 }, p.title);
               })
@@ -5185,7 +5185,7 @@ window.StemLab = window.StemLab || {
                   t.tools.length > 0 && h('div', { className: 'flex gap-1' },
                     t.tools.map(function(tk) {
                       return h('button', { key: tk, onClick: function() { switchMode(tk); },
-                        className: 'transition-colors px-2 py-0.5 rounded text-[10px] font-bold bg-lime-100 text-lime-800 hover:bg-lime-200'
+                        className: 'transition-colors px-2 py-0.5 rounded text-[0.625rem] font-bold bg-lime-100 text-lime-800 hover:bg-lime-200'
                       }, '→ ' + tk);
                     })
                   )
@@ -5249,7 +5249,7 @@ window.StemLab = window.StemLab || {
           // Legend
           h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-3' },
             h('p', { className: 'text-xs font-bold text-green-700 mb-2' }, 'Legend:'),
-            h('div', { className: 'flex gap-2 flex-wrap text-[11px]' },
+            h('div', { className: 'flex gap-2 flex-wrap text-[0.6875rem]' },
               h('span', { className: 'px-2 py-0.5 rounded font-bold bg-emerald-200 text-emerald-900' }, 'intro'),
               h('span', { className: 'px-2 py-0.5 rounded font-bold bg-emerald-700 text-white' }, 'core'),
               h('span', { className: 'px-2 py-0.5 rounded font-bold bg-amber-200 text-amber-900' }, 'review'),
@@ -5278,7 +5278,7 @@ window.StemLab = window.StemLab || {
                     grades.map(function(g) {
                       var st = (matrix[mk] || {})[g] || '';
                       return h('td', { key: g + '-' + mk, className: 'text-center' },
-                        h('div', { className: 'rounded text-[10px] font-bold uppercase py-1 ' + cellClass(st) }, st || '·')
+                        h('div', { className: 'rounded text-[0.625rem] font-bold uppercase py-1 ' + cellClass(st) }, st || '·')
                       );
                     })
                   );
@@ -5695,8 +5695,8 @@ window.StemLab = window.StemLab || {
                 h('h3', { className: 'text-lg font-black text-rose-900' }, curAct.goal)
               ),
               h('div', { className: 'text-right' },
-                h('span', { className: 'inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-rose-100 text-rose-800' }, 'Grade ' + curAct.grade),
-                h('span', { className: 'inline-block ml-1 px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-800' }, curAct.time)
+                h('span', { className: 'inline-block px-2 py-0.5 text-[0.625rem] font-bold rounded bg-rose-100 text-rose-800' }, 'Grade ' + curAct.grade),
+                h('span', { className: 'inline-block ml-1 px-2 py-0.5 text-[0.625rem] font-bold rounded bg-amber-100 text-amber-800' }, curAct.time)
               )
             ),
             h('p', { className: 'text-xs font-bold text-rose-700 mt-3 mb-1' }, 'MATERIALS:'),
@@ -5737,7 +5737,7 @@ window.StemLab = window.StemLab || {
                   className: 'text-left p-2 rounded text-xs transition-all ' +
                     (i === aIdx ? 'bg-rose-100 border border-rose-400' : 'bg-white border border-slate-200 hover:bg-rose-50')
                 },
-                  h('span', { className: 'font-mono text-[10px] bg-slate-200 px-1 rounded mr-1' }, a.grade),
+                  h('span', { className: 'font-mono text-[0.625rem] bg-slate-200 px-1 rounded mr-1' }, a.grade),
                   h('span', { className: 'font-bold' }, a.goal.length > 50 ? a.goal.slice(0, 50) + '…' : a.goal)
                 );
               })
@@ -5867,7 +5867,7 @@ window.StemLab = window.StemLab || {
                 shortcuts.map(function(s) {
                   return h('tr', { key: 'sc' + s.keys, className: 'border-b border-slate-100' },
                     h('td', { className: 'py-2 pr-3' },
-                      h('kbd', { className: 'inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[11px]' }, s.keys)
+                      h('kbd', { className: 'inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[0.6875rem]' }, s.keys)
                     ),
                     h('td', { className: 'py-2 text-slate-700' }, s.what)
                   );
@@ -6038,7 +6038,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'flex' }, parts)
             ),
-            fracVal > 0 && h('p', { className: 'text-[10px] text-slate-600 ml-14' },
+            fracVal > 0 && h('p', { className: 'text-[0.625rem] text-slate-600 ml-14' },
               'Selected: ' + (fbSelected[denom] || []).length + '/' + denom + ' = ' + fracVal.toFixed(3)
             )
           );
@@ -6161,9 +6161,9 @@ window.StemLab = window.StemLab || {
                     fontSize: p.w >= 40 ? 12 : 10,
                     textShadow: p.color === '#fef2f2' ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
                   } }, p.name.split(' ')[0]),
-                  h('p', { className: 'text-[10px] font-bold text-indigo-700 text-center' }, p.name),
+                  h('p', { className: 'text-[0.625rem] font-bold text-indigo-700 text-center' }, p.name),
                   h('button', { onClick: function(k) { return function() { atAdd(k); }; }(p.kind),
-                    className: 'transition-colors px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, __alloT('stem.manipulatives.add', '+ Add'))
+                    className: 'transition-colors px-2 py-0.5 rounded text-[0.625rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700' }, __alloT('stem.manipulatives.add', '+ Add'))
                 );
               })
             )

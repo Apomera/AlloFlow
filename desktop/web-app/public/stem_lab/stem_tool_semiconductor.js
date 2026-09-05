@@ -518,7 +518,7 @@ window.StemLab = window.StemLab || {
 
       function statBadge(label, value, color, key) {
         return h('div', { key: key != null ? key : label, className: 'semi-stat-card flex flex-col items-center justify-center px-2 py-1 rounded-lg bg-slate-800/80 border border-slate-600' },
-          h('span', { className: 'text-[11px] text-slate-300 uppercase tracking-wider font-semibold' }, label),
+          h('span', { className: 'text-[0.6875rem] text-slate-300 uppercase tracking-wider font-semibold' }, label),
           h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
         );
       }
@@ -633,7 +633,7 @@ window.StemLab = window.StemLab || {
             h('span', null, d.aiExplain),
             callTTS ? h('button', {
               onClick: function() { speakText(d.aiExplain); },
-              className: 'ml-2 px-1.5 py-0.5 text-[11px] bg-indigo-700 rounded hover:bg-indigo-600 transition-colors',
+              className: 'ml-2 px-1.5 py-0.5 text-[0.6875rem] bg-indigo-700 rounded hover:bg-indigo-600 transition-colors',
               'aria-label': t('stem.semiconductor.read_aloud', 'Read aloud')
             }, '\uD83D\uDD0A') : null
           )
@@ -2060,7 +2060,7 @@ window.StemLab = window.StemLab || {
                   // Supply
                   h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-red-900/30 border border-red-700' },
                     h('span', { className: 'text-lg' }, '\u26A1'),
-                    h('span', { className: 'text-[11px] text-red-400' }, supplyV + 'V')
+                    h('span', { className: 'text-[0.6875rem] text-red-400' }, supplyV + 'V')
                   ),
                   // Wire
                   h('span', { className: 'self-center text-slate-400' }, '\u2014'),
@@ -2069,10 +2069,10 @@ window.StemLab = window.StemLab || {
                     var compInfo = COMP_PALETTE.find(function(p) { return p.type === comp.type; }) || {};
                     return h('div', { key: comp.id, className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600 relative group' },
                       h('span', { className: 'text-lg' }, compInfo.icon || '?'),
-                      h('span', { className: 'text-[11px] text-slate-400' }, comp.value),
+                      h('span', { className: 'text-[0.6875rem] text-slate-400' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
-                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[11px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
+                        className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[0.6875rem] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
                         'aria-label': 'Remove ' + comp.label
                       }, '\u2715'),
                       ci < components.length - 1 ? null : null
@@ -2082,7 +2082,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'self-center text-slate-400' }, '\u2014'),
                   h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600' },
                     h('span', { className: 'text-lg' }, '\u23DA'),
-                    h('span', { className: 'text-[11px] text-slate-400' }, 'GND')
+                    h('span', { className: 'text-[0.6875rem] text-slate-400' }, 'GND')
                   )
                 )
           ),
@@ -2466,7 +2466,7 @@ window.StemLab = window.StemLab || {
                 'aria-pressed': ledActive,
                 'aria-label': m.name + ' LED',
                 onClick: function() { upd('ledMaterial', key); tryAwardXP('led-' + key, 5, 'Explored ' + m.name + ' LED'); },
-                className: 'min-h-9 border-2 px-3 py-1 text-[11px] font-black rounded-full transition-all ' +
+                className: 'min-h-9 border-2 px-3 py-1 text-[0.6875rem] font-black rounded-full transition-all ' +
                   (ledActive ? 'border-white ring-2 ring-cyan-200 shadow-lg' : 'border-transparent opacity-85 hover:opacity-100'),
                 style: { backgroundColor: m.color, color: canvasInkFor(m.color) }
               }, m.name.split(' ')[0]);
@@ -3062,7 +3062,7 @@ window.StemLab = window.StemLab || {
           ),
           // Transition energies
           transitions.length > 0 && h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-800/60 border border-slate-700' },
-            h('div', { className: 'text-[11px] text-slate-400 uppercase tracking-wider mb-1' }, t('stem.semiconductor.optical_transitions', 'Optical Transitions')),
+            h('div', { className: 'text-[0.6875rem] text-slate-400 uppercase tracking-wider mb-1' }, t('stem.semiconductor.optical_transitions', 'Optical Transitions')),
             h('div', { className: 'flex flex-wrap gap-2' },
               transitions.filter(function(tr) { return tr.dE > 0; }).slice(0, 4).map(function(tr) {
                 return h('div', { key: tr.from + '-' + tr.to, className: 'text-xs text-slate-300' },
@@ -3617,7 +3617,7 @@ window.StemLab = window.StemLab || {
             h('section', { id: 'semiconductor-challenge-howto', className: 'max-w-xl mx-auto mb-4 rounded-xl border border-amber-500/50 bg-amber-950/30 p-3 text-left', 'aria-labelledby': 'semiconductor-challenge-howto-title' },
               h('div', { id: 'semiconductor-challenge-howto-title', className: 'text-sm font-black text-amber-200' }, t('stem.semiconductor.how_challenge_works', 'How Challenge works')),
               h('p', { className: 'mt-1 text-sm text-slate-100 leading-relaxed' }, t('stem.semiconductor.choose_one_answer_misses_unlock_a_hint', 'Choose one answer. Misses unlock a hint; correct answers build your streak and XP.')),
-              h('div', { className: 'mt-2 flex flex-wrap gap-2 text-[11px] text-slate-200' },
+              h('div', { className: 'mt-2 flex flex-wrap gap-2 text-[0.6875rem] text-slate-200' },
                 h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '1. Read the topic'),
                 h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '2. Choose an answer'),
                 h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '3. Review feedback')
@@ -3633,7 +3633,7 @@ window.StemLab = window.StemLab || {
             ),
             // Tier progress bar
             h('div', { className: 'w-48 mx-auto mb-4' },
-              h('div', { className: 'text-[11px] text-slate-400 mb-1' }, t('stem.semiconductor.progress_to_next_rank', 'Progress to next rank')),
+              h('div', { className: 'text-[0.6875rem] text-slate-400 mb-1' }, t('stem.semiconductor.progress_to_next_rank', 'Progress to next rank')),
               h('div', { className: 'h-2 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all', style: { width: Math.min(100, (score % 5) * 20) + '%' } })
               )
@@ -3654,7 +3654,7 @@ window.StemLab = window.StemLab || {
           ),
           // Question card
           h('div', { className: 'p-4 rounded-xl bg-slate-800 border border-slate-700 mb-3' },
-            current.topic && h('span', { className: 'text-[11px] uppercase tracking-wider text-cyan-500 mb-1 block' }, current.topic),
+            current.topic && h('span', { className: 'text-[0.6875rem] uppercase tracking-wider text-cyan-500 mb-1 block' }, current.topic),
             h('p', { className: 'text-sm font-semibold text-white mb-3', role: 'status' }, current.q),
             h('div', { className: 'flex flex-col gap-2' },
               orderOptions(current.q, current.opts, current.a).map(function(opt) {
@@ -3752,7 +3752,7 @@ window.StemLab = window.StemLab || {
             h('section', { id: 'semiconductor-battle-howto', className: 'max-w-xl mx-auto mb-4 rounded-xl border border-red-500/50 bg-red-950/25 p-3 text-left', 'aria-labelledby': 'semiconductor-battle-howto-title' },
               h('div', { id: 'semiconductor-battle-howto-title', className: 'text-sm font-black text-red-200' }, t('stem.semiconductor.how_chip_defense_works', 'How Chip Defense works')),
               h('p', { className: 'mt-1 text-sm text-slate-100 leading-relaxed' }, t('stem.semiconductor.answer_to_damage_the_enemy', 'Answer a round to damage the enemy. A miss costs chip HP, so use the prompt and take your time.')),
-              h('div', { className: 'mt-2 flex flex-wrap gap-2 text-[11px] text-slate-200' },
+              h('div', { className: 'mt-2 flex flex-wrap gap-2 text-[0.6875rem] text-slate-200' },
                 h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '1. Read the threat'),
                 h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '2. Pick the best answer'),
                 h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '3. Defend the chip')
@@ -3800,19 +3800,19 @@ window.StemLab = window.StemLab || {
           // HP bars
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[11px] text-slate-400 mb-0.5' }, t('stem.semiconductor.your_chip', '\uD83D\uDEE1\uFE0F Your Chip')),
+              h('div', { className: 'text-[0.6875rem] text-slate-400 mb-0.5' }, t('stem.semiconductor.your_chip', '\uD83D\uDEE1\uFE0F Your Chip')),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-emerald-500 rounded-full transition-all', style: { width: (playerHP / 5 * 100) + '%' } })
               ),
-              h('div', { className: 'text-[11px] text-emerald-400 mt-0.5' }, playerHP + '/5 HP')
+              h('div', { className: 'text-[0.6875rem] text-emerald-400 mt-0.5' }, playerHP + '/5 HP')
             ),
             h('div', { className: 'text-sm font-bold text-slate-400' }, 'VS'),
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[11px] text-slate-400 mb-0.5 text-right' }, currentRound.enemy),
+              h('div', { className: 'text-[0.6875rem] text-slate-400 mb-0.5 text-right' }, currentRound.enemy),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-red-500 rounded-full transition-all', style: { width: (enemyHP / 5 * 100) + '%' } })
               ),
-              h('div', { className: 'text-[11px] text-red-400 mt-0.5 text-right' }, enemyHP + '/5 HP')
+              h('div', { className: 'text-[0.6875rem] text-red-400 mt-0.5 text-right' }, enemyHP + '/5 HP')
             )
           ),
           // Round info
@@ -3972,7 +3972,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('div', { className: 'text-sm font-bold text-white' }, t('stem.semiconductor.semiconductor_concepts', '\uD83D\uDCDA Semiconductor Concepts')),
-            h('div', { className: 'text-[11px] text-slate-300 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
+            h('div', { className: 'text-[0.6875rem] text-slate-300 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
           ),
           h('section', { id: 'semiconductor-learn-start', className: 'rounded-xl border border-cyan-500/40 bg-cyan-950/20 p-3', 'aria-labelledby': 'semiconductor-learn-start-title' },
             h('div', { id: 'semiconductor-learn-start-title', className: 'text-sm font-black text-cyan-200' }, t('stem.semiconductor.start_here_band_gap_energy', 'Start here: Band Gap Energy')),
@@ -3986,7 +3986,7 @@ window.StemLab = window.StemLab || {
             var topicId = 'semiconductor-learn-topic-' + topicIndex;
             return h('details', { className: 'group', key: item.title, open: topicIndex === 0 },
               h('summary', { className: 'cursor-pointer text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors list-none flex items-center gap-1', 'aria-controls': topicId },
-                h('span', { className: 'text-[11px] text-slate-400 group-open:rotate-90 transition-transform', 'aria-hidden': 'true' }, '\u25B6'),
+                h('span', { className: 'text-[0.6875rem] text-slate-400 group-open:rotate-90 transition-transform', 'aria-hidden': 'true' }, '\u25B6'),
                 item.title
               ),
               h('div', { id: topicId, className: 'mt-1 pl-4 text-xs text-slate-300 leading-relaxed' }, item.body)
@@ -4163,45 +4163,45 @@ window.StemLab = window.StemLab || {
           }[state];
           return h('div', { className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/40 shadow-sm space-y-3' },
             h('h3', { className: 'text-sm font-black text-amber-300' }, t('stem.semiconductor.doping_discovery_2', '⚗️ Doping discovery')),
-            h('p', { className: 'text-[12px] text-slate-300' }, t('stem.semiconductor.adjust_dopant_concentration_temperatur', 'Adjust dopant concentration, temperature, material. Discrete 4-band regime. No score, no reveal.')),
+            h('p', { className: 'text-[0.75rem] text-slate-300' }, t('stem.semiconductor.adjust_dopant_concentration_temperatur', 'Adjust dopant concentration, temperature, material. Discrete 4-band regime. No score, no reveal.')),
             h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
               h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-              h('div', { className: 'text-[11px] text-slate-300 mt-1' }, sm.desc),
-              h('div', { className: 'text-[10px] text-slate-400 mt-1 font-mono' }, 'Carriers ≈ ' + carrierConc.toExponential(1) + ' cm⁻³')
+              h('div', { className: 'text-[0.6875rem] text-slate-300 mt-1' }, sm.desc),
+              h('div', { className: 'text-[0.625rem] text-slate-400 mt-1 font-mono' }, 'Carriers ≈ ' + carrierConc.toExponential(1) + ' cm⁻³')
             ),
             h('div', { className: 'flex gap-2' },
               ['Si', 'Ge', 'GaAs'].map(function(m) {
                 var active = iq.material === m;
-                return h('button', { key: m, onClick: function() { setIQ({ material: m }); }, className: 'px-2 py-1 rounded text-[11px] font-bold border ' + (active ? 'bg-amber-300 text-slate-950 border-amber-400' : 'bg-slate-900/70 text-slate-300 border-slate-700') }, m);
+                return h('button', { key: m, onClick: function() { setIQ({ material: m }); }, className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border ' + (active ? 'bg-amber-300 text-slate-950 border-amber-400' : 'bg-slate-900/70 text-slate-300 border-slate-700') }, m);
               })
             ),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               [{ k: 'conc', l: 'Dopant log10 conc', mn: 0, mx: 15, st: 1 },
                { k: 'tempK', l: 'Temperature (K)', mn: 100, mx: 500, st: 10 }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-amber-300' }, iq[s.k])),
+                  h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-amber-300' }, iq[s.k])),
                   h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                     className: 'w-full', 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-700 text-[11px] font-bold text-slate-100 border border-slate-600' }, t('stem.semiconductor.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-slate-900/70 text-[11px] font-semibold text-slate-300 border border-slate-700' }, t('stem.semiconductor.reset', '↺ Reset'))
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-700 text-[0.6875rem] font-bold text-slate-100 border border-slate-600' }, t('stem.semiconductor.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-slate-900/70 text-[0.6875rem] font-semibold text-slate-300 border border-slate-700' }, t('stem.semiconductor.reset', '↺ Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.semiconductor.hypothesis_input', 'Semiconductor carrier concentration hypothesis'), placeholder: t('stem.semiconductor.hypothesis_how_does_temperature_affect', 'Hypothesis: How does temperature affect carrier concentration?'),
-              className: 'w-full text-[12px] border border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-400 rounded p-2 font-mono leading-snug', rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-900/30 text-[11px] font-bold text-amber-200 border border-amber-700' }, t('stem.semiconductor.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-amber-100 leading-relaxed' },
+              className: 'w-full text-[0.75rem] border border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-400 rounded p-2 font-mono leading-snug', rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-900/30 text-[0.6875rem] font-bold text-amber-200 border border-amber-700' }, t('stem.semiconductor.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[0.6875rem] text-amber-100 leading-relaxed' },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
                 h('li', null, t('stem.semiconductor.compare_si_and_gaas_at_same_concentrat', 'Compare Si and GaAs at same concentration. Why differ?')),
                 h('li', null, t('stem.semiconductor.find_two_settings_producing_same_regim', 'Find two settings producing same regime.')))),
-            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
+            h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
               t('stem.semiconductor.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.semiconductor.explanation_input', 'Explain semiconductor carrier concentration'), placeholder: t('stem.semiconductor.explain_how_concentration_temperature_', 'Explain how concentration, temperature, and material jointly set the regime.'),
-              className: 'w-full text-[12px] border border-emerald-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-400 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-            h('div', { className: 'text-[10px] italic text-slate-400' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
+              className: 'w-full text-[0.75rem] border border-emerald-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-400 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+            h('div', { className: 'text-[0.625rem] italic text-slate-400' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
           );
         })();
         else content = stableRenderCache.bandgap;
@@ -4456,7 +4456,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { className: 'flex flex-wrap items-center gap-2' },
           h('div', { id: 'semiconductor-quick-start-title', className: 'text-sm font-black text-cyan-100' }, t('stem.semiconductor.guided_experiment', 'Guided experiment')),
-          h('span', { className: 'rounded-full border border-cyan-400/50 bg-cyan-950 px-2 py-1 text-[11px] font-bold text-cyan-50' }, guidedSaved ? t('stem.semiconductor.complete', 'Complete') : guidedProgressStep + '/3 · ' + t('stem.semiconductor.three_short_steps', '3 short steps'))
+          h('span', { className: 'rounded-full border border-cyan-400/50 bg-cyan-950 px-2 py-1 text-[0.6875rem] font-bold text-cyan-50' }, guidedSaved ? t('stem.semiconductor.complete', 'Complete') : guidedProgressStep + '/3 · ' + t('stem.semiconductor.three_short_steps', '3 short steps'))
         ),
         h('ol', { className: 'mt-3', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 } },
           h('li', { className: guidedStepClass(guidedReady, !guidedReady), 'data-state': guidedStepState(guidedReady, !guidedReady) }, h('strong', { className: 'block ' + (guidedReady ? 'text-emerald-300' : 'text-cyan-100') }, guidedReady ? '✓ Baseline loaded' : '1. Set up'), quick.action),
@@ -4512,7 +4512,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'semi-header-kicker' }, t('stem.semiconductor.interactive_chip_lab', 'Interactive chip lab')),
           h('div', { className: 'flex flex-wrap items-baseline gap-2' },
             h('h2', { className: 'm-0 text-xl font-black text-white' }, t('stem.semiconductor.semiconductor_lab_2', 'Semiconductor Lab')),
-            h('span', { className: 'text-[10px] font-bold text-slate-300' }, 'v3.0')
+            h('span', { className: 'text-[0.625rem] font-bold text-slate-300' }, 'v3.0')
           ),
           h('p', { className: 'semi-header-subtitle' }, tab === 'explore'
             ? getSubtoolLabel(subtool) + ' · Change a control and watch the model respond.'

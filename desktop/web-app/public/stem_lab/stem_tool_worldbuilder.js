@@ -1015,24 +1015,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           writingPower > 0 && h('div', { className: 'flex items-center gap-2' },
             h('div', { className: 'text-center' },
               h('div', { className: 'text-lg font-black', style: { color: getQualityTier(writingPower).color } }, writingPower),
-              h('div', { className: 'text-[11px] text-slate-500 font-bold' }, 'POWER')
+              h('div', { className: 'text-[0.6875rem] text-slate-500 font-bold' }, 'POWER')
             ),
             h('div', { className: 'text-center' },
               h('div', { className: 'text-lg font-black text-amber-600' }, totalXP),
-              h('div', { className: 'text-[11px] text-slate-500 font-bold' }, 'XP')
+              h('div', { className: 'text-[0.6875rem] text-slate-500 font-bold' }, 'XP')
             ),
             h('div', { className: 'text-center' },
               h('select', {
                 value: gradeLevel,
                 onChange: function(e) { upd('playerGradeLevel', e.target.value); },
                 'aria-label': __alloT('stem.worldbuilder.grade_level', 'Grade level'),
-                className: 'text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-500 rounded-lg px-1 py-0.5 outline-none focus:ring-2 focus:ring-violet-500'
+                className: 'text-[0.6875rem] font-bold text-violet-600 bg-violet-50 border border-violet-500 rounded-lg px-1 py-0.5 outline-none focus:ring-2 focus:ring-violet-500'
               },
                 GRADE_OPTIONS.map(function(g) {
                   return h('option', { key: g, value: g }, g);
                 })
               ),
-              h('div', { className: 'text-[11px] text-slate-500 font-bold' }, 'GRADE')
+              h('div', { className: 'text-[0.6875rem] text-slate-500 font-bold' }, 'GRADE')
             )
           )
         ),
@@ -1083,9 +1083,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           });
           return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h3', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, __alloT('stem.worldbuilder.world_inquiry_predict_the_story_tensio', '🔬 World Inquiry — Explore the Story Tension')),
-            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, __alloT('stem.worldbuilder.set_biome_population_tech_conflict_and', 'Set biome, population, technology, conflict, and government, then observe how the modeled world-state changes. The result updates live; record a hypothesis or pattern before writing your first scene.')),
-            h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, biome.emoji + ' ' + biome.name + ' · ' + sm.label),
-            h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+            h('p', { className: 'text-[0.625rem] opacity-85 mb-2 leading-snug' }, __alloT('stem.worldbuilder.set_biome_population_tech_conflict_and', 'Set biome, population, technology, conflict, and government, then observe how the modeled world-state changes. The result updates live; record a hypothesis or pattern before writing your first scene.')),
+            h('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, biome.emoji + ' ' + biome.name + ' · ' + sm.label),
+            h('p', { className: 'text-[0.625rem] opacity-80 mb-2' }, sm.desc),
             h('div', { className: 'flex gap-3 items-center mb-2 flex-wrap' },
               h('svg', { role: 'img', 'aria-label': __alloT('stem.worldbuilder.orbit_img', 'Orbit diagram'), width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
                 [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
@@ -1101,7 +1101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 pts.map(function(p, i) { return h('circle', { key: 'p' + i, cx: p[0], cy: p[1], r: 3, fill: sm.color }); }),
                 labelPts.map(function(lp, i) { return h('text', { key: 'l' + i, x: lp[0], y: lp[1], textAnchor: 'middle', fill: '#94a3b8', fontSize: 7 }, ['Pop', 'War', 'Govt', 'Tech', 'Bio'][i]); })
               ),
-              h('div', { className: 'flex-1 text-[10px] min-w-[200px]' },
+              h('div', { className: 'flex-1 text-[0.625rem] min-w-[200px]' },
                 h('div', { className: 'font-bold mb-1 opacity-85' }, __alloT('stem.worldbuilder.world_metrics', 'World metrics')),
                 h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.population', 'Population')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.popMillions + 'M (' + (popPressure * 100).toFixed(0) + '% of carrying)')),
                 h('div', { className: 'flex justify-between py-0.5 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.carrying_cap', 'Carrying cap')), h('span', { className: 'font-mono', style: { color: sm.color } }, maxPop.toFixed(0) + 'M')),
@@ -1112,23 +1112,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'flex flex-wrap gap-1 mb-2' },
               Object.keys(biomes).map(function(b) {
                 var active = iq.biome === b;
-                return h('button', { key: b, onClick: function() { setKey('biome', b); }, className: 'px-2 py-1 rounded text-[10px] font-bold', style: { background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', border: '1px solid ' + (active ? sm.color : '#1e293b'), cursor: 'pointer' } }, biomes[b].emoji + ' ' + biomes[b].name);
+                return h('button', { key: b, onClick: function() { setKey('biome', b); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', border: '1px solid ' + (active ? sm.color : '#1e293b'), cursor: 'pointer' } }, biomes[b].emoji + ' ' + biomes[b].name);
               })
             ),
             h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
-              h('label', { className: 'text-[10px]' },
+              h('label', { className: 'text-[0.625rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.population_m', 'Population (M)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.popMillions)),
                 h('input', { type: 'range', min: 1, max: 500, step: 1, value: iq.popMillions, onChange: function(e) { setKey('popMillions', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
-              h('label', { className: 'text-[10px]' },
+              h('label', { className: 'text-[0.625rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.tech_level_1_10', 'Tech level (1-10)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.techLevel)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.techLevel, onChange: function(e) { setKey('techLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
-              h('label', { className: 'text-[10px]' },
+              h('label', { className: 'text-[0.625rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.conflict_1_10', 'Conflict (1-10)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.conflictLevel)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.conflictLevel, onChange: function(e) { setKey('conflictLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
               ),
-              h('label', { className: 'text-[10px]' },
+              h('label', { className: 'text-[0.625rem]' },
                 h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.worldbuilder.govt_stability', 'Govt stability')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.govStability)),
                 h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.govStability, onChange: function(e) { setKey('govStability', parseInt(e.target.value, 10)); }, className: 'w-full' })
               )
@@ -1137,16 +1137,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               h('button', { onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, b: iq.biome, p: iq.popMillions, tech: iq.techLevel, conf: iq.conflictLevel, gov: iq.govStability, frag: (fragility * 100).toFixed(0), state: sm.label }]) });
-              }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.worldbuilder.log_this_world', '📋 Log this world')),
-              h('button', { onClick: function() { setIQ({ biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.worldbuilder.reset', 'Reset'))
+              }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.worldbuilder.log_this_world', '📋 Log this world')),
+              h('button', { onClick: function() { setIQ({ biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7 }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.worldbuilder.reset', 'Reset'))
             ),
-            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[10px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[0.625rem] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · ' + e.b + ' · p' + e.p + ' tech' + e.tech + ' conf' + e.conf + ' gov' + e.gov + ' → frag ' + e.frag + '%'); })
             ),
-            h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, __alloT('stem.worldbuilder.your_hypothesis_what_slider_would_tip_', 'Your hypothesis (what slider would tip your world into collapse fastest? Why?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.e_g_a_desert_biome_at_carrying_capacit', 'e.g., a desert biome at carrying capacity can survive only if govt stays stable...'), 'aria-label': __alloT('stem.worldbuilder.hypothesis', 'World collapse hypothesis'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.worldbuilder.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-            iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+            h('label', { className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, __alloT('stem.worldbuilder.your_hypothesis_what_slider_would_tip_', 'Your hypothesis (what slider would tip your world into collapse fastest? Why?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.e_g_a_desert_biome_at_carrying_capacit', 'e.g., a desert biome at carrying capacity can survive only if govt stays stable...'), 'aria-label': __alloT('stem.worldbuilder.hypothesis', 'World collapse hypothesis'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.worldbuilder.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
               h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, __alloT('stem.worldbuilder.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { className: 'pl-4 m-0' },
                 h('li', null, __alloT('stem.worldbuilder.what_does_carrying_capacity_mean_for_a', 'What does "carrying capacity" mean for a story? When does it bend, when does it break?')),
@@ -1155,12 +1155,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('li', null, __alloT('stem.worldbuilder.when_is_the_right_time_in_a_story_to_f', 'When is the right time in a story to flip a slider — and would your reader notice?'))
               )
             ),
-            h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+            h('label', { className: 'flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1' },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.worldbuilder.i_can_explain_why_this_combo_yields_th', 'I can explain why this combo yields this story-tension state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.explain_in_your_own_words', 'Explain in your own words...'), 'aria-label': __alloT('stem.worldbuilder.explanation', 'World-state explanation'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-[10px] italic opacity-60' }, __alloT('stem.worldbuilder.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Carrying capacities are pedagogical heuristics, not population biology; use as story scaffolding, not policy modeling.'))
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.explain_in_your_own_words', 'Explain in your own words...'), 'aria-label': __alloT('stem.worldbuilder.explanation', 'World-state explanation'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-[0.625rem] italic opacity-60' }, __alloT('stem.worldbuilder.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Carrying capacities are pedagogical heuristics, not population biology; use as story scaffolding, not policy modeling.'))
           );
         })(),
 
@@ -1224,7 +1224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                           }
                           refineCharacterPortrait(edit);
                         },
-                        className: 'absolute -bottom-1 -right-1 w-6 h-6 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 transition-colors shadow-md',
+                        className: 'absolute -bottom-1 -right-1 w-6 h-6 bg-violet-600 text-white rounded-full text-[0.6875rem] font-bold hover:bg-violet-700 transition-colors shadow-md',
                         'aria-label': __alloT('stem.worldbuilder.refine_character_portrait', 'Refine character portrait')
                       }, '✏️')
                     )
@@ -1257,7 +1257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                         return h('option', { key: g, value: g }, g);
                       })
                     ),
-                    ctxGradeLevel && !playerGradeLevel && h('div', { className: 'text-[11px] text-violet-700 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
+                    ctxGradeLevel && !playerGradeLevel && h('div', { className: 'text-[0.6875rem] text-violet-700 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
                   )
                 ),
                 h('div', null,
@@ -1288,7 +1288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('div', { className: 'text-3xl mb-2' }, w.emoji),
                 h('div', { className: 'font-bold text-slate-800' }, w.name),
                 h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, __alloT('stem.worldbuilder.' + (w.id) + '_desc', w.desc)),
-                h('div', { className: 'text-[11px] text-violet-700 font-bold mt-2' }, w.rooms.length + ' locations to explore')
+                h('div', { className: 'text-[0.6875rem] text-violet-700 font-bold mt-2' }, w.rooms.length + ' locations to explore')
               );
             })
           )
@@ -1305,15 +1305,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               // Character portrait overlay
               characterPortrait && h('div', { className: 'absolute bottom-2 left-2' },
                 h('img', { src: characterPortrait, alt: (characterName || 'Character') + ' portrait', className: 'w-14 h-14 rounded-full object-cover border-2 border-violet-400 shadow-lg' }),
-                h('div', { className: 'text-[11px] text-white font-bold text-center mt-0.5 bg-black/50 rounded px-1' }, characterName || 'You')
+                h('div', { className: 'text-[0.6875rem] text-white font-bold text-center mt-0.5 bg-black/50 rounded px-1' }, characterName || 'You')
               ),
               // Harmony meter overlay (visible when interacting with NPCs)
               harmonyScore > 0 && h('div', { className: 'absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1' },
-                h('div', { className: 'text-[11px] font-bold text-indigo-300 uppercase tracking-wider' }, __alloT('stem.worldbuilder.harmony', '✨ Harmony')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-indigo-300 uppercase tracking-wider' }, __alloT('stem.worldbuilder.harmony', '✨ Harmony')),
                 h('div', { className: 'w-20 h-1.5 bg-slate-600 rounded-full overflow-hidden mt-0.5' },
                   h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 transition-all duration-500', style: { width: harmonyScore + '%' } })
                 ),
-                h('div', { className: 'text-[11px] text-white font-bold text-center mt-0.5' }, harmonyScore + '%')
+                h('div', { className: 'text-[0.6875rem] text-white font-bold text-center mt-0.5' }, harmonyScore + '%')
               )
             ),
             h('div', { className: 'p-4' },
@@ -1332,7 +1332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           // current room's neighbors are click-to-travel. Replaces the flat
           // button row that hid the spatial structure.
           h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
-            h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2' }, __alloT('stem.worldbuilder.world_map', '🗺️ World Map')),
+            h('div', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-widest mb-2' }, __alloT('stem.worldbuilder.world_map', '🗺️ World Map')),
             (function() {
               var rooms = world.rooms, N = rooms.length, W = 300, Hh = 220, cx = W / 2, cy = 100, R = Math.min(cx, cy) - 36;
               var pos = {};
@@ -1384,12 +1384,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 })
               );
             })(),
-            h('div', { className: 'text-[10px] text-slate-500 text-center mt-1' }, __alloT('stem.worldbuilder.you_are_here_visited_tap_a_connected_l', '🟣 you are here · ✓ visited · tap a connected location to travel'))
+            h('div', { className: 'text-[0.625rem] text-slate-500 text-center mt-1' }, __alloT('stem.worldbuilder.you_are_here_visited_tap_a_connected_l', '🟣 you are here · ✓ visited · tap a connected location to travel'))
           ),
 
           // NPCs in this room
           gmCharacters.filter(function(npc) { return !npc.roomId || npc.roomId === currentRoom; }).length > 0 && !activeNPC && h('div', { className: 'bg-gradient-to-r from-cyan-50 to-teal-50 border border-cyan-200 rounded-xl p-3' },
-            h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-widest mb-2' }, __alloT('stem.worldbuilder.people_here', '👥 People Here')),
+            h('div', { className: 'text-[0.6875rem] font-bold text-cyan-600 uppercase tracking-widest mb-2' }, __alloT('stem.worldbuilder.people_here', '👥 People Here')),
             h('div', { className: 'flex flex-wrap gap-2' },
               gmCharacters.filter(function(npc) { return !npc.roomId || npc.roomId === currentRoom; }).map(function(npc, i) {
                 return h('button', { 'aria-label': 'Talk with ' + npc.name + ', ' + npc.role, key: i, onClick: function() { interactWithNPC(npc); },
@@ -1398,14 +1398,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   h('span', { className: 'text-lg' }, npc.emoji),
                   h('div', { className: 'text-left flex-1' },
                     h('div', { className: 'font-bold text-slate-800' }, npc.name),
-                    h('div', { className: 'text-[11px] text-slate-600' }, npc.role),
-                    npc.conflictType && npc.conflictType !== 'none' && h('span', { className: 'text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.conflictType),
+                    h('div', { className: 'text-[0.6875rem] text-slate-600' }, npc.role),
+                    npc.conflictType && npc.conflictType !== 'none' && h('span', { className: 'text-[0.6875rem] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.conflictType),
                     // Mini rapport bar
                     npcRapport[npc.name] !== undefined && h('div', { className: 'mt-1 w-full' },
                       h('div', { className: 'w-full h-1 bg-slate-200 rounded-full overflow-hidden' },
                         h('div', { className: 'h-full rounded-full transition-all ' + (npcRapport[npc.name] >= 70 ? 'bg-green-400' : npcRapport[npc.name] >= 40 ? 'bg-amber-400' : 'bg-blue-400'), style: { width: npcRapport[npc.name] + '%' } })
                       ),
-                      h('div', { className: 'text-[11px] text-slate-500 mt-0.5' }, '💛 ' + npcRapport[npc.name] + '%')
+                      h('div', { className: 'text-[0.6875rem] text-slate-500 mt-0.5' }, '💛 ' + npcRapport[npc.name] + '%')
                     )
                   )
                 );
@@ -1419,8 +1419,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               h('span', { className: 'text-3xl' }, activeNPC.emoji),
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-sm font-black text-slate-800' }, activeNPC.name),
-                h('div', { className: 'text-[11px] text-cyan-600 font-medium' }, activeNPC.role),
-                activeNPC.selTheme && h('span', { className: 'text-[11px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold' }, activeNPC.selTheme)
+                h('div', { className: 'text-[0.6875rem] text-cyan-600 font-medium' }, activeNPC.role),
+                activeNPC.selTheme && h('span', { className: 'text-[0.6875rem] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold' }, activeNPC.selTheme)
               )
             ),
 
@@ -1430,7 +1430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               var rapport = npcRapport[npcKey] !== undefined ? npcRapport[npcKey] : 10;
               var rapportColor = rapport >= 70 ? 'green' : rapport >= 40 ? 'amber' : rapport >= 20 ? 'blue' : 'slate';
               return h('div', { className: 'mb-3 bg-white rounded-xl p-2.5 border border-cyan-200' },
-                h('div', { className: 'flex justify-between text-[11px] font-bold uppercase mb-1' },
+                h('div', { className: 'flex justify-between text-[0.6875rem] font-bold uppercase mb-1' },
                   h('span', { className: 'text-cyan-600 tracking-widest' }, __alloT('stem.worldbuilder.rapport', '💛 Rapport')),
                   h('span', { className: rapport >= 70 ? 'text-green-600' : 'text-slate-600' }, rapport + '%')
                 ),
@@ -1443,7 +1443,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     style: { width: rapport + '%' }
                   })
                 ),
-                h('div', { className: 'text-[11px] text-slate-500 mt-0.5' },
+                h('div', { className: 'text-[0.6875rem] text-slate-500 mt-0.5' },
                   rapport < 20 ? '🔒 Guarded — build trust through empathy' :
                   rapport < 40 ? '🌱 Opening up — keep showing understanding' :
                   rapport < 70 ? '💬 Trusting — deeper conversations unlocked' :
@@ -1451,10 +1451,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 ),
                 // Quest tracker
                 (npcQuests[npcKey] || []).length > 0 && h('div', { className: 'mt-2 space-y-1' },
-                  h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-wider' }, __alloT('stem.worldbuilder.quests', '📋 Quests')),
+                  h('div', { className: 'text-[0.6875rem] font-bold text-cyan-600 uppercase tracking-wider' }, __alloT('stem.worldbuilder.quests', '📋 Quests')),
                   (npcQuests[npcKey] || []).map(function(q) {
                     var isLocked = rapport < q.difficulty;
-                    return h('div', { key: q.id, className: 'flex items-center gap-1.5 text-[11px] ' + (q.isCompleted ? 'text-green-600' : isLocked ? 'text-slate-500' : 'text-slate-700') },
+                    return h('div', { key: q.id, className: 'flex items-center gap-1.5 text-[0.6875rem] ' + (q.isCompleted ? 'text-green-600' : isLocked ? 'text-slate-500' : 'text-slate-700') },
                       h('span', null, q.isCompleted ? '✅' : isLocked ? '🔒' : '⭕'),
                       h('span', { className: q.isCompleted ? 'line-through' : isLocked ? 'opacity-50' : 'font-medium' },
                         isLocked ? 'Requires rapport ' + q.difficulty + '%' : q.text
@@ -1468,22 +1468,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-200 mb-2' },
               h('p', { className: 'text-sm text-slate-800 italic leading-relaxed' }, '"' + activeNPC.openingLine + '"')
             ),
-            h('div', { className: 'text-[11px] text-slate-600 mb-1' },
+            h('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' },
               h('strong', null, 'Situation: '), activeNPC.currentSituation
             ),
             actionResult && actionResult.npcResponse && h('div', { className: 'bg-cyan-50 rounded-xl p-3 border border-cyan-200 mt-2' },
-              h('div', { className: 'text-[11px] font-bold text-cyan-600 mb-1' }, activeNPC.emoji + ' ' + activeNPC.name + ' says:'),
+              h('div', { className: 'text-[0.6875rem] font-bold text-cyan-600 mb-1' }, activeNPC.emoji + ' ' + activeNPC.name + ' says:'),
               h('p', { className: 'text-sm text-cyan-900 leading-relaxed font-medium' }, actionResult.npcResponse),
               actionResult.selBreakdown && h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
                 Object.entries(actionResult.selBreakdown).map(function(entry) {
                   var max = entry[0] === 'empathy' ? 15 : entry[0] === 'accountability' ? 5 : 10;
-                  return h('span', { key: entry[0], className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (entry[1] >= max * 0.7 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, entry[0] + ': ' + entry[1] + '/' + max);
+                  return h('span', { key: entry[0], className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full ' + (entry[1] >= max * 0.7 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, entry[0] + ': ' + entry[1] + '/' + max);
                 })
               ),
-              actionResult.progressToward && h('div', { className: 'mt-2 text-[11px] font-bold ' + (actionResult.progressToward === 'resolved' ? 'text-green-600' : actionResult.progressToward === 'near-resolution' ? 'text-amber-600' : 'text-slate-500') },
+              actionResult.progressToward && h('div', { className: 'mt-2 text-[0.6875rem] font-bold ' + (actionResult.progressToward === 'resolved' ? 'text-green-600' : actionResult.progressToward === 'near-resolution' ? 'text-amber-600' : 'text-slate-500') },
                 '📊 Progress: ' + actionResult.progressToward.replace(/-/g, ' ')
               ),
-              actionResult.selFeedback && h('p', { className: 'text-[11px] text-teal-600 mt-1 font-medium' }, '🤝 ' + actionResult.selFeedback)
+              actionResult.selFeedback && h('p', { className: 'text-[0.6875rem] text-teal-600 mt-1 font-medium' }, '🤝 ' + actionResult.selFeedback)
             )
           ),
 
@@ -1495,16 +1495,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             ),
             h('p', { className: 'text-sm text-amber-900 font-medium leading-relaxed' }, gmMessage),
             gmSceneImage && h('img', { src: gmSceneImage, alt: __alloT('stem.worldbuilder.scene_from_the_game_master', 'Scene from the Game Master'), className: 'w-full rounded-xl mt-2 border border-amber-200' }),
-            h('button', { 'aria-label': __alloT('stem.worldbuilder.dismiss', 'Dismiss'), onClick: function() { updMulti({ gmMessage: null, gmSceneImage: null }); }, className: 'mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold' }, __alloT('stem.worldbuilder.dismiss_2', 'Dismiss'))
+            h('button', { 'aria-label': __alloT('stem.worldbuilder.dismiss', 'Dismiss'), onClick: function() { updMulti({ gmMessage: null, gmSceneImage: null }); }, className: 'mt-2 text-[0.6875rem] text-amber-500 hover:text-amber-700 font-bold' }, __alloT('stem.worldbuilder.dismiss_2', 'Dismiss'))
           ),
 
           // Target vocabulary (teacher-set)
           targetVocab.length > 0 && h('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3' },
-            h('div', { className: 'text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.target_vocabulary_use_these_for_bonus_', '📖 Target Vocabulary — use these for bonus power!')),
+            h('div', { className: 'text-[0.6875rem] font-bold text-blue-600 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.target_vocabulary_use_these_for_bonus_', '📖 Target Vocabulary — use these for bonus power!')),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               targetVocab.map(function(term, i) {
                 var used = vocabTermsUsed.indexOf(term.toLowerCase()) >= 0;
-                return h('span', { key: i, className: 'px-2 py-1 rounded-full text-[11px] font-bold border ' + (used ? 'bg-green-100 border-green-300 text-green-700' : 'bg-white border-blue-200 text-blue-700') }, (used ? '✓ ' : '') + term);
+                return h('span', { key: i, className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold border ' + (used ? 'bg-green-100 border-green-300 text-green-700' : 'bg-white border-blue-200 text-blue-700') }, (used ? '✓ ' : '') + term);
               })
             )
           ),
@@ -1512,8 +1512,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           // ── Inventory ──
           inventory.length > 0 && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest' }, '🎒 Inventory (' + inventory.length + ')'),
-              activeItem && h('span', { className: 'text-[11px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full' }, '⚔️ Equipped: ' + activeItem.emoji + ' ' + activeItem.name)
+              h('div', { className: 'text-[0.6875rem] font-bold text-amber-600 uppercase tracking-widest' }, '🎒 Inventory (' + inventory.length + ')'),
+              activeItem && h('span', { className: 'text-[0.6875rem] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full' }, '⚔️ Equipped: ' + activeItem.emoji + ' ' + activeItem.name)
             ),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               inventory.map(function(item, i) {
@@ -1525,14 +1525,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       if (activeBattle) { useItemInBattle(item); }
                       else { updMulti({ activeItem: isEquipped ? null : item }); }
                     },
-                    className: 'flex flex-col items-center px-2 py-1 rounded-lg border text-[11px] font-bold transition-all ' +
+                    className: 'flex flex-col items-center px-2 py-1 rounded-lg border text-[0.6875rem] font-bold transition-all ' +
                       (isEquipped ? 'bg-amber-200 border-amber-400 text-amber-900 ring-2 ring-amber-400' : 'bg-white border-amber-200 text-amber-700 hover:border-amber-400 hover:shadow-sm'),
                     'aria-label': item.name + ', ' + tier.label + ' quality, power ' + item.power + ', durability ' + (item.durability || 0) + ' of ' + (item.maxDurability || 0)
                   },
                     h('div', { className: 'flex items-center gap-1' },
                       h('span', null, item.emoji),
                       h('span', null, item.name),
-                      h('span', { className: 'text-[11px] px-1 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + item.power)
+                      h('span', { className: 'text-[0.6875rem] px-1 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + item.power)
                     ),
                     // Durability bar
                     h('div', { className: 'w-full mt-0.5 flex items-center gap-1' },
@@ -1543,11 +1543,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                           style: { width: ((item.durability || 0) / (item.maxDurability || 1) * 100) + '%' }
                         })
                       ),
-                      h('span', { className: 'text-[11px] text-slate-500' }, (item.durability || 0) + '/' + (item.maxDurability || 0))
+                      h('span', { className: 'text-[0.6875rem] text-slate-500' }, (item.durability || 0) + '/' + (item.maxDurability || 0))
                     )
                   ),
                   // Tooltip on hover
-                  h('div', { className: 'hidden group-hover:block group-focus-within:block absolute z-10 bottom-full left-0 mb-1 w-48 bg-white border border-amber-200 rounded-lg p-2 shadow-lg text-[11px]' },
+                  h('div', { className: 'hidden group-hover:block group-focus-within:block absolute z-10 bottom-full left-0 mb-1 w-48 bg-white border border-amber-200 rounded-lg p-2 shadow-lg text-[0.6875rem]' },
                     h('div', { className: 'font-bold text-amber-800' }, item.emoji + ' ' + item.name),
                     h('div', { className: 'text-slate-600 mt-0.5' }, item.desc),
                     item.specialAbility && h('div', { className: 'text-violet-600 font-medium mt-0.5' }, '✨ ' + item.specialAbility),
@@ -1569,7 +1569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             var roomStructures = structures.filter(function(s) { return s.roomId === currentRoom; });
             if (roomStructures.length === 0) return null;
             return h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-[11px] font-bold text-emerald-600 uppercase tracking-widest mb-2' }, __alloT('stem.worldbuilder.structures_here', '🏗️ Structures Here')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-emerald-600 uppercase tracking-widest mb-2' }, __alloT('stem.worldbuilder.structures_here', '🏗️ Structures Here')),
               h('div', { className: 'space-y-1.5' },
                 roomStructures.map(function(s, i) {
                   var tier = getQualityTier(s.quality);
@@ -1578,11 +1578,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-xs font-bold text-emerald-700' }, s.name),
-                        h('span', { className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + ' ' + tier.label)
+                        h('span', { className: 'text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full', style: { background: tier.color + '22', color: tier.color } }, tier.emoji + ' ' + tier.label)
                       ),
-                      h('p', { className: 'text-[11px] text-emerald-600 italic leading-relaxed' }, s.desc),
-                      s.bonus && h('div', { className: 'text-[11px] text-violet-600 font-medium mt-0.5' }, '✨ ' + s.bonus),
-                      h('div', { className: 'text-[11px] text-slate-500 mt-0.5' }, 'Built by ' + s.builtBy)
+                      h('p', { className: 'text-[0.6875rem] text-emerald-600 italic leading-relaxed' }, s.desc),
+                      s.bonus && h('div', { className: 'text-[0.6875rem] text-violet-600 font-medium mt-0.5' }, '✨ ' + s.bonus),
+                      h('div', { className: 'text-[0.6875rem] text-slate-500 mt-0.5' }, 'Built by ' + s.builtBy)
                     )
                   );
                 })
@@ -1595,31 +1595,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'text-sm font-bold text-violet-700' }, __alloT('stem.worldbuilder.what_do_you_do', '✍️ What do you do?')),
               h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: getQualityTier(writingPower).color + '22', color: getQualityTier(writingPower).color } },
+                h('span', { className: 'text-[0.6875rem] font-bold px-2 py-1 rounded-full', style: { background: getQualityTier(writingPower).color + '22', color: getQualityTier(writingPower).color } },
                   getQualityTier(writingPower).emoji + ' Power: ' + writingPower
                 )
               )
             ),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.worldbuilder.describe_your_action_with_vivid_detail', 'Describe your action with vivid detail. The better you write, the more powerful the outcome. Use sensory language, precise vocabulary, and creativity!')),
             h('div', { className: 'flex flex-wrap gap-2 mb-2' },
-              h('button', { onClick: function() { upd('actionMode', 'action'); }, 'aria-pressed': (d.actionMode || 'action') === 'action', className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.worldbuilder.act', '⚔️ Act')),
-              h('button', { onClick: function() { upd('actionMode', 'explore'); }, 'aria-pressed': d.actionMode === 'explore', className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.worldbuilder.explore', '🔍 Explore')),
-              h('button', { onClick: function() { upd('actionMode', 'craft'); }, 'aria-pressed': d.actionMode === 'craft', className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
-              !activeBattle && !activeNPC && h('button', { 'aria-label': __alloT('stem.worldbuilder.battle', 'Battle'), onClick: startBattle, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-red-100 text-red-800 hover:bg-red-200' }, __alloT('stem.worldbuilder.battle_2', '⚔️ Battle')),
-              activeNPC && h('button', { 'aria-label': __alloT('stem.worldbuilder.leave', 'Leave'), onClick: function() { updMulti({ activeNPC: null, actionMode: 'action' }); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200' }, __alloT('stem.worldbuilder.leave_2', '👋 Leave'))
+              h('button', { onClick: function() { upd('actionMode', 'action'); }, 'aria-pressed': (d.actionMode || 'action') === 'action', className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.worldbuilder.act', '⚔️ Act')),
+              h('button', { onClick: function() { upd('actionMode', 'explore'); }, 'aria-pressed': d.actionMode === 'explore', className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.worldbuilder.explore', '🔍 Explore')),
+              h('button', { onClick: function() { upd('actionMode', 'craft'); }, 'aria-pressed': d.actionMode === 'craft', className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
+              !activeBattle && !activeNPC && h('button', { 'aria-label': __alloT('stem.worldbuilder.battle', 'Battle'), onClick: startBattle, className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all bg-red-100 text-red-800 hover:bg-red-200' }, __alloT('stem.worldbuilder.battle_2', '⚔️ Battle')),
+              activeNPC && h('button', { 'aria-label': __alloT('stem.worldbuilder.leave', 'Leave'), onClick: function() { updMulti({ activeNPC: null, actionMode: 'action' }); }, className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200' }, __alloT('stem.worldbuilder.leave_2', '👋 Leave'))
             ),
             // Craft sub-mode selector (Item vs Structure)
             d.actionMode === 'craft' && h('div', { className: 'flex gap-2 mb-2 ml-1' },
               h('button', { 'aria-label': __alloT('stem.worldbuilder.craft_item', 'Craft Item'), onClick: function() { upd('craftSubMode', 'item'); },
-                className: 'px-3 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
+                className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold border transition-all ' +
                   (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-600')
               }, '🔨 Craft Item' + (craftedThisTurn ? ' ✓' : '')),
               h('button', { 'aria-label': __alloT('stem.worldbuilder.build_structure', 'Build Structure'), onClick: function() { upd('craftSubMode', 'structure'); },
-                className: 'px-3 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
+                className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold border transition-all ' +
                   (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-600') +
                   (structureCooldown > 0 ? ' opacity-40' : '')
               }, '🏗️ Build Structure' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : '')),
-              structureCooldown > 0 && h('span', { className: 'text-[11px] text-slate-500 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
+              structureCooldown > 0 && h('span', { className: 'text-[0.6875rem] text-slate-500 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
             ),
             // Active battle encounter card
             activeBattle && h('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-xl p-3 mb-2' },
@@ -1628,23 +1628,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   h('span', { className: 'text-2xl' }, activeBattle.emoji),
                   h('div', null,
                     h('div', { className: 'text-sm font-black text-red-800' }, activeBattle.name),
-                    h('div', { className: 'text-[11px] text-red-600 italic' }, activeBattle.desc.substring(0, 80))
+                    h('div', { className: 'text-[0.6875rem] text-red-600 italic' }, activeBattle.desc.substring(0, 80))
                   )
                 ),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-xs font-bold text-red-700' }, 'Round ' + (activeBattle.rounds + 1)),
-                  h('div', { className: 'text-[11px] text-slate-600' }, 'Power: ' + activeBattle.power)
+                  h('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Power: ' + activeBattle.power)
                 )
               ),
               // HP bar
               h('div', { className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden', role: 'progressbar', 'aria-label': __alloT('stem.worldbuilder.enemy_health', 'Enemy health'), 'aria-valuenow': activeBattle.currentHp, 'aria-valuemax': activeBattle.hp },
                 h('div', { className: 'h-full rounded-full transition-all duration-500 ' + (activeBattle.currentHp / activeBattle.hp > 0.5 ? 'bg-red-500' : activeBattle.currentHp / activeBattle.hp > 0.25 ? 'bg-orange-500' : 'bg-yellow-500'), style: { width: (activeBattle.currentHp / activeBattle.hp * 100) + '%' } })
               ),
-              h('div', { className: 'flex justify-between text-[11px] font-bold mt-1' },
+              h('div', { className: 'flex justify-between text-[0.6875rem] font-bold mt-1' },
                 h('span', { className: 'text-red-600' }, activeBattle.currentHp + '/' + activeBattle.hp + ' HP'),
                 h('span', { className: 'text-amber-600' }, '💡 Weakness: ' + activeBattle.weakness)
               ),
-              h('p', { className: 'text-[11px] text-red-700 mt-1 font-medium' }, __alloT('stem.worldbuilder.write_your_battle_action_describe_how_', '⚔️ Write your battle action! Describe HOW you fight. Reference the weakness for +15 bonus damage!'))
+              h('p', { className: 'text-[0.6875rem] text-red-700 mt-1 font-medium' }, __alloT('stem.worldbuilder.write_your_battle_action_describe_how_', '⚔️ Write your battle action! Describe HOW you fight. Reference the weakness for +15 bonus damage!'))
             ),
             h('textarea', {
               value: actionText,
@@ -1685,25 +1685,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 onClick: function() { upd('hwPenmanshipOn', !hwPenmanshipOn); },
                 'aria-label': (hwPenmanshipOn || hwTeacherPenmanship ? 'Disable' : 'Enable') + ' penmanship feedback',
                 'aria-pressed': String(hwPenmanshipOn || hwTeacherPenmanship),
-                className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
+                className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold border transition-all ' +
                   (hwPenmanshipOn || hwTeacherPenmanship
                     ? 'bg-violet-100 border-violet-300 text-violet-700'
                     : 'bg-slate-50 border-slate-400 text-slate-600 hover:border-violet-500 hover:text-violet-700')
               }, __alloT('stem.worldbuilder.penmanship_tips', '✏️ Penmanship Tips '), hwPenmanshipOn || hwTeacherPenmanship ? 'ON' : 'OFF'),
-              hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[11px] text-violet-700 font-medium' }, __alloT('stem.worldbuilder.teacher_enabled', '(teacher enabled)'))
+              hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[0.6875rem] text-violet-700 font-medium' }, __alloT('stem.worldbuilder.teacher_enabled', '(teacher enabled)'))
             ),
 
             // ── Penmanship Feedback Card ──
             hwResult && hwResult.penmanship && h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 border border-violet-200 rounded-xl p-3 mt-2', role: 'region', 'aria-label': __alloT('stem.worldbuilder.penmanship_feedback', 'Penmanship feedback') },
               h('div', { className: 'flex items-center justify-between mb-1' },
-                h('div', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-widest' }, __alloT('stem.worldbuilder.penmanship_feedback_2', '✏️ Penmanship Feedback')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-600 uppercase tracking-widest' }, __alloT('stem.worldbuilder.penmanship_feedback_2', '✏️ Penmanship Feedback')),
                 h('div', { className: 'text-sm font-black text-violet-600' },
                   (hwResult.penmanship.score >= 80 ? 'Very legible' : hwResult.penmanship.score >= 60 ? 'Legible' : hwResult.penmanship.score >= 40 ? 'Developing' : 'Keep practicing')
                 )
               ),
               // AI-estimate disclaimer — handwriting can't be reliably graded from a
               // photo, so this is qualitative feedback, not an assessment or grade.
-              h('p', { className: 'text-[10px] text-violet-700 italic mb-2' }, __alloT('stem.worldbuilder.an_ai_estimate_to_spark_practice_not_a', 'An AI estimate to spark practice — not a handwriting assessment or grade.')),
+              h('p', { className: 'text-[0.625rem] text-violet-700 italic mb-2' }, __alloT('stem.worldbuilder.an_ai_estimate_to_spark_practice_not_a', 'An AI estimate to spark practice — not a handwriting assessment or grade.')),
               // Per-dimension feedback as coarse bands (no false-precise /25 number)
               h('div', { className: 'flex gap-2 mb-2' },
                 [['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(function(pair) {
@@ -1711,7 +1711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   var band = val >= 18 ? 'Strong' : val >= 12 ? 'Solid' : 'Growing';
                   return h('div', { key: pair[0], className: 'flex-1 text-center' },
                     h('div', { className: 'text-xs font-black ' + (val >= 18 ? 'text-green-600' : val >= 12 ? 'text-amber-600' : 'text-slate-500') }, band),
-                    h('div', { className: 'text-[11px] text-slate-500 font-bold uppercase' }, pair[1])
+                    h('div', { className: 'text-[0.6875rem] text-slate-500 font-bold uppercase' }, pair[1])
                   );
                 })
               ),
@@ -1720,14 +1720,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               hwResult.penmanship.tips && h('p', { className: 'text-xs text-violet-600 font-medium' }, '💡 ' + hwResult.penmanship.tips),
               h('button', {
                 onClick: function() { upd('hwResult', null); },
-                className: 'text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1',
+                className: 'text-[0.6875rem] text-slate-500 hover:text-slate-600 font-bold mt-1',
                 'aria-label': __alloT('stem.worldbuilder.dismiss_penmanship_feedback', 'Dismiss penmanship feedback')
               }, __alloT('stem.worldbuilder.dismiss_3', 'Dismiss'))
             ),
 
-            pasteDetected && h('div', { className: 'text-[11px] text-red-600 font-bold mt-1' }, __alloT('stem.worldbuilder.pasting_detected_please_write_your_own', '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.')),
+            pasteDetected && h('div', { className: 'text-[0.6875rem] text-red-600 font-bold mt-1' }, __alloT('stem.worldbuilder.pasting_detected_please_write_your_own', '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.')),
             h('div', { className: 'flex items-center justify-between mt-2' },
-              h('span', { className: 'text-[11px] text-slate-600' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
+              h('span', { className: 'text-[0.6875rem] text-slate-600' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
               h('button', { onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
                 'aria-busy': !!actionLoading,
                 disabled: actionText.trim().length < 5 || actionLoading,
@@ -1752,11 +1752,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   ),
                   actionResult.strategyScore > 0 && h('div', { className: 'text-center' },
                     h('div', { className: 'text-2xl font-black text-indigo-600' }, '+', actionResult.strategyScore),
-                    h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, __alloT('stem.worldbuilder.strategy', '🧠 Strategy'))
+                    h('div', { className: 'text-[0.6875rem] text-indigo-500 font-bold' }, __alloT('stem.worldbuilder.strategy', '🧠 Strategy'))
                   )
                 ),
-                actionResult.weaknessExploited && h('div', { className: 'mt-2 inline-block bg-amber-200 text-amber-800 px-3 py-1 rounded-full text-[11px] font-bold' }, __alloT('stem.worldbuilder.weakness_exploited', '🎯 Weakness exploited!')),
-                actionResult.environmentUsed && h('div', { className: 'mt-1 inline-block bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-[11px] font-bold' }, __alloT('stem.worldbuilder.environment_used', '🌍 Environment used!'))
+                actionResult.weaknessExploited && h('div', { className: 'mt-2 inline-block bg-amber-200 text-amber-800 px-3 py-1 rounded-full text-[0.6875rem] font-bold' }, __alloT('stem.worldbuilder.weakness_exploited', '🎯 Weakness exploited!')),
+                actionResult.environmentUsed && h('div', { className: 'mt-1 inline-block bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-[0.6875rem] font-bold' }, __alloT('stem.worldbuilder.environment_used', '🌍 Environment used!'))
               ),
 
               // Writing breakdown
@@ -1764,22 +1764,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 Object.entries(actionResult.breakdown).map(function(entry) {
                   return h('div', { key: entry[0], className: 'text-center' },
                     h('div', { className: 'text-sm font-black text-slate-700' }, entry[1], '/20'),
-                    h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, entry[0])
+                    h('div', { className: 'text-[0.6875rem] text-slate-600 uppercase font-bold' }, entry[0])
                   );
                 })
               ),
 
               // Player's narrative outcome
               h('div', { className: 'p-4 border-b border-slate-100' },
-                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.your_action', '⚔️ Your Action')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-700 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.your_action', '⚔️ Your Action')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed italic' }, '"' + (actionResult.narrative || '') + '"')
               ),
 
               // Enemy's literary writing (mentor text)
               actionResult.enemyWriting && h('div', { className: 'p-4 bg-gradient-to-r from-red-50 to-orange-50' },
-                h('div', { className: 'text-[11px] font-bold text-red-600 uppercase tracking-widest mb-1 flex items-center gap-1' }, activeBattle ? activeBattle.emoji + ' ' : '', activeBattle ? activeBattle.name + ' Responds' : 'Enemy Responds'),
+                h('div', { className: 'text-[0.6875rem] font-bold text-red-600 uppercase tracking-widest mb-1 flex items-center gap-1' }, activeBattle ? activeBattle.emoji + ' ' : '', activeBattle ? activeBattle.name + ' Responds' : 'Enemy Responds'),
                 h('p', { className: 'text-sm text-red-900 leading-relaxed font-medium' }, actionResult.enemyWriting),
-                h('p', { className: 'text-[11px] text-red-400 italic mt-2' }, __alloT('stem.worldbuilder.notice_the_vivid_language_sensory_deta', '📖 Notice the vivid language, sensory details, and figurative writing in the enemy\'s response — learn from how it describes its actions!'))
+                h('p', { className: 'text-[0.6875rem] text-red-400 italic mt-2' }, __alloT('stem.worldbuilder.notice_the_vivid_language_sensory_deta', '📖 Notice the vivid language, sensory details, and figurative writing in the enemy\'s response — learn from how it describes its actions!'))
               ),
 
               // Feedback
@@ -1791,20 +1791,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
               // Extras
               h('div', { className: 'px-4 pb-3 flex flex-wrap gap-2' },
-                actionResult.xpEarned && h('span', { className: 'text-[11px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-full' }, '+' + actionResult.xpEarned + ' XP'),
-                actionResult.damageDealt && h('span', { className: 'text-[11px] font-bold bg-red-100 text-red-700 px-2 py-1 rounded-full' }, '💥 ' + actionResult.damageDealt + ' damage'),
-                actionResult.powerChange > 0 && h('span', { className: 'text-[11px] font-bold bg-violet-100 text-violet-700 px-2 py-1 rounded-full' }, '+' + actionResult.powerChange + ' Power'),
-                actionResult.discoveredItem && h('span', { className: 'text-[11px] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full' }, '🎁 Found: ' + actionResult.discoveredItem),
+                actionResult.xpEarned && h('span', { className: 'text-[0.6875rem] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-full' }, '+' + actionResult.xpEarned + ' XP'),
+                actionResult.damageDealt && h('span', { className: 'text-[0.6875rem] font-bold bg-red-100 text-red-700 px-2 py-1 rounded-full' }, '💥 ' + actionResult.damageDealt + ' damage'),
+                actionResult.powerChange > 0 && h('span', { className: 'text-[0.6875rem] font-bold bg-violet-100 text-violet-700 px-2 py-1 rounded-full' }, '+' + actionResult.powerChange + ' Power'),
+                actionResult.discoveredItem && h('span', { className: 'text-[0.6875rem] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full' }, '🎁 Found: ' + actionResult.discoveredItem),
                 (actionResult.vocabHighlights || []).map(function(v, vi) {
-                  return h('span', { key: vi, className: 'text-[11px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-full' }, '📖 ' + v);
+                  return h('span', { key: vi, className: 'text-[0.6875rem] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-full' }, '📖 ' + v);
                 })
               )
             ),
 
             // TTS narrate both player and enemy
             callTTS && h('div', { className: 'flex gap-2' },
-              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[11px] text-violet-700 hover:text-violet-700 font-bold' }, __alloT('stem.worldbuilder.hear_your_action', '🔊 Hear your action')),
-              actionResult.enemyWriting && h('button', { 'aria-label': __alloT('stem.worldbuilder.refresh', 'Refresh'), onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[11px] text-red-500 hover:text-red-700 font-bold' }, __alloT('stem.worldbuilder.hear_enemy_s_response', '🔊 Hear enemy\'s response'))
+              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[0.6875rem] text-violet-700 hover:text-violet-700 font-bold' }, __alloT('stem.worldbuilder.hear_your_action', '🔊 Hear your action')),
+              actionResult.enemyWriting && h('button', { 'aria-label': __alloT('stem.worldbuilder.refresh', 'Refresh'), onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[0.6875rem] text-red-500 hover:text-red-700 font-bold' }, __alloT('stem.worldbuilder.hear_enemy_s_response', '🔊 Hear enemy\'s response'))
             )
           ),
 
@@ -1813,7 +1813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('summary', { className: 'px-4 py-2 text-xs font-bold text-slate-600 cursor-pointer hover:bg-slate-50' }, '📜 Adventure Log (' + actionLog.length + ' actions)'),
             h('div', { className: 'px-4 pb-3 space-y-1.5 max-h-48 overflow-y-auto' },
               actionLog.slice().reverse().map(function(entry, i) {
-                return h('div', { key: i, className: 'text-[11px] text-slate-600 flex items-start gap-2' },
+                return h('div', { key: i, className: 'text-[0.6875rem] text-slate-600 flex items-start gap-2' },
                   h('span', { className: 'font-bold shrink-0', style: { color: getQualityTier(entry.score).color } }, entry.score),
                   h('span', { className: 'text-slate-500' }, entry.room + ':'),
                   h('span', { className: 'truncate' }, entry.text)
@@ -1825,37 +1825,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           // Stats
           h('div', { className: 'grid grid-cols-4 gap-2' },
             h('div', { className: 'bg-violet-50 rounded-xl border border-violet-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-violet-600' }, roomsVisited.length), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.explored', 'Explored'))
+              h('div', { className: 'text-lg font-black text-violet-600' }, roomsVisited.length), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.explored', 'Explored'))
             ),
             h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-amber-600' }, actionLog.length), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.actions', 'Actions'))
+              h('div', { className: 'text-lg font-black text-amber-600' }, actionLog.length), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.actions', 'Actions'))
             ),
             h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-red-600' }, d.battlesWon || 0), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.battles_won', 'Battles Won'))
+              h('div', { className: 'text-lg font-black text-red-600' }, d.battlesWon || 0), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.battles_won', 'Battles Won'))
             ),
             h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-emerald-600' }, legendaryActions), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.legendary', 'Legendary'))
+              h('div', { className: 'text-lg font-black text-emerald-600' }, legendaryActions), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.legendary', 'Legendary'))
             ),
             h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-cyan-600' }, conflictsResolved), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.resolved', 'Resolved'))
+              h('div', { className: 'text-lg font-black text-cyan-600' }, conflictsResolved), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.resolved', 'Resolved'))
             ),
             h('div', { className: 'bg-blue-50 rounded-xl border border-blue-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-blue-600' }, vocabTermsUsed.length), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.vocab', 'Vocab'))
+              h('div', { className: 'text-lg font-black text-blue-600' }, vocabTermsUsed.length), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.vocab', 'Vocab'))
             ),
             h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-teal-600' }, selSkillsUsed.length), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.sel_skills', 'SEL Skills'))
+              h('div', { className: 'text-lg font-black text-teal-600' }, selSkillsUsed.length), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.sel_skills', 'SEL Skills'))
             ),
             h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-purple-600' }, completedQuests), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.quests_2', 'Quests'))
+              h('div', { className: 'text-lg font-black text-purple-600' }, completedQuests), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.quests_2', 'Quests'))
             ),
             h('div', { className: 'bg-orange-50 rounded-xl border border-orange-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-orange-600' }, inventory.length), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.items', 'Items'))
+              h('div', { className: 'text-lg font-black text-orange-600' }, inventory.length), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.items', 'Items'))
             ),
             h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-emerald-600' }, structures.length), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.structures', 'Structures'))
+              h('div', { className: 'text-lg font-black text-emerald-600' }, structures.length), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.structures', 'Structures'))
             ),
             harmonyScore > 0 && h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-2 text-center' },
-              h('div', { className: 'text-lg font-black text-indigo-600' }, harmonyScore), h('div', { className: 'text-[11px] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.harmony_2', 'Harmony'))
+              h('div', { className: 'text-lg font-black text-indigo-600' }, harmonyScore), h('div', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, __alloT('stem.worldbuilder.harmony_2', 'Harmony'))
             )
           ),
 
@@ -1877,12 +1877,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       ? 'bg-violet-100 border-violet-300 text-violet-700'
                       : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-300')
                 }, '✏️ Penmanship Feedback: ' + (hwTeacherPenmanship ? 'ON' : 'OFF')),
-                h('span', { className: 'text-[11px] text-slate-600' }, hwTeacherPenmanship ? 'Students will see handwriting feedback when they snap photos' : 'Enable to give students penmanship tips on handwritten submissions')
+                h('span', { className: 'text-[0.6875rem] text-slate-600' }, hwTeacherPenmanship ? 'Students will see handwriting feedback when they snap photos' : 'Enable to give students penmanship tips on handwritten submissions')
               ),
 
               // Scenario templates
               h('div', { className: 'mb-3' },
-                h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-1.5' }, __alloT('stem.worldbuilder.quick_scenarios_creates_multiple_chara', '📋 Quick Scenarios (creates multiple characters)')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-amber-600 uppercase tracking-widest mb-1.5' }, __alloT('stem.worldbuilder.quick_scenarios_creates_multiple_chara', '📋 Quick Scenarios (creates multiple characters)')),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                   SCENARIO_TEMPLATES.map(function(tmpl) {
                     return h('button', { key: tmpl.type,
@@ -1914,13 +1914,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                         }).catch(function() { upd('actionLoading', false); });
                       },
                       disabled: actionLoading,
-                      className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-amber-200 bg-white text-amber-700 hover:bg-amber-100 hover:border-amber-400 transition-all disabled:opacity-40'
+                      className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-amber-200 bg-white text-amber-700 hover:bg-amber-100 hover:border-amber-400 transition-all disabled:opacity-40'
                     }, tmpl.label);
                   })
                 )
               ),
 
-              h('div', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.or_create_a_custom_character', 'Or create a custom character:')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-amber-500 uppercase tracking-widest mb-1' }, __alloT('stem.worldbuilder.or_create_a_custom_character', 'Or create a custom character:')),
               h('textarea', {
                 value: d.gmCharacterPrompt || '',
                 onChange: function(e) { upd('gmCharacterPrompt', e.target.value); },
@@ -1933,23 +1933,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 disabled:opacity-40 transition-colors'
               }, actionLoading ? 'Creating...' : '✨ Create Character'),
               gmCharacters.length > 0 && h('div', { className: 'space-y-2 mt-2' },
-                h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest' }, 'Characters in World (' + gmCharacters.length + ')'),
+                h('div', { className: 'text-[0.6875rem] font-bold text-amber-600 uppercase tracking-widest' }, 'Characters in World (' + gmCharacters.length + ')'),
                 gmCharacters.map(function(npc, i) {
                   return h('div', { key: i, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-amber-200 text-xs' },
                     h('span', { className: 'text-lg' }, npc.emoji),
                     h('div', { className: 'flex-1 min-w-0' },
                       h('span', { className: 'font-bold text-slate-800' }, npc.name),
                       h('span', { className: 'text-slate-600 ml-1' }, '(' + npc.role + ')'),
-                      npc.selTheme && h('span', { className: 'ml-1 text-[11px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.selTheme)
+                      npc.selTheme && h('span', { className: 'ml-1 text-[0.6875rem] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.selTheme)
                     ),
-                    h('button', { onClick: function() { updMulti({ gmCharacters: gmCharacters.filter(function(_, j) { return j !== i; }) }); }, className: 'text-slate-600 hover:text-red-500 text-[11px]', 'aria-label': 'Remove ' + npc.name }, '✕')
+                    h('button', { onClick: function() { updMulti({ gmCharacters: gmCharacters.filter(function(_, j) { return j !== i; }) }); }, className: 'text-slate-600 hover:text-red-500 text-[0.6875rem]', 'aria-label': 'Remove ' + npc.name }, '✕')
                   );
                 })
               )
             )
           ),
 
-          h('button', { 'aria-label': __alloT('stem.worldbuilder.start_a_new_world', 'Start a New World'), onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null, hwResult: null, hwLoading: false }); }, className: 'text-[11px] text-slate-500 hover:text-slate-700 font-bold' }, __alloT('stem.worldbuilder.start_a_new_world_2', '🔄 Start a New World'))
+          h('button', { 'aria-label': __alloT('stem.worldbuilder.start_a_new_world', 'Start a New World'), onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null, hwResult: null, hwLoading: false }); }, className: 'text-[0.6875rem] text-slate-500 hover:text-slate-700 font-bold' }, __alloT('stem.worldbuilder.start_a_new_world_2', '🔄 Start a New World'))
         )
       );
     }

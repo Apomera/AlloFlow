@@ -80,7 +80,7 @@ describe('Solar System Investigation Hub', () => {
     expect(source).toContain('"data-journal-field": field.key');
     expect(source).toContain('React.createElement("dl", { className: "space-y-2" }');
     expect(source).toContain("style: { fontSize: '12px' }");
-    expect(source).toContain('break-words px-2 py-1.5 text-right text-[11px]');
+    expect(source).toContain('break-words px-2 py-1.5 text-right text-[0.6875rem]');
   });
 
   it('launches and closes Gravity Drop as a proper controlled investigation', () => {

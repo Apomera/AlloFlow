@@ -1809,7 +1809,7 @@ var d = labToolData || {};
 
                 title: t('stem.economicslab.literacy_tooltip', 'Economic literacy grows with concepts learned, years simulated across the sims, quiz accuracy, and achievements earned'),
 
-                className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' +
+                className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border ' +
 
                   (econLiteracyScore >= 80 ? 'text-green-800 bg-green-50 border-green-200' :
 
@@ -1821,13 +1821,13 @@ var d = labToolData || {};
 
               }, '\uD83C\uDF93 Literacy: ' + econLiteracyScore + '%'),
 
-              React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, t('stem.economicslab.ai_powered_learning', '\uD83D\uDCDA AI-Powered Learning')),
+              React.createElement('span', { className: 'text-[0.6875rem] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, t('stem.economicslab.ai_powered_learning', '\uD83D\uDCDA AI-Powered Learning')),
 
               econAchievements.length > 0 && React.createElement('button', {
 
                 type: 'button',
                 'aria-expanded': d.showAchievements ? 'true' : 'false',
-                className: 'text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
+                className: 'text-[0.6875rem] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
 
                 onClick: function () { upd('showAchievements', !(d.showAchievements)); }
 
@@ -1837,7 +1837,7 @@ var d = labToolData || {};
 
                 type: 'button',
                 'aria-expanded': d.showGlossary ? 'true' : 'false',
-                className: 'text-[11px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
+                className: 'text-[0.6875rem] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
 
                 onClick: function () { upd('showGlossary', !(d.showGlossary)); }
 
@@ -1849,7 +1849,7 @@ var d = labToolData || {};
                 'aria-expanded': d.showQuiz ? 'true' : 'false',
                 onClick: function () { upd('showQuiz', !(d.showQuiz)); },
 
-                className: 'text-[11px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
+                className: 'text-[0.6875rem] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
 
               }, t('stem.economicslab.quiz_me', '\u270D\uFE0F Quiz Me')),
 
@@ -1859,7 +1859,7 @@ var d = labToolData || {};
                 'aria-expanded': d.showAdvisor ? 'true' : 'false',
                 onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
 
-                className: 'text-[11px] text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
+                className: 'text-[0.6875rem] text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
 
               }, t('stem.economicslab.ask_tutor', '\uD83E\uDDD1\u200D\uD83C\uDFEB Ask Tutor')),
 
@@ -1871,7 +1871,7 @@ var d = labToolData || {};
 
                 onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
 
-                className: 'text-[11px] bg-slate-100 border border-slate-500 rounded-full px-2 py-0.5 text-slate-600 cursor-pointer'
+                className: 'text-[0.6875rem] bg-slate-100 border border-slate-500 rounded-full px-2 py-0.5 text-slate-600 cursor-pointer'
 
               },
 
@@ -2027,9 +2027,9 @@ var d = labToolData || {};
 
                     React.createElement('div', { className: 'text-xl' }, a.icon),
 
-                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-800 mt-1' }, a.title),
+                    React.createElement('div', { className: 'text-[0.6875rem] font-bold text-amber-800 mt-1' }, a.title),
 
-                    React.createElement('div', { className: 'text-[11px] text-amber-600' }, a.desc)
+                    React.createElement('div', { className: 'text-[0.6875rem] text-amber-600' }, a.desc)
 
                   );
 
@@ -2054,7 +2054,7 @@ var d = labToolData || {};
                       var glossaryText = (d.econGlossary || []).map(function (g) { return g.concept + ' \u2014 ' + g.explanation; }).join('\n');
                       try { navigator.clipboard.writeText(glossaryText); if (addToast) addToast(t('stem.economicslab.glossary_copied', 'Glossary copied \u2014 paste it into your notes'), 'success'); } catch (e) { if (addToast) addToast('Copy failed', 'error'); }
                     },
-                    className: 'text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-bold'
+                    className: 'text-[0.6875rem] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-bold'
                   }, t('stem.economicslab.copy_glossary', '\uD83D\uDCCB Copy')),
 
                   React.createElement('button', { onClick: function () { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs', 'aria-label': t('stem.economicslab.close_glossary', 'Close glossary') }, '\u2715')
@@ -2073,13 +2073,13 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'flex items-center gap-2' },
 
-                        React.createElement('span', { className: 'text-[11px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-bold' }, g.tab),
+                        React.createElement('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 font-bold' }, g.tab),
 
-                        React.createElement('span', { className: 'text-[11px] font-bold text-slate-700' }, g.concept)
+                        React.createElement('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, g.concept)
 
                       ),
 
-                      React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, g.explanation)
+                      React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mt-1' }, g.explanation)
 
                     );
 
@@ -2320,7 +2320,7 @@ var d = labToolData || {};
 
                     onClick: function () { upd('advisorInput', q); },
 
-                    className: 'text-[11px] px-2 py-1 rounded-full bg-sky-100 text-sky-800 hover:bg-sky-200'
+                    className: 'text-[0.6875rem] px-2 py-1 rounded-full bg-sky-100 text-sky-800 hover:bg-sky-200'
 
                   }, q);
 
@@ -2338,11 +2338,11 @@ var d = labToolData || {};
               React.createElement('h4', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\uD83C\uDFAF Economics Scenarios (' + (econScenarioIdx + 1) + '/' + ECON_SCENARIOS.length + ')'),
               // Streak + score
               React.createElement('div', { className: 'flex justify-between items-center mb-2' },
-                econStreak > 0 ? React.createElement('span', { className: 'inline-block px-3 py-0.5 rounded-full text-[11px] font-bold ' + (econStreak >= 5 ? 'bg-amber-700 text-white motion-reduce:animate-none animate-pulse' : econStreak >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600') },
+                econStreak > 0 ? React.createElement('span', { className: 'inline-block px-3 py-0.5 rounded-full text-[0.6875rem] font-bold ' + (econStreak >= 5 ? 'bg-amber-700 text-white motion-reduce:animate-none animate-pulse' : econStreak >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + econStreak + ' streak!' + (econStreak >= 5 ? ' AMAZING!' : econStreak >= 3 ? ' On fire!' : '')) : null,
-                React.createElement('span', { className: 'text-[11px] text-slate-600' }, 'Score: ' + econScenarioScore + '/' + econScenarioTotal + ' | Best: ' + econBestStreak)
+                React.createElement('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Score: ' + econScenarioScore + '/' + econScenarioTotal + ' | Best: ' + econBestStreak)
               ),
-              econScenarioTotal >= ECON_SCENARIOS.length && React.createElement('div', { className: 'text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5 mb-2 text-center' },
+              econScenarioTotal >= ECON_SCENARIOS.length && React.createElement('div', { className: 'text-[0.6875rem] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5 mb-2 text-center' },
                 t('stem.economicslab.scenario_complete', '🏁 Full deck answered! ') + econScenarioScore + '/' + econScenarioTotal + t('stem.economicslab.scenario_complete_2', ' correct, best streak ') + econBestStreak + t('stem.economicslab.scenario_complete_3', '. Scenarios repeat — can you beat your streak?')),
               (function() {
                 var sc = ECON_SCENARIOS[econScenarioIdx];
@@ -2351,9 +2351,9 @@ var d = labToolData || {};
                 var isCorrect = econScenarioAnswer === sc.correct;
                 return React.createElement('div', null,
                   React.createElement('div', { className: 'bg-white rounded-xl p-3 mb-2 border border-rose-100' },
-                    React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, sc.scenario)
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, sc.scenario)
                   ),
-                  React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 mb-2' }, sc.question),
+                  React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-800 mb-2' }, sc.question),
                   React.createElement('div', { className: 'space-y-1.5 mb-2' },
                     sc.options.map(function(opt, oi) {
                       var isSelected = econScenarioAnswer === oi;
@@ -2388,10 +2388,10 @@ var d = labToolData || {};
                     })
                   ),
                   answered && React.createElement('div', { className: 'space-y-2' },
-                    React.createElement('div', { className: 'rounded-xl p-2.5 text-[11px] ' + (isCorrect ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-700') },
+                    React.createElement('div', { className: 'rounded-xl p-2.5 text-[0.6875rem] ' + (isCorrect ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-700') },
                       (isCorrect ? '\u2705 ' : '\u274C ') + sc.explain
                     ),
-                    React.createElement('div', { className: 'rounded-xl p-2 text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700' },
+                    React.createElement('div', { className: 'rounded-xl p-2 text-[0.6875rem] bg-indigo-50 border border-indigo-200 text-indigo-700' },
                       '\uD83D\uDCDA Concept: ' + sc.concept
                     ),
                     React.createElement('button', {
@@ -2412,7 +2412,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, t('stem.economicslab.economic_history_timeline', '\uD83D\uDCC5 Economic History Timeline')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconTimeline', !(d.showEconTimeline)); },
-                  className: 'text-[11px] text-slate-600 hover:text-slate-700 font-bold'
+                  className: 'text-[0.6875rem] text-slate-600 hover:text-slate-700 font-bold'
                 }, d.showEconTimeline ? 'Hide' : 'Explore \u2192')
               ),
               d.showEconTimeline && React.createElement('div', { className: 'relative ml-3 max-h-80 overflow-y-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.economicslab.economic_timeline', 'Economic timeline') },
@@ -2428,15 +2428,15 @@ var d = labToolData || {};
                       React.createElement('div', { className: 'rounded-xl p-2.5 border transition-all ' + (isActive ? 'border-slate-400 bg-white shadow-md' : 'border-slate-100 bg-slate-50 hover:bg-white') },
                         React.createElement('div', { className: 'flex items-center gap-1.5' },
                           React.createElement('span', { className: 'text-lg' }, ev.icon),
-                          React.createElement('span', { className: 'text-[11px] font-black text-amber-600 font-mono' }, ev.year),
-                          React.createElement('span', { className: 'text-[11px] text-slate-700 font-bold flex-1' }, ev.event)
+                          React.createElement('span', { className: 'text-[0.6875rem] font-black text-amber-600 font-mono' }, ev.year),
+                          React.createElement('span', { className: 'text-[0.6875rem] text-slate-700 font-bold flex-1' }, ev.event)
                         ),
                         isActive && React.createElement('div', { className: 'mt-2 space-y-1.5 pl-7' },
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' },
+                          React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' },
                             React.createElement('span', { className: 'font-bold text-red-600' }, t('stem.economicslab.impact', '\uD83D\uDCA5 Impact: ')),
                             ev.impact
                           ),
-                          React.createElement('div', { className: 'text-[11px] text-indigo-600 bg-indigo-50 rounded-lg p-1.5 border border-indigo-100' },
+                          React.createElement('div', { className: 'text-[0.6875rem] text-indigo-600 bg-indigo-50 rounded-lg p-1.5 border border-indigo-100' },
                             React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.lesson', '\uD83D\uDCDA Lesson: ')),
                             ev.lesson
                           )
@@ -2454,7 +2454,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.economicslab.quick_reference_cards', '\uD83D\uDCCB Quick Reference Cards')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconQuickRef', !(d.showEconQuickRef)); },
-                  style: { color: ecoInk('#b45309') }, className: 'text-[11px] text-amber-700 hover:text-amber-800 font-bold'
+                  style: { color: ecoInk('#b45309') }, className: 'text-[0.6875rem] text-amber-700 hover:text-amber-800 font-bold'
                 }, d.showEconQuickRef ? 'Hide' : 'View \u2192')
               ),
               d.showEconQuickRef && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
@@ -2465,9 +2465,9 @@ var d = labToolData || {};
                   },
                     React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                       React.createElement('span', { className: 'text-lg' }, card.icon),
-                      React.createElement('span', { className: 'text-[11px] font-black', style: { color: ecoInk(card.color) } }, card.title)
+                      React.createElement('span', { className: 'text-[0.6875rem] font-black', style: { color: ecoInk(card.color) } }, card.title)
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 leading-relaxed' }, card.content)
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed' }, card.content)
                   );
                 })
               )
@@ -2480,34 +2480,34 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-red-800' }, t('stem.economicslab.inflation_calculator', '\uD83D\uDCB2 Inflation Calculator')),
                 React.createElement('button', {
                   onClick: function() { upd('showInflationCalc', !(d.showInflationCalc)); },
-                  className: 'text-[11px] text-red-700 hover:text-red-700 font-bold'
+                  className: 'text-[0.6875rem] text-red-700 hover:text-red-700 font-bold'
                 }, d.showInflationCalc ? 'Hide' : 'Calculate \u2192')
               ),
               d.showInflationCalc && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.see_how_inflation_erodes_purchasing_po', 'See how inflation erodes purchasing power over time. A dollar today is worth more than a dollar tomorrow!')),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 italic mb-3' }, t('stem.economicslab.see_how_inflation_erodes_purchasing_po', 'See how inflation erodes purchasing power over time. A dollar today is worth more than a dollar tomorrow!')),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.amount', 'Amount ($)')),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.amount', 'Amount ($)')),
                     React.createElement('input', { 'aria-label': t('stem.economicslab.amount', 'Amount ($)'), type: 'number', value: d.inflationAmt || 100,
                       onChange: function(e) { upd('inflationAmt', parseFloat(e.target.value) || 100); },
                       className: 'w-full px-2 py-1.5 border border-red-200 rounded-lg text-xs focus:border-red-400'
                     })
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.inflation_rate', 'Inflation Rate (%)')),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.inflation_rate', 'Inflation Rate (%)')),
                     React.createElement('input', { type: 'range', 'aria-valuetext': (d.inflationRate || 3) + '%', 'aria-label': t('stem.economicslab.inflation_rate_percent', 'Inflation rate, percent'), min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
                       onChange: function(e) { upd('inflationRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
-                    React.createElement('div', { className: 'text-[11px] text-center text-red-600 font-bold' }, (d.inflationRate || 3) + '%')
+                    React.createElement('div', { className: 'text-[0.6875rem] text-center text-red-600 font-bold' }, (d.inflationRate || 3) + '%')
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.years', 'Years')),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-red-600 block mb-0.5' }, t('stem.economicslab.years', 'Years')),
                     React.createElement('input', { type: 'range', 'aria-valuetext': (d.inflationYears || 20) + ' years', 'aria-label': t('stem.economicslab.years_2', 'Years'), min: 1, max: 50, value: d.inflationYears || 20,
                       onChange: function(e) { upd('inflationYears', parseInt(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
-                    React.createElement('div', { className: 'text-[11px] text-center text-red-600 font-bold' }, (d.inflationYears || 20) + ' years')
+                    React.createElement('div', { className: 'text-[0.6875rem] text-center text-red-600 font-bold' }, (d.inflationYears || 20) + ' years')
                   )
                 ),
                 (function() {
@@ -2518,9 +2518,9 @@ var d = labToolData || {};
                   var lostPct = ((1 - futureValue / amt) * 100).toFixed(1);
                   return React.createElement('div', { className: 'bg-white rounded-xl p-3 border border-red-100 text-center' },
                     React.createElement('div', { className: 'text-2xl font-black text-red-600' }, '$' + futureValue.toFixed(2)),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Your $' + amt + ' will only buy $' + futureValue.toFixed(2) + ' worth of today\'s goods in ' + yrs + ' years'),
-                    React.createElement('div', { className: 'text-[11px] font-bold text-red-700 mt-1' }, '\uD83D\uDCC9 ' + lostPct + '% of purchasing power lost!'),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 italic' }, 'Rule of 72: Money loses half its value in ~' + Math.round(72 / ((d.inflationRate || 3))) + ' years at ' + (d.inflationRate || 3) + '% inflation')
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, 'Your $' + amt + ' will only buy $' + futureValue.toFixed(2) + ' worth of today\'s goods in ' + yrs + ' years'),
+                    React.createElement('div', { className: 'text-[0.6875rem] font-bold text-red-700 mt-1' }, '\uD83D\uDCC9 ' + lostPct + '% of purchasing power lost!'),
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mt-1 italic' }, 'Rule of 72: Money loses half its value in ~' + Math.round(72 / ((d.inflationRate || 3))) + ' years at ' + (d.inflationRate || 3) + '% inflation')
                   );
                 })()
               )
@@ -2532,11 +2532,11 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-green-800' }, t('stem.economicslab.business_cycle', '\uD83D\uDD04 Business Cycle')),
                 React.createElement('button', {
                   onClick: function() { upd('showBizCycle', !(d.showBizCycle)); },
-                  style: { color: ecoInk('#15803d') }, className: 'text-[11px] text-green-700 hover:text-green-900 font-bold'
+                  style: { color: ecoInk('#15803d') }, className: 'text-[0.6875rem] text-green-700 hover:text-green-900 font-bold'
                 }, d.showBizCycle ? 'Hide' : 'Explore \u2192')
               ),
               d.showBizCycle && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.the_economy_moves_through_repeating_cy', 'The economy moves through repeating cycles of expansion and contraction. Understanding where we are in the cycle helps predict what comes next.')),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 italic mb-3' }, t('stem.economicslab.the_economy_moves_through_repeating_cy', 'The economy moves through repeating cycles of expansion and contraction. Understanding where we are in the cycle helps predict what comes next.')),
                 // Visual cycle
                 React.createElement('div', { className: 'flex items-center justify-center gap-1 mb-3' },
                   BUSINESS_CYCLE_PHASES.map(function(phase, pi) {
@@ -2548,7 +2548,7 @@ var d = labToolData || {};
                         style: { borderColor: isActive ? phase.color : phase.color + '40', background: isActive ? phase.color + '15' : '#fff' }
                       },
                         React.createElement('span', { className: 'text-xl' }, phase.icon),
-                        React.createElement('span', { className: 'text-[11px] font-black', style: { color: isActive ? ecoInk(phase.color) : ecoInkOnWhite(phase.color) } }, phase.name)
+                        React.createElement('span', { className: 'text-[0.6875rem] font-black', style: { color: isActive ? ecoInk(phase.color) : ecoInkOnWhite(phase.color) } }, phase.name)
                       ),
                       pi < 3 && React.createElement('span', { className: 'text-slate-400 text-lg mx-0.5', 'aria-hidden': 'true' }, '\u2192')
                     );
@@ -2564,21 +2564,21 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
                       React.createElement('span', { className: 'text-2xl' }, phase.icon),
                       React.createElement('div', null,
-                        React.createElement('div', { className: 'text-[11px] font-black', style: { color: ecoInk(phase.color) } }, phase.name),
-                        React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Duration: ' + phase.duration)
+                        React.createElement('div', { className: 'text-[0.6875rem] font-black', style: { color: ecoInk(phase.color) } }, phase.name),
+                        React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Duration: ' + phase.duration)
                       )
                     ),
-                    React.createElement('div', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, 'Characteristics:'),
+                    React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-600 mb-1' }, 'Characteristics:'),
                     React.createElement('ul', { className: 'space-y-0.5 ml-3 mb-2' },
                       phase.characteristics.map(function(ch, chi) {
-                        return React.createElement('li', { key: chi, className: 'text-[11px] text-slate-600 list-disc' }, ch);
+                        return React.createElement('li', { key: chi, className: 'text-[0.6875rem] text-slate-600 list-disc' }, ch);
                       })
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-blue-600 bg-blue-50 rounded-lg p-2 border border-blue-100 mb-1' },
+                    React.createElement('div', { className: 'text-[0.6875rem] text-blue-600 bg-blue-50 rounded-lg p-2 border border-blue-100 mb-1' },
                       React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.policy_response', '\uD83C\uDFDB\uFE0F Policy Response: ')),
                       phase.policy
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-amber-600 italic' }, '\uD83D\uDCCA Indicators: ' + phase.indicators)
+                    React.createElement('div', { className: 'text-[0.6875rem] text-amber-600 italic' }, '\uD83D\uDCCA Indicators: ' + phase.indicators)
                   );
                 })()
               )
@@ -2590,27 +2590,27 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, t('stem.economicslab.compound_interest_calculator', '\uD83D\uDCCA Compound Interest Calculator')),
                 React.createElement('button', {
                   onClick: function() { upd('showCompoundCalc', !(d.showCompoundCalc)); },
-                  className: 'text-[11px] text-emerald-700 hover:text-emerald-700 font-bold'
+                  className: 'text-[0.6875rem] text-emerald-700 hover:text-emerald-700 font-bold'
                 }, d.showCompoundCalc ? 'Hide' : 'Calculate \u2192')
               ),
               d.showCompoundCalc && React.createElement('div', null,
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Starting Amount: $' + (d.pfPrincipal || 1000).toLocaleString()),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-emerald-600 block mb-0.5' }, 'Starting Amount: $' + (d.pfPrincipal || 1000).toLocaleString()),
                     React.createElement('input', { type: 'range', 'aria-valuetext': '$' + (d.pfPrincipal || 1000).toLocaleString(), 'aria-label': t('stem.economicslab.starting_amount_in_dollars', 'Starting amount in dollars'), min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
                       onChange: function(e) { upd('pfPrincipal', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Annual Return: ' + (d.pfRate || 7) + '%'),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-emerald-600 block mb-0.5' }, 'Annual Return: ' + (d.pfRate || 7) + '%'),
                     React.createElement('input', { type: 'range', 'aria-valuetext': (d.pfRate || 7) + '%', 'aria-label': t('stem.economicslab.annual_return_percent', 'Annual return, percent'), min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
                       onChange: function(e) { upd('pfRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Years: ' + (d.pfYears || 30)),
+                    React.createElement('label', { className: 'text-[0.6875rem] font-bold text-emerald-600 block mb-0.5' }, 'Years: ' + (d.pfYears || 30)),
                     React.createElement('input', { type: 'range', 'aria-valuetext': (d.pfYears || 30) + ' years', 'aria-label': t('stem.economicslab.years_3', 'Years'), min: 1, max: 50, value: d.pfYears || 30,
                       onChange: function(e) { upd('pfYears', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
@@ -2625,9 +2625,9 @@ var d = labToolData || {};
                   var earned = fv - p;
                   return React.createElement('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center' },
                     React.createElement('div', { className: 'text-2xl font-black text-emerald-600' }, '$' + Math.round(fv).toLocaleString()),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'From $' + p.toLocaleString() + ' invested at ' + (d.pfRate || 7) + '% for ' + y + ' years'),
-                    React.createElement('div', { className: 'text-[11px] font-bold text-emerald-700 mt-1' }, '\uD83D\uDCC8 $' + Math.round(earned).toLocaleString() + ' earned through compound interest!'),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 italic' }, t('stem.economicslab.compound_interest_is_the_eighth_wonder', '"Compound interest is the eighth wonder of the world." \u2014 Albert Einstein (attributed)'))
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, 'From $' + p.toLocaleString() + ' invested at ' + (d.pfRate || 7) + '% for ' + y + ' years'),
+                    React.createElement('div', { className: 'text-[0.6875rem] font-bold text-emerald-700 mt-1' }, '\uD83D\uDCC8 $' + Math.round(earned).toLocaleString() + ' earned through compound interest!'),
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mt-1 italic' }, t('stem.economicslab.compound_interest_is_the_eighth_wonder', '"Compound interest is the eighth wonder of the world." \u2014 Albert Einstein (attributed)'))
                   );
                 })()
               )
@@ -2639,7 +2639,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-blue-800' }, t('stem.economicslab.budget_rules', '\uD83D\uDCB0 Budget Rules')),
                 React.createElement('button', {
                   onClick: function() { upd('showBudgetRules', !(d.showBudgetRules)); },
-                  className: 'text-[11px] text-blue-700 hover:text-blue-900 font-bold'
+                  className: 'text-[0.6875rem] text-blue-700 hover:text-blue-900 font-bold'
                 }, d.showBudgetRules ? 'Hide' : 'Learn \u2192')
               ),
               d.showBudgetRules && React.createElement('div', { className: 'space-y-3' },
@@ -2653,15 +2653,15 @@ var d = labToolData || {};
                   },
                     React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                       React.createElement('span', { className: 'text-lg' }, rule.icon),
-                      React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, rule.name),
-                      React.createElement('span', { className: 'text-[11px] text-slate-600' }, rule.desc)
+                      React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, rule.name),
+                      React.createElement('span', { className: 'text-[0.6875rem] text-slate-600' }, rule.desc)
                     ),
                     isActive && React.createElement('div', null,
                       // Visual bar
                       React.createElement('div', { className: 'flex rounded-full overflow-hidden h-6 mb-2' },
                         rule.parts.map(function(part) {
                           return React.createElement('div', { key: part.label,
-                            className: 'flex items-center justify-center text-[11px] font-bold text-white',
+                            className: 'flex items-center justify-center text-[0.6875rem] font-bold text-white',
                             style: { background: ecoBarBg(part.color), width: part.pct + '%' }
                           }, part.label + ' ' + part.pct + '%');
                         })
@@ -2675,9 +2675,9 @@ var d = labToolData || {};
                             className: 'rounded-lg p-2 text-center border',
                             style: { borderColor: part.color + '40' }
                           },
-                            React.createElement('div', { className: 'text-[11px] font-bold', style: { color: ecoInk(part.color) } }, part.label + ' (' + part.pct + '%)'),
-                            React.createElement('div', { className: 'text-[11px] font-black text-slate-800' }, '$' + allocated.toLocaleString() + '/mo'),
-                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, part.items)
+                            React.createElement('div', { className: 'text-[0.6875rem] font-bold', style: { color: ecoInk(part.color) } }, part.label + ' (' + part.pct + '%)'),
+                            React.createElement('div', { className: 'text-[0.6875rem] font-black text-slate-800' }, '$' + allocated.toLocaleString() + '/mo'),
+                            React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, part.items)
                           );
                         })
                       )
@@ -2693,15 +2693,15 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-purple-800' }, t('stem.economicslab.schools_of_economic_thought', '\uD83C\uDFDB\uFE0F Schools of Economic Thought')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconSchools', !(d.showEconSchools)); },
-                  className: 'text-[11px] text-purple-700 hover:text-purple-900 font-bold'
+                  className: 'text-[0.6875rem] text-purple-700 hover:text-purple-900 font-bold'
                 }, d.showEconSchools ? 'Hide' : 'Compare \u2192')
               ),
               d.showEconSchools && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.economists_disagree_different_schools_', 'Economists disagree! Different schools of thought offer different answers to the same questions. Understanding these perspectives helps you think critically about economic policy.')),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 italic mb-3' }, t('stem.economicslab.economists_disagree_different_schools_', 'Economists disagree! Different schools of thought offer different answers to the same questions. Understanding these perspectives helps you think critically about economic policy.')),
                 // Comparison table
                 React.createElement('div', { className: 'rounded-xl overflow-hidden border border-purple-200' },
                   // Header
-                  React.createElement('div', { className: 'grid grid-cols-4 bg-purple-100 text-[11px] font-bold text-purple-800 uppercase' },
+                  React.createElement('div', { className: 'grid grid-cols-4 bg-purple-100 text-[0.6875rem] font-bold text-purple-800 uppercase' },
                     React.createElement('div', { className: 'p-1.5' }, t('stem.economicslab.school', 'School')),
                     React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, t('stem.economicslab.gov_t_role', 'Gov\'t Role')),
                     React.createElement('div', { className: 'p-1.5 border-l border-purple-200' }, t('stem.economicslab.on_recession', 'On Recession')),
@@ -2717,20 +2717,20 @@ var d = labToolData || {};
                         onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('econSchoolIdx', isActive ? null : si); } },
                         style: isActive ? { background: school.color + '10', borderLeft: '3px solid ' + school.color } : {}
                       },
-                        React.createElement('div', { className: 'p-1.5 text-[11px]' },
+                        React.createElement('div', { className: 'p-1.5 text-[0.6875rem]' },
                           React.createElement('span', { className: 'font-bold', style: { color: ecoInk(school.color) } }, school.icon + ' ' + school.name),
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, school.era)
+                          React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, school.era)
                         ),
-                        React.createElement('div', { className: 'p-1.5 text-[11px] text-slate-600 border-l border-slate-100' }, school.govRole),
-                        React.createElement('div', { className: 'p-1.5 text-[11px] text-slate-600 border-l border-slate-100' }, school.onRecession),
-                        React.createElement('div', { className: 'p-1.5 text-[11px] text-slate-600 border-l border-slate-100' }, school.onInflation)
+                        React.createElement('div', { className: 'p-1.5 text-[0.6875rem] text-slate-600 border-l border-slate-100' }, school.govRole),
+                        React.createElement('div', { className: 'p-1.5 text-[0.6875rem] text-slate-600 border-l border-slate-100' }, school.onRecession),
+                        React.createElement('div', { className: 'p-1.5 text-[0.6875rem] text-slate-600 border-l border-slate-100' }, school.onInflation)
                       ),
                       isActive && React.createElement('div', { className: 'px-3 py-2 border-t border-slate-100', style: { background: school.color + '08', borderLeft: '3px solid ' + school.color } },
-                        React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' },
+                        React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' },
                           React.createElement('span', { className: 'font-bold', style: { color: ecoInk(school.color) } }, t('stem.economicslab.key_idea', '\uD83D\uDCA1 Key Idea: ')),
                           school.key
                         ),
-                        React.createElement('div', { className: 'text-[11px] text-slate-600' },
+                        React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' },
                           React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.famous', '\uD83C\uDF93 Famous: ')),
                           school.famous
                         )
@@ -2748,7 +2748,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-indigo-800' }, '\uD83D\uDCDA Economics Concept Library (' + ECON_CONCEPTS.length + ')'),
                 React.createElement('button', {
                   onClick: function() { upd('showConceptLib', !(d.showConceptLib)); },
-                  className: 'text-[11px] text-indigo-700 hover:text-indigo-900 font-bold'
+                  className: 'text-[0.6875rem] text-indigo-700 hover:text-indigo-900 font-bold'
                 }, d.showConceptLib ? 'Hide' : 'Explore \u2192')
               ),
               d.showConceptLib && React.createElement('div', null,
@@ -2757,7 +2757,7 @@ var d = labToolData || {};
                   ['all', 'fundamentals', 'micro', 'macro', 'finance', 'trade'].map(function(cat) {
                     return React.createElement('button', { key: cat,
                       onClick: function() { upd('econConceptFilter', cat); },
-                      className: 'px-2 py-0.5 rounded-full text-[11px] font-bold transition-all ' +
+                      className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-bold transition-all ' +
                         ((d.econConceptFilter || 'all') === cat ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-100')
                     }, cat.charAt(0).toUpperCase() + cat.slice(1));
                   })
@@ -2773,11 +2773,11 @@ var d = labToolData || {};
                     },
                       React.createElement('div', { className: 'flex items-center gap-1.5 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, concept.icon),
-                        React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, concept.name),
-                        React.createElement('span', { className: 'text-[11px] px-1 py-0.5 rounded bg-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-100 text-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-800 font-bold' }, concept.category)
+                        React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, concept.name),
+                        React.createElement('span', { className: 'text-[0.6875rem] px-1 py-0.5 rounded bg-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-100 text-' + (concept.category === 'macro' ? 'blue' : concept.category === 'micro' ? 'green' : concept.category === 'finance' ? 'amber' : concept.category === 'trade' ? 'purple' : 'slate') + '-800 font-bold' }, concept.category)
                       ),
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, concept.def),
-                      isActive && React.createElement('div', { className: 'mt-1.5 text-[11px] text-indigo-600 bg-indigo-50 rounded-lg p-1.5 border border-indigo-100' },
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, concept.def),
+                      isActive && React.createElement('div', { className: 'mt-1.5 text-[0.6875rem] text-indigo-600 bg-indigo-50 rounded-lg p-1.5 border border-indigo-100' },
                         React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.example', '\uD83D\uDCA1 Example: ')),
                         concept.example
                       )
@@ -2793,22 +2793,22 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, t('stem.economicslab.market_structures', '\uD83C\uDFEA Market Structures')),
                 React.createElement('button', {
                   onClick: function() { upd('showMarketStructures', !(d.showMarketStructures)); },
-                  className: 'text-[11px] text-emerald-700 hover:text-emerald-700 font-bold'
+                  className: 'text-[0.6875rem] text-emerald-700 hover:text-emerald-700 font-bold'
                 }, d.showMarketStructures ? 'Hide' : 'Compare \u2192')
               ),
               d.showMarketStructures && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-2' }, t('stem.economicslab.markets_range_from_perfect_competition', 'Markets range from perfect competition (many sellers, identical products) to monopoly (one seller, unique product). Click each to learn more:')),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 italic mb-2' }, t('stem.economicslab.markets_range_from_perfect_competition', 'Markets range from perfect competition (many sellers, identical products) to monopoly (one seller, unique product). Click each to learn more:')),
                 // Spectrum bar
                 React.createElement('div', { className: 'flex mb-3 rounded-full overflow-hidden h-4' },
                   MARKET_STRUCTURES.map(function(ms) {
                     return React.createElement('div', { key: ms.id,
-                      className: 'flex-1 flex items-center justify-center text-[11px] font-bold text-white',
+                      className: 'flex-1 flex items-center justify-center text-[0.6875rem] font-bold text-white',
                       style: { background: ecoBarBg(ms.color) },
                       title: ms.name
                     }, ms.name.split(' ')[0]);
                   })
                 ),
-                React.createElement('div', { className: 'flex items-center justify-between text-[11px] text-slate-600 mb-3' },
+                React.createElement('div', { className: 'flex items-center justify-between text-[0.6875rem] text-slate-600 mb-3' },
                   React.createElement('span', null, t('stem.economicslab.more_competition', '\u2190 More Competition')),
                   React.createElement('span', null, t('stem.economicslab.more_market_power', 'More Market Power \u2192'))
                 ),
@@ -2825,10 +2825,10 @@ var d = labToolData || {};
                     },
                       React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, ms.icon),
-                        React.createElement('div', { className: 'text-[11px] font-black', style: { color: ecoInkOnWhite(ms.color) } }, ms.name)
+                        React.createElement('div', { className: 'text-[0.6875rem] font-black', style: { color: ecoInkOnWhite(ms.color) } }, ms.name)
                       ),
                       isActive && React.createElement('div', { className: 'space-y-1 mt-1' },
-                        React.createElement('div', { className: 'grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]' },
+                        React.createElement('div', { className: 'grid grid-cols-2 gap-x-3 gap-y-0.5 text-[0.6875rem]' },
                           React.createElement('span', { className: 'text-slate-600 font-bold' }, 'Sellers:'),
                           React.createElement('span', { className: 'text-slate-700' }, ms.sellers),
                           React.createElement('span', { className: 'text-slate-600 font-bold' }, 'Product:'),
@@ -2840,7 +2840,7 @@ var d = labToolData || {};
                           React.createElement('span', { className: 'text-slate-600 font-bold' }, t('stem.economicslab.long_run_profit', 'Long-run Profit:')),
                           React.createElement('span', { className: 'text-slate-700' }, ms.profit)
                         ),
-                        React.createElement('div', { className: 'text-[11px] text-amber-600 font-medium mt-1' }, '\uD83D\uDCA1 Examples: ' + ms.examples)
+                        React.createElement('div', { className: 'text-[0.6875rem] text-amber-600 font-medium mt-1' }, '\uD83D\uDCA1 Examples: ' + ms.examples)
                       )
                     );
                   })
@@ -2854,23 +2854,23 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.economicslab.gdp_c_i_g_x_m', '\uD83C\uDFDB\uFE0F GDP = C + I + G + (X\u2212M)')),
                 React.createElement('button', {
                   onClick: function() { upd('showGdpBreakdown', !(d.showGdpBreakdown)); },
-                  style: { color: ecoInk('#b45309') }, className: 'text-[11px] text-amber-700 hover:text-amber-800 font-bold'
+                  style: { color: ecoInk('#b45309') }, className: 'text-[0.6875rem] text-amber-700 hover:text-amber-800 font-bold'
                 }, d.showGdpBreakdown ? 'Hide' : 'Explore \u2192')
               ),
               d.showGdpBreakdown && React.createElement('div', null,
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic mb-3' }, t('stem.economicslab.gross_domestic_product_measures_the_to', 'Gross Domestic Product measures the total value of all final goods and services produced within a country\'s borders in a given year. Here\'s how it breaks down for the United States:')),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 italic mb-3' }, t('stem.economicslab.gross_domestic_product_measures_the_to', 'Gross Domestic Product measures the total value of all final goods and services produced within a country\'s borders in a given year. Here\'s how it breaks down for the United States:')),
                 // Bar chart visualization
                 React.createElement('div', { className: 'flex items-end gap-1 h-24 mb-2 px-4' },
                   GDP_COMPONENTS.map(function(comp) {
                     var barH = Math.max(5, Math.abs(comp.pct) / 68 * 100);
                     return React.createElement('div', { key: comp.id, className: 'flex-1 flex flex-col items-center' },
-                      React.createElement('div', { className: 'text-[11px] font-bold mb-0.5', style: { color: ecoInk(comp.color) } }, (comp.pct > 0 ? '' : '') + comp.pct + '%'),
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold mb-0.5', style: { color: ecoInk(comp.color) } }, (comp.pct > 0 ? '' : '') + comp.pct + '%'),
                       React.createElement('div', {
                         className: 'w-full rounded-t-lg transition-all',
                         style: { background: comp.color, height: barH + '%', minHeight: 8, opacity: 0.8 }
                       }),
-                      React.createElement('div', { className: 'text-[11px] font-bold text-slate-600 mt-1' }, comp.id),
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, comp.name)
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-600 mt-1' }, comp.id),
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, comp.name)
                     );
                   })
                 ),
@@ -2883,11 +2883,11 @@ var d = labToolData || {};
                     },
                       React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, comp.icon),
-                        React.createElement('span', { className: 'text-[11px] font-black', style: { color: ecoInk(comp.color) } }, comp.id + ' \u2014 ' + comp.name),
-                        React.createElement('span', { className: 'text-[11px] font-bold ml-auto', style: { color: ecoInk(comp.color) } }, comp.pct + '%')
+                        React.createElement('span', { className: 'text-[0.6875rem] font-black', style: { color: ecoInk(comp.color) } }, comp.id + ' \u2014 ' + comp.name),
+                        React.createElement('span', { className: 'text-[0.6875rem] font-bold ml-auto', style: { color: ecoInk(comp.color) } }, comp.pct + '%')
                       ),
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, comp.desc),
-                      React.createElement('div', { className: 'text-[11px] text-amber-600 mt-0.5 italic' }, '\uD83D\uDCA1 ' + comp.examples)
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, comp.desc),
+                      React.createElement('div', { className: 'text-[0.6875rem] text-amber-600 mt-0.5 italic' }, '\uD83D\uDCA1 ' + comp.examples)
                     );
                   })
                 )
@@ -2900,7 +2900,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, t('stem.economicslab.famous_economists', '\uD83C\uDF93 Famous Economists')),
                 React.createElement('button', {
                   onClick: function() { upd('showEconomists', !(d.showEconomists)); },
-                  className: 'text-[11px] text-violet-700 hover:text-violet-900 font-bold'
+                  className: 'text-[0.6875rem] text-violet-700 hover:text-violet-900 font-bold'
                 }, d.showEconomists ? 'Hide' : 'Meet Them \u2192')
               ),
               d.showEconomists && React.createElement('div', { className: 'space-y-2 max-h-72 overflow-y-auto' },
@@ -2916,19 +2916,19 @@ var d = labToolData || {};
                       React.createElement('span', { className: 'text-xl' }, econ.icon),
                       React.createElement('div', { className: 'flex-1' },
                         React.createElement('div', { className: 'flex items-center gap-2' },
-                          React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, econ.name),
-                          React.createElement('span', { className: 'text-[11px] text-slate-600 font-mono' }, econ.years)
+                          React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, econ.name),
+                          React.createElement('span', { className: 'text-[0.6875rem] text-slate-600 font-mono' }, econ.years)
                         ),
-                        React.createElement('div', { className: 'text-[11px] text-violet-600 font-bold' }, econ.contribution)
+                        React.createElement('div', { className: 'text-[0.6875rem] text-violet-600 font-bold' }, econ.contribution)
                       ),
-                      React.createElement('span', { className: 'text-[11px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600 font-bold' }, econ.school)
+                      React.createElement('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600 font-bold' }, econ.school)
                     ),
                     isActive && React.createElement('div', { className: 'mt-2 space-y-1 pl-8' },
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' },
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' },
                         React.createElement('span', { className: 'font-bold text-violet-700' }, t('stem.economicslab.key_work', '\uD83D\uDCDA Key Work: ')),
                         econ.work
                       ),
-                      React.createElement('div', { className: 'text-[11px] text-slate-600 leading-relaxed' },
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed' },
                         React.createElement('span', { className: 'font-bold text-amber-600' }, t('stem.economicslab.big_idea', '\uD83D\uDCA1 Big Idea: ')),
                         econ.idea
                       )
@@ -2944,7 +2944,7 @@ var d = labToolData || {};
                 React.createElement('h4', { className: 'text-sm font-bold text-cyan-800' }, '\uD83D\uDCCA Key Economic Indicators (' + ECONOMIC_INDICATORS.length + ')'),
                 React.createElement('button', {
                   onClick: function() { upd('showIndicators', !(d.showIndicators)); },
-                  className: 'text-[11px] text-cyan-700 hover:text-cyan-900 font-bold'
+                  className: 'text-[0.6875rem] text-cyan-700 hover:text-cyan-900 font-bold'
                 }, d.showIndicators ? 'Hide' : 'View \u2192')
               ),
               d.showIndicators && React.createElement('div', { className: 'grid grid-cols-2 gap-1.5 max-h-60 overflow-y-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.economicslab.indicator_list', 'Indicator list') },
@@ -2952,12 +2952,12 @@ var d = labToolData || {};
                   return React.createElement('div', { key: ii, className: 'rounded-lg p-2 bg-white border border-cyan-100' },
                     React.createElement('div', { className: 'flex items-center gap-1 mb-0.5' },
                       React.createElement('span', null, ind.icon),
-                      React.createElement('span', { className: 'text-[11px] font-bold text-slate-700' }, ind.name)
+                      React.createElement('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, ind.name)
                     ),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600' }, ind.desc),
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, ind.desc),
                     React.createElement('div', { className: 'flex gap-2 mt-0.5' },
-                      React.createElement('span', { className: 'text-[11px] text-green-800 font-bold' }, '\u2705 ' + ind.good),
-                      React.createElement('span', { className: 'text-[11px] text-red-700 font-bold' }, '\u26A0 ' + ind.bad)
+                      React.createElement('span', { className: 'text-[0.6875rem] text-green-800 font-bold' }, '\u2705 ' + ind.good),
+                      React.createElement('span', { className: 'text-[0.6875rem] text-red-700 font-bold' }, '\u26A0 ' + ind.bad)
                     )
                   );
                 })
@@ -2967,7 +2967,7 @@ var d = labToolData || {};
 
             // Macro indicators banner (always visible)
 
-            (d.macroHistory || []).length > 0 && React.createElement('div', { className: 'flex gap-2 mb-2 bg-slate-800 rounded-lg px-3 py-1.5 text-[11px] font-mono text-slate-300 overflow-x-auto' },
+            (d.macroHistory || []).length > 0 && React.createElement('div', { className: 'flex gap-2 mb-2 bg-slate-800 rounded-lg px-3 py-1.5 text-[0.6875rem] font-mono text-slate-300 overflow-x-auto' },
 
               React.createElement('span', { className: 'text-slate-600' }, t('stem.economicslab.macro', '\uD83C\uDFDB\uFE0F MACRO |')),
 
@@ -3066,7 +3066,7 @@ var d = labToolData || {};
 
                 React.createElement('h4', { className: 'text-sm font-bold text-blue-800 mb-2' }, t('stem.economicslab.key_concepts', '\uD83D\uDCDA Key Concepts')),
 
-                React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-[11px] text-slate-600 leading-relaxed' },
+                React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-[0.6875rem] text-slate-600 leading-relaxed' },
 
                   React.createElement('div', null,
 
@@ -3106,9 +3106,9 @@ var d = labToolData || {};
 
                 (sdPriceFloor > 0 || sdPriceCeiling > 0 || sdTax > 0 || sdDemandShift !== 0 || sdSupplyShift !== 0 || sdDemSlope !== 0.8 || sdSupSlope !== 0.8) && React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-blue-100' },
 
-                  React.createElement('h5', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, t('stem.economicslab.what_s_happening_right_now', '\uD83D\uDCA1 What\'s Happening Right Now:')),
+                  React.createElement('h5', { className: 'text-[0.6875rem] font-bold text-indigo-700 mb-1' }, t('stem.economicslab.what_s_happening_right_now', '\uD83D\uDCA1 What\'s Happening Right Now:')),
 
-                  React.createElement('div', { className: 'text-[11px] text-slate-600 space-y-1' },
+                  React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 space-y-1' },
 
                     sdDemandShift > 0 && React.createElement('p', null, t('stem.economicslab.demand_shifted_right_more_people_want_', '\u25B6 Demand shifted RIGHT \u2014 More people want this product (maybe income rose, or a trend made it popular). This raises both equilibrium price AND quantity.')),
 
@@ -3188,7 +3188,7 @@ var d = labToolData || {};
                         onChange: function (e) { upd('sdSupSlope', parseFloat(e.target.value)); },
                         className: 'w-full accent-red-500'
                       }),
-                      React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
                         t('stem.economicslab.slope_note', '📚 Flat = elastic: people react strongly to price (luxuries, substitutes). Steep = inelastic: they can\'t easily change behavior (gasoline, medicine). Watch who bears a tax as you tilt the curves.'))
                     );
                   })()
@@ -3248,9 +3248,9 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'col-span-2 bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 mb-2' },
 
-                React.createElement('h4', { className: 'text-[11px] font-bold text-cyan-700 mb-1' }, t('stem.economicslab.price_elasticity_of_demand', '\uD83D\uDCCF Price Elasticity of Demand')),
+                React.createElement('h4', { className: 'text-[0.6875rem] font-bold text-cyan-700 mb-1' }, t('stem.economicslab.price_elasticity_of_demand', '\uD83D\uDCCF Price Elasticity of Demand')),
 
-                React.createElement('div', { className: 'text-[11px] text-slate-600 leading-relaxed' },
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed' },
 
                   React.createElement('p', null, '\uD83D\uDCDA ',
 
@@ -3268,9 +3268,9 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg' }, '\uD83D\uDC8E'),
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, t('stem.economicslab.elastic_1', 'Elastic (>1)')),
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold text-cyan-700' }, t('stem.economicslab.elastic_1', 'Elastic (>1)')),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.luxury_goods_restaurants_vacations', 'Luxury goods, restaurants, vacations'))
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.economicslab.luxury_goods_restaurants_vacations', 'Luxury goods, restaurants, vacations'))
 
                     ),
 
@@ -3278,9 +3278,9 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg' }, '\u2696\uFE0F'),
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, t('stem.economicslab.unit_elastic_1', 'Unit Elastic (=1)')),
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold text-cyan-700' }, t('stem.economicslab.unit_elastic_1', 'Unit Elastic (=1)')),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.revenue_unchanged_by_price', 'Revenue unchanged by price'))
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.economicslab.revenue_unchanged_by_price', 'Revenue unchanged by price'))
 
                     ),
 
@@ -3288,9 +3288,9 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg' }, '\uD83D\uDC8A'),
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-cyan-700' }, t('stem.economicslab.inelastic_1', 'Inelastic (<1)')),
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold text-cyan-700' }, t('stem.economicslab.inelastic_1', 'Inelastic (<1)')),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.medicine_gasoline_utilities', 'Medicine, gasoline, utilities'))
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.economicslab.medicine_gasoline_utilities', 'Medicine, gasoline, utilities'))
 
                     )
 
@@ -3312,9 +3312,9 @@ var d = labToolData || {};
 
                     React.createElement('h5', { className: 'text-xs font-bold text-slate-800' }, d.sdScenario.title),
 
-                    React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, d.sdScenario.explanation),
+                    React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mt-1' }, d.sdScenario.explanation),
 
-                    React.createElement('div', { className: 'flex gap-2 mt-2 text-[11px]' },
+                    React.createElement('div', { className: 'flex gap-2 mt-2 text-[0.6875rem]' },
 
                       React.createElement('span', { className: 'text-blue-600 font-bold' }, 'Demand: ' + (d.sdScenario.demandShift > 0 ? '+' : '') + d.sdScenario.demandShift),
 
@@ -3322,7 +3322,7 @@ var d = labToolData || {};
 
                     ),
 
-                    d.sdScenario.lesson && React.createElement('div', { className: 'mt-2 bg-violet-100 rounded-lg px-3 py-2 text-[11px] text-violet-800 border border-violet-200' },
+                    d.sdScenario.lesson && React.createElement('div', { className: 'mt-2 bg-violet-100 rounded-lg px-3 py-2 text-[0.6875rem] text-violet-800 border border-violet-200' },
 
                       React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.concept', '\uD83D\uDCDA Concept: ')),
 
@@ -3369,7 +3369,7 @@ var d = labToolData || {};
 
                     onClick: function () { upd('sdScenario', null); },
 
-                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600'
+                    className: 'w-full py-1.5 rounded-lg text-[0.6875rem] font-bold bg-slate-100 text-slate-600'
 
                   }, t('stem.economicslab.dismiss', 'Dismiss'))
 
@@ -3429,7 +3429,7 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, d.lifeEvent.description),
 
-                    d.lifeEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-100 rounded-lg px-3 py-2 text-[11px] text-indigo-800 border border-indigo-200' },
+                    d.lifeEvent.lesson && React.createElement('div', { className: 'mt-2 bg-indigo-100 rounded-lg px-3 py-2 text-[0.6875rem] text-indigo-800 border border-indigo-200' },
 
                       React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.economics_concept', '\uD83D\uDCDA Economics Concept: ')),
 
@@ -3604,7 +3604,7 @@ var d = labToolData || {};
 
                     React.createElement('div', { className: 'text-lg' }, s.icon),
 
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 font-bold uppercase tracking-wide' }, s.label),
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 font-bold uppercase tracking-wide' }, s.label),
 
                     React.createElement('div', { className: 'text-sm font-bold text-' + s.color + '-800' }, s.val)
 
@@ -3616,14 +3616,14 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'text-xs text-slate-600 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + pfNetWorth.toLocaleString() + ((d.pfInvested || 0) > 0 ? ' | \uD83D\uDCC8 Invested: $' + (d.pfInvested || 0).toLocaleString() : '') + ((d.pfEquity || 0) > 0 ? ' | \uD83C\uDFE0 Equity: $' + (d.pfEquity || 0).toLocaleString() : '') + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance') + ((d.pfDebt || 0) > 0 ? ' | \uD83D\uDCB3 Debt +10%/yr APR' : '')),
 
-              (d.pfCash || 2000) < 0 && React.createElement('div', { className: 'text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center mb-2', role: 'alert' },
+              (d.pfCash || 2000) < 0 && React.createElement('div', { className: 'text-[0.6875rem] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center mb-2', role: 'alert' },
                 t('stem.economicslab.cash_flow_warning', '\u26A0\uFE0F Your cash is negative \u2014 you are spending more than you earn. Try cheaper housing, a lower investment %, or paying down debt before it compounds.')),
 
               (function () {
                 var pfMonthlyExp = pfRent + pfFood + pfTransport + pfEntertain;
                 var runway = Math.max(0, (d.pfCash || 2000)) / Math.max(1, pfMonthlyExp);
                 var runwayCls = runway >= 6 ? 'text-green-800 bg-green-50 border-green-200' : runway >= 3 ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200';
-                return React.createElement('div', { className: 'text-[11px] text-center rounded-lg border px-3 py-1.5 mb-2 ' + runwayCls },
+                return React.createElement('div', { className: 'text-[0.6875rem] text-center rounded-lg border px-3 py-1.5 mb-2 ' + runwayCls },
                   t('stem.economicslab.emergency_fund', '\uD83D\uDEDF Emergency fund: ') + runway.toFixed(1) + ' ' + t('stem.economicslab.months_of_expenses', 'months of expenses in cash') + ' \u2014 ' + t('stem.economicslab.emergency_fund_target', 'advisors suggest keeping 3\u20136 months'));
               })(),
 
@@ -3636,16 +3636,16 @@ var d = labToolData || {};
                 if (ly.growth > 0) rows.push([t('stem.economicslab.flow_growth', 'Portfolio growth (inside investments)'), ly.growth, true]);
                 if (ly.debtInterest > 0) rows.push([t('stem.economicslab.flow_debt_interest', 'Debt interest added (10% APR)'), -ly.debtInterest, true]);
                 return React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 mb-2' },
-                  React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1' }, t('stem.economicslab.last_year_flow', '\uD83E\uDDFE Last year\'s money flow')),
+                  React.createElement('h4', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wide mb-1' }, t('stem.economicslab.last_year_flow', '\uD83E\uDDFE Last year\'s money flow')),
                   rows.map(function (r, ri) {
-                    return React.createElement('div', { key: ri, className: 'flex justify-between text-[11px] py-0.5 border-b border-slate-50' },
+                    return React.createElement('div', { key: ri, className: 'flex justify-between text-[0.6875rem] py-0.5 border-b border-slate-50' },
                       React.createElement('span', { className: 'text-slate-600 flex-1 pr-2' }, r[0] + (r[2] ? ' *' : '')),
                       React.createElement('span', { className: (r[1] >= 0 ? 'text-green-800' : 'text-red-700') + ' font-bold' }, (r[1] >= 0 ? '+' : '\u2212') + '$' + Math.abs(r[1]).toLocaleString()));
                   }),
-                  React.createElement('div', { className: 'flex justify-between text-[11px] pt-1 font-bold' },
+                  React.createElement('div', { className: 'flex justify-between text-[0.6875rem] pt-1 font-bold' },
                     React.createElement('span', { className: 'text-slate-700' }, t('stem.economicslab.flow_net', 'Net cash change')),
                     React.createElement('span', { className: ly.net >= 0 ? 'text-green-800' : 'text-red-600' }, (ly.net >= 0 ? '+' : '\u2212') + '$' + Math.abs(ly.net).toLocaleString())),
-                  React.createElement('p', { className: 'text-[10px] text-slate-500 italic mt-1 m-0' }, t('stem.economicslab.flow_footnote', '* not part of cash \u2014 growth compounds inside your portfolio; interest compounds inside your debt.')));
+                  React.createElement('p', { className: 'text-[0.625rem] text-slate-500 italic mt-1 m-0' }, t('stem.economicslab.flow_footnote', '* not part of cash \u2014 growth compounds inside your portfolio; interest compounds inside your debt.')));
               })(),
 
               // Next Year / Generate Event button
@@ -3702,7 +3702,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200 mt-3 mb-1' },
 
-                React.createElement('h4', { className: 'text-[11px] font-bold text-orange-700 mb-2' }, t('stem.economicslab.housing_strategy', '\uD83C\uDFE0 Housing Strategy')),
+                React.createElement('h4', { className: 'text-[0.6875rem] font-bold text-orange-700 mb-2' }, t('stem.economicslab.housing_strategy', '\uD83C\uDFE0 Housing Strategy')),
 
                 React.createElement('div', { className: 'flex gap-2' },
 
@@ -3728,11 +3728,11 @@ var d = labToolData || {};
 
                     },
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-slate-700' }, h.label),
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-700' }, h.label),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, h.desc),
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, h.desc),
 
-                      React.createElement('div', { className: 'text-[11px] font-bold text-orange-600 mt-1' }, h.cost)
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold text-orange-600 mt-1' }, h.cost)
 
                     );
 
@@ -3740,7 +3740,7 @@ var d = labToolData || {};
 
                 ),
 
-                React.createElement('div', { className: 'text-[11px] text-orange-700 mt-2 bg-white rounded-lg p-2 border border-orange-100' },
+                React.createElement('div', { className: 'text-[0.6875rem] text-orange-700 mt-2 bg-white rounded-lg p-2 border border-orange-100' },
 
                   (d.pfHousing || 'renting') === 'renting' && '\uD83D\uDCDA Renting means paying a landlord monthly. Pros: flexibility to move, no maintenance costs, lower upfront cost. Cons: no equity buildup, rent may increase annually, no tax deductions.',
 
@@ -3756,7 +3756,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200 mt-3 mb-3' },
 
-                React.createElement('h4', { className: 'text-[11px] font-bold text-green-800 mb-2' }, t('stem.economicslab.investment_allocation_of_annual_salary', '\uD83D\uDCCA Investment Allocation (% of annual salary invested)')),
+                React.createElement('h4', { className: 'text-[0.6875rem] font-bold text-green-800 mb-2' }, t('stem.economicslab.investment_allocation_of_annual_salary', '\uD83D\uDCCA Investment Allocation (% of annual salary invested)')),
 
                 React.createElement('div', { className: 'flex items-center gap-3' },
 
@@ -3772,7 +3772,7 @@ var d = labToolData || {};
 
                   React.createElement('span', { className: 'text-xs font-bold text-green-800 w-12 text-right' }, (d.pfInvestPct || 0) + '%'),
 
-                  React.createElement('span', { className: 'text-[11px] text-slate-600' }, '$' + Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100).toLocaleString() + '/yr')
+                  React.createElement('span', { className: 'text-[0.6875rem] text-slate-600' }, '$' + Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100).toLocaleString() + '/yr')
 
                 ),
 
@@ -3788,7 +3788,7 @@ var d = labToolData || {};
 
                       onClick: function () { upd('pfInvestType', short); },
 
-                      className: 'flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
+                      className: 'flex-1 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' +
 
                         ((d.pfInvestType || '') === short ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-slate-600 border border-green-200 hover:border-green-400')
 
@@ -3798,7 +3798,7 @@ var d = labToolData || {};
 
                 ),
 
-                (d.pfInvestPct || 0) > 0 && (d.pfInvestType) && React.createElement('div', { className: 'mt-2 text-[11px] text-green-800 bg-white rounded-lg p-2 border border-green-100' },
+                (d.pfInvestPct || 0) > 0 && (d.pfInvestType) && React.createElement('div', { className: 'mt-2 text-[0.6875rem] text-green-800 bg-white rounded-lg p-2 border border-green-100' },
 
                   d.pfInvestType === 'Conservative' && '\uD83D\uDCDA Bonds are low-risk, low-return (~3-5% annual). Best for capital preservation and stable income. Less volatile but won\'t beat inflation long-term.',
 
@@ -3820,7 +3820,7 @@ var d = labToolData || {};
 
                 (d.pfHistory || []).slice().reverse().map(function (h, hi) {
 
-                  return React.createElement('div', { key: hi, className: 'flex justify-between text-[11px] py-1 border-b border-slate-50' },
+                  return React.createElement('div', { key: hi, className: 'flex justify-between text-[0.6875rem] py-1 border-b border-slate-50' },
 
                     React.createElement('span', { className: 'text-slate-600' }, 'Age ' + h.age),
 
@@ -3978,7 +3978,7 @@ var d = labToolData || {};
 
                         React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, smCompanies[smSelected].name + ' (' + smCompanies[smSelected].ticker + ')'),
 
-                        React.createElement('span', { className: 'text-[11px] text-slate-600' }, smCompanies[smSelected].sector + (smCompanies[smSelected].description ? ' \u2014 ' + smCompanies[smSelected].description : ''))
+                        React.createElement('span', { className: 'text-[0.6875rem] text-slate-600' }, smCompanies[smSelected].sector + (smCompanies[smSelected].description ? ' \u2014 ' + smCompanies[smSelected].description : ''))
 
                       ),
 
@@ -3988,13 +3988,13 @@ var d = labToolData || {};
 
                         smCompanies[smSelected].history && smCompanies[smSelected].history.length > 1 && React.createElement('div', {
 
-                          className: 'text-[11px] font-bold ' + (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? 'text-green-800' : 'text-red-700')
+                          className: 'text-[0.6875rem] font-bold ' + (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? 'text-green-800' : 'text-red-700')
 
                         }, (smCompanies[smSelected].price >= smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] ? '\u25B2 +' : '\u25BC ') +
 
                         ((smCompanies[smSelected].price / smCompanies[smSelected].history[smCompanies[smSelected].history.length - 2] - 1) * 100).toFixed(1) + '%'),
 
-                        React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Held: ' + (smPortfolio[smCompanies[smSelected].ticker] || 0) + ' shares ($' + ((smPortfolio[smCompanies[smSelected].ticker] || 0) * smCompanies[smSelected].price).toFixed(0) + ')')
+                        React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Held: ' + (smPortfolio[smCompanies[smSelected].ticker] || 0) + ' shares ($' + ((smPortfolio[smCompanies[smSelected].ticker] || 0) * smCompanies[smSelected].price).toFixed(0) + ')')
 
                       )
 
@@ -4010,9 +4010,9 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-amber-800 mt-1' }, d.smNewsEvent.analysis || ''),
 
-                    React.createElement('div', { className: 'text-[11px] text-amber-600 mt-2 font-bold' }, 'Impact: ' + (d.smNewsEvent.impact > 0 ? '\u25B2 +' : '\u25BC ') + (d.smNewsEvent.impact * 100).toFixed(1) + '%'),
+                    React.createElement('div', { className: 'text-[0.6875rem] text-amber-600 mt-2 font-bold' }, 'Impact: ' + (d.smNewsEvent.impact > 0 ? '\u25B2 +' : '\u25BC ') + (d.smNewsEvent.impact * 100).toFixed(1) + '%'),
 
-                    d.smNewsEvent.lesson && React.createElement('div', { className: 'mt-2 bg-amber-100 rounded-lg px-3 py-2 text-[11px] text-amber-800 border border-amber-200' },
+                    d.smNewsEvent.lesson && React.createElement('div', { className: 'mt-2 bg-amber-100 rounded-lg px-3 py-2 text-[0.6875rem] text-amber-800 border border-amber-200' },
 
                       React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.investing_concept', '\uD83D\uDCDA Investing Concept: ')),
 
@@ -4078,7 +4078,7 @@ var d = labToolData || {};
 
                       },
 
-                      className: 'py-3 px-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white'
+                      className: 'py-3 px-2 rounded-xl text-[0.6875rem] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white'
 
                     }, t('stem.economicslab.buy_10', '\u25B2\u25B2 Buy 10')),
 
@@ -4138,7 +4138,7 @@ var d = labToolData || {};
 
                       },
 
-                      className: 'py-3 px-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white'
+                      className: 'py-3 px-2 rounded-xl text-[0.6875rem] font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white'
 
                     }, '\u25BC\u25BC Sell ' + Math.min(smPortfolio[smCompanies[smSelected] ? smCompanies[smSelected].ticker : ''] || 0, 10)),
 
@@ -4260,7 +4260,7 @@ var d = labToolData || {};
 
                         var c = smCompanies.find(function (x) { return x.ticker === ticker; });
 
-                        return smPortfolio[ticker] > 0 ? React.createElement('span', { key: ticker, className: 'bg-slate-100 px-2 py-1 rounded text-[11px] font-bold' }, ticker + ': ' + smPortfolio[ticker] + ' ($' + (smPortfolio[ticker] * c.price).toFixed(0) + ')') : null;
+                        return smPortfolio[ticker] > 0 ? React.createElement('span', { key: ticker, className: 'bg-slate-100 px-2 py-1 rounded text-[0.6875rem] font-bold' }, ticker + ': ' + smPortfolio[ticker] + ' ($' + (smPortfolio[ticker] * c.price).toFixed(0) + ')') : null;
 
                       })
 
@@ -4291,13 +4291,13 @@ var d = labToolData || {};
 
                       return React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400' },
 
-                        React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.economicslab.portfolio_analytics', '\uD83D\uDCC8 Portfolio Analytics')),
+                        React.createElement('h4', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.economicslab.portfolio_analytics', '\uD83D\uDCC8 Portfolio Analytics')),
 
                         React.createElement('div', { className: 'grid grid-cols-4 gap-2 text-center' },
 
                           React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
 
-                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.total_p_l', 'Total P&L')),
+                            React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.economicslab.total_p_l', 'Total P&L')),
 
                             React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-800' : 'text-red-700') },
 
@@ -4307,7 +4307,7 @@ var d = labToolData || {};
 
                           React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
 
-                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.return', 'Return %')),
+                            React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.economicslab.return', 'Return %')),
 
                             React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-800' : 'text-red-700') },
 
@@ -4317,7 +4317,7 @@ var d = labToolData || {};
 
                           React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
 
-                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.index_hold', 'Index (hold)')),
+                            React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.economicslab.index_hold', 'Index (hold)')),
 
                             React.createElement('div', { className: 'text-sm font-bold ' + (idxReturn >= 0 ? 'text-green-800' : 'text-red-700') },
 
@@ -4327,7 +4327,7 @@ var d = labToolData || {};
 
                           React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
 
-                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.holdings', 'Holdings')),
+                            React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.economicslab.holdings', 'Holdings')),
 
                             React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
 
@@ -4337,11 +4337,11 @@ var d = labToolData || {};
 
                         ),
 
-                        myReturn < idxReturn - 0.5 && React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
+                        myReturn < idxReturn - 0.5 && React.createElement('div', { className: 'mt-2 text-[0.6875rem] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
 
                           t('stem.economicslab.index_lesson', '\uD83D\uDCDA The buy-and-hold index is beating your trading. Most active traders underperform simply holding everything \u2014 this is why index funds are the default advice.')),
 
-                        topShare > 0.7 && stockVal > 0 && React.createElement('div', { className: 'mt-2 text-[11px] text-amber-800 bg-amber-50 rounded-lg p-2 border border-amber-100' },
+                        topShare > 0.7 && stockVal > 0 && React.createElement('div', { className: 'mt-2 text-[0.6875rem] text-amber-800 bg-amber-50 rounded-lg p-2 border border-amber-100' },
 
                           t('stem.economicslab.concentration_warning', '\u26A0\uFE0F Over 70% of your stock value is in one company. Diversification cushions single-company shocks \u2014 spread your bets.'))
 
@@ -4422,7 +4422,7 @@ var d = labToolData || {};
                 var paSeg = function (pctVal, color, label) {
                   return pctVal > 0 ? React.createElement('div', {
                     style: { width: pctVal + '%', background: color },
-                    className: 'flex items-center justify-center text-white text-[10px] font-bold h-full'
+                    className: 'flex items-center justify-center text-white text-[0.625rem] font-bold h-full'
                   }, pctVal >= 12 ? label + ' ' + pctVal + '%' : '') : null;
                 };
 
@@ -4440,7 +4440,7 @@ var d = labToolData || {};
                 };
 
                 var paPanel = React.createElement('div', null,
-                  React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_pa_intro', 'Real investors don’t just pick stocks — they decide how to split money across asset types. Answer 3 questions to find your risk profile, then build your mix.')),
+                  React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_pa_intro', 'Real investors don’t just pick stocks — they decide how to split money across asset types. Answer 3 questions to find your risk profile, then build your mix.')),
                   paQs.map(function (qq, qi) {
                     return React.createElement('div', { key: 'paq' + qi, className: 'mb-2' },
                       React.createElement('div', { className: 'text-xs font-bold text-slate-700 mb-1' }, (qi + 1) + '. ' + qq.q),
@@ -4459,21 +4459,21 @@ var d = labToolData || {};
                                 if (addToast) addToast('🧭 ' + t('stem.economicslab.iv_profile_unlocked', 'Investor profile unlocked!'), 'success');
                               }
                             },
-                            className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (sel ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300')
+                            className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold border transition-all ' + (sel ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300')
                           }, op);
                         })));
                   }),
-                  paDone && React.createElement('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-lg p-2 mb-2 text-[11px] text-indigo-800' },
+                  paDone && React.createElement('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-lg p-2 mb-2 text-[0.6875rem] text-indigo-800' },
                     React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.iv_pa_suggested', 'Suggested mix') + ': ' + paProfile.name + ' — '),
                     paProfile.stocks + '% ' + t('stem.economicslab.iv_stocks', 'stocks') + ' / ' + paProfile.bonds + '% ' + t('stem.economicslab.iv_bonds', 'bonds') + ' / ' + (100 - paProfile.stocks - paProfile.bonds) + '% ' + t('stem.economicslab.iv_cash', 'cash'),
                     React.createElement('button', {
                       onClick: function () { upd('paStocks', paProfile.stocks); upd('paBonds', paProfile.bonds); },
-                      className: 'ml-2 px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold border-0'
+                      className: 'ml-2 px-2 py-0.5 rounded bg-indigo-600 text-white text-[0.625rem] font-bold border-0'
                     }, t('stem.economicslab.iv_pa_apply', 'Apply'))),
                   React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-1' },
-                    React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_stocks_pct', 'Stocks') + ': ' + paStocks + '%',
+                    React.createElement('label', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, t('stem.economicslab.iv_stocks_pct', 'Stocks') + ': ' + paStocks + '%',
                       React.createElement('input', { type: 'range', min: 0, max: 100, step: 5, value: paStocks, 'aria-label': t('stem.economicslab.iv_stocks_pct_aria', 'Percent in stocks'), onChange: function (e) { var v = +e.target.value; upd('paStocks', v); if (v + paBonds > 100) upd('paBonds', 100 - v); }, className: 'w-full' })),
-                    React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_bonds_pct', 'Bonds') + ': ' + paBonds + '%',
+                    React.createElement('label', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, t('stem.economicslab.iv_bonds_pct', 'Bonds') + ': ' + paBonds + '%',
                       React.createElement('input', { type: 'range', min: 0, max: 100 - paStocks, step: 5, value: paBonds, 'aria-label': t('stem.economicslab.iv_bonds_pct_aria', 'Percent in bonds'), onChange: function (e) { upd('paBonds', +e.target.value); }, className: 'w-full' }))),
                   React.createElement('div', { className: 'flex h-6 rounded-lg overflow-hidden border border-slate-300 mb-2', role: 'img', 'aria-label': t('stem.economicslab.iv_alloc_bar', 'Allocation bar') + ': ' + paStocks + '% ' + t('stem.economicslab.iv_stocks', 'stocks') + ', ' + paBonds + '% ' + t('stem.economicslab.iv_bonds', 'bonds') + ', ' + paCash + '% ' + t('stem.economicslab.iv_cash', 'cash') },
                     paSeg(paStocks, '#9333ea', t('stem.economicslab.iv_stocks', 'stocks')),
@@ -4481,15 +4481,15 @@ var d = labToolData || {};
                     paSeg(paCash, '#64748b', t('stem.economicslab.iv_cash', 'cash'))),
                   React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                     React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_expected_return', 'Expected return')),
+                      React.createElement('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.economicslab.iv_expected_return', 'Expected return')),
                       React.createElement('div', { className: 'text-sm font-bold text-green-800' }, '≈' + ivMean.toFixed(1) + '%/yr')),
                     React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_typical_year', 'Typical year')),
+                      React.createElement('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.economicslab.iv_typical_year', 'Typical year')),
                       React.createElement('div', { className: 'text-sm font-bold text-slate-700' }, (ivMean - ivVol).toFixed(0) + '% to +' + (ivMean + ivVol).toFixed(0) + '%')),
                     React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
-                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_bad_year', 'Bad year, on $10K')),
+                      React.createElement('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.economicslab.iv_bad_year', 'Bad year, on $10K')),
                       React.createElement('div', { className: 'text-sm font-bold text-red-700' }, ivFmt(paBadYear)))),
-                  paDone && Math.abs(paStocks - paProfile.stocks) > 15 && React.createElement('div', { className: 'mt-2 text-[11px] text-amber-800 bg-amber-50 rounded-lg p-2 border border-amber-100' },
+                  paDone && Math.abs(paStocks - paProfile.stocks) > 15 && React.createElement('div', { className: 'mt-2 text-[0.6875rem] text-amber-800 bg-amber-50 rounded-lg p-2 border border-amber-100' },
                     t('stem.economicslab.iv_pa_mismatch', '🧭 Your mix is quite far from your quiz profile. That’s allowed — but know why: more stocks = more growth and bigger drops; fewer = calmer ride, slower growth.')),
                   paStocks > 0 && paStocks < 95 && (function () {
                     var paD10 = paDrift(10), paD20 = paDrift(20);
@@ -4498,17 +4498,17 @@ var d = labToolData || {};
                     var paBad20 = paStats20.mean - 2 * paStats20.vol;
                     var paRow = function (lbl, w) {
                       return React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
-                        React.createElement('span', { className: 'text-[10px] font-bold text-slate-600 w-14 shrink-0' }, lbl),
+                        React.createElement('span', { className: 'text-[0.625rem] font-bold text-slate-600 w-14 shrink-0' }, lbl),
                         React.createElement('div', { className: 'flex h-4 rounded overflow-hidden border border-slate-300 flex-1', role: 'img', 'aria-label': lbl + ': ' + w.s + '% ' + t('stem.economicslab.iv_stocks', 'stocks') + ', ' + w.b + '% ' + t('stem.economicslab.iv_bonds', 'bonds') + ', ' + w.c + '% ' + t('stem.economicslab.iv_cash', 'cash') },
                           paSeg(w.s, '#9333ea', ''), paSeg(w.b, '#2563eb', ''), paSeg(w.c, '#64748b', '')),
-                        React.createElement('span', { className: 'text-[10px] text-slate-600 w-16 shrink-0 text-right' }, w.s + '/' + w.b + '/' + w.c));
+                        React.createElement('span', { className: 'text-[0.625rem] text-slate-600 w-16 shrink-0 text-right' }, w.s + '/' + w.b + '/' + w.c));
                     };
                     return React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-2 border border-slate-200' },
-                      React.createElement('h5', { className: 'text-[11px] font-bold text-slate-700 mb-1 m-0' }, t('stem.economicslab.iv_drift_title', '🔄 If you never rebalance…')),
+                      React.createElement('h5', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1 m-0' }, t('stem.economicslab.iv_drift_title', '🔄 If you never rebalance…')),
                       paRow(t('stem.economicslab.iv_drift_now', 'Now'), { s: paStocks, b: paBonds, c: paCash }),
                       paRow(t('stem.economicslab.iv_drift_y10', 'Year 10'), paD10),
                       paRow(t('stem.economicslab.iv_drift_y20', 'Year 20'), paD20),
-                      React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1 m-0' },
+                      React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mt-1 m-0' },
                         t('stem.economicslab.iv_drift_lesson1', 'Stocks outgrow the rest, so your mix quietly drifts stock-heavy: a typical bad year worsens from') + ' ' + paBadNow.toFixed(0) + '% ' + t('stem.economicslab.iv_drift_lesson2', 'today to') + ' ' + paBad20.toFixed(0) + '% ' + t('stem.economicslab.iv_drift_lesson3', 'at year 20. Rebalancing — selling a little of what grew, topping up the rest — keeps the risk you actually chose.')));
                   })());
 
@@ -4531,7 +4531,7 @@ var d = labToolData || {};
                 var rvMax = rvSeries.reduce(function (m, sr) { return sr.pts.reduce(function (m2, p) { return Math.max(m2, p); }, m); }, 10000);
 
                 var rvPanel = React.createElement('div', null,
-                  React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_rv_intro', 'All three investments below average exactly +7% per year. Watch what the ride does to the destination.')),
+                  React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_rv_intro', 'All three investments below average exactly +7% per year. Watch what the ride does to the destination.')),
                   React.createElement('svg', {
                     viewBox: '0 0 320 160', className: 'w-full', role: 'img',
                     'aria-label': t('stem.economicslab.iv_rv_chart_aria', 'Line chart of $10,000 over 10 years: steady +7% ends near $19,700; a wild ride averaging +7% ends near $14,900; a rebalanced 50/50 mix ends near $18,400.')
@@ -4547,16 +4547,16 @@ var d = labToolData || {};
                     })),
                   React.createElement('div', { className: 'flex flex-col gap-1 mt-1' },
                     rvSeries.map(function (sr) {
-                      return React.createElement('div', { key: 'leg' + sr.name, className: 'flex items-center gap-2 text-[11px] text-slate-700' },
+                      return React.createElement('div', { key: 'leg' + sr.name, className: 'flex items-center gap-2 text-[0.6875rem] text-slate-700' },
                         React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-3 rounded-sm', style: { background: sr.color } }),
                         React.createElement('span', { className: 'font-bold' }, sr.name),
                         React.createElement('span', null, t('stem.economicslab.iv_rv_ends', 'ends') + ' ' + ivFmt(sr.end) + ' · ' + t('stem.economicslab.iv_rv_worst_drop', 'worst drop') + ' −' + (sr.dd * 100).toFixed(0) + '%'));
                     })),
-                  React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold block mt-2' }, t('stem.economicslab.iv_rv_swing', 'Build your own ride — yearly swing') + ': ±' + rvSwing + '%',
+                  React.createElement('label', { className: 'text-[0.6875rem] text-slate-600 font-bold block mt-2' }, t('stem.economicslab.iv_rv_swing', 'Build your own ride — yearly swing') + ': ±' + rvSwing + '%',
                     React.createElement('input', { type: 'range', min: 0, max: 25, step: 1, value: rvSwing, 'aria-label': t('stem.economicslab.iv_rv_swing_aria', 'Yearly swing percent for your custom ride'), onChange: function (e) { upd('rvSwing', +e.target.value); }, className: 'w-full' })),
-                  rvSwing > 0 && React.createElement('p', { className: 'text-[11px] text-amber-800 m-0 mt-1' },
+                  rvSwing > 0 && React.createElement('p', { className: 'text-[0.6875rem] text-amber-800 m-0 mt-1' },
                     t('stem.economicslab.iv_rv_swing_result1', 'Alternating') + ' +' + (7 + rvSwing) + '% / ' + (7 - rvSwing >= 0 ? '+' : '') + (7 - rvSwing) + '% ' + t('stem.economicslab.iv_rv_swing_result2', 'still averages +7% — but the swings cost') + ' ' + ivFmt(rvSeries[0].end - rvSeries[3].end) + ' ' + t('stem.economicslab.iv_rv_swing_result3', 'over 10 years vs the steady line.')),
-                  React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
+                  React.createElement('div', { className: 'mt-2 text-[0.6875rem] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
                     t('stem.economicslab.iv_rv_lesson', '📚 Same average, different endings: big losses hurt more than equal-sized gains help (volatility drag). Splitting money between the two and rebalancing every year recovers most of the gap — that’s what diversification buys, and why "risk" means more than "some red days."')));
 
                 // ── Panel 3: Range of Outcomes (Monte Carlo, seeded/deterministic) ──
@@ -4610,7 +4610,7 @@ var d = labToolData || {};
                   var mcY = function (v) { return (150 - v / mcMax * 135).toFixed(1); };
                   var mcBand = mcP90.map(function (v, yi) { return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ') + ' ' + mcP10.slice().reverse().map(function (v, ri) { var yi = mcYears - ri; return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ');
                   mcPanel = React.createElement('div', null,
-                    React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' },
+                    React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mb-2 m-0' },
                       mcMode === 'retire'
                         ? t('stem.economicslab.iv_mc_intro_retire', '200 simulated retirements: a $500,000 nest egg in your mix') + ' (' + paStocks + '/' + paBonds + '/' + paCash + '), ' + t('stem.economicslab.iv_mc_intro_retire2', 'spending') + ' ' + ivFmt(mcSpend) + t('stem.economicslab.iv_mc_intro_retire3', '/yr. Will it last?')
                         : t('stem.economicslab.iv_mc_intro', 'The Compound Interest calculator draws ONE smooth line. Real markets deliver a range. Here are 200 simulated futures for $10,000 in your mix') + ' (' + paStocks + '/' + paBonds + '/' + paCash + ')' + (mcContrib > 0 ? ' + ' + ivFmt(mcContrib) + t('stem.economicslab.iv_mc_intro_contrib', '/yr added') : '') + '.'),
@@ -4621,18 +4621,18 @@ var d = labToolData || {};
                           key: mm.id,
                           'aria-pressed': msel,
                           onClick: function () { upd('mcMode', mm.id); if (mm.id === 'retire' && !d.mcRanRetire) { upd('mcRanRetire', true); addXP(5, 'Retirement stress test'); } },
-                          className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ' + (msel ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-600 border-slate-300')
+                          className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold border transition-all ' + (msel ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-600 border-slate-300')
                         }, mm.label);
                       })),
                     React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2 items-center' },
-                      React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_years', 'Years') + ': ' + mcYears,
+                      React.createElement('label', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_years', 'Years') + ': ' + mcYears,
                         React.createElement('input', { type: 'range', min: 10, max: 40, step: 5, value: mcYears, 'aria-label': t('stem.economicslab.iv_mc_years_aria', 'Simulation years'), onChange: function (e) { upd('mcYears', +e.target.value); }, className: 'w-full' })),
                       mcMode === 'retire'
-                        ? React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_spend', 'Spending/yr') + ': ' + ivFmt(mcSpend) + ' (' + (mcSpend / 5000).toFixed(1) + '%)',
+                        ? React.createElement('label', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_spend', 'Spending/yr') + ': ' + ivFmt(mcSpend) + ' (' + (mcSpend / 5000).toFixed(1) + '%)',
                             React.createElement('input', { type: 'range', min: 10000, max: 40000, step: 2500, value: mcSpend, 'aria-label': t('stem.economicslab.iv_mc_spend_aria', 'Yearly spending in retirement'), onChange: function (e) { upd('mcSpend', +e.target.value); }, className: 'w-full' }))
-                        : React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_contrib', 'Added/yr') + ': ' + ivFmt(mcContrib),
+                        : React.createElement('label', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_contrib', 'Added/yr') + ': ' + ivFmt(mcContrib),
                             React.createElement('input', { type: 'range', min: 0, max: 5000, step: 250, value: mcContrib, 'aria-label': t('stem.economicslab.iv_mc_contrib_aria', 'Yearly contribution'), onChange: function (e) { upd('mcContrib', +e.target.value); }, className: 'w-full' })),
-                      React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_fee', 'Fund fee') + ': ' + mcFee.toFixed(2) + '%/yr',
+                      React.createElement('label', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_fee', 'Fund fee') + ': ' + mcFee.toFixed(2) + '%/yr',
                         React.createElement('input', { type: 'range', min: 0, max: 1.5, step: 0.05, value: mcFee, 'aria-label': t('stem.economicslab.iv_mc_fee_aria', 'Yearly fund fee percent'), onChange: function (e) { upd('mcFee', +e.target.value); }, className: 'w-full' })),
                       React.createElement('button', {
                         onClick: function () { upd('mcSeed', (d.mcSeed || 1) + 1); if (announceToSR) announceToSR(t('stem.economicslab.iv_mc_rerolled', 'New simulation run generated.')); },
@@ -4648,37 +4648,37 @@ var d = labToolData || {};
                       React.createElement('line', { x1: 20, y1: 150, x2: 310, y2: 150, stroke: '#cbd5e1', strokeWidth: 1 }),
                       React.createElement('text', { x: 20, y: 158, fill: '#94a3b8', fontSize: 8 }, '0'),
                       React.createElement('text', { x: 290, y: 158, fill: '#94a3b8', fontSize: 8 }, mcYears + 'y')),
-                    React.createElement('div', { className: 'flex gap-3 text-[10px] text-slate-600 mt-1' },
+                    React.createElement('div', { className: 'flex gap-3 text-[0.625rem] text-slate-600 mt-1' },
                       React.createElement('span', null, React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-2 rounded-sm align-middle mr-1', style: { background: '#c7d2fe' } }), t('stem.economicslab.iv_mc_band', 'middle 80% of runs')),
                       React.createElement('span', null, React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-0.5 align-middle mr-1', style: { background: '#4f46e5' } }), t('stem.economicslab.iv_mc_median', 'median run')),
                       React.createElement('span', null, React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-0.5 align-middle mr-1', style: { background: '#d97706' } }), t('stem.economicslab.iv_mc_straight', 'straight-line calc'))),
                     React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center mt-2' },
                       React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
-                        React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_mc_unlucky', 'Unlucky (10th pct)')),
+                        React.createElement('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.economicslab.iv_mc_unlucky', 'Unlucky (10th pct)')),
                         React.createElement('div', { className: 'text-sm font-bold text-red-700' }, ivFmt(mcP10[mcYears]))),
                       React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
-                        React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_mc_median_end', 'Median')),
+                        React.createElement('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.economicslab.iv_mc_median_end', 'Median')),
                         React.createElement('div', { className: 'text-sm font-bold text-indigo-600' }, ivFmt(mcP50[mcYears]))),
                       React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
-                        React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_mc_lucky', 'Lucky (90th pct)')),
+                        React.createElement('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.economicslab.iv_mc_lucky', 'Lucky (90th pct)')),
                         React.createElement('div', { className: 'text-sm font-bold text-green-800' }, ivFmt(mcP90[mcYears])))),
-                    mcMode === 'retire' && React.createElement('div', { className: 'mt-2 text-[11px] font-bold rounded-lg p-2 border ' + (mcAlive / mcN >= 0.9 ? 'text-green-800 bg-green-50 border-green-200' : mcAlive / mcN >= 0.75 ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200') },
+                    mcMode === 'retire' && React.createElement('div', { className: 'mt-2 text-[0.6875rem] font-bold rounded-lg p-2 border ' + (mcAlive / mcN >= 0.9 ? 'text-green-800 bg-green-50 border-green-200' : mcAlive / mcN >= 0.75 ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200') },
                       '🛡️ ' + mcAlive + ' ' + t('stem.economicslab.iv_mc_alive1', 'of 200 simulated retirements still had money after') + ' ' + mcYears + ' ' + t('stem.economicslab.iv_mc_alive2', 'years') + ' (' + (mcAlive / mcN * 100).toFixed(0) + '%).'),
-                    mcMode === 'grow' && mcFee > 0.1 && React.createElement('div', { className: 'mt-2 text-[11px] text-rose-700 bg-rose-50 rounded-lg p-2 border border-rose-100' },
+                    mcMode === 'grow' && mcFee > 0.1 && React.createElement('div', { className: 'mt-2 text-[0.6875rem] text-rose-700 bg-rose-50 rounded-lg p-2 border border-rose-100' },
                       '💸 ' + t('stem.economicslab.iv_mc_fee_cost1', 'Fees compound too: at') + ' ' + mcFee.toFixed(2) + '% ' + t('stem.economicslab.iv_mc_fee_cost2', 'the straight-line path ends near') + ' ' + ivFmt(mcCstAt(mcFee)) + '; ' + t('stem.economicslab.iv_mc_fee_cost3', 'at 0.05% (a cheap index fund) it ends near') + ' ' + ivFmt(mcCstAt(0.05)) + ' — ' + t('stem.economicslab.iv_mc_fee_cost4', 'a gap of') + ' ' + ivFmt(mcCstAt(0.05) - mcCstAt(mcFee)) + '.'),
-                    React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
+                    React.createElement('div', { className: 'mt-2 text-[0.6875rem] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
                       mcMode === 'retire'
                         ? t('stem.economicslab.iv_mc_lesson_retire', '📚 Sequence-of-returns risk, live: every run here has the SAME average return — the runs that went broke just met their bad years FIRST, while withdrawals kept draining the pot. This is why retirees hold more bonds, and why the "4% rule" is a guideline, not a guarantee.')
                         : t('stem.economicslab.iv_mc_lesson', '📚 The dashed line is what a constant-rate calculator promises — the median simulated run usually lands below it, because the average is pulled up by a few lucky runs. And two savers with the same average return can end in very different places: the ORDER of good and bad years matters (sequence-of-returns risk), especially near retirement.')));
                 }
 
                 return React.createElement('div', { className: 'mt-4' },
-                  React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, t('stem.economicslab.iv_deep_dives', '🎓 Investing Deep-Dives')),
-                  React.createElement('p', { className: 'text-[11px] text-slate-600 mb-1 m-0' }, t('stem.economicslab.iv_deep_dives_sub', 'Beyond picking stocks: build a whole portfolio, see what risk really means, and explore the range of long-run outcomes.')),
+                  React.createElement('h4', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1' }, t('stem.economicslab.iv_deep_dives', '🎓 Investing Deep-Dives')),
+                  React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mb-1 m-0' }, t('stem.economicslab.iv_deep_dives_sub', 'Beyond picking stocks: build a whole portfolio, see what risk really means, and explore the range of long-run outcomes.')),
                   ivCard('paOpen', t('stem.economicslab.iv_pa_title', '🧩 Portfolio Builder — risk profile & asset mix'), paPanel),
                   ivCard('rvOpen', t('stem.economicslab.iv_rv_title', '🎢 Risk Visualizer — same average, different ride'), rvPanel),
                   ivCard('mcOpen', t('stem.economicslab.iv_mc_title', '🎲 Range of Outcomes — 200 simulated futures'), mcPanel),
-                  React.createElement('p', { className: 'text-[10px] text-slate-500 italic mt-2 m-0' }, t('stem.economicslab.iv_disclaimer', 'Illustrative teaching model: long-run US-style averages (stocks ≈10%/yr, bonds ≈4%, cash ≈1.5%, historical-style volatility), ignoring fees, taxes, and inflation. Not a prediction and not financial advice.')));
+                  React.createElement('p', { className: 'text-[0.625rem] text-slate-500 italic mt-2 m-0' }, t('stem.economicslab.iv_disclaimer', 'Illustrative teaching model: long-run US-style averages (stocks ≈10%/yr, bonds ≈4%, cash ≈1.5%, historical-style volatility), ignoring fees, taxes, and inflation. Not a prediction and not financial advice.')));
               })()
 
             ),
@@ -4785,7 +4785,7 @@ var d = labToolData || {};
 
                       React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, d.enBusiness.businessName),
 
-                      React.createElement('p', { className: 'text-[11px] text-amber-600' }, d.enBusiness.description)
+                      React.createElement('p', { className: 'text-[0.6875rem] text-amber-600' }, d.enBusiness.description)
 
                     ),
 
@@ -4793,13 +4793,13 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'text-lg font-bold ' + ((d.enBizCash || 0) >= 0 ? 'text-green-800' : 'text-red-700') }, '$' + (d.enBizCash || 0).toLocaleString()),
 
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
+                      React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Day ' + (d.enBizDay || 1) + ' | Rep: ' + (d.enBizRep || 50) + '/100 | Staff: ' + (d.enBizEmployees || 0))
 
                     )
 
                   ),
 
-                  d.enBusiness && (d.enBizCash || 0) < 0 && React.createElement('div', { className: 'text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3', role: 'alert' },
+                  d.enBusiness && (d.enBizCash || 0) < 0 && React.createElement('div', { className: 'text-[0.6875rem] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3', role: 'alert' },
                 t('stem.economicslab.biz_cash_warning', '⚠️ Your business is losing money — cash is negative. Check your unit economics: does price cover unit cost AND your share of fixed costs? Raising price, cutting costs, or building reputation are your levers.')),
 
               // Price adjustment + stats
@@ -4808,7 +4808,7 @@ var d = labToolData || {};
 
                     React.createElement('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
 
-                      React.createElement('label', { className: 'block text-[11px] font-bold text-amber-800 mb-1' }, '\uD83D\uDCB2 Price per ' + (d.enBusiness.unitName || 'unit') + ': $' + (d.enBizPrice || d.enBusiness.suggestedPrice || 10).toFixed(2)),
+                      React.createElement('label', { className: 'block text-[0.6875rem] font-bold text-amber-800 mb-1' }, '\uD83D\uDCB2 Price per ' + (d.enBusiness.unitName || 'unit') + ': $' + (d.enBizPrice || d.enBusiness.suggestedPrice || 10).toFixed(2)),
 
                       React.createElement('input', {
 
@@ -4822,35 +4822,35 @@ var d = labToolData || {};
 
                       }),
 
-                      React.createElement('div', { className: 'text-[11px] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10)),
+                      React.createElement('div', { className: 'text-[0.6875rem] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10)),
 
-                      (d.enBizPrice || d.enBusiness.suggestedPrice || 10) < (d.enBusiness.unitCost || 0) && React.createElement('div', { className: 'text-[11px] text-red-700 font-bold mt-1', role: 'alert' }, t('stem.economicslab.below_cost_warning', '⚠️ Price is below unit cost — you lose money on EVERY sale.')),
+                      (d.enBizPrice || d.enBusiness.suggestedPrice || 10) < (d.enBusiness.unitCost || 0) && React.createElement('div', { className: 'text-[0.6875rem] text-red-700 font-bold mt-1', role: 'alert' }, t('stem.economicslab.below_cost_warning', '⚠️ Price is below unit cost — you lose money on EVERY sale.')),
 
-                      (d.enBizPrice || 0) > (d.enBusiness.suggestedPrice || 10) * 2 && React.createElement('div', { className: 'text-[11px] text-amber-800 mt-1' }, t('stem.economicslab.high_price_hint', '📚 Price is far above suggested — expect demand to fall (price elasticity).'))
+                      (d.enBizPrice || 0) > (d.enBusiness.suggestedPrice || 10) * 2 && React.createElement('div', { className: 'text-[0.6875rem] text-amber-800 mt-1' }, t('stem.economicslab.high_price_hint', '📚 Price is far above suggested — expect demand to fall (price elasticity).'))
 
                     ),
 
                     React.createElement('div', { className: 'bg-blue-50 rounded-xl p-3 border border-blue-200 text-center' },
 
-                      React.createElement('div', { className: 'text-[11px] text-blue-500 font-bold' }, t('stem.economicslab.profit_margin', 'Profit Margin')),
+                      React.createElement('div', { className: 'text-[0.6875rem] text-blue-500 font-bold' }, t('stem.economicslab.profit_margin', 'Profit Margin')),
 
                       React.createElement('div', { className: 'text-lg font-bold ' + (((d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)) / (d.enBizPrice || d.enBusiness.suggestedPrice || 10) * 100 > 30 ? 'text-green-800' : 'text-amber-600') },
 
                         (((d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)) / (d.enBizPrice || d.enBusiness.suggestedPrice || 10) * 100).toFixed(0) + '%'),
 
-                      React.createElement('div', { className: 'text-[11px] text-blue-400' }, 'Cost: $' + (d.enBusiness.unitCost || 5))
+                      React.createElement('div', { className: 'text-[0.6875rem] text-blue-400' }, 'Cost: $' + (d.enBusiness.unitCost || 5))
 
                     ),
 
                     React.createElement('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200 text-center' },
 
-                      React.createElement('div', { className: 'text-[11px] text-purple-500 font-bold' }, 'Break-Even'),
+                      React.createElement('div', { className: 'text-[0.6875rem] text-purple-500 font-bold' }, 'Break-Even'),
 
                       React.createElement('div', { className: 'text-lg font-bold text-purple-700' },
 
                         Math.ceil((d.enBusiness.dailyFixedCosts || 50) / Math.max(0.01, (d.enBizPrice || d.enBusiness.suggestedPrice || 10) - (d.enBusiness.unitCost || 5)))),
 
-                      React.createElement('div', { className: 'text-[11px] text-purple-400' }, d.enBusiness.unitName + 's/day')
+                      React.createElement('div', { className: 'text-[0.6875rem] text-purple-400' }, d.enBusiness.unitName + 's/day')
 
                     )
 
@@ -4872,7 +4872,7 @@ var d = labToolData || {};
 
                     React.createElement('p', { className: 'text-xs text-purple-600 mt-1' }, d.enBizEvent.description),
 
-                    d.enBizEvent.lesson && React.createElement('div', { className: 'mt-2 bg-purple-100 rounded-lg px-3 py-2 text-[11px] text-purple-800 border border-purple-200' },
+                    d.enBizEvent.lesson && React.createElement('div', { className: 'mt-2 bg-purple-100 rounded-lg px-3 py-2 text-[0.6875rem] text-purple-800 border border-purple-200' },
 
                       React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.business_concept', '\uD83D\uDCDA Business Concept: ')),
 
@@ -5004,7 +5004,7 @@ var d = labToolData || {};
 
                 (d.enBizHistory || []).slice(-7).reverse().map(function (dh, dhi) {
 
-                  return React.createElement('div', { key: dhi, className: 'flex justify-between text-[11px] py-1 border-b border-slate-50' },
+                  return React.createElement('div', { key: dhi, className: 'flex justify-between text-[0.6875rem] py-1 border-b border-slate-50' },
 
                     React.createElement('span', { className: 'text-slate-600' }, 'Day ' + dh.day),
 
@@ -5099,13 +5099,13 @@ var d = labToolData || {};
               };
               return React.createElement('div', { className: 'mt-4', 'data-economicslab-macro-controls': 'true' },
                 React.createElement('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
-                  React.createElement('span', { className: 'text-[11px] font-bold text-slate-600' }, t('stem.economicslab.policy_goal_label', '🎯 Policy goal (pick one, predict, then advance):')),
+                  React.createElement('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, t('stem.economicslab.policy_goal_label', '🎯 Policy goal (pick one, predict, then advance):')),
                   MACRO_GOALS.map(function (g) {
                     var isOn = mGoal === g.id;
                     return React.createElement('button', {
                       key: g.id, type: 'button', 'aria-pressed': isOn ? 'true' : 'false',
                       onClick: function () { upd('macroGoal', isOn ? null : g.id); },
-                      className: 'text-[11px] px-2 py-1 rounded-full border font-bold ' + (isOn ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-600 border-slate-300 hover:border-red-400')
+                      className: 'text-[0.6875rem] px-2 py-1 rounded-full border font-bold ' + (isOn ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-600 border-slate-300 hover:border-red-400')
                     }, g.label);
                   })
                 ),
@@ -5120,7 +5120,7 @@ var d = labToolData || {};
                       onChange: function (e) { upd('macroInterest', parseFloat(e.target.value)); },
                       className: 'w-full accent-blue-500'
                     }),
-                    React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
+                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
                       t('stem.economicslab.real_rate_note', '\uD83D\uDCDA Real rate = nominal \u2212 inflation = ') + mRealRate.toFixed(1) + '%. ' +
                       (mRealRate < 0
                         ? t('stem.economicslab.real_rate_negative', 'Negative real rates mean borrowers win and savers lose \u2014 very stimulative.')
@@ -5144,7 +5144,7 @@ var d = labToolData || {};
                       onChange: function (e) { upd('macroTax', parseFloat(e.target.value)); },
                       className: 'w-full accent-amber-500'
                     }),
-                    (mSpend > 0 || mTax < 0) && React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-amber-100' },
+                    (mSpend > 0 || mTax < 0) && React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 bg-white rounded-lg p-2 border border-amber-100' },
                       t('stem.economicslab.deficit_note', '\uD83D\uDCDA Spending more while taxing less = deficit spending. It stimulates now, but the debt is a claim on future taxpayers.'))
                   )
                 ),
@@ -5157,18 +5157,18 @@ var d = labToolData || {};
                   d.macroReport.shock && React.createElement('div', { className: 'flex items-center gap-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg p-2' },
                     React.createElement('span', { className: 'text-xl', 'aria-hidden': 'true' }, d.macroReport.shock.icon),
                     React.createElement('div', null,
-                      React.createElement('div', { className: 'text-[11px] font-bold text-amber-800' }, t('stem.economicslab.shock_label', 'Shock: ') + d.macroReport.shock.name),
-                      React.createElement('div', { className: 'text-[11px] text-amber-800' }, d.macroReport.shock.lesson))),
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold text-amber-800' }, t('stem.economicslab.shock_label', 'Shock: ') + d.macroReport.shock.name),
+                      React.createElement('div', { className: 'text-[0.6875rem] text-amber-800' }, d.macroReport.shock.lesson))),
                   React.createElement('div', { className: 'space-y-1' },
                     (d.macroReport.lines || []).map(function (ln, li2) {
-                      return React.createElement('p', { key: li2, className: 'text-[11px] text-slate-600 leading-relaxed m-0' }, ln);
+                      return React.createElement('p', { key: li2, className: 'text-[0.6875rem] text-slate-600 leading-relaxed m-0' }, ln);
                     }))
                 ),
                 React.createElement('button', {
                   onClick: function () { upd('macroGDP', 2.1); upd('macroInflation', 3.2); upd('macroInterest', 5.25); upd('macroUnemployment', 3.8); upd('macroTrade', -0.5); upd('macroYear', 2025); upd('macroHistory', []); upd('macroReport', null); upd('macroSpend', 0); upd('macroTax', 0); if (addToast) addToast(t('stem.economicslab.economy_reset', '\u267B Economy reset to 2025 baseline'), 'info'); },
                   className: 'w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400 mb-2'
                 }, t('stem.economicslab.reset_economy', '\u267B Reset Economy')),
-                React.createElement('p', { className: 'm-0 text-[10px] italic text-slate-500' }, t('stem.economicslab.macro_model_disclaimer', 'Toy model with textbook-Keynesian signs plus Okun\'s-law unemployment \u2014 NOT a forecast. Real economies depend on expectations, credibility, and global conditions, and economists genuinely disagree about these coefficients (see Schools of Thought in the reference shelf).'))
+                React.createElement('p', { className: 'm-0 text-[0.625rem] italic text-slate-500' }, t('stem.economicslab.macro_model_disclaimer', 'Toy model with textbook-Keynesian signs plus Okun\'s-law unemployment \u2014 NOT a forecast. Real economies depend on expectations, credibility, and global conditions, and economists genuinely disagree about these coefficients (see Schools of Thought in the reference shelf).'))
               );
             })(),
 
@@ -5198,9 +5198,9 @@ var d = labToolData || {};
               })[state];
               return React.createElement('div', { className: 'mt-4 p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
                 React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: ecoInk(sm.color) } }, t('stem.economicslab.policy_inquiry_predict_the_macro_outco', '\uD83D\uDD2C Policy Inquiry \u2014 Explore the Macro Outcome')),
-                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.economicslab.move_four_policy_levers_tax_govt_spend', 'Move the tax, government-spending, interest-rate, and tariff controls, then observe how the modeled macro state changes. The result updates live; record a hypothesis or pattern you notice.')),
-                React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
-                React.createElement('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+                React.createElement('p', { className: 'text-[0.625rem] opacity-85 mb-2 leading-snug' }, t('stem.economicslab.move_four_policy_levers_tax_govt_spend', 'Move the tax, government-spending, interest-rate, and tariff controls, then observe how the modeled macro state changes. The result updates live; record a hypothesis or pattern you notice.')),
+                React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
+                React.createElement('p', { className: 'text-[0.625rem] opacity-80 mb-2' }, sm.desc),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
                   [
                     { label: '\u0394GDP', val: (dGDP > 0 ? '+' : '') + dGDP.toFixed(2) + '%' },
@@ -5208,8 +5208,8 @@ var d = labToolData || {};
                     { label: '\u0394Unemploy', val: (dUnemployment > 0 ? '+' : '') + dUnemployment.toFixed(2) + 'pp' }
                   ].map(function(m) {
                     return React.createElement('div', { key: m.label, className: 'p-2 rounded text-center', style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                      React.createElement('div', { className: 'text-[9px] opacity-60' }, m.label),
-                      React.createElement('div', { className: 'text-[12px] font-bold font-mono', style: { color: ecoInk(sm.color) } }, m.val)
+                      React.createElement('div', { className: 'text-[0.5625rem] opacity-60' }, m.label),
+                      React.createElement('div', { className: 'text-[0.75rem] font-bold font-mono', style: { color: ecoInk(sm.color) } }, m.val)
                     );
                   })
                 ),
@@ -5238,19 +5238,19 @@ var d = labToolData || {};
                   React.createElement('text', { x: 4, y: 118, fill: '#475569', fontSize: 8 }, 'down')
                 ),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
-                  React.createElement('label', { className: 'text-[10px]' },
+                  React.createElement('label', { className: 'text-[0.625rem]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.tax_cut', 'Tax cut (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: ecoInk(sm.color) } }, iq.taxCut.toFixed(1))),
                     React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.tax_cut_lever', 'Tax cut, percent'), 'aria-valuetext': iq.taxCut.toFixed(1) + '%', min: -5, max: 5, step: 0.5, value: iq.taxCut, onChange: function(e) { setKey('taxCut', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
-                  React.createElement('label', { className: 'text-[10px]' },
+                  React.createElement('label', { className: 'text-[0.625rem]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.govt_spending', 'Govt spending (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: ecoInk(sm.color) } }, iq.govSpend.toFixed(1))),
                     React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.govt_spending_lever', 'Government spending, percent'), 'aria-valuetext': iq.govSpend.toFixed(1) + '%', min: -5, max: 5, step: 0.5, value: iq.govSpend, onChange: function(e) { setKey('govSpend', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
-                  React.createElement('label', { className: 'text-[10px]' },
+                  React.createElement('label', { className: 'text-[0.625rem]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.interest_rate_2', 'Interest rate \u0394')), React.createElement('span', { className: 'font-mono font-bold', style: { color: ecoInk(sm.color) } }, iq.rateChange.toFixed(1) + 'pp')),
                     React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.interest_rate_lever', 'Interest rate change'), 'aria-valuetext': iq.rateChange.toFixed(2) + ' percentage points', min: -3, max: 3, step: 0.25, value: iq.rateChange, onChange: function(e) { setKey('rateChange', parseFloat(e.target.value)); }, className: 'w-full' })
                   ),
-                  React.createElement('label', { className: 'text-[10px]' },
+                  React.createElement('label', { className: 'text-[0.625rem]' },
                     React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, t('stem.economicslab.tariff', 'Tariff (%)')), React.createElement('span', { className: 'font-mono font-bold', style: { color: ecoInk(sm.color) } }, iq.tariff.toFixed(1))),
                     React.createElement('input', { type: 'range', 'aria-label': t('stem.economicslab.tariff_lever', 'Tariff, percent'), 'aria-valuetext': iq.tariff.toFixed(1) + '%', min: 0, max: 25, step: 1, value: iq.tariff, onChange: function(e) { setKey('tariff', parseFloat(e.target.value)); }, className: 'w-full' })
                   )
@@ -5259,16 +5259,16 @@ var d = labToolData || {};
                   React.createElement('button', { onClick: function() {
                     var t = new Date().toISOString().slice(11, 19);
                     setIQ({ log: iq.log.concat([{ t: t, tx: iq.taxCut, sp: iq.govSpend, r: iq.rateChange, tr: iq.tariff, gdp: dGDP.toFixed(2), inf: dInflation.toFixed(2), state: sm.label }]) });
-                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.economicslab.log_this_policy_mix', '\uD83D\uDCCB Log this policy mix')),
-                  React.createElement('button', { onClick: function() { setIQ({ taxCut: 0, govSpend: 0, rateChange: 0, tariff: 0 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.economicslab.reset', 'Reset'))
+                  }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.economicslab.log_this_policy_mix', '\uD83D\uDCCB Log this policy mix')),
+                  React.createElement('button', { onClick: function() { setIQ({ taxCut: 0, govSpend: 0, rateChange: 0, tariff: 0 }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.economicslab.reset', 'Reset'))
                 ),
-                iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[0.5625rem] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return React.createElement('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 tx' + e.tx + ' sp' + e.sp + ' r' + e.r + ' tar' + e.tr + ' \u2192 gdp' + e.gdp + ' inf' + e.inf); })
                 ),
-                React.createElement('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.economicslab.your_hypothesis_which_lever_has_the_mo', 'Your hypothesis (which lever has the most disagreement among economists in real life? Why?)')),
-                React.createElement('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.e_g_tariffs_hit_prices_fast_but_the_gd', 'e.g., tariffs hit prices fast but the GDP effect depends on retaliation...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.economicslab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
-                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                React.createElement('label', { className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, t('stem.economicslab.your_hypothesis_which_lever_has_the_mo', 'Your hypothesis (which lever has the most disagreement among economists in real life? Why?)')),
+                React.createElement('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.e_g_tariffs_hit_prices_fast_but_the_gd', 'e.g., tariffs hit prices fast but the GDP effect depends on retaliation...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.economicslab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                   React.createElement('div', { className: 'font-bold mb-1', style: { color: ecoInk(sm.color) } }, t('stem.economicslab.open_questions_no_answer_key', 'Open questions (no answer key)')),
                   React.createElement('ul', { className: 'pl-4 m-0' },
                     React.createElement('li', null, t('stem.economicslab.what_combination_produces_stagflation_', 'What combination produces "stagflation"? Why was it so politically painful in the 1970s?')),
@@ -5278,12 +5278,12 @@ var d = labToolData || {};
                     React.createElement('li', null, t('stem.economicslab.this_widget_hard_codes_textbook_keynes', 'This widget hard-codes textbook Keynesian signs. Which signs would FLIP under supply-side economics? Under MMT? Under new-classical (rational expectations)? Where does the Keynesian model give the wrong sign in real-world data?'))
                   )
                 ),
-                React.createElement('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                React.createElement('label', { className: 'flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1' },
                   React.createElement('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                   React.createElement('span', null, t('stem.economicslab.i_can_explain_why_this_policy_mix_yiel', 'I can explain why this policy mix yields this macroeconomic state.'))
                 ),
-                iq.understood && React.createElement('textarea', { 'aria-label': t('stem.economicslab.policy_explanation', 'Explain your policy prediction'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.economicslab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.'))
+                iq.understood && React.createElement('textarea', { 'aria-label': t('stem.economicslab.policy_explanation', 'Explain your policy prediction'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement('p', { className: 'm-0 text-[0.5625rem] italic opacity-60' }, t('stem.economicslab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.'))
               );
             })()
 

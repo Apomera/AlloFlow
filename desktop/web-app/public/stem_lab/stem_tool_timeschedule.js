@@ -583,7 +583,7 @@
               analog(clock, 'ts-main-clock', false)),
             h('div', { className: 'space-y-4' },
               h('div', { className: 'rounded-2xl bg-slate-950 text-cyan-300 border-4 border-slate-700 p-5 text-center shadow-inner' },
-                h('p', { className: 'text-[11px] font-bold uppercase tracking-[.2em] text-slate-400' },
+                h('p', { className: 'text-[0.6875rem] font-bold uppercase tracking-[.2em] text-slate-400' },
                   use24 ? '24-hour display' : '12-hour display'),
                 h('p', { className: 'font-mono text-4xl sm:text-5xl font-black tracking-wider mt-2',
                   'aria-live': 'polite' }, showTime(clock, use24)),
@@ -613,10 +613,10 @@
                 h('h4', { className: 'text-sm font-black text-indigo-900' }, t('stem.timeschedule.n_12_24_hour_bridge', "12 ↔ 24-hour bridge")),
                 h('div', { className: 'grid grid-cols-2 gap-3 mt-2 text-center' },
                   h('div', { className: 'rounded-lg bg-white border border-indigo-100 p-3' },
-                    h('div', { className: 'text-[10px] uppercase text-indigo-700 font-bold' }, t('stem.timeschedule.n_12_hour', "12-hour")),
+                    h('div', { className: 'text-[0.625rem] uppercase text-indigo-700 font-bold' }, t('stem.timeschedule.n_12_hour', "12-hour")),
                     h('div', { className: 'text-lg font-black text-indigo-950' }, time12(clock))),
                   h('div', { className: 'rounded-lg bg-white border border-indigo-100 p-3' },
-                    h('div', { className: 'text-[10px] uppercase text-indigo-700 font-bold' }, t('stem.timeschedule.n_24_hour', "24-hour")),
+                    h('div', { className: 'text-[0.625rem] uppercase text-indigo-700 font-bold' }, t('stem.timeschedule.n_24_hour', "24-hour")),
                     h('div', { className: 'text-lg font-black text-indigo-950 font-mono' }, time24(clock)))),
                 h('p', { className: 'text-xs text-indigo-800 mt-2' }, rule)))));
       }
@@ -680,7 +680,7 @@
                   (step > 0 ? '. ' + showTime(shownPoints[shownPoints.length - 1].time, use24) : '') +
                   (complete && guess ? '. ' + (parseInputTime(guess) === end ? t('stem.timeschedule.prediction_matches', 'Your prediction matches the endpoint.') : t('stem.timeschedule.prediction_revisit', 'Compare your prediction with the jumps. Which jump changes your thinking?')) : ''))),
               h('div', { className: 'rounded-xl bg-slate-950 text-white p-4 text-center' },
-                h('p', { className: 'text-[10px] uppercase tracking-widest text-slate-400 font-bold' },
+                h('p', { className: 'text-[0.625rem] uppercase tracking-widest text-slate-400 font-bold' },
                   direction > 0 ? t('stem.timeschedule.ending_time', "Ending time") : t('stem.timeschedule.earlier_starting_time', "Earlier starting time")),
                 h('p', { className: 'text-3xl font-black font-mono text-cyan-300 mt-1',
                   'aria-live': 'polite', 'data-elapsed-result': true }, complete ? showTime(end, use24) : '?'),
@@ -833,11 +833,11 @@
                   [span - busy, t('stem.timeschedule.free_time', "Free time"), 'text-amber-700']].map(function (x) {
                   return h('div', { key: x[1] },
                     h('p', { className: 'text-base font-black ' + x[2] }, durationText(x[0])),
-                    h('p', { className: 'text-[10px] uppercase text-slate-500 font-bold' }, x[1]));
+                    h('p', { className: 'text-[0.625rem] uppercase text-slate-500 font-bold' }, x[1]));
                 }))),
             h('aside', { className: 'rounded-2xl border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-4 space-y-4' },
               h('div', null,
-                h('p', { className: 'text-[10px] uppercase tracking-widest font-black text-amber-700' },
+                h('p', { className: 'text-[0.625rem] uppercase tracking-widest font-black text-amber-700' },
                   t('stem.timeschedule.schedule_reasoning_2', "Schedule reasoning ") + (sqIndex + 1) + '/' + sqs.length),
                 h('h4', { id: 'ts-schedule-prompt', className: 'text-base font-black text-slate-900 mt-1' }, sq.prompt)),
               h('label', { htmlFor: 'ts-schedule-answer', className: 'block text-xs font-bold text-slate-700' },
@@ -1055,7 +1055,7 @@
                     challenge.type === 'time' ? t('stem.timeschedule.find_an_exact_clock_time', "Find an exact clock time.") : t('stem.timeschedule.find_the_interval_length', "Find the interval length.")))),
             h('div', { className: 'rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-sm' },
               h('div', null,
-                h('p', { className: 'text-[10px] font-black uppercase tracking-[.18em] text-indigo-600' },
+                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.18em] text-indigo-600' },
                   t('stem.timeschedule.challenge', "Challenge ") + (challengePosition + 1) + t('stem.timeschedule.of', " of ") + challengeList.length + ' \u00B7 ' +
                     selectedDifficulty.label + ' / ' + challenge.difficulty + ' \u00B7 ' + challenge.title),
                 h('h4', { id: 'ts-challenge-prompt', className: 'text-xl sm:text-2xl font-black mt-2 leading-snug' }, challenge.prompt)),
@@ -1076,7 +1076,7 @@
                     challenge.type === 'time' ? t('stem.timeschedule.example_2_15_pm_or_14_15', "Example: 2:15 PM or 14:15") :
                     t('stem.timeschedule.example_95_min_or_1_h_35_m', "Example: 95 min or 1 h 35 m"),
                   className: 'mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 text-lg font-bold disabled:bg-slate-100' })),
-              h('p', { className: 'text-[11px] text-slate-500' },
+              h('p', { className: 'text-[0.6875rem] text-slate-500' },
                 challenge.type === 'duration' ? t('stem.timeschedule.durations_may_be_entered_in_total_minu', "Durations may be entered in total minutes or hours and minutes.") :
                   challenge.answerFormat === '24' ? t('stem.timeschedule.use_two_digit_24_hour_form_hh_mm', "Use two-digit 24-hour form (HH:MM).") :
                   challenge.answerFormat === '12' ? t('stem.timeschedule.include_am_or_pm', "Include AM or PM.") :
@@ -1131,7 +1131,7 @@
                 return h('div', { key: x[1],
                   className: 'rounded-xl bg-white/10 border border-white/20 px-3 py-2' },
                   h('div', { className: 'text-lg font-black' }, x[0]),
-                  h('div', { className: 'text-[10px] uppercase tracking-wide text-white font-semibold' }, x[1]));
+                  h('div', { className: 'text-[0.625rem] uppercase tracking-wide text-white font-semibold' }, x[1]));
               })))),
         h('div', { className: 'grid grid-cols-2 lg:grid-cols-4 gap-2',
           role: 'tablist', 'aria-label': t('stem.timeschedule.time_and_schedule_lab_sections', "Time and Schedule Lab sections") },
@@ -1147,7 +1147,7 @@
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-xl', 'aria-hidden': 'true' }, item[2]),
                 h('span', null, h('span', { className: 'block text-sm font-black' }, item[1]),
-                  h('span', { className: 'block text-[10px] ' +
+                  h('span', { className: 'block text-[0.625rem] ' +
                     (selected ? 'text-white' : 'text-slate-700') }, item[3]))));
           })),
         h('div', { id: 'ts-tab-panel', role: 'tabpanel', 'aria-labelledby': 'ts-tab-' + tab,

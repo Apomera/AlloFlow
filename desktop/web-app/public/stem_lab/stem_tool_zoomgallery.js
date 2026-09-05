@@ -195,7 +195,7 @@
           t('stem.zoomGallery.open_note', 'Zoom Gallery is open. Keep this AlloFlow window open too — it powers the AI coach.')),
         popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
           t('stem.zoomGallery.closed_note', 'Zoom Gallery was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed' },
           t('stem.zoomGallery.credit', 'Viewer: OpenSeadragon (openseadragon.github.io), free and open source under the BSD-3-Clause license. Images: Smithsonian Open Access (released CC0) served as IIIF deep-zoom tiles, and NASA photographs (public domain). Each image lists its source and a link to the original record. The viewer and images load from the web, so the gallery needs internet.'))
       );
     }

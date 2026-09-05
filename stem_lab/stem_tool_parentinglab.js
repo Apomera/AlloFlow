@@ -815,7 +815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
               var b = BADGES[k];
               return h('div', { key: k, className: 'flex flex-col gap-1 rounded-xl p-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
                 badgeChip(k),
-                h('span', { className: 'text-[11px] leading-snug', style: { color: pal.muted } }, b.meaning)
+                h('span', { className: 'text-[0.6875rem] leading-snug', style: { color: pal.muted } }, b.meaning)
               );
             })
           )
@@ -855,7 +855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
                 // Guidance cards (practical how-to, e.g., meeting prep) carry no
                 // evidence entry on purpose — a source line would imply one study
                 // "proves" what is really synthesized practice guidance.
-                ev.source ? h('p', { className: 'text-[11px] mt-2 font-semibold', style: { color: pal.muted } }, __alloT('stem.parentingLab.source', 'Source') + ': ' + ev.source + ' — ' + ev.note) : null
+                ev.source ? h('p', { className: 'text-[0.6875rem] mt-2 font-semibold', style: { color: pal.muted } }, __alloT('stem.parentingLab.source', 'Source') + ': ' + ev.source + ' — ' + ev.note) : null
               )
             );
           })
@@ -873,7 +873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn,
             h('h2', { className: 'text-xl font-black' }, '🫂 ' + __alloT('stem.parentingLab.title', 'Science of Parenting Lab')),
-            m1Done && h('span', { className: 'text-[11px] font-bold rounded-full px-2 py-0.5', style: { background: 'rgba(5,150,105,0.15)', color: '#059669', border: '1px solid rgba(5,150,105,0.4)' } }, __alloT('stem.parentingLab.m1_done', 'Module 1 complete'))
+            m1Done && h('span', { className: 'text-[0.6875rem] font-bold rounded-full px-2 py-0.5', style: { background: 'rgba(5,150,105,0.15)', color: '#059669', border: '1px solid rgba(5,150,105,0.4)' } }, __alloT('stem.parentingLab.m1_done', 'Module 1 complete'))
           ),
           h('p', { className: 'text-sm mb-4', style: { color: pal.muted } },
             __alloT('stem.parentingLab.intro', 'What the parenting literature actually says, with the strength of each claim labeled honestly. Built to be strengths-based: nothing here diagnoses or scores your family — education, not clinical or legal advice.')),
@@ -886,7 +886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🎛️ ' + __alloT('stem.parentingLab.m1_title', 'M1 — Warmth & Structure: the two dials')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 Object.keys(readCards).length + '/' + M1_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(dialsDone).length + '/' + M1_VIGNETTES.length + ' ' + __alloT('stem.parentingLab.vignettes', 'vignettes'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -899,7 +899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🤝 ' + __alloT('stem.parentingLab.m2_title', 'M2 — Attachment: the theory vs. the brand')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M2_CARDS) + '/' + M2_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(servesDone).length + '/' + M2_SERVES.length + ' ' + __alloT('stem.parentingLab.serves', 'serves'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -912,7 +912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🧪 ' + __alloT('stem.parentingLab.m3_title', 'M3 — The RCT core')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M3_CARDS) + '/' + M3_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(movesDone).length + '/' + M3_MOVES.length + ' ' + __alloT('stem.parentingLab.moves', 'moves'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -925,7 +925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🗣️ ' + __alloT('stem.parentingLab.m4_title', 'M4 — PRIDE Skills Studio')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M4_CARDS) + '/' + M4_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.prideDone || {}).length + '/' + M4_UTTERANCES.length + ' ' + __alloT('stem.parentingLab.lines', 'lines'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -938,7 +938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🔁 ' + __alloT('stem.parentingLab.m5_title', 'M5 — ABC at Home')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M5_CARDS) + '/' + M5_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.abcDone || {}).length + '/' + M5_SCENES.length + ' ' + __alloT('stem.parentingLab.scenes', 'scenes'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -951,7 +951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '⚖️ ' + __alloT('stem.parentingLab.m6_title', 'M6 — Discipline: what the evidence says')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M6_CARDS) + '/' + M6_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.claimsDone || {}).length + '/' + M6_CLAIMS.length + ' ' + __alloT('stem.parentingLab.claims', 'claims'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -964,7 +964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🔍 ' + __alloT('stem.parentingLab.m7_title', 'M7 — Myths vs. literature')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M7_CARDS) + '/' + M7_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.mythsDone || {}).length + '/' + M7_CLAIMS.length + ' ' + __alloT('stem.parentingLab.claims', 'claims'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -977,7 +977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🧭 ' + __alloT('stem.parentingLab.m8_title', 'M8 — Adolescents: autonomy and staying in the room')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M8_CARDS) + '/' + M8_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.stanceDone || {}).length + '/' + M8_SCENES.length + ' ' + __alloT('stem.parentingLab.scenes', 'scenes'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -990,7 +990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🤲 ' + __alloT('stem.parentingLab.m9_title', 'M9 — When to seek help + partnering with school')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                 cardsRead(M9_CARDS) + '/' + M9_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.prepDone || {}).length + '/' + M9_CHECKLIST.length + ' ' + __alloT('stem.parentingLab.prep', 'prep items'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
@@ -1023,7 +1023,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
               h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, '🤝 ' + __alloT('stem.parentingLab.serves_title', 'Serve & Return studio')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (servesCurrent + 1) + ' / ' + M2_SERVES.length)
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.muted } }, (servesCurrent + 1) + ' / ' + M2_SERVES.length)
             ),
             h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
               __alloT('stem.parentingLab.serves_sub', 'Each scene is a serve. Pick the response that returns it. Misses are universal in every family — this is practice, not scoring.')),
@@ -1081,7 +1081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         return h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
             h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, cfg.icon + ' ' + cfg.title),
-            h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (cur + 1) + ' / ' + cfg.items.length)
+            h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.muted } }, (cur + 1) + ' / ' + cfg.items.length)
           ),
           h('p', { className: 'text-xs mb-3', style: { color: pal.muted } }, cfg.sub),
           it && h('div', { className: 'rounded-xl p-3 mb-3 text-sm leading-relaxed', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, it.prompt),
@@ -1240,7 +1240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
           h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
               h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, '📋 ' + __alloT('stem.parentingLab.prep_title', 'Meeting-prep checklist')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, Object.keys(prepDone).length + ' / ' + M9_CHECKLIST.length)
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.muted } }, Object.keys(prepDone).length + ' / ' + M9_CHECKLIST.length)
             ),
             h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
               __alloT('stem.parentingLab.prep_sub', 'Check items as you prepare. This list saves with the tool — reset it before each new meeting by unchecking.')),
@@ -1253,10 +1253,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
               return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
                 h('div', { className: 'text-xs font-black mb-1', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
                   '📌 ' + __alloT('stem.parentingLab.saved_rules', 'Rules I want to ask about')),
-                h('p', { className: 'text-[11px] mb-2', style: { color: pal.muted } },
+                h('p', { className: 'text-[0.6875rem] mb-2', style: { color: pal.muted } },
                   __alloT('stem.parentingLab.saved_rules_sub', 'Saved from the Education Law Navigator. Bring the citation, not a paraphrase.')),
                 cites.map(function(c, i) {
-                  return h('div', { key: i, className: 'text-[12px] mb-1', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
+                  return h('div', { key: i, className: 'text-[0.75rem] mb-1', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
                     h('strong', null, c.citation || (c.short + ' § ' + c.section)),
                     c.heading ? h('span', { style: { color: pal.muted } }, ' — ' + String(c.heading).replace(/^§\s*[\d.]+\s*/, '').slice(0, 70)) : null);
                 })
@@ -1353,7 +1353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
             h('h3', { className: 'text-sm font-black', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, '🎛️ ' + __alloT('stem.parentingLab.dials_title', 'The Two Dials — rate each scene')),
-            h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (dialsCurrent + 1) + ' / ' + M1_VIGNETTES.length)
+            h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.muted } }, (dialsCurrent + 1) + ' / ' + M1_VIGNETTES.length)
           ),
           h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
             __alloT('stem.parentingLab.dials_sub', 'Rate warmth and structure separately. The same scene can be high on both — that is the whole point of dials over boxes. One scene is a moment, not a style.')),

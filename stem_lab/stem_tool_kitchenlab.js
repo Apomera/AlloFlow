@@ -4294,39 +4294,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         }[state];
         return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 space-y-3' },
           h('h3', { className: 'text-sm font-black text-orange-700' }, __alloT('stem.kitchenlab.maillard_browning_discovery', '🔬 Maillard browning discovery')),
-          h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.kitchenlab.sliders_for_surface_temp_amino_acid_su', 'Sliders for surface temp, amino-acid %, sugar %. Discrete 5-state browning stage. No score, no reveal.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.kitchenlab.sliders_for_surface_temp_amino_acid_su', 'Sliders for surface temp, amino-acid %, sugar %. Discrete 5-state browning stage. No score, no reveal.')),
           h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-            h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+            h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
           ),
           h('div', { className: 'grid grid-cols-3 gap-3' },
             [{ k: 'tempF', l: 'Surface °F', mn: 200, mx: 500, st: 5 },
              { k: 'aminoPct', l: 'Amino acid %', mn: 0, mx: 100, st: 5 },
              { k: 'sugarPct', l: 'Sugar %', mn: 0, mx: 100, st: 5 }].map(function(s) {
               return h('div', { key: s.k },
-                h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
+                h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
                 h('input', { id: 'mh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                   onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                   className: 'w-full', 'aria-label': s.l }));
             })
           ),
           h('div', { className: 'flex gap-2 items-center flex-wrap' },
-            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
-            h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
+            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
+            h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
           ),
           h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': 'Maillard reaction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
-            className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+            className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
               h('li', null, __alloT('stem.kitchenlab.what_happens_at_100_amino_but_0_sugar', 'What happens at 100% amino but 0% sugar?')),
               h('li', null, __alloT('stem.kitchenlab.why_does_crust_form_on_bread_above_320', 'Why does crust form on bread above 320°F?')))),
-          h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+          h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             __alloT('stem.kitchenlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
           iq.understood && h('textarea', { id: 'kitchen-maillard-explanation', 'aria-label': 'Explain the chemistry of Maillard browning', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.explain_the_chemistry_of_maillard_brow', 'Explain the chemistry of Maillard browning.'),
-            className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-          h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.kitchenlab.design_note_discrete_5_state_browning_', 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.'))
+            className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+          h('div', { className: 'text-[0.625rem] italic text-slate-500' }, __alloT('stem.kitchenlab.design_note_discrete_5_state_browning_', 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.'))
         );
       })();
       else content = renderSafety();

@@ -1618,19 +1618,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('span', { className: 'text-2xl', 'aria-hidden': 'true', style: { filter: unlocked ? '' : 'grayscale(1)' } }, unlocked ? s.icon : '\uD83D\uDD12'),
             h('span', { className: 'font-bold text-sm', style: { color: unlocked ? s.color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.name),
             tier && unlocked && h('span', {
-              className: 'text-[9px] font-bold px-1.5 py-0.5 rounded-md',
+              className: 'text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-md',
               style: { background: tier.bg, border: '1px solid ' + tier.border, color: tier.text },
               title: tier.name + ' (' + usageCount + ' casts)'
             }, tier.icon + ' ' + tier.name),
-            equipped && h('span', { className: 'ml-auto text-[10px] font-bold text-violet-600 uppercase tracking-wide' }, t('stem.allobotsage.equipped', 'Equipped'))
+            equipped && h('span', { className: 'ml-auto text-[0.625rem] font-bold text-violet-600 uppercase tracking-wide' }, t('stem.allobotsage.equipped', 'Equipped'))
           ),
-          h('div', { className: 'text-[11px] text-slate-600 leading-snug' },
+          h('div', { className: 'text-[0.6875rem] text-slate-600 leading-snug' },
             unlocked
               ? (s.sourceLabel + ' \u00b7 ' + s.baseDamage + ' dmg \u00b7 crit \u00d7' + s.critMultiplier.toFixed(1))
               : ('Locked \u2014 ' + s.unlockHint)
           ),
-          unlocked && usageCount > 0 && h('div', { className: 'mt-1 text-[10px] text-slate-500 font-mono' }, '\uD83D\uDD2E ' + usageCount + ' cast' + (usageCount > 1 ? 's' : '')),
-          unlocked && h('div', { className: 'mt-1 text-[10px] italic text-slate-600 leading-snug' }, s.flavor)
+          unlocked && usageCount > 0 && h('div', { className: 'mt-1 text-[0.625rem] text-slate-500 font-mono' }, '\uD83D\uDD2E ' + usageCount + ' cast' + (usageCount > 1 ? 's' : '')),
+          unlocked && h('div', { className: 'mt-1 text-[0.625rem] italic text-slate-600 leading-snug' }, s.flavor)
         );
       }
 
@@ -1941,7 +1941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   h('span', { className: 'text-4xl' }, ps.icon),
                   h('div', { className: 'flex-1' },
                     h('div', { id: 'abs-preview-title', className: 'text-lg font-bold', style: { color: ps.color } }, ps.name),
-                    h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, ps.sourceLabel + ' · ' + ps.element + ' · ' + ps.baseDamage + ' base dmg · crit ×' + ps.critMultiplier.toFixed(1))
+                    h('div', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, ps.sourceLabel + ' · ' + ps.element + ' · ' + ps.baseDamage + ' base dmg · crit ×' + ps.critMultiplier.toFixed(1))
                   ),
                   h('button', {
                     ref: closeButtonRef,
@@ -1952,39 +1952,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   }, '×')
                 ),
                 // Flavor + stats strip
-                h('div', { className: 'px-4 py-2 text-[12px] italic text-slate-600 border-b border-slate-200' }, '"' + ps.flavor + '"'),
+                h('div', { className: 'px-4 py-2 text-[0.75rem] italic text-slate-600 border-b border-slate-200' }, '"' + ps.flavor + '"'),
                 h('div', { className: 'px-4 py-2 grid grid-cols-3 gap-2 text-center border-b border-slate-200' },
                   h('div', null,
-                    h('div', { className: 'text-[9px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.casts', 'Casts')),
+                    h('div', { className: 'text-[0.5625rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.casts', 'Casts')),
                     h('div', { className: 'text-base font-bold text-violet-700' }, castN)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[9px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.questions', 'Questions')),
-                    h('div', { className: 'text-base font-bold text-slate-700' }, bank.length, h('span', { className: 'text-[10px] text-slate-600 font-normal' }, ' (' + pSeen + ' seen)'))
+                    h('div', { className: 'text-[0.5625rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.questions', 'Questions')),
+                    h('div', { className: 'text-base font-bold text-slate-700' }, bank.length, h('span', { className: 'text-[0.625rem] text-slate-600 font-normal' }, ' (' + pSeen + ' seen)'))
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[9px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.accuracy', 'Accuracy')),
+                    h('div', { className: 'text-[0.5625rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.accuracy', 'Accuracy')),
                     h('div', { className: 'text-base font-bold ' + (pAccPct === null ? 'text-slate-600' : pAccPct >= 75 ? 'text-emerald-600' : pAccPct >= 50 ? 'text-amber-600' : 'text-red-600') }, pAccPct === null ? '—' : pAccPct + '%')
                   )
                 ),
                 // Sample questions
                 h('div', { className: 'p-4' },
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2' }, '📋 Sample Questions (' + samples.length + ')'),
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-500 mb-2' }, '📋 Sample Questions (' + samples.length + ')'),
                   h('div', { className: 'space-y-2' },
                     samples.map(function(samp, si) {
                       var qq = samp.q;
                       return h('div', { key: 'samp-' + si, className: 'p-3 rounded-lg border border-slate-200 bg-slate-50' },
                         h('div', { className: 'flex items-center gap-1 mb-1' },
-                          h('span', { className: 'text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded', style: { color: samp.color, background: samp.color + '15' } }, samp.tag),
-                          qq.aiGenerated && h('span', { className: 'text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-fuchsia-100 text-fuchsia-700' }, t('stem.allobotsage.ai', '✨ AI'))
+                          h('span', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded', style: { color: samp.color, background: samp.color + '15' } }, samp.tag),
+                          qq.aiGenerated && h('span', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-fuchsia-100 text-fuchsia-700' }, t('stem.allobotsage.ai', '✨ AI'))
                         ),
-                        h('p', { className: 'text-[12px] font-semibold text-slate-800 mb-2' }, qq.prompt),
+                        h('p', { className: 'text-[0.75rem] font-semibold text-slate-800 mb-2' }, qq.prompt),
                         h('div', { className: 'space-y-1' },
                           qq.options.map(function(opt, oi) {
                             var isCorrect = oi === qq.correctIndex;
                             return h('div', {
                               key: 'samp-opt-' + oi,
-                              className: 'text-[11px] p-1.5 rounded ' + (isCorrect ? 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300' : 'bg-white text-slate-600 border border-slate-200')
+                              className: 'text-[0.6875rem] p-1.5 rounded ' + (isCorrect ? 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300' : 'bg-white text-slate-600 border border-slate-200')
                             },
                               h('span', { className: 'inline-block w-5 font-bold' }, String.fromCharCode(65 + oi) + '.'),
                               opt,
@@ -1992,7 +1992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                             );
                           })
                         ),
-                        h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, '→ ' + qq.explain)
+                        h('div', { className: 'mt-2 text-[0.625rem] italic text-slate-500' }, '→ ' + qq.explain)
                       );
                     })
                   )
@@ -2022,7 +2022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); setStemLabTool(null); }, 'Back to Lab'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.spellforge', 'Spellforge'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.spellforge', 'Spellforge'))
           ),
 
           // Hero row: AlloBot + headline
@@ -2069,7 +2069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'text-3xl' }, '\uD83C\uDF81'),
               h('div', { className: 'flex-1' },
                 h('div', { className: 'font-bold text-sm text-amber-900' }, t('stem.allobotsage.daily_bonus_ready', 'Daily Bonus ready!')),
-                h('div', { className: 'text-[11px] text-amber-700' }, t('stem.allobotsage.essence_scales_with_how_many_source_to', 'Essence scales with how many source tools you\u2019ve tended.'))
+                h('div', { className: 'text-[0.6875rem] text-amber-700' }, t('stem.allobotsage.essence_scales_with_how_many_source_to', 'Essence scales with how many source tools you\u2019ve tended.'))
               ),
               h('div', { className: 'text-amber-600 font-bold' }, '\u2192')
             )
@@ -2091,10 +2091,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   ),
                   h('p', { className: 'mb-2 text-amber-900 leading-relaxed' },
                     h('strong', null, t('stem.allobotsage.how_to_start', 'How to start: ')), t('stem.allobotsage.scroll_down_to_yet_to_discover_and_cli', 'scroll down to "Yet to discover" and click any spell\'s '),
-                    h('span', { className: 'inline-block px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 font-mono text-[10px]' }, t('stem.allobotsage.open_tool_name', '\u2192 Open [tool name]')),
+                    h('span', { className: 'inline-block px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 font-mono text-[0.625rem]' }, t('stem.allobotsage.open_tool_name', '\u2192 Open [tool name]')),
                     t('stem.allobotsage.button_that_ll_take_you_to_the_tool_th', ' button. That\'ll take you to the tool that unlocks it.')
                   ),
-                  h('p', { className: 'text-[12px] text-amber-700 italic' },
+                  h('p', { className: 'text-[0.75rem] text-amber-700 italic' },
                     t('stem.allobotsage.practice_across_alloflow_counts_here', 'Your practice across AlloFlow counts here. Even a single mission, problem, or drill in another tool will start unlocking spells here.')
                   )
                 )
@@ -2139,7 +2139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('span', { className: 'text-xl' }, '\uD83D\uDCDA'),
                 h('div', { className: 'text-left' },
                   h('div', { className: 'text-sm' }, t('stem.allobotsage.study_hall', 'Study Hall')),
-                  h('div', { className: 'text-[10px] text-emerald-600 font-normal' }, t('stem.allobotsage.untimed_drill_no_damage_full_explanati', 'Untimed drill \u00B7 no damage \u00B7 full explanations'))
+                  h('div', { className: 'text-[0.625rem] text-emerald-600 font-normal' }, t('stem.allobotsage.untimed_drill_no_damage_full_explanati', 'Untimed drill \u00B7 no damage \u00B7 full explanations'))
                 )
               ),
               h('button', {
@@ -2151,9 +2151,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('div', { className: 'text-left' },
                   h('div', { className: 'text-sm flex items-center gap-2' },
                     t('stem.allobotsage.review_tough', 'Review Tough'),
-                    toughCount > 0 && h('span', { className: 'text-[10px] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded-full' }, toughCount)
+                    toughCount > 0 && h('span', { className: 'text-[0.625rem] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded-full' }, toughCount)
                   ),
-                  h('div', { className: 'text-[10px] text-red-600 font-normal' },
+                  h('div', { className: 'text-[0.625rem] text-red-600 font-normal' },
                     toughCount === 0
                       ? 'No mistakes yet \u2014 keep playing'
                       : 'Re-study what you got wrong'
@@ -2168,7 +2168,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('span', { className: 'text-xl' }, '\uD83D\uDCCA'),
                 h('div', { className: 'text-left' },
                   h('div', { className: 'text-sm' }, t('stem.allobotsage.your_progress', 'Your Progress')),
-                  h('div', { className: 'text-[10px] text-sky-600 font-normal' }, t('stem.allobotsage.accuracy_calibration_sectors_bosses', 'Accuracy \u00B7 calibration \u00B7 sectors \u00B7 bosses'))
+                  h('div', { className: 'text-[0.625rem] text-sky-600 font-normal' }, t('stem.allobotsage.accuracy_calibration_sectors_bosses', 'Accuracy \u00B7 calibration \u00B7 sectors \u00B7 bosses'))
                 )
               )
             );
@@ -2194,13 +2194,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             var galleryOpen = d.galleryOpen !== false; // default true
             return h('section', { 'aria-label': t('stem.allobotsage.achievement_gallery', 'Achievement gallery'), className: 'mb-5' },
               h('div', { className: 'flex items-center gap-2 mb-2' },
-                h('h2', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1' },
+                h('h2', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1' },
                   h('span', null, t('stem.allobotsage.achievements', '🏅 Achievements')),
                   h('span', { className: 'text-violet-700' }, '(' + earnedCount + '/' + hookEval.length + ')')
                 ),
                 h('button', {
                   onClick: function() { sfxClick(); updKey('galleryOpen', !galleryOpen); },
-                  className: 'transition-colors ml-auto text-[10px] text-slate-500 hover:text-slate-800 font-semibold focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2 py-0.5',
+                  className: 'transition-colors ml-auto text-[0.625rem] text-slate-500 hover:text-slate-800 font-semibold focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2 py-0.5',
                   'aria-expanded': galleryOpen
                 }, galleryOpen ? 'Collapse' : 'Expand')
               ),
@@ -2210,13 +2210,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   hookEval.slice().sort(function(a, b) { return (b.earned ? 1 : 0) - (a.earned ? 1 : 0); }).map(function(h2) {
                     return h('div', {
                       key: 'ach-' + h2.id,
-                      className: 'flex items-center gap-2 p-2 rounded-lg text-[11px] ' + (h2.earned ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-200'),
+                      className: 'flex items-center gap-2 p-2 rounded-lg text-[0.6875rem] ' + (h2.earned ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-200'),
                       'aria-label': h2.label + (h2.earned ? ' (earned)' : ' (in progress: ' + h2.progress + ')')
                     },
                       h('span', { className: 'text-base', style: { filter: h2.earned ? '' : 'grayscale(0.5) opacity(0.65)' } }, h2.icon),
                       h('div', { className: 'flex-1 min-w-0' },
                         h('div', { className: 'font-semibold truncate ' + (h2.earned ? 'text-emerald-900' : 'text-slate-700') }, h2.label),
-                        h('div', { className: 'text-[9px] ' + (h2.earned ? 'text-emerald-700' : 'text-slate-400') }, h2.earned ? '✓ Earned' : h2.progress)
+                        h('div', { className: 'text-[0.5625rem] ' + (h2.earned ? 'text-emerald-700' : 'text-slate-400') }, h2.earned ? '✓ Earned' : h2.progress)
                       )
                     );
                   })
@@ -2227,7 +2227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Trophy shelf
           unlockedSpells.length > 0 && h('section', { 'aria-label': t('stem.allobotsage.trophy_shelf', 'Trophy shelf'), className: 'mb-5' },
-            h('h2', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.trophy_shelf_2', '\uD83C\uDFC6 Trophy Shelf')),
+            h('h2', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.trophy_shelf_2', '\uD83C\uDFC6 Trophy Shelf')),
             h('div', { className: 'rounded-xl p-3 border-2 border-amber-200/50 bg-gradient-to-b from-amber-50/50 to-white' },
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 canonicalSources.map(function(src) {
@@ -2239,8 +2239,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     'aria-label': src.label + (earned ? ': ' + tally.count + ' spells earned' : ': no spells yet')
                   },
                     h('div', { className: 'text-2xl', style: { filter: earned ? '' : 'grayscale(1) opacity(0.5)' } }, src.icon),
-                    h('div', { className: 'text-[11px] font-bold mt-1 ' + (earned ? 'text-amber-900' : 'text-slate-400') }, src.label),
-                    h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-400') },
+                    h('div', { className: 'text-[0.6875rem] font-bold mt-1 ' + (earned ? 'text-amber-900' : 'text-slate-400') }, src.label),
+                    h('div', { className: 'text-[0.625rem] ' + (earned ? 'text-amber-700' : 'text-slate-400') },
                       earned ? (tally.count + ' spell' + (tally.count > 1 ? 's' : '')) : 'yet to earn'
                     )
                   );
@@ -2253,7 +2253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('section', { 'aria-label': t('stem.allobotsage.grimoire', 'Grimoire'), className: 'mb-4' },
             h('h2', { className: 'text-sm font-bold text-slate-700 mb-2 flex items-center gap-2' + onHostInk },
               h('span', null, t('stem.allobotsage.grimoire_2', '\uD83D\uDCDC Grimoire')),
-              unlockedSpells.length > 0 && h('span', { className: 'text-[10px] font-normal text-slate-600' },
+              unlockedSpells.length > 0 && h('span', { className: 'text-[0.625rem] font-normal text-slate-600' },
                 '(' + unlockedSpells.length + ' unlocked)'
               )
             ),
@@ -2261,7 +2261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: (d.castCounts || {})[s.id] || 0, onClick: function() { sfxClick(); updKey('previewingSpellId', s.id); } }); })
             ),
             lockedSpells.length > 0 && h('div', null,
-              h('h3', { className: 'text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, 'Yet to discover (' + lockedSpells.length + ')'),
+              h('h3', { className: 'text-[0.6875rem] font-semibold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, 'Yet to discover (' + lockedSpells.length + ')'),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                 lockedSpells.map(function(s) {
                   return h('div', { key: 'locked-wrap-' + s.id, className: 'flex flex-col gap-1' },
@@ -2274,7 +2274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         sfxClick();
                         try { ctx.setStemLabTool(s.sourceTool); } catch(e) {}
                       },
-                      className: 'text-[10px] text-slate-500 hover:text-violet-700 font-semibold py-1 px-2 rounded-md hover:bg-violet-50 focus:ring-2 focus:ring-violet-400 focus:outline-none transition flex items-center gap-1 self-end',
+                      className: 'text-[0.625rem] text-slate-500 hover:text-violet-700 font-semibold py-1 px-2 rounded-md hover:bg-violet-50 focus:ring-2 focus:ring-violet-400 focus:outline-none transition flex items-center gap-1 self-end',
                       'aria-label': 'Open ' + s.sourceLabel + ' to work toward unlocking ' + s.name
                     },
                       h('span', null, '→ Open ' + s.sourceLabel)
@@ -2395,7 +2395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.loadout', 'Loadout'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.loadout', 'Loadout'))
           ),
           h('h2', { className: 'text-lg font-bold mb-1' }, t('stem.allobotsage.choose_your_spells', 'Choose your spells')),
           h('p', { className: 'text-sm text-slate-600 mb-4' },
@@ -2412,8 +2412,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Standard = balanced; Hard = sharpen retrieval speed under pressure.
           // The reward multiplier rises with difficulty to honor the harder path.
           h('section', { 'aria-label': t('stem.allobotsage.choose_your_challenge_level', 'Choose your challenge level'), className: 'mb-4 p-3 rounded-xl border-2 border-slate-200 bg-white' },
-            h('div', { className: 'text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2' }, t('stem.allobotsage.challenge_level', '\u2699\ufe0f Challenge level')),
-            h('p', { className: 'text-[10px] text-slate-500 mb-2 italic' }, t('stem.allobotsage.pick_what_fits_today_you_can_change_th', 'Pick what fits today. You can change this any expedition. Harder difficulty = bigger essence reward.')),
+            h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 uppercase tracking-wider mb-2' }, t('stem.allobotsage.challenge_level', '\u2699\ufe0f Challenge level')),
+            h('p', { className: 'text-[0.625rem] text-slate-500 mb-2 italic' }, t('stem.allobotsage.pick_what_fits_today_you_can_change_th', 'Pick what fits today. You can change this any expedition. Harder difficulty = bigger essence reward.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
               ['easy', 'standard', 'hard'].map(function(diffId) {
                 var dp = DIFFICULTY_PROFILES[diffId];
@@ -2431,8 +2431,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('span', { className: 'font-bold text-sm', style: { color: dp.color } }, dp.name),
                     picked && h('span', { className: 'ml-auto text-violet-700 font-bold text-xs' }, '\u2713')
                   ),
-                  h('div', { className: 'text-[10px] leading-snug text-slate-600 mb-1' }, __alloT('stem.allobotsage.' + (diffId) + '_desc', dp.desc)),
-                  h('div', { className: 'text-[9px] text-slate-500 font-mono' },
+                  h('div', { className: 'text-[0.625rem] leading-snug text-slate-600 mb-1' }, __alloT('stem.allobotsage.' + (diffId) + '_desc', dp.desc)),
+                  h('div', { className: 'text-[0.5625rem] text-slate-500 font-mono' },
                     'crit \u2264' + dp.critWindowSec + 's \u00b7 ' + dp.rooms + ' rooms \u00b7 ' + dp.playerHp + ' HP \u00b7 ' + dp.essenceMult + 'x essence'
                   )
                 );
@@ -2501,16 +2501,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             }
             return h('section', { 'aria-label': t('stem.allobotsage.loadout_presets', 'Loadout presets'), className: 'mb-4 p-3 rounded-xl border-2 border-slate-200 bg-slate-50' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600' }, '\ud83d\udcbe Loadout Presets ' + (presets.length > 0 ? '(' + presets.length + '/3)' : '')),
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600' }, '\ud83d\udcbe Loadout Presets ' + (presets.length > 0 ? '(' + presets.length + '/3)' : '')),
                 h('button', {
                   onClick: saveAsPreset,
                   disabled: presets.length >= 3 || equippedLoadout.length === 0,
-                  className: 'transition-colors text-[10px] font-bold py-1 px-2 rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-slate-400 focus:outline-none',
+                  className: 'transition-colors text-[0.625rem] font-bold py-1 px-2 rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-slate-400 focus:outline-none',
                   title: presets.length >= 3 ? 'Preset slots full' : equippedLoadout.length === 0 ? 'Equip at least 1 spell first' : 'Save current loadout as a preset'
                 }, t('stem.allobotsage.save_current', '+ Save current'))
               ),
               presets.length === 0
-                ? h('div', { className: 'text-[11px] text-slate-500 italic' }, t('stem.allobotsage.no_presets_yet_build_a_loadout_you_lik', 'No presets yet. Build a loadout you like and click "Save current" to keep it for next time.'))
+                ? h('div', { className: 'text-[0.6875rem] text-slate-500 italic' }, t('stem.allobotsage.no_presets_yet_build_a_loadout_you_lik', 'No presets yet. Build a loadout you like and click "Save current" to keep it for next time.'))
                 : h('div', { className: 'flex flex-col gap-1.5' },
                     presets.map(function(p, idx) {
                       return h('div', {
@@ -2519,7 +2519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       },
                         h('button', {
                           onClick: function() { loadPreset(p); },
-                          className: 'flex-1 text-left text-[11px] font-semibold text-violet-700 hover:underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded',
+                          className: 'flex-1 text-left text-[0.6875rem] font-semibold text-violet-700 hover:underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded',
                           'aria-label': 'Load preset ' + p.name
                         }, '\ud83d\udcc2 ' + p.name),
                         h('div', { className: 'flex items-center gap-1' },
@@ -2549,7 +2549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                             if (confirmed) { deletePreset(idx); announceSR('Deleted preset: ' + p.name); }
                             else announceSR('Preset kept.');
                           },
-                          className: 'transition-colors text-[12px] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
+                          className: 'transition-colors text-[0.75rem] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
                           'aria-label': 'Delete preset ' + p.name
                         }, '\ud83d\uddd1')
                       );
@@ -2563,9 +2563,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           callGemini && equippedLoadout.length > 0 && h('section', { 'aria-label': t('stem.allobotsage.ai_question_banks', 'AI question banks'), className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50' },
             h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1' }, t('stem.allobotsage.infinite_question_bank', '\u2728 Infinite Question Bank')),
-                h('div', { className: 'text-[10px] text-violet-700 mt-0.5' }, t('stem.allobotsage.static_questions_never_run_out_gemini_', 'Static questions never run out \u2014 Gemini generates fresh ones on top.')),
-                h('div', { className: 'text-[10px] text-amber-700 mt-0.5 font-semibold' }, t('stem.allobotsage.ai_generated_questions_can_be_wrong_ev', '\u26a0\ufe0f AI-generated questions can be wrong (even the marked answer) \u2014 if one looks off, tell your teacher.'))
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1' }, t('stem.allobotsage.infinite_question_bank', '\u2728 Infinite Question Bank')),
+                h('div', { className: 'text-[0.625rem] text-violet-700 mt-0.5' }, t('stem.allobotsage.static_questions_never_run_out_gemini_', 'Static questions never run out \u2014 Gemini generates fresh ones on top.')),
+                h('div', { className: 'text-[0.625rem] text-amber-700 mt-0.5 font-semibold' }, t('stem.allobotsage.ai_generated_questions_can_be_wrong_ev', '\u26a0\ufe0f AI-generated questions can be wrong (even the marked answer) \u2014 if one looks off, tell your teacher.'))
               ),
               h('button', {
                 onClick: function() {
@@ -2615,7 +2615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     addToast('Failed to generate AI questions. Try again.', 'error');
                   });
                 },
-                className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none'
+                className: 'transition-colors px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none'
               }, t('stem.allobotsage.pre_load', '\u2728 Pre-load'))
             ),
             // Per-spell AI status row
@@ -2628,16 +2628,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 var inFlight = !!(d._aiInFlight && d._aiInFlight[spellId]);
                 return h('div', {
                   key: 'ai-' + spellId,
-                  className: 'flex items-center gap-2 text-[11px] py-0.5'
+                  className: 'flex items-center gap-2 text-[0.6875rem] py-0.5'
                 },
                   h('span', { className: 'flex-shrink-0' }, s.icon),
                   h('span', { className: 'font-bold flex-1 truncate', style: { color: s.color } }, s.name),
-                  h('span', { className: 'text-slate-500 text-[10px]' }, staticCount + ' static'),
+                  h('span', { className: 'text-slate-500 text-[0.625rem]' }, staticCount + ' static'),
                   inFlight
-                    ? h('span', { className: 'text-violet-600 text-[10px] font-bold abs-pulse' }, t('stem.allobotsage.generating', '\u23f3 generating...'))
+                    ? h('span', { className: 'text-violet-600 text-[0.625rem] font-bold abs-pulse' }, t('stem.allobotsage.generating', '\u23f3 generating...'))
                     : aiCount > 0
-                      ? h('span', { className: 'text-violet-700 text-[10px] font-bold px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300' }, '\u2728 +' + aiCount + ' AI')
-                      : h('span', { className: 'text-slate-400 text-[10px] italic' }, t('stem.allobotsage.no_ai_yet', 'no AI yet')),
+                      ? h('span', { className: 'text-violet-700 text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300' }, '\u2728 +' + aiCount + ' AI')
+                      : h('span', { className: 'text-slate-400 text-[0.625rem] italic' }, t('stem.allobotsage.no_ai_yet', 'no AI yet')),
                   aiCount > 0 && !inFlight && h('button', {
                     onClick: function() {
                       // Reroll the AI bank for THIS spell.
@@ -2665,7 +2665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       });
                     },
                     'aria-label': 'Regenerate AI questions for ' + s.name,
-                    className: 'transition-colors text-violet-500 hover:text-violet-700 text-[10px] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded'
+                    className: 'transition-colors text-violet-500 hover:text-violet-700 text-[0.625rem] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded'
                   }, '\ud83d\udd04')
                 );
               })
@@ -2674,7 +2674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Sector picker \u2014 richer cards showing the sector's enemy/boss pool
           h('section', { 'aria-label': t('stem.allobotsage.sector', 'Sector'), className: 'mb-5' },
-            h('h3', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_sector', '\uD83C\uDF0C Choose a sector')),
+            h('h3', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_sector', '\uD83C\uDF0C Choose a sector')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               SECTORS.map(function(sec) {
                 var unlocked = expeditionsDone >= sec.unlockAt;
@@ -2708,22 +2708,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('div', { className: 'text-3xl', 'aria-hidden': 'true' }, unlocked ? '\uD83C\uDF0C' : '\uD83D\uDD12'),
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'font-bold text-sm leading-tight' }, sec.name),
-                      h('div', { className: 'text-[10px] mt-0.5 ' + (selected ? 'opacity-95 font-bold' : 'text-amber-600 font-bold') },
+                      h('div', { className: 'text-[0.625rem] mt-0.5 ' + (selected ? 'opacity-95 font-bold' : 'text-amber-600 font-bold') },
                         unlocked
                           ? ('\u2728 Essence \u00d7' + sec.essenceMult.toFixed(2))
                           : ('Clear ' + sec.unlockAt + ' expedition' + (sec.unlockAt > 1 ? 's' : '') + ' to unlock')
                       )
                     )
                   ),
-                  h('div', { className: 'text-[11px] mb-3 ' + (selected ? 'opacity-95' : 'text-slate-600') + ' italic leading-snug' }, __alloT('stem.allobotsage.' + (sec.id) + '_subtitle', sec.subtitle)),
+                  h('div', { className: 'text-[0.6875rem] mb-3 ' + (selected ? 'opacity-95' : 'text-slate-600') + ' italic leading-snug' }, __alloT('stem.allobotsage.' + (sec.id) + '_subtitle', sec.subtitle)),
                   // Boss preview
                   unlocked && sectorBosses.length > 0 && h('div', { className: 'mb-2' },
-                    h('div', { className: 'text-[9px] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, t('stem.allobotsage.bosses', 'Bosses')),
+                    h('div', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, t('stem.allobotsage.bosses', 'Bosses')),
                     h('div', { className: 'flex flex-wrap gap-1' },
                       sectorBosses.map(function(b) {
                         return h('div', {
                           key: b.id,
-                          className: 'flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold',
+                          className: 'flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.625rem] font-semibold',
                           style: selected ? { background: 'rgba(255,255,255,0.18)' } : { background: '#fef3c7', color: '#92400e' },
                           title: b.name + ' \u2014 ' + b.flavor
                         },
@@ -2735,7 +2735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   ),
                   // Enemy preview (normals)
                   unlocked && sectorNormals.length > 0 && h('div', null,
-                    h('div', { className: 'text-[9px] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, 'Foes (' + sectorNormals.length + ')'),
+                    h('div', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, 'Foes (' + sectorNormals.length + ')'),
                     h('div', { className: 'flex flex-wrap gap-0.5', 'aria-hidden': 'true' },
                       sectorNormals.map(function(en) {
                         return h('span', {
@@ -2746,7 +2746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       })
                     )
                   ),
-                  unlocked && sectorBosses.length > 0 && selected && h('div', { className: 'mt-2 text-[10px] opacity-90' },
+                  unlocked && sectorBosses.length > 0 && selected && h('div', { className: 'mt-2 text-[0.625rem] opacity-90' },
                     h('div', { className: 'flex items-center gap-1 font-bold' }, t('stem.allobotsage.selected', '\u2728 Selected'))
                   )
                 );
@@ -2755,7 +2755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
 
           // Spells
-          h('h3', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCDC Equip spells (' + equippedLoadout.length + '/3)'),
+          h('h3', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCDC Equip spells (' + equippedLoadout.length + '/3)'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-5' },
             available.map(function(s) {
               return spellCard(s, {
@@ -2772,12 +2772,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('section', { 'aria-label': t('stem.allobotsage.set_goals_for_this_expedition', 'Set goals for this expedition'), className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-violet-50/40' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-violet-900 uppercase tracking-wider' }, t('stem.allobotsage.set_your_goals_optional', '\ud83c\udfaf Set your goals (optional)')),
-                h('div', { className: 'text-[10px] text-violet-700 mt-0.5' }, t('stem.allobotsage.research_specific_goals_improve_perfor', 'Research: specific goals improve performance + focus. Pick any.'))
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-900 uppercase tracking-wider' }, t('stem.allobotsage.set_your_goals_optional', '\ud83c\udfaf Set your goals (optional)')),
+                h('div', { className: 'text-[0.625rem] text-violet-700 mt-0.5' }, t('stem.allobotsage.research_specific_goals_improve_perfor', 'Research: specific goals improve performance + focus. Pick any.'))
               ),
               h('button', {
                 onClick: function() { sfxClick(); updKey('selectedGoals', []); },
-                className: 'transition-colors text-[10px] text-violet-600 hover:text-violet-900 font-semibold underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded'
+                className: 'transition-colors text-[0.625rem] text-violet-600 hover:text-violet-900 font-semibold underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded'
               }, t('stem.allobotsage.skip_clear_all', 'Skip / clear all'))
             ),
             (function() {
@@ -2808,8 +2808,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-lg' }, g.icon),
                       h('div', { className: 'flex-1' },
-                        h('div', { className: 'text-[11px] font-bold ' + (picked ? 'text-violet-900' : 'text-slate-700') }, g.label),
-                        h('div', { className: 'text-[10px] ' + (picked ? 'text-violet-700' : 'text-slate-400') }, g.desc)
+                        h('div', { className: 'text-[0.6875rem] font-bold ' + (picked ? 'text-violet-900' : 'text-slate-700') }, g.label),
+                        h('div', { className: 'text-[0.625rem] ' + (picked ? 'text-violet-700' : 'text-slate-400') }, g.desc)
                       ),
                       picked && h('span', { className: 'text-violet-700 font-bold' }, '\u2713')
                     )
@@ -3249,7 +3249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               className: 'transition-colors text-xs font-semibold text-slate-600 hover:text-slate-800 underline'
             }, t('stem.allobotsage.abandon', 'Abandon')),
             h('div', { className: 'flex-1 text-center' },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-violet-600' },
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-violet-600' },
                 (exp.sectorName || 'Expedition')
                 + (enemy && enemy.type === 'shrine' ? ' \u00b7 Shrine'
                     : isBossRoom ? ' \u00b7 Boss'
@@ -3265,7 +3265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     'aria-hidden': 'true'
                   });
                 }),
-                h('span', { className: 'ml-2 text-[10px] text-slate-600' }, 'Room ' + (roomIndex + 1) + '/' + totalRooms)
+                h('span', { className: 'ml-2 text-[0.625rem] text-slate-600' }, 'Room ' + (roomIndex + 1) + '/' + totalRooms)
               )
             ),
             h('div', { className: 'text-xs text-slate-600' }, 'Turn: ', h('span', { className: 'font-bold ' + (exp.turn === 'player' ? 'text-violet-600' : 'text-red-600') }, exp.turn === 'player' ? 'You' : enemy.name))
@@ -3398,7 +3398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     style: { width: playerPct + '%', background: playerPct > 50 ? '#34d399' : playerPct > 25 ? '#fbbf24' : '#ef4444' }
                   })
                 ),
-                h('div', { className: 'text-[10px] mt-0.5 text-violet-200' }, exp.playerHp + ' / ' + exp.playerMaxHp + ' HP')
+                h('div', { className: 'text-[0.625rem] mt-0.5 text-violet-200' }, exp.playerHp + ' / ' + exp.playerMaxHp + ' HP')
               ),
               h('div', { className: 'text-3xl text-violet-300 abs-pulse', 'aria-hidden': 'true' }, 'VS'),
               // Enemy
@@ -3411,10 +3411,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     style: { width: enemyPct + '%', background: '#ef4444' }
                   })
                 ),
-                h('div', { className: 'text-[10px] mt-0.5 text-violet-200' }, enemy.hp + ' / ' + enemy.maxHp + ' HP')
+                h('div', { className: 'text-[0.625rem] mt-0.5 text-violet-200' }, enemy.hp + ' / ' + enemy.maxHp + ' HP')
               )
             ),
-            h('p', { className: 'text-[11px] text-center text-violet-200 mt-3 italic' }, enemy.flavor)
+            h('p', { className: 'text-[0.6875rem] text-center text-violet-200 mt-3 italic' }, enemy.flavor)
           ),
 
           // Boss telegraph warning \u2014 visible when boss is winding up a special.
@@ -3432,8 +3432,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   enemy.name + ' is winding up: ',
                   h('span', { className: 'italic' }, enemy.specialName || 'SPECIAL ATTACK')
                 ),
-                enemy.specialFlavor && h('div', { className: 'text-[11px] text-red-200 mt-0.5 italic' }, '\u201c' + enemy.specialFlavor + '\u201d'),
-                h('div', { className: 'text-[11px] text-red-100 mt-0.5' }, t('stem.allobotsage.land_a_critical_cast_correct_under_6_s', 'Land a CRITICAL cast (correct + under 6 seconds) to interrupt and reduce the damage.'))
+                enemy.specialFlavor && h('div', { className: 'text-[0.6875rem] text-red-200 mt-0.5 italic' }, '\u201c' + enemy.specialFlavor + '\u201d'),
+                h('div', { className: 'text-[0.6875rem] text-red-100 mt-0.5' }, t('stem.allobotsage.land_a_critical_cast_correct_under_6_s', 'Land a CRITICAL cast (correct + under 6 seconds) to interrupt and reduce the damage.'))
               )
             )
           ),
@@ -3447,7 +3447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'text-3xl' }, '\ud83d\udee1\ufe0f'),
               h('div', { className: 'flex-1' },
                 h('div', { className: 'font-bold text-sm' }, t('stem.allobotsage.interrupt_landed', 'INTERRUPT LANDED')),
-                h('div', { className: 'text-[11px] text-emerald-100 mt-0.5' }, enemy.name + '\u2019s special will deal reduced damage when it resolves.')
+                h('div', { className: 'text-[0.6875rem] text-emerald-100 mt-0.5' }, enemy.name + '\u2019s special will deal reduced damage when it resolves.')
               )
             )
           ),
@@ -3489,9 +3489,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   h('div', { className: 'flex-1 min-w-0' },
                     h('div', { className: 'font-bold text-sm flex items-center gap-1', style: { color: s.color } },
                       s.name,
-                      lvl > 0 && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl)
+                      lvl > 0 && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl)
                     ),
-                    h('div', { className: 'text-[10px] text-slate-600' }, leveledDmg + ' dmg \u00b7 ' + s.sourceLabel)
+                    h('div', { className: 'text-[0.625rem] text-slate-600' }, leveledDmg + ' dmg \u00b7 ' + s.sourceLabel)
                   )
                 )
               );
@@ -3528,10 +3528,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-2xl abs-spin', 'aria-hidden': 'true' }, s.icon),
                 h('div', null,
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-widest', style: { color: s.color } }, t('stem.allobotsage.casting', 'Casting')),
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest', style: { color: s.color } }, t('stem.allobotsage.casting', 'Casting')),
                   h('div', { className: 'text-base font-bold', style: { color: s.color } }, s.name)
                 ),
-                h('div', { className: 'ml-auto text-[10px] text-slate-600' }, t('stem.allobotsage.faster_correct_critical', 'Faster + correct = critical!'))
+                h('div', { className: 'ml-auto text-[0.625rem] text-slate-600' }, t('stem.allobotsage.faster_correct_critical', 'Faster + correct = critical!'))
               ),
               // Surface whether THIS question was AI-generated (tracked as
               // pendingCast.aiSourced) — a hallucinated answer key would reward
@@ -3539,7 +3539,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               // to trust. Static, hand-authored questions show no badge.
               pendingCast.aiSourced ? h('div', { className: 'flex items-start gap-1.5 mb-2 px-2 py-1 rounded-lg', style: { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.4)' } },
                 h('span', { 'aria-hidden': 'true' }, '⚠️'),
-                h('span', { className: 'text-[10px] font-semibold leading-snug', style: { color: '#b45309' } }, t('stem.allobotsage.ai_generated_question_the_marked_answe', 'AI-generated question — the marked answer could be wrong. If it looks off, tell your teacher.'))
+                h('span', { className: 'text-[0.625rem] font-semibold leading-snug', style: { color: '#b45309' } }, t('stem.allobotsage.ai_generated_question_the_marked_answe', 'AI-generated question — the marked answer could be wrong. If it looks off, tell your teacher.'))
               ) : null,
               h('p', { className: 'text-sm font-semibold text-slate-800 mb-3', role: 'group', 'aria-label': t('stem.allobotsage.challenge_prompt', 'Challenge prompt') }, c.prompt),
               // ── Confidence calibration (optional, metacognitive) ──
@@ -3547,7 +3547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               // clickable. If a level is set, the post-resolve note compares
               // their feeling-of-knowing to the actual result. Builds calibration.
               !resolved && h('div', { className: 'mb-3' },
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, t('stem.allobotsage.confidence_check_optional', '🧠 Confidence check (optional)')),
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-500 mb-1' }, t('stem.allobotsage.confidence_check_optional', '🧠 Confidence check (optional)')),
                 h('div', { className: 'grid grid-cols-3 gap-1.5' },
                   [
                     { level: 'low',  icon: '🤷', label: t('stem.allobotsage.guessing', 'Guessing'),    color: 'var(--allo-stem-text-soft, #94a3b8)' },
@@ -3561,7 +3561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         sfxClick();
                         mutateExp({ pendingCast: Object.assign({}, pendingCast, { confidence: opt.level }) });
                       },
-                      className: 'text-[11px] py-1.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'font-bold' : 'font-normal hover:bg-slate-50'),
+                      className: 'text-[0.6875rem] py-1.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'font-bold' : 'font-normal hover:bg-slate-50'),
                       style: picked ? { borderColor: opt.color, background: opt.color + '14', color: opt.color } : { borderColor: '#e2e8f0', color: 'var(--allo-stem-text-soft, #64748b)' },
                       'aria-label': opt.label + (picked ? ' (selected)' : ''),
                       'aria-pressed': picked
@@ -3586,18 +3586,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                           : (isSelected ? 'border-red-400 bg-red-50 text-red-900' : 'border-slate-400 bg-slate-50 text-slate-600'))
                         : 'transition-colors border-slate-300 bg-white hover:border-violet-500 hover:bg-violet-50')
                   },
-                    h('span', { className: 'inline-block w-6 h-6 mr-2 rounded-full text-[11px] font-bold text-center leading-6 ' + (resolved && isCorrect ? 'bg-emerald-700 text-white' : resolved && isSelected ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-600') }, String.fromCharCode(65 + i)),
+                    h('span', { className: 'inline-block w-6 h-6 mr-2 rounded-full text-[0.6875rem] font-bold text-center leading-6 ' + (resolved && isCorrect ? 'bg-emerald-700 text-white' : resolved && isSelected ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-600') }, String.fromCharCode(65 + i)),
                     opt
                   );
                 })
               ),
-              resolved && h('div', { className: 'mt-3 p-2 rounded-lg bg-slate-50 text-[11px] text-slate-700' },
+              resolved && h('div', { className: 'mt-3 p-2 rounded-lg bg-slate-50 text-[0.6875rem] text-slate-700' },
                 h('strong', null, pendingCast.result === 'crit' ? 'Critical hit!' : pendingCast.result === 'hit' ? 'Hit.' : 'Backfire.'),
                 ' ', c.explain
               ),
               // Calibration metacognitive feedback — only if student set a confidence
               calNote && h('div', {
-                className: 'mt-2 p-2 rounded-lg text-[11px] font-medium',
+                className: 'mt-2 p-2 rounded-lg text-[0.6875rem] font-medium',
                 style: {
                   background: calNote.tone === 'good' ? '#ecfdf5' : calNote.tone === 'caution' ? '#fef3c7' : '#f1f5f9',
                   color: calNote.tone === 'good' ? '#065f46' : calNote.tone === 'caution' ? '#92400e' : '#334155',
@@ -3609,7 +3609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Log
           h('div', { className: 'rounded-xl bg-slate-50 border border-slate-400 p-3 max-h-40 overflow-y-auto' },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, 'Log'),
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-1' }, 'Log'),
             (exp.log || []).slice().reverse().slice(0, 8).map(function(entry, i) {
               var color = entry.kind === 'player' ? 'text-violet-700'
                         : entry.kind === 'enemy'  ? 'text-red-700'
@@ -3731,10 +3731,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               'aria-label': 'Goal progress: ' + metCount + ' of ' + goals.length + ' met'
             },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: allMet ? '#065f46' : '#475569' } },
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: allMet ? '#065f46' : '#475569' } },
                   '\ud83c\udfaf Goal Progress: ' + metCount + ' / ' + goals.length + ' met'
                 ),
-                allMet && h('span', { className: 'text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300' }, t('stem.allobotsage.all_goals_met', '\u2728 All goals met!'))
+                allMet && h('span', { className: 'text-[0.625rem] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300' }, t('stem.allobotsage.all_goals_met', '\u2728 All goals met!'))
               ),
               h('div', { className: 'space-y-1' },
                 goals.map(function(gid) {
@@ -3743,11 +3743,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   var met = def.check();
                   return h('div', {
                     key: 'goal-result-' + gid,
-                    className: 'flex items-center gap-2 p-1.5 rounded-md text-[11px] ' + (met ? 'bg-emerald-100 text-emerald-900' : 'bg-white border border-slate-200 text-slate-600')
+                    className: 'flex items-center gap-2 p-1.5 rounded-md text-[0.6875rem] ' + (met ? 'bg-emerald-100 text-emerald-900' : 'bg-white border border-slate-200 text-slate-600')
                   },
                     h('span', { className: 'text-base' }, met ? '\u2705' : '\u25cb'),
                     h('span', { className: 'flex-1 font-semibold' }, def.icon + ' ' + def.label),
-                    h('span', { className: 'text-[10px] ' + (met ? 'text-emerald-700' : 'text-slate-400') }, def.progress)
+                    h('span', { className: 'text-[0.625rem] ' + (met ? 'text-emerald-700' : 'text-slate-400') }, def.progress)
                   );
                 })
               )
@@ -3758,7 +3758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Per-spell performance for THIS expedition. The textual reflection
           // moment students will actually use, not a cumulative dashboard.
           runCastLog.length > 0 && h('section', { className: 'rounded-xl border-2 border-slate-200 bg-slate-50 p-3 mb-4 text-left', 'aria-label': t('stem.allobotsage.this_run_s_breakdown', 'This run\'s breakdown') },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2 text-center' }, t('stem.allobotsage.this_run_per_spell_breakdown', '\uD83D\uDD0D This Run \u2014 Per-Spell Breakdown')),
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-2 text-center' }, t('stem.allobotsage.this_run_per_spell_breakdown', '\uD83D\uDD0D This Run \u2014 Per-Spell Breakdown')),
             h('div', { className: 'flex flex-col gap-1.5' },
               Object.keys(runBySpell).map(function(spellId) {
                 var sp = findSpell(spellId);
@@ -3774,18 +3774,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   h('span', { className: 'text-lg' }, sp.icon),
                   h('div', { className: 'flex-1 min-w-0' },
                     h('div', { className: 'font-bold text-xs', style: { color: sp.color } }, sp.name),
-                    h('div', { className: 'text-[10px] text-slate-500' }, st.total + ' cast' + (st.total > 1 ? 's' : '') + ' \u00B7 ' + st.crits + ' crit \u00B7 ' + st.hits + ' hit \u00B7 ' + st.backfires + ' backfire' + (st.backfires !== 1 ? 's' : ''))
+                    h('div', { className: 'text-[0.625rem] text-slate-500' }, st.total + ' cast' + (st.total > 1 ? 's' : '') + ' \u00B7 ' + st.crits + ' crit \u00B7 ' + st.hits + ' hit \u00B7 ' + st.backfires + ' backfire' + (st.backfires !== 1 ? 's' : ''))
                   ),
                   h('div', { className: 'text-right' },
                     h('div', { className: 'font-bold text-sm', style: { color: rateColor } }, rate + '%'),
-                    h('div', { className: 'text-[9px] text-slate-400 uppercase tracking-wide' }, 'correct')
+                    h('div', { className: 'text-[0.5625rem] text-slate-400 uppercase tracking-wide' }, 'correct')
                   )
                 );
               })
             ),
             // \u2500\u2500 Confidence calibration summary (if any confidence was set) \u2500\u2500
             totalCalibrated > 0 && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.confidence_calibration', '\uD83E\uDDE0 Confidence Calibration')),
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.confidence_calibration', '\uD83E\uDDE0 Confidence Calibration')),
               // Calibration CHART: accuracy by stated confidence. Well-calibrated
               // = bars RISE from Guessing -> Knew it (the dashed reference). A
               // low "Knew it" bar = overconfidence; a high "Guessing" bar = you
@@ -3821,9 +3821,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 ].map(function(opt) {
                   var rc = runConfidence[opt.level];
                   var tot = rc.right + rc.wrong;
-                  if (tot === 0) return h('div', { key: 'cal-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-[10px] text-slate-500' },
+                  if (tot === 0) return h('div', { key: 'cal-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-[0.625rem] text-slate-500' },
                     h('div', null, opt.icon, ' ' + opt.label),
-                    h('div', { className: 'text-[9px] mt-0.5' }, '\u2014')
+                    h('div', { className: 'text-[0.5625rem] mt-0.5' }, '\u2014')
                   );
                   var pct = Math.round(rc.right / tot * 100);
                   // Calibration interpretation:
@@ -3835,11 +3835,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   else if (opt.level === 'high' && pct >= 80) note = 'well-calibrated';
                   return h('div', {
                     key: 'cal-' + opt.level,
-                    className: 'p-2 rounded-lg bg-white border border-slate-200 text-[10px]'
+                    className: 'p-2 rounded-lg bg-white border border-slate-200 text-[0.625rem]'
                   },
                     h('div', { className: 'font-bold' }, opt.icon, ' ' + opt.label),
                     h('div', { className: 'font-bold mt-0.5', style: { color: pct >= 70 ? '#16a34a' : '#f59e0b' } }, rc.right + '/' + tot, ' (' + pct + '%)'),
-                    note && h('div', { className: 'text-[9px] italic mt-0.5 text-slate-500' }, note)
+                    note && h('div', { className: 'text-[0.5625rem] italic mt-0.5 text-slate-500' }, note)
                   );
                 })
               )
@@ -3857,7 +3857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'text-2xl' }, '\uD83C\uDFAF'),
               h('div', { className: 'flex-1' },
                 h('div', { className: 'font-bold text-sm text-red-900' }, 'Review ' + globalToughCount + ' tough question' + (globalToughCount > 1 ? 's' : '')),
-                h('div', { className: 'text-[10px] text-red-700' }, t('stem.allobotsage.re_study_what_you_got_wrong_mark_got_i', 'Re-study what you got wrong. Mark "Got it now" once you understand.'))
+                h('div', { className: 'text-[0.625rem] text-red-700' }, t('stem.allobotsage.re_study_what_you_got_wrong_mark_got_i', 'Re-study what you got wrong. Mark "Got it now" once you understand.'))
               ),
               h('div', { className: 'text-red-600 font-bold' }, '\u2192')
             ),
@@ -3872,7 +3872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('div', { className: 'text-2xl' }, ws.icon),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-emerald-900' }, 'Drill ' + ws.name + ' in Study Hall'),
-                  h('div', { className: 'text-[10px] text-emerald-700' }, 'Untimed practice \u2014 your weakest spell this run (' + Math.round(weakestRate * 100) + '% correct). Build it up with no pressure.')
+                  h('div', { className: 'text-[0.625rem] text-emerald-700' }, 'Untimed practice \u2014 your weakest spell this run (' + Math.round(weakestRate * 100) + '% correct). Build it up with no pressure.')
                 ),
                 h('div', { className: 'text-emerald-600 font-bold' }, '\u2192')
               );
@@ -3884,21 +3884,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'text-2xl' }, '\u26A0\uFE0F'),
               h('div', { className: 'flex-1' },
                 h('div', { className: 'font-bold text-sm text-amber-900' }, t('stem.allobotsage.overconfidence_detected', 'Overconfidence detected')),
-                h('div', { className: 'text-[10px] text-amber-700' }, 'You felt sure on ' + runConfidence.high.wrong + ' questions you got wrong. Those are the ones to review first \u2014 feeling-of-knowing fooled you.')
+                h('div', { className: 'text-[0.625rem] text-amber-700' }, 'You felt sure on ' + runConfidence.high.wrong + ' questions you got wrong. Those are the ones to review first \u2014 feeling-of-knowing fooled you.')
               )
             )
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 mb-4 text-sm' },
             h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
-              h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.total_casts', 'Total Casts')),
+              h('div', { className: 'text-[0.625rem] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.total_casts', 'Total Casts')),
               h('div', { className: 'text-xl font-bold text-violet-600' }, totalCasts)
             ),
             h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
-              h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.critical_casts', 'Critical Casts')),
+              h('div', { className: 'text-[0.625rem] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.critical_casts', 'Critical Casts')),
               h('div', { className: 'text-xl font-bold text-amber-600' }, critCasts)
             ),
             h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
-              h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.rooms_cleared', 'Rooms Cleared')),
+              h('div', { className: 'text-[0.625rem] font-bold text-slate-600 uppercase' }, t('stem.allobotsage.rooms_cleared', 'Rooms Cleared')),
               h('div', { className: 'text-xl font-bold text-emerald-600' }, roomsCleared + '/' + totalRoomsD)
             )
           ),
@@ -3911,8 +3911,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             className: 'rounded-xl border-2 border-sky-200 bg-sky-50 p-3 mb-4 text-left',
             'aria-label': t('stem.allobotsage.reflection_prompt', 'Reflection prompt')
           },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-sky-700 mb-1' }, t('stem.allobotsage.optional_reflection', '📝 Optional — Reflection')),
-            h('p', { className: 'text-[11px] text-sky-900 mb-2' },
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-sky-700 mb-1' }, t('stem.allobotsage.optional_reflection', '📝 Optional — Reflection')),
+            h('p', { className: 'text-[0.6875rem] text-sky-900 mb-2' },
               t('stem.allobotsage.what_is_one_thing_you_learned_or_notic', 'What is ONE thing you learned or noticed this run? (Writing it strengthens memory more than just thinking it.)')
             ),
             h('textarea', {
@@ -3923,7 +3923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               maxLength: 200,
               rows: 2,
               placeholder: t('stem.allobotsage.e_g_the_bee_flower_question_keeps_trip', 'e.g., "The bee/flower question keeps tripping me up — mutualism = both benefit"'),
-              className: 'w-full p-2 rounded-md border border-sky-600 bg-white text-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400'
+              className: 'w-full p-2 rounded-md border border-sky-600 bg-white text-[0.75rem] text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400'
             }),
             h('div', { className: 'flex justify-end mt-2' },
               h('button', {
@@ -3950,7 +3950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   addToast('📝 Reflection saved — view it any time in Your Progress', 'success');
                   announceSR('Reflection saved.');
                 },
-                className: 'transition-colors px-4 py-1.5 rounded-lg text-[11px] font-bold text-white bg-sky-700 hover:bg-sky-800 focus:ring-2 focus:ring-sky-300 focus:outline-none'
+                className: 'transition-colors px-4 py-1.5 rounded-lg text-[0.6875rem] font-bold text-white bg-sky-700 hover:bg-sky-800 focus:ring-2 focus:ring-sky-300 focus:outline-none'
               }, t('stem.allobotsage.save_reflection', 'Save reflection'))
             )
           ),
@@ -3997,7 +3997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spell_shop_2', 'Spell Shop'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spell_shop_2', 'Spell Shop'))
           ),
           h('div', { className: 'rounded-2xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #78350f 0%, #f59e0b 100%)', color: 'white' } },
             h('div', { className: 'flex items-center gap-3' },
@@ -4007,7 +4007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('p', { className: 'text-sm text-amber-100 mt-1' }, t('stem.allobotsage.spend_essence_to_deepen_the_runes_of_e', 'Spend essence to deepen the runes of each spell. Higher levels = more base damage + bigger crits.'))
               ),
               h('div', { className: 'text-right' },
-                h('div', { className: 'text-[10px] font-bold text-amber-200 uppercase' }, t('stem.allobotsage.essence', 'Essence')),
+                h('div', { className: 'text-[0.625rem] font-bold text-amber-200 uppercase' }, t('stem.allobotsage.essence', 'Essence')),
                 h('div', { className: 'text-2xl font-bold' }, '\u2B50 ' + essence)
               )
             )
@@ -4033,10 +4033,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'font-bold text-sm flex items-center gap-1', style: { color: s.color } },
                         s.name,
-                        lvl > 0 && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl),
-                        maxed && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold' }, 'MAX')
+                        lvl > 0 && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl),
+                        maxed && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold' }, 'MAX')
                       ),
-                      h('div', { className: 'text-[11px] text-slate-600' }, s.sourceLabel),
+                      h('div', { className: 'text-[0.6875rem] text-slate-600' }, s.sourceLabel),
                       // Level pips
                       h('div', { className: 'flex gap-1 mt-1' },
                         Array.from({ length: SPELL_LEVEL_CAP }).map(function(_p, i) {
@@ -4050,7 +4050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       )
                     ),
                     h('div', { className: 'text-right' },
-                      h('div', { className: 'text-[10px] text-slate-600' }, t('stem.allobotsage.damage', 'Damage')),
+                      h('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.allobotsage.damage', 'Damage')),
                       h('div', { className: 'text-sm font-bold' },
                         maxed
                           ? h('span', { style: { color: s.color } }, currentDmg)
@@ -4152,7 +4152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'flex items-center gap-3 mb-4' },
               backBtn(exitPractice, 'Back to Spellforge'),
               h('div', { className: 'flex-1' }),
-              h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.study_hall_2', 'Study Hall'))
+              h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.study_hall_2', 'Study Hall'))
             ),
             h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
               h('div', { className: 'flex items-center gap-3' },
@@ -4168,7 +4168,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   t('stem.allobotsage.no_spells_unlocked_yet_play_other_stem', 'No spells unlocked yet. Play other STEAM Lab tools to unlock spells, then come back here to practice.')
                 )
               : h('div', null,
-                  h('h2', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_spell_to_practice', '🧪 Choose a spell to practice')),
+                  h('h2', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_spell_to_practice', '🧪 Choose a spell to practice')),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                     unlockedForPractice.map(function(s) {
                       // Compute SRS health for this spell — % of its questions answered correctly in last attempt.
@@ -4190,10 +4190,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('span', { className: 'text-2xl' }, s.icon),
                           h('span', { className: 'font-bold text-sm', style: { color: s.color } }, s.name),
-                          mistakes > 0 && h('span', { className: 'ml-auto text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded' }, '⚠ ' + mistakes + ' tough')
+                          mistakes > 0 && h('span', { className: 'ml-auto text-[0.625rem] font-bold text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded' }, '⚠ ' + mistakes + ' tough')
                         ),
-                        h('div', { className: 'text-[11px] text-slate-600' }, s.sourceLabel + ' · ' + bank.length + ' questions'),
-                        h('div', { className: 'text-[10px] text-slate-400 mt-0.5' },
+                        h('div', { className: 'text-[0.6875rem] text-slate-600' }, s.sourceLabel + ' · ' + bank.length + ' questions'),
+                        h('div', { className: 'text-[0.625rem] text-slate-400 mt-0.5' },
                           seen + ' practiced · ' + unseen + ' new'
                         )
                       );
@@ -4215,8 +4215,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               className: 'transition-colors text-xs font-semibold text-slate-500 hover:text-slate-800 underline'
             }, t('stem.allobotsage.change_spell', '← Change spell')),
             h('div', { className: 'flex-1 text-center' },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-emerald-700' }, t('stem.allobotsage.study_hall_untimed', '📚 Study Hall — Untimed')),
-              h('div', { className: 'text-[11px] text-slate-500' },
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-emerald-700' }, t('stem.allobotsage.study_hall_untimed', '📚 Study Hall — Untimed')),
+              h('div', { className: 'text-[0.6875rem] text-slate-500' },
                 practiceStats.correct + '/' + practiceStats.attempted + ' correct this session · ' + bankSize + ' total questions'
               )
             ),
@@ -4230,7 +4230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('span', { className: 'text-3xl' }, practiceSpell.icon),
             h('div', { className: 'flex-1' },
               h('div', { className: 'font-bold', style: { color: practiceSpell.color } }, practiceSpell.name),
-              h('div', { className: 'text-[10px] text-slate-500' }, practiceSpell.sourceLabel + ' · ' + practiceSpell.element)
+              h('div', { className: 'text-[0.625rem] text-slate-500' }, practiceSpell.sourceLabel + ' · ' + practiceSpell.element)
             )
           ),
           // Question
@@ -4271,10 +4271,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               className: 'mt-4 p-3 rounded-lg',
               style: { background: wasCorrect ? '#ecfdf5' : '#fef2f2', border: '1px solid ' + (wasCorrect ? '#a7f3d0' : '#fecaca') }
             },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider mb-1', style: { color: wasCorrect ? '#065f46' : '#991b1b' } },
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-1', style: { color: wasCorrect ? '#065f46' : '#991b1b' } },
                 wasCorrect ? '✓ Correct — why this is right' : '✗ Not quite — why the correct answer is right'
               ),
-              h('div', { className: 'text-[12px] leading-relaxed', style: { color: wasCorrect ? '#065f46' : '#7f1d1d' } }, pq.explain)
+              h('div', { className: 'text-[0.75rem] leading-relaxed', style: { color: wasCorrect ? '#065f46' : '#7f1d1d' } }, pq.explain)
             )
           ),
           // Footer actions
@@ -4353,7 +4353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'flex items-center gap-3 mb-4' },
               backBtn(exitReview, 'Back to Spellforge'),
               h('div', { className: 'flex-1' }),
-              h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.review', 'Review'))
+              h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.review', 'Review'))
             ),
             h('div', { className: 'rounded-2xl p-8 text-center', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
               h('div', { className: 'text-6xl mb-3' }, '✨'),
@@ -4379,13 +4379,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-3' },
             backBtn(exitReview, 'Back to Spellforge'),
             h('div', { className: 'flex-1 text-center' },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-red-700' }, t('stem.allobotsage.review_tough_questions', '🎯 Review Tough Questions')),
-              h('div', { className: 'text-[11px] text-slate-500' }, 'Card ' + (reviewIdx + 1) + ' of ' + toughList.length)
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-red-700' }, t('stem.allobotsage.review_tough_questions', '🎯 Review Tough Questions')),
+              h('div', { className: 'text-[0.6875rem] text-slate-500' }, 'Card ' + (reviewIdx + 1) + ' of ' + toughList.length)
             ),
             h('div', { style: { width: '60px' } })
           ),
           // Spell context
-          h('div', { className: 'rounded-xl p-2 mb-3 flex items-center gap-2 text-[11px]', style: { background: current.spell.color + '14', border: '1px solid ' + current.spell.color + '40' } },
+          h('div', { className: 'rounded-xl p-2 mb-3 flex items-center gap-2 text-[0.6875rem]', style: { background: current.spell.color + '14', border: '1px solid ' + current.spell.color + '40' } },
             h('span', null, current.spell.icon),
             h('span', { className: 'font-semibold', style: { color: current.spell.color } }, current.spell.name),
             h('span', { className: 'text-slate-400' }, '·'),
@@ -4394,14 +4394,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
           // Question (flashcard style: prompt visible, answer revealed on click)
           h('div', { className: 'rounded-2xl p-5 mb-3 border-2 border-red-200 bg-red-50' },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-red-700 mb-2' }, t('stem.allobotsage.question', '❓ Question')),
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-red-700 mb-2' }, t('stem.allobotsage.question', '❓ Question')),
             h('p', { className: 'text-sm font-semibold text-slate-800 leading-relaxed mb-4' }, rq.prompt),
             h('div', { className: 'grid grid-cols-1 gap-1.5' },
               rq.options.map(function(opt, oi) {
                 var isCorrect = oi === rq.correctIndex;
                 return h('div', {
                   key: 'rev-opt-' + oi,
-                  className: 'text-[12px] p-2 rounded ' + (reviewRevealed && isCorrect ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300' : 'bg-white text-slate-700 border border-slate-200'),
+                  className: 'text-[0.75rem] p-2 rounded ' + (reviewRevealed && isCorrect ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300' : 'bg-white text-slate-700 border border-slate-200'),
                   'aria-label': 'Option ' + (oi + 1) + (reviewRevealed && isCorrect ? ' (correct answer)' : '')
                 },
                   h('span', { className: 'inline-block w-6 font-bold' }, String.fromCharCode(65 + oi) + '.'),
@@ -4415,8 +4415,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               className: 'transition-colors mt-4 w-full py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-200 focus:outline-none'
             }, t('stem.allobotsage.reveal_answer_explanation', '👁 Reveal answer + explanation')),
             reviewRevealed && h('div', { className: 'mt-4 p-3 rounded-lg bg-white border border-emerald-200' },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1' }, t('stem.allobotsage.why_this_is_correct', '✓ Why this is correct')),
-              h('div', { className: 'text-[12px] leading-relaxed text-slate-800' }, rq.explain)
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-emerald-700 mb-1' }, t('stem.allobotsage.why_this_is_correct', '✓ Why this is correct')),
+              h('div', { className: 'text-[0.75rem] leading-relaxed text-slate-800' }, rq.explain)
             )
           ),
           // Action buttons (only after reveal)
@@ -4502,7 +4502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(dashBack, 'Back to Spellforge'),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[10px] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.your_progress_2', 'Your Progress'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.your_progress_2', 'Your Progress'))
           ),
           // Headline + AlloBot
           h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%)', color: 'white' } },
@@ -4521,42 +4521,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // 4 headline KPIs
           h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 mb-4' },
             h('div', { className: 'p-3 rounded-xl bg-white border-2 border-emerald-200 text-center' },
-              h('div', { className: 'text-[9px] font-bold text-emerald-700 uppercase tracking-wider' }, t('stem.allobotsage.accuracy_2', 'Accuracy')),
+              h('div', { className: 'text-[0.5625rem] font-bold text-emerald-700 uppercase tracking-wider' }, t('stem.allobotsage.accuracy_2', 'Accuracy')),
               h('div', { className: 'text-2xl font-bold text-emerald-600 mt-1' }, accuracyPct + '%'),
-              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, totalCorrect + '/' + totalAttempts + ' correct')
+              h('div', { className: 'text-[0.5625rem] text-slate-400 mt-0.5' }, totalCorrect + '/' + totalAttempts + ' correct')
             ),
             h('div', { className: 'p-3 rounded-xl bg-white border-2 border-amber-200 text-center' },
-              h('div', { className: 'text-[9px] font-bold text-amber-700 uppercase tracking-wider' }, t('stem.allobotsage.crit_rate', 'Crit Rate')),
+              h('div', { className: 'text-[0.5625rem] font-bold text-amber-700 uppercase tracking-wider' }, t('stem.allobotsage.crit_rate', 'Crit Rate')),
               h('div', { className: 'text-2xl font-bold text-amber-600 mt-1' }, critPct + '%'),
-              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, (d.critCasts || 0) + ' crits')
+              h('div', { className: 'text-[0.5625rem] text-slate-400 mt-0.5' }, (d.critCasts || 0) + ' crits')
             ),
             h('div', { className: 'p-3 rounded-xl bg-white border-2 border-violet-200 text-center' },
-              h('div', { className: 'text-[9px] font-bold text-violet-700 uppercase tracking-wider' }, t('stem.allobotsage.spells_unlocked', 'Spells Unlocked')),
+              h('div', { className: 'text-[0.5625rem] font-bold text-violet-700 uppercase tracking-wider' }, t('stem.allobotsage.spells_unlocked', 'Spells Unlocked')),
               h('div', { className: 'text-2xl font-bold text-violet-600 mt-1' }, currentlyUnlocked.length + '/' + SPELLBOOK.length),
-              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, Math.round(currentlyUnlocked.length / SPELLBOOK.length * 100) + '% complete')
+              h('div', { className: 'text-[0.5625rem] text-slate-400 mt-0.5' }, Math.round(currentlyUnlocked.length / SPELLBOOK.length * 100) + '% complete')
             ),
             h('div', { className: 'p-3 rounded-xl bg-white border-2 border-rose-200 text-center' },
-              h('div', { className: 'text-[9px] font-bold text-rose-700 uppercase tracking-wider' }, t('stem.allobotsage.interrupts', 'Interrupts')),
+              h('div', { className: 'text-[0.5625rem] font-bold text-rose-700 uppercase tracking-wider' }, t('stem.allobotsage.interrupts', 'Interrupts')),
               h('div', { className: 'text-2xl font-bold text-rose-600 mt-1' }, (d.interruptCount || 0)),
-              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, t('stem.allobotsage.boss_specials_blocked', 'boss specials blocked'))
+              h('div', { className: 'text-[0.5625rem] text-slate-400 mt-0.5' }, t('stem.allobotsage.boss_specials_blocked', 'boss specials blocked'))
             )
           ),
           // Sectors + bosses progress
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4' },
             // Sectors
             h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3' },
-              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.sectors_cleared', '🌌 Sectors Cleared')),
+              h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.sectors_cleared', '🌌 Sectors Cleared')),
               h('div', { className: 'space-y-1' },
                 SECTORS.map(function(sec) {
                   var cleared = !!sectorsClearedMap[sec.id];
                   var unlocked = (d.expeditionsCompleted || 0) >= sec.unlockAt;
                   return h('div', {
                     key: 'dash-sec-' + sec.id,
-                    className: 'flex items-center gap-2 p-2 rounded-lg text-[11px] ' + (cleared ? 'bg-emerald-50 border border-emerald-200' : unlocked ? 'bg-slate-50 border border-slate-200' : 'bg-slate-50 border border-slate-200 opacity-50')
+                    className: 'flex items-center gap-2 p-2 rounded-lg text-[0.6875rem] ' + (cleared ? 'bg-emerald-50 border border-emerald-200' : unlocked ? 'bg-slate-50 border border-slate-200' : 'bg-slate-50 border border-slate-200 opacity-50')
                   },
                     h('span', { className: 'text-lg' }, cleared ? '✅' : unlocked ? '○' : '🔒'),
                     h('span', { className: 'font-semibold flex-1' }, sec.name),
-                    h('span', { className: 'text-[10px] text-slate-400' },
+                    h('span', { className: 'text-[0.625rem] text-slate-400' },
                       cleared ? 'Cleared' : unlocked ? 'Available' : 'Unlock at ' + sec.unlockAt + ' expeditions'
                     )
                   );
@@ -4565,13 +4565,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             // Bosses
             h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3' },
-              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '💀 Bosses Defeated (' + Object.keys(bossesDefeatedMap).length + '/' + bossesAll.length + ')'),
+              h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '💀 Bosses Defeated (' + Object.keys(bossesDefeatedMap).length + '/' + bossesAll.length + ')'),
               h('div', { className: 'grid grid-cols-3 gap-1' },
                 bossesAll.map(function(b) {
                   var defeated = !!bossesDefeatedMap[b.id];
                   return h('div', {
                     key: 'dash-boss-' + b.id,
-                    className: 'flex flex-col items-center p-1.5 rounded-lg text-center text-[9px] ' + (defeated ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-60'),
+                    className: 'flex flex-col items-center p-1.5 rounded-lg text-center text-[0.5625rem] ' + (defeated ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-60'),
                     title: b.name + (defeated ? ' (defeated)' : ' (not yet defeated)')
                   },
                     h('span', { className: 'text-lg', style: { filter: defeated ? '' : 'grayscale(1)' } }, b.icon),
@@ -4584,36 +4584,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Strongest + weakest spells
           (strongest.length > 0 || weakest.length > 0) && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4' },
             h('section', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 p-3' },
-              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-2' }, t('stem.allobotsage.top_spells', '💪 Top Spells')),
+              h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-emerald-700 mb-2' }, t('stem.allobotsage.top_spells', '💪 Top Spells')),
               strongest.length === 0
-                ? h('div', { className: 'text-[11px] text-slate-500 italic' }, t('stem.allobotsage.cast_each_spell_at_least_3_times_to_se', 'Cast each spell at least 3 times to see your strongest.'))
+                ? h('div', { className: 'text-[0.6875rem] text-slate-500 italic' }, t('stem.allobotsage.cast_each_spell_at_least_3_times_to_se', 'Cast each spell at least 3 times to see your strongest.'))
                 : h('div', { className: 'space-y-1' },
                     strongest.map(function(item) {
-                      return h('div', { key: 'top-' + item.spell.id, className: 'flex items-center gap-2 text-[11px] p-1.5 rounded-lg bg-white border border-emerald-200' },
+                      return h('div', { key: 'top-' + item.spell.id, className: 'flex items-center gap-2 text-[0.6875rem] p-1.5 rounded-lg bg-white border border-emerald-200' },
                         h('span', { className: 'text-base' }, item.spell.icon),
                         h('span', { className: 'flex-1 font-semibold', style: { color: item.spell.color } }, item.spell.name),
                         h('span', { className: 'font-bold text-emerald-700' }, Math.round(item.rate * 100) + '%'),
-                        h('span', { className: 'text-[9px] text-slate-400' }, '(' + item.attempts + ')')
+                        h('span', { className: 'text-[0.5625rem] text-slate-400' }, '(' + item.attempts + ')')
                       );
                     })
                   )
             ),
             h('section', { className: 'rounded-xl border border-rose-200 bg-rose-50 p-3' },
-              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-rose-700 mb-2' }, t('stem.allobotsage.spells_to_strengthen', '🎯 Spells to Strengthen')),
+              h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-rose-700 mb-2' }, t('stem.allobotsage.spells_to_strengthen', '🎯 Spells to Strengthen')),
               weakest.length === 0
-                ? h('div', { className: 'text-[11px] text-slate-500 italic' }, t('stem.allobotsage.no_weak_spots_flagged_yet_keep_casting', 'No weak spots flagged yet. Keep casting!'))
+                ? h('div', { className: 'text-[0.6875rem] text-slate-500 italic' }, t('stem.allobotsage.no_weak_spots_flagged_yet_keep_casting', 'No weak spots flagged yet. Keep casting!'))
                 : h('div', { className: 'space-y-1' },
                     weakest.map(function(item) {
                       return h('button', {
                         key: 'weak-' + item.spell.id,
                         onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: item.spell.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 } }); },
-                        className: 'w-full flex items-center gap-2 text-[11px] p-1.5 rounded-lg bg-white border border-rose-200 hover:bg-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none transition text-left',
+                        className: 'w-full flex items-center gap-2 text-[0.6875rem] p-1.5 rounded-lg bg-white border border-rose-200 hover:bg-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none transition text-left',
                         'aria-label': 'Practice ' + item.spell.name + ' in Study Hall'
                       },
                         h('span', { className: 'text-base' }, item.spell.icon),
                         h('span', { className: 'flex-1 font-semibold', style: { color: item.spell.color } }, item.spell.name),
                         h('span', { className: 'font-bold text-rose-700' }, Math.round(item.rate * 100) + '%'),
-                        h('span', { className: 'text-[9px] text-rose-600 font-bold' }, t('stem.allobotsage.drill', 'Drill →'))
+                        h('span', { className: 'text-[0.5625rem] text-rose-600 font-bold' }, t('stem.allobotsage.drill', 'Drill →'))
                       );
                     })
                   )
@@ -4621,8 +4621,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
           // Calibration health (only if any confidence levels logged)
           (calData.high.total + calData.med.total + calData.low.total) > 0 && h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3 mb-4' },
-            h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.confidence_calibration_health', '🧠 Confidence Calibration Health')),
-            h('p', { className: 'text-[10px] text-slate-500 mb-2 italic' }, t('stem.allobotsage.when_you_say_you_know_it_and_you_do_th', 'When you say you "know it" and you do — that\'s calibration. Mismatch (over/under-confidence) is the hidden cost in learning.')),
+            h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.confidence_calibration_health', '🧠 Confidence Calibration Health')),
+            h('p', { className: 'text-[0.625rem] text-slate-500 mb-2 italic' }, t('stem.allobotsage.when_you_say_you_know_it_and_you_do_th', 'When you say you "know it" and you do — that\'s calibration. Mismatch (over/under-confidence) is the hidden cost in learning.')),
             h('div', { className: 'grid grid-cols-3 gap-2' },
               [
                 { level: 'high', icon: '🔥', label: t('stem.allobotsage.knew_it_3', 'Knew it') },
@@ -4630,7 +4630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 { level: 'low',  icon: '🤷', label: t('stem.allobotsage.guessing_4', 'Guessing') }
               ].map(function(opt) {
                 var c = calData[opt.level];
-                if (c.total === 0) return h('div', { key: 'cd-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-center text-[10px] text-slate-500' },
+                if (c.total === 0) return h('div', { key: 'cd-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-center text-[0.625rem] text-slate-500' },
                   h('div', null, opt.icon + ' ' + opt.label),
                   h('div', { className: 'mt-1' }, '—')
                 );
@@ -4641,27 +4641,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 else if (opt.level === 'high' && pct >= 85) calNote = 'sharp';
                 return h('div', {
                   key: 'cd-' + opt.level,
-                  className: 'p-2 rounded-lg text-center text-[10px] border ' + (calNote === 'overconfident' ? 'bg-amber-50 border-amber-200' : calNote === 'underconfident' ? 'bg-sky-50 border-sky-200' : 'bg-emerald-50 border-emerald-200')
+                  className: 'p-2 rounded-lg text-center text-[0.625rem] border ' + (calNote === 'overconfident' ? 'bg-amber-50 border-amber-200' : calNote === 'underconfident' ? 'bg-sky-50 border-sky-200' : 'bg-emerald-50 border-emerald-200')
                 },
                   h('div', { className: 'font-bold' }, opt.icon + ' ' + opt.label),
                   h('div', { className: 'text-base font-bold mt-1' }, pct + '%'),
-                  h('div', { className: 'text-[9px] text-slate-400' }, c.right + '/' + c.total),
-                  calNote && h('div', { className: 'text-[9px] italic mt-0.5 ' + (calNote === 'overconfident' ? 'text-amber-700' : calNote === 'underconfident' ? 'text-sky-700' : 'text-emerald-700') }, calNote)
+                  h('div', { className: 'text-[0.5625rem] text-slate-400' }, c.right + '/' + c.total),
+                  calNote && h('div', { className: 'text-[0.5625rem] italic mt-0.5 ' + (calNote === 'overconfident' ? 'text-amber-700' : calNote === 'underconfident' ? 'text-sky-700' : 'text-emerald-700') }, calNote)
                 );
               })
             )
           ),
           // Source-tool mastery domains
           h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3 mb-4' },
-            h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.source_tool_mastery', '🌐 Source-Tool Mastery')),
+            h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.source_tool_mastery', '🌐 Source-Tool Mastery')),
             h('div', { className: 'space-y-1' },
               Object.keys(sourceTally).map(function(k) {
                 var t = sourceTally[k];
                 var pct = t.total > 0 ? Math.round(t.unlocked / t.total * 100) : 0;
-                return h('div', { key: 'st-' + k, className: 'flex items-center gap-2 text-[11px] p-1.5 rounded-lg bg-slate-50 border border-slate-200' },
+                return h('div', { key: 'st-' + k, className: 'flex items-center gap-2 text-[0.6875rem] p-1.5 rounded-lg bg-slate-50 border border-slate-200' },
                   h('span', { className: 'text-base' }, t.icon),
                   h('span', { className: 'flex-1 font-semibold text-slate-700' }, t.label),
-                  h('span', { className: 'text-[10px] text-slate-500' }, t.unlocked + '/' + t.total + ' spells · ' + t.casts + ' cast' + (t.casts !== 1 ? 's' : '')),
+                  h('span', { className: 'text-[0.625rem] text-slate-500' }, t.unlocked + '/' + t.total + ' spells · ' + t.casts + ' cast' + (t.casts !== 1 ? 's' : '')),
                   h('div', { className: 'w-16 h-2 rounded-full bg-slate-200 overflow-hidden' },
                     h('div', { className: 'h-full bg-violet-500', style: { width: pct + '%' } })
                   )
@@ -4674,11 +4674,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Reading your own past observations is its own form of retrieval +
           // re-encoding (elaborative practice). Empty state explains the loop.
           h('section', { className: 'rounded-xl border border-sky-200 bg-sky-50 p-3 mb-4' },
-            h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-sky-700 mb-2' }, t('stem.allobotsage.reflection_journal', '📝 Reflection Journal')),
+            h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-sky-700 mb-2' }, t('stem.allobotsage.reflection_journal', '📝 Reflection Journal')),
             (function() {
               var reflections = d.reflections || [];
               if (reflections.length === 0) {
-                return h('p', { className: 'text-[11px] text-sky-700 italic' },
+                return h('p', { className: 'text-[0.6875rem] text-sky-700 italic' },
                   t('stem.allobotsage.no_reflections_saved_yet_after_each_ex', 'No reflections saved yet. After each expedition, write one thing you noticed or learned. Future you will thank present you.')
                 );
               }
@@ -4695,9 +4695,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     else if (diffDays < 2) when = 'Yesterday';
                     else when = Math.floor(diffDays) + ' days ago';
                   } catch(e) { when = ''; }
-                  return h('div', { key: 'refl-' + idx, className: 'p-2 rounded-lg bg-white border border-sky-200 text-[11px]' },
+                  return h('div', { key: 'refl-' + idx, className: 'p-2 rounded-lg bg-white border border-sky-200 text-[0.6875rem]' },
                     h('p', { className: 'text-slate-800 leading-snug mb-1' }, '"' + r.text + '"'),
-                    h('div', { className: 'text-[9px] text-sky-600 flex items-center gap-2' },
+                    h('div', { className: 'text-[0.5625rem] text-sky-600 flex items-center gap-2' },
                       h('span', null, when),
                       r.sectorName && h('span', null, '· ' + r.sectorName),
                       r.difficulty && h('span', null, '· ' + r.difficulty),

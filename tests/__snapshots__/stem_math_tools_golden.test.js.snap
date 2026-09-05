@@ -4,22 +4,22 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
 {
   "buttons": 42,
   "circles": 0,
-  "inputs": 3,
-  "lengthBucket": 104,
+  "inputs": 5,
+  "lengthBucket": 80,
   "rects": 0,
-  "sha": "652ede4ba93968ad",
+  "sha": "28d2de9f795f3f4a",
   "svgs": 0,
 }
 `;
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for base10 1`] = `
 {
-  "buttons": 52,
+  "buttons": 34,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 101,
+  "lengthBucket": 85,
   "rects": 0,
-  "sha": "4069389ae281e927",
+  "sha": "c273bbb37640cff2",
   "svgs": 0,
 }
 `;
@@ -29,33 +29,33 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 15,
   "circles": 0,
   "inputs": 3,
-  "lengthBucket": 74,
+  "lengthBucket": 75,
   "rects": 0,
-  "sha": "9814e7bf089d038e",
+  "sha": "5ba756b88934d4a4",
   "svgs": 1,
 }
 `;
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for fractionViz 1`] = `
 {
-  "buttons": 41,
+  "buttons": 45,
   "circles": 1,
   "inputs": 2,
-  "lengthBucket": 82,
+  "lengthBucket": 86,
   "rects": 0,
-  "sha": "aa9677b47f619e37",
+  "sha": "1f635491e40524d9",
   "svgs": 1,
 }
 `;
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for fractions 1`] = `
 {
-  "buttons": 41,
+  "buttons": 45,
   "circles": 1,
   "inputs": 2,
-  "lengthBucket": 82,
+  "lengthBucket": 86,
   "rects": 0,
-  "sha": "aa9677b47f619e37",
+  "sha": "1f635491e40524d9",
   "svgs": 1,
 }
 `;
@@ -65,21 +65,21 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 29,
   "circles": 7,
   "inputs": 0,
-  "lengthBucket": 169,
+  "lengthBucket": 170,
   "rects": 9,
-  "sha": "0f952b3f8fabe419",
+  "sha": "87667c9a044fd8fa",
   "svgs": 1,
 }
 `;
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for multtable 1`] = `
 {
-  "buttons": 22,
+  "buttons": 23,
   "circles": 0,
   "inputs": 4,
-  "lengthBucket": 163,
+  "lengthBucket": 177,
   "rects": 0,
-  "sha": "ae583e80288c5e0a",
+  "sha": "f8ee232c54e36924",
   "svgs": 0,
 }
 `;
@@ -89,9 +89,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 21,
   "circles": 0,
   "inputs": 5,
-  "lengthBucket": 86,
+  "lengthBucket": 88,
   "rects": 1,
-  "sha": "bef193e416a6eb4b",
+  "sha": "95005b6c538b0032",
   "svgs": 2,
 }
 `;
@@ -101,9 +101,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 69,
   "circles": 3,
   "inputs": 4,
-  "lengthBucket": 162,
+  "lengthBucket": 164,
   "rects": 0,
-  "sha": "82e057fdbb93bec7",
+  "sha": "8dcb73ca60160056",
   "svgs": 1,
 }
 `;
@@ -113,9 +113,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 33,
   "circles": 0,
   "inputs": 6,
-  "lengthBucket": 207,
+  "lengthBucket": 208,
   "rects": 0,
-  "sha": "593119f064d2ab12",
+  "sha": "5d676a9d49fad626",
   "svgs": 0,
 }
 `;

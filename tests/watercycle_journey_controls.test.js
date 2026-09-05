@@ -50,7 +50,7 @@ describe('Water Cycle journey playback controls', () => {
       expect(source).toContain('.wc-timeline-step.is-complete');
       expect(source).toContain("var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];");
       expect(source).toContain("d.journeyState === 'ground_choice' || d.journeyState === 'complete'");
-      expect(source).toContain('className: "flex flex-wrap items-center gap-3 text-[11px] font-bold", role: "status"');
+      expect(source).toContain('className: "flex flex-wrap items-center gap-3 text-[0.6875rem] font-bold", role: "status"');
       expect(source).toContain('"aria-label": "Journey progress summary"');
       expect(source).toContain('"aria-live": "polite"');
       expect(source).toContain('"aria-atomic": "true"');

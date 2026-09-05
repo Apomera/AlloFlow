@@ -2681,7 +2681,7 @@ if (!safetyChecked) {
       },
         React.createElement("div", { style: { fontSize:'28px', marginBottom:'4px' } }, "\u26A0\uFE0F"),
         React.createElement("h2", { className: "text-xl font-black tracking-tight", style: { color: stationDefs[safetyStation-1].color } }, __alloT('stem.titration.lab_safety_briefing', "Lab Safety Briefing")),
-        React.createElement("p", { className: "text-[11px] mt-1", style: { color: 'rgba(255,255,255,0.5)' } },
+        React.createElement("p", { className: "text-[0.6875rem] mt-1", style: { color: 'rgba(255,255,255,0.5)' } },
           "Complete all 4 safety stations before entering the Virtual " + preset.acidName.split(' ')[0] + " Lab")
       ),
 
@@ -3059,7 +3059,7 @@ if (!safetyChecked) {
           React.createElement("button", {
             type: "button", "aria-label": __alloT('stem.titration.back_to_ppe_station', "Back to PPE station"),
             onClick: function() { goSafetyStation(1); },
-            className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
+            className: "px-4 py-2 rounded-xl text-[0.6875rem] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
           }, __alloT('stem.titration.ppe', "\u2190 PPE")),
           mapComplete && React.createElement("button", {
             "aria-label": __alloT('stem.titration.continue_to_chemical_briefing', "Continue to Chemical Briefing"),
@@ -3121,7 +3121,7 @@ if (!safetyChecked) {
           React.createElement("button", {
             type: "button", "aria-label": __alloT('stem.titration.back_to_lab_scan', "Back to Lab Scan"),
             onClick: function() { goSafetyStation(2); },
-            className: "px-4 py-2 rounded-xl text-[11px] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
+            className: "px-4 py-2 rounded-xl text-[0.6875rem] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all"
           }, __alloT('stem.titration.lab_scan_2', "\u2190 Lab Scan")),
           chemsComplete && React.createElement("button", {
             "aria-label": __alloT('stem.titration.continue_to_safety_drill', "Continue to Safety Drill"),
@@ -3303,7 +3303,7 @@ if (!safetyChecked) {
           React.createElement("button", {
             type: "button", "aria-label": __alloT('stem.titration.back_to_chemical_briefing', "Back to Chemical Briefing"),
             onClick: function() { goSafetyStation(3); },
-            className: "min-h-[44px] px-4 py-2 rounded-xl text-[11px] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            className: "min-h-[44px] px-4 py-2 rounded-xl text-[0.6875rem] font-bold text-slate-200 hover:text-white bg-black/30 border border-slate-700 hover:border-slate-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
           }, __alloT('stem.titration.chemicals_2', "\u2190 Chemicals")),
           drillResult && !allStationsComplete && React.createElement("button", {
             type: "button", "aria-label": __alloT('stem.titration.retry_drill', "Retry drill"),
@@ -3311,7 +3311,7 @@ if (!safetyChecked) {
               updMulti({ drillActive: false, drillStartTime: 0, drillAnswer: null, drillResult: null, drillPaused: false, drillPausedTimeLeft: null, drillExtraSeconds: 0 });
               focusTitrationRegion('titration-drill-begin');
             },
-            className: "min-h-[44px] px-4 py-2 rounded-xl text-[11px] font-bold text-amber-400 bg-amber-900/30 border border-amber-700 hover:border-amber-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+            className: "min-h-[44px] px-4 py-2 rounded-xl text-[0.6875rem] font-bold text-amber-400 bg-amber-900/30 border border-amber-700 hover:border-amber-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
           }, __alloT('stem.titration.retry_drill_2', "\u21BA Retry Drill"))
         ),
 
@@ -3444,12 +3444,12 @@ return React.createElement("div", {
     React.createElement("div", { className: "text-xs font-black text-amber-400 mb-2" }, __alloT('stem.titration.quick_safety_reference', "\u26A0\uFE0F Quick Safety Reference")),
     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
       safetyItems.slice(0, 4).map(function (item) {
-        return React.createElement("div", { key: item.id, className: "flex items-center gap-2 text-[11px] text-amber-200/70" },
+        return React.createElement("div", { key: item.id, className: "flex items-center gap-2 text-[0.6875rem] text-amber-200/70" },
           React.createElement("span", null, item.icon), React.createElement("span", null, item.label)
         );
       })
     ),
-    React.createElement("div", { className: "text-[11px] text-amber-300/50 mt-1" },
+    React.createElement("div", { className: "text-[0.6875rem] text-amber-300/50 mt-1" },
       __alloT('stem.titration.eyewash_10_second_rule_fire_extinguish', "\uD83D\uDEBF Eyewash located; flush immediately after exposure \u2022 \uD83D\uDEA8 Alarm and exit route known \u2022 \uD83D\uDCCB Exact SDS reviewed"))
   ),
 
@@ -3484,8 +3484,8 @@ return React.createElement("div", {
   },
     React.createElement("span", { className: "text-lg shrink-0" }, activeTip.icon),
     React.createElement("div", null,
-      React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider mb-0.5", style: { color: activeTip.color } }, __alloT('stem.titration.safety_tip', "Safety Tip")),
-      React.createElement("div", { className: "text-[11px] text-slate-300 leading-relaxed" }, activeTip.text)
+      React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-wider mb-0.5", style: { color: activeTip.color } }, __alloT('stem.titration.safety_tip', "Safety Tip")),
+      React.createElement("div", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, activeTip.text)
     )
   ),
 
@@ -3511,7 +3511,7 @@ return React.createElement("div", {
       }, __alloT('stem.titration.back_4', "\u2190 Back")),
 
       React.createElement("h3", { className: "text-lg font-black text-white tracking-tight" }, __alloT('stem.titration.virtual_titration_lab', "\uD83E\uDDEA Virtual Titration Lab")),
-      React.createElement("span", { className: "text-[11px] text-slate-400 ml-1" }, "v2.0")
+      React.createElement("span", { className: "text-[0.6875rem] text-slate-400 ml-1" }, "v2.0")
 
     ),
 
@@ -3531,7 +3531,7 @@ return React.createElement("div", {
     React.createElement("div", { className: "absolute -right-5 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🧪"),
     React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.1fr_.9fr]" },
       React.createElement("div", null,
-        React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-cyan-300" }, "Experiment command"),
+        React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.15em] text-cyan-300" }, "Experiment command"),
         React.createElement("h2", { id: "titration-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-white" }, volumeAdded === 0 ? "Prepare a controlled first addition" : pastEquivalence ? "Equivalence passed — evaluate endpoint bias" : atEquivalence ? "At equivalence — compare the indicator signal" : Math.abs(volumeAdded - Veq) <= 2 ? "Approach equivalence drop by drop" : "Build the titration curve"),
         React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed" }, volumeAdded === 0 ? (isPotentiometric ? "Confirm the preset, then add titrant while watching both the colour and the electrode potential." : "Confirm the preset and indicator, then add titrant while watching both color and pH.") : pastEquivalence ? "Compare the observed endpoint with the stoichiometric equivalence volume before resetting." : atEquivalence ? "This is the stoichiometric point; check whether the selected indicator has already changed, is changing, or has not changed yet." : Math.abs(volumeAdded - Veq) <= 2 ? "The curve is steep here. Use the smallest additions and swirl after every drop." : "Add measured volumes, observe the response, and predict where the sharp change will occur."),
         React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4", "aria-label": "Live titration metrics" },
@@ -3545,7 +3545,7 @@ return React.createElement("div", {
                 className: "font-black text-white leading-tight " +
                   (wordy ? "text-sm break-words" : "text-base truncate")
               }, metric[0]),
-              React.createElement("div", { className: "mt-1 text-[10px] font-bold text-slate-400" }, metric[1]));
+              React.createElement("div", { className: "mt-1 text-[0.625rem] font-bold text-slate-400" }, metric[1]));
           })
         )
       ),
@@ -3555,9 +3555,9 @@ return React.createElement("div", {
       // right beside it. A bare labelled <div> would have its aria-label dropped, so
       // the role has to stay.
       React.createElement("div", { role: "group", className: "rounded-xl border border-cyan-500/20 bg-black/20 p-4", "aria-label": "Equivalence progress" },
-        React.createElement("div", { className: "flex items-center justify-between gap-3" }, React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-300" }, "Equivalence progress"), React.createElement("span", { className: "text-lg font-black text-white" }, Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)) + "%")),
+        React.createElement("div", { className: "flex items-center justify-between gap-3" }, React.createElement("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-cyan-300" }, "Equivalence progress"), React.createElement("span", { className: "text-lg font-black text-white" }, Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)) + "%")),
         React.createElement("div", { className: "mt-3 h-2 overflow-hidden rounded-full bg-slate-800", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)), "aria-label": "Progress toward equivalence volume" }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all", style: { width: Math.min(100, volumeAdded / Math.max(0.1, Veq) * 100) + '%' } })),
-        React.createElement("ol", { className: "mt-4 space-y-2 text-[11px] text-slate-300" }, ["Measure volume precisely", isPotentiometric ? "Track colour and potential together" : "Track color and pH together", "Distinguish endpoint from equivalence"].map(function(step, i) {
+        React.createElement("ol", { className: "mt-4 space-y-2 text-[0.6875rem] text-slate-300" }, ["Measure volume precisely", isPotentiometric ? "Track colour and potential together" : "Track color and pH together", "Distinguish endpoint from equivalence"].map(function(step, i) {
           return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-cyan-400" }, (i + 1) + "."), React.createElement("span", null, step));
         }))
       )
@@ -3724,7 +3724,7 @@ return React.createElement("div", {
   // so the curve here is volts from the Nernst equation. Both half-reactions and both E°
   // values are on screen: the plotted curve should be checkable by hand against them.
   labTab === 'titrate' && isPotentiometric && React.createElement("div", {
-    className: "rounded-xl p-3 border text-[12px] leading-snug max-w-2xl mx-auto space-y-2",
+    className: "rounded-xl p-3 border text-[0.75rem] leading-snug max-w-2xl mx-auto space-y-2",
     role: "status",
     style: { background: 'rgba(112,26,117,0.30)', borderColor: 'rgba(217,70,239,0.5)', color: '#f5d0fe' }
   },
@@ -3732,7 +3732,7 @@ return React.createElement("div", {
       React.createElement("span", { className: "font-black" }, __alloT('stem.titration.redox_potentiometric_curve', '⚗ Redox titration — the y-axis is volts, not pH. ')),
       __alloT('stem.titration.redox_potentiometric_explainer', 'You follow a redox titration with a platinum electrode on a potentiometer. Before equivalence the Fe³⁺/Fe²⁺ couple sets the potential; after it, the leftover MnO₄⁻/Mn²⁺ couple takes over. The near-vertical jump between them is the endpoint.')
     ),
-    React.createElement("div", { className: "font-mono text-[11px] leading-relaxed", style: { color: '#f0abfc' } },
+    React.createElement("div", { className: "font-mono text-[0.6875rem] leading-relaxed", style: { color: '#f0abfc' } },
       React.createElement("div", null, 'Fe³⁺ + e⁻ → Fe²⁺    E° = +0.771 V'),
       React.createElement("div", null, 'MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O    E° = +1.507 V'),
       React.createElement("div", null, 'E = E° + (0.05916/n)·log₁₀([ox]/[red])'),
@@ -3757,7 +3757,7 @@ return React.createElement("div", {
 
     React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
 
-      React.createElement("span", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.titrant_volume', "TITRANT VOLUME:")),
+      React.createElement("span", { className: "text-[0.6875rem] text-slate-200 font-bold" }, __alloT('stem.titration.titrant_volume', "TITRANT VOLUME:")),
 
       React.createElement("input", {
 
@@ -3829,7 +3829,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-2" }, __alloT('stem.titration.burette_flask', "BURETTE & FLASK")),
+      React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-200 mb-2" }, __alloT('stem.titration.burette_flask', "BURETTE & FLASK")),
 
 
 
@@ -4009,7 +4009,7 @@ return React.createElement("div", {
 
       },
 
-        React.createElement("span", { className: "text-[11px] text-slate-200 font-bold block" }, isPotentiometric ? __alloT('stem.titration.cell_potential_caps', "CELL POTENTIAL") : __alloT('stem.titration.current_ph', "CURRENT pH")),
+        React.createElement("span", { className: "text-[0.6875rem] text-slate-200 font-bold block" }, isPotentiometric ? __alloT('stem.titration.cell_potential_caps', "CELL POTENTIAL") : __alloT('stem.titration.current_ph', "CURRENT pH")),
 
         React.createElement("span", {
 
@@ -4043,7 +4043,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-2" }, __alloT('stem.titration.titration_curve', "TITRATION CURVE")),
+      React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-200 mb-2" }, __alloT('stem.titration.titration_curve', "TITRATION CURVE")),
 
       React.createElement("svg", {
 
@@ -4330,7 +4330,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, isPotentiometric ? __alloT('stem.titration.cell_potential_caps', "CELL POTENTIAL") : __alloT('stem.titration.current_ph_2', "CURRENT pH")),
+      React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-200 mb-1" }, isPotentiometric ? __alloT('stem.titration.cell_potential_caps', "CELL POTENTIAL") : __alloT('stem.titration.current_ph_2', "CURRENT pH")),
 
       React.createElement("div", { className: "text-xl font-black tabular-nums tracking-tight", style: { color: readoutColor } }, yAxis.readout(currentY) + yAxis.unit),
 
@@ -4368,11 +4368,11 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.volume_added', "VOLUME ADDED")),
+      React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.volume_added', "VOLUME ADDED")),
 
       React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400 tracking-tight" }, volumeAdded.toFixed(1) + " mL"),
 
-      React.createElement("div", { className: "text-[11px] text-slate-400 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
+      React.createElement("div", { className: "text-[0.6875rem] text-slate-400 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
 
     ),
 
@@ -4386,7 +4386,7 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.equivalence_point', "EQUIVALENCE POINT")),
+      React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.equivalence_point', "EQUIVALENCE POINT")),
 
       React.createElement("div", { className: "text-lg font-black tabular-nums tracking-tight " + (pastEquivalence ? 'text-red-400' : 'text-slate-300') },
 
@@ -4394,7 +4394,7 @@ return React.createElement("div", {
 
       ),
 
-      React.createElement("div", { className: "text-[11px] mt-1 " + (pastEquivalence ? 'text-red-400' : 'text-slate-200') },
+      React.createElement("div", { className: "text-[0.6875rem] mt-1 " + (pastEquivalence ? 'text-red-400' : 'text-slate-200') },
 
         pastEquivalence ? 'Past equivalence' : atEquivalence ? '\u2714 At equivalence' : 'Approaching equivalence'
 
@@ -4424,7 +4424,7 @@ return React.createElement("div", {
 
       React.createElement("div", { className: "text-xs font-bold text-slate-300" }, isPotentiometric ? "Permanganate — self-indicating" : indicator.label),
 
-      React.createElement("div", { className: "text-[11px] text-slate-200" }, indicatorStatus)
+      React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, indicatorStatus)
 
     )
 
@@ -4458,7 +4458,7 @@ return React.createElement("div", {
 
         React.createElement("h5", { className: "text-xs font-bold text-cyan-400 mb-1" }, __alloT('stem.titration.what_is_titration', "What is Titration?")),
 
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
 
           "Titration is a technique to determine the concentration of an unknown solution by reacting it with a solution of known concentration (the titrant). " +
 
@@ -4482,7 +4482,7 @@ return React.createElement("div", {
 
         ),
 
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
 
           "This equation relates pH to the ratio of conjugate base [A\u207B] to weak acid [HA] concentrations. " +
 
@@ -4500,25 +4500,25 @@ return React.createElement("div", {
 
         React.createElement("h5", { className: "text-xs font-bold text-emerald-400 mb-2" }, __alloT('stem.titration.key_concepts', "Key Concepts")),
 
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed mb-1" },
 
           React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equivalence_point_2', "Equivalence Point")), __alloT('stem.titration.where_moles_of_acid_moles_of_base_the_', " \u2014 Where titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction. The pH at this point depends on the acid/base strength.")
 
         ),
 
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed mb-1" },
 
           React.createElement("span", { className: "font-bold text-pink-400" }, __alloT('stem.titration.endpoint', "Endpoint")), __alloT('stem.titration.where_the_indicator_changes_color_idea', " — The visual or instrumental signal used to estimate equivalence. A suitable method keeps endpoint bias acceptably small.")
 
         ),
 
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed mb-1" },
 
           React.createElement("span", { className: "font-bold text-amber-400" }, __alloT('stem.titration.buffer_region_2', "Buffer Region")), __alloT('stem.titration.the_flat_part_of_a_weak_acid_base_curv', " \u2014 The flat part of a weak acid/base curve where pH resists change (Henderson\u2013Hasselbalch applies).")
 
         ),
 
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
 
           React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.indicators', "Indicators")), __alloT('stem.titration.weak_acids_bases_that_change_color_at_', " \u2014 Weak acids/bases that change color over a pH range. Choose one whose transition occurs within the steep part of the curve and produces acceptably small endpoint-volume bias.")
 
@@ -4532,16 +4532,16 @@ return React.createElement("div", {
       },
         React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-2" }, __alloT('stem.titration.lab_safety_best_practices', "\u26A0\uFE0F Lab Safety Best Practices")),
 
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed mb-1" },
           React.createElement("span", { className: "font-bold text-red-400" }, __alloT('stem.titration.spill_response', "\uD83E\uDDEA Spill Response")), __alloT('stem.titration.acid_spill_neutralize_with_sodium_bica', " — Spill response: alert the teacher, keep others away, and follow the approved SDS/local spill plan. Students should not neutralize or clean unknown spills.")
         ),
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed mb-1" },
           React.createElement("span", { className: "font-bold text-amber-400" }, __alloT('stem.titration.never_mix', "\u274C Never Mix")), __alloT('stem.titration.never_mix_bleach_with_ammonia_toxic_ch', " \u2014 Never mix bleach with ammonia (toxic chloramine gas). Never add water to concentrated acid (exothermic splash risk \u2014 always add acid to water).")
         ),
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed mb-1" },
           React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equipment_2', "\uD83E\uDDEA Equipment")), __alloT('stem.titration.rinse_the_burette_with_the_titrant_sol', " \u2014 Rinse the burette with the titrant solution before filling. Swirl the flask gently after each addition. Read the burette at the meniscus bottom.")
         ),
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
           React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.waste_disposal', "\u267B\uFE0F Waste Disposal")), __alloT('stem.titration.neutralized_acid_base_solutions_ph_6_8', " — Waste disposal: label and collect chemical waste according to the instructor\'s SDS/local waste plan. Never assume drain disposal is allowed.")
         )
       )
@@ -4626,7 +4626,7 @@ return React.createElement("div", {
           : aiError ? React.createElement("p", { className: "text-rose-300" }, aiError)
           : aiText ? React.createElement("p", { className: "text-slate-200 bg-slate-900/40 rounded-lg p-3" }, aiText)
           : null),
-      !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-400" }, __alloT('stem.titration.click_explain_to_have_the_ai_tutor_des', "Click \u201CExplain\u201D to have the AI tutor describe this titration at your chosen reading level."))
+      !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[0.6875rem] italic text-slate-400" }, __alloT('stem.titration.click_explain_to_have_the_ai_tutor_des', "Click \u201CExplain\u201D to have the AI tutor describe this titration at your chosen reading level."))
     );
   })(),
 
@@ -4768,7 +4768,7 @@ return React.createElement("div", {
         React.createElement("div", null,
           React.createElement("h3", { className: "text-sm font-black text-amber-400" },
             spec.icon + ' ' + __alloT('stem.titration.unknown_run', 'Unknown') + ' #' + gRun + ' \u2014 ' + spec.name),
-          React.createElement("p", { className: "text-[12px] text-slate-300 mt-1 max-w-xl leading-relaxed" }, spec.blurb)
+          React.createElement("p", { className: "text-[0.75rem] text-slate-300 mt-1 max-w-xl leading-relaxed" }, spec.blurb)
         ),
         React.createElement("button", {
           type: "button",
@@ -4787,17 +4787,17 @@ return React.createElement("div", {
          [spec.titrant + ' ' + spec.titrantConc.toFixed(4) + ' M', __alloT('stem.titration.titrant_known', 'Titrant (known)')],
          [gInd.label, __alloT('stem.titration.indicator_label', 'Indicator')]].map(function (m) {
           return React.createElement("div", { key: m[1], className: "rounded-xl border border-white/10 bg-white/5 p-2.5" },
-            React.createElement("div", { className: "text-[13px] font-black text-white break-words" }, m[0]),
-            React.createElement("div", { className: "mt-0.5 text-[10px] font-bold text-slate-400" }, m[1]));
+            React.createElement("div", { className: "text-[0.8125rem] font-black text-white break-words" }, m[0]),
+            React.createElement("div", { className: "mt-0.5 text-[0.625rem] font-bold text-slate-400" }, m[1]));
         })
       ),
-      React.createElement("p", { className: "text-[11px] text-slate-400 italic" }, '\uD83E\uDDEB ' + spec.prep),
+      React.createElement("p", { className: "text-[0.6875rem] text-slate-400 italic" }, '\uD83E\uDDEB ' + spec.prep),
 
       // \u2500\u2500 Burette: forward only, like the real thing \u2500\u2500
       React.createElement("div", { className: "rounded-xl p-3 border border-slate-600/40 bg-slate-900/40 space-y-2" },
         React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
-          React.createElement("span", { className: "text-[11px] font-bold text-slate-200" }, __alloT('stem.titration.deliver_titrant', 'DELIVER TITRANT')),
-          React.createElement("span", { className: "text-[11px] text-slate-400" },
+          React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-200" }, __alloT('stem.titration.deliver_titrant', 'DELIVER TITRANT')),
+          React.createElement("span", { className: "text-[0.6875rem] text-slate-400" },
             __alloT('stem.titration.one_drop_is', 'One drop = ') + BURETTE.DROP_ML.toFixed(2) + ' mL')
         ),
         React.createElement("div", { className: "flex gap-2 flex-wrap" },
@@ -4841,10 +4841,10 @@ return React.createElement("div", {
           background: indicatorColorFor(gInd, gFlaskPH, false), border: '2px solid rgba(148,163,184,0.5)'
         } }),
         React.createElement("div", { className: "flex-1 min-w-[180px]" },
-          React.createElement("div", { className: "text-[11px] font-bold text-slate-200" }, __alloT('stem.titration.in_the_flask', 'IN THE FLASK')),
-          React.createElement("div", { className: "text-[12px] font-semibold", style: { color: obs.tone } }, obs.text)
+          React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-200" }, __alloT('stem.titration.in_the_flask', 'IN THE FLASK')),
+          React.createElement("div", { className: "text-[0.75rem] font-semibold", style: { color: obs.tone } }, obs.text)
         ),
-        React.createElement("div", { className: "text-[10px] text-slate-400 italic max-w-[220px]" },
+        React.createElement("div", { className: "text-[0.625rem] text-slate-400 italic max-w-[220px]" },
           __alloT('stem.titration.no_ph_meter', 'No pH readout in graded mode \u2014 you judge the endpoint the way you would at a real bench.'))
       ),
 
@@ -4924,14 +4924,14 @@ return React.createElement("div", {
               glReady && React.createElement("button", {
                 onClick: function () { updMulti({ gRot3d: burHomeRot(), gZoom3d: BUR_HOME.zoom }); },
                 style: { position: 'absolute', right: 8, top: 6 },
-                className: "px-2 py-0.5 rounded text-[10px] font-bold text-slate-200 bg-slate-900/70 border border-slate-600 hover:bg-slate-800"
+                className: "px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-200 bg-slate-900/70 border border-slate-600 hover:bg-slate-800"
               }, __alloT('stem.titration.reset_view', 'Reset view')),
               !glReady && React.createElement("div", {
                 style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
                   justifyContent: 'center', background: '#0a1420' }
               }, elevation)
             ),
-            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 leading-snug" },
+            React.createElement("p", { className: "text-[0.625rem] text-slate-400 mt-1 leading-snug" },
               glReady
                 ? (__alloT('stem.titration.exag_note', 'Drawn as a wide bore seen from close in, so the effect is visible \u2014 about ')
                     + BUR3D.EXAGGERATION.toFixed(1)
@@ -4939,7 +4939,7 @@ return React.createElement("div", {
                 : __alloT('stem.titration.elevation_note', 'Side elevation. The green line is where the meniscus really sits; the amber line is where your sight line crosses the scale.'))
           ),
           React.createElement("div", { className: "space-y-2" },
-            React.createElement("label", { className: "block text-[11px] font-bold text-slate-300", htmlFor: "titr-eye" },
+            React.createElement("label", { className: "block text-[0.6875rem] font-bold text-slate-300", htmlFor: "titr-eye" },
               __alloT('stem.titration.eye_height', 'Eye height vs the meniscus')),
             React.createElement("input", {
               id: "titr-eye", type: "range", min: -BURETTE.MAX_EYE_CM, max: BURETTE.MAX_EYE_CM, step: 0.5,
@@ -4952,7 +4952,7 @@ return React.createElement("div", {
                 Math.abs(parErr).toFixed(3) + __alloT('stem.titration.sr_millilitres', ' millilitres.'),
               className: "min-h-[44px] w-full accent-amber-400"
             }),
-            React.createElement("div", { className: "flex items-center justify-between text-[10px] text-slate-400" },
+            React.createElement("div", { className: "flex items-center justify-between text-[0.625rem] text-slate-400" },
               React.createElement("span", null, __alloT('stem.titration.below', '20 cm below')),
               React.createElement("button", {
                 onClick: function () { upd('gEyeCm', 0); },
@@ -4990,8 +4990,8 @@ return React.createElement("div", {
         var concordant = includedTrials.length >= 2 && liveStats.spread <= BURETTE.CONCORDANCE_RANGE_ML + 1e-9;
         return React.createElement("div", { id: "titration-trials", tabIndex: -1, className: "rounded-xl p-3 border border-slate-600/40 bg-slate-900/40 space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" },
           React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
-            React.createElement("span", { className: "text-[11px] font-bold text-slate-200" }, __alloT('stem.titration.trials', '\uD83E\uDDFE TRIALS')),
-            React.createElement("span", { className: "text-[10px] text-slate-400 italic" },
+            React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-200" }, __alloT('stem.titration.trials', '\uD83E\uDDFE TRIALS')),
+            React.createElement("span", { className: "text-[0.625rem] text-slate-400 italic" },
               'Activity criterion: select at least two non-rough titres with a range within ' + BURETTE.CONCORDANCE_RANGE_ML.toFixed(2) + ' mL, then report their mean. Your course may specify another criterion; concordance shows repeatability, not accuracy.')
           ),
           gTrials.length === 0
@@ -5024,7 +5024,7 @@ return React.createElement("div", {
                         : React.createElement("span", { className: "text-xs text-amber-300" }, 'Not eligible')));
                 }))
               )),
-          includedTrials.length >= 2 && React.createElement("div", { className: "text-[11px] font-bold",
+          includedTrials.length >= 2 && React.createElement("div", { className: "text-[0.6875rem] font-bold",
             style: { color: concordant ? '#4ade80' : '#fbbf24' } },
             __alloT('stem.titration.mean_of', 'Mean of ') + liveStats.n + ': ' + liveStats.mean.toFixed(2) + ' mL \u00B7 ' +
             __alloT('stem.titration.spread_is', 'spread ') + liveStats.spread.toFixed(2) + ' mL \u00B7 ' +
@@ -5087,7 +5087,7 @@ return React.createElement("div", {
                 (includedTrials.length < 2 || !concordant ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
                                     : "bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-[0.98]")
             }, __alloT('stem.titration.finish_and_report', '\u2705 Finish and report the mean')),
-            (!concordant) && React.createElement("span", { className: "text-[10px] text-slate-400 self-center" },
+            (!concordant) && React.createElement("span", { className: "text-[0.625rem] text-slate-400 self-center" },
               __alloT('stem.titration.need_two', 'Select at least two concordant titres before reporting.'))
           )
         );
@@ -5110,8 +5110,8 @@ return React.createElement("div", {
              [(r.volErrMl >= 0 ? '+' : '') + r.volErrMl.toFixed(2) + ' mL', 'Total error vs equivalence'],
              [(r.concErrPct >= 0 ? '+' : '') + r.concErrPct.toFixed(2) + '%', __alloT('stem.titration.concentration_error', 'Concentration error')]].map(function (m) {
               return React.createElement("div", { key: m[1], className: "rounded-lg border border-white/10 bg-white/5 p-2.5" },
-                React.createElement("div", { className: "text-[13px] font-black text-white break-words" }, m[0]),
-                React.createElement("div", { className: "mt-0.5 text-[10px] font-bold text-slate-400" }, m[1]));
+                React.createElement("div", { className: "text-[0.8125rem] font-black text-white break-words" }, m[0]),
+                React.createElement("div", { className: "mt-0.5 text-[0.625rem] font-bold text-slate-400" }, m[1]));
             })
           ),
           // \u2500\u2500 Precision and accuracy, scored SEPARATELY \u2500\u2500
@@ -5130,16 +5130,16 @@ return React.createElement("div", {
               return React.createElement("div", { key: m[1], className: "rounded-lg border p-2.5",
                 style: { borderColor: m[0] ? 'rgba(74,222,128,0.5)' : 'rgba(248,113,113,0.5)',
                   background: m[0] ? 'rgba(22,101,52,0.15)' : 'rgba(127,29,29,0.15)' } },
-                React.createElement("div", { className: "text-[10px] font-bold text-slate-400" }, m[1]),
-                React.createElement("div", { className: "text-[13px] font-black", style: { color: m[0] ? '#4ade80' : '#f87171' } },
+                React.createElement("div", { className: "text-[0.625rem] font-bold text-slate-400" }, m[1]),
+                React.createElement("div", { className: "text-[0.8125rem] font-black", style: { color: m[0] ? '#4ade80' : '#f87171' } },
                   (m[0] ? '\u2713 ' : '\u2717 ') + m[3]),
-                React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5" }, m[2]));
+                React.createElement("div", { className: "text-[0.625rem] text-slate-400 mt-0.5" }, m[2]));
             })
           ),
 
           // The teaching moment this whole feature exists for.
           r.pa && r.pa.verdict === 'precise-not-accurate' && React.createElement("div", {
-            className: "rounded-lg p-3 border text-[11px] leading-relaxed",
+            className: "rounded-lg p-3 border text-[0.6875rem] leading-relaxed",
             style: { borderColor: 'rgba(251,191,36,0.6)', background: 'rgba(120,53,15,0.28)', color: '#fde68a' }
           },
             React.createElement("span", { className: "font-black" }, __alloT('stem.titration.precise_not_accurate_head', '\u26a0 Precise, but not accurate. ')),
@@ -5166,7 +5166,7 @@ return React.createElement("div", {
       })(),
 
       gLog.length > 0 && React.createElement("details", { className: "rounded-xl border border-slate-700/50 overflow-hidden" },
-        React.createElement("summary", { className: "px-3 py-2 cursor-pointer text-[12px] font-bold text-slate-300" },
+        React.createElement("summary", { className: "px-3 py-2 cursor-pointer text-[0.75rem] font-bold text-slate-300" },
           __alloT('stem.titration.run_log', 'Run log') + ' (' + gLog.length + ')'),
         React.createElement("div", { className: "overflow-x-auto", role: "region", "aria-label": "Completed unknown runs", tabIndex: 0 }, React.createElement("table", { className: "w-full min-w-[34rem] text-xs" },
           React.createElement("caption", { className: "sr-only" }, "Completed unknown runs"),
@@ -5194,8 +5194,8 @@ return React.createElement("div", {
     React.createElement("div", { className: "flex items-center justify-between" },
       React.createElement("h3", { className: "text-sm font-black text-amber-400" }, __alloT('stem.titration.lab_safety_chemistry_challenge', "\uD83C\uDFC6 Lab Safety & Chemistry Challenge")),
       React.createElement("div", { className: "flex gap-2" },
-        React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400" }, "Score: " + challengeScore),
-        challengeStreak >= 3 && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "\uD83D\uDD25 Streak: " + challengeStreak)
+        React.createElement("span", { className: "text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400" }, "Score: " + challengeScore),
+        challengeStreak >= 3 && React.createElement("span", { className: "text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "\uD83D\uDD25 Streak: " + challengeStreak)
       )
     ),
     // Current question
@@ -5207,10 +5207,10 @@ return React.createElement("div", {
       },
         React.createElement("div", { className: "flex items-center gap-2 mb-2" },
           React.createElement("span", {
-            className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
+            className: "text-[0.6875rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
               (cq.category === 'safety' ? 'bg-red-900/30 text-red-400' : cq.category === 'technique' ? 'bg-cyan-900/30 text-cyan-400' : 'bg-indigo-900/30 text-indigo-400')
           }, cq.category),
-          React.createElement("span", { className: "text-[11px] text-slate-400" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
+          React.createElement("span", { className: "text-[0.6875rem] text-slate-400" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
         ),
         React.createElement("p", { className: "text-sm font-semibold text-white mb-3" }, cq.q),
         React.createElement("div", { className: "flex flex-col gap-2" },
@@ -5248,7 +5248,7 @@ return React.createElement("div", {
           React.createElement("p", { className: "text-xs font-bold mb-1 " + (challengeAnswer === cq.answer ? "text-emerald-400" : "text-red-400") },
             challengeAnswer === cq.answer ? "\u2705 Correct! +" + cq.xp + " XP" + (challengeStreak >= 3 ? " \uD83D\uDD25 Streak bonus!" : "") : "\u274C Incorrect"
           ),
-          React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, cq.feedback),
+          React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, cq.feedback),
           React.createElement("div", { className: "mt-2" },
             React.createElement("button", { "aria-label": __alloT('stem.titration.next_question', "Next Question"),
               type: "button",
@@ -5274,9 +5274,9 @@ return React.createElement("div", {
     React.createElement("div", { className: "flex items-center justify-between" },
       React.createElement("h3", { className: "text-sm font-black text-red-400" }, __alloT('stem.titration.lab_safety_incident_simulator', "\uD83D\uDEA8 Lab Safety Incident Simulator")),
       React.createElement("div", { className: "flex gap-2" },
-        React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-900/30 text-emerald-400" },
+        React.createElement("span", { className: "text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-emerald-900/30 text-emerald-400" },
           Object.keys(incidentCompleted).filter(function(k) { return incidentCompleted[k]; }).length + "/" + incidentScenarios.length + " completed"),
-        React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "Score: " + incidentScore)
+        React.createElement("span", { className: "text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "Score: " + incidentScore)
       )
     ),
     React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed" },
@@ -5312,13 +5312,13 @@ return React.createElement("div", {
           React.createElement("div", null,
             React.createElement("h4", { className: "text-sm font-black text-white" }, scenario.title),
             React.createElement("span", {
-              className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
+              className: "text-[0.6875rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
                 (scenario.urgency === 'critical' ? 'bg-red-600 text-white' : scenario.urgency === 'high' ? 'bg-amber-700 text-white' : 'bg-slate-600 text-slate-200')
             }, scenario.urgency + " urgency")
           )
         ),
         React.createElement("p", { className: "text-xs text-slate-300 mb-3 leading-relaxed" }, scenario.desc),
-        React.createElement("div", { className: "text-[11px] font-bold text-red-400 mb-2" }, __alloT('stem.titration.what_do_you_do', "What do you do?")),
+        React.createElement("div", { className: "text-[0.6875rem] font-bold text-red-400 mb-2" }, __alloT('stem.titration.what_do_you_do', "What do you do?")),
         React.createElement("div", { className: "flex flex-col gap-2" },
           scenario.options.map(function(opt) {
             var showResult = incidentAnswer !== null;
@@ -5359,7 +5359,7 @@ return React.createElement("div", {
             React.createElement("p", { className: "text-xs font-bold mb-1 " + (selected.correct ? "text-emerald-400" : "text-red-400") },
               selected.correct ? "\u2705 Correct Response! +20 XP" : "\u274C Not the best response"
             ),
-            React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, selected.feedback),
+            React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, selected.feedback),
             incidentIdx < incidentScenarios.length - 1 && React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.next_scenario', "Next Scenario"),
               onClick: function() {
                 updMulti({ incidentIdx: incidentIdx + 1, incidentAnswer: null });
@@ -5404,9 +5404,9 @@ return React.createElement("div", {
       var slice = mlHeightMm(sel.boreMm);
       var beaker = mlHeightMm(70);
       return React.createElement("div", { className: "rounded-xl p-3 border border-emerald-800/40 bg-slate-900/40 space-y-3 mb-4" },
-        React.createElement("div", { className: "text-[11px] font-bold text-emerald-300" },
+        React.createElement("div", { className: "text-[0.6875rem] font-bold text-emerald-300" },
           __alloT('stem.titration.why_tolerances_differ', '\uD83D\uDCD0 WHY THE TOLERANCES DIFFER')),
-        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+        React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
           __alloT('stem.titration.bore_explains_tolerance', 'A tolerance is not an arbitrary number stamped on the glass \u2014 it follows from how wide the vessel is where you read it. The blue slice in each vessel below is one millilitre, drawn to scale against that vessel\'s real bore.')),
         React.createElement("div", {
           style: { position: 'relative', height: 220, borderRadius: 10, overflow: 'hidden',
@@ -5465,7 +5465,7 @@ return React.createElement("div", {
             return React.createElement("button", {
               key: g.id, type: "button", onClick: function () { upd('benchSel', g.id); },
               "aria-pressed": on ? 'true' : 'false',
-              className: "min-h-[44px] px-3 py-2 rounded-lg text-[10px] font-bold border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 " +
+              className: "min-h-[44px] px-3 py-2 rounded-lg text-[0.625rem] font-bold border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 " +
                 (on ? "bg-emerald-500 text-slate-900 border-emerald-300"
                     : "bg-slate-800/60 text-slate-300 border-slate-600 hover:bg-slate-700/70")
             }, g.label);
@@ -5488,7 +5488,7 @@ return React.createElement("div", {
               React.createElement("td", { className: "px-2 py-1 tabular-nums" }, tolPercent(g).toFixed(2) + '%'));
           }))
         )),
-        React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#a7f3d0' } },
+        React.createElement("p", { className: "text-[0.6875rem] leading-relaxed", style: { color: '#a7f3d0' } },
           __alloT('stem.titration.bench_punchline_a', 'In the ') + sel.label.toLowerCase() +
           __alloT('stem.titration.bench_punchline_b', ', one millilitre stands ') + slice.toFixed(1) +
           __alloT('stem.titration.bench_punchline_c', ' mm tall \u2014 about ') + (slice / beaker).toFixed(0) +
@@ -5520,7 +5520,7 @@ return React.createElement("div", {
             React.createElement("span", { className: "text-lg" }, eq.icon),
             React.createElement("span", { id: "titration-equipment-name-" + eq.id, className: "text-xs font-bold " + (isSelected ? "text-emerald-400" : "text-white") }, eq.name)
           ),
-          React.createElement("p", { id: "titration-equipment-description-" + eq.id, className: "text-[11px] text-slate-200" }, eq.desc)
+          React.createElement("p", { id: "titration-equipment-description-" + eq.id, className: "text-[0.6875rem] text-slate-200" }, eq.desc)
         );
       })
     ),
@@ -5543,14 +5543,14 @@ return React.createElement("div", {
         // Technique
         React.createElement("div", { className: "rounded-xl p-4 border border-emerald-800/30 bg-emerald-950/20" },
           React.createElement("h5", { className: "text-xs font-bold text-emerald-400 mb-2" }, __alloT('stem.titration.correct_technique', "\u2705 Correct Technique")),
-          React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, eq.technique)
+          React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, eq.technique)
         ),
         // Common errors
         React.createElement("div", { className: "rounded-xl p-4 border border-amber-800/30 bg-amber-950/20" },
           React.createElement("h5", { className: "text-xs font-bold text-amber-400 mb-2" }, __alloT('stem.titration.common_errors', "\u26A0\uFE0F Common Errors")),
           React.createElement("ul", { className: "space-y-1" },
             eq.errors.map(function(err, i) {
-              return React.createElement("li", { key: i, className: "text-[11px] text-slate-300 flex items-start gap-1.5" },
+              return React.createElement("li", { key: i, className: "text-[0.6875rem] text-slate-300 flex items-start gap-1.5" },
                 React.createElement("span", { className: "text-red-400 shrink-0" }, "\u2022"),
                 err
               );
@@ -5560,7 +5560,7 @@ return React.createElement("div", {
         // Safety note
         React.createElement("div", { className: "rounded-xl p-4 border border-red-800/30 bg-red-950/20" },
           React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-1" }, __alloT('stem.titration.safety_note', "\uD83D\uDEE1\uFE0F Safety Note")),
-          React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, eq.safetyNote)
+          React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, eq.safetyNote)
         )
       );
     })()
@@ -5583,8 +5583,8 @@ return React.createElement("div", {
     },
       React.createElement("span", { className: "text-base shrink-0" }, "\u26A0\uFE0F"),
       React.createElement("div", null,
-        React.createElement("p", { className: "text-[11px] font-bold text-red-400" }, __alloT('stem.titration.critical_safety_reminder', "CRITICAL SAFETY REMINDER")),
-        React.createElement("p", { className: "text-[11px] text-red-300/70" }, __alloT('stem.titration.always_add_acid_to_water_never_water_t', "Always add acid TO water, never water to acid. Exothermic mixing can cause violent boiling and splash concentrated acid."))
+        React.createElement("p", { className: "text-[0.6875rem] font-bold text-red-400" }, __alloT('stem.titration.critical_safety_reminder', "CRITICAL SAFETY REMINDER")),
+        React.createElement("p", { className: "text-[0.6875rem] text-red-300/70" }, __alloT('stem.titration.always_add_acid_to_water_never_water_t', "Always add acid TO water, never water to acid. Exothermic mixing can cause violent boiling and splash concentrated acid."))
       )
     ),
 
@@ -5592,9 +5592,9 @@ return React.createElement("div", {
     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" },
       // Stock solution (C1)
       React.createElement("div", { className: "rounded-xl p-3 border border-violet-800/30 bg-violet-950/20" },
-        React.createElement("div", { className: "text-[11px] font-bold text-violet-400 mb-2 uppercase tracking-wider" }, __alloT('stem.titration.stock_solution', "Stock Solution")),
+        React.createElement("div", { className: "text-[0.6875rem] font-bold text-violet-400 mb-2 uppercase tracking-wider" }, __alloT('stem.titration.stock_solution', "Stock Solution")),
         React.createElement("label", { className: "block mb-2" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.c_concentration', "C\u2081 (Concentration)")),
+          React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.titration.c_concentration', "C\u2081 (Concentration)")),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 0.01, max: 18, step: 0.01, value: molarityCalcC1,
@@ -5607,18 +5607,18 @@ return React.createElement("div", {
           )
         ),
         React.createElement("label", { className: "block" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.v_volume_needed', "V\u2081 (Volume needed)")),
+          React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.titration.v_volume_needed', "V\u2081 (Volume needed)")),
           React.createElement("div", { className: "text-lg font-black text-violet-300 mt-1 tracking-tight" },
             (dilutionStockMl).toFixed(2) + " mL"
           ),
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.calculated_from_c_v_c', "Calculated from C\u2082V\u2082/C\u2081"))
+          React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.titration.calculated_from_c_v_c', "Calculated from C\u2082V\u2082/C\u2081"))
         )
       ),
       // Desired solution (C2, V2)
       React.createElement("div", { className: "rounded-xl p-3 border border-cyan-800/30 bg-cyan-950/20" },
-        React.createElement("div", { className: "text-[11px] font-bold text-cyan-400 mb-2 uppercase tracking-wider" }, __alloT('stem.titration.desired_solution', "Desired Solution")),
+        React.createElement("div", { className: "text-[0.6875rem] font-bold text-cyan-400 mb-2 uppercase tracking-wider" }, __alloT('stem.titration.desired_solution', "Desired Solution")),
         React.createElement("label", { className: "block mb-2" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.c_target_concentration', "C\u2082 (Target concentration)")),
+          React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.titration.c_target_concentration', "C\u2082 (Target concentration)")),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 0.001, max: molarityCalcC1, step: 0.001, value: dilutionC2,
@@ -5631,7 +5631,7 @@ return React.createElement("div", {
           )
         ),
         React.createElement("label", { className: "block" },
-          React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.titration.v_final_volume', "V\u2082 (Final volume)")),
+          React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.titration.v_final_volume', "V\u2082 (Final volume)")),
           React.createElement("div", { className: "flex items-center gap-1 mt-1" },
             React.createElement("input", {
               type: "range", min: 1, max: 1000, step: 1, value: molarityCalcV1,
@@ -5652,7 +5652,7 @@ return React.createElement("div", {
 
     // Dilution procedure
     React.createElement("div", { className: "rounded-xl p-4 border border-slate-700 bg-slate-800/40" },
-      React.createElement("div", { className: "text-[11px] font-bold text-white mb-2" }, __alloT('stem.titration.dilution_procedure', "\uD83D\uDCD0 Dilution Procedure")),
+      React.createElement("div", { className: "text-[0.6875rem] font-bold text-white mb-2" }, __alloT('stem.titration.dilution_procedure', "\uD83D\uDCD0 Dilution Procedure")),
       React.createElement("div", { className: "space-y-2" },
         [
           { step: 1, text: "Calculate V\u2081 = C\u2082 \u00D7 V\u2082 / C\u2081 = " + dilutionC2.toFixed(3) + " \u00D7 " + molarityCalcV1.toFixed(0) + " / " + molarityCalcC1.toFixed(2) + " = " + (dilutionStockMl).toFixed(2) + " mL", icon: "\uD83E\uDDEE" },
@@ -5664,7 +5664,7 @@ return React.createElement("div", {
         ].map(function(s) {
           return React.createElement("div", { key: s.step, className: "flex items-start gap-2" },
             React.createElement("span", { className: "text-xs shrink-0" }, s.icon),
-            React.createElement("span", { className: "text-[11px] text-slate-300" },
+            React.createElement("span", { className: "text-[0.6875rem] text-slate-300" },
               React.createElement("span", { className: "font-bold text-white" }, "Step " + s.step + ": "), s.text
             )
           );
@@ -5675,15 +5675,15 @@ return React.createElement("div", {
     // Dilution factor
     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-3" },
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-violet-800/30 bg-violet-950/20" },
-        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.dilution_factor', "Dilution Factor")),
+        React.createElement("div", { className: "text-[0.6875rem] text-slate-200 font-bold" }, __alloT('stem.titration.dilution_factor', "Dilution Factor")),
         React.createElement("div", { className: "text-sm font-black text-violet-400" }, "1:" + (molarityCalcC1 / dilutionC2).toFixed(1))
       ),
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-cyan-800/30 bg-cyan-950/20" },
-        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.water_to_add', "Diluent")),
+        React.createElement("div", { className: "text-[0.6875rem] text-slate-200 font-bold" }, __alloT('stem.titration.water_to_add', "Diluent")),
         React.createElement("div", { className: "text-sm font-black text-cyan-400" }, "Add to the final mark")
       ),
       React.createElement("div", { className: "rounded-lg px-4 py-2 text-center border border-emerald-800/30 bg-emerald-950/20" },
-        React.createElement("div", { className: "text-[11px] text-slate-200 font-bold" }, __alloT('stem.titration.moles_solute', "Moles Solute")),
+        React.createElement("div", { className: "text-[0.6875rem] text-slate-200 font-bold" }, __alloT('stem.titration.moles_solute', "Moles Solute")),
         React.createElement("div", { className: "text-sm font-black text-emerald-400" }, (dilutionC2 * molarityCalcV1 / 1000).toExponential(2) + " mol")
       )
     )
@@ -5780,11 +5780,11 @@ return React.createElement("div", {
     }
     return React.createElement('div', { className: 'rounded-2xl p-5 border space-y-4', style: Object.assign({}, glass, { background: 'rgba(3,30,40,0.85)', borderColor: 'rgba(8,145,178,0.3)' }) },
       React.createElement('h3', { className: 'text-sm font-black text-cyan-400 mb-1' }, __alloT('stem.titration.buffer_strength_discovery', '🛡️ Buffer strength discovery')),
-      React.createElement('p', { className: 'text-[12px] text-slate-300 mb-3 leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.75rem] text-slate-300 mb-3 leading-relaxed' },
         __alloT('stem.titration.three_sliders_weak_acid_strength_ka_bu', 'Two sliders you control — weak acid strength (Ka) and buffer ratio [A⁻]/[HA]; the starting pH below them is a readout, not a control. The simulation tells you whether the buffer HOLDS or FAILS after adding 20% more acid (discrete outcome — no numeric "buffer score"). Sweep the sliders. Log observations. Type what you discover about what makes a good buffer.')),
       React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mb-3 p-3 rounded-lg text-center', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
         React.createElement('div', { className: 'text-base font-black mb-1', style: { color: outcomeMeta.color } }, outcomeMeta.label),
-        React.createElement('div', { className: 'text-[11px] text-slate-700' }, outcomeMeta.desc)
+        React.createElement('div', { className: 'text-[0.6875rem] text-slate-700' }, outcomeMeta.desc)
       ),
       React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
         [
@@ -5793,7 +5793,7 @@ return React.createElement("div", {
           { key: 'startPH', label: __alloT('stem.titration.starting_ph_display_only', 'Starting pH (display only)'), val: pHcurrent, displayVal: pHcurrent.toFixed(2), min: 0, max: 14, step: 0.1, onChange: function(v) {}, readOnly: true }
         ].map(function(s) {
           return React.createElement('div', { key: s.key },
-            React.createElement('label', { htmlFor: 'bf-' + s.key, className: 'block text-[11px] font-bold text-slate-300 mb-1' },
+            React.createElement('label', { htmlFor: 'bf-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1' },
               s.label + ': ', React.createElement('span', { className: 'font-mono text-cyan-400' }, s.displayVal)),
             s.readOnly
               ? React.createElement('output', { id: 'bf-' + s.key, className: 'block min-h-[44px] rounded-lg border border-cyan-800/40 bg-slate-900 px-3 py-2 text-base font-mono font-bold text-cyan-300', 'aria-label': s.label }, s.displayVal)
@@ -5803,10 +5803,10 @@ return React.createElement("div", {
         })
       ),
       React.createElement('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-        React.createElement('button', { type: 'button', onClick: logObs, className: 'min-h-[44px] transition-colors px-3 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 bg-slate-700 hover:bg-slate-600 text-[11px] font-bold text-slate-200 border border-slate-600 active:scale-[0.97]' }, __alloT('stem.titration.log_observation', '📋 Log observation')),
+        React.createElement('button', { type: 'button', onClick: logObs, className: 'min-h-[44px] transition-colors px-3 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 bg-slate-700 hover:bg-slate-600 text-[0.6875rem] font-bold text-slate-200 border border-slate-600 active:scale-[0.97]' }, __alloT('stem.titration.log_observation', '📋 Log observation')),
         React.createElement('button', { type: 'button', onClick: function() { setBF({ ka: 1e-5, ratio: 1.0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-          className: 'min-h-[44px] transition-colors px-3 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-300 border border-slate-600 active:scale-[0.97]' }, __alloT('stem.titration.reset_2', '↺ Reset')),
-        (bf.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-400 italic' }, (bf.log || []).length + ' observations logged')
+          className: 'min-h-[44px] transition-colors px-3 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 bg-slate-800 hover:bg-slate-700 text-[0.6875rem] font-semibold text-slate-300 border border-slate-600 active:scale-[0.97]' }, __alloT('stem.titration.reset_2', '↺ Reset')),
+        (bf.log || []).length > 0 && React.createElement('span', { className: 'text-[0.625rem] text-slate-400 italic' }, (bf.log || []).length + ' observations logged')
       ),
       (bf.log || []).length > 0 && React.createElement('div', { className: 'mb-3 overflow-x-auto' },
         React.createElement('table', { className: 'text-xs w-full min-w-[520px] border-collapse text-slate-300', 'aria-label': 'Buffer observations' },
@@ -5826,18 +5826,18 @@ return React.createElement("div", {
           })))
       ),
       React.createElement('div', { className: 'mb-3' },
-        React.createElement('label', { htmlFor: 'bf-hypo', className: 'block text-[11px] font-bold text-slate-300 mb-1' },
+        React.createElement('label', { htmlFor: 'bf-hypo', className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1' },
           __alloT('stem.titration.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
         React.createElement('textarea', { id: 'bf-hypo', value: bf.hypothesis || '',
           onChange: function(e) { setBF({ hypothesis: e.target.value }); },
           placeholder: __alloT('stem.titration.what_single_condition_makes_the_differ', 'What single condition makes the difference between GOOD and POOR? Does ratio matter more than pKa? Does the starting pH matter at all? Type your own theory.'),
-          className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 3 })
+          className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 3 })
       ),
       React.createElement('div', { className: 'mb-3' },
         !bf.stuckRevealed && React.createElement('button', { type: 'button', onClick: function() { setBF({ stuckRevealed: true }); },
-          className: 'min-h-[44px] transition-colors px-3 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 bg-amber-900/30 hover:bg-amber-800/40 text-[11px] font-bold text-amber-300 border border-amber-700 active:scale-[0.97]' },
+          className: 'min-h-[44px] transition-colors px-3 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 bg-amber-900/30 hover:bg-amber-800/40 text-[0.6875rem] font-bold text-amber-300 border border-amber-700 active:scale-[0.97]' },
           __alloT('stem.titration.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
-        bf.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-300 leading-relaxed' },
+        bf.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[0.6875rem] text-slate-300 leading-relaxed' },
           React.createElement('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.titration.open_questions_investigate_by_manipula', 'Open questions — investigate by manipulating:')),
           React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
             React.createElement('li', null, __alloT('stem.titration.fix_ratio_at_1_0_sweep_pka_from_2_to_1', 'Fix ratio at 1.0. Sweep pKa from 2 to 12. Are some pKa values just inherently better buffers? Why might that be?')),
@@ -5845,27 +5845,27 @@ return React.createElement("div", {
             React.createElement('li', null, __alloT('stem.titration.find_one_good_buffer_then_change_one_s', 'Find one GOOD buffer. Then change ONE slider until it becomes POOR. Which single change was most efficient?')),
             React.createElement('li', null, __alloT('stem.titration.log_4_5_good_buffers_with_different_pk', 'Log 4-5 GOOD buffers with different pKa values. What do their starting pH values have in common with their pKa?')),
             React.createElement('li', null, __alloT('stem.titration.in_real_biochemistry_blood_is_buffered', 'In real biochemistry, blood is buffered at pH 7.4 — what pKa would be ideal for that buffer system? Investigate by looking up phosphate and bicarbonate buffers.'))),
-          React.createElement('div', { className: 'text-[10px] italic text-amber-400 mt-2' }, __alloT('stem.titration.no_answers_will_be_revealed_investigat', 'No answers will be revealed. Investigate.')))
+          React.createElement('div', { className: 'text-[0.625rem] italic text-amber-400 mt-2' }, __alloT('stem.titration.no_answers_will_be_revealed_investigat', 'No answers will be revealed. Investigate.')))
       ),
       React.createElement('div', { className: 'p-3 rounded bg-emerald-900/20 border border-emerald-700' },
         React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
           React.createElement('input', { type: 'checkbox', id: 'bf-und', checked: !!bf.understood, onChange: function(e) { setBF({ understood: e.target.checked }); }, className: 'w-6 h-6' }),
-          React.createElement('label', { htmlFor: 'bf-und', className: 'text-[12px] font-bold text-emerald-300 cursor-pointer' },
+          React.createElement('label', { htmlFor: 'bf-und', className: 'text-[0.75rem] font-bold text-emerald-300 cursor-pointer' },
             __alloT('stem.titration.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
         // A placeholder is not an accessible name: it vanishes the moment the student
         // starts typing, so anyone relying on the accessible name loses the prompt
         // exactly when they need it. The visible label is bound with htmlFor.
         bf.understood && React.createElement('label', {
-          htmlFor: 'bf-explain', className: 'block text-[11px] font-bold text-emerald-300 mb-1'
+          htmlFor: 'bf-explain', className: 'block text-[0.6875rem] font-bold text-emerald-300 mb-1'
         }, __alloT('stem.titration.explain_label', 'Your explanation')),
         bf.understood && React.createElement('textarea', { id: 'bf-explain', value: bf.explanation || '',
           onChange: function(e) { setBF({ explanation: e.target.value }); },
           placeholder: __alloT('stem.titration.explain_in_your_own_words_what_is_the_', 'Explain in your own words: what is the relationship between pKa, ratio, and starting pH? What single condition (or combination) makes a buffer hold against more acid? Why does ratio range matter?'),
-          className: 'w-full text-[12px] border border-emerald-700 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 4 }),
-        bf.understood && (bf.explanation || '').trim().length >= 40 && React.createElement('div', { className: 'mt-2 text-[10px] italic text-emerald-400' },
+          className: 'w-full text-[0.75rem] border border-emerald-700 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 4 }),
+        bf.understood && (bf.explanation || '').trim().length >= 40 && React.createElement('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-400' },
           __alloT('stem.titration.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
       ),
-      React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-900 border border-slate-700 text-[10px] italic text-slate-400' },
+      React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-900 border border-slate-700 text-[0.625rem] italic text-slate-400' },
         __alloT('stem.titration.design_note_no_buffer_capacity_score_n', 'Design note: no buffer-capacity score, no reveal button, no quiz validation. Outcome is shown as a discrete 2-state marker (GOOD / POOR), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'))
     );
   })()

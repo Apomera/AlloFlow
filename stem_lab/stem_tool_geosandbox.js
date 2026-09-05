@@ -4283,7 +4283,7 @@ window.StemLab = window.StemLab || {
                 setGeoMode('single');
                 if (announceToSR) announceToSR('Single shape mode');
               },
-              className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
+              className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
                 (mode === 'single' ? 'bg-sky-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.single_shape', '\uD83D\uDCE6 Single shape')),
             h('button', {
@@ -4297,7 +4297,7 @@ window.StemLab = window.StemLab || {
                 if (announceToSR) announceToSR('Dimensional stretch mode. Place a point and stretch it into higher dimensions.');
               },
               title: t('stem.geosandbox.handwaver_inspired_build_by_stretching', 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid'),
-              className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
+              className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
                 (mode === 'stretch' ? 'bg-purple-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.stretch_mode', '\uD83D\uDCD0 Stretch mode')),
             h('button', {
@@ -4312,7 +4312,7 @@ window.StemLab = window.StemLab || {
                 if (announceToSR) announceToSR('Sculpt mode. Build manually from primitive shapes or use AI-assisted creation.');
               },
               title: t('stem.geosandbox.sculpt_mode_title', 'Sculpt: build manually from primitives or create with AI'),
-              className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
+              className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
                 (mode === 'sculpt' ? 'bg-fuchsia-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA Sculpt'))
           ),
@@ -4400,8 +4400,8 @@ window.StemLab = window.StemLab || {
               var earned = !!(ext.badges && ext.badges[id]);
               return h('div', { key: id, className: 'flex flex-col items-center text-center p-2 rounded-lg transition-all ' + (earned ? 'bg-purple-500/20 border border-purple-400/40' : 'bg-slate-800/40 border border-slate-500/70 opacity-90') },
                 h('span', { className: 'text-xl mb-1' }, earned ? b.icon : '\uD83D\uDD12'),
-                h('span', { className: 'text-[11px] font-bold ' + (earned ? 'text-purple-200' : 'text-slate-200') }, b.name),
-                h('span', { className: 'text-[11px] ' + (earned ? 'text-purple-200' : 'text-slate-300') }, __alloT('stem.geosandbox.' + (id) + '_desc', b.desc))
+                h('span', { className: 'text-[0.6875rem] font-bold ' + (earned ? 'text-purple-200' : 'text-slate-200') }, b.name),
+                h('span', { className: 'text-[0.6875rem] ' + (earned ? 'text-purple-200' : 'text-slate-300') }, __alloT('stem.geosandbox.' + (id) + '_desc', b.desc))
               );
             })
           )
@@ -4443,7 +4443,7 @@ window.StemLab = window.StemLab || {
                       (shape === s.id ? 'bg-sky-500/30 border border-sky-400/50 text-sky-300 shadow-lg shadow-sky-500/10' : 'bg-slate-700/40 border border-slate-600/30 text-slate-200 hover:bg-slate-700/60 hover:text-slate-300')
                   },
                     h('span', { className: 'text-lg leading-none' }, s.icon),
-                    h('span', { className: 'text-[11px] leading-tight' }, s.label)
+                    h('span', { className: 'text-[0.6875rem] leading-tight' }, s.label)
                   );
                 })
               )
@@ -4452,9 +4452,9 @@ window.StemLab = window.StemLab || {
             // ── v3: AI SCULPT PANEL — reuses window.AlloModules.Prim3D ──
             mode === 'sculpt' && h('div', { className: 'bg-gradient-to-br from-fuchsia-900/40 to-pink-900/30 rounded-xl p-3 border border-fuchsia-500/40 space-y-3' },
               h('div', { className: 'text-xs font-bold text-fuchsia-200 uppercase tracking-wider' }, t('stem.geosandbox.ai_sculpt', '🧊 Sculpt studio')),
-              h('p', { className: 'text-[11px] text-fuchsia-200/80 leading-relaxed' }, t('stem.geosandbox.ai_sculpt_help', 'Build directly from primitive shapes, or describe an object for AI-assisted creation. Every result can be refined by hand.')),
+              h('p', { className: 'text-[0.6875rem] text-fuchsia-200/80 leading-relaxed' }, t('stem.geosandbox.ai_sculpt_help', 'Build directly from primitive shapes, or describe an object for AI-assisted creation. Every result can be refined by hand.')),
               (typeof ctx.callGemini !== 'function')
-                ? h('p', { className: 'text-[11px] text-amber-300' }, t('stem.geosandbox.ai_sculpt_no_ai', 'AI-assisted creation is unavailable, but manual sculpting below still works.'))
+                ? h('p', { className: 'text-[0.6875rem] text-amber-300' }, t('stem.geosandbox.ai_sculpt_no_ai', 'AI-assisted creation is unavailable, but manual sculpting below still works.'))
                 : h(React.Fragment, null,
                     h('input', {
                       type: 'text', value: sculptPrompt,
@@ -4477,9 +4477,9 @@ window.StemLab = window.StemLab || {
                       title: t('stem.geosandbox.voice_sculpt_title', 'Voice sculpt — speak to create and shape it, hands-free'),
                       className: 'w-full px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (voiceListening ? 'bg-rose-600 text-white opacity-90' : 'bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80')
                     }, voiceListening ? ('🔴 ' + t('stem.geosandbox.voice_listening', 'Listening… tap to stop')) : ('🎤 ' + t('stem.geosandbox.voice_sculpt', 'Voice sculpt'))),
-                    voiceHeard && h('p', { className: 'text-[11px] text-fuchsia-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”'),
+                    voiceHeard && h('p', { className: 'text-[0.6875rem] text-fuchsia-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”'),
                     sculptRecipe && h('div', { className: 'pt-2 mt-1 border-t border-fuchsia-500/30 space-y-2' },
-                      h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_refine', 'Refine')),
+                      h('div', { className: 'text-[0.6875rem] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_refine', 'Refine')),
                       h('div', { className: 'flex gap-1' },
                         h('input', {
                           type: 'text', value: sculptRefine,
@@ -4489,7 +4489,7 @@ window.StemLab = window.StemLab || {
                           'aria-label': t('stem.geosandbox.sculpt_refine_placeholder', 'Tell the AI what to change'),
                           className: 'flex-1 min-w-0 text-xs p-1.5 rounded-lg bg-slate-900/60 border border-fuchsia-500/40 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-fuchsia-400 outline-none'
                         }),
-                        h('button', { onClick: doRefineSculpt, disabled: sculptBusy, 'aria-label': t('stem.geosandbox.apply_sculpt_refinement', 'Apply sculpture refinement'), className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50' }, '✨')
+                        h('button', { onClick: doRefineSculpt, disabled: sculptBusy, 'aria-label': t('stem.geosandbox.apply_sculpt_refinement', 'Apply sculpture refinement'), className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50' }, '✨')
                       )
                     )
                   ),
@@ -4497,7 +4497,7 @@ window.StemLab = window.StemLab || {
               sculptRecipe && h('div',{className:'geo-action-row','aria-label':t('stem.geosandbox.workbench_whole','Whole sculpture')},
 h('div', { className: 'flex flex-wrap gap-1' },
                         [['bigger', '🔍+ ' + t('stem.geosandbox.sculpt_bigger', 'Bigger')], ['smaller', '🔍− ' + t('stem.geosandbox.sculpt_smaller', 'Smaller')], ['rotate', '⟳ ' + t('stem.geosandbox.sculpt_rotate', 'Rotate')], ['recolor', '🎨 ' + t('stem.geosandbox.sculpt_recolor', 'Recolor')]].map(function(bt) {
-                          return h('button', { key: bt[0], onClick: function() { doManualTweak(bt[0]); }, className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80' }, bt[1]);
+                          return h('button', { key: bt[0], onClick: function() { doManualTweak(bt[0]); }, className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80' }, bt[1]);
                         })
                       )
               ),
@@ -4508,16 +4508,16 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   h('button', {
                     onClick: function() { if (!sculptRecipe) startFromScratch(); else setSculptEdit(!sculptEdit); },
                     'aria-pressed': (sculptRecipe && sculptEdit) ? 'true' : 'false',
-                    className: 'px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ' + ((sculptRecipe && sculptEdit) ? 'bg-fuchsia-600 text-white' : 'bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80')
+                    className: 'px-2.5 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' + ((sculptRecipe && sculptEdit) ? 'bg-fuchsia-600 text-white' : 'bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80')
                   }, sculptRecipe ? ('✋ ' + (sculptEdit ? t('stem.geosandbox.sculpt_editing', 'Editing by hand') : t('stem.geosandbox.sculpt_edit', 'Edit by hand'))) : ('🆕 ' + t('stem.geosandbox.sculpt_scratch', 'Build from scratch'))),
                   sculptUndo.length > 0 && h('button', {
                     onClick: undoSculptEdit,
-                    className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80'
+                    className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80'
                   }, '↶ ' + t('stem.geosandbox.sculpt_undo', 'Undo')),
                   sculptRedo.length > 0 && h('button',{type:'button',onClick:redoSculptEdit,className:'geo-workbench-button'},t('stem.geosandbox.workbench_redo','Redo'))
                 ),
                 (sculptEdit && sculptRecipe && sculptRecipe.parts) && h('div', { className: 'space-y-2 bg-slate-900/40 rounded-lg p-2' },
-                  h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_parts', 'Parts — tap one to select, then shape it')),
+                  h('div', { className: 'text-[0.6875rem] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_parts', 'Parts — tap one to select, then shape it')),
                   h('div', { className: 'flex flex-wrap gap-1' },
                     sculptRecipe.parts.map(function(pp, i) {
                       return h('button', {
@@ -4527,7 +4527,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                         onMouseLeave: function() { previewSculptPart(null); },
                         onFocus: function() { previewSculptPart(i); },
                         onBlur: function() { previewSculptPart(null); },
-                        className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (selPart === i ? 'bg-fuchsia-600/40 border-fuchsia-400 text-white' : 'bg-slate-800/60 border-slate-600/40 text-slate-200 hover:bg-slate-800')
+                        className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold border transition-all ' + (selPart === i ? 'bg-fuchsia-600/40 border-fuchsia-400 text-white' : 'bg-slate-800/60 border-slate-600/40 text-slate-200 hover:bg-slate-800')
                       },
                         h('span', { className: 'w-2.5 h-2.5 rounded-full inline-block', style: { backgroundColor: pp.color || '#ffffff' } }),
                         (i + 1) + ' ' + (pp.label || pp.shape || 'box')
@@ -4535,26 +4535,26 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     })
                   ),
                   h('div', { className: 'flex flex-wrap items-center gap-1' },
-                    h('span', { className: 'text-[11px] text-fuchsia-200/70' }, t('stem.geosandbox.sculpt_add', 'Add:')),
+                    h('span', { className: 'text-[0.6875rem] text-fuchsia-200/70' }, t('stem.geosandbox.sculpt_add', 'Add:')),
                     SCULPT_SHAPES.map(function(s) {
-                      return h('button', { key: s, onClick: function() { addPart(s); }, className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-800/60 text-fuchsia-100 border border-fuchsia-500/30 hover:bg-slate-800' }, '＋ ' + s);
+                      return h('button', { key: s, onClick: function() { addPart(s); }, className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold bg-slate-800/60 text-fuchsia-100 border border-fuchsia-500/30 hover:bg-slate-800' }, '＋ ' + s);
                     })
                   ),
                   (selPart != null && sculptRecipe.parts[selPart]) && h('div', { className: 'space-y-1.5 pt-1.5 border-t border-fuchsia-500/20' },
-                    h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_selected', 'Selected part') + ' ' + (selPart + 1)),
+                    h('div', { className: 'text-[0.6875rem] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_selected', 'Selected part') + ' ' + (selPart + 1)),
                     renderExactPartEditor(),
                     h('div', { className: 'flex flex-wrap gap-1' },
                       [['x', -1, '◀ X'], ['x', 1, 'X ▶'], ['y', 1, '▲ Y'], ['y', -1, 'Y ▼'], ['z', -1, 'Z −'], ['z', 1, 'Z ＋']].map(function(m, k) {
-                        return h('button', { key: k, onClick: function() { nudgePart(m[0], m[1]); }, 'aria-label': 'Move ' + m[0] + (m[1] > 0 ? ' positive' : ' negative'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, m[2]);
+                        return h('button', { key: k, onClick: function() { nudgePart(m[0], m[1]); }, 'aria-label': 'Move ' + m[0] + (m[1] > 0 ? ' positive' : ' negative'), className: 'px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, m[2]);
                       })
                     ),
                     h('div', { className: 'flex flex-wrap gap-1' },
-                      h('button', { onClick: function() { scaleSelPart(1.15); }, 'aria-label': t('stem.geosandbox.sculpt_part_bigger', 'Make part bigger'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🔍＋'),
-                      h('button', { onClick: function() { scaleSelPart(0.87); }, 'aria-label': t('stem.geosandbox.sculpt_part_smaller', 'Make part smaller'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🔍−'),
-                      h('button', { onClick: rotateSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_rotate', 'Rotate part'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '⟳'),
-                      h('button', { onClick: recolorSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_recolor', 'Recolor part'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🎨'),
-                      h('button', { onClick: reshapeSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_reshape', 'Change part shape'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '◆ ' + t('stem.geosandbox.sculpt_shape', 'shape')),
-                      h('button', { onClick: deleteSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_delete', 'Delete selected part'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-rose-900/40 text-rose-200 border border-rose-500/40 hover:bg-rose-900/60' }, '🗑')
+                      h('button', { onClick: function() { scaleSelPart(1.15); }, 'aria-label': t('stem.geosandbox.sculpt_part_bigger', 'Make part bigger'), className: 'px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🔍＋'),
+                      h('button', { onClick: function() { scaleSelPart(0.87); }, 'aria-label': t('stem.geosandbox.sculpt_part_smaller', 'Make part smaller'), className: 'px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🔍−'),
+                      h('button', { onClick: rotateSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_rotate', 'Rotate part'), className: 'px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '⟳'),
+                      h('button', { onClick: recolorSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_recolor', 'Recolor part'), className: 'px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🎨'),
+                      h('button', { onClick: reshapeSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_reshape', 'Change part shape'), className: 'px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '◆ ' + t('stem.geosandbox.sculpt_shape', 'shape')),
+                      h('button', { onClick: deleteSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_delete', 'Delete selected part'), className: 'px-2 py-1 rounded text-[0.6875rem] font-bold bg-rose-900/40 text-rose-200 border border-rose-500/40 hover:bg-rose-900/60' }, '🗑')
                     )
                   )
                 )
@@ -4570,23 +4570,23 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   deletedSculpt && h('button',{type:'button',onClick:function(){var next=Object.assign({},savedSculpts);var name=geoUniqueSaveName(deletedSculpt.name,next);next[name]=deletedSculpt.recipe;upd('savedSculpts',next);setDeletedSculpt(null);}},t('stem.geosandbox.workbench_restore','Restore deleted sculpt'))
                 ),
                 h('div', { className: 'flex items-center justify-between gap-2' },
-                  h('button', { type: 'button', onClick: function() { setShowSculptGallery(!showSculptGallery); }, 'aria-expanded': showSculptGallery ? 'true' : 'false', className: 'flex-1 flex items-center justify-between rounded px-2 py-1 text-[11px] font-bold text-fuchsia-200 bg-slate-900/35 border border-fuchsia-500/20 hover:border-fuchsia-400/50' },
+                  h('button', { type: 'button', onClick: function() { setShowSculptGallery(!showSculptGallery); }, 'aria-expanded': showSculptGallery ? 'true' : 'false', className: 'flex-1 flex items-center justify-between rounded px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-200 bg-slate-900/35 border border-fuchsia-500/20 hover:border-fuchsia-400/50' },
                     h('span', null, '🖼 ' + t('stem.geosandbox.sculpt_gallery', 'Saved sculpts') + ' (' + Object.keys(savedSculpts).length + ')'),
                     h('span', { 'aria-hidden': 'true' }, showSculptGallery ? '−' : '+')
                   ),
                   sculptRecipe && h('button', {
                     onClick: function() { saveSculpt(sculptRecipe.name); },
                     'aria-label': t('stem.geosandbox.sculpt_save', 'Save this sculpt'),
-                    className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700'
+                    className: 'px-2.5 py-1 rounded-full text-[0.6875rem] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700'
                   }, '💾 ' + t('stem.geosandbox.sculpt_save_2', 'Save'))
                 ),
                 showSculptGallery && ((Object.keys(savedSculpts).length === 0)
-                  ? h('p', { className: 'text-[11px] text-fuchsia-200/60' }, t('stem.geosandbox.sculpt_gallery_empty', 'No saved sculpts yet — make one, then press Save.'))
+                  ? h('p', { className: 'text-[0.6875rem] text-fuchsia-200/60' }, t('stem.geosandbox.sculpt_gallery_empty', 'No saved sculpts yet — make one, then press Save.'))
                   : h('div', { className: 'flex flex-wrap gap-1' },
                       Object.keys(savedSculpts).map(function(nm) {
                         return h('div', { key: nm, className: 'flex items-center rounded-lg overflow-hidden border border-fuchsia-500/30 bg-slate-800/60' },
-                          h('button', { onClick: function() { loadSculpt(nm); }, title: t('stem.geosandbox.sculpt_load', 'Load') + ' ' + nm, className: 'px-2 py-1 text-[11px] font-bold text-fuchsia-100 hover:bg-slate-800 max-w-[120px] truncate' }, nm),
-                          h('button', { onClick: function() { deleteSculpt(nm); }, 'aria-label': t('stem.geosandbox.sculpt_delete', 'Delete') + ' ' + nm, className: 'px-1.5 py-1 text-[11px] text-rose-300 hover:bg-rose-900/40 border-l border-fuchsia-500/30' }, '×')
+                          h('button', { onClick: function() { loadSculpt(nm); }, title: t('stem.geosandbox.sculpt_load', 'Load') + ' ' + nm, className: 'px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-100 hover:bg-slate-800 max-w-[120px] truncate' }, nm),
+                          h('button', { onClick: function() { deleteSculpt(nm); }, 'aria-label': t('stem.geosandbox.sculpt_delete', 'Delete') + ' ' + nm, className: 'px-1.5 py-1 text-[0.6875rem] text-rose-300 hover:bg-rose-900/40 border-l border-fuchsia-500/30' }, '×')
                         );
                       })
                     ))
@@ -4622,26 +4622,26 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 h('div', { className: 'space-y-1 max-h-52 overflow-y-auto' },
                   sm.parts.map(function(pt, i) {
                     var rep = geoSculptRepresentation(pt.shape);
-                    return h('button', { type: 'button', key: 'sm-' + i, onClick: function() { selectSculptPart(i); }, onMouseEnter: function() { previewSculptPart(i); }, onMouseLeave: function() { previewSculptPart(null); }, onFocus: function() { previewSculptPart(i); }, onBlur: function() { previewSculptPart(null); }, 'aria-pressed': selPart === i ? 'true' : 'false', className: 'w-full text-left text-[11px] rounded px-2 py-1.5 border transition-all ' + (selPart === i ? 'bg-emerald-700/35 border-emerald-300 text-white' : 'bg-slate-900/40 border-transparent hover:border-emerald-500/50') },
+                    return h('button', { type: 'button', key: 'sm-' + i, onClick: function() { selectSculptPart(i); }, onMouseEnter: function() { previewSculptPart(i); }, onMouseLeave: function() { previewSculptPart(null); }, onFocus: function() { previewSculptPart(i); }, onBlur: function() { previewSculptPart(null); }, 'aria-pressed': selPart === i ? 'true' : 'false', className: 'w-full text-left text-[0.6875rem] rounded px-2 py-1.5 border transition-all ' + (selPart === i ? 'bg-emerald-700/35 border-emerald-300 text-white' : 'bg-slate-900/40 border-transparent hover:border-emerald-500/50') },
                       h('div', { className: 'flex justify-between font-bold text-emerald-100' },
                         h('span', null, (i + 1) + '. ' + pt.name + ' (' + pt.dims + ')'),
                         h('span', { className: 'font-mono text-emerald-300' }, 'V ' + pt.vol.toFixed(2))
                       ),
-                      h('div', { className: 'font-mono text-[10px] text-emerald-300/80' }, pt.volFormula + ' · ' + pt.saFormula + ' → SA ' + pt.sa.toFixed(1)),
+                      h('div', { className: 'font-mono text-[0.625rem] text-emerald-300/80' }, pt.volFormula + ' · ' + pt.saFormula + ' → SA ' + pt.sa.toFixed(1)),
                       h('div', { className: 'text-[9.5px] text-cyan-200/75 mt-0.5' }, 'Slice: ' + rep.crossSection + ' · Net: ' + rep.net)
                     );
                   })
                 ),
-                h('div', { 'data-geo-sculpt-upper-bound': 'true', className: 'flex justify-between gap-2 text-[11px] font-bold pt-1.5 border-t border-emerald-500/30' },
+                h('div', { 'data-geo-sculpt-upper-bound': 'true', className: 'flex justify-between gap-2 text-[0.6875rem] font-bold pt-1.5 border-t border-emerald-500/30' },
                   h('span', { className: 'text-amber-200' }, t('stem.geosandbox.sculpt_total_upper', 'Upper-bound sum of parts')),
                   h('span', { className: 'font-mono text-emerald-300 text-right' },
                     'V ≤ ' + sm.totalVol.toFixed(2) + ' ' + unitDef.short + '³ · SA ≤ ' + sm.totalSA.toFixed(1) + ' ' + unitDef.short + '²')
                 ),
-                h('div', { className: 'text-[10px] text-amber-100/80 italic rounded bg-amber-950/25 border border-amber-500/20 px-2 py-1' },
+                h('div', { className: 'text-[0.625rem] text-amber-100/80 italic rounded bg-amber-950/25 border border-amber-500/20 px-2 py-1' },
                   t('stem.geosandbox.sculpt_overlap_note', 'Upper bound: overlapping pieces are counted separately. The actual union can have less volume and less exposed surface area.')),                h('div', { 'data-geo-sculpt-cross-section': 'true', className: 'rounded-lg border border-amber-400/35 bg-amber-950/20 p-2 space-y-1.5' },
-                  h('div', { className: 'text-[11px] font-bold text-amber-100' }, '◒ Live cross-section'),
+                  h('div', { className: 'text-[0.6875rem] font-bold text-amber-100' }, '◒ Live cross-section'),
                   selPart == null || !sculptRecipe.parts[selPart]
-                    ? h('p', { className: 'text-[10px] text-amber-100/70' }, 'Select a sculpt part to explore a slice through it.')
+                    ? h('p', { className: 'text-[0.625rem] text-amber-100/70' }, 'Select a sculpt part to explore a slice through it.')
                     : (function() {
                         var sliceStudy = geoSculptSliceStudy(sculptRecipe.parts[selPart], sculptSliceT, sculptRecipe.scale, SCULPT_GRID_UNIT);
                         var sliceProfile = geoSculptSliceProfile(sculptRecipe.parts[selPart], sculptSliceT, sculptRecipe.scale, SCULPT_GRID_UNIT, 32);
@@ -4651,7 +4651,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                             h('span', null, 'Show the section plane in the 3D sculpt')
                           ),
                           sculptSliceOn && h('div', { id: 'geo-sculpt-slice-controls', className: 'space-y-1' },
-                            h('div', { className: 'flex items-center justify-between gap-2 text-[10px]' },
+                            h('div', { className: 'flex items-center justify-between gap-2 text-[0.625rem]' },
                               h('span', { className: 'text-amber-100' }, (sliceStudy.shape === 'torus' ? 'Depth along local Z ' : 'Height along local Y ') + Math.round(sculptSliceT * 100) + '% · ' + sliceStudy.label),
                               h('span', { className: 'font-mono font-bold text-amber-200' }, 'A = ' + sliceStudy.area.toFixed(2) + ' ' + unitDef.short + '²')
                             ),
@@ -4673,9 +4673,9 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 ),
                 h('div', { 'data-geo-sculpt-investigation': 'true', className: 'rounded-lg border border-cyan-400/35 bg-cyan-950/25 p-2 space-y-2' },
                   h('div', { className: 'flex items-center justify-between gap-2' },
-                    h('div', { className: 'text-[11px] font-bold text-cyan-100' }, '🔬 Scale investigation'),
+                    h('div', { className: 'text-[0.6875rem] font-bold text-cyan-100' }, '🔬 Scale investigation'),
                     !sculptInvestigation.active
-                      ? h('button', { type: 'button', onClick: startSculptInvestigation, disabled: selPart == null, className: 'px-2 py-1 rounded text-[10px] font-bold bg-cyan-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, selPart == null ? 'Select a part first' : 'Start')
+                      ? h('button', { type: 'button', onClick: startSculptInvestigation, disabled: selPart == null, className: 'px-2 py-1 rounded text-[0.625rem] font-bold bg-cyan-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, selPart == null ? 'Select a part first' : 'Start')
                       : h('div', { className: 'flex gap-1' },
                           sculptInvestigation.study && h('button', { type: 'button', onClick: function() { resetSculptInvestigation(true); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-700 text-white' }, 'Restart'),
                           h('button', { type: 'button', onClick: function() { resetSculptInvestigation(false); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-rose-900/45 text-rose-100 border border-rose-500/40' }, sculptInvestigation.study ? 'Undo & exit' : 'Exit')
@@ -4689,7 +4689,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                       return h('div', { key: phase, className: 'rounded px-1 py-1 text-center text-[8.5px] font-bold uppercase tracking-wide border ' + (reached ? 'bg-cyan-500/20 border-cyan-300 text-cyan-50' : 'bg-slate-900/50 border-slate-600 text-slate-400') }, (phaseIndex + 1) + ' ' + phase);
                     })
                   ),
-                  !sculptInvestigation.active && h('p', { className: 'text-[10px] text-cyan-100/70' }, 'Predict, change the selected part, compare exact ratios, then explain the pattern.'),
+                  !sculptInvestigation.active && h('p', { className: 'text-[0.625rem] text-cyan-100/70' }, 'Predict, change the selected part, compare exact ratios, then explain the pattern.'),
                   sculptInvestigation.active && sculptInvestigation.phase === 'predict' && h('div', { className: 'space-y-1.5' },
                     h('p', { className: 'text-[10.5px] text-cyan-50 font-bold' }, 'If every dimension becomes ×1.25, which measure grows faster?'),
                     h('div', { className: 'grid grid-cols-3 gap-1' },
@@ -4700,31 +4700,31 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   ),
                   sculptInvestigation.active && sculptInvestigation.phase === 'manipulate' && h('div', { className: 'space-y-1.5' },
                     h('p', { className: 'text-[10.5px] text-cyan-50' }, 'Prediction recorded. Now make the same scale change in the 3D model.'),
-                    h('button', { type: 'button', onClick: manipulateSculptInvestigation, disabled: sculptInvestigation.partIndex !== selPart, className: 'w-full px-2 py-1.5 rounded text-[10px] font-bold bg-fuchsia-700 text-white disabled:bg-slate-700' }, sculptInvestigation.partIndex === selPart ? 'Scale selected part ×1.25' : 'Re-select the investigation part')
+                    h('button', { type: 'button', onClick: manipulateSculptInvestigation, disabled: sculptInvestigation.partIndex !== selPart, className: 'w-full px-2 py-1.5 rounded text-[0.625rem] font-bold bg-fuchsia-700 text-white disabled:bg-slate-700' }, sculptInvestigation.partIndex === selPart ? 'Scale selected part ×1.25' : 'Re-select the investigation part')
                   ),
                   sculptInvestigation.active && sculptInvestigation.phase === 'compare' && sculptInvestigation.study && h('div', { className: 'space-y-1.5' },
                     h('div', { className: 'grid grid-cols-2 gap-1 text-center' },
                       h('div', { className: 'rounded bg-slate-900/55 p-1.5' },
-                        h('div', { className: 'text-[9px] text-slate-300' }, 'Volume'),
-                        h('div', { className: 'font-mono text-[9px] text-fuchsia-100/80' }, sculptInvestigation.study.before.vol.toFixed(2) + ' → ' + sculptInvestigation.study.after.vol.toFixed(2)),
+                        h('div', { className: 'text-[0.5625rem] text-slate-300' }, 'Volume'),
+                        h('div', { className: 'font-mono text-[0.5625rem] text-fuchsia-100/80' }, sculptInvestigation.study.before.vol.toFixed(2) + ' → ' + sculptInvestigation.study.after.vol.toFixed(2)),
                         h('div', { className: 'font-mono font-bold text-fuchsia-200' }, '×' + sculptInvestigation.study.volumeRatio.toFixed(3) + ' = 1.25³')
                       ),
                       h('div', { className: 'rounded bg-slate-900/55 p-1.5' },
-                        h('div', { className: 'text-[9px] text-slate-300' }, 'Surface area'),
-                        h('div', { className: 'font-mono text-[9px] text-sky-100/80' }, sculptInvestigation.study.before.sa.toFixed(2) + ' → ' + sculptInvestigation.study.after.sa.toFixed(2)),
+                        h('div', { className: 'text-[0.5625rem] text-slate-300' }, 'Surface area'),
+                        h('div', { className: 'font-mono text-[0.5625rem] text-sky-100/80' }, sculptInvestigation.study.before.sa.toFixed(2) + ' → ' + sculptInvestigation.study.after.sa.toFixed(2)),
                         h('div', { className: 'font-mono font-bold text-sky-200' }, '×' + sculptInvestigation.study.areaRatio.toFixed(3) + ' = 1.25²')
                       )
                     ),
-                    h('p', { className: 'text-[10px] ' + (sculptInvestigation.prediction === 'volume' ? 'text-emerald-200' : 'text-amber-200') }, sculptInvestigation.prediction === 'volume' ? 'Your prediction matched: volume grows faster.' : 'The model shows volume grows faster because its scale factor is cubed.'),
-                    h('button', { type: 'button', onClick: function() { setSculptInvestigation(Object.assign({}, sculptInvestigation, { phase: 'explain' })); recordGeoResearch('investigation_compare', { mode: 'sculpt', part: selPart, phase: 'compare' }); }, className: 'w-full px-2 py-1 rounded text-[10px] font-bold bg-cyan-700 text-white' }, 'Explain the pattern →')
+                    h('p', { className: 'text-[0.625rem] ' + (sculptInvestigation.prediction === 'volume' ? 'text-emerald-200' : 'text-amber-200') }, sculptInvestigation.prediction === 'volume' ? 'Your prediction matched: volume grows faster.' : 'The model shows volume grows faster because its scale factor is cubed.'),
+                    h('button', { type: 'button', onClick: function() { setSculptInvestigation(Object.assign({}, sculptInvestigation, { phase: 'explain' })); recordGeoResearch('investigation_compare', { mode: 'sculpt', part: selPart, phase: 'compare' }); }, className: 'w-full px-2 py-1 rounded text-[0.625rem] font-bold bg-cyan-700 text-white' }, 'Explain the pattern →')
                   ),
                   sculptInvestigation.active && sculptInvestigation.phase === 'explain' && h('div', { className: 'space-y-1.5' },
                     h('label',{className:'geo-field'},t('stem.geosandbox.workbench_response','How will you explain?'),h('select',{'aria-label':t('stem.geosandbox.workbench_response','How will you explain?'),value:sculptInvestigation.responseMode || 'written',onChange:function(e){setSculptInvestigation(Object.assign({},sculptInvestigation,{responseMode:e.target.value}));}},h('option',{value:'written'},t('stem.geosandbox.workbench_written','Written explanation')),h('option',{value:'model'},t('stem.geosandbox.workbench_demonstration','Model demonstration')))),
                     sculptInvestigation.responseMode === 'model' && h('label',{className:'geo-check'},h('input',{type:'checkbox',checked:!!sculptInvestigation.demonstrated,onChange:function(e){setSculptInvestigation(Object.assign({},sculptInvestigation,{demonstrated:e.target.checked}));}}),t('stem.geosandbox.workbench_demonstrated','I used the model to show how lengths, areas, and volumes change.')),
                     h('p',{className:'text-xs text-slate-200'},t('stem.geosandbox.workbench_explain_prompt','Try: Each length changed by __. Area uses two lengths, so __. Volume uses three, so __. Your before and after models will be saved.')),
-                    h('label', { htmlFor: 'geo-sculpt-explanation', className: 'block text-[10px] font-bold text-cyan-50' }, 'Why does volume grow faster than surface area?'),
-                    h('textarea', { id: 'geo-sculpt-explanation', rows: 2, value: sculptInvestigation.explanation || '', onChange: function(e) { setSculptInvestigation(Object.assign({}, sculptInvestigation, { explanation: e.target.value })); }, placeholder: 'Use dimensions, squares, cubes, or the model in your explanation…', className: 'w-full rounded bg-slate-950 border border-cyan-400/45 p-2 text-[10px] text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-300 outline-none' }),
-                    h('button', { type: 'button', onClick: finishSculptInvestigation, disabled: sculptInvestigation.responseMode === 'model' ? !sculptInvestigation.demonstrated : !String(sculptInvestigation.explanation || '').trim(), className: 'w-full px-2 py-1 rounded text-[10px] font-bold bg-emerald-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, 'Complete investigation')
+                    h('label', { htmlFor: 'geo-sculpt-explanation', className: 'block text-[0.625rem] font-bold text-cyan-50' }, 'Why does volume grow faster than surface area?'),
+                    h('textarea', { id: 'geo-sculpt-explanation', rows: 2, value: sculptInvestigation.explanation || '', onChange: function(e) { setSculptInvestigation(Object.assign({}, sculptInvestigation, { explanation: e.target.value })); }, placeholder: 'Use dimensions, squares, cubes, or the model in your explanation…', className: 'w-full rounded bg-slate-950 border border-cyan-400/45 p-2 text-[0.625rem] text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-300 outline-none' }),
+                    h('button', { type: 'button', onClick: finishSculptInvestigation, disabled: sculptInvestigation.responseMode === 'model' ? !sculptInvestigation.demonstrated : !String(sculptInvestigation.explanation || '').trim(), className: 'w-full px-2 py-1 rounded text-[0.625rem] font-bold bg-emerald-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, 'Complete investigation')
                   )
                 )
               );
@@ -4745,7 +4745,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
             // ── v2: STRETCH MODE PANEL — the HandWaver-inspired workflow ──
             mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/30 rounded-xl p-3 border border-purple-500/40 space-y-3' },
               h('div', { className: 'text-xs font-bold text-purple-200 uppercase tracking-wider' }, t('stem.geosandbox.dimensional_stretch_builder', '📐 Dimensional Stretch Builder')),
-              h('p', { className: 'text-[11px] text-purple-200/80 leading-relaxed' },
+              h('p', { className: 'text-[0.6875rem] text-purple-200/80 leading-relaxed' },
                 t('stem.geosandbox.build_geometry_by_stretching_a_point_i', 'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.')
               ),
               // ── Dimension journey: 0D→3D spine that fills as the student first
@@ -4769,14 +4769,14 @@ h('div', { className: 'flex flex-wrap gap-1' },
                       style: { background: on ? (r.color + '26') : 'rgba(15,23,42,0.86)', borderColor: on ? r.color : '#94a3b8', opacity: on ? 1 : 0.92 }
                     },
                       h('div', { className: 'text-sm leading-none', style: { color: on ? '#f8fafc' : '#cbd5e1' } }, r.glyph),
-                      h('div', { className: 'text-[9px] font-bold mt-0.5', style: { color: on ? '#f8fafc' : '#cbd5e1' } }, r.d + 'D'),
-                      h('div', { className: 'text-[8px] text-slate-400 leading-tight' }, r.name)
+                      h('div', { className: 'text-[0.5625rem] font-bold mt-0.5', style: { color: on ? '#f8fafc' : '#cbd5e1' } }, r.d + 'D'),
+                      h('div', { className: 'text-[0.5rem] text-slate-400 leading-tight' }, r.name)
                     );
                   })
                 );
               })(),
               // ── Predict-then-reveal toggle: pause each stretch to guess the result. ──
-              h('label', { className: 'flex items-center gap-1.5 text-[11px] font-bold text-purple-200 cursor-pointer' },
+              h('label', { className: 'flex items-center gap-1.5 text-[0.6875rem] font-bold text-purple-200 cursor-pointer' },
                 h('input', {
                   type: 'checkbox', checked: predictMode,
                   onChange: function(e) { upd('predictMode', e.target.checked); if (!e.target.checked && pendingPredict) cancelPrediction(); },
@@ -4788,27 +4788,27 @@ h('div', { className: 'flex flex-wrap gap-1' },
               (function() {
                 if (!buildChallenge) {
                   return h('div', { className: 'rounded-lg p-2.5 bg-slate-900/50 border border-emerald-500/40 space-y-1.5' },
-                    h('div', { className: 'text-[11px] font-bold text-emerald-200' }, '🎯 ' + t('stem.geosandbox.build_challenge', 'Build Challenge')),
+                    h('div', { className: 'text-[0.6875rem] font-bold text-emerald-200' }, '🎯 ' + t('stem.geosandbox.build_challenge', 'Build Challenge')),
                     h('p', { className: 'text-[10.5px] text-emerald-200/70' }, t('stem.geosandbox.build_challenge_intro', 'Get a target and build a shape that hits it — stretch to the right length, area, or volume.')),
                     h('div', { className: 'flex gap-1' },
                       [[1, t('stem.geosandbox.level_length', 'Length')], [2, t('stem.geosandbox.level_area', 'Area')], [3, t('stem.geosandbox.level_volume', 'Volume')]].map(function(lvl) {
                         return h('button', {
                           key: 'lvl-' + lvl[0],
                           onClick: function() { startBuildChallenge(lvl[0]); },
-                          className: 'flex-1 px-2 py-1.5 rounded text-[11px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-800 transition-all'
+                          className: 'flex-1 px-2 py-1.5 rounded text-[0.6875rem] font-bold bg-emerald-700/70 text-white hover:bg-emerald-800 transition-all'
                         }, lvl[1]);
                       })
                     ),
-                    (buildScore.solved > 0) && h('div', { className: 'text-[10px] text-emerald-300/80' }, '⭐ ' + (t('stem.geosandbox.build_solved_count', '{n} solved').replace('{n}', String(buildScore.solved))))
+                    (buildScore.solved > 0) && h('div', { className: 'text-[0.625rem] text-emerald-300/80' }, '⭐ ' + (t('stem.geosandbox.build_solved_count', '{n} solved').replace('{n}', String(buildScore.solved))))
                   );
                 }
                 var solved = buildEval && buildEval.solved;
                 return h('div', { className: 'rounded-lg p-2.5 border space-y-1.5 ' + (solved ? 'bg-emerald-900/40 border-emerald-400/60' : 'bg-slate-900/50 border-emerald-500/40') },
                   h('div', { className: 'flex items-center justify-between' },
-                    h('div', { className: 'text-[11px] font-bold text-emerald-200' }, (solved ? '✅ ' : '🎯 ') + t('stem.geosandbox.build_challenge', 'Build Challenge')),
-                    (buildScore.solved > 0) && h('div', { className: 'text-[10px] text-emerald-300/80' }, '⭐ ' + buildScore.solved)
+                    h('div', { className: 'text-[0.6875rem] font-bold text-emerald-200' }, (solved ? '✅ ' : '🎯 ') + t('stem.geosandbox.build_challenge', 'Build Challenge')),
+                    (buildScore.solved > 0) && h('div', { className: 'text-[0.625rem] text-emerald-300/80' }, '⭐ ' + buildScore.solved)
                   ),
-                  h('p', { className: 'text-[11px] text-emerald-100 font-medium' }, buildChallenge.prompt),
+                  h('p', { className: 'text-[0.6875rem] text-emerald-100 font-medium' }, buildChallenge.prompt),
                   buildEval && h('p', { className: 'text-[10.5px] font-mono ' + (solved ? 'text-emerald-300' : 'text-amber-300/90'), 'aria-live': 'polite' }, buildEval.message),
                   h('div', { className: 'flex gap-1' },
                     h('button', {
@@ -4824,7 +4824,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                       className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-slate-800/70 text-slate-300 hover:bg-slate-700'
                     }, '✕')
                   ),
-                  (gd._geoExt && gd._geoExt._bldHint) && h('p', { className: 'text-[10px] text-emerald-200/70 italic' }, buildChallenge.hint)
+                  (gd._geoExt && gd._geoExt._bldHint) && h('p', { className: 'text-[0.625rem] text-emerald-200/70 italic' }, buildChallenge.hint)
                 );
               })(),
               // Voice build (hands-free HandWaver stretch): speak the dimensional moves
@@ -4836,7 +4836,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   title: t('stem.geosandbox.voice_build_title', 'Voice build — speak the stretches to build point to line to plane to solid, hands-free'),
                   className: 'w-full px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (voiceListening ? 'bg-rose-600 text-white opacity-90' : 'bg-slate-900/50 text-purple-200 border border-purple-500/40 hover:bg-slate-900/80')
                 }, voiceListening ? ('🔴 ' + t('stem.geosandbox.voice_listening', 'Listening… tap to stop')) : ('🎤 ' + t('stem.geosandbox.voice_build', 'Voice build'))),
-                voiceHeard && h('p', { className: 'text-[11px] text-purple-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”')
+                voiceHeard && h('p', { className: 'text-[0.6875rem] text-purple-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”')
               ),
               // Step 1: Place a point — at the origin, by tapping the 3D view, or at
               // exact x/z/y. Y is HEIGHT above the grid (x and z are the floor pair),
@@ -4856,48 +4856,48 @@ h('div', { className: 'flex flex-wrap gap-1' },
                       (placeArmed ? 'bg-emerald-700 text-white border-emerald-300 shadow-md' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                   }, placeArmed ? t('stem.geosandbox.placing_active', '🎯 Placing…') : t('stem.geosandbox.click_place', '🎯 Click-place'))
                 ),
-                placeArmed && h('p', { className: 'text-[10px] text-emerald-300/80' },
+                placeArmed && h('p', { className: 'text-[0.625rem] text-emerald-300/80' },
                   t('stem.geosandbox.click_place_hint', 'Click empty space in the 3D view to drop a point (snaps to the grid).')),
-                placeArmed && placeY > 0 && h('p', { className: 'text-[10px] text-amber-300/90' },
+                placeArmed && placeY > 0 && h('p', { className: 'text-[0.625rem] text-amber-300/90' },
                   t('stem.geosandbox.click_place_hint_raised', 'Taps land at height') + ' ' + placeY + ' ' + unitDef.short + ' — ' +
                   t('stem.geosandbox.click_place_hint_floor', 'set Y back to 0 to drop points on the floor.')),
                 // Exact placement + snap grid (keyboard-friendly path)
                 h('div', { className: 'flex items-end gap-1.5' },
                   h('label', { className: 'flex-1' },
-                    h('span', { className: 'block text-[10px] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_x', 'X')),
+                    h('span', { className: 'block text-[0.625rem] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_x', 'X')),
                     h('input', {
                       type: 'number', step: (snap || 0.5), value: placeX,
                       onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('placeX', v); },
                       'aria-label': t('stem.geosandbox.place_x_aria', 'Point X position'),
-                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[0.6875rem] font-mono text-right'
                     })),
                   h('label', { className: 'flex-1' },
-                    h('span', { className: 'block text-[10px] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_z', 'Z')),
+                    h('span', { className: 'block text-[0.625rem] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_z', 'Z')),
                     h('input', {
                       type: 'number', step: (snap || 0.5), value: placeZ,
                       onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('placeZ', v); },
                       'aria-label': t('stem.geosandbox.place_z_aria', 'Point Z position'),
-                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[0.6875rem] font-mono text-right'
                     })),
                   // Y = height above the grid. Clamped at 0 so a point can never sit
                   // under the floor, which would strand it away from the shadow and
                   // the grid — the two references students read position against.
                   h('label', { className: 'flex-1' },
-                    h('span', { className: 'block text-[10px] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_y', 'Y ↑')),
+                    h('span', { className: 'block text-[0.625rem] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_y', 'Y ↑')),
                     h('input', {
                       type: 'number', step: (snap || 0.5), min: '0', value: placeY,
                       onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('placeY', Math.max(0, v)); },
                       'aria-label': t('stem.geosandbox.place_y_aria', 'Point height above the grid'),
-                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[0.6875rem] font-mono text-right'
                     })),
                   h('button', {
                     onClick: function() { placePoint(placeX, placeZ, placeY); },
                     'aria-label': t('stem.geosandbox.place_at_xyz', 'Place a point at the entered X, Z and height Y'),
-                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all'
+                    className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all'
                   }, t('stem.geosandbox.place', 'Place'))
                 ),
                 h('div', { className: 'flex items-center gap-1.5' },
-                  h('span', { className: 'text-[10px] font-bold text-purple-200' }, t('stem.geosandbox.snap', 'Snap:')),
+                  h('span', { className: 'text-[0.625rem] font-bold text-purple-200' }, t('stem.geosandbox.snap', 'Snap:')),
                   [{ v: 0.5, l: '½' }, { v: 1, l: '1' }, { v: 0, l: t('stem.geosandbox.snap_off', 'off') }].map(function(s) {
                     var on = snap === s.v;
                     return h('button', {
@@ -4905,7 +4905,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                       onClick: function() { upd('snap', s.v); },
                       'aria-pressed': on,
                       'aria-label': t('stem.geosandbox.snap_grid', 'Snap grid') + ' ' + s.l,
-                      className: 'px-2 py-0.5 rounded text-[11px] font-bold font-mono transition-all ' +
+                      className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold font-mono transition-all ' +
                         (on ? 'bg-purple-600 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
                     }, s.l);
                   })
@@ -4913,26 +4913,26 @@ h('div', { className: 'flex flex-wrap gap-1' },
               ),
               // Build action (verb) — how the next stretch resolves.
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.build_action', 'Build action:')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.build_action', 'Build action:')),
                 h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.build_action_2', 'Build action') },
                   [{ id: 'stretch', label: t('stem.geosandbox.verb_stretch', '⤴ Stretch') }, { id: 'taper', label: t('stem.geosandbox.verb_taper', '🔺 Taper') }, { id: 'revolve', label: t('stem.geosandbox.verb_revolve', '🌀 Revolve') }].map(function(vb) {
                     var active = buildVerb === vb.id;
                     return h('button', {
                       key: 'vb-' + vb.id, role: 'radio', 'aria-checked': active,
                       onClick: function() { upd('buildVerb', vb.id); },
-                      className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold border-2 ' +
+                      className: 'flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold border-2 ' +
                         (active ? 'bg-fuchsia-700 text-white border-fuchsia-400' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                     }, vb.label);
                   })
                 ),
-                buildVerb === 'taper' && h('p', { className: 'text-[10px] text-fuchsia-200/70 mt-0.5' },
+                buildVerb === 'taper' && h('p', { className: 'text-[0.625rem] text-fuchsia-200/70 mt-0.5' },
                   t('stem.geosandbox.taper_hint', 'Taper a rectangle → shrinks the top toward a point. Top 0 = pyramid (⅓ the box!), 1 = box.')),
-                buildVerb === 'revolve' && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                buildVerb === 'revolve' && h('p', { className: 'text-[0.625rem] text-teal-200/70 mt-0.5' },
                   t('stem.geosandbox.revolve_hint', 'Revolve a rectangle around a world axis (through the origin) → a cylinder when an edge sits on the axis, a ring when you place it further out. Volume by Pappus: V = θ·R̄·A.'))
               ),
               // Taper top-size slider (taper verb only).
               buildVerb === 'taper' && h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
+                h('div', { className: 'flex justify-between text-[0.6875rem] font-bold text-purple-200 mb-1' },
                   h('span', null, t('stem.geosandbox.top_size', 'Top size')),
                   h('span', { className: 'text-fuchsia-300 font-mono' }, topScale.toFixed(2) + (topScale <= 0.001 ? ' ▲ ' + t('stem.geosandbox.pyramid', 'pyramid') : topScale >= 0.999 ? ' ▮ ' + t('stem.geosandbox.box', 'box') : ' ◭ ' + t('stem.geosandbox.frustum', 'frustum')))
                 ),
@@ -4945,7 +4945,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
               ),
               // Revolve sweep-angle slider (revolve verb only).
               buildVerb === 'revolve' && h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
+                h('div', { className: 'flex justify-between text-[0.6875rem] font-bold text-purple-200 mb-1' },
                   h('span', null, t('stem.geosandbox.sweep_angle', 'Sweep angle')),
                   h('span', { className: 'text-teal-300 font-mono' }, Math.round(revolveAngle) + '°' + (revolveAngle >= 360 ? ' ' + t('stem.geosandbox.full_turn', 'full turn') : ''))
                 ),
@@ -4955,7 +4955,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   'aria-label': t('stem.geosandbox.sweep_angle_aria', 'Revolution sweep angle in degrees'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500'
                 }),
-                h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                h('p', { className: 'text-[0.625rem] text-teal-200/70 mt-0.5' },
                   t('stem.geosandbox.revolve_axis_note', 'Uses the axis picker below as the spin axis (through the origin). Edge on the axis → solid cylinder; placed further out → a ring.')),
                 // Profile: rectangle → cylinder/ring, triangle → cone
                 h('div', { className: 'flex gap-1 mt-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.revolve_profile', 'Profile to spin') },
@@ -4964,12 +4964,12 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     return h('button', {
                       key: 'pf-' + pf.id, role: 'radio', 'aria-checked': active,
                       onClick: function() { upd('revolveProfile', pf.id); },
-                      className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold border ' +
+                      className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold border ' +
                         (active ? 'bg-teal-700 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                     }, pf.label);
                   })
                 ),
-                revolveProfile === 'triangle' && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                revolveProfile === 'triangle' && h('p', { className: 'text-[0.625rem] text-teal-200/70 mt-0.5' },
                   t('stem.geosandbox.cone_note', 'Spinning a right triangle gives a cone — and Pappus lands exactly on V = ⅓πr²h.'))
               ),
               // Stretch axis selector. The picker does not govern every move, and
@@ -4987,14 +4987,14 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 // live: the axis is a preset for the next move you make.
                 var fixedByNormal = eff.reason === 'normal';
                 return h('div', null,
-                  h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' },
+                  h('div', { className: 'text-[0.6875rem] font-bold text-purple-200 mb-1' },
                     isSpin ? t('stem.geosandbox.spin_axis', 'Spin axis:')
                       : fixedByNormal ? t('stem.geosandbox.stretch_direction', 'Stretch direction:')
                       : t('stem.geosandbox.stretch_axis', 'Stretch axis:')),
                   fixedByNormal
                   ? h('div', { className: 'flex items-center gap-2 px-2 py-1.5 rounded bg-slate-800/70 border border-slate-300/40' },
                       h('span', { className: 'text-sm text-purple-200', 'aria-hidden': 'true' }, '⊥'),
-                      h('span', { className: 'text-[11px] font-bold text-slate-100' },
+                      h('span', { className: 'text-[0.6875rem] font-bold text-slate-100' },
                         t('stem.geosandbox.axis_out_of_face', 'Straight out of the face')))
                   : h('div', {
                     className: 'flex gap-1',
@@ -5011,7 +5011,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                         'aria-checked': active,
                         onClick: function() { upd('stretchAxis', ax.id); },
                         style: { borderColor: active ? ax.color : (substituted ? '#fbbf24' : 'transparent') },
-                        className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold border-2 ' +
+                        className: 'flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold border-2 ' +
                           (active ? 'bg-slate-700 text-white'
                             : substituted ? 'bg-amber-900/40 text-amber-100 hover:bg-amber-900/60'
                             : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
@@ -5019,14 +5019,14 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     })
                   ),
                   // Say WHY, in the terms the lesson uses.
-                  fixedByNormal && h('p', { className: 'text-[10px] text-slate-300/90 mt-0.5' },
+                  fixedByNormal && h('p', { className: 'text-[0.625rem] text-slate-300/90 mt-0.5' },
                     t('stem.geosandbox.axis_normal_note', 'A rectangle extrudes straight out of its own face — that perpendicular is the only direction that adds a third dimension.')),
-                  eff.reason === 'no_selection' && h('p', { className: 'text-[10px] text-slate-300/90 mt-0.5' },
+                  eff.reason === 'no_selection' && h('p', { className: 'text-[0.625rem] text-slate-300/90 mt-0.5' },
                     t('stem.geosandbox.axis_no_selection_note', 'Select an object to see which way it will stretch.')),
-                  !fixedByNormal && eff.reason === 'parallel' && h('p', { className: 'text-[10px] text-amber-300/90 mt-0.5', 'aria-live': 'polite' },
+                  !fixedByNormal && eff.reason === 'parallel' && h('p', { className: 'text-[0.625rem] text-amber-300/90 mt-0.5', 'aria-live': 'polite' },
                     t('stem.geosandbox.axis_parallel_note', 'That axis runs along the segment, so stretching there would only make it longer. It will use') +
                     ' ' + String(eff.axis).toUpperCase() + ' ' + t('stem.geosandbox.axis_parallel_note_2', 'instead, to open out a rectangle.')),
-                  isSpin && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                  isSpin && h('p', { className: 'text-[0.625rem] text-teal-200/70 mt-0.5' },
                     t('stem.geosandbox.axis_spin_note', 'This is the line the rectangle spins around, not a stretch direction.')),
                   // Say it BEFORE the press, not only in the refusal afterwards.
                   isSpin && (function() {
@@ -5034,7 +5034,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     if (rv.ok) return null;
                     var okAx = revolutionAxisOptions(axSel, revolveProfile)
                       .map(function(a) { return a.toUpperCase(); }).join(' / ');
-                    return h('p', { className: 'text-[10px] text-amber-300/90 mt-0.5', 'aria-live': 'polite' },
+                    return h('p', { className: 'text-[0.625rem] text-amber-300/90 mt-0.5', 'aria-live': 'polite' },
                       (rv.reason === 'crosses_axis'
                         ? t('stem.geosandbox.spin_crosses_axis', 'The rectangle straddles the spin axis, so it would sweep through itself. Pappus’s theorem needs the whole face on one side of the axis.')
                         : t('stem.geosandbox.spin_axis_off_plane', 'That axis is not in the rectangle’s plane, so spinning around it sweeps no solid at all.'))
@@ -5047,7 +5047,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
               // Stretch length — slider for quick feel + a precise number box so a
               // student can dial in an exact value (needed to hit a challenge target).
               h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
+                h('div', { className: 'flex justify-between text-[0.6875rem] font-bold text-purple-200 mb-1' },
                   h('span', null, t('stem.geosandbox.length', 'Length')),
                   h('span', { className: 'text-purple-300 font-mono' }, stretchLength.toFixed(1) + ' ' + unitDef.short)
                 ),
@@ -5064,7 +5064,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     value: stretchLength,
                     onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('stretchLength', Math.max(0.1, Math.min(20, v))); },
                     'aria-label': t('stem.geosandbox.stretch_length_exact', 'Exact stretch length'),
-                    className: 'w-16 px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                    className: 'w-16 px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[0.6875rem] font-mono text-right'
                   })
                 )
               ),
@@ -5073,7 +5073,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
               //    of Cavalieri's principle. ──
               h('div', null,
                 h('div', { className: 'flex justify-between items-center mb-1' },
-                  h('label', { className: 'flex items-center gap-1.5 text-[11px] font-bold text-purple-200 cursor-pointer' },
+                  h('label', { className: 'flex items-center gap-1.5 text-[0.6875rem] font-bold text-purple-200 cursor-pointer' },
                     h('input', {
                       type: 'checkbox', checked: stretchSlant !== 0,
                       onChange: function(e) { upd('stretchSlant', e.target.checked ? 0.6 : 0); },
@@ -5081,7 +5081,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     }),
                     t('stem.geosandbox.oblique', '◣ Oblique (slant)')
                   ),
-                  stretchSlant !== 0 && h('span', { className: 'text-purple-300 font-mono text-[11px]' }, '×' + stretchSlant.toFixed(1))
+                  stretchSlant !== 0 && h('span', { className: 'text-purple-300 font-mono text-[0.6875rem]' }, '×' + stretchSlant.toFixed(1))
                 ),
                 stretchSlant !== 0 && h('input', {
                   type: 'range', min: '0', max: '1.5', step: '0.1',
@@ -5090,13 +5090,13 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   'aria-label': t('stem.geosandbox.slant_amount', 'Slant amount'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
                 }),
-                stretchSlant !== 0 && h('p', { className: 'text-[10px] text-emerald-300/80 mt-0.5' },
+                stretchSlant !== 0 && h('p', { className: 'text-[0.625rem] text-emerald-300/80 mt-0.5' },
                   t('stem.geosandbox.cavalieri_note', "Cavalieri: slanting keeps the base and height — so area/volume don't change, only the surface does.")
                 )
               ),
               // Predict card — when a stretch is paused for a guess (predict mode).
               pendingPredict && h('div', { className: 'rounded-lg p-2.5 bg-indigo-900/50 border border-indigo-400/50 space-y-2' },
-                h('div', { className: 'text-[11px] font-bold text-indigo-100' },
+                h('div', { className: 'text-[0.6875rem] font-bold text-indigo-100' },
                   '🔮 ' + t('stem.geosandbox.predict_the', 'Predict the') + ' ' + pendingPredict.label.toLowerCase() +
                   ' ' + t('stem.geosandbox.of_the_result', 'of the result') +
                   (pendingPredict.unitExp ? ' (' + unitDef.short + (pendingPredict.unitExp === 2 ? '²' : pendingPredict.unitExp === 3 ? '³' : '') + ')' : '')),
@@ -5110,12 +5110,12 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   }),
                   h('button', {
                     onClick: revealPrediction,
-                    className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all'
+                    className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all'
                   }, t('stem.geosandbox.reveal_build', 'Reveal & build')),
                   h('button', {
                     onClick: cancelPrediction,
                     'aria-label': t('stem.geosandbox.cancel_prediction', 'Cancel prediction'),
-                    className: 'px-2 py-1 rounded-lg text-[11px] text-indigo-200 hover:bg-indigo-800/50 transition-all'
+                    className: 'px-2 py-1 rounded-lg text-[0.6875rem] text-indigo-200 hover:bg-indigo-800/50 transition-all'
                   }, '✕')
                 )
               ),
@@ -5159,9 +5159,9 @@ h('div', { className: 'flex flex-wrap gap-1' },
               })(),
               // Construction object list
               construction.objects.length > 0 && h('div', { className: 'border-t border-purple-500/30 pt-2' },
-                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' },
+                h('div', { className: 'text-[0.6875rem] font-bold text-purple-200 mb-1' },
                   t('stem.geosandbox.construction_heading', 'Construction') + ' (' + construction.objects.length + ')'),
-                h('div', { className: 'text-[10px] text-purple-300/70 mb-1' }, t('stem.geosandbox.click_to_select_hint', '💡 Tip: click a shape in the 3D view — or the list — to select it, then stretch.')),
+                h('div', { className: 'text-[0.625rem] text-purple-300/70 mb-1' }, t('stem.geosandbox.click_to_select_hint', '💡 Tip: click a shape in the 3D view — or the list — to select it, then stretch.')),
                 h('div', { className: 'space-y-1 max-h-40 overflow-y-auto' },
                   construction.objects.map(function(o) {
                     var isSel = o.id === construction.selection;
@@ -5177,14 +5177,14 @@ h('div', { className: 'flex flex-wrap gap-1' },
                       h('button', {
                         onClick: function() { selectObject(o.id); },
                         'aria-pressed': isSel,
-                        className: 'flex-1 text-left px-2 py-1 rounded text-[11px] transition-all flex items-center gap-2 ' +
+                        className: 'flex-1 text-left px-2 py-1 rounded text-[0.6875rem] transition-all flex items-center gap-2 ' +
                           (isSel ? 'bg-fuchsia-600 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
                       }, h('span', { className: 'text-base' }, icon), label),
                       h('button', {
                         onClick: function() { deleteObject(o.id); },
                         'aria-label': t('stem.geosandbox.delete_object', 'Delete') + ' ' + o.type + ' #' + o.id,
                         title: t('stem.geosandbox.delete_object', 'Delete this object'),
-                        className: 'px-1.5 py-1 rounded text-[11px] text-rose-300 hover:bg-rose-700/40 transition-all'
+                        className: 'px-1.5 py-1 rounded text-[0.6875rem] text-rose-300 hover:bg-rose-700/40 transition-all'
                       }, '🗑')
                     );
                   })
@@ -5202,11 +5202,11 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     ? [{ label: t('stem.geosandbox.dim_side_u', 'Side u'), i: 0, len: vec3Mag(sel.u) }, { label: t('stem.geosandbox.dim_side_v', 'Side v'), i: 1, len: vec3Mag(sel.v) }]
                     : [{ label: t('stem.geosandbox.dim_side_u', 'Side u'), i: 0, len: vec3Mag(sel.u) }, { label: t('stem.geosandbox.dim_side_v', 'Side v'), i: 1, len: vec3Mag(sel.v) }, { label: t('stem.geosandbox.dim_height_w', 'Height w'), i: 2, len: vec3Mag(sel.w) }];
                 return h('div', { className: 'border-t border-purple-500/30 pt-2 space-y-1.5' },
-                  h('div', { className: 'text-[11px] font-bold text-purple-200' },
+                  h('div', { className: 'text-[0.6875rem] font-bold text-purple-200' },
                     t('stem.geosandbox.edit_selected', '✎ Edit selected size') + ' (#' + sel.id + ')'),
                   dims.map(function(d) {
                     return h('div', { key: 'rsz-' + d.i, className: 'flex items-center gap-2' },
-                      h('span', { className: 'w-16 text-[11px] font-bold text-purple-200' }, d.label),
+                      h('span', { className: 'w-16 text-[0.6875rem] font-bold text-purple-200' }, d.label),
                       h('input', {
                         type: 'range', min: '0.5', max: '12', step: '0.5', value: Math.min(12, d.len),
                         onPointerDown: beginResizeDrag, onPointerUp: endResizeDrag, onBlur: endResizeDrag,
@@ -5218,7 +5218,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                         type: 'number', min: '0.1', max: '20', step: '0.1', value: +d.len.toFixed(2),
                         onChange: function(e) { resizeSelectedDim(d.i, e.target.value, true); },
                         'aria-label': d.label + ' ' + t('stem.geosandbox.exact_value', 'exact value'),
-                        className: 'w-16 px-1.5 py-1 rounded bg-slate-900/70 border border-fuchsia-500/40 text-fuchsia-100 text-[11px] font-mono text-right'
+                        className: 'w-16 px-1.5 py-1 rounded bg-slate-900/70 border border-fuchsia-500/40 text-fuchsia-100 text-[0.6875rem] font-mono text-right'
                       })
                     );
                   })
@@ -5230,14 +5230,14 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   onClick: doStretchUndo,
                   disabled: !history.length,
                   'aria-label': t('stem.geosandbox.undo_last_stretch', 'Undo last stretch'),
-                  className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
+                  className: 'flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                     (history.length ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, '↶ Undo (' + history.length + ')'),
                 h('button', {
                   onClick: clearConstruction,
                   disabled: !construction.objects.length,
                   'aria-label': t('stem.geosandbox.clear_all_construction_objects', 'Clear all construction objects'),
-                  className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
+                  className: 'flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                     (construction.objects.length ? 'bg-rose-700 text-white hover:bg-rose-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, t('stem.geosandbox.clear_all', '× Clear all'))
               )
@@ -5250,7 +5250,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 var doneCount = GEO_MISSIONS.filter(function(mn) { return solvedSet.indexOf(mn.id) >= 0; }).length;
                 return h('div', { className: 'flex items-center justify-between' },
                   h('div', { className: 'text-xs font-bold text-indigo-200 uppercase tracking-wider' }, t('stem.geosandbox.missions', '🗺 Missions')),
-                  h('div', { className: 'text-[10px] text-indigo-300/80 font-mono' }, doneCount + '/' + GEO_MISSIONS.length + ' ★')
+                  h('div', { className: 'text-[0.625rem] text-indigo-300/80 font-mono' }, doneCount + '/' + GEO_MISSIONS.length + ' ★')
                 );
               })(),
               h('div', { className: 'space-y-1' },
@@ -5264,10 +5264,10 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   },
                     h('span', { className: 'text-base leading-none pt-0.5', 'aria-hidden': 'true' }, done ? '✅' : mn.icon),
                     h('div', { className: 'flex-1 min-w-0' },
-                      h('div', { className: 'text-[11px] font-bold ' + (done ? 'text-emerald-200' : 'text-slate-200') }, mn.title),
-                      h('div', { className: 'text-[10px] text-slate-400 leading-snug' }, mn.desc)
+                      h('div', { className: 'text-[0.6875rem] font-bold ' + (done ? 'text-emerald-200' : 'text-slate-200') }, mn.title),
+                      h('div', { className: 'text-[0.625rem] text-slate-400 leading-snug' }, mn.desc)
                     ),
-                    liveSolved && !everSolved && h('span', { className: 'text-[9px] text-emerald-300 font-bold self-center' }, t('stem.geosandbox.mission_now', 'now!'))
+                    liveSolved && !everSolved && h('span', { className: 'text-[0.5625rem] text-emerald-300 font-bold self-center' }, t('stem.geosandbox.mission_now', 'now!'))
                   );
                 })
               )
@@ -5284,17 +5284,17 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     key: 'real-' + ro.id,
                     onClick: function() { upd('realChallenge', active ? null : ro.id); },
                     'aria-pressed': active,
-                    className: 'text-left px-2 py-1.5 rounded text-[11px] font-bold transition-all border ' +
+                    className: 'text-left px-2 py-1.5 rounded text-[0.6875rem] font-bold transition-all border ' +
                       (active ? 'bg-teal-700 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                   }, ro.icon + ' ' + ro.name);
                 })
               ),
               realChallenge && h('div', { className: 'rounded-lg p-2 bg-slate-900/50 border border-teal-500/30 space-y-1' },
-                h('div', { className: 'text-[11px] text-teal-100' }, (realEval && realEval.solved ? '✅ ' : '🎯 ') + realChallenge.desc),
-                realEval && realEval.closest != null && !realEval.solved && h('div', { className: 'text-[10px] text-teal-300/80 font-mono' },
+                h('div', { className: 'text-[0.6875rem] text-teal-100' }, (realEval && realEval.solved ? '✅ ' : '🎯 ') + realChallenge.desc),
+                realEval && realEval.closest != null && !realEval.solved && h('div', { className: 'text-[0.625rem] text-teal-300/80 font-mono' },
                   t('stem.geosandbox.closest_volume', 'Closest volume so far:') + ' ' + (Math.round(realEval.closest * 100) / 100) + ' / ' + (Math.round(realChallenge.target * 100) / 100)),
-                realEval && realEval.solved && h('div', { className: 'text-[11px] text-emerald-300 font-bold' }, t('stem.geosandbox.real_solved', 'Solved! You built a') + ' ' + realChallenge.name.toLowerCase() + '.'),
-                h('div', { className: 'text-[10px] text-teal-200/60' }, '💡 ' + realChallenge.hint)
+                realEval && realEval.solved && h('div', { className: 'text-[0.6875rem] text-emerald-300 font-bold' }, t('stem.geosandbox.real_solved', 'Solved! You built a') + ' ' + realChallenge.name.toLowerCase() + '.'),
+                h('div', { className: 'text-[0.625rem] text-teal-200/60' }, '💡 ' + realChallenge.hint)
               )
             ),
 
@@ -5306,11 +5306,11 @@ h('div', { className: 'flex flex-wrap gap-1' },
               ),
               puzzleOn && h('div', { className: 'space-y-1' },
                 h('p', { className: 'text-[10.5px] text-amber-200/80' }, t('stem.geosandbox.puzzle_desc', 'Build the solid with the BIGGEST volume whose surface area is ≤ 54 square units. What shape wins?')),
-                puzzleEval && h('div', { className: 'text-[11px] font-mono text-amber-100' },
+                puzzleEval && h('div', { className: 'text-[0.6875rem] font-mono text-amber-100' },
                   t('stem.geosandbox.your_best', 'Your best:') + ' V = ' + (Math.round(puzzleEval.best * 100) / 100) + '  (' + Math.round(puzzleEval.fraction * 100) + '% ' + t('stem.geosandbox.of_optimum', 'of the max') + ')'),
                 puzzleEval && puzzleEval.atOptimum
-                  ? h('div', { className: 'text-[11px] text-emerald-300 font-bold' }, t('stem.geosandbox.puzzle_win', '🏆 Optimal! A cube is the fattest solid for a given surface area.'))
-                  : h('div', { className: 'text-[10px] text-amber-200/60' }, t('stem.geosandbox.puzzle_hint', 'Try a cube: surface 6s² ≤ 54 means s ≤ 3, so a 3×3×3 cube (volume 27) is unbeatable.'))
+                  ? h('div', { className: 'text-[0.6875rem] text-emerald-300 font-bold' }, t('stem.geosandbox.puzzle_win', '🏆 Optimal! A cube is the fattest solid for a given surface area.'))
+                  : h('div', { className: 'text-[0.625rem] text-amber-200/60' }, t('stem.geosandbox.puzzle_hint', 'Try a cube: surface 6s² ≤ 54 means s ≤ 3, so a 3×3×3 cube (volume 27) is unbeatable.'))
               )
             ),
 
@@ -5344,7 +5344,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     }).join('') + '</svg>';
                   return h('div', { id: 'geo-stretch-net-panel', role: 'region', 'aria-label': t('stem.geosandbox.printable_prism_net', 'Printable prism net'), className: 'space-y-2' },
                     h('div', { className: 'bg-white rounded-lg p-2 flex justify-center', dangerouslySetInnerHTML: { __html: svg } }),
-                    h('div', { className: 'text-[10px] text-sky-200/80' }, t('stem.geosandbox.net_faces', '6 faces · edges {a}×{b}×{c}')
+                    h('div', { className: 'text-[0.625rem] text-sky-200/80' }, t('stem.geosandbox.net_faces', '6 faces · edges {a}×{b}×{c}')
                       .replace('{a}', net.dims.a.toFixed(1)).replace('{b}', net.dims.b.toFixed(1)).replace('{c}', net.dims.c.toFixed(1))),
                     h('button', {
                       onClick: function() {
@@ -5356,7 +5356,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                           win.document.close();
                         } catch (e) {}
                       },
-                      className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-sky-700/70 text-white hover:bg-sky-800'
+                      className: 'w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-sky-700/70 text-white hover:bg-sky-800'
                     }, '🖨 ' + t('stem.geosandbox.net_print', 'Print / cut-out net'))
                   );
                 })()
@@ -5374,8 +5374,8 @@ h('div', { className: 'flex flex-wrap gap-1' },
               return h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-slate-900/30 rounded-xl p-3 border border-amber-500/40 space-y-2' },
                 h('div', { className: 'text-xs font-bold text-amber-200 uppercase tracking-wider' }, t('stem.geosandbox.scale_explorer', '🔎 Scale explorer — square–cube law')),
                 h('div', { className: 'flex justify-between items-center' },
-                  h('span', { className: 'text-[11px] font-bold text-amber-200' }, t('stem.geosandbox.scale_factor', 'Scale factor k')),
-                  h('span', { className: 'text-amber-300 font-mono text-[11px]' }, '×' + k.toFixed(2))
+                  h('span', { className: 'text-[0.6875rem] font-bold text-amber-200' }, t('stem.geosandbox.scale_factor', 'Scale factor k')),
+                  h('span', { className: 'text-amber-300 font-mono text-[0.6875rem]' }, '×' + k.toFixed(2))
                 ),
                 h('input', {
                   type: 'range', min: '0.5', max: '3', step: '0.25', value: k,
@@ -5385,20 +5385,20 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 }),
                 h('div', { className: 'space-y-1' },
                   rep.rows.map(function(row) {
-                    return h('div', { key: row.label, className: 'flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1' },
+                    return h('div', { key: row.label, className: 'flex items-center justify-between text-[0.6875rem] bg-slate-900/40 rounded px-2 py-1' },
                       h('span', { className: 'text-slate-200 font-medium' }, row.label),
                       h('span', { className: 'font-mono text-amber-200' },
                         row.before.toFixed(2) + ' → ' + row.after.toFixed(2) + '  (×k' + (expText[row.exp] || ('^' + row.exp)) + ' = ×' + row.ratio.toFixed(2) + ')')
                     );
                   })
                 ),
-                sel.type === 'prism' && h('p', { className: 'text-[10px] text-amber-300/80' },
+                sel.type === 'prism' && h('p', { className: 'text-[0.625rem] text-amber-300/80' },
                   t('stem.geosandbox.square_cube_note', 'Double the sides and the volume grows 8×, not 2× — why big animals need thick legs and small ones do not.')
                 ),
                 h('button', {
                   onClick: function() { placeScaledCopy(k); },
                   'aria-label': t('stem.geosandbox.place_scaled_copy', 'Place a scaled copy beside the original'),
-                  className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-700/70 text-white hover:bg-amber-800'
+                  className: 'w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-amber-700/70 text-white hover:bg-amber-800'
                 }, '⧉ ' + t('stem.geosandbox.place_scaled', 'Place ×{k} copy').replace('{k}', k.toFixed(2)))
               );
             })(),
@@ -5421,7 +5421,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   }, sliceOn ? t('stem.geosandbox.slicing_on', 'Slicing ✓') : t('stem.geosandbox.slice_show', 'Show slice'))
                 ),
                 sliceOn && h('div', null,
-                  h('div', { className: 'flex justify-between text-[11px] font-bold text-yellow-200 mb-1' },
+                  h('div', { className: 'flex justify-between text-[0.6875rem] font-bold text-yellow-200 mb-1' },
                     h('span', null, t('stem.geosandbox.slice_height', 'Slice height')),
                     h('span', { className: 'font-mono text-yellow-300' }, Math.round(sliceT * 100) + '%')
                   ),
@@ -5432,19 +5432,19 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
                   })
                 ),
-                h('div', { className: 'text-[11px] bg-slate-900/40 rounded px-2 py-1.5 space-y-0.5' },
+                h('div', { className: 'text-[0.6875rem] bg-slate-900/40 rounded px-2 py-1.5 space-y-0.5' },
                   h('div', { className: 'flex justify-between' },
                     h('span', { className: 'text-slate-300' }, t('stem.geosandbox.cross_area', 'Cross-section area')),
                     h('span', { className: 'font-mono text-yellow-200' }, info.baseArea.toFixed(2) + ' ' + unitDef.short + '²')
                   ),
-                  h('div', { className: 'text-[10px] text-emerald-300/80' }, t('stem.geosandbox.cross_constant', 'Same at every height — that is why volume = area × height (Cavalieri).')),
+                  h('div', { className: 'text-[0.625rem] text-emerald-300/80' }, t('stem.geosandbox.cross_constant', 'Same at every height — that is why volume = area × height (Cavalieri).')),
                   h('div', { className: 'flex justify-between pt-0.5 border-t border-slate-700/60' },
-                    h('span', { className: 'text-slate-300 font-mono text-[10px]' }, info.baseArea.toFixed(1) + ' × ' + info.height.toFixed(1) + ' (height)'),
+                    h('span', { className: 'text-slate-300 font-mono text-[0.625rem]' }, info.baseArea.toFixed(1) + ' × ' + info.height.toFixed(1) + ' (height)'),
                     h('span', { className: 'font-mono text-yellow-200' }, '= ' + info.volume.toFixed(2) + ' ' + unitDef.short + '³')
                   )
                 ),
                 sliceOn && h('div', null,
-                  h('div', { className: 'flex justify-between text-[10px] text-yellow-200/80 mb-0.5' },
+                  h('div', { className: 'flex justify-between text-[0.625rem] text-yellow-200/80 mb-0.5' },
                     h('span', null, t('stem.geosandbox.stack_slices', 'Stack of {n} slices').replace('{n}', String(nSlices))),
                     h('span', { className: 'font-mono' }, '≈ ' + geoStackVolume(sel, nSlices).toFixed(2))
                   ),
@@ -5454,7 +5454,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     'aria-label': t('stem.geosandbox.slice_count', 'Number of slices in the stack'),
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
                   }),
-                  h('p', { className: 'text-[10px] text-yellow-200/70' }, t('stem.geosandbox.stack_note', 'More slices → the stack of areas adds up to the true volume.'))
+                  h('p', { className: 'text-[0.625rem] text-yellow-200/70' }, t('stem.geosandbox.stack_note', 'More slices → the stack of areas adds up to the true volume.'))
                 )
               );
             })(),
@@ -5554,20 +5554,20 @@ h('div', { className: 'flex flex-wrap gap-1' },
               ];
               return h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-purple-700/40', style: { color: '#e8f0f5' } },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.geosandbox.stretch_analyzer_inquiry_widget', '📐 Stretch Analyzer — Inquiry Widget')),
-                h('div', { className: 'text-[10px] opacity-80 mb-2' }, t('stem.geosandbox.predict_geometry_properties_as_you_str', 'Predict geometry properties as you stretch. No answer key — you mark your own understanding.')),
-                h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
-                h('div', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+                h('div', { className: 'text-[0.625rem] opacity-80 mb-2' }, t('stem.geosandbox.predict_geometry_properties_as_you_str', 'Predict geometry properties as you stretch. No answer key — you mark your own understanding.')),
+                h('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
+                h('div', { className: 'text-[0.625rem] opacity-80 mb-2' }, sm.desc),
                 h('div', { className: 'grid grid-cols-5 gap-1 mb-2' },
                   metrics.map(function(m) {
                     return h('div', { key: m.k, className: 'text-center p-1 rounded', style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                      h('div', { className: 'text-[8px] uppercase tracking-wide opacity-70' }, m.label),
-                      h('div', { className: 'text-[11px] font-bold', style: { color: sm.color } }, m.val)
+                      h('div', { className: 'text-[0.5rem] uppercase tracking-wide opacity-70' }, m.label),
+                      h('div', { className: 'text-[0.6875rem] font-bold', style: { color: sm.color } }, m.val)
                     );
                   })
                 ),
                 h('div', { className: 'grid grid-cols-4 gap-1 mb-2' },
                   ['point', 'segment', 'rect', 'prism'].map(function(t, di) {
-                    return h('div', { key: t, className: 'text-center p-1 rounded text-[9px]', style: { background: byDim[di] ? '#0a0a1a' : '#0f172a', border: '1px solid ' + (byDim[di] ? dimColors[di] : '#94a3b8'), color: byDim[di] ? dimColors[di] : '#cbd5e1' } },
+                    return h('div', { key: t, className: 'text-center p-1 rounded text-[0.5625rem]', style: { background: byDim[di] ? '#0a0a1a' : '#0f172a', border: '1px solid ' + (byDim[di] ? dimColors[di] : '#94a3b8'), color: byDim[di] ? dimColors[di] : '#cbd5e1' } },
                       di + 'D · ' + byDim[di]
                     );
                   })
@@ -5580,23 +5580,23 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   h('text', { x: 8, y: 172, fill: '#64748b', fontSize: 9 }, 'view ' + iq.viewAngle + '°  · focus ' + iq.focus)
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
-                  h('label', { className: 'text-[10px]' },
+                  h('label', { className: 'text-[0.625rem]' },
                     h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.view_angle', 'View angle')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.viewAngle + '°')),
                     h('input', { type: 'range', min: 0, max: 60, step: 5, value: iq.viewAngle, onChange: function(e) { setKey('viewAngle', parseInt(e.target.value, 10)); }, 'aria-label': t('stem.geosandbox.view_angle_aria', 'Analyzer view angle'), className: 'w-full' })
                   ),
-                  h('label', { className: 'text-[10px]' },
+                  h('label', { className: 'text-[0.625rem]' },
                     h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.detail_level', 'Detail (decimals)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.detail)),
                     h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.detail, onChange: function(e) { setKey('detail', parseInt(e.target.value, 10)); }, 'aria-label': t('stem.geosandbox.detail_decimals_aria', 'Decimal places shown in the analyzer metrics'), className: 'w-full' })
                   ),
-                  h('label', { className: 'text-[10px]' },
+                  h('label', { className: 'text-[0.625rem]' },
                     h('div', { className: 'mb-0.5' }, t('stem.geosandbox.focus_on_type', 'Focus on type')),
-                    h('select', { value: iq.focus, onChange: function(e) { setKey('focus', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[10px]', style: { color: '#e8f0f5' } },
+                    h('select', { value: iq.focus, onChange: function(e) { setKey('focus', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[0.625rem]', style: { color: '#e8f0f5' } },
                       ['all', 'point', 'segment', 'rect', 'prism'].map(function(t) { return h('option', { key: t, value: t }, t); })
                     )
                   ),
-                  h('label', { className: 'text-[10px]' },
+                  h('label', { className: 'text-[0.625rem]' },
                     h('div', { className: 'mb-0.5' }, t('stem.geosandbox.edge_style', 'Edge style')),
-                    h('select', { value: iq.edgeStyle, onChange: function(e) { setKey('edgeStyle', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[10px]', style: { color: '#e8f0f5' } },
+                    h('select', { value: iq.edgeStyle, onChange: function(e) { setKey('edgeStyle', e.target.value); }, className: 'w-full p-1 rounded bg-slate-900 border border-purple-700/40 text-[0.625rem]', style: { color: '#e8f0f5' } },
                       [['colored', 'colored by dimension'], ['plain', 'plain white']].map(function(o) { return h('option', { key: o[0], value: o[0] }, o[1]); })
                     )
                   )
@@ -5605,16 +5605,16 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   h('button', { onClick: function() {
                     var t = new Date().toISOString().slice(11, 19);
                     setIQ({ log: iq.log.concat([{ t: t, n: objs.length, dim: avgDim.toFixed(2), len: totalLen.toFixed(2), area: totalArea.toFixed(2), vol: totalVol.toFixed(2) }]) });
-                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.geosandbox.log_snapshot', '📋 Log snapshot')),
-                  h('button', { onClick: function() { setIQ({ log: [] }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.clear_log', 'Clear log'))
+                  }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.geosandbox.log_snapshot', '📋 Log snapshot')),
+                  h('button', { onClick: function() { setIQ({ log: [] }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.clear_log', 'Clear log'))
                 ),
-                iq.log.length > 0 && h('div', { className: 'mb-2 p-1.5 rounded text-[9px] font-mono', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                iq.log.length > 0 && h('div', { className: 'mb-2 p-1.5 rounded text-[0.5625rem] font-mono', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  n=' + e.n + ' d=' + e.dim + ' L=' + e.len + ' A=' + e.area + ' V=' + e.vol); })
                 ),
-                h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.geosandbox.your_hypothesis_what_stretches_grow_le', 'Your hypothesis (what stretches grow length faster — area faster — volume faster?)')),
-                h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.geosandbox.your_hypothesis', 'Your geometry scaling hypothesis'), placeholder: t('stem.geosandbox.e_g_stretching_a_segment_perpendicular', 'e.g., stretching a segment perpendicular doubles area but volume needs a second stretch...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-                iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                h('label', { className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, t('stem.geosandbox.your_hypothesis_what_stretches_grow_le', 'Your hypothesis (what stretches grow length faster — area faster — volume faster?)')),
+                h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.geosandbox.your_hypothesis', 'Your geometry scaling hypothesis'), placeholder: t('stem.geosandbox.e_g_stretching_a_segment_perpendicular', 'e.g., stretching a segment perpendicular doubles area but volume needs a second stretch...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+                iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                   h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.geosandbox.open_questions_no_answer_key', 'Open questions (no answer key)')),
                   h('ul', { className: 'pl-4 m-0' },
                     h('li', null, t('stem.geosandbox.when_you_stretch_a_segment_perpendicul', 'When you stretch a segment perpendicular to itself, what happens to its dimension count?')),
@@ -5623,12 +5623,12 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     h('li', null, t('stem.geosandbox.what_would_make_this_construction_symm', 'What would make this construction symmetric about its centroid?'))
                   )
                 ),
-                h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                h('label', { className: 'flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1' },
                   h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                   h('span', null, t('stem.geosandbox.i_can_explain_why_these_metrics_scale_', 'I can explain why these metrics scale the way they do as I stretch.'))
                 ),
-                iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.geosandbox.scaling_explanation', 'Explain geometry scaling in your own words'), placeholder: t('stem.geosandbox.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                h('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.geosandbox.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump.'))
+                iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.geosandbox.scaling_explanation', 'Explain geometry scaling in your own words'), placeholder: t('stem.geosandbox.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                h('p', { className: 'm-0 text-[0.5625rem] italic opacity-60' }, t('stem.geosandbox.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump.'))
               );
             })(),
 
@@ -5638,7 +5638,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
               currentSliders.map(function(sl) {
                 var sliderMax = shape === 'torus' && sl.key === 'tube' ? Math.min(sl.max, Math.max(sl.min, dims.r - 0.1)) : sl.max;
                 return h('div', { key: sl.key, className: 'mb-2' },
-                  h('div', { className: 'flex justify-between text-[11px] text-slate-300 mb-0.5' },
+                  h('div', { className: 'flex justify-between text-[0.6875rem] text-slate-300 mb-0.5' },
                     h('span', { title: getDimTooltip(shape, sl.key), style: { cursor: getDimTooltip(shape, sl.key) ? 'help' : 'default', borderBottom: getDimTooltip(shape, sl.key) ? '1px dotted #64748b' : 'none' } }, sl.label),
                     h('span', { className: 'text-sky-400 font-mono' }, (dims[sl.key] || sl.min).toFixed(sl.step < 1 ? 1 : 0))
                   ),
@@ -5654,10 +5654,10 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   })
                 );
               }),
-              shape === 'torus' && h('p', { className: 'text-[10px] text-sky-300/70 -mt-1 mb-2' }, t('stem.geosandbox.torus_radius_constraint', 'Tube radius stays smaller than the major radius so the torus does not self-intersect.')),
+              shape === 'torus' && h('p', { className: 'text-[0.625rem] text-sky-300/70 -mt-1 mb-2' }, t('stem.geosandbox.torus_radius_constraint', 'Tube radius stays smaller than the major radius so the torus does not self-intersect.')),
               // Color picker
               h('div', { className: 'mt-3' },
-                h('div', { className: 'text-[11px] text-slate-300 mb-1' }, t('stem.geosandbox.color', 'Color')),
+                h('div', { className: 'text-[0.6875rem] text-slate-300 mb-1' }, t('stem.geosandbox.color', 'Color')),
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
                   colorPalette.map(function(c) {
                     return h('button', { key: c,
@@ -5684,11 +5684,11 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     style: { left: wireframe ? 18 : 2 }
                   })
                 ),
-                h('span', { className: 'text-[11px] text-slate-300' }, t('stem.geosandbox.wireframe_2', 'Wireframe'))
+                h('span', { className: 'text-[0.6875rem] text-slate-300' }, t('stem.geosandbox.wireframe_2', 'Wireframe'))
               ),
               // Opacity slider
               h('div', { className: 'mt-2' },
-                h('div', { className: 'flex justify-between text-[11px] text-slate-300 mb-0.5' },
+                h('div', { className: 'flex justify-between text-[0.6875rem] text-slate-300 mb-0.5' },
                   h('span', null, t('stem.geosandbox.opacity', 'Opacity')),
                   h('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
                 ),
@@ -5705,7 +5705,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
             // ── v2: Real-world unit + save/load shared between modes ──
             h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50 space-y-2' },
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider' }, t('stem.geosandbox.tools', '🛠 Tools')),
-              h('button', { type: 'button', onClick: function() { upd('showAdvancedTools', !showAdvancedTools); }, 'aria-expanded': showAdvancedTools ? 'true' : 'false', className: 'w-full flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[11px] font-bold bg-slate-900/55 text-slate-200 border border-slate-600/45 hover:border-sky-400/60' },
+              h('button', { type: 'button', onClick: function() { upd('showAdvancedTools', !showAdvancedTools); }, 'aria-expanded': showAdvancedTools ? 'true' : 'false', className: 'w-full flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[0.6875rem] font-bold bg-slate-900/55 text-slate-200 border border-slate-600/45 hover:border-sky-400/60' },
                 h('span', null, 'Learning & research options'),
                 h('span', { 'aria-hidden': 'true' }, showAdvancedTools ? '−' : '+')
               ),
@@ -5722,17 +5722,17 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 )
               ),
               h('div', { className: 'flex items-center gap-1' },
-                h('label', { className: 'text-[11px] text-slate-300 font-bold mr-1' }, 'Units:'),
+                h('label', { className: 'text-[0.6875rem] text-slate-300 font-bold mr-1' }, 'Units:'),
                 h('select', {
                   value: unitId,
                   onChange: function(e) { upd('unitId', e.target.value); if (announceToSR) announceToSR('Unit changed to ' + e.target.options[e.target.selectedIndex].text); },
                   'aria-label': t('stem.geosandbox.real_world_unit', 'Real-world unit'),
-                  className: 'flex-1 text-[11px] bg-slate-900 border border-slate-500 rounded px-2 py-1 text-slate-200 font-mono'
+                  className: 'flex-1 text-[0.6875rem] bg-slate-900 border border-slate-500 rounded px-2 py-1 text-slate-200 font-mono'
                 }, GEO_UNITS.map(function(u) {
                   return h('option', { key: u.id, value: u.id }, u.short + ' — ' + u.long);
                 }))
               ),
-              (mode === 'stretch' || mode === 'sculpt') && h('label', { className: 'flex items-center gap-2 text-[11px] font-bold text-slate-200 cursor-pointer' },
+              (mode === 'stretch' || mode === 'sculpt') && h('label', { className: 'flex items-center gap-2 text-[0.6875rem] font-bold text-slate-200 cursor-pointer' },
                 h('input', {
                   type: 'checkbox',
                   checked: showSceneLabels,
@@ -5751,12 +5751,12 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     setSaveOpen(true);
                   },
                   disabled: !construction.objects.length,
-                  className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold ' +
+                  className: 'flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold ' +
                     (construction.objects.length ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, t('stem.geosandbox.save', '💾 Save')),
                 h('button', {
                   onClick: function() { upd('showSaved', !showSaved); },
-                  className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
+                  className: 'flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
                 }, '📂 Load (' + Object.keys(savedConstructions).length + ')')
               ),
               mode === 'stretch' && saveOpen && h('form', {
@@ -5764,35 +5764,35 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 onKeyDown: function(e) { if (e.key === 'Escape') { e.preventDefault(); setSaveOpen(false); setSaveName(''); } },
                 className: 'border border-blue-500/50 bg-blue-950/50 rounded p-2 space-y-1.5'
               },
-                h('label', { htmlFor: 'geo-save-name', className: 'block text-[11px] font-bold text-blue-100' }, t('stem.geosandbox.construction_name', 'Construction name')),
-                h('input', { ref: saveNameRef, id: 'geo-save-name', type: 'text', maxLength: 40, value: saveName, onChange: function(e) { setSaveName(e.target.value); }, className: 'w-full px-2 py-1 rounded bg-slate-950 border border-blue-400/60 text-[11px] text-white' }),
+                h('label', { htmlFor: 'geo-save-name', className: 'block text-[0.6875rem] font-bold text-blue-100' }, t('stem.geosandbox.construction_name', 'Construction name')),
+                h('input', { ref: saveNameRef, id: 'geo-save-name', type: 'text', maxLength: 40, value: saveName, onChange: function(e) { setSaveName(e.target.value); }, className: 'w-full px-2 py-1 rounded bg-slate-950 border border-blue-400/60 text-[0.6875rem] text-white' }),
                 h('div', { className: 'flex gap-1' },
-                  h('button', { type: 'submit', disabled: !String(saveName || '').trim(), className: 'px-2 py-1 rounded bg-blue-700 text-white text-[10px] font-bold disabled:opacity-50' }, t('stem.geosandbox.save_named_construction', 'Save construction')),
-                  h('button', { type: 'button', onClick: function() { setSaveOpen(false); setSaveName(''); }, className: 'px-2 py-1 rounded bg-slate-700 text-white text-[10px] font-bold' }, t('common.cancel', 'Cancel'))
+                  h('button', { type: 'submit', disabled: !String(saveName || '').trim(), className: 'px-2 py-1 rounded bg-blue-700 text-white text-[0.625rem] font-bold disabled:opacity-50' }, t('stem.geosandbox.save_named_construction', 'Save construction')),
+                  h('button', { type: 'button', onClick: function() { setSaveOpen(false); setSaveName(''); }, className: 'px-2 py-1 rounded bg-slate-700 text-white text-[0.625rem] font-bold' }, t('common.cancel', 'Cancel'))
                 )
               ),
               mode === 'stretch' && showSaved && h('div', { className: 'border-t border-slate-700 pt-2 space-y-1 max-h-40 overflow-y-auto' },
                 Object.keys(savedConstructions).length === 0
-                  ? h('p', { className: 'text-[11px] text-slate-500 italic' }, t('stem.geosandbox.no_saved_constructions_yet', 'No saved constructions yet.'))
+                  ? h('p', { className: 'text-[0.6875rem] text-slate-500 italic' }, t('stem.geosandbox.no_saved_constructions_yet', 'No saved constructions yet.'))
                   : Object.keys(savedConstructions).map(function(name) {
                       var snap = savedConstructions[name];
                       return h('div', { key: 'sv-' + name, className: 'flex flex-wrap items-center gap-1 bg-slate-900/60 rounded p-1' },
-                        h('span', { className: 'text-[11px] text-slate-200 flex-1 truncate', title: name }, name),
-                        h('span', { className: 'text-[10px] text-slate-400 font-mono' }, (snap.objects || []).length + ' objs'),
+                        h('span', { className: 'text-[0.6875rem] text-slate-200 flex-1 truncate', title: name }, name),
+                        h('span', { className: 'text-[0.625rem] text-slate-400 font-mono' }, (snap.objects || []).length + ' objs'),
                         h('button', {
                           onClick: function() { loadConstruction(name); },
-                          className: 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
+                          className: 'px-1.5 py-0.5 rounded text-[0.625rem] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
                         }, t('stem.geosandbox.load', 'Load')),
                         h('button', {
                           onClick: function() { setDeletePending(name); },
                           'aria-label': t('stem.geosandbox.delete_saved_construction', 'Delete saved construction') + ' ' + name,
-                          className: 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-700 text-white hover:bg-rose-800'
+                          className: 'px-1.5 py-0.5 rounded text-[0.625rem] font-bold bg-rose-700 text-white hover:bg-rose-800'
                         }, '×'),
                         deletePending === name && h('div', {
                           role: 'alertdialog', 'aria-modal': 'false',
                           'aria-label': t('stem.geosandbox.confirm_delete', 'Confirm deletion'),
                           onKeyDown: function(e) { if (e.key === 'Escape') { e.preventDefault(); setDeletePending(null); } },
-                          className: 'basis-full mt-1 p-2 rounded border border-rose-400/70 bg-rose-950 text-[10px] text-rose-100'
+                          className: 'basis-full mt-1 p-2 rounded border border-rose-400/70 bg-rose-950 text-[0.625rem] text-rose-100'
                         },
                           h('p', { className: 'mb-1.5' }, t('stem.geosandbox.delete_saved_prompt', 'Delete this saved construction?') + ' "' + name + '"'),
                           h('div', { className: 'flex gap-1' },
@@ -5812,7 +5812,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 h('button', {
                   onClick: function() { upd('showMath', !showMath); },
                   'aria-pressed': showMath,
-                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (showMath ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                  className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded transition-all ' + (showMath ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showMath ? t('stem.geosandbox.hide_math', '\uD83E\uDDEE Hide the math') : t('stem.geosandbox.show_math', '\uD83E\uDDEE Show the math'))
               ),
               h('div', { className: 'space-y-1.5' },
@@ -5822,8 +5822,8 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     h('span', { className: 'text-slate-300' }, t('stem.geosandbox.volume_2', 'Volume')),
                     h('span', { className: 'text-emerald-400 font-mono font-bold' }, m.vol.toFixed(2) + ' u\u00B3')
                   ),
-                  h('div', { className: 'text-[11px] text-emerald-500/70 font-mono mt-0.5' }, steps.vol.formula),
-                  showMath && h('div', { className: 'text-[11px] text-emerald-300 font-mono mt-0.5 pl-2 border-l-2 border-emerald-500/40' },
+                  h('div', { className: 'text-[0.6875rem] text-emerald-500/70 font-mono mt-0.5' }, steps.vol.formula),
+                  showMath && h('div', { className: 'text-[0.6875rem] text-emerald-300 font-mono mt-0.5 pl-2 border-l-2 border-emerald-500/40' },
                     steps.vol.sub + ' = ' + m.vol.toFixed(2))
                 ),
                 // Surface Area with formula
@@ -5832,8 +5832,8 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     h('span', { className: 'text-slate-300' }, t('stem.geosandbox.surface_area', 'Surface Area')),
                     h('span', { className: 'text-sky-400 font-mono font-bold' }, m.sa.toFixed(2) + ' u\u00B2')
                   ),
-                  h('div', { className: 'text-[11px] text-sky-500/70 font-mono mt-0.5' }, steps.sa.formula),
-                  showMath && h('div', { className: 'text-[11px] text-sky-300 font-mono mt-0.5 pl-2 border-l-2 border-sky-500/40' },
+                  h('div', { className: 'text-[0.6875rem] text-sky-500/70 font-mono mt-0.5' }, steps.sa.formula),
+                  showMath && h('div', { className: 'text-[0.6875rem] text-sky-300 font-mono mt-0.5 pl-2 border-l-2 border-sky-500/40' },
                     steps.sa.sub + ' = ' + m.sa.toFixed(2))
                 ),
                 h('div', { className: 'flex justify-between text-xs' },
@@ -5856,7 +5856,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     (m.vertices - m.edges + m.faces) === 2 ? ' \u2713' : ''
                   )
                 ),
-                m.note && h('div', { className: 'text-[11px] text-slate-200 italic mt-1' }, m.note)
+                m.note && h('div', { className: 'text-[0.6875rem] text-slate-200 italic mt-1' }, m.note)
               )
             ),
 
@@ -5868,12 +5868,12 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 h('button', {
                   onClick: function() { upd('xsOn', !xsOn); },
                   'aria-pressed': xsOn,
-                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (xsOn ? 'bg-yellow-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                  className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded transition-all ' + (xsOn ? 'bg-yellow-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, xsOn ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
               ),
               xsOn && h('div', { className: 'space-y-2 mt-2' },
                 h('p', { className: 'text-[10.5px] text-yellow-200/70' }, t('stem.geosandbox.xs_intro', 'Slide the cut up and down. A solid is a stack of these slices — that is why volume = cross-section area × height.')),
-                h('div', { className: 'flex justify-between text-[11px] font-bold text-yellow-200' },
+                h('div', { className: 'flex justify-between text-[0.6875rem] font-bold text-yellow-200' },
                   h('span', null, t('stem.geosandbox.cut_height', 'Cut height')),
                   h('span', { className: 'font-mono text-yellow-300' }, Math.round(xsT * 100) + '%')
                 ),
@@ -5894,7 +5894,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   else { var ww = (xs.w || 1) * sc, dd = (xs.d || 1) * sc; kids.push(h('rect', { key: 'r', x: cx - ww / 2, y: cy - dd / 2, width: Math.max(1, ww), height: Math.max(1, dd), fill: '#facc1533', stroke: '#facc15', strokeWidth: 1.5 })); }
                   return h('div', { className: 'flex items-center gap-3' },
                     h('svg', { width: svgSize, height: svgSize, viewBox: '0 0 ' + svgSize + ' ' + svgSize, role: 'img', 'aria-label': xs.name + ' cross-section with area ' + xs.area.toFixed(2) + ' square units', className: 'bg-slate-950/50 rounded border border-slate-700 flex-none' }, kids),
-                    h('div', { className: 'text-[11px] text-yellow-100 space-y-0.5' },
+                    h('div', { className: 'text-[0.6875rem] text-yellow-100 space-y-0.5' },
                       h('div', { className: 'font-bold' }, xs.name),
                       xs.r != null && h('div', { className: 'font-mono text-[10.5px]' }, 'r = ' + xs.r.toFixed(2)),
                       xs.rOuter != null && h('div', { className: 'font-mono text-[10.5px]' }, 'R±: ' + xs.rInner.toFixed(2) + '–' + xs.rOuter.toFixed(2)),
@@ -5905,8 +5905,8 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 })(),
                 // Conic sections — cone only
                 conic && h('div', { className: 'border-t border-yellow-500/30 pt-2 space-y-1' },
-                  h('div', { className: 'text-[11px] font-bold text-orange-200' }, t('stem.geosandbox.conic_sections', '🍦 Conic sections (tilt the cut)')),
-                  h('div', { className: 'flex justify-between text-[11px] text-orange-200' },
+                  h('div', { className: 'text-[0.6875rem] font-bold text-orange-200' }, t('stem.geosandbox.conic_sections', '🍦 Conic sections (tilt the cut)')),
+                  h('div', { className: 'flex justify-between text-[0.6875rem] text-orange-200' },
                     h('span', null, t('stem.geosandbox.tilt', 'Tilt')),
                     h('span', { className: 'font-mono text-orange-300' }, Math.round(conic.beta) + '°')
                   ),
@@ -5916,8 +5916,8 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     'aria-label': t('stem.geosandbox.conic_tilt_aria', 'Conic section cutting-plane tilt'),
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500'
                   }),
-                  h('div', { className: 'text-[12px] font-bold text-orange-100' }, conic.name),
-                  h('div', { className: 'text-[10px] text-orange-200/70' }, conic.note)
+                  h('div', { className: 'text-[0.75rem] font-bold text-orange-100' }, conic.name),
+                  h('div', { className: 'text-[0.625rem] text-orange-200/70' }, conic.note)
                 )
               )
             ),
@@ -5930,10 +5930,10 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   onClick: function() { upd('singleNetOpen', !netOpen); },
                   'aria-expanded': netOpen,
                   'aria-controls': 'geo-single-net-panel',
-                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (netOpen ? 'bg-sky-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                  className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded transition-all ' + (netOpen ? 'bg-sky-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, netOpen ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
               ),
-              !shapeNet.unfoldable && h('p', { className: 'text-[11px] text-sky-200/70 italic' }, shapeNet.note),
+              !shapeNet.unfoldable && h('p', { className: 'text-[0.6875rem] text-sky-200/70 italic' }, shapeNet.note),
               shapeNet.unfoldable && netOpen && h('div', { id: 'geo-single-net-panel', role: 'region', 'aria-label': t('stem.geosandbox.shape_net_details', 'Shape net details'), className: 'space-y-1.5' },
                 h('p', { className: 'text-[10.5px] text-sky-200/70' }, shapeNet.note),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -5950,17 +5950,17 @@ h('div', { className: 'flex flex-wrap gap-1' },
                     return h('div', { key: 'net-' + i, className: 'text-center' },
                       h('svg', { width: box, height: box, viewBox: '0 0 ' + box + ' ' + box, role: 'img', 'aria-label': pc.label + ', area ' + pc.area.toFixed(1) + ' square units', className: 'bg-slate-950/50 rounded border border-slate-700' }, kid),
                       h('div', { className: 'text-[8.5px] text-sky-300/80 leading-tight mt-0.5' }, pc.label),
-                      h('div', { className: 'text-[8px] text-slate-400 font-mono' }, pc.area.toFixed(1) + ' u\u00B2')
+                      h('div', { className: 'text-[0.5rem] text-slate-400 font-mono' }, pc.area.toFixed(1) + ' u\u00B2')
                     );
                   })
                 ),
-                h('div', { className: 'text-[10px] text-sky-300/70 font-mono' }, t('stem.geosandbox.faces_sum', '\u03A3 pieces') + ' = ' + shapeNet.pieces.reduce(function(s, p) { return s + p.area; }, 0).toFixed(1) + ' u\u00B2 \u2248 ' + t('stem.geosandbox.surface_area', 'Surface Area'))
+                h('div', { className: 'text-[0.625rem] text-sky-300/70 font-mono' }, t('stem.geosandbox.faces_sum', '\u03A3 pieces') + ' = ' + shapeNet.pieces.reduce(function(s, p) { return s + p.area; }, 0).toFixed(1) + ' u\u00B2 \u2248 ' + t('stem.geosandbox.surface_area', 'Surface Area'))
               ),
               // Real-world size anchor
               h('div', { className: 'border-t border-sky-500/30 pt-2' },
-                h('div', { className: 'text-[11px] text-sky-100' }, '\uD83C\uDF0D ' + t('stem.geosandbox.real_world_size', 'Real-world size') + ' (' + t('stem.geosandbox.if_one_unit', '1 unit = 10 cm') + ')'),
-                h('div', { className: 'text-[11px] text-sky-200 font-mono' }, '\u2248 ' + realScale.litres.toFixed(1) + ' L  \u00B7  ' + Math.round(realScale.cups) + ' ' + t('stem.geosandbox.cups', 'cups')),
-                h('div', { className: 'text-[10px] text-sky-300/70' }, '\u2014 ' + realScale.phrase)
+                h('div', { className: 'text-[0.6875rem] text-sky-100' }, '\uD83C\uDF0D ' + t('stem.geosandbox.real_world_size', 'Real-world size') + ' (' + t('stem.geosandbox.if_one_unit', '1 unit = 10 cm') + ')'),
+                h('div', { className: 'text-[0.6875rem] text-sky-200 font-mono' }, '\u2248 ' + realScale.litres.toFixed(1) + ' L  \u00B7  ' + Math.round(realScale.cups) + ' ' + t('stem.geosandbox.cups', 'cups')),
+                h('div', { className: 'text-[0.625rem] text-sky-300/70' }, '\u2014 ' + realScale.phrase)
               )
             ),
 
@@ -6031,7 +6031,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
             // Camera presets are available to pointer, touch and keyboard users.
             h('div',{className:'geo-camera-bar',role:'group','aria-label':t('stem.geosandbox.workbench_camera','Camera views')},mode === 'sculpt' && sculptRecipe && h('button',{type:'button',onClick:function(){focusSculptPart(null);}},t('stem.geosandbox.workbench_fit','Fit')),['front','side','top','iso'].map(function(view){return h('button',{key:view,type:'button',onClick:function(){setCameraView(view);},'aria-label':t('stem.geosandbox.workbench_view_'+view,view+' view')},t('stem.geosandbox.workbench_'+view,view));})),
             // Controls hint overlay
-            h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md' },
+            h('div', { className: 'absolute bottom-2 right-2 text-[0.6875rem] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md' },
               h('span', { className: 'geo-hint-desktop' }, t('stem.geosandbox.drag_rotate_scroll_zoom_right_click_pa', '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan')),
               h('span', { className: 'geo-hint-touch' }, t('stem.geosandbox.touch_controls_hint', 'Drag: rotate \u2022 Pinch: zoom \u2022 Two fingers: pan'))
             ),
@@ -6079,7 +6079,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                 lines.push('Dimension: 3D');
               }
               return h('div', {
-                className: 'absolute top-12 left-2 text-[11px] text-fuchsia-100 bg-purple-900/90 backdrop-blur-md px-3 py-2 rounded-lg border border-fuchsia-400/40 shadow-lg shadow-fuchsia-600/20',
+                className: 'absolute top-12 left-2 text-[0.6875rem] text-fuchsia-100 bg-purple-900/90 backdrop-blur-md px-3 py-2 rounded-lg border border-fuchsia-400/40 shadow-lg shadow-fuchsia-600/20',
                 style: { maxWidth: '240px' },
                 role: 'status',
                 'aria-live': 'polite'
@@ -6099,7 +6099,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
               var selectedSliceStudy = sculptSliceOn ? geoSculptSliceStudy(sculptRecipe.parts[selPart], sculptSliceT, sculptRecipe.scale, SCULPT_GRID_UNIT) : null;
               return h('div', {
                 'data-geo-sculpt-math-overlay': 'true',
-                className: 'pointer-events-none absolute top-12 left-2 w-[min(19rem,calc(100%_-_4rem))] text-[11px] text-emerald-50 bg-slate-950/90 backdrop-blur-md px-3 py-2.5 rounded-lg border border-emerald-300/50 shadow-xl shadow-emerald-900/30',
+                className: 'pointer-events-none absolute top-12 left-2 w-[min(19rem,calc(100%_-_4rem))] text-[0.6875rem] text-emerald-50 bg-slate-950/90 backdrop-blur-md px-3 py-2.5 rounded-lg border border-emerald-300/50 shadow-xl shadow-emerald-900/30',
                 role: 'status',
                 'aria-live': 'polite'
               },
@@ -6120,7 +6120,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                   h('div', { className: 'text-cyan-100/75 italic' }, selectedRepresentation.cue),
                   selectedSliceStudy && h('div', { className: 'mt-1 pt-1 border-t border-amber-300/20 text-amber-100 font-mono' }, 'Section ' + Math.round(sculptSliceT * 100) + '% · ' + selectedSliceStudy.label + ' · A = ' + selectedSliceStudy.area.toFixed(2) + ' ' + unitDef.short + '²')
                 ),
-                sculptEdit && h('div', { className: 'mt-1.5 rounded bg-slate-900/60 px-2 py-1 text-[10px] text-slate-200' },
+                sculptEdit && h('div', { className: 'mt-1.5 rounded bg-slate-900/60 px-2 py-1 text-[0.625rem] text-slate-200' },
                   h('span', { className: 'font-bold text-rose-300' }, 'X'), ' · ',
                   h('span', { className: 'font-bold text-green-300' }, 'Y'), ' · ',
                   h('span', { className: 'font-bold text-blue-300' }, 'Z'),
@@ -6133,7 +6133,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
               );
             })(),
             // Keyboard shortcuts overlay
-            h('div', { className: 'absolute top-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
+            h('div', { className: 'absolute top-2 right-2 text-[0.6875rem] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
               // Only what actually works in THIS mode: sculpt advertised "U: undo"
               // while U was bound for stretch alone, and stretch owns [ ] / Delete.
               mode === 'single'
@@ -6154,7 +6154,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
             h('div', null,
               h('div', { className: 'text-sm font-bold text-sky-200 mb-1' }, ct.title),
               h('div', { className: 'text-xs text-slate-200 mb-1' }, ct.tip),
-              h('div', { className: 'text-[11px] text-slate-300 italic' }, '\uD83C\uDF0D ' + ct.example)
+              h('div', { className: 'text-[0.6875rem] text-slate-300 italic' }, '\uD83C\uDF0D ' + ct.example)
             )
           )
         ),
@@ -6168,7 +6168,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
               h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2705 ' + challengeScore.correct),
               h('span', { className: 'text-xs text-slate-300' }, '/'),
               h('span', { className: 'text-xs font-bold text-slate-300' }, challengeScore.total + ' attempted'),
-              challengeScore.total > 0 && h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (challengeScore.correct/challengeScore.total >= 0.8 ? 'bg-emerald-500/30 text-emerald-300' : challengeScore.correct/challengeScore.total >= 0.5 ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300') }, Math.round(challengeScore.correct/challengeScore.total*100) + '%')
+              challengeScore.total > 0 && h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full ' + (challengeScore.correct/challengeScore.total >= 0.8 ? 'bg-emerald-500/30 text-emerald-300' : challengeScore.correct/challengeScore.total >= 0.5 ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300') }, Math.round(challengeScore.correct/challengeScore.total*100) + '%')
             )
           ),
           // Shape info + question
@@ -6222,7 +6222,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
         ),
 
         // STL note
-        h('div', { className: 'text-[11px] text-slate-300 text-center' },
+        h('div', { className: 'text-[0.6875rem] text-slate-300 text-center' },
           t('stem.geosandbox.stl_files_are_unit_less_most_3d_printe', '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.')
         )
       );

@@ -1425,10 +1425,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', { className: 'space-y-3' },
                 h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
                   h('div', null,
-                    h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-700' }, 'Ride lab'),
+                    h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wider text-cyan-700' }, 'Ride lab'),
                     h('div', { className: 'text-2xl font-black text-slate-900 leading-tight' }, status)
                   ),
-                  h('div', { className: 'flex gap-2 flex-wrap text-[11px] font-bold' },
+                  h('div', { className: 'flex gap-2 flex-wrap text-[0.6875rem] font-bold' },
                     h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700' }, bike.name),
                     h('span', { className: 'px-2 py-1 rounded-full bg-sky-100 text-sky-800' }, terrain.name),
                     h('span', { className: 'px-2 py-1 rounded-full bg-amber-100 text-amber-800' }, surfaceLabel + ' surface')
@@ -1443,9 +1443,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'bikelab-metric-grid' },
                   metricItems.map(function(item) {
                     return h('div', { key: item[0], className: 'rounded-xl border border-slate-200 bg-slate-50 p-3' },
-                      h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-500' }, item[0]),
+                      h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-slate-500' }, item[0]),
                       h('div', { className: 'text-lg font-black text-slate-900 mt-1' }, item[1]),
-                      h('div', { className: 'text-[10px] font-mono text-slate-500' }, item[2])
+                      h('div', { className: 'text-[0.625rem] font-mono text-slate-500' }, item[2])
                     );
                   })
                 ),
@@ -1481,7 +1481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     h('span', { className: 'text-xl' }, b.icon),
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'text-sm font-bold text-slate-800 truncate' }, b.name),
-                      h('div', { className: 'text-[10px] text-slate-600' }, 'm=' + b.mass + 'kg · Cd·A=' + b.cdA.toFixed(2) + ' · Crr=' + b.crr)
+                      h('div', { className: 'text-[0.625rem] text-slate-600' }, 'm=' + b.mass + 'kg · Cd·A=' + b.cdA.toFixed(2) + ' · Crr=' + b.crr)
                     )
                   );
                 })
@@ -1506,14 +1506,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onChange: function(e) { setPower(parseInt(e.target.value)); },
                   className: 'w-full mt-1 accent-cyan-500',
                   'aria-label': t('stem.bikelab.rider_power_watts', 'Rider power in watts') }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.pro_300_w_amateur_150_w_casual_80_w', 'Pro: ~300 W · Amateur: ~150 W · Casual: ~80 W')),
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, t('stem.bikelab.pro_300_w_amateur_150_w_casual_80_w', 'Pro: ~300 W · Amateur: ~150 W · Casual: ~80 W')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
                   h('span', null, t('stem.bikelab.gear_ratio', 'Gear Ratio')), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
                   onChange: function(e) { setGear(parseFloat(e.target.value)); },
                   className: 'w-full mt-1 accent-violet-500',
                   'aria-label': t('stem.bikelab.gear_ratio_slider', 'Gear ratio') }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.low_gear_more_torque_less_top_speed_se', 'Low gear = more torque, less top speed. See Gearing Lab for math.')),
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, t('stem.bikelab.low_gear_more_torque_less_top_speed_se', 'Low gear = more torque, less top speed. See Gearing Lab for math.')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
                   h('span', null, t('stem.bikelab.wind', 'Wind')),
                   h('span', { className: wind > 0 ? 'text-rose-600' : wind < 0 ? 'text-emerald-600' : 'text-slate-600' },
@@ -1522,7 +1522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onChange: function(e) { setWind(parseFloat(e.target.value)); },
                   className: 'w-full mt-1 accent-rose-500',
                   'aria-label': t('stem.bikelab.wind_speed_slider', 'Wind speed and direction') }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.drag_scales_with_v_wind_a_10_mph_headw', 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.')),
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, t('stem.bikelab.drag_scales_with_v_wind_a_10_mph_headw', 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
                   h('span', null, t('stem.bikelab.rider_mass', 'Rider Mass')),
                   h('span', { className: 'text-amber-600' }, riderMass + ' kg · ' + Math.round(riderMass * 2.20462) + ' lb')),
@@ -1530,14 +1530,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onChange: function(e) { setRiderMass(parseInt(e.target.value, 10)); },
                   className: 'w-full mt-1 accent-amber-500',
                   'aria-label': t('stem.bikelab.rider_mass_in_kilograms', 'Rider mass in kilograms') }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'System mass = ' + ((bike.mass - 70) + riderMass) + ' kg (frame ' + (bike.mass - 70) + ' + rider ' + riderMass + '). Heavier riders climb slower (F=m·g·sinθ) and accelerate slower (a=F/m).')
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, 'System mass = ' + ((bike.mass - 70) + riderMass) + ' kg (frame ' + (bike.mass - 70) + ' + rider ' + riderMass + '). Heavier riders climb slower (F=m·g·sinθ) and accelerate slower (a=F/m).')
               )
             ),
             // Canvas column
             h('div', { className: 'space-y-3', 'data-bikelab-ride-column': 'true' },
               h('div', { className: 'bikelab-canvas-toolbar', 'data-bikelab-canvas-toolbar': 'true' },
                 h('div', { className: 'text-xs font-black uppercase tracking-wider text-slate-700' }, 'Live ride surface'),
-                h('div', { className: 'flex gap-2 flex-wrap text-[11px] font-bold' },
+                h('div', { className: 'flex gap-2 flex-wrap text-[0.6875rem] font-bold' },
                   h('span', { className: 'px-2 py-1 rounded-full bg-slate-200 text-slate-700' }, bike.name),
                   h('span', { className: 'px-2 py-1 rounded-full bg-cyan-100 text-cyan-800' }, terrain.name),
                   h('span', { className: 'px-2 py-1 rounded-full ' + (running ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700') }, running ? (coasting ? 'Coasting' : 'Pedaling') : 'Ready')
@@ -1601,9 +1601,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                  ['Potential E', (pe / 1000).toFixed(2) + ' kJ', (systemMass * G * elev).toFixed(0) + ' J']
                 ].map(function(stat, i) {
                   return h('div', { key: i, className: 'bg-white rounded-lg p-3 shadow border border-slate-400' },
-                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600' }, stat[0]),
+                    h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600' }, stat[0]),
                     h('div', { className: 'text-lg font-black text-slate-800 mt-0.5' }, stat[1]),
-                    h('div', { className: 'text-[10px] text-slate-600 font-mono' }, stat[2])
+                    h('div', { className: 'text-[0.625rem] text-slate-600 font-mono' }, stat[2])
                   );
                 })
               ),
@@ -1708,7 +1708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 },
                   h('span', { className: 'text-xl' }, b.icon),
                   h('span', { className: 'font-bold text-sm text-slate-700' }, b.name),
-                  h('span', { className: 'text-[10px] text-slate-600 font-mono' }, b.chainringT.length + '×' + b.cassetteT.length)
+                  h('span', { className: 'text-[0.625rem] text-slate-600 font-mono' }, b.chainringT.length + '×' + b.cassetteT.length)
                 );
               })
             ),
@@ -1741,7 +1741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         }, t);
                       })
                     ),
-                    h('div', { className: 'text-[11px] text-slate-600 mt-2' }, t('stem.bikelab.leftmost_largest_easiest_to_climb_righ', 'Leftmost = largest = easiest to climb. Rightmost = smallest = fastest top speed.'))
+                    h('div', { className: 'text-[0.6875rem] text-slate-600 mt-2' }, t('stem.bikelab.leftmost_largest_easiest_to_climb_righ', 'Leftmost = largest = easiest to climb. Rightmost = smallest = fastest top speed.'))
                   ),
                   h('div', { className: 'pt-2' }, crossHint),
                   h('label', { className: 'text-sm font-bold text-slate-700 flex justify-between pt-2' },
@@ -1751,7 +1751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     onChange: function(e) { setCadence(parseInt(e.target.value)); },
                     className: 'w-full accent-violet-500',
                     'aria-label': t('stem.bikelab.pedal_cadence_rpm_slider', 'Pedal cadence in RPM') }),
-                  h('div', { className: 'text-[11px] text-slate-600' }, t('stem.bikelab.casual_riders_60_80_trained_80_100_spi', 'Casual riders: 60–80. Trained: 80–100. Spin classes: 100+.'))
+                  h('div', { className: 'text-[0.6875rem] text-slate-600' }, t('stem.bikelab.casual_riders_60_80_trained_80_100_spi', 'Casual riders: 60–80. Trained: 80–100. Spin classes: 100+.'))
                 )
               ),
               // Stats card
@@ -1759,24 +1759,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, t('stem.bikelab.this_gear', 'This Gear')),
                 h('div', { className: 'grid grid-cols-2 gap-4' },
                   h('div', null,
-                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.gear_ratio_2', 'Gear Ratio')),
+                    h('div', { className: 'text-[0.6875rem] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.gear_ratio_2', 'Gear Ratio')),
                     h('div', { className: 'text-3xl font-black font-mono' }, ratio.toFixed(2)),
-                    h('div', { className: 'text-[10px] opacity-70 font-mono' }, chainringT + ' ÷ ' + cogT)
+                    h('div', { className: 'text-[0.625rem] opacity-70 font-mono' }, chainringT + ' ÷ ' + cogT)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.mech_advantage', 'Mech. Advantage')),
+                    h('div', { className: 'text-[0.6875rem] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.mech_advantage', 'Mech. Advantage')),
                     h('div', { className: 'text-3xl font-black font-mono' }, ma.toFixed(2) + '×'),
-                    h('div', { className: 'text-[10px] opacity-70' }, t('stem.bikelab.at_the_wheel', 'at the wheel'))
+                    h('div', { className: 'text-[0.625rem] opacity-70' }, t('stem.bikelab.at_the_wheel', 'at the wheel'))
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.distance_per_rev', 'Distance per Rev')),
+                    h('div', { className: 'text-[0.6875rem] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.distance_per_rev', 'Distance per Rev')),
                     h('div', { className: 'text-2xl font-black font-mono' }, dev.toFixed(2) + ' m'),
-                    h('div', { className: 'text-[10px] opacity-70 font-mono' }, 'ratio × 2πr = ' + ratio.toFixed(2) + ' × ' + wheelCirc.toFixed(2))
+                    h('div', { className: 'text-[0.625rem] opacity-70 font-mono' }, 'ratio × 2πr = ' + ratio.toFixed(2) + ' × ' + wheelCirc.toFixed(2))
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, 'Speed @ ' + cadence + ' RPM'),
+                    h('div', { className: 'text-[0.6875rem] opacity-80 uppercase tracking-wider' }, 'Speed @ ' + cadence + ' RPM'),
                     h('div', { className: 'text-2xl font-black font-mono' }, speedMph.toFixed(1) + ' mph'),
-                    h('div', { className: 'text-[10px] opacity-70 font-mono' }, speedKph.toFixed(1) + ' km/h · ' + speedMs.toFixed(2) + ' m/s')
+                    h('div', { className: 'text-[0.625rem] opacity-70 font-mono' }, speedKph.toFixed(1) + ' km/h · ' + speedMs.toFixed(2) + ' m/s')
                   )
                 )
               )
@@ -1793,9 +1793,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               var heat = function(gi) { var t = giMax > giMin ? (gi - giMin) / (giMax - giMin) : 0.5; return 'hsl(' + Math.round(140 - t * 140) + ', 72%, 87%)'; };
               return h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.gearing_matrix_gear_inches_every_ring_', 'Gearing Matrix — gear inches (every ring × cog)')),
-                h('div', { className: 'text-[11px] text-slate-600 mb-3' }, t('stem.bikelab.lower_easier_climbing_higher_faster_to', 'Lower = easier (climbing); higher = faster (top speed). Green→red = easy→hard. Click any cell to select that gear.')),
+                h('div', { className: 'text-[0.6875rem] text-slate-600 mb-3' }, t('stem.bikelab.lower_easier_climbing_higher_faster_to', 'Lower = easier (climbing); higher = faster (top speed). Green→red = easy→hard. Click any cell to select that gear.')),
                 h('div', { className: 'overflow-x-auto' },
-                  h('table', { className: 'border-collapse text-[11px]' },
+                  h('table', { className: 'border-collapse text-[0.6875rem]' },
                     h('caption', { className: 'sr-only' }, 'Bike gearing matrix in gear inches. Choose a chainring and cog combination.'),
                     h('thead', null,
                       h('tr', null,
@@ -1837,10 +1837,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   return h('div', { key: i, className: 'flex-1 flex flex-col items-center justify-end' },
                     h('div', { className: 'w-full rounded-t transition-all duration-300 ' + (isCurrent ? 'bg-violet-500' : 'bg-violet-200'),
                       style: { height: Math.round(pct * 100) + '%' } },
-                      isCurrent && h('div', { className: 'text-[10px] font-bold text-white text-center pt-1' }, pt.v.toFixed(0))
+                      isCurrent && h('div', { className: 'text-[0.625rem] font-bold text-white text-center pt-1' }, pt.v.toFixed(0))
                     ),
-                    h('div', { className: 'text-[10px] text-slate-600 font-mono mt-1' }, pt.c),
-                    h('div', { className: 'text-[9px] text-slate-400' }, pt.v.toFixed(0) + ' mph')
+                    h('div', { className: 'text-[0.625rem] text-slate-600 font-mono mt-1' }, pt.c),
+                    h('div', { className: 'text-[0.5625rem] text-slate-400' }, pt.v.toFixed(0) + ' mph')
                   );
                 })
               ),
@@ -1859,7 +1859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   var climbV = climbSim(g.gear);
                   var climbMph = climbV * 2.237;
                   return h('div', { key: i, className: 'bg-gradient-to-br ' + g.color + ' text-white rounded-lg p-4 shadow' },
-                    h('div', { className: 'text-[11px] uppercase tracking-wider font-bold opacity-80' }, g.label),
+                    h('div', { className: 'text-[0.6875rem] uppercase tracking-wider font-bold opacity-80' }, g.label),
                     h('div', { className: 'text-3xl font-black font-mono mt-1' }, climbMph.toFixed(1)),
                     h('div', { className: 'text-xs opacity-80 font-mono' }, t('stem.bikelab.mph_up_the_hill', 'mph up the hill'))
                   );
@@ -1955,7 +1955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                             )
                           )
                         ),
-                        isDone && h('span', { className: 'bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[11px] font-bold' }, t('stem.bikelab.done', '✓ Done'))
+                        isDone && h('span', { className: 'bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[0.6875rem] font-bold' }, t('stem.bikelab.done', '✓ Done'))
                       ),
                       h('p', { className: 'text-sm text-slate-600 mt-2' }, __alloT('stem.bikelab.' + (j.id) + '_description', j.description))
                     )
@@ -2021,7 +2021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('h3', { className: 'text-2xl font-black mb-3' }, currStep.label),
               h('p', { className: 'text-sm leading-relaxed opacity-95' }, currStep.instruction),
               h('div', { className: 'mt-4 pt-4 border-t border-white/20' },
-                h('div', { className: 'text-[11px] uppercase tracking-wider font-bold opacity-70 mb-2' }, 'Use:'),
+                h('div', { className: 'text-[0.6875rem] uppercase tracking-wider font-bold opacity-70 mb-2' }, 'Use:'),
                 h('div', { className: 'inline-flex items-center gap-2 bg-white/20 backdrop-blur px-3 py-2 rounded-lg' },
                   h('span', { className: 'text-2xl' }, TOOL_ICONS[currStep.tool] || '🔧'),
                   h('span', { className: 'text-sm font-bold capitalize' }, (currStep.tool || '').replace(/-/g, ' '))
@@ -2046,11 +2046,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     className: 'w-20 h-20 rounded-xl border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-600 ' + (dragged === t ? 'opacity-40 scale-95' : '')
                   },
                     h('span', { className: 'text-3xl' }, TOOL_ICONS[t] || '🔧'),
-                    h('span', { className: 'text-[10px] font-bold text-slate-600 capitalize' }, t.replace(/-/g, ' '))
+                    h('span', { className: 'text-[0.625rem] font-bold text-slate-600 capitalize' }, t.replace(/-/g, ' '))
                   );
                 })
               ),
-              h('div', { className: 'text-[11px] text-slate-600 mt-3' }, t('stem.bikelab.tip_click_or_drag_if_your_choice_match', 'Tip: click or drag. If your choice matches the step, the job advances. Wrong choice = no penalty, try again.'))
+              h('div', { className: 'text-[0.6875rem] text-slate-600 mt-3' }, t('stem.bikelab.tip_click_or_drag_if_your_choice_match', 'Tip: click or drag. If your choice matches the step, the job advances. Wrong choice = no penalty, try again.'))
             ),
             // Drop zone / job area
             h('div', {
@@ -2127,7 +2127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     onChange: function(e) { var v = parseInt(e.target.value); setInseamCm(v); upd('fitInseamCm', v); },
                     className: 'w-full mt-1 accent-emerald-500',
                     'aria-label': t('stem.bikelab.rider_inseam_centimeters', 'Rider inseam in centimeters') }),
-                  h('div', { className: 'text-[11px] text-slate-600 mt-2 leading-relaxed bg-slate-50 p-2 rounded' },
+                  h('div', { className: 'text-[0.6875rem] text-slate-600 mt-2 leading-relaxed bg-slate-50 p-2 rounded' },
                     h('strong', null, t('stem.bikelab.how_to_measure_inseam', 'How to measure inseam: ')),
                     t('stem.bikelab.stand_barefoot_against_a_wall_place_a_', 'Stand barefoot against a wall. Place a hardcover book snug between your legs. Measure from floor to the top spine of the book.')),
                   h('div', { className: 'mt-4 pt-3 border-t border-slate-200' },
@@ -2153,7 +2153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         }, opt[1]);
                       })
                     ),
-                    h('div', { className: 'text-[11px] text-slate-600 mt-2' }, t('stem.bikelab.less_flexible_higher_bars', 'Less flexible = higher bars.'))
+                    h('div', { className: 'text-[0.6875rem] text-slate-600 mt-2' }, t('stem.bikelab.less_flexible_higher_bars', 'Less flexible = higher bars.'))
                   )
                 )
               ),
@@ -2186,10 +2186,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     { label: t('stem.bikelab.bar_drop', 'Bar Drop'), main: drop + ' cm', sub: '(saddle → bar, below)', formula: bikeType === 'road' ? 'Scales with flexibility' : bikeType === 'mtb' ? 'MTB: slightly below' : 'Hybrid: level', color: 'from-amber-500 to-orange-600' }
                   ].map(function(r, i) {
                     return h('div', { key: i, className: 'bg-gradient-to-br ' + r.color + ' text-white rounded-xl p-4 shadow' },
-                      h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider font-bold' }, r.label),
+                      h('div', { className: 'text-[0.6875rem] opacity-80 uppercase tracking-wider font-bold' }, r.label),
                       h('div', { className: 'text-2xl font-black font-mono mt-1' }, r.main),
-                      h('div', { className: 'text-[10px] opacity-80' }, r.sub),
-                      h('div', { className: 'text-[10px] opacity-70 font-mono mt-1 border-t border-white/20 pt-1' }, r.formula)
+                      h('div', { className: 'text-[0.625rem] opacity-80' }, r.sub),
+                      h('div', { className: 'text-[0.625rem] opacity-70 font-mono mt-1 border-t border-white/20 pt-1' }, r.formula)
                     );
                   })
                 ),
@@ -2297,7 +2297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onChange: function(e) { var v = parseInt(e.target.value); setSpeedMph(v); upd('brakingMph', v); },
                   className: 'w-full mt-2 accent-rose-500',
                   'aria-label': t('stem.bikelab.initial_speed_mph_slider', 'Initial speed in miles per hour') }),
-                h('div', { className: 'text-[10px] text-slate-600' }, (speedMph / 2.237).toFixed(1) + ' m/s · ' + (speedMph * 1.609).toFixed(1) + ' km/h')
+                h('div', { className: 'text-[0.625rem] text-slate-600' }, (speedMph / 2.237).toFixed(1) + ' m/s · ' + (speedMph * 1.609).toFixed(1) + ' km/h')
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.surface', 'Surface')),
@@ -2310,7 +2310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     }, SURFACES[k].label);
                   })
                 ),
-                h('div', { className: 'text-[10px] text-slate-600 font-mono mt-2' }, 'μ = ' + mu.toFixed(2))
+                h('div', { className: 'text-[0.625rem] text-slate-600 font-mono mt-2' }, 'μ = ' + mu.toFixed(2))
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.brake_used', 'Brake Used')),
@@ -2323,7 +2323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     }, opt[1]);
                   })
                 ),
-                h('div', { className: 'text-[10px] text-slate-600 mt-2' }, t('stem.bikelab.rear_only_stops_3_slower_than_front', 'Rear-only stops ~3× slower than front.'))
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-2' }, t('stem.bikelab.rear_only_stops_3_slower_than_front', 'Rear-only stops ~3× slower than front.'))
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between' },
@@ -2332,7 +2332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onChange: function(e) { var v = parseFloat(e.target.value); setReaction(v); upd('brakingReactionSec', v); },
                   className: 'w-full mt-2 accent-amber-500',
                   'aria-label': t('stem.bikelab.reaction_time_seconds_slider', 'Reaction time in seconds') }),
-                h('div', { className: 'text-[10px] text-slate-600' }, t('stem.bikelab.alert_adult_1_0_s_pro_racer_0_3_s', 'Alert adult: 1.0 s · Pro racer: 0.3 s'))
+                h('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.bikelab.alert_adult_1_0_s_pro_racer_0_3_s', 'Alert adult: 1.0 s · Pro racer: 0.3 s'))
               )
             ),
             h('div', { className: 'grid grid-cols-2 lg:grid-cols-4 gap-3' },
@@ -2343,9 +2343,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 { label: t('stem.bikelab.time_to_stop', 'Time to Stop'), val: timeToStop.toFixed(2) + ' s', sub: 't = v / a', color: 'from-purple-500 to-fuchsia-600' }
               ].map(function(s, i) {
                 return h('div', { key: i, className: 'bg-gradient-to-br ' + s.color + ' text-white rounded-xl p-4 shadow' },
-                  h('div', { className: 'text-[10px] opacity-80 uppercase tracking-wider font-bold' }, s.label),
+                  h('div', { className: 'text-[0.625rem] opacity-80 uppercase tracking-wider font-bold' }, s.label),
                   h('div', { className: 'text-2xl font-black font-mono mt-1' }, s.val),
-                  h('div', { className: 'text-[10px] opacity-75 font-mono' }, s.sub)
+                  h('div', { className: 'text-[0.625rem] opacity-75 font-mono' }, s.sub)
                 );
               })
             ),
@@ -2354,9 +2354,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2' }, t('stem.bikelab.weight_transfer_endo_limit', '📐 Weight Transfer & Endo Limit')),
                 h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' },
                   t('stem.bikelab.hard_front_braking_transfers_weight_fo', 'Hard front braking transfers weight forward. If deceleration exceeds a = g·(L − a_cm)/h_cm, the rear wheel lifts (endo).')),
-                h('div', { className: 'font-mono text-[11px] text-slate-800 bg-white p-2 rounded border border-indigo-100' },
+                h('div', { className: 'font-mono text-[0.6875rem] text-slate-800 bg-white p-2 rounded border border-indigo-100' },
                   'endo limit = ' + endoA.toFixed(2) + ' m/s²'),
-                endoWarn && h('div', { className: 'mt-2 text-[11px] font-bold text-rose-700 bg-rose-50 p-2 rounded border border-rose-200' },
+                endoWarn && h('div', { className: 'mt-2 text-[0.6875rem] font-bold text-rose-700 bg-rose-50 p-2 rounded border border-rose-200' },
                   t('stem.bikelab.at_this_friction_pure_front_braking_wi', '⚠ At this friction, pure front braking will flip you. Shift weight back or use both brakes.'))
               ),
               h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4' },
@@ -2939,7 +2939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onClick: function() { setRunning(false); reset(); },
                   className: 'py-2 px-4 rounded-lg font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm transition-colors'
                 }, t('stem.bikelab.reset_2', '↺ Reset')),
-                bestTime && h('div', { className: 'text-[11px] text-slate-600 text-center border-t border-slate-200 pt-2' },
+                bestTime && h('div', { className: 'text-[0.6875rem] text-slate-600 text-center border-t border-slate-200 pt-2' },
                   '🏆 Best: ' + bestTime.toFixed(1) + 's')
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3' },
@@ -2999,34 +2999,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onBlur: function() { setBraking(false); },
                   className: 'flex-1 rounded-lg font-black text-white transition-colors shadow ' + (braking ? 'bg-rose-700' : 'bg-rose-500 hover:bg-rose-600')
                 }, braking ? '🛑 BRAKING' : '🛑 Hold to Brake'),
-                h('div', { className: 'text-[10px] text-slate-600 mt-2 text-center' }, t('stem.bikelab.hold_to_slow_or_stop', 'Hold to slow or stop'))
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-2 text-center' }, t('stem.bikelab.hold_to_slow_or_stop', 'Hold to slow or stop'))
               )
             ),
             finished && h('div', { className: 'bg-gradient-to-br from-emerald-700 to-teal-700 rounded-xl shadow-lg text-white p-5' },
               h('div', { className: 'flex items-center gap-3 mb-3' },
                 h('span', { className: 'text-5xl' }, '🏫'),
                 h('div', null,
-                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80' }, t('stem.bikelab.you_made_it_to_school', 'You made it to school')),
+                  h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider opacity-80' }, t('stem.bikelab.you_made_it_to_school', 'You made it to school')),
                   h('div', { className: 'text-3xl font-black font-mono' }, timeRef.current.toFixed(1) + 's'),
                   bestTime === timeRef.current && h('div', { className: 'text-xs font-bold' }, t('stem.bikelab.new_personal_best', '🏆 New personal best!'))
                 )
               ),
               h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                 h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase opacity-80' }, t('stem.bikelab.stop_sign_2', 'Stop Sign')),
+                  h('div', { className: 'text-[0.625rem] uppercase opacity-80' }, t('stem.bikelab.stop_sign_2', 'Stop Sign')),
                   h('div', { className: 'text-xl' }, scoreRef.current.stopSignObeyed ? '✓' : '✗')
                 ),
                 h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase opacity-80' }, t('stem.bikelab.hill_crawl', 'Hill Crawl')),
+                  h('div', { className: 'text-[0.625rem] uppercase opacity-80' }, t('stem.bikelab.hill_crawl', 'Hill Crawl')),
                   h('div', { className: 'text-xl' }, scoreRef.current.hillCrawlTime <= 5 ? '✓' : '✗')
                 ),
                 h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase opacity-80' }, t('stem.bikelab.wet_section', 'Wet Section')),
+                  h('div', { className: 'text-[0.625rem] uppercase opacity-80' }, t('stem.bikelab.wet_section', 'Wet Section')),
                   h('div', { className: 'text-xl' }, !scoreRef.current.wetBrakingHard ? '✓' : '✗')
                 )
               ),
               advice.length > 0 && h('div', { className: 'bg-white/20 rounded-lg p-3 text-sm' },
-                h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80 mb-1' }, t('stem.bikelab.coach', 'Coach')),
+                h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider opacity-80 mb-1' }, t('stem.bikelab.coach', 'Coach')),
                 advice.map(function(a, i) { return h('div', { key: i, className: 'leading-relaxed' }, '• ' + a); })
               )
             ),
@@ -3182,17 +3182,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   h('div', { className: 'p-4 bg-gradient-to-br from-slate-700 to-slate-900 text-white' },
                     h('div', { className: 'flex items-center justify-between mb-1' },
                       h('span', { className: 'text-xs font-bold uppercase tracking-wider opacity-70' }, selected.cat),
-                      selected.repairJob && h('span', { className: 'bg-amber-500/30 text-amber-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider' }, t('stem.bikelab.has_repair_job', 'Has repair job'))
+                      selected.repairJob && h('span', { className: 'bg-amber-500/30 text-amber-200 px-2 py-0.5 rounded text-[0.625rem] font-bold uppercase tracking-wider' }, t('stem.bikelab.has_repair_job', 'Has repair job'))
                     ),
                     h('h3', { className: 'text-2xl font-black' }, selected.name)
                   ),
                   h('div', { className: 'p-4 space-y-3' },
                     h('div', null,
-                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.function', 'Function')),
+                      h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.function', 'Function')),
                       h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, selected.fn)
                     ),
                     h('div', null,
-                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.common_issues', 'Common Issues')),
+                      h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.common_issues', 'Common Issues')),
                       h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, selected.issues)
                     ),
                     selected.repairJob && h('button', {
@@ -3205,7 +3205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   )
                 ),
                 h('div', { className: 'bg-slate-100 rounded-xl p-3' },
-                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.parts_by_category', 'Parts by category')),
+                  h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.parts_by_category', 'Parts by category')),
                   CATEGORIES.map(function(c) {
                     var parts = BIKE_PARTS.filter(function(p) { return p.cat === c.id; });
                     return h('div', { key: c.id, className: 'mb-2' },
@@ -3218,7 +3218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                           return h('button', {
                             key: p.id,
                             onClick: function() { setSelectedId(p.id); upd('partsLastId', p.id); },
-                            className: 'text-[11px] px-2 py-0.5 rounded border transition-colors ' + (selectedId === p.id ? 'border-indigo-700 bg-indigo-600 text-white font-bold' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
+                            className: 'text-[0.6875rem] px-2 py-0.5 rounded border transition-colors ' + (selectedId === p.id ? 'border-indigo-700 bg-indigo-600 text-white font-bold' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
                           }, p.name);
                         })
                       )
@@ -3269,7 +3269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           return h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-300' },
             h('label', { htmlFor: id, className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
               h('span', null, label),
-              h('span', { className: 'normal-case text-[11px] font-semibold ' + statusColor }, statusText)
+              h('span', { className: 'normal-case text-[0.6875rem] font-semibold ' + statusColor }, statusText)
             ),
             h('input', {
               id: id, type: 'range', min: min, max: max, step: step, value: value,
@@ -3598,15 +3598,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             // Scoreboard
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.round', 'Round')),
+                h('div', { className: 'text-[0.625rem] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.round', 'Round')),
                 h('div', { className: 'text-2xl font-black text-amber-700' }, gameMode === 'idle' ? '—' : (Math.min(roundIdx + (gameMode === 'done' ? 0 : 1), ROUND_COUNT) + ' / ' + ROUND_COUNT))
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.avg_correct', 'Avg (Correct)')),
+                h('div', { className: 'text-[0.625rem] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.avg_correct', 'Avg (Correct)')),
                 h('div', { className: 'text-2xl font-black text-cyan-700' }, avgCorrect ? (avgCorrect / 1000).toFixed(2) + 's' : '—')
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.personal_best', '🏆 Personal Best')),
+                h('div', { className: 'text-[0.625rem] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.personal_best', '🏆 Personal Best')),
                 h('div', { className: 'text-2xl font-black text-emerald-700' }, bestMs ? (bestMs / 1000).toFixed(2) + 's' : '—')
               )
             ),

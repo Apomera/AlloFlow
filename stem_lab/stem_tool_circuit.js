@@ -1012,7 +1012,7 @@ window.StemLab = window.StemLab || {
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14 }
             },
               h('div', { style: { minWidth: 0 } },
-                h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300 mb-2' }, __alloT('stem.circuit.electronics_bench', 'Electronics bench')),
+                h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wider text-cyan-300 mb-2' }, __alloT('stem.circuit.electronics_bench', 'Electronics bench')),
                 h('h2', { id: 'circuit-bench-title', className: 'text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-2' }, __alloT('stem.circuit.bench_headline', 'Build the loop, then prove the numbers')),
                 h('p', { className: 'text-sm text-slate-300 leading-relaxed mb-3' }, introText),
                 h('div', { className: 'rounded-xl border p-3', style: { borderColor: circuitState.tone + '66', background: circuitState.soft } },
@@ -1026,8 +1026,8 @@ window.StemLab = window.StemLab || {
                   benchStats.map(function(stat) {
                     return h('div', { key: stat.label, className: 'rounded-xl border border-slate-700/70 bg-slate-950/55 p-2.5' },
                       h('div', { className: 'text-base font-black text-white font-mono leading-none' }, stat.value),
-                      h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400' }, stat.label),
-                      h('div', { className: 'mt-0.5 text-[10px] text-slate-400' }, stat.hint)
+                      h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wide text-slate-400' }, stat.label),
+                      h('div', { className: 'mt-0.5 text-[0.625rem] text-slate-400' }, stat.hint)
                     );
                   })
                 )
@@ -1061,7 +1061,7 @@ window.StemLab = window.StemLab || {
                         h('span', { 'aria-hidden': 'true', className: 'text-lg' }, route.icon),
                         h('span', { className: 'text-xs font-black text-white' }, route.title)
                       ),
-                      h('div', { className: 'text-[11px] text-slate-400 leading-snug' }, route.note)
+                      h('div', { className: 'text-[0.6875rem] text-slate-400 leading-snug' }, route.note)
                     );
                   })
                 )
@@ -1084,9 +1084,9 @@ window.StemLab = window.StemLab || {
 
               h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder')),
 
-              h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20' }, __alloT('stem.circuit.interactive_badge', 'INTERACTIVE')),
+              h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[0.625rem] font-black rounded-full border border-yellow-500/20' }, __alloT('stem.circuit.interactive_badge', 'INTERACTIVE')),
 
-              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[10px] font-black rounded-full border border-red-500/30 animate-pulse motion-reduce:animate-none' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!')),
+              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[0.625rem] font-black rounded-full border border-red-500/30 animate-pulse motion-reduce:animate-none' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!')),
 
               // Badge toggle
               h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'),
@@ -1788,7 +1788,7 @@ window.StemLab = window.StemLab || {
                   key: m.label,
                   className: 'text-center p-3 rounded-xl border backdrop-blur-sm transition-all ' + (isSh ? 'bg-red-950/20 border-red-500/40 short-active-flash' : m.borderCls)
                 },
-                  h('p', { className: 'text-[10px] font-bold uppercase tracking-wider mb-1 ' + (isSh ? 'text-red-400' : m.textCls) }, m.icon + ' ' + m.label),
+                  h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-1 ' + (isSh ? 'text-red-400' : m.textCls) }, m.icon + ' ' + m.label),
                   h('p', { className: 'text-sm font-black font-mono ' + (isSh ? 'text-red-300' : m.valCls) }, m.val)
                 );
               })
@@ -1801,17 +1801,17 @@ window.StemLab = window.StemLab || {
             },
               h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
                 h('div', null,
-                  h('p', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (meterIssue ? 'text-red-400' : 'text-emerald-400') }, __alloT('stem.circuit.meter_safety_coach', 'Meter Safety Coach')),
+                  h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wider ' + (meterIssue ? 'text-red-400' : 'text-emerald-400') }, __alloT('stem.circuit.meter_safety_coach', 'Meter Safety Coach')),
                   h('h4', { id: 'circuitMeterCoachTitle', className: 'text-sm font-black ' + (meterIssue ? 'text-red-200' : 'text-emerald-200') }, meterStatus)
                 ),
                 h('span', {
-                  className: 'px-2 py-1 rounded text-[10px] font-bold border ' + (meterIssue ? 'text-red-200 border-red-500/40' : 'text-emerald-200 border-emerald-500/40'),
+                  className: 'px-2 py-1 rounded text-[0.625rem] font-bold border ' + (meterIssue ? 'text-red-200 border-red-500/40' : 'text-emerald-200 border-emerald-500/40'),
                   role: 'status',
                   'aria-live': 'polite'
                 }, meterIssue ? __alloT('stem.circuit.fix_placement', 'Fix placement') : __alloT('stem.circuit.connected_correctly', 'Connected correctly'))
               ),
-              h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, meterGuidance),
-              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-[10px]' },
+              h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, meterGuidance),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-[0.625rem]' },
                 h('div', { className: 'border-l-2 border-cyan-500 pl-2' },
                   h('strong', { className: 'block text-cyan-300' }, __alloT('stem.circuit.ammeter_rule', 'Ammeter rule')),
                   h('span', { className: 'text-slate-400' }, __alloT('stem.circuit.ammeter_rule_desc', 'Series connection; very low internal resistance.'))
@@ -1830,8 +1830,8 @@ window.StemLab = window.StemLab || {
               var sx = function(v) { return pl + (v / Vmax) * (W - pl - pr); };
               var sy = function(i) { return pt + (1 - i / Imax) * (H - pt - pb); };
               return h('div', { className: 'mt-3 bg-slate-900/40 border border-blue-500/20 rounded-xl p-3' },
-                h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-1' }, "⚡ " + __alloT('stem.circuit.ohm_iv_title', "Ohm's law: I–V characteristic")),
-                h('p', { className: 'text-[10px] text-slate-400 mb-2' }, __alloT('stem.circuit.ohm_iv_desc', 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-blue-400 uppercase tracking-wider mb-1' }, "⚡ " + __alloT('stem.circuit.ohm_iv_title', "Ohm's law: I–V characteristic")),
+                h('p', { className: 'text-[0.625rem] text-slate-400 mb-2' }, __alloT('stem.circuit.ohm_iv_desc', 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.')),
                 h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Current versus voltage is a straight line through the origin; at ' + voltage + ' volts the current is ' + current.toFixed(3) + ' amps.' },
                   h('line', { x1: pl, y1: pt, x2: pl, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
                   h('line', { x1: pl, y1: H - pb, x2: W - pr, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
@@ -1849,8 +1849,8 @@ window.StemLab = window.StemLab || {
             // Per-component analysis table
             // ══════════════════════════════════════
             components.length > 0 && !noLoadPath && h('div', { className: 'mt-3 bg-slate-900/40 border border-cyan-500/20 rounded-xl p-3 backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 ' + __alloT('stem.circuit.mental_model_checks', 'Mental-model checks')),
-              h('ul', { className: 'space-y-1 text-[11px] text-slate-300 leading-snug list-disc list-inside marker:text-cyan-500' },
+              h('p', { className: 'text-[0.6875rem] font-bold text-cyan-400 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 ' + __alloT('stem.circuit.mental_model_checks', 'Mental-model checks')),
+              h('ul', { className: 'space-y-1 text-[0.6875rem] text-slate-300 leading-snug list-disc list-inside marker:text-cyan-500' },
                 h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_electrons_bold', 'Electrons crawl; the signal races. ')), __alloT('stem.circuit.mmc_electrons_body', 'The glowing dots move fast for visibility, but real electrons drift at only about 0.1 mm/s. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.')),
                 mode === 'series'
                   ? h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_series_bold', 'Current is not used up. ')), 'The very same ' + current.toFixed(3) + ' A flows through every component in series \u2014 an ammeter reads the same value before AND after each bulb. Energy gets spent along the way; charge does not.')
@@ -1863,7 +1863,7 @@ window.StemLab = window.StemLab || {
             // Per-component analysis table
             // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
             components.length > 0 && h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u26A1 ' + __alloT('stem.circuit.per_component_analysis', 'Per-Component Analysis')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u26A1 ' + __alloT('stem.circuit.per_component_analysis', 'Per-Component Analysis')),
               h('div', { className: 'space-y-1.5' },
                 components.map(function(comp, i) {
                   var compR = getCompR(comp);
@@ -1891,13 +1891,13 @@ window.StemLab = window.StemLab || {
                     comp.type === 'bulb' && h('span', { className: 'text-yellow-400 ml-auto' }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05'),
                     comp.type === 'switch' && h('span', { className: 'ml-auto ' + (comp.closed ? 'text-emerald-400' : 'text-red-400') }, comp.closed ? '\u2705 ' + __alloT('stem.circuit.status_closed', 'Closed') : '\u274C ' + __alloT('stem.circuit.status_open', 'Open')),
                     comp.type === 'led' && h('span', { className: 'ml-auto', style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\u2B50 ' + __alloT('stem.circuit.status_lit', 'Lit') : '\u26AB ' + __alloT('stem.circuit.status_off', 'Off')),
-                    comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[10px]' }, comp.value + '\u00B5F (blocks DC)')
+                    comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[0.625rem]' }, comp.value + '\u00B5F (blocks DC)')
                   );
                 })
               ),
 
               // Formula reminder
-              h('div', { className: 'mt-3 flex items-center gap-2 text-[10px] text-slate-400 font-medium' },
+              h('div', { className: 'mt-3 flex items-center gap-2 text-[0.625rem] text-slate-400 font-medium' },
                 h('span', null, '\u2696 V = IR'),
                 h('span', null, '\u2022'),
                 h('span', null, 'P = IV'),
@@ -1931,22 +1931,22 @@ window.StemLab = window.StemLab || {
                 : power < 100 ? __alloT('stem.circuit.eq_laptop', 'a laptop under load')
                 : __alloT('stem.circuit.eq_appliance', 'a household appliance');
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-rose-500/25 rounded-xl p-4 backdrop-blur-md' },
-                h('p', { className: 'text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 ' + __alloT('stem.circuit.energy_budget_title', 'Energy budget — where the power goes')),
-                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' },
+                h('p', { className: 'text-[0.6875rem] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 ' + __alloT('stem.circuit.energy_budget_title', 'Energy budget — where the power goes')),
+                h('p', { className: 'text-[0.6875rem] text-slate-400 mb-2 leading-snug' },
                   __alloT('stem.circuit.energy_budget_intro', 'The battery pours out '), h('b', { className: 'text-rose-300' }, 'P = V×I = ' + power.toFixed(2) + ' W'),
                   ' (like ' + eq + '). Every load turns its share into heat or light — and the shares must add back up to the total. Energy is never destroyed, only spent.'),
                 // Segmented power bar
                 h('div', { className: 'flex w-full h-7 rounded-lg overflow-hidden border border-slate-700', role: 'img', 'aria-label': 'Power split: ' + segs.map(function(s){ return s.name + ' ' + (s.p/totP*100).toFixed(0) + ' percent'; }).join(', ') },
-                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[10px] text-slate-500' }, __alloT('stem.circuit.no_dissipating_load', 'no dissipating load'))
+                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[0.625rem] text-slate-500' }, __alloT('stem.circuit.no_dissipating_load', 'no dissipating load'))
                   : segs.map(function(s, i) {
                       var pct = s.p / totP * 100;
                       return h('div', { key: i, style: { width: pct + '%', background: s.col + '33', borderRight: i < segs.length - 1 ? '1px solid rgba(15,23,42,0.6)' : 'none' }, className: 'flex flex-col items-center justify-center overflow-hidden' },
-                        pct > 12 && h('span', { className: 'text-[10px] font-black leading-none', style: { color: s.col } }, s.p.toFixed(2) + 'W'),
-                        pct > 20 && h('span', { className: 'text-[8px] text-slate-400 leading-none mt-0.5 truncate px-1', style: { maxWidth: '100%' } }, s.name)
+                        pct > 12 && h('span', { className: 'text-[0.625rem] font-black leading-none', style: { color: s.col } }, s.p.toFixed(2) + 'W'),
+                        pct > 20 && h('span', { className: 'text-[0.5rem] text-slate-400 leading-none mt-0.5 truncate px-1', style: { maxWidth: '100%' } }, s.name)
                       );
                     })
                 ),
-                h('div', { className: 'flex justify-between mt-1.5 text-[10px]' },
+                h('div', { className: 'flex justify-between mt-1.5 text-[0.625rem]' },
                   h('span', { className: 'text-slate-500' }, mode === 'series' ? __alloT('stem.circuit.dissipate_series_note', 'Biggest resistor dissipates the most (P = I²R, same I)') : __alloT('stem.circuit.dissipate_parallel_note', 'Smallest resistor dissipates the most (P = V²/R, same V)')),
                   h('span', { className: 'font-mono font-bold text-rose-300' }, 'Σ = ' + totP.toFixed(2) + ' W')
                 )
@@ -1977,8 +1977,8 @@ window.StemLab = window.StemLab || {
                 );
               }
               return h('div', { className: 'circuit-card mt-4 bg-gradient-to-br from-slate-900 to-blue-950/40 border border-cyan-500/25 rounded-xl p-4 backdrop-blur-md' },
-                h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1' }, '🐌⚡ ' + __alloT('stem.circuit.paradox_title', 'The paradox: electrons crawl, the signal races')),
-                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' }, __alloT('stem.circuit.paradox_body', 'The blue dots in the schematic move fast so you can see them — but real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-cyan-400 uppercase tracking-wider mb-1' }, '🐌⚡ ' + __alloT('stem.circuit.paradox_title', 'The paradox: electrons crawl, the signal races')),
+                h('p', { className: 'text-[0.6875rem] text-slate-400 mb-2 leading-snug' }, __alloT('stem.circuit.paradox_body', 'The blue dots in the schematic move fast so you can see them — but real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.')),
                 h('svg', { viewBox: '0 0 360 120', width: '100%', role: 'img', 'aria-label': __alloT('stem.circuit.aria_paradox_svg', 'Two wires. In the top wire the electric field pulse races across almost instantly. In the bottom wire individual electrons drift very slowly.') },
                   lane(32, '⚡ ' + __alloT('stem.circuit.lane_field_label', 'Electric field / signal'), '≈ 200,000 km/s'),
                   // fast signal pulse
@@ -1995,15 +1995,15 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2 mt-1' },
                   h('div', { className: 'bg-cyan-950/30 border border-cyan-500/20 rounded-lg p-2 text-center' },
-                    h('p', { className: 'text-[10px] uppercase tracking-wider text-cyan-500/80 font-bold' }, __alloT('stem.circuit.signal_crosses_label', 'Signal crosses 1 m in')),
+                    h('p', { className: 'text-[0.625rem] uppercase tracking-wider text-cyan-500/80 font-bold' }, __alloT('stem.circuit.signal_crosses_label', 'Signal crosses 1 m in')),
                     h('p', { className: 'text-sm font-black font-mono text-cyan-300' }, '~5 nanoseconds')
                   ),
                   h('div', { className: 'bg-blue-950/30 border border-blue-500/20 rounded-lg p-2 text-center' },
-                    h('p', { className: 'text-[10px] uppercase tracking-wider text-blue-400/80 font-bold' }, __alloT('stem.circuit.electron_crosses_label', 'One electron crosses 1 m in')),
+                    h('p', { className: 'text-[0.625rem] uppercase tracking-wider text-blue-400/80 font-bold' }, __alloT('stem.circuit.electron_crosses_label', 'One electron crosses 1 m in')),
                     h('p', { className: 'text-sm font-black font-mono text-blue-300' }, '~' + driftTime)
                   )
                 ),
-                h('p', { className: 'text-[10px] text-slate-500 italic mt-1.5 leading-snug' }, 'Drift speed computed from your ' + current.toFixed(3) + ' A through an assumed 1 mm² copper wire (v = I ÷ n·A·e). Turn up the voltage and the electrons speed up — but they never come close to the signal.')
+                h('p', { className: 'text-[0.625rem] text-slate-500 italic mt-1.5 leading-snug' }, 'Drift speed computed from your ' + current.toFixed(3) + ' A through an assumed 1 mm² copper wire (v = I ÷ n·A·e). Turn up the voltage and the electrons speed up — but they never come close to the signal.')
               );
             })(),
 
@@ -2023,8 +2023,8 @@ window.StemLab = window.StemLab || {
                 { a: 30000, label: 'lightning bolt' }
               ];
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-amber-500/25 rounded-xl p-4 backdrop-blur-md' },
-                h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1' }, '📏 How big is ' + current.toFixed(3) + ' A, really?'),
-                h('p', { className: 'text-[11px] text-slate-400 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
+                h('p', { className: 'text-[0.6875rem] font-bold text-amber-400 uppercase tracking-wider mb-1' }, '📏 How big is ' + current.toFixed(3) + ' A, really?'),
+                h('p', { className: 'text-[0.6875rem] text-slate-400 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
                 h('svg', { viewBox: '0 0 360 78', width: '100%', role: 'img', 'aria-label': 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws ' + current.toFixed(3) + ' amps, between ' + (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() + ' and larger loads.' },
                   h('defs', null,
                     h('linearGradient', { id: 'circAmpGrad', x1: 0, y1: 0, x2: 1, y2: 0 },
@@ -2057,7 +2057,7 @@ window.StemLab = window.StemLab || {
             // KVL Verification (g68 / g912)
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && components.length > 0 && mode === 'series' && current > 0.001 && h('div', { className: 'mt-4 bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-4 backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\u2696 ' + __alloT('stem.circuit.kvl_title', 'Kirchhoff\'s Voltage Law (KVL) Verification')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\u2696 ' + __alloT('stem.circuit.kvl_title', 'Kirchhoff\'s Voltage Law (KVL) Verification')),
               h('p', { className: 'text-xs text-slate-300 mb-2' }, __alloT('stem.circuit.kvl_desc', 'The sum of voltage drops around any closed loop equals the source voltage. The same current flows through every series component, so this isn\'t a lucky coincidence — Ohm\'s law forces it to balance.')),
               h('div', { className: 'space-y-1' },
                 components.map(function(comp, i) {
@@ -2108,7 +2108,7 @@ window.StemLab = window.StemLab || {
                 onClick: function() { upd('showPresets', !showPresets); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
-                h('p', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider' }, '\uD83D\uDCCB ' + __alloT('stem.circuit.circuit_presets', 'Circuit Presets')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-slate-300 uppercase tracking-wider' }, '\uD83D\uDCCB ' + __alloT('stem.circuit.circuit_presets', 'Circuit Presets')),
                 h('span', { className: 'ml-auto text-slate-400 text-xs' }, showPresets ? '\u25B2' : '\u25BC')
               ),
               showPresets && h('div', { className: 'flex flex-wrap gap-2 mt-3' },
@@ -2120,7 +2120,7 @@ window.StemLab = window.StemLab || {
                     title: __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc)
                   },
                     h('span', { className: 'font-bold text-slate-200 block' }, preset.label),
-                    h('span', { className: 'text-[10px] text-slate-400 mt-0.5 block' }, __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc))
+                    h('span', { className: 'text-[0.625rem] text-slate-400 mt-0.5 block' }, __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc))
                   );
                 })
               )
@@ -2130,7 +2130,7 @@ window.StemLab = window.StemLab || {
             // Circuit Challenges (10)
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFAF ' + __alloT('stem.circuit.circuit_challenges_title', 'Circuit Challenges')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFAF ' + __alloT('stem.circuit.circuit_challenges_title', 'Circuit Challenges')),
               h('div', { className: 'flex flex-wrap gap-2' },
                 CHALLENGES.map(function(ch, ci) {
                   var actual = ch.type === 'current' ? current : ch.type === 'resistance' ? totalR : power;
@@ -2156,7 +2156,7 @@ window.StemLab = window.StemLab || {
                         upd('challenge', ch);
                       }
                     },
-                    className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-400/80 border-emerald-700' : 'transition-colors bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800 active:scale-[0.97]')
+                    className: 'px-2.5 py-1 rounded-lg text-[0.625rem] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-400/80 border-emerald-700' : 'transition-colors bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800 active:scale-[0.97]')
                   }, (close || challengesDoneSet[ci] ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
                 })
               )
@@ -2222,7 +2222,7 @@ window.StemLab = window.StemLab || {
             // Badge panel (collapsible)
             // ══════════════════════════════════════
             showBadges && h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges') + ' (' + Object.keys(badges).length + '/' + BADGES.length + ')'),
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges') + ' (' + Object.keys(badges).length + '/' + BADGES.length + ')'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 BADGES.map(function(b) {
                   var earned = badges[b.id];
@@ -2233,7 +2233,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-base' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', null,
                       h('p', { className: 'font-bold ' + (earned ? 'text-amber-300' : 'text-slate-500') }, b.name),
-                      h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-400/80' : 'text-slate-600') }, __alloT('stem.circuit.' + (b.id) + '_desc', b.desc))
+                      h('p', { className: 'text-[0.625rem] ' + (earned ? 'text-amber-400/80' : 'text-slate-600') }, __alloT('stem.circuit.' + (b.id) + '_desc', b.desc))
                     )
                   );
                 })
@@ -2244,7 +2244,7 @@ window.StemLab = window.StemLab || {
             // AI Tutor panel (collapsible)
             // ══════════════════════════════════════
             showAI && h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_circuit_tutor', 'AI Circuit Tutor')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_circuit_tutor', 'AI Circuit Tutor')),
               h('div', { className: 'flex gap-2' },
                 h('input', {
                   id: 'circuit-ai-question',
@@ -2270,7 +2270,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': __alloT('stem.circuit.aria_ask_question', 'Ask question'),
                     key: q,
                     onClick: function() { updMulti({ aiQuestion: q }); },
-                    className: 'px-2.5 py-1 text-[10px] bg-slate-950/60 text-blue-400 border border-blue-900/50 rounded-full hover:bg-blue-950/30 hover:text-blue-300 transition-all active:scale-[0.97]'
+                    className: 'px-2.5 py-1 text-[0.625rem] bg-slate-950/60 text-blue-400 border border-blue-900/50 rounded-full hover:bg-blue-950/30 hover:text-blue-300 transition-all active:scale-[0.97]'
                   }, q);
                 })
               )
@@ -2283,7 +2283,7 @@ window.StemLab = window.StemLab || {
               h('button', { 'aria-label': __alloT('stem.circuit.aria_kirchhoff_laws', 'Kirchhoff Laws'), 'aria-expanded': showKirchhoff, onClick: function() { upd('showKirchhoff', !showKirchhoff); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
-                h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase tracking-wider' }, '\u2696 ' + __alloT('stem.circuit.kirchhoff_laws_title', "Kirchhoff's Laws")),
+                h('p', { className: 'text-[0.6875rem] font-bold text-violet-400 uppercase tracking-wider' }, '\u2696 ' + __alloT('stem.circuit.kirchhoff_laws_title', "Kirchhoff's Laws")),
                 h('span', { className: 'ml-auto text-violet-400 text-xs' }, showKirchhoff ? '\u25B2' : '\u25BC')
               ),
               showKirchhoff && h('div', { className: 'mt-3 space-y-3' },
@@ -2293,9 +2293,9 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-xs text-slate-400' }, __alloT('stem.circuit.kcl_desc', 'The total current entering a junction equals the total current leaving that junction.')),
                   h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 I_in = \u2211 I_out'),
                   mode === 'parallel' && components.length > 0 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
-                    h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
-                    h('p', { className: 'text-[10px] text-slate-400 font-mono' }, 'Total current from source: ' + current.toFixed(3) + 'A'),
-                    h('p', { className: 'text-[10px] text-slate-400 font-mono mt-0.5' }, 'Branch currents: ' + components.map(function(c, i) {
+                    h('p', { className: 'text-[0.625rem] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
+                    h('p', { className: 'text-[0.625rem] text-slate-400 font-mono' }, 'Total current from source: ' + current.toFixed(3) + 'A'),
+                    h('p', { className: 'text-[0.625rem] text-slate-400 font-mono mt-0.5' }, 'Branch currents: ' + components.map(function(c, i) {
                       var cR = getCompR(c);
                       var cI = voltage / cR;
                       return 'I' + (i + 1) + '=' + cI.toFixed(3) + 'A';
@@ -2303,7 +2303,7 @@ window.StemLab = window.StemLab || {
                     (function() {
                       var branchSum = 0;
                       components.forEach(function(c) { branchSum += voltage / getCompR(c); });
-                      return h('p', { className: 'text-[10px] font-bold text-violet-300 font-mono mt-1' }, 'Sum of branch currents: ' + branchSum.toFixed(3) + 'A ' + (Math.abs(branchSum - current) < 0.001 ? '\u2705' : ''));
+                      return h('p', { className: 'text-[0.625rem] font-bold text-violet-300 font-mono mt-1' }, 'Sum of branch currents: ' + branchSum.toFixed(3) + 'A ' + (Math.abs(branchSum - current) < 0.001 ? '\u2705' : ''));
                     })()
                   )
                 ),
@@ -2314,12 +2314,12 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-xs text-slate-400' }, __alloT('stem.circuit.kvl_law_desc', 'The sum of all voltage drops around any closed loop equals the source voltage (EMF).')),
                   h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 V_drops = V_source'),
                   mode === 'series' && components.length > 0 && current > 0.001 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
-                    h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
+                    h('p', { className: 'text-[0.625rem] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
                     components.map(function(c, i) {
                       if (c.type === 'ammeter' || c.type === 'voltmeter') return null;
                       var cR = getCompR(c);
                       var cV = current * cR;
-                      return h('p', { key: c.id, className: 'text-[10px] text-slate-400 font-mono' }, 'V' + (i + 1) + ' = ' + current.toFixed(3) + ' \u00D7 ' + cR.toFixed(1) + ' = ' + cV.toFixed(2) + 'V');
+                      return h('p', { key: c.id, className: 'text-[0.625rem] text-slate-400 font-mono' }, 'V' + (i + 1) + ' = ' + current.toFixed(3) + ' \u00D7 ' + cR.toFixed(1) + ' = ' + cV.toFixed(2) + 'V');
                     }),
                     (function() {
                       var vSum = 0;
@@ -2328,7 +2328,7 @@ window.StemLab = window.StemLab || {
                           vSum += current * getCompR(c);
                         }
                       });
-                      return h('p', { className: 'text-[10px] font-bold text-violet-300 font-mono mt-1' }, '\u2211 = ' + vSum.toFixed(2) + 'V \u2248 ' + voltage + 'V ' + (Math.abs(vSum - voltage) < 0.1 ? '\u2705' : '\u26A0\uFE0F'));
+                      return h('p', { className: 'text-[0.625rem] font-bold text-violet-300 font-mono mt-1' }, '\u2211 = ' + vSum.toFixed(2) + 'V \u2248 ' + voltage + 'V ' + (Math.abs(vSum - voltage) < 0.1 ? '\u2705' : '\u26A0\uFE0F'));
                     })()
                   )
                 ),
@@ -2336,7 +2336,7 @@ window.StemLab = window.StemLab || {
                 // Additional formulas for g912
                 band === 'g912' && h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
                   h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.key_relationships', 'Key Relationships')),
-                  h('div', { className: 'grid grid-cols-2 gap-2 text-[10px] text-slate-400 font-mono' },
+                  h('div', { className: 'grid grid-cols-2 gap-2 text-[0.625rem] text-slate-400 font-mono' },
                     h('p', null, 'V = IR (Ohm\'s Law)'),
                     h('p', null, 'P = IV = I\u00B2R = V\u00B2/R'),
                     h('p', null, 'R_series = R1 + R2 + ...'),
@@ -2354,8 +2354,8 @@ window.StemLab = window.StemLab || {
             components.length > 0 && !isOpen ? h('div', { className: 'mt-4 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-xl' },
               h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b border-slate-800 bg-slate-950/60' },
                 h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse motion-reduce:animate-none' }),
-                h('span', { className: 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, __alloT('stem.circuit.oscilloscope_label', 'Oscilloscope')),
-                h('span', { className: 'ml-auto text-[10px] text-slate-500 font-mono' },
+                h('span', { className: 'text-[0.625rem] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, __alloT('stem.circuit.oscilloscope_label', 'Oscilloscope')),
+                h('span', { className: 'ml-auto text-[0.625rem] text-slate-500 font-mono' },
                   voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
               ),
               h('canvas', { role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.circuit.aria_oscilloscope', 'Circuit oscilloscope visualization showing voltage, current, and capacitor charge traces'),
@@ -2527,14 +2527,14 @@ window.StemLab = window.StemLab || {
               if (components.length === 0) return null;
 
               return h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-                h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u269B How Components Work'),
+                h('p', { className: 'text-[0.6875rem] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u269B How Components Work'),
                 h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
                   ['resistor', 'bulb', 'switch', 'led', 'ammeter', 'voltmeter', 'capacitor'].map(function(type) {
                     var info = COMP_PHYSICS[type];
                     var active = selectedComp === type;
                     return h('button', { key: type,
                       onClick: function() { upd('_selectedComp', active ? null : type); },
-                      className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ' +
+                      className: 'px-2.5 py-1 rounded-lg text-[0.625rem] font-bold transition-all border ' +
                         (active ? 'text-slate-950 font-extrabold shadow-sm' : 'transition-colors bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'),
                       style: active ? { background: info.color, borderColor: info.color } : {}
                     }, info.icon + ' ' + info.name);
@@ -2544,18 +2544,18 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
                     h('span', { className: 'text-xl' }, physics.icon),
                     h('h4', { className: 'font-bold text-slate-200 text-sm' }, physics.name),
-                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-900 text-yellow-500 border border-slate-800' }, physics.equation)
+                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[0.625rem] font-mono font-bold bg-slate-900 text-yellow-500 border border-slate-800' }, physics.equation)
                   ),
                   h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, physics.how),
                   h('div', { className: 'bg-cyan-950/20 rounded-lg p-2.5 border border-cyan-900/30' },
-                    h('span', { className: 'text-[10px] font-bold text-cyan-400' }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.analogy_label', 'Analogy: ')),
-                    h('span', { className: 'text-[10px] text-cyan-300 leading-normal' }, physics.analogy)
+                    h('span', { className: 'text-[0.625rem] font-bold text-cyan-400' }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.analogy_label', 'Analogy: ')),
+                    h('span', { className: 'text-[0.625rem] text-cyan-300 leading-normal' }, physics.analogy)
                   ),
                   typeof callTTS === 'function' ? h('button', { 'aria-label': __alloT('stem.circuit.aria_read_aloud', 'Read aloud'),
                     onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy); },
-                    className: 'transition-colors mt-2 text-[10px] text-yellow-500 hover:text-yellow-400 font-bold'
+                    className: 'transition-colors mt-2 text-[0.625rem] text-yellow-500 hover:text-yellow-400 font-bold'
                   }, '\uD83D\uDD0A ' + __alloT('stem.circuit.read_aloud', 'Read aloud')) : null
-                ) : h('p', { className: 'text-[10px] text-slate-500 italic' }, __alloT('stem.circuit.tap_component_hint', 'Tap a component above to learn how it works inside!'))
+                ) : h('p', { className: 'text-[0.625rem] text-slate-500 italic' }, __alloT('stem.circuit.tap_component_hint', 'Tap a component above to learn how it works inside!'))
               );
             })(),
 
@@ -2563,7 +2563,7 @@ window.StemLab = window.StemLab || {
             // Real-World Circuit Applications
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D ' + __alloT('stem.circuit.real_world_circuits_title', 'Real-World Circuits')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-cyan-400 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D ' + __alloT('stem.circuit.real_world_circuits_title', 'Real-World Circuits')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                 [
                   { emoji: '\uD83D\uDD26', name: __alloT('stem.circuit.app_flashlight_name', 'Flashlight'), circuit: __alloT('stem.circuit.circuit_type_series', 'Series'), desc: __alloT('stem.circuit.app_flashlight_desc', 'Battery + switch + bulb in series. Switch breaks circuit to turn off.'), comps: __alloT('stem.circuit.app_flashlight_comps', 'Switch, Bulb') },
@@ -2583,12 +2583,12 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-base' }, app.emoji),
                       h('div', null,
                         h('span', { className: 'text-xs font-bold text-slate-200 block' }, app.name),
-                        h('span', { className: 'text-[10px] text-cyan-400 font-bold uppercase tracking-wider' }, app.circuit)
+                        h('span', { className: 'text-[0.625rem] text-cyan-400 font-bold uppercase tracking-wider' }, app.circuit)
                       )
                     ),
                     expanded ? h('div', { className: 'animate-in fade-in duration-200 motion-reduce:animate-none mt-1' },
-                      h('p', { className: 'text-[10px] text-slate-400 leading-normal mb-1.5' }, app.desc),
-                      h('span', { className: 'text-[10px] text-slate-300 font-bold block' }, '\uD83D\uDD27 ' + __alloT('stem.circuit.key_parts_label', 'Key parts: ') + app.comps)
+                      h('p', { className: 'text-[0.625rem] text-slate-400 leading-normal mb-1.5' }, app.desc),
+                      h('span', { className: 'text-[0.625rem] text-slate-300 font-bold block' }, '\uD83D\uDD27 ' + __alloT('stem.circuit.key_parts_label', 'Key parts: ') + app.comps)
                     ) : null
                   );
                 })
@@ -2632,7 +2632,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Footer
-            h('p', { className: 'text-[10px] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', "Ohm's Law: V = IR") + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV')),
+            h('p', { className: 'text-[0.625rem] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', "Ohm's Law: V = IR") + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV')),
             confirmationAction && h(CircuitConfirmationDialog, {
               React: React,
               action: confirmationAction,
@@ -2809,7 +2809,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200' },
           h('div', null,
             h('h3', { className: 'text-base font-black text-amber-900' }, '⚡ ' + __alloT('stem.circuit.reference_library_title', 'Circuit Reference Library')),
-            h('div', { className: 'text-[11px] text-amber-700 mt-0.5' }, __alloT('stem.circuit.reference_library_subtitle', 'Interactive references — pick a topic below to explore.'))
+            h('div', { className: 'text-[0.6875rem] text-amber-700 mt-0.5' }, __alloT('stem.circuit.reference_library_subtitle', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
@@ -2887,13 +2887,13 @@ window.StemLab = window.StemLab || {
           return h('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
           TAB_GROUPS.map(function(g) {
             return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              h('span', { 'aria-hidden': 'true', className: 'text-[10px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              h('span', { 'aria-hidden': 'true', className: 'text-[0.625rem] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
             );
           })
@@ -2907,11 +2907,11 @@ window.StemLab = window.StemLab || {
             CIRCUIT_LAWS.map(function(l, i) {
               return h('div', { key: 'l'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, l.name),
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, l.name),
                   h('span', { className: 'text-sm font-bold ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-mono' }, l.formula)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1 leading-relaxed' }, l.desc),
-                h('div', { className: 'text-[11px] text-slate-600 italic' }, 'Example: ', l.example)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1 leading-relaxed' }, l.desc),
+                h('div', { className: 'text-[0.6875rem] text-slate-600 italic' }, 'Example: ', l.example)
               );
             })
           )
@@ -2926,11 +2926,11 @@ window.StemLab = window.StemLab || {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
                   h('span', { className: 'text-base font-black text-amber-700' }, c.symbol),
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.name),
-                  h('span', { className: 'text-[10px] font-mono ml-auto px-1.5 py-0.5 rounded bg-amber-100 text-amber-800' }, c.units)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[0.625rem] font-mono ml-auto px-1.5 py-0.5 rounded bg-amber-100 text-amber-800' }, c.units)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1 leading-relaxed' }, c.role),
-                h('div', { className: 'text-[10px] text-slate-600 italic' }, c.colors)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1 leading-relaxed' }, c.role),
+                h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, c.colors)
               );
             })
           )
@@ -2941,7 +2941,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⇊ Series vs parallel circuits'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Series and parallel circuit comparison'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -2971,11 +2971,11 @@ window.StemLab = window.StemLab || {
             CIRCUIT_PATTERNS.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, p.name),
-                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800' }, p.purpose)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, p.name),
+                  h('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800' }, p.purpose)
                 ),
-                h('div', { className: 'text-[11px] font-mono text-indigo-800 bg-indigo-50 px-2 py-1 rounded mb-1' }, p.formula),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.notes)
+                h('div', { className: 'text-[0.6875rem] font-mono text-indigo-800 bg-indigo-50 px-2 py-1 rounded mb-1' }, p.formula),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.notes)
               );
             })
           )
@@ -2985,16 +2985,16 @@ window.StemLab = window.StemLab || {
       function renderLogicSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '0/1 Digital logic gates'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Every digital circuit is built from logic gates. Combinational logic computes; sequential logic remembers. NAND or NOR alone is functionally complete (can build all others).'),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'Every digital circuit is built from logic gates. Combinational logic computes; sequential logic remembers. NAND or NOR alone is functionally complete (can build all others).'),
           h('div', { className: 'space-y-2' },
             DIGITAL_LOGIC.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[14px] font-black text-amber-700' }, g.gate),
-                  h('span', { className: 'text-[11px] font-mono ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800' }, g.formula)
+                  h('span', { className: 'text-[0.875rem] font-black text-amber-700' }, g.gate),
+                  h('span', { className: 'text-[0.6875rem] font-mono ml-auto px-2 py-0.5 rounded bg-amber-100 text-amber-800' }, g.formula)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Truth: '), g.truth),
-                h('div', { className: 'text-[11px] text-slate-600 italic' }, 'Uses: ', g.uses)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Truth: '), g.truth),
+                h('div', { className: 'text-[0.6875rem] text-slate-600 italic' }, 'Uses: ', g.uses)
               );
             })
           )
@@ -3007,8 +3007,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             SAFETY_RULES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-red-50 border border-red-200' },
-                h('div', { className: 'text-[12px] font-black text-red-900 mb-1' }, '🛡 ' + s.rule),
-                h('div', { className: 'text-[11px] text-red-900 leading-relaxed' }, s.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-red-900 mb-1' }, '🛡 ' + s.rule),
+                h('div', { className: 'text-[0.6875rem] text-red-900 leading-relaxed' }, s.detail)
               );
             })
           )
@@ -3132,18 +3132,18 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict, test, and revise with electrical evidence'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             'Use the labeled voltage and resistance to predict a measurable result ', h('em', null, 'before'), ' revealing the model evidence. Prediction accuracy is not graded; each completed comparison and evidence-based revision earns inquiry credit. Power is this model\'s brightness proxy; real perceived brightness also depends on the bulb.'),
           POE_SCENARIOS.map(function(scenario, i) {
             var stg = Object.assign({ picked: null, revealed: false, revision: '', reason: '', complete: false }, state.stage[scenario.id] || {});
             var reflectionReady = !!stg.revision && String(stg.reason || '').trim().length >= 12;
             return h('div', { key: scenario.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               h('div', { className: 'flex items-baseline gap-2 mb-2' },
-                h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, '#' + (i + 1)),
-                h('span', { className: 'text-[12px] font-black text-slate-800' }, scenario.title)
+                h('span', { className: 'text-[0.625rem] font-mono text-amber-700 font-bold' }, '#' + (i + 1)),
+                h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, scenario.title)
               ),
               drawSchematic(scenario),
-              h('div', { className: 'mt-2 text-[11px] font-bold text-slate-700' }, scenario.predict.question),
+              h('div', { className: 'mt-2 text-[0.6875rem] font-bold text-slate-700' }, scenario.predict.question),
               h('div', { className: 'flex flex-wrap gap-1 mt-1' },
                 scenario.predict.options.map(function(opt, oi) {
                   var picked = stg.picked === oi;
@@ -3162,7 +3162,7 @@ window.StemLab = window.StemLab || {
                       updatePoeStage(scenario.id, { picked: oi, revealed: false, revision: '', reason: '', complete: false });
                     },
                     'aria-pressed': picked ? 'true' : 'false',
-                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + bg
+                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors ' + bg
                   }, opt);
                 })
               ),
@@ -3175,16 +3175,16 @@ window.StemLab = window.StemLab || {
                     if (stg.picked == null || stg.revealed) return;
                     updatePoeStage(scenario.id, { picked: stg.picked, revealed: true, revision: '', reason: '', complete: false });
                   },
-                  className: 'transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
+                  className: 'transition-colors px-3 py-1 rounded-md text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
                 }, stg.revealed ? '✓ Evidence revealed' : 'Reveal model evidence'),
-                stg.revealed && h('span', { role: 'status', className: 'text-[11px] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-amber-800 font-bold') },
+                stg.revealed && h('span', { role: 'status', className: 'text-[0.6875rem] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-amber-800 font-bold') },
                   scenario.answerIndex === stg.picked ? 'Evidence supported your estimate' : 'The model produced a different result')
               ),
-              stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[11px] text-slate-700 leading-relaxed' },
+              stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[0.6875rem] text-slate-700 leading-relaxed' },
                 h('strong', { className: 'text-amber-900' }, 'Evidence and reasoning: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation)),
               stg.revealed && h('fieldset', { className: 'mt-2 rounded-lg border border-violet-500 bg-white p-2', 'data-circuit-poe-revision': scenario.id },
-                h('legend', { className: 'px-1 text-[10px] font-black uppercase tracking-wide text-violet-800' }, 'Revise from the evidence'),
-                h('p', { className: 'text-[10px] leading-relaxed text-slate-600' }, 'Choose the honest reflection; no option is scored as correct.'),
+                h('legend', { className: 'px-1 text-[0.625rem] font-black uppercase tracking-wide text-violet-800' }, 'Revise from the evidence'),
+                h('p', { className: 'text-[0.625rem] leading-relaxed text-slate-600' }, 'Choose the honest reflection; no option is scored as correct.'),
                 h('div', { className: 'mt-1 grid gap-1 sm:grid-cols-3', role: 'radiogroup', 'aria-label': 'How the circuit evidence affected your thinking for scenario ' + (i + 1) },
                   [
                     { id: 'supported', label: 'It strengthened my reasoning' },
@@ -3192,19 +3192,19 @@ window.StemLab = window.StemLab || {
                     { id: 'uncertain', label: 'I would run another test' }
                   ].map(function(option) {
                     var selectedRevision = stg.revision === option.id;
-                    return h('label', { key: option.id, className: 'flex cursor-pointer gap-1.5 rounded border p-1.5 text-[10px] font-bold ' + (selectedRevision ? 'border-violet-500 bg-violet-50 text-violet-950' : 'border-slate-200 text-slate-700') },
+                    return h('label', { key: option.id, className: 'flex cursor-pointer gap-1.5 rounded border p-1.5 text-[0.625rem] font-bold ' + (selectedRevision ? 'border-violet-500 bg-violet-50 text-violet-950' : 'border-slate-200 text-slate-700') },
                       h('input', { type: 'radio', name: 'circuit-poe-revision-' + scenario.id, value: option.id, checked: selectedRevision, onChange: function() { updatePoeStage(scenario.id, { revision: option.id, complete: false }); }, className: 'mt-0.5 h-4 w-4 accent-violet-700' }),
                       h('span', null, option.label)
                     );
                   })
                 ),
-                h('label', { htmlFor: 'circuit-poe-reason-' + scenario.id, className: 'mt-2 block text-[10px] font-black text-violet-900' }, 'What evidence supports your revision?'),
-                h('textarea', { id: 'circuit-poe-reason-' + scenario.id, rows: 2, maxLength: 400, value: stg.reason || '', onChange: function(e) { updatePoeStage(scenario.id, { reason: e.target.value.slice(0, 400), complete: false }); }, placeholder: 'The voltage, current, or power evidence shows...', className: 'mt-1 w-full rounded border border-violet-500 bg-white p-2 text-[10px] text-slate-800' }),
-                h('button', { type: 'button', disabled: !reflectionReady || stg.complete, 'aria-disabled': reflectionReady && !stg.complete ? 'false' : 'true', onClick: function() { if (!reflectionReady || stg.complete) return; updatePoeStage(scenario.id, { complete: true }); }, className: 'mt-1.5 rounded bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, stg.complete ? 'Inquiry credit recorded' : 'Record comparison and revision')
+                h('label', { htmlFor: 'circuit-poe-reason-' + scenario.id, className: 'mt-2 block text-[0.625rem] font-black text-violet-900' }, 'What evidence supports your revision?'),
+                h('textarea', { id: 'circuit-poe-reason-' + scenario.id, rows: 2, maxLength: 400, value: stg.reason || '', onChange: function(e) { updatePoeStage(scenario.id, { reason: e.target.value.slice(0, 400), complete: false }); }, placeholder: 'The voltage, current, or power evidence shows...', className: 'mt-1 w-full rounded border border-violet-500 bg-white p-2 text-[0.625rem] text-slate-800' }),
+                h('button', { type: 'button', disabled: !reflectionReady || stg.complete, 'aria-disabled': reflectionReady && !stg.complete ? 'false' : 'true', onClick: function() { if (!reflectionReady || stg.complete) return; updatePoeStage(scenario.id, { complete: true }); }, className: 'mt-1.5 rounded bg-violet-700 px-2.5 py-1.5 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, stg.complete ? 'Inquiry credit recorded' : 'Record comparison and revision')
               )
             );
           }),
-          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex flex-wrap items-center gap-2', 'data-circuit-inquiry-credit': 'completion-revision' },
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex flex-wrap items-center gap-2', 'data-circuit-inquiry-credit': 'completion-revision' },
             h('span', null, '🎯'),
             h('strong', null, 'Inquiry progress: ' + inquiryComplete + ' / ' + POE_SCENARIOS.length),
             h('span', { className: 'text-slate-500 ml-2 italic' }, 'Credit comes from comparing evidence and revising your reasoning, regardless of whether the initial prediction matched.')
@@ -3336,7 +3336,7 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🛠 Why did it fail? — Socratic diagnostics'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             'Three broken circuits. Diagnose the root cause. If you’re wrong, you don’t get the answer — you get a follow-up question to fill the missing reasoning step. After two wrong attempts you’ll see the explanation. Right on the first try? Bonus points + the explanation.'),
           FAIL_DX_CASES.map(function(c, idx) {
             var st = state.cases[c.id] || { depth: 0, picks: [], resolved: false, firstTryCorrect: false };
@@ -3374,38 +3374,38 @@ window.StemLab = window.StemLab || {
             }
             return h('div', { key: c.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, '#' + (idx + 1)),
-                h('span', { className: 'text-[12px] font-black text-slate-800' }, c.title)
+                h('span', { className: 'text-[0.625rem] font-mono text-amber-700 font-bold' }, '#' + (idx + 1)),
+                h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.title)
               ),
-              h('div', { className: 'text-[11px] text-slate-700 italic mb-2' }, h('strong', null, 'Observed: '), c.symptom),
+              h('div', { className: 'text-[0.6875rem] text-slate-700 italic mb-2' }, h('strong', null, 'Observed: '), c.symptom),
               !isAtFinal && h('div', null,
-                depth > 0 && h('div', { className: 'mb-1 text-[10px] uppercase tracking-wider text-amber-700 font-bold' }, 'Scaffold question ' + depth + ' of 2'),
-                h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, currentQ.ask),
+                depth > 0 && h('div', { className: 'mb-1 text-[0.625rem] uppercase tracking-wider text-amber-700 font-bold' }, 'Scaffold question ' + depth + ' of 2'),
+                h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, currentQ.ask),
                 h('div', { className: 'flex flex-wrap gap-1 mb-2' },
                   currentQ.options.map(function(opt) {
                     return h('button', {
                       key: opt.id,
                       onClick: function() { handlePick(opt.id); },
-                      className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
+                      className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
                     }, opt.label);
                   })
                 ),
-                depth > 0 && h('p', { className: 'text-[10px] text-amber-700 italic' }, '(Your previous answer triggered this follow-up. The next reveal will explain.)')
+                depth > 0 && h('p', { className: 'text-[0.625rem] text-amber-700 italic' }, '(Your previous answer triggered this follow-up. The next reveal will explain.)')
               ),
               isAtFinal && h('div', null,
                 h('div', { className: 'p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 mb-2' },
-                  h('div', { className: 'text-[12px] font-black text-amber-900 mb-1' },
+                  h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-1' },
                     st.firstTryCorrect ? '✓ First-try diagnosis correct! (+1 case score, +2 depth bonus)' : 'Resolved after ' + picks.length + ' attempts (+ partial credit)'
                   ),
-                  h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, 'Root cause + reasoning: '), c.finalExplanation)
+                  h('p', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, h('strong', null, 'Root cause + reasoning: '), c.finalExplanation)
                 ),
-                h('div', { className: 'text-[10px] text-slate-500 italic' },
+                h('div', { className: 'text-[0.625rem] text-slate-500 italic' },
                   'Your reasoning path: ' + picks.map(function(p) { return p.picked; }).join(' → ')
                 )
               )
             );
           }),
-          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap' },
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex items-center gap-2 flex-wrap' },
             h('span', null, '🎯'),
             h('strong', null, 'Case score: ' + (state.score || 0).toFixed(1) + ' / ' + FAIL_DX_CASES.length),
             h('strong', { className: 'ml-2 text-amber-700' }, 'Depth bonus: +' + (state.depthBonus || 0)),
@@ -3420,8 +3420,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             CIRCUIT_GLOSSARY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-amber-900' }, g.term),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+                h('div', { className: 'text-[0.75rem] font-black text-amber-900' }, g.term),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.def)
               );
             })
           )
@@ -3609,9 +3609,9 @@ window.StemLab = window.StemLab || {
       function renderResistorSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 Resistor color code'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'For 4-band resistors: first 2 bands = digits, 3rd = multiplier, 4th = tolerance. Mnemonic: "Big Boys Race Our Young Girls But Violet Generally Wins".'),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'For 4-band resistors: first 2 bands = digits, 3rd = multiplier, 4th = tolerance. Mnemonic: "Big Boys Race Our Young Girls But Violet Generally Wins".'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Resistor color code reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -3632,7 +3632,7 @@ window.StemLab = window.StemLab || {
               )
             )
           ),
-          h('div', { className: 'mt-3 p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+          h('div', { className: 'mt-3 p-2.5 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900' },
             h('strong', null, 'Example: '), 'Red-Red-Brown-Gold = 22 × 10 = 220 Ω, ±5% tolerance.'
           )
         );
@@ -3642,29 +3642,29 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⎮⎮ Capacitors'),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Common types'),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, 'Common types'),
             h('div', { className: 'space-y-1' },
               CAPACITOR_TYPES.map(function(c, i) {
                 return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 mb-0.5 flex-wrap' },
-                    h('span', { className: 'text-[11px] font-black text-slate-800' }, c.type),
-                    h('span', { className: 'text-[10px] font-mono text-amber-700 ml-auto' }, c.range),
-                    h('span', { className: 'text-[10px] font-mono text-slate-600' }, c.voltage)
+                    h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, c.type),
+                    h('span', { className: 'text-[0.625rem] font-mono text-amber-700 ml-auto' }, c.range),
+                    h('span', { className: 'text-[0.625rem] font-mono text-slate-600' }, c.voltage)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700' }, c.notes)
+                  h('div', { className: 'text-[0.625rem] text-slate-700' }, c.notes)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Key formulas'),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, 'Key formulas'),
           h('div', { className: 'space-y-1' },
             CAPACITOR_FORMULAS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                  h('span', { className: 'text-[11px] font-black text-slate-800' }, f.name),
-                  h('span', { className: 'text-[11px] font-mono ml-auto text-amber-700 font-bold' }, f.formula)
+                  h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, f.name),
+                  h('span', { className: 'text-[0.6875rem] font-mono ml-auto text-amber-700 font-bold' }, f.formula)
                 ),
-                h('div', { className: 'text-[10px] text-slate-700' }, f.plain)
+                h('div', { className: 'text-[0.625rem] text-slate-700' }, f.plain)
               );
             })
           )
@@ -3677,8 +3677,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             INDUCTOR_NOTES.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, n.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.detail)
               );
             })
           )
@@ -3692,11 +3692,11 @@ window.StemLab = window.StemLab || {
             SEMICONDUCTORS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.device),
-                  h('span', { className: 'text-[10px] font-mono text-amber-700 ml-auto px-2 py-0.5 rounded bg-amber-100' }, s.symbol)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.device),
+                  h('span', { className: 'text-[0.625rem] font-mono text-amber-700 ml-auto px-2 py-0.5 rounded bg-amber-100' }, s.symbol)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Behavior: '), s.behavior),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), s.use)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Behavior: '), s.behavior),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), s.use)
               );
             })
           )
@@ -3706,9 +3706,9 @@ window.StemLab = window.StemLab || {
       function renderOpampSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '▷ Op-amp configurations'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Op-amp = operational amplifier. High gain (~100,000+), high input impedance, low output impedance. Used with feedback for predictable behavior.'),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'Op-amp = operational amplifier. High gain (~100,000+), high input impedance, low output impedance. Used with feedback for predictable behavior.'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Operational amplifier configurations'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -3722,7 +3722,7 @@ window.StemLab = window.StemLab || {
                   return h('tr', { key: 'o'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, o.name),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold' }, o.gain),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, o.use)
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, o.use)
                   );
                 })
               )
@@ -3738,11 +3738,11 @@ window.StemLab = window.StemLab || {
             FILTERS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, f.type),
-                  h('span', { className: 'text-[10px] font-mono text-amber-700 ml-auto' }, f.cutoff)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, f.type),
+                  h('span', { className: 'text-[0.625rem] font-mono text-amber-700 ml-auto' }, f.cutoff)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Behavior: '), f.behavior),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), f.use)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Behavior: '), f.behavior),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), f.use)
               );
             })
           )
@@ -3756,10 +3756,10 @@ window.StemLab = window.StemLab || {
             POWER_SUPPLIES.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, p.type),
-                  h('span', { className: 'text-[10px] font-mono text-amber-700 ml-auto px-2 py-0.5 rounded bg-amber-100 font-bold' }, p.efficiency)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, p.type),
+                  h('span', { className: 'text-[0.625rem] font-mono text-amber-700 ml-auto px-2 py-0.5 rounded bg-amber-100 font-bold' }, p.efficiency)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.notes)
               );
             })
           )
@@ -3772,9 +3772,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             MOTORS_GENERATORS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.type),
-                h('div', { className: 'text-[10px] text-amber-700 italic mb-1' }, '→ ' + m.use),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, m.type),
+                h('div', { className: 'text-[0.625rem] text-amber-700 italic mb-1' }, '→ ' + m.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.notes)
               );
             })
           )
@@ -3787,8 +3787,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             FIELD_NOTES.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, n.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.detail)
               );
             })
           )
@@ -3802,11 +3802,11 @@ window.StemLab = window.StemLab || {
             WIRELESS_POWER.map(function(w, i) {
               return h('div', { key: 'w'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, w.type),
-                  h('span', { className: 'text-[10px] font-mono text-amber-700' }, 'Range: ' + w.range),
-                  h('span', { className: 'text-[10px] font-mono text-slate-600' }, 'η: ' + w.efficiency)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, w.type),
+                  h('span', { className: 'text-[0.625rem] font-mono text-amber-700' }, 'Range: ' + w.range),
+                  h('span', { className: 'text-[0.625rem] font-mono text-slate-600' }, 'η: ' + w.efficiency)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, w.use)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, w.use)
               );
             })
           )
@@ -3817,7 +3817,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∑ Units & constants'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Electrical units and constants'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -3831,7 +3831,7 @@ window.StemLab = window.StemLab || {
                   return h('tr', { key: 'u'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, u.quantity),
                     h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold' }, u.unit),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, u.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, u.notes)
                   );
                 })
               )
@@ -3847,10 +3847,10 @@ window.StemLab = window.StemLab || {
             ELECTRICITY_HISTORY.map(function(e, i) {
               return h('div', { key: 'e'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-amber-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-0.5' },
-                  h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, e.year),
-                  h('span', { className: 'text-[12px] font-black text-amber-900' }, e.who)
+                  h('span', { className: 'text-[0.625rem] font-mono text-amber-700 font-bold' }, e.year),
+                  h('span', { className: 'text-[0.75rem] font-black text-amber-900' }, e.who)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, e.what)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, e.what)
               );
             })
           )
@@ -4028,9 +4028,9 @@ window.StemLab = window.StemLab || {
       function renderSymbolsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⊜ Schematic symbols (US vs EU style)'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Most schematics use IEEE/ANSI (US) or IEC (European) symbols. Both are clear once you learn them, but mixing in one schematic is confusing.'),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'Most schematics use IEEE/ANSI (US) or IEC (European) symbols. Both are clear once you learn them, but mixing in one schematic is confusing.'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Schematic symbols comparison'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4043,9 +4043,9 @@ window.StemLab = window.StemLab || {
                 SCHEMATIC_SYMBOLS.map(function(s, i) {
                   return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, s.name),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.us),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.eu),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, s.us),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, s.eu),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, s.notes)
                   );
                 })
               )
@@ -4090,7 +4090,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔌 Common connectors + cables'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Common electrical connectors and cables'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4103,9 +4103,9 @@ window.StemLab = window.StemLab || {
                 CONNECTORS.map(function(c, i) {
                   return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, c.name),
-                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, c.pins),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, c.use),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[0.625rem]' }, c.pins),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, c.use),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -4144,16 +4144,16 @@ window.StemLab = window.StemLab || {
       function renderCommonCircuitsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚒ Hands-on project ideas'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A learning ladder from "blink an LED" to "build a quadruped robot." Each project builds on skills from earlier ones.'),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'A learning ladder from "blink an LED" to "build a quadruped robot." Each project builds on skills from earlier ones.'),
           h('div', { className: 'space-y-2' },
             PROJECT_CIRCUITS.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, p.project),
-                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, p.difficulty)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, p.project),
+                  h('span', { className: 'text-[0.625rem] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, p.difficulty)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Components: '), p.components),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, 'Skills: '), p.skills)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Components: '), p.components),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, h('strong', null, 'Skills: '), p.skills)
               );
             })
           )
@@ -4228,9 +4228,9 @@ window.StemLab = window.StemLab || {
       function renderHouseholdAppSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏠 Household appliance power'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Typical wattage of common devices. Watts × hours = watt-hours of energy used. 1 kWh costs ~$0.10-0.30 in most regions.'),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'Typical wattage of common devices. Watts × hours = watt-hours of energy used. 1 kWh costs ~$0.10-0.30 in most regions.'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Household appliance power reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4243,8 +4243,8 @@ window.StemLab = window.StemLab || {
                 APPLIANCES.map(function(a, i) {
                   return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, a.device),
-                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, a.watts),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[0.625rem]' }, a.watts),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, a.notes)
                   );
                 })
               )
@@ -4259,9 +4259,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             LAB_EQUIPMENT.map(function(L, i) {
               return h('div', { key: 'L'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, L.instrument),
-                h('div', { className: 'text-[11px] text-amber-700 font-bold mb-1' }, 'Use: ' + L.use),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, L.instrument),
+                h('div', { className: 'text-[0.6875rem] text-amber-700 font-bold mb-1' }, 'Use: ' + L.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, L.notes)
               );
             })
           )
@@ -4343,9 +4343,9 @@ window.StemLab = window.StemLab || {
       function renderWireSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '〰 Wire gauges (AWG)'),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'American Wire Gauge. Lower number = THICKER. Doubles in cross-section every 3 gauges. Current capacity depends on insulation + ambient temp.'),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'American Wire Gauge. Lower number = THICKER. Doubles in cross-section every 3 gauges. Current capacity depends on insulation + ambient temp.'),
           h('div', { className: 'overflow-x-auto mb-3' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'American Wire Gauge reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4358,9 +4358,9 @@ window.StemLab = window.StemLab || {
                 WIRE_GAUGES.map(function(w, i) {
                   return h('tr', { key: 'w'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 font-mono font-black text-amber-700 text-center' }, w.awg),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, w.dia),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, w.amps),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, w.use)
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, w.dia),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, w.amps),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, w.use)
                   );
                 })
               )
@@ -4369,8 +4369,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             WIRE_NOTES.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[11px] font-black text-amber-900 mb-0.5' }, n.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+                h('div', { className: 'text-[0.6875rem] font-black text-amber-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.detail)
               );
             })
           )
@@ -4384,10 +4384,10 @@ window.StemLab = window.StemLab || {
             FUSES_BREAKERS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, f.device),
-                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, f.rating)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, f.device),
+                  h('span', { className: 'text-[0.625rem] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, f.rating)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.notes)
               );
             })
           )
@@ -4402,21 +4402,21 @@ window.StemLab = window.StemLab || {
               LIGHT_BULBS.map(function(L, i) {
                 return h('div', { key: 'L'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                    h('span', { className: 'text-[12px] font-black text-slate-800' }, L.type),
-                    h('span', { className: 'text-[10px] text-amber-700 font-mono' }, L.efficiency),
-                    h('span', { className: 'text-[10px] text-slate-600 font-mono ml-auto' }, 'Life: ' + L.life)
+                    h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, L.type),
+                    h('span', { className: 'text-[0.625rem] text-amber-700 font-mono' }, L.efficiency),
+                    h('span', { className: 'text-[0.625rem] text-slate-600 font-mono ml-auto' }, 'Life: ' + L.life)
                   ),
-                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.notes)
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, L.notes)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, 'Lighting essentials'),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, 'Lighting essentials'),
           h('div', { className: 'space-y-1' },
             LIGHT_FACTS.map(function(L, i) {
               return h('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[11px] font-black text-amber-900 mb-0.5' }, L.fact),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.detail)
+                h('div', { className: 'text-[0.6875rem] font-black text-amber-900 mb-0.5' }, L.fact),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, L.detail)
               );
             })
           )
@@ -4533,7 +4533,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔋 Battery technologies'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Battery technology comparison'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4546,9 +4546,9 @@ window.StemLab = window.StemLab || {
                 BATTERY_TYPES.map(function(b, i) {
                   return h('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, b.type),
-                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[10px]' }, b.voltage),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, b.energy),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, b.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 font-bold text-[0.625rem]' }, b.voltage),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, b.energy),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, b.notes)
                   );
                 })
               )
@@ -4564,11 +4564,11 @@ window.StemLab = window.StemLab || {
             ENERGY_SOURCES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.source),
-                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto' }, s.share)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.source),
+                  h('span', { className: 'text-[0.625rem] text-amber-700 font-mono ml-auto' }, s.share)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Cost: '), s.cost),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Cost: '), s.cost),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.notes)
               );
             })
           )
@@ -4581,9 +4581,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             FAMOUS_CIRCUITS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, c.name),
-                h('div', { className: 'text-[11px] text-amber-700 font-bold mb-1' }, 'Use: ' + c.use),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, c.name),
+                h('div', { className: 'text-[0.6875rem] text-amber-700 font-bold mb-1' }, 'Use: ' + c.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.notes)
               );
             })
           )
@@ -4597,10 +4597,10 @@ window.StemLab = window.StemLab || {
             COMPUTER_HISTORY.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                  h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, c.year),
-                  h('span', { className: 'text-[12px] font-black text-amber-900' }, c.what)
+                  h('span', { className: 'text-[0.625rem] font-mono text-amber-700 font-bold' }, c.year),
+                  h('span', { className: 'text-[0.75rem] font-black text-amber-900' }, c.what)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
           )
@@ -4613,8 +4613,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             WORLD_ELECTRIC.map(function(w, i) {
               return h('div', { key: 'w'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, w.region),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, w.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-0.5' }, w.region),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, w.detail)
               );
             })
           )
@@ -4785,10 +4785,10 @@ window.StemLab = window.StemLab || {
             MICROCONTROLLERS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, m.name),
-                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, m.specs)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, m.name),
+                  h('span', { className: 'text-[0.625rem] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, m.specs)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.notes)
               );
             })
           )
@@ -4801,9 +4801,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             COMMON_ICS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, c.ic),
-                h('div', { className: 'text-[11px] text-amber-700 font-bold mb-1' }, c.use),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, c.ic),
+                h('div', { className: 'text-[0.6875rem] text-amber-700 font-bold mb-1' }, c.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.notes)
               );
             })
           )
@@ -4814,7 +4814,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↔ Digital communication protocols'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Digital communication protocols'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4827,8 +4827,8 @@ window.StemLab = window.StemLab || {
                 DIGITAL_PROTOCOLS.map(function(p, i) {
                   return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, p.protocol),
-                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 text-[10px]' }, p.wires),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-amber-700 text-[0.625rem]' }, p.wires),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, p.notes)
                   );
                 })
               )
@@ -4841,7 +4841,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '◉ Sensors'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Electronic sensor reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4854,8 +4854,8 @@ window.StemLab = window.StemLab || {
                 SENSORS.map(function(s, i) {
                   return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, s.sensor),
-                    h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[10px]' }, s.measures),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, s.notes)
+                    h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[0.625rem]' }, s.measures),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, s.notes)
                   );
                 })
               )
@@ -4868,7 +4868,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚙ Actuators + outputs'),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('caption', { className: 'sr-only' }, 'Electronic actuator reference'),
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
@@ -4881,8 +4881,8 @@ window.StemLab = window.StemLab || {
                 ACTUATORS.map(function(a, i) {
                   return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold text-slate-800' }, a.actuator),
-                    h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[10px]' }, a.purpose),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, a.notes)
+                    h('td', { className: 'px-2 py-1 text-amber-700 font-medium text-[0.625rem]' }, a.purpose),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, a.notes)
                   );
                 })
               )
@@ -4897,8 +4897,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             PCB_TOPICS.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, p.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-0.5' }, p.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.detail)
               );
             })
           )
@@ -4911,8 +4911,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             TROUBLESHOOTING.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-amber-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, t.problem),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.steps)
+                h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-0.5' }, t.problem),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.steps)
               );
             })
           )
@@ -4925,8 +4925,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             SIM_TOOLS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, s.tool),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.use)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, s.tool),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.use)
               );
             })
           )
@@ -4940,10 +4940,10 @@ window.StemLab = window.StemLab || {
             STANDARDS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.standard),
-                  h('span', { className: 'text-[10px] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, s.region)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.standard),
+                  h('span', { className: 'text-[0.625rem] text-amber-700 font-mono ml-auto px-2 py-0.5 rounded bg-amber-100' }, s.region)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.notes)
               );
             })
           )
@@ -4956,8 +4956,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             ELEC_CAREERS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-amber-900 mb-0.5' }, c.career),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-0.5' }, c.career),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
           )

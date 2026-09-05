@@ -27589,7 +27589,7 @@ const d = labToolData.waterCycle || {};
               React.createElement("h2", { className: "text-lg font-bold tracking-tight", style: { color: isHeaderSurfaceDark ? "#ffffff" : "#1e293b" } }, t('stem.watercycle.water_cycle', "\uD83C\uDF0A Water Cycle")),
 
               React.createElement("span", {
-                className: "px-2 py-0.5 text-[11px] font-bold rounded-full border",
+                className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full border",
                 style: {
                   backgroundColor: isHeaderSurfaceDark ? "#000000" : "#e0f2fe",
                   color: isHeaderSurfaceDark ? "#facc15" : "#075985",
@@ -27899,14 +27899,14 @@ const d = labToolData.waterCycle || {};
               ),
 
               // Weather badge overlay
-              precipJourneyModel && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-sky-950/80 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" },
+              precipJourneyModel && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-sky-950/80 text-white text-[0.6875rem] font-bold rounded-full backdrop-blur-sm" },
                 "\u26C8 " + precipJourneyModel.phaseLabel.toUpperCase()),
-              (!precipJourneyModel && d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
+              (!precipJourneyModel && d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-blue-900/70 text-white text-[0.6875rem] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
               (d.climTemp != null && d.climTemp > 30) && React.createElement("div", {
                 className: "absolute " + (precipJourneyModel ? "top-24" : "top-16") +
-                  " left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm"
+                  " left-2 px-2 py-1 bg-amber-900/70 text-white text-[0.6875rem] font-bold rounded-full backdrop-blur-sm"
               }, "HOT SURFACE"),
-              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-16 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.night', "\uD83C\uDF19 NIGHT")),
+              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-16 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[0.6875rem] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.night', "\uD83C\uDF19 NIGHT")),
 
               journeyView === '3d' && d.journeyActive && d.journeyState === 'ground_choice' && React.createElement("section", {
                 className: "wc-viewport-choice" + (precipJourneyModel ? " wc-precip-journey-choice" : ""),
@@ -28110,7 +28110,7 @@ const d = labToolData.waterCycle || {};
               h('summary', null, t('stem.watercycle.investigation_learning_tools', 'Learning guide, grade level, and achievements')),
             // ═══ GRADE LEVEL SELECTOR ═══
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
-              React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider mr-1", style: { color: isHeaderSurfaceDark ? "#ffffff" : "#334155" } }, t('stem.watercycle.grade', "\uD83C\uDF93 Grade:")),
+              React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider mr-1", style: { color: isHeaderSurfaceDark ? "#ffffff" : "#334155" } }, t('stem.watercycle.grade', "\uD83C\uDF93 Grade:")),
               GRADE_BANDS.map(function(gb) {
                 return React.createElement("button", {
                   key: gb,
@@ -28120,11 +28120,11 @@ const d = labToolData.waterCycle || {};
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' - content complexity updated!', 'success');
                   },
-                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isHeaderSurfaceDark ? 'transition-colors bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 border border-slate-400 active:scale-[0.97]'))
+                  className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isHeaderSurfaceDark ? 'transition-colors bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 border border-slate-400 active:scale-[0.97]'))
                 }, (gradeBand === gb ? "✓ " : "") + gb);
               }),
               React.createElement("span", {
-                className: "ml-auto px-2 py-0.5 text-[11px] font-bold rounded-full border",
+                className: "ml-auto px-2 py-0.5 text-[0.6875rem] font-bold rounded-full border",
                 style: {
                   backgroundColor: isHeaderSurfaceDark ? "#000000" : "#eef2ff",
                   color: isHeaderSurfaceDark ? "#facc15" : "#3730a3",
@@ -28229,7 +28229,7 @@ const d = labToolData.waterCycle || {};
                   React.createElement("span", { className: "text-sm font-bold " + (isDark ? "text-sky-400" : "text-sky-700") }, (d.researchPoints || 0) + " RP")
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-800")
+                  className: "text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-800")
                 }, (d.completedChallenges || []).length + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
               ),
               React.createElement("div", {
@@ -28460,7 +28460,7 @@ const d = labToolData.waterCycle || {};
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'shadow-md' : 'border hover:opacity-80') + (isCausalStage ? ' wc-stage-causal' : ''),
                   style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? _wcInk : _wcChipInk }
                 },
-                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
+                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[0.625rem] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
                   isViewed && React.createElement("span", { className: "wc-stage-viewed-mark", "aria-hidden": "true" }, "\u2713"),
                   React.createElement("span", null, stage.emoji + " " + stage.label));
               })
@@ -28703,7 +28703,7 @@ React.createElement("div", {
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-lg" }, "\uD83C\uDF21"),
                 React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-amber-400" : "text-amber-800") }, t('stem.watercycle.climate_lab', "Climate Lab")),
-                                React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-amber-950/50 text-amber-300 border border-amber-900/30" : "bg-amber-200 text-amber-800") }, "INTERACTIVE"),
+                                React.createElement("span", { className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-amber-950/50 text-amber-300 border border-amber-900/30" : "bg-amber-200 text-amber-800") }, "INTERACTIVE"),
                 React.createElement("label", { className: "wc-preset-control", htmlFor: "wcScenarioPreset" },
                   React.createElement("span", null, "Experiment"),
                   React.createElement("select", {
@@ -28747,7 +28747,7 @@ React.createElement("div", {
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#f59e0b' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-amber-500/80" : "text-amber-500") },
+                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] " + (isDark ? "text-amber-500/80" : "text-amber-500") },
                     React.createElement("span", null, t('stem.watercycle.night_2', "\uD83C\uDF19 Night")),
                     React.createElement("span", null, t('stem.watercycle.bright', "\u2600\uFE0F Bright"))
                   ),
@@ -28770,7 +28770,7 @@ React.createElement("div", {
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#0ea5e9' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-sky-500/80" : "text-sky-500") },
+                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] " + (isDark ? "text-sky-500/80" : "text-sky-500") },
                     React.createElement("span", null, t('stem.watercycle.20', "\u2744\uFE0F -20\u00B0")),
                     React.createElement("span", null, t('stem.watercycle.45', "\uD83D\uDD25 45\u00B0"))
                   ),
@@ -28793,7 +28793,7 @@ React.createElement("div", {
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#22c55e' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? "text-emerald-500/80" : "text-emerald-500") },
+                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] " + (isDark ? "text-emerald-500/80" : "text-emerald-500") },
                     React.createElement("span", null, t('stem.watercycle.calm', "Calm")),
                     React.createElement("span", null, t('stem.watercycle.gale', "\uD83C\uDF2A Gale"))
                   ),
@@ -28826,7 +28826,7 @@ React.createElement("div", {
                 "Science note: sunlight supplies energy, temperature affects molecular motion and phase, and wind transports vapor. Change one control at a time to make a fair comparison."
               ),
               // Weather readout
-              React.createElement("div", { className: "wc-weather-readout mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold" },
+              React.createElement("div", { className: "wc-weather-readout mt-2 flex flex-wrap gap-1.5 text-[0.6875rem] font-bold" },
                 (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-blue-950/60 text-blue-300 border border-blue-900/50" : "bg-blue-100 text-blue-700") }, t('stem.watercycle.snow_active', "\u2744\uFE0F Snow active")),
                 (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, "Hot surface"),
                 (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-purple-950/60 text-purple-300 border border-purple-900/50" : "bg-purple-100 text-purple-700") }, t('stem.watercycle.rainbow', "\uD83C\uDF08 Rainbow")),
@@ -28858,7 +28858,7 @@ React.createElement("div", {
               React.createElement("div", { className: "wc-land-head" },
                 React.createElement("div", null,
                   React.createElement("h4", { id: "wc-land-title", className: "text-sm font-bold " + (isDark ? "text-emerald-300" : "text-emerald-800") }, "Land-Surface Scenario Lab"),
-                  React.createElement("p", { className: "text-[11px] mt-1 " + (isDark ? "text-slate-300" : "text-slate-600") }, "Explore how storm and landscape conditions influence pathways after water reaches the ground.")
+                  React.createElement("p", { className: "text-[0.6875rem] mt-1 " + (isDark ? "text-slate-300" : "text-slate-600") }, "Explore how storm and landscape conditions influence pathways after water reaches the ground.")
                 ),
                 React.createElement("button", {
                   type: "button",
@@ -28935,7 +28935,7 @@ React.createElement("div", {
               ),
               React.createElement("p", { className: "wc-land-interpretation", role: "note" }, wcLandInterpretation),
               React.createElement("p", { className: "wc-land-prompt", role: "note" }, wcLandExperimentPrompt),
-              React.createElement("p", { role: "note", className: "text-[11px] mt-2 leading-relaxed " + (isDark ? "text-emerald-200" : "text-emerald-800") },
+              React.createElement("p", { role: "note", className: "text-[0.6875rem] mt-2 leading-relaxed " + (isDark ? "text-emerald-200" : "text-emerald-800") },
                 "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
               )
             ),
@@ -29279,7 +29279,7 @@ React.createElement("div", {
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { className: "text-xl" }, "\uD83D\uDCA7"),
                   React.createElement("h4", { className: "text-sm font-bold " + (isDark ? "text-cyan-400" : "text-cyan-800") }, t('stem.watercycle.journey_mode', "Journey Mode")),
-                  React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-cyan-950/50 text-cyan-300 border border-cyan-900/30" : "bg-cyan-200 text-cyan-800") }, t('stem.watercycle.play_as_water', "FOLLOW ONE DROPLET"))
+                  React.createElement("span", { className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-cyan-950/50 text-cyan-300 border border-cyan-900/30" : "bg-cyan-200 text-cyan-800") }, t('stem.watercycle.play_as_water', "FOLLOW ONE DROPLET"))
                 ),
                 !d.journeyActive
                   ? React.createElement("button", { "aria-label": t('stem.watercycle.start_journey_mode_shortcut_j', "Start Journey mode (shortcut: J)"),
@@ -29303,7 +29303,7 @@ React.createElement("div", {
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                           if (typeof announceToSR === 'function') announceToSR('Journey ended.');
                         },
-                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                       }, t('stem.watercycle.end_journey_j', "\u23F9 End Journey (J)"))
                     )
               ),
@@ -29441,7 +29441,7 @@ React.createElement("div", {
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! Loop " + (d.journeyLoops || 1) + " recorded \u00B7 +25 XP" :
                     "\uD83D\uDCA7 Current: " + journeyStateLabel
                   ),
-                  d.journeyState === 'complete' && React.createElement("p", { className: "text-[11px] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, t('stem.watercycle.you_rode_the_same_water_molecule_the_w', "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years.")),
+                  d.journeyState === 'complete' && React.createElement("p", { className: "text-[0.6875rem] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, t('stem.watercycle.you_rode_the_same_water_molecule_the_w', "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years.")),
                   journeyChosenRoute && React.createElement("div", {
                     className: "wc-journey-choice-receipt" + (d.journeyState === 'complete' ? " is-complete" : ""),
                     role: "region",
@@ -29523,11 +29523,11 @@ React.createElement("div", {
                       className: "wc-route-choice-card" + (wcRouteLeader === "runoff" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300 active:scale-[0.97]" : "transition-colors bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
-                      React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.river_runoff_r', "River Runoff (R)")),
-                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Runoff tendency: " + landIndexBand(runoffTendency)),
-                      React.createElement("p", { className: "wc-route-driver-copy text-[11px] opacity-70" }, "Driver: " + journeyPathDriverByKey.runoff),
-                      React.createElement("p", { className: "wc-route-pace-copy text-[11px] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.runoff),
-                      React.createElement("p", { className: "wc-route-return-copy text-[11px] opacity-70" }, "Return path: " + journeyPathReturnByKey.runoff),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold" }, t('stem.watercycle.river_runoff_r', "River Runoff (R)")),
+                      React.createElement("p", { className: "text-[0.6875rem] opacity-70" }, "Runoff tendency: " + landIndexBand(runoffTendency)),
+                      React.createElement("p", { className: "wc-route-driver-copy text-[0.6875rem] opacity-70" }, "Driver: " + journeyPathDriverByKey.runoff),
+                      React.createElement("p", { className: "wc-route-pace-copy text-[0.6875rem] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.runoff),
+                      React.createElement("p", { className: "wc-route-return-copy text-[0.6875rem] opacity-70" }, "Return path: " + journeyPathReturnByKey.runoff),
                       renderWc2dRouteShare('runoff', wcRouteShares.runoff, wcRouteLeader === 'runoff')
                     ),
                     React.createElement("button", {
@@ -29537,11 +29537,11 @@ React.createElement("div", {
                       className: "wc-route-choice-card" + (wcRouteLeader === "infiltrate" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300 active:scale-[0.97]" : "transition-colors bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
-                      React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.underground_u', "Underground (U)")),
-                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Infiltration opportunity: " + landIndexBand(infiltrationOpportunity)),
-                      React.createElement("p", { className: "wc-route-driver-copy text-[11px] opacity-70" }, "Driver: " + journeyPathDriverByKey.infiltrate),
-                      React.createElement("p", { className: "wc-route-pace-copy text-[11px] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.infiltrate),
-                      React.createElement("p", { className: "wc-route-return-copy text-[11px] opacity-70" }, "Return path: " + journeyPathReturnByKey.infiltrate),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold" }, t('stem.watercycle.underground_u', "Underground (U)")),
+                      React.createElement("p", { className: "text-[0.6875rem] opacity-70" }, "Infiltration opportunity: " + landIndexBand(infiltrationOpportunity)),
+                      React.createElement("p", { className: "wc-route-driver-copy text-[0.6875rem] opacity-70" }, "Driver: " + journeyPathDriverByKey.infiltrate),
+                      React.createElement("p", { className: "wc-route-pace-copy text-[0.6875rem] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.infiltrate),
+                      React.createElement("p", { className: "wc-route-return-copy text-[0.6875rem] opacity-70" }, "Return path: " + journeyPathReturnByKey.infiltrate),
                       renderWc2dRouteShare('infiltrate', wcRouteShares.infiltration, wcRouteLeader === 'infiltrate')
                     ),
                     React.createElement("button", {
@@ -29551,11 +29551,11 @@ React.createElement("div", {
                       className: "wc-route-choice-card" + (wcRouteLeader === "plant" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300 active:scale-[0.97]" : "transition-colors bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
-                      React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.enter_plant_p', "Enter Plant (P)")),
-                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Transpiration!"),
-                      React.createElement("p", { className: "wc-route-driver-copy text-[11px] opacity-70" }, "Driver: " + journeyPathDriverByKey.plant),
-                      React.createElement("p", { className: "wc-route-pace-copy text-[11px] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.plant),
-                      React.createElement("p", { className: "wc-route-return-copy text-[11px] opacity-70" }, "Return path: " + journeyPathReturnByKey.plant),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold" }, t('stem.watercycle.enter_plant_p', "Enter Plant (P)")),
+                      React.createElement("p", { className: "text-[0.6875rem] opacity-70" }, "Transpiration!"),
+                      React.createElement("p", { className: "wc-route-driver-copy text-[0.6875rem] opacity-70" }, "Driver: " + journeyPathDriverByKey.plant),
+                      React.createElement("p", { className: "wc-route-pace-copy text-[0.6875rem] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.plant),
+                      React.createElement("p", { className: "wc-route-return-copy text-[0.6875rem] opacity-70" }, "Return path: " + journeyPathReturnByKey.plant),
                       renderWc2dRouteShare('plant', wcRouteShares.plant, wcRouteLeader === 'plant')
                     )
                   ),
@@ -29575,7 +29575,7 @@ React.createElement("div", {
                 ),
 
                 // Stats bar
-                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex flex-wrap items-center gap-3 text-[11px] font-bold", role: "status", "aria-label": "Journey progress summary", "aria-live": "polite", "aria-atomic": "true" },
+                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex flex-wrap items-center gap-3 text-[0.6875rem] font-bold", role: "status", "aria-label": "Journey progress summary", "aria-live": "polite", "aria-atomic": "true" },
                   React.createElement("span", { className: "text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
                   React.createElement("span", { className: "text-blue-500 text-blue-400" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
                   React.createElement("span", { className: "text-amber-500 text-amber-400" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
@@ -29584,7 +29584,7 @@ React.createElement("div", {
               ),
 
               // Inactive description
-              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-500 mt-1" }, t('stem.watercycle.become_a_water_droplet_and_travel_thro', "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation."))
+              !d.journeyActive && React.createElement("p", { className: "text-[0.6875rem] text-cyan-500 mt-1" }, t('stem.watercycle.become_a_water_droplet_and_travel_thro', "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation."))
             ),
 
             // The stage heading, description, and phase chip that used to sit here
@@ -29607,7 +29607,7 @@ React.createElement("div", {
                 React.createElement("span", null, "🧠"),
                 React.createElement("span", null, t('stem.watercycle.ask_the_ai_hydrologist_tutor', "Ask the AI Hydrologist Tutor"))
               ),
-              React.createElement("p", { id: "wcHydrologistTutorHint", className: "text-[10px] mb-2 " + (isDark ? "text-slate-400" : "text-slate-500") },
+              React.createElement("p", { id: "wcHydrologistTutorHint", className: "text-[0.625rem] mb-2 " + (isDark ? "text-slate-400" : "text-slate-500") },
                 "Ask questions about the " + (sel ? sel.label : 'water cycle') + " stage, climate feedbacks, or global hydrology."
               ),
               React.createElement("div", { className: "flex gap-2" },
@@ -29651,7 +29651,7 @@ React.createElement("div", {
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
                 React.createElement("h4", { className: "text-xs font-bold " + (isDark ? "text-slate-200" : "text-slate-700") }, t('stem.watercycle.water_budget_live', "Scenario Readout")),
-                React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-800") }, "TEACHING MODEL")
+                React.createElement("span", { className: "px-1.5 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-800") }, "TEACHING MODEL")
               ),
               (function() {
                 var t3 = d.climTemp != null ? d.climTemp : 15;
@@ -29662,22 +29662,22 @@ React.createElement("div", {
                 return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
                     React.createElement("p", { className: "text-lg font-bold tracking-tight " + (isDark ? "text-amber-400" : "text-amber-700") }, evapRate.toFixed(2) + "x"),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-400" : "text-amber-700") }, t('stem.watercycle.evaporation_2', "Evaporation index"))
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold " + (isDark ? "text-amber-400" : "text-amber-700") }, t('stem.watercycle.evaporation_2', "Evaporation index"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-blue-950/50" : "bg-white border-blue-100") },
                     React.createElement("p", { className: "text-sm font-bold " + (isDark ? "text-blue-400" : "text-blue-700") }, precipType),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-400" : "text-blue-700") }, t('stem.watercycle.precip_type', "Precip Type"))
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold " + (isDark ? "text-blue-400" : "text-blue-700") }, t('stem.watercycle.precip_type', "Precip Type"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-cyan-950/50" : "bg-white border-cyan-100") },
                     React.createElement("p", { className: "text-sm font-bold " + (isDark ? "text-cyan-400" : "text-cyan-700") }, runoffDisplay),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-400" : "text-cyan-700") }, "Runoff tendency")
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold " + (isDark ? "text-cyan-400" : "text-cyan-700") }, "Runoff tendency")
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-emerald-950/50" : "bg-white border-emerald-100") },
                     React.createElement("p", { className: "text-sm font-bold " + (isDark ? "text-emerald-400" : "text-emerald-700") }, infiltrationDisplay),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-400" : "text-emerald-700") }, "Infiltration opportunity")
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold " + (isDark ? "text-emerald-400" : "text-emerald-700") }, "Infiltration opportunity")
                   )
                   ),
-                  React.createElement("p", { role: "note", className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "Relative teaching indices, not measurements or a forecast. Surface temperature only hints at precipitation phase; the vertical temperature profile matters. Land controls shape runoff tendency and infiltration opportunity, but neither index is a water-budget percentage. Groundwater recharge remains unresolved.")
+                  React.createElement("p", { role: "note", className: "text-[0.6875rem] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "Relative teaching indices, not measurements or a forecast. Surface temperature only hints at precipitation phase; the vertical temperature profile matters. Land controls shape runoff tendency and infiltration opportunity, but neither index is a water-budget percentage. Groundwater recharge remains unresolved.")
                 );
               })()
             ),
@@ -29786,7 +29786,7 @@ React.createElement("div", {
                   )
                 )
               ),
-              React.createElement("p", { role: "note", className: "text-[10px] mt-2 " + (isDark ? "text-cyan-200" : "text-slate-600") }, "Read the chart as a comparison: changing solar energy mostly lifts the energy signal, while rain, saturation, slope, cover, and permeability redistribute surface flow and storage.")
+              React.createElement("p", { role: "note", className: "text-[0.625rem] mt-2 " + (isDark ? "text-cyan-200" : "text-slate-600") }, "Read the chart as a comparison: changing solar energy mostly lifts the energy signal, while rain, saturation, slope, cover, and permeability redistribute surface flow and storage.")
             ),
 
             React.createElement("section", { className: "wc-next-test wc-focus-secondary", role: "region", "aria-labelledby": "wcNextTestTitle", "data-watercycle-next-test": "true", "data-wc-focus-key": wcSignalDriver.key, "data-wc-focus-state": wcSignalFocusState },
@@ -29895,9 +29895,9 @@ React.createElement("div", {
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-purple-900/60 text-purple-200" : "bg-purple-100 text-purple-600") }, t('stem.watercycle.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
-              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
-              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600") }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
+              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-purple-900/60 text-purple-200" : "bg-purple-100 text-purple-600") }, t('stem.watercycle.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
+              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[0.6875rem] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
+              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600") }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", {
                 className: "wc-focus-secondary mt-2 rounded-xl p-3 border shadow-sm " + (isDark ? "bg-slate-950/60 border-sky-900/40 backdrop-blur-md" : "bg-gradient-to-br from-sky-50 to-indigo-50 border-sky-200"),
@@ -30025,13 +30025,13 @@ React.createElement("div", {
                     return React.createElement("div", { className: "p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in " + (isDark ? "bg-indigo-950/40 border border-indigo-900/50" : "bg-indigo-50 border border-indigo-200") },
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("p", { className: "text-xs font-bold " + (isDark ? "text-indigo-400" : "text-indigo-800") }, "🔍 Concept Focus: " + concept),
-                        React.createElement("p", { className: "text-[11px] mt-0.5 leading-relaxed font-medium " + (isDark ? "text-slate-300" : "text-slate-600") }, definition)
+                        React.createElement("p", { className: "text-[0.6875rem] mt-0.5 leading-relaxed font-medium " + (isDark ? "text-slate-300" : "text-slate-600") }, definition)
                       ),
                       !studied && React.createElement("button", {
                         onClick: function() {
                           studyVocab(concept);
                         },
-                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
+                        className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                       }, t('stem.watercycle.study_term_5_rp', "📖 Study Term (+5 RP)"))
                     );
                   })()
@@ -30073,12 +30073,12 @@ React.createElement("div", {
               }
               return React.createElement("div", { className: "wc-focus-secondary rounded-xl p-3 mb-2 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-violet-900/40 backdrop-blur-md" : "bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200"), role: "region", "aria-labelledby": "wcMythTitle" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                  React.createElement("p", { id: "wcMythTitle", className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? "text-violet-400" : "text-violet-700") }, t('stem.watercycle.water_myths', "\uD83E\uDDE0 Water Myths \u2014 true or false?")),
+                  React.createElement("p", { id: "wcMythTitle", className: "text-[0.6875rem] font-bold uppercase tracking-wider " + (isDark ? "text-violet-400" : "text-violet-700") }, t('stem.watercycle.water_myths', "\uD83E\uDDE0 Water Myths \u2014 true or false?")),
                   React.createElement("button", {
                   type: "button",
                   "aria-label": t('stem.watercycle.start_water_myth', "Start a water myth question"),
                     onClick: startMyth,
-                    className: "px-3 py-1 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-all focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+                    className: "px-3 py-1 bg-violet-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-violet-700 transition-all focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                   }, myth ? "\uD83D\uDD04 New Myth" : "\u25B6 Start")
                 ),
                 myth && React.createElement("div", { className: "space-y-2", role: "group", "aria-labelledby": "wcMythQuestion", "aria-describedby": "wcMythInstructions" },
@@ -30117,7 +30117,7 @@ React.createElement("div", {
                     React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },
                       (myth.chosen === myth.t ? '\u2705 Correct \u2014 ' : '\u274C Not quite \u2014 ') + (myth.t ? 'TRUE.' : 'FALSE.')),
                     React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-300" : "text-slate-700") }, myth.why),
-                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold " + (isDark ? "text-indigo-400" : "text-indigo-700") }, "\uD83D\uDD2C Try it: " + myth.tryIt)
+                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed font-bold " + (isDark ? "text-indigo-400" : "text-indigo-700") }, "\uD83D\uDD2C Try it: " + myth.tryIt)
                   )
                 )
               );

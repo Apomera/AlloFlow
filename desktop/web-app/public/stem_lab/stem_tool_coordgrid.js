@@ -589,8 +589,8 @@ window.StemLab = window.StemLab || {
           var xLabelX = Math.max(14, Math.min(gridW - 14, toSvg(v, 'x')));
           var yLabelY = Math.max(11, Math.min(gridH - 4, toSvg(v, 'y') + 3));
           gridElements.push(
-            h('text', { key: 'xl' + gi, x: xLabelX, y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[11px] fill-slate-600' }, v),
-            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: yLabelY, textAnchor: 'end', className: 'text-[11px] fill-slate-600' }, v)
+            h('text', { key: 'xl' + gi, x: xLabelX, y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[0.6875rem] fill-slate-600' }, v),
+            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: yLabelY, textAnchor: 'end', className: 'text-[0.6875rem] fill-slate-600' }, v)
           );
         }
       }
@@ -612,12 +612,12 @@ window.StemLab = window.StemLab || {
         return h(React.Fragment, { key: 'ln' + li },
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '6,3', opacity: 0.8 }),
           h('line', { x1: toSvg(ln.to.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
-          ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: riseMidY + 3, className: 'text-[11px] fill-red-500 font-bold' }, '\u0394y=' + ln.slope.rise),
+          ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: riseMidY + 3, className: 'text-[0.6875rem] fill-red-500 font-bold' }, '\u0394y=' + ln.slope.rise),
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.from.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
-          ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[11px] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
+          ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[0.6875rem] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
           h('rect', { x: midX - Math.max(48, ('m=' + ln.slope.display).length * 7 + 10) / 2, y: midY - 10, width: Math.max(48, ('m=' + ln.slope.display).length * 7 + 10), height: 18, rx: 5, fill: '#6366f1', opacity: 0.9 }),
           h('text', { x: midX, y: midY + 3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '11px', fontWeight: 'bold' } }, 'm=' + ln.slope.display),
-          h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[11px] fill-indigo-400 font-mono' }, eq)
+          h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[0.6875rem] fill-indigo-400 font-mono' }, eq)
         );
       });
 
@@ -630,9 +630,9 @@ window.StemLab = window.StemLab || {
             return h(React.Fragment, null,
               h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: '#f59e0b', strokeWidth: 2.5 }),
               h('line', { x1: toSvg(p2.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '4,2', opacity: 0.7 }),
-              h('text', { x: toSvg(p2.x, 'x') + 12, y: rMidY + 3, className: 'text-[11px] fill-red-500 font-bold' }, 'rise'),
+              h('text', { x: toSvg(p2.x, 'x') + 12, y: rMidY + 3, className: 'text-[0.6875rem] fill-red-500 font-bold' }, 'rise'),
               h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p1.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '4,2', opacity: 0.7 }),
-              h('text', { x: rMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', className: 'text-[11px] fill-blue-500 font-bold' }, 'run'),
+              h('text', { x: rMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', className: 'text-[0.6875rem] fill-blue-500 font-bold' }, 'run'),
               h('circle', { cx: toSvg(p1.x, 'x'), cy: toSvg(p1.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }),
               h('circle', { cx: toSvg(p2.x, 'x'), cy: toSvg(p2.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 })
             );
@@ -690,7 +690,7 @@ window.StemLab = window.StemLab || {
                 );
               })(),
               h('circle', { cx: toSvg(mid.x, 'x'), cy: toSvg(mid.y, 'y'), r: 3, fill: '#a855f7', stroke: '#fff', strokeWidth: 1 }),
-              h('text', { x: toSvg(mid.x, 'x'), y: toSvg(mid.y, 'y') + 14, textAnchor: 'middle', className: 'text-[11px] fill-purple-500 font-bold' }, 'M(' + mid.x + ',' + mid.y + ')')
+              h('text', { x: toSvg(mid.x, 'x'), y: toSvg(mid.y, 'y') + 14, textAnchor: 'middle', className: 'text-[0.6875rem] fill-purple-500 font-bold' }, 'M(' + mid.x + ',' + mid.y + ')')
             );
           })()
         : null;
@@ -751,7 +751,7 @@ window.StemLab = window.StemLab || {
         return h('circle', { key: 'pt' + p.x + '_' + p.y, cx: toSvg(p.x, 'x'), cy: toSvg(p.y, 'y'), r: 5, fill: connectFirst === i ? '#6366f1' : '#0891b2', stroke: '#fff', strokeWidth: 2, className: 'cursor-pointer allo-cg-pop' });
       });
       var labelElements = gridPoints.map(function(p, i) {
-        return h('text', { key: 'lb' + i, x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') - 8, className: 'text-[11px] fill-cyan-700 font-bold' }, '(' + p.x + ',' + p.y + ')');
+        return h('text', { key: 'lb' + i, x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') - 8, className: 'text-[0.6875rem] fill-cyan-700 font-bold' }, '(' + p.x + ',' + p.y + ')');
       });
       // Per-point quadrant badge + distance-from-origin — anchors each point in the coordinate system.
       var quadBadgeElements = gridPoints.map(function(p, i) {
@@ -781,7 +781,7 @@ window.StemLab = window.StemLab || {
         var earned = Object.keys(badges).length;
         if (earned === 0) return null;
         return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-          h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'),
+          h('p', { className: 'text-[0.6875rem] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             BADGES.map(function(b) {
               var has = badges[b.id];
@@ -819,7 +819,7 @@ window.StemLab = window.StemLab || {
             ['What is slope?', 'How to find distance?', 'What is a midpoint?', 'What are quadrants?'].map(function(q) {
               return h('button', { 'aria-label': t('stem.coordgrid.ask_question', 'Ask question'),
                 key: q, onClick: function() { updCG({ aiQuestion: q }); },
-                className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
+                className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
               }, q);
             })
           ),
@@ -953,17 +953,17 @@ window.StemLab = window.StemLab || {
                 className: 'rounded-lg p-2 text-center transition-all border-2 ' + (active ? 'shadow-lg ring-2 ring-offset-1' : 'hover:shadow-md opacity-90 hover:opacity-100'),
                 style: { backgroundColor: q.soft, borderColor: q.color, color: q.color }
               },
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider' }, q.name),
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider' }, q.name),
                 h('div', { className: 'text-lg font-bold font-mono leading-tight' }, q.sign),
-                h('div', { className: 'text-[10px] italic mt-1' }, q.desc),
-                h('div', { className: 'text-[10px] font-mono mt-0.5 opacity-70' }, 'e.g. (' + q.sample.x + ', ' + q.sample.y + ')')
+                h('div', { className: 'text-[0.625rem] italic mt-1' }, q.desc),
+                h('div', { className: 'text-[0.625rem] font-mono mt-0.5 opacity-70' }, 'e.g. (' + q.sample.x + ', ' + q.sample.y + ')')
               );
             })
           ),
 
           // Grid with quadrant overlay + point + reflections + walker
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-3' },
-            h('p', { className: 'text-[11px] font-bold text-purple-700 mb-2' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-purple-700 mb-2' },
               t('stem.coordgrid.colored_regions_are_the_four_quadrants', '🗺 Colored regions are the four quadrants. Change the focus point below to see how it moves.')
             ),
             h('div', { className: 'flex justify-center' },
@@ -989,7 +989,7 @@ window.StemLab = window.StemLab || {
 
           // Point input controls
           h('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
-            h('p', { className: 'text-[11px] font-bold text-purple-800 mb-2' }, t('stem.coordgrid.focus_point_x_y', '📍 Focus point: ( x , y )')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-purple-800 mb-2' }, t('stem.coordgrid.focus_point_x_y', '📍 Focus point: ( x , y )')),
             h('div', { className: 'flex flex-wrap items-center gap-2' },
               h('label', { className: 'text-xs font-bold text-purple-700' }, 'x:'),
               h('input', { type: 'number', value: qtPointX, min: gridRange.min, max: gridRange.max, step: 1,
@@ -1003,13 +1003,13 @@ window.StemLab = window.StemLab || {
                 'aria-label': t('stem.coordgrid.y_coordinate', 'Y coordinate'),
                 className: 'w-16 px-2 py-1 border border-purple-500 rounded text-center font-mono bg-white text-slate-900'
               }),
-              h('span', { className: 'text-[11px] text-purple-700 ml-1 font-bold' }, '→ ' + getQuadrant(qtPointX, qtPointY)),
+              h('span', { className: 'text-[0.6875rem] text-purple-700 ml-1 font-bold' }, '→ ' + getQuadrant(qtPointX, qtPointY)),
               h('button', {
                 onClick: doWalk,
                 'aria-label': t('stem.coordgrid.animate_walk_from_origin_to_this_point', 'Animate walk from origin to this point'),
                 className: 'ml-auto px-3 py-1 bg-purple-700 text-white text-xs font-bold rounded hover:bg-purple-800 transition-all'
               }, t('stem.coordgrid.walk_it', '▶ Walk it')),
-              h('label', { className: 'text-[11px] font-bold text-purple-700 flex items-center gap-1 cursor-pointer ml-2' },
+              h('label', { className: 'text-[0.6875rem] font-bold text-purple-700 flex items-center gap-1 cursor-pointer ml-2' },
                 h('input', { type: 'checkbox', checked: qtShowReflections, onChange: function() { updCG({ qtShowReflections: !qtShowReflections }); } }),
                 t('stem.coordgrid.show_reflections', 'Show reflections')
               )
@@ -1019,39 +1019,39 @@ window.StemLab = window.StemLab || {
           // Reflection breakdown (three cards)
           qtShowReflections && h('div', { className: 'grid grid-cols-3 gap-2' },
             h('div', { className: 'bg-red-50 rounded-lg p-2 border border-red-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-red-700 uppercase tracking-wider' }, t('stem.coordgrid.across_x_axis', 'Across x-axis')),
+              h('p', { className: 'text-[0.625rem] font-bold text-red-700 uppercase tracking-wider' }, t('stem.coordgrid.across_x_axis', 'Across x-axis')),
               h('p', { className: 'text-base font-bold text-red-900 font-mono' }, '(' + ref_x.x + ', ' + ref_x.y + ')'),
-              h('p', { className: 'text-[10px] text-red-700 italic mt-1' }, t('stem.coordgrid.y_flips_sign', 'y flips sign'))
+              h('p', { className: 'text-[0.625rem] text-red-700 italic mt-1' }, t('stem.coordgrid.y_flips_sign', 'y flips sign'))
             ),
             h('div', { className: 'bg-blue-50 rounded-lg p-2 border border-blue-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-blue-700 uppercase tracking-wider' }, t('stem.coordgrid.across_y_axis', 'Across y-axis')),
+              h('p', { className: 'text-[0.625rem] font-bold text-blue-700 uppercase tracking-wider' }, t('stem.coordgrid.across_y_axis', 'Across y-axis')),
               h('p', { className: 'text-base font-bold text-blue-900 font-mono' }, '(' + ref_y.x + ', ' + ref_y.y + ')'),
-              h('p', { className: 'text-[10px] text-blue-700 italic mt-1' }, t('stem.coordgrid.x_flips_sign', 'x flips sign'))
+              h('p', { className: 'text-[0.625rem] text-blue-700 italic mt-1' }, t('stem.coordgrid.x_flips_sign', 'x flips sign'))
             ),
             h('div', { className: 'bg-purple-50 rounded-lg p-2 border border-purple-200 text-center' },
-              h('p', { className: 'text-[10px] font-bold text-purple-700 uppercase tracking-wider' }, t('stem.coordgrid.through_origin', 'Through origin')),
+              h('p', { className: 'text-[0.625rem] font-bold text-purple-700 uppercase tracking-wider' }, t('stem.coordgrid.through_origin', 'Through origin')),
               h('p', { className: 'text-base font-bold text-purple-900 font-mono' }, '(' + ref_o.x + ', ' + ref_o.y + ')'),
-              h('p', { className: 'text-[10px] text-purple-700 italic mt-1' }, t('stem.coordgrid.both_flip', 'BOTH flip'))
+              h('p', { className: 'text-[0.625rem] text-purple-700 italic mt-1' }, t('stem.coordgrid.both_flip', 'BOTH flip'))
             )
           ),
 
           // Multi-representation panel
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-3' },
-            h('p', { className: 'text-[11px] font-bold text-purple-700 mb-2' }, t('stem.coordgrid.same_point_three_names', '🔄 Same point, three names')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-purple-700 mb-2' }, t('stem.coordgrid.same_point_three_names', '🔄 Same point, three names')),
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: 'text-center bg-purple-50 rounded-lg p-2 border border-purple-200' },
-                h('p', { className: 'text-[10px] font-bold text-purple-700 uppercase' }, t('stem.coordgrid.ordered_pair', 'Ordered pair')),
+                h('p', { className: 'text-[0.625rem] font-bold text-purple-700 uppercase' }, t('stem.coordgrid.ordered_pair', 'Ordered pair')),
                 h('p', { className: 'text-xl font-bold text-purple-900 font-mono mt-1' }, '(' + qtPointX + ', ' + qtPointY + ')')
               ),
               h('div', { className: 'text-center bg-purple-50 rounded-lg p-2 border border-purple-200' },
-                h('p', { className: 'text-[10px] font-bold text-purple-700 uppercase' }, t('stem.coordgrid.in_words', 'In words')),
+                h('p', { className: 'text-[0.625rem] font-bold text-purple-700 uppercase' }, t('stem.coordgrid.in_words', 'In words')),
                 h('p', { className: 'text-sm font-bold text-purple-900 mt-1' },
                   (qtPointX === 0 && qtPointY === 0) ? 'at origin' :
                   (Math.abs(qtPointX) + ' ' + (qtPointX >= 0 ? 'right' : 'left') + ', ' + Math.abs(qtPointY) + ' ' + (qtPointY >= 0 ? 'up' : 'down'))
                 )
               ),
               h('div', { className: 'text-center bg-purple-50 rounded-lg p-2 border border-purple-200' },
-                h('p', { className: 'text-[10px] font-bold text-purple-700 uppercase' }, t('stem.coordgrid.movement', 'Movement')),
+                h('p', { className: 'text-[0.625rem] font-bold text-purple-700 uppercase' }, t('stem.coordgrid.movement', 'Movement')),
                 h('p', { className: 'text-base font-bold text-purple-900 mt-1 break-all' },
                   (Math.abs(qtPointX) === 0 ? '·' : (qtPointX > 0 ? '→' : '←').repeat(Math.min(Math.abs(qtPointX), 6))) + ' ' +
                   (Math.abs(qtPointY) === 0 ? '·' : (qtPointY > 0 ? '↑' : '↓').repeat(Math.min(Math.abs(qtPointY), 6)))
@@ -1200,7 +1200,7 @@ window.StemLab = window.StemLab || {
             labels.push(h('text', { key: 'rl-' + i, x: -10, y: i * cell + cell / 2 + 4, textAnchor: 'end', fontSize: 12, fontWeight: 'bold', fill: '#7c5e48' }, 8 - i));
           }
           return h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-[11px] text-slate-700' },
+            h('p', { className: 'text-[0.6875rem] text-slate-700' },
               h('b', {}, t('stem.coordgrid.chess_board_notation', 'Chess board notation. ')),
               t('stem.coordgrid.columns_files_are_letters_a_h_rows_ran', 'Columns (files) are letters a-h. Rows (ranks) are numbers 1-8. Every square has a letter+number coordinate. The white queen starts at d1, the black king at e8.')
             ),
@@ -1217,7 +1217,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-1' },
                 h('span', { className: 'text-xs font-bold text-emerald-800' }, 'Selected:'),
                 h('span', { className: 'text-lg font-bold font-mono text-emerald-900' }, chessSelected),
-                h('span', { className: 'text-[11px] text-emerald-700' }, '= (file ' + (selFx + 1) + ', rank ' + (8 - selRy) + ')')
+                h('span', { className: 'text-[0.6875rem] text-emerald-700' }, '= (file ' + (selFx + 1) + ', rank ' + (8 - selRy) + ')')
               ),
               h('div', { className: 'flex items-center gap-1 ml-auto' },
                 h('span', { className: 'text-xs font-bold text-emerald-800' }, t('stem.coordgrid.type_a_square', 'Type a square:')),
@@ -1240,7 +1240,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('div', { className: 'flex flex-wrap gap-1 text-[11px]' },
+            h('div', { className: 'flex flex-wrap gap-1 text-[0.6875rem]' },
               h('span', { className: 'font-bold text-emerald-700 self-center mr-1' }, 'Try:'),
               ['a1','e4','h8','d5','g2','b6'].map(function(s) {
                 return h('button', { key: 'cspre-' + s,
@@ -1259,7 +1259,7 @@ window.StemLab = window.StemLab || {
                   }),
                   t('stem.coordgrid.practice_mode_translate_squares_to_not', '🎯 Practice mode — translate squares to notation')
                 ),
-                chessPracticeOn && h('span', { className: 'text-[11px] font-bold text-amber-700 ml-auto' },
+                chessPracticeOn && h('span', { className: 'text-[0.6875rem] font-bold text-amber-700 ml-auto' },
                   '✓ ' + chessSolved + '  ·  🔥 ' + chessChallStreak
                 )
               ),
@@ -1290,12 +1290,12 @@ window.StemLab = window.StemLab || {
                   className: 'text-xs font-bold text-amber-700 hover:underline'
                 }, t('stem.coordgrid.next_challenge', '➡ Next challenge'))
               ),
-              chessPracticeOn && h('p', { className: 'text-[10px] text-amber-700 italic mt-2' },
+              chessPracticeOn && h('p', { className: 'text-[0.625rem] text-amber-700 italic mt-2' },
                 t('stem.coordgrid.alternates_two_directions_see_the_squa', 'Alternates two directions: see-the-square name it, hear-the-name find it. 5 in a row earns the ♟️ Chess Master badge.')
               )
             ),
 
-            h('p', { className: 'text-[11px] text-slate-600 italic' },
+            h('p', { className: 'text-[0.6875rem] text-slate-600 italic' },
               t('stem.coordgrid.chess_notation_works_because_it_pairs_', '💡 Chess notation works because it pairs one number-system (letters as positions) with another (numbers as positions). The "name" of the square IS its coordinate, just written differently than (5, 4).')
             )
           );
@@ -1344,7 +1344,7 @@ window.StemLab = window.StemLab || {
 
           if (!bsShips) {
             return h('div', { className: 'space-y-3' },
-              h('p', { className: 'text-[11px] text-slate-700' },
+              h('p', { className: 'text-[0.6875rem] text-slate-700' },
                 h('b', {}, t('stem.coordgrid.battleship_a_coordinate_calling_game', 'Battleship: a coordinate-calling game. ')),
                 t('stem.coordgrid.i_will_hide_4_ships_sizes_4_3_3_2_on_a', 'I will hide 4 ships (sizes 4, 3, 3, 2) on a 10×10 grid. Letters A-J across, numbers 1-10 down. Call coordinates to find them. All ships sunk = you win.')
               ),
@@ -1493,7 +1493,7 @@ window.StemLab = window.StemLab || {
           }
           return h('div', { className: 'space-y-3' },
             h('div', { className: 'flex flex-wrap items-center gap-3' },
-              h('p', { className: 'text-[11px] text-slate-700 flex-1' },
+              h('p', { className: 'text-[0.6875rem] text-slate-700 flex-1' },
                 h('b', {}, t('stem.coordgrid.call_coordinates_to_find_the_ships', 'Call coordinates to find the ships. ')),
                 t('stem.coordgrid.click_any_cell_to_fire_hit_miss_a_ship', 'Click any cell to fire. 💥 = hit, · = miss. A ship is sunk when all its cells are hit.')
               ),
@@ -1548,33 +1548,33 @@ window.StemLab = window.StemLab || {
                 'aria-label': t('stem.coordgrid.type_a_battleship_coordinate_like_b5_t', 'Type a Battleship coordinate like B5, then press Enter to fire'),
                 className: 'w-20 px-2 py-1 border border-emerald-400 rounded text-center font-mono uppercase'
               }),
-              h('span', { className: 'text-[11px] text-emerald-700' }, t('stem.coordgrid.or_tab_through_cells_and_press_enter', 'or Tab through cells and press Enter'))
+              h('span', { className: 'text-[0.6875rem] text-emerald-700' }, t('stem.coordgrid.or_tab_through_cells_and_press_enter', 'or Tab through cells and press Enter'))
             ),
             h('div', { className: 'grid grid-cols-4 gap-2' },
               h('div', { className: 'bg-emerald-50 rounded-lg p-2 border border-emerald-200 text-center' },
-                h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.shots', 'Shots')),
+                h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.shots', 'Shots')),
                 h('p', { className: 'text-xl font-bold text-emerald-900' }, totalShots)
               ),
               h('div', { className: 'bg-rose-50 rounded-lg p-2 border border-rose-200 text-center' },
-                h('p', { className: 'text-[10px] font-bold text-rose-700 uppercase' }, t('stem.coordgrid.hits', 'Hits')),
+                h('p', { className: 'text-[0.625rem] font-bold text-rose-700 uppercase' }, t('stem.coordgrid.hits', 'Hits')),
                 h('p', { className: 'text-xl font-bold text-rose-900' }, totalHits)
               ),
               h('div', { className: 'bg-slate-50 rounded-lg p-2 border border-slate-200 text-center' },
-                h('p', { className: 'text-[10px] font-bold text-slate-700 uppercase' }, t('stem.coordgrid.accuracy', 'Accuracy')),
+                h('p', { className: 'text-[0.625rem] font-bold text-slate-700 uppercase' }, t('stem.coordgrid.accuracy', 'Accuracy')),
                 h('p', { className: 'text-xl font-bold text-slate-900' }, totalShots > 0 ? Math.round(totalHits / totalShots * 100) + '%' : '—')
               ),
               h('div', { className: 'bg-amber-50 rounded-lg p-2 border border-amber-200 text-center' },
-                h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase' }, t('stem.coordgrid.ships_sunk', 'Ships sunk')),
+                h('p', { className: 'text-[0.625rem] font-bold text-amber-700 uppercase' }, t('stem.coordgrid.ships_sunk', 'Ships sunk')),
                 h('p', { className: 'text-xl font-bold text-amber-900' }, totalSunk + ' / 4')
               )
             ),
-            bsBest != null && h('p', { className: 'text-[11px] text-center text-emerald-700 font-bold' },
+            bsBest != null && h('p', { className: 'text-[0.6875rem] text-center text-emerald-700 font-bold' },
               '🏆 Personal best: ' + bsBest + ' shots' + (bsBest <= 30 ? ' — Naval Strategist ⚓' : '')
             ),
             bsLastResult && h('p', { className: 'text-sm font-bold text-center', 'aria-live': 'polite' }, bsLastResult),
             won && h('div', { className: 'bg-emerald-50 rounded-xl p-3 border-2 border-emerald-400 text-center' },
               h('p', { className: 'text-base font-bold text-emerald-800' }, '🏆 Victory! All ships sunk in ' + totalShots + ' shots.'),
-              h('p', { className: 'text-[11px] text-emerald-700 italic mt-1' }, t('stem.coordgrid.naval_coordinates_work_the_same_way_as', 'Naval coordinates work the same way as math coordinates. Letter + number = a point on the grid.'))
+              h('p', { className: 'text-[0.6875rem] text-emerald-700 italic mt-1' }, t('stem.coordgrid.naval_coordinates_work_the_same_way_as', 'Naval coordinates work the same way as math coordinates. Letter + number = a point on the grid.'))
             )
           );
         };
@@ -1727,7 +1727,7 @@ window.StemLab = window.StemLab || {
           }
 
           return h('div', { className: 'space-y-3' },
-            h('p', { className: 'text-[11px] text-slate-700' },
+            h('p', { className: 'text-[0.6875rem] text-slate-700' },
               h('b', {}, t('stem.coordgrid.latitude_and_longitude_earth_s_coordin', 'Latitude and longitude: Earth’s coordinate system. ')),
               t('stem.coordgrid.lat_tells_you_how_far_north_south_of_t', 'Lat tells you how far north/south of the equator (0° to 90°, N positive, S negative). Lon tells you how far east/west of the prime meridian (−180° to 180°). Every place on Earth has two numbers.')
             ),
@@ -1761,34 +1761,34 @@ window.StemLab = window.StemLab || {
             ),
             current && h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200 grid grid-cols-2 md:grid-cols-4 gap-2 text-center' },
               h('div', {},
-                h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.city', 'City')),
+                h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.city', 'City')),
                 h('p', { className: 'text-sm font-bold text-emerald-900' }, current.name)
               ),
               h('div', {},
-                h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.latitude', 'Latitude')),
+                h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.latitude', 'Latitude')),
                 h('p', { className: 'text-sm font-bold font-mono text-emerald-900' }, current.lat + '°' + (current.lat > 0 ? ' N' : current.lat < 0 ? ' S' : ''))
               ),
               h('div', {},
-                h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.longitude', 'Longitude')),
+                h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.longitude', 'Longitude')),
                 h('p', { className: 'text-sm font-bold font-mono text-emerald-900' }, current.lon + '°' + (current.lon > 0 ? ' E' : current.lon < 0 ? ' W' : ''))
               ),
               h('div', {},
-                h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.hemisphere', 'Hemisphere')),
+                h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase' }, t('stem.coordgrid.hemisphere', 'Hemisphere')),
                 h('p', { className: 'text-sm font-bold text-emerald-900' }, (current.lat >= 0 ? 'N' : 'S') + ' / ' + (current.lon >= 0 ? 'E' : 'W'))
               )
             ),
-            current && current.hint && h('p', { className: 'text-[11px] text-emerald-700 italic text-center' }, '💡 ' + current.hint),
+            current && current.hint && h('p', { className: 'text-[0.6875rem] text-emerald-700 italic text-center' }, '💡 ' + current.hint),
             h('div', { className: 'flex flex-wrap gap-1' },
-              h('span', { className: 'text-[11px] font-bold text-emerald-700 self-center mr-1' }, 'Cities:'),
+              h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700 self-center mr-1' }, 'Cities:'),
               cities.map(function(c) {
                 return h('button', { key: 'wcb-' + c.id,
                   onClick: function() { sfxClick(); updCG({ worldCity: c.id, worldClickLat: null, worldClickLon: null }); },
-                  className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all ' +
+                  className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold transition-all ' +
                     (c.id === worldCity ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50')
                 }, c.name.split(',')[0]);
               })
             ),
-            worldClickLat != null && !worldFeedback && h('p', { className: 'text-[11px] text-amber-700 text-center italic' },
+            worldClickLat != null && !worldFeedback && h('p', { className: 'text-[0.6875rem] text-amber-700 text-center italic' },
               '🎯 You clicked: ' + worldClickLat + '° lat, ' + worldClickLon + '° lon. ' +
               (worldClickLat >= 0 ? 'Northern' : 'Southern') + ' hemisphere, ' + (worldClickLon >= 0 ? 'Eastern' : 'Western') + ' hemisphere.'
             ),
@@ -1802,7 +1802,7 @@ window.StemLab = window.StemLab || {
                   }),
                   t('stem.coordgrid.practice_mode_find_the_place_from_its_', '🎯 Practice mode — find the place from its coordinates')
                 ),
-                worldPracticeOn && h('span', { className: 'text-[11px] font-bold text-amber-700 ml-auto' },
+                worldPracticeOn && h('span', { className: 'text-[0.6875rem] font-bold text-amber-700 ml-auto' },
                   '✓ ' + worldSolved + '  ·  🔥 ' + worldChallStreak
                 )
               ),
@@ -1816,11 +1816,11 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'font-mono bg-white px-2 py-0.5 rounded border border-amber-300' },
                     worldChallenge.lat + '° lat, ' + worldChallenge.lon + '° lon'
                   ),
-                  h('span', { className: 'text-[11px] font-normal text-amber-700 ml-1' },
+                  h('span', { className: 'text-[0.6875rem] font-normal text-amber-700 ml-1' },
                     '(' + (worldChallenge.lat >= 0 ? 'N' : 'S') + ' / ' + (worldChallenge.lon >= 0 ? 'E' : 'W') + ' hemisphere)'
                   )
                 ),
-                !worldFeedback && h('p', { className: 'text-[10px] text-amber-700 italic' },
+                !worldFeedback && h('p', { className: 'text-[0.625rem] text-amber-700 italic' },
                   t('stem.coordgrid.click_on_the_map_above_within_15_of_th', 'Click on the map above. Within 15° of the target counts as correct.')
                 ),
                 worldFeedback && h('p', { className: 'text-sm font-bold ' + (worldFeedback.correct ? 'text-green-700' : 'text-red-600'), 'aria-live': 'polite' }, worldFeedback.msg),
@@ -1828,12 +1828,12 @@ window.StemLab = window.StemLab || {
                   className: 'text-xs font-bold text-amber-700 hover:underline'
                 }, t('stem.coordgrid.next_place', '➡ Next place'))
               ),
-              worldPracticeOn && h('p', { className: 'text-[10px] text-amber-700 italic mt-2' },
+              worldPracticeOn && h('p', { className: 'text-[0.625rem] text-amber-700 italic mt-2' },
                 t('stem.coordgrid.trains_spatial_reasoning_lat_lon_to_a_', 'Trains spatial reasoning: lat/lon to a position on the planet. 5 correct earns the 🌍 World Geographer badge.')
               )
             ),
 
-            h('p', { className: 'text-[11px] text-slate-600 italic' },
+            h('p', { className: 'text-[0.6875rem] text-slate-600 italic' },
               t('stem.coordgrid.every_lat_lon_pair_is_a_coordinate_jus', '💡 Every (lat, lon) pair is a coordinate just like (x, y), just at planetary scale. Negative lat = south, negative lon = west. GPS, weather maps, ship navigation — all the same idea.')
             )
           );
@@ -1943,12 +1943,12 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': t('stem.coordgrid.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30' }, 'Spatial reasoning studio')
+                  h('span', { className: 'rounded-full bg-cyan-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30' }, 'Spatial reasoning studio')
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.coordgrid.coordinate_grid', '\uD83D\uDCCD Coordinate Grid')),
                 h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-cyan-100' }, 'Locate, compare, and communicate positions using ordered pairs across graphs and real-world maps.'),
                 h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Recommended next move'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Recommended next move'),
                   h('p', { className: 'mt-1 text-sm font-semibold text-white' }, coordNext)
                 )
               ),
@@ -1960,7 +1960,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-cyan-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-cyan-200' }, metric.label)
                   );
                 })
               )
@@ -1982,7 +1982,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex justify-end' },
           h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
+            bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Best: ' + bestStreak),
             h('span', { className: 'text-xs font-bold', style: { color: isContrast || isDark ? '#86efac' : '#047857' } }, exploreScore.correct + '/' + exploreScore.total),
             h('button', { onClick: function() {
                 var snap = { id: 'snap-' + Date.now(), tool: 'coordinate', label: 'Grid: ' + gridPoints.length + ' points', data: { points: gridPoints.slice() }, timestamp: Date.now() };
@@ -1991,7 +1991,7 @@ window.StemLab = window.StemLab || {
                 addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
               },
               'aria-label': t('stem.coordgrid.save_snapshot', 'Save snapshot'),
-              className: 'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
+              className: 'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8'),
             h('button', {
               onClick: function() {
@@ -2027,7 +2027,7 @@ window.StemLab = window.StemLab || {
               },
               'aria-label': t('stem.coordgrid.reset_everything', 'Reset everything'),
               title: t('stem.coordgrid.reset_all_points_lines_and_quadrant_to', 'Reset all points, lines, and quadrant tour'),
-              className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
+              className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
             }, t('stem.coordgrid.reset', '\u21BA Reset'))
           )
         ),
@@ -2103,7 +2103,7 @@ window.StemLab = window.StemLab || {
 
         // Challenge Modes
         h('div', { className: 'space-y-2' },
-          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.coordgrid.challenges', '\uD83C\uDFAF Challenges')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.coordgrid.challenges', '\uD83C\uDFAF Challenges')),
           h('div', { className: 'flex gap-2 flex-wrap' },
             h('button', { 'aria-label': t('stem.coordgrid.plot_a_point', 'Plot a Point'),
               onClick: function() {
@@ -2146,24 +2146,24 @@ window.StemLab = window.StemLab || {
         // Slope challenge UI
         slopeChallenge && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
           h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83D\uDCCF Find the slope: (' + gridChallenge.p1.x + ',' + gridChallenge.p1.y + ') \u2192 (' + gridChallenge.p2.x + ',' + gridChallenge.p2.y + ')'),
-          h('p', { className: 'text-[11px] text-amber-600 mb-2 italic' }, t('stem.coordgrid.fill_in_rise_y_run_x_then_slope_m_rise', 'Fill in rise (\u0394y), run (\u0394x), then slope (m = rise/run)')),
+          h('p', { className: 'text-[0.6875rem] text-amber-600 mb-2 italic' }, t('stem.coordgrid.fill_in_rise_y_run_x_then_slope_m_rise', 'Fill in rise (\u0394y), run (\u0394x), then slope (m = rise/run)')),
           h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
             h('div', { className: 'flex flex-col gap-1' },
-              h('label', { className: 'text-[11px] font-bold text-red-600 uppercase' }, t('stem.coordgrid.rise_y', 'Rise (\u0394y)')),
+              h('label', { className: 'text-[0.6875rem] font-bold text-red-600 uppercase' }, t('stem.coordgrid.rise_y', 'Rise (\u0394y)')),
               h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.rise_delta_y_vertical_change', 'Rise (delta y) — vertical change'), value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-red-600 rounded-lg text-sm font-bold text-center focus:border-red-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-700' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
-              h('label', { className: 'text-[11px] font-bold text-blue-600 uppercase' }, t('stem.coordgrid.run_x', 'Run (\u0394x)')),
+              h('label', { className: 'text-[0.6875rem] font-bold text-blue-600 uppercase' }, t('stem.coordgrid.run_x', 'Run (\u0394x)')),
               h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.run_delta_x_horizontal_change', 'Run (delta x) — horizontal change'), value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-bold text-center focus:border-blue-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-700' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
-              h('label', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.coordgrid.slope_m', 'Slope (m)')),
+              h('label', { className: 'text-[0.6875rem] font-bold text-amber-700 uppercase' }, t('stem.coordgrid.slope_m', 'Slope (m)')),
               h('input', { type: 'text', placeholder: t('stem.coordgrid.e_g_2_3', 'e.g. 2/3'), 'aria-label': t('stem.coordgrid.slope_as_a_fraction_example_2_3', 'Slope as a fraction (example: 2/3)'), value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value, correct: false, msg: null }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, disabled: !!(gridFeedback && gridFeedback.correct), className: 'px-2 py-1.5 border-2 border-amber-600 rounded-lg text-sm font-bold text-center focus:border-amber-500 ' })
             )
           ),
           h('div', { className: 'flex gap-2 items-center' },
-            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': t('stem.coordgrid.hint', 'Hint'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-600' }, t('stem.coordgrid.hint_2', '\uD83D\uDCA1 Hint')),
-            (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[11px] text-amber-500 italic' }, t('stem.coordgrid.hint_used', '\uD83D\uDCA1 Hint used')),
+            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': t('stem.coordgrid.hint', 'Hint'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-[0.6875rem] hover:bg-amber-200 transition-all border border-amber-600' }, t('stem.coordgrid.hint_2', '\uD83D\uDCA1 Hint')),
+            (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[0.6875rem] text-amber-500 italic' }, t('stem.coordgrid.hint_used', '\uD83D\uDCA1 Hint used')),
             h('button', { 'aria-label': t('stem.coordgrid.check_2', 'Check'), onClick: checkGrid, disabled: !!(gridFeedback && gridFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-50' }, t('stem.coordgrid.check_3', '\u2714 Check'))
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
@@ -2172,7 +2172,7 @@ window.StemLab = window.StemLab || {
         // Distance challenge UI
         distanceChallenge && h('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
           h('p', { className: 'text-sm font-bold text-green-800 mb-2' }, '\uD83D\uDCCF Find the distance: (' + gridChallenge.p1.x + ',' + gridChallenge.p1.y + ') to (' + gridChallenge.p2.x + ',' + gridChallenge.p2.y + ')'),
-          h('p', { className: 'text-[11px] text-green-600 mb-2 italic' }, t('stem.coordgrid.d_x_x_y_y_round_to_1_decimal_place', '\uD83D\uDCA1 d = \u221A((x\u2082\u2212x\u2081)\u00B2 + (y\u2082\u2212y\u2081)\u00B2)  \u2014 Round to 1 decimal place')),
+          h('p', { className: 'text-[0.6875rem] text-green-600 mb-2 italic' }, t('stem.coordgrid.d_x_x_y_y_round_to_1_decimal_place', '\uD83D\uDCA1 d = \u221A((x\u2082\u2212x\u2081)\u00B2 + (y\u2082\u2212y\u2081)\u00B2)  \u2014 Round to 1 decimal place')),
           h('div', { className: 'flex gap-2 items-center' },
             h('input', { 'aria-label': t('stem.coordgrid.distance_answer_label', 'Distance answer'),
               type: 'number', step: '0.1', placeholder: t('stem.coordgrid.distance', 'Distance = ?'),
@@ -2211,16 +2211,16 @@ window.StemLab = window.StemLab || {
               var eq = calcLineEq(ln.from, ln.slope);
               var dist = calcDistance(ln.from, ln.to);
               var mid = calcMidpoint(ln.from, ln.to);
-              return h('div', { key: li, className: 'flex items-center gap-2 text-[11px] bg-white rounded px-2 py-1 border flex-wrap' },
+              return h('div', { key: li, className: 'flex items-center gap-2 text-[0.6875rem] bg-white rounded px-2 py-1 border flex-wrap' },
                 h('span', { className: 'font-bold text-indigo-600' }, '(' + ln.from.x + ',' + ln.from.y + ') \u2192 (' + ln.to.x + ',' + ln.to.y + ')'),
                 h('span', { className: 'font-bold text-indigo-800' }, 'm=' + ln.slope.display),
                 h('span', { className: 'text-green-600' }, 'd=' + dist.toFixed(1)),
                 h('span', { className: 'text-purple-600' }, 'M(' + mid.x + ',' + mid.y + ')'),
-                h('span', { className: 'ml-auto text-[11px] font-mono text-indigo-400' }, eq)
+                h('span', { className: 'ml-auto text-[0.6875rem] font-mono text-indigo-400' }, eq)
               );
             })
           ),
-          h('button', { 'aria-label': t('stem.coordgrid.clear_lines', 'Clear Lines'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200' }, t('stem.coordgrid.clear_lines_2', '\uD83D\uDDD1 Clear Lines'))
+          h('button', { 'aria-label': t('stem.coordgrid.clear_lines', 'Clear Lines'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[0.6875rem] font-bold bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200' }, t('stem.coordgrid.clear_lines_2', '\uD83D\uDDD1 Clear Lines'))
         ),
 
         // Function plotting panel
@@ -2232,7 +2232,7 @@ window.StemLab = window.StemLab || {
               }),
               t('stem.coordgrid.plot_functions_on_the_grid', '📈 Plot functions on the grid')
             ),
-            funcsOn && h('span', { className: 'text-[11px] text-indigo-700 ml-auto' }, funcs.length + ' plotted')
+            funcsOn && h('span', { className: 'text-[0.6875rem] text-indigo-700 ml-auto' }, funcs.length + ' plotted')
           ),
           funcsOn && h('div', { className: 'space-y-2' },
             h('div', { className: 'flex items-center gap-1' },
@@ -2250,11 +2250,11 @@ window.StemLab = window.StemLab || {
               }, t('stem.coordgrid.add', '+ Add'))
             ),
             h('div', { className: 'flex flex-wrap gap-1' },
-              h('span', { className: 'text-[10px] font-bold text-indigo-700 self-center mr-1' }, 'Presets:'),
+              h('span', { className: 'text-[0.625rem] font-bold text-indigo-700 self-center mr-1' }, 'Presets:'),
               ['x', '2x+1', '-x+3', '0.5x-2', 'x^2', '-x^2+4'].map(function(p) {
                 return h('button', { key: 'fpre-' + p,
                   onClick: function() { addFunc(p); },
-                  className: 'px-2 py-0.5 rounded text-[11px] font-mono bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'
+                  className: 'px-2 py-0.5 rounded text-[0.6875rem] font-mono bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'
                 }, 'y = ' + p);
               })
             ),
@@ -2264,7 +2264,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'inline-block w-3 h-3 rounded-full flex-shrink-0', style: { backgroundColor: f.color } }),
                   h('span', { className: 'text-xs font-mono font-bold flex-1', style: { color: f.color, opacity: f.visible ? 1 : 0.4 } }, 'y = ' + f.expr),
                   h('button', { onClick: function() { toggleFunc(f.id); }, 'aria-label': f.visible ? 'Hide function' : 'Show function',
-                    className: 'text-[11px] text-slate-600 hover:text-slate-900 px-1.5 py-0.5 rounded hover:bg-slate-100'
+                    className: 'text-[0.6875rem] text-slate-600 hover:text-slate-900 px-1.5 py-0.5 rounded hover:bg-slate-100'
                   }, f.visible ? '👁' : '🚫'),
                   h('button', { onClick: function() { removeFunc(f.id); }, 'aria-label': t('stem.coordgrid.remove_function', 'Remove function'),
                     className: 'text-sm text-rose-600 hover:text-rose-800 px-1.5 py-0.5 rounded hover:bg-rose-50 font-bold leading-none'
@@ -2272,7 +2272,7 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
-            h('p', { className: 'text-[10px] text-indigo-700 italic' },
+            h('p', { className: 'text-[0.625rem] text-indigo-700 italic' },
               t('stem.coordgrid.try_2x_1_linear_slope_2_x_3_negative_s', 'Try: 2x+1 (linear, slope 2), -x+3 (negative slope, y-intercept 3), x^2 (parabola), 0.5x-2 (fractional slope). Use ^ for exponents.')
             )
           )
@@ -2332,37 +2332,37 @@ window.StemLab = window.StemLab || {
           }[quadrant];
           return h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-quadHunt', tabIndex: 0, className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
             h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.coordgrid.quadrant_discovery', '🎯 Quadrant discovery')),
-            h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.coordgrid.sliders_for_x_and_y_widget_tells_you_w', 'Sliders for x and y. Widget tells you which discrete region you are in. No score, no reveal.')),
+            h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.coordgrid.sliders_for_x_and_y_widget_tells_you_w', 'Sliders for x and y. Widget tells you which discrete region you are in. No score, no reveal.')),
             h('div', { className: 'p-3 rounded-lg text-center', style: { background: qm.bg, border: '2px solid ' + qm.border } },
               h('div', { className: 'text-base font-black', style: { color: qm.color } }, qm.label),
-              h('div', { className: 'text-[11px] text-slate-700 mt-1 font-mono' }, '(x, y) = (' + iq.x + ', ' + iq.y + ')')
+              h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1 font-mono' }, '(x, y) = (' + iq.x + ', ' + iq.y + ')')
             ),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               [{ k: 'x', l: 'x coordinate' }, { k: 'y', l: 'y coordinate' }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'qh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                  h('label', { htmlFor: 'qh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
                   h('input', { id: 'qh-' + s.k, type: 'range', min: -10, max: 10, step: 1, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                     className: 'w-full', 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ x: iq.x, y: iq.y, q: quadrant }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.coordgrid.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ x: 3, y: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-500' }, t('stem.coordgrid.reset_2', '↺ Reset'))
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ x: iq.x, y: iq.y, q: quadrant }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.coordgrid.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ x: 3, y: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, t('stem.coordgrid.reset_2', '↺ Reset'))
             ),
             h('textarea', { 'aria-label': t('stem.coordgrid.hypothesis_input', 'Quadrant sign hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.coordgrid.hypothesis_what_sign_combinations_defi', 'Hypothesis: What sign combinations define each quadrant?'),
-              className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.coordgrid.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+              className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.coordgrid.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
                 h('li', null, t('stem.coordgrid.place_a_point_in_each_quadrant_look_at', 'Place a point in each quadrant. Look at the signs.')),
                 h('li', null, t('stem.coordgrid.what_happens_exactly_on_an_axis', 'What happens exactly on an axis?')))),
-            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+            h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
               t('stem.coordgrid.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { 'aria-label': t('stem.coordgrid.explanation_input', 'Quadrant sign explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.coordgrid.explain_the_sign_pattern_that_defines_', 'Explain the sign pattern that defines each quadrant.'),
-              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.coordgrid.design_note_discrete_7_state_region_ma', 'Design note: discrete 7-state region marker; no coordinate score; no reveal — by design.'))
+              className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+            h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.coordgrid.design_note_discrete_7_state_region_ma', 'Design note: discrete 7-state region marker; no coordinate score; no reveal — by design.'))
           );
         })(),
 
@@ -2377,7 +2377,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[11px] mt-2', style: { color: isContrast ? '#f8fafc' : (isDark ? '#cbd5e1' : '#475569') } },
+        h('div', { className: 'text-center text-[0.6875rem] mt-2', style: { color: isContrast ? '#f8fafc' : (isDark ? '#cbd5e1' : '#475569') } },
           t('stem.coordgrid.c_connect_mode_r_clear_ai_tutor', '\u2328\uFE0F C: connect mode | R: clear | ?: AI tutor')
         )
       );

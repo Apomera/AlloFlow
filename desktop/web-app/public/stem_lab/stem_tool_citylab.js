@@ -2384,7 +2384,7 @@
       function panel(key, title, children) {
         return h('section', { key: key, className: 'rounded-xl border p-3 mb-3',
           style: { background: panelBg, borderColor: panelBorder } },
-          title ? h('h3', { className: 'text-[12px] font-black mb-2', style: { color: ink } }, title) : null,
+          title ? h('h3', { className: 'text-[0.75rem] font-black mb-2', style: { color: ink } }, title) : null,
           children);
       }
 
@@ -2579,7 +2579,7 @@
             // The land-use code sits in the CORNER, not the centre. Roads are
             // drawn centre to centre, and a centred label put the two on top of
             // each other: the main street made row 6 unreadable in both themes.
-            className: 'relative text-[9px] font-black hover:brightness-110',
+            className: 'relative text-[0.5625rem] font-black hover:brightness-110',
             style: {
               aspectRatio: '1 / 1',
               // backgroundColor, NOT the `background` shorthand. The shorthand
@@ -2613,15 +2613,15 @@
             h('span', { 'aria-hidden': 'true', className: 'absolute top-0 left-0 leading-none',
               style: { padding: '1px 2px' } }, use.code),
             plan.greenInfra[id]
-              ? h('span', { 'aria-hidden': 'true', className: 'absolute top-0 right-0 text-[8px] leading-none',
+              ? h('span', { 'aria-hidden': 'true', className: 'absolute top-0 right-0 text-[0.5rem] leading-none',
                   style: { color: '#bbf7d0', padding: '1px 2px' } }, '●')
               : null,
             units > 0 && !served[id]
-              ? h('span', { 'aria-hidden': 'true', className: 'absolute bottom-0 left-0 text-[9px]',
+              ? h('span', { 'aria-hidden': 'true', className: 'absolute bottom-0 left-0 text-[0.5625rem]',
                   style: { color: '#fecaca' } }, '!')
               : null,
             noPark
-              ? h('span', { 'aria-hidden': 'true', className: 'absolute bottom-0 right-0 text-[9px]',
+              ? h('span', { 'aria-hidden': 'true', className: 'absolute bottom-0 right-0 text-[0.5625rem]',
                   style: { color: '#fef08a' } }, '*')
               : null
           );
@@ -2685,7 +2685,7 @@
         function ctlBtn(label, onClick, disabled, aria) {
           return h('button', {
             type: 'button', onClick: onClick, disabled: !!disabled, 'aria-label': aria || label,
-            className: 'text-[11px] font-bold px-2 py-1 rounded border',
+            className: 'text-[0.6875rem] font-bold px-2 py-1 rounded border',
             style: { background: panelBg, color: ink, borderColor: panelBorder,
               opacity: disabled ? 0.45 : 1 }
           }, label);
@@ -2698,7 +2698,7 @@
           ctlBtn('Keyboard shortcuts', function () { setShowShortcuts(!showShortcuts); }, false,
             (showShortcuts ? 'Hide' : 'Show') + ' the keyboard shortcuts'),
           typeof plan.moveBudget === 'number'
-            ? h('span', { className: 'text-[11px] font-bold px-2 py-1 rounded', role: 'status',
+            ? h('span', { className: 'text-[0.6875rem] font-bold px-2 py-1 rounded', role: 'status',
                 style: { background: movesLeft(plan) ? 'rgba(42,120,214,0.18)' : 'rgba(235,104,52,0.18)',
                   color: movesLeft(plan) ? ink : missColour } },
                 movesLeft(plan) + ' of ' + plan.moveBudget + ' moves left')
@@ -2734,11 +2734,11 @@
                         'parcel table to change the plan. Buttons below the model move the camera.'
                       : 'Map now coloured by land use.');
                 },
-                className: 'text-[11px] font-bold px-2 py-1',
+                className: 'text-[0.6875rem] font-bold px-2 py-1',
                 style: { background: on ? '#1f5eb0' : panelBg, color: on ? '#ffffff' : ink }
               }, kv[1]);
             })),
-          h('span', { className: 'text-[10px] ml-auto', style: { color: dim } },
+          h('span', { className: 'text-[0.625rem] ml-auto', style: { color: dim } },
             'Selected: ' + selected));
       }
 
@@ -2756,18 +2756,18 @@
         return h('div', { className: 'mt-2 rounded-lg border p-2',
           style: { background: panelBg, borderColor: panelBorder } },
           h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-            h('h4', { className: 'text-[11px] font-black', style: { color: ink } }, t('stem.citylab.keyboard', 'Keyboard')),
+            h('h4', { className: 'text-[0.6875rem] font-black', style: { color: ink } }, t('stem.citylab.keyboard', 'Keyboard')),
             h('button', {
               type: 'button', onClick: function () { setShowShortcuts(false); },
-              className: 'text-[10px] font-bold underline', style: { color: '#1f5eb0' }
+              className: 'text-[0.625rem] font-bold underline', style: { color: '#1f5eb0' }
             }, t('stem.citylab.close', 'Close'))),
-          h('dl', { className: 'text-[10px] grid grid-cols-[auto,1fr] gap-x-2 gap-y-0.5' },
+          h('dl', { className: 'text-[0.625rem] grid grid-cols-[auto,1fr] gap-x-2 gap-y-0.5' },
             SHORTCUTS.map(function (row, i) {
               return h(React.Fragment, { key: i },
                 h('dt', { className: 'font-bold', style: { color: ink } }, row[0]),
                 h('dd', { style: { color: dim } }, row[1]));
             })),
-          h('p', { className: 'text-[10px] mt-1.5', style: { color: dim } },
+          h('p', { className: 'text-[0.625rem] mt-1.5', style: { color: dim } },
             'Land use order: ' + PALETTE_IDS.map(function (uid, i) {
               return (i === 9 ? '0' : String(i + 1)) + ' ' + useLabel(uid, plan);
             }).join(', ') + '.'));
@@ -2779,7 +2779,7 @@
           h('span', { className: 'inline-block',
             style: { width: (100 / N_COLS) + '%', height: '4px', background: ink,
               borderLeft: '2px solid ' + ink, borderRight: '2px solid ' + ink } }),
-          h('span', { className: 'text-[10px]', style: { color: dim } },
+          h('span', { className: 'text-[0.625rem]', style: { color: dim } },
             t('stem.citylab.100_m_one_parcel_one_hectare', '100 m, one parcel, one hectare')));
       }
 
@@ -2789,13 +2789,13 @@
         var lo = Math.min.apply(null, elevs), hi = Math.max.apply(null, elevs);
         return h('div', { className: 'mt-2' },
           h('div', { className: 'flex items-center gap-1.5' },
-            h('span', { className: 'text-[10px]', style: { color: dim } }, lo + ' m'),
+            h('span', { className: 'text-[0.625rem]', style: { color: dim } }, lo + ' m'),
             h('span', { 'aria-hidden': 'true', className: 'flex-1 flex h-2 rounded overflow-hidden' },
               TERRAIN_RAMP.map(function (c, i) {
                 return h('span', { key: i, className: 'flex-1', style: { background: c } });
               })),
-            h('span', { className: 'text-[10px]', style: { color: dim } }, hi + ' m')),
-          h('p', { className: 'text-[10px] mt-1', style: { color: dim } },
+            h('span', { className: 'text-[0.625rem]', style: { color: dim } }, hi + ' m')),
+          h('p', { className: 'text-[0.625rem] mt-1', style: { color: dim } },
             'Ground height, low and dark to high and pale. Land use codes stay on every ' +
             'parcel, and the bay keeps its own colour. Switch back to Land use to zone.'));
       }
@@ -2819,9 +2819,9 @@
         if (failed) {
           return h('div', { className: 'rounded-lg border p-3',
             style: { background: panelBg, borderColor: panelBorder } },
-            h('p', { className: 'text-[11px] font-bold', style: { color: ink } },
+            h('p', { className: 'text-[0.6875rem] font-bold', style: { color: ink } },
               t('stem.citylab.the_3d_model_is_not_available_on_this_', 'The 3D model is not available on this device.')),
-            h('p', { className: 'text-[11px] mt-1', style: { color: dim } },
+            h('p', { className: 'text-[0.6875rem] mt-1', style: { color: dim } },
               'Nothing is missing from your plan. Switch back to Land use or Height, or open ' +
               'the Parcel table: all three show the same thing, and every number on the ' +
               'scorecard is computed from the plan, not from the picture.'));
@@ -2830,7 +2830,7 @@
         function camBtn(label, aria, fn) {
           return h('button', {
             type: 'button', onClick: fn, 'aria-label': aria,
-            className: 'text-[11px] font-bold px-2 py-1 rounded border',
+            className: 'text-[0.6875rem] font-bold px-2 py-1 rounded border',
             style: { background: panelBg, color: ink, borderColor: panelBorder }
           }, label);
         }
@@ -2857,7 +2857,7 @@
           },
             h('div', { ref: cityViewerAttach, className: 'absolute inset-0' }),
             glStatus === 'loading'
-              ? h('p', { className: 'absolute inset-0 flex items-center justify-center text-[11px]',
+              ? h('p', { className: 'absolute inset-0 flex items-center justify-center text-[0.6875rem]',
                   style: { color: dim } }, t('stem.citylab.building_the_model', 'Building the model...'))
               : null),
 
@@ -2876,19 +2876,19 @@
               fullscreen ? 'Leave full screen' : 'Show the model full screen',
               function () { setFullscreen(!fullscreen); })),
 
-          h('p', { className: 'text-[11px] mt-2', style: { color: dim } },
+          h('p', { className: 'text-[0.6875rem] mt-2', style: { color: dim } },
             'Blocks are indicative massing at ' + m.metresPerStorey + ' m a storey, not a ' +
             'modelled building height, and nothing on the scorecard reads them. Heights are ' +
             'exaggerated ' + m.verticalExaggeration + ' times so the ground shows at all: ' +
             'this town runs from ' + m.minElevationM + ' m to ' + m.maxElevationM + ' m.'),
           m.sheets.length
-            ? h('p', { className: 'text-[11px] mt-1', style: { color: ink } },
+            ? h('p', { className: 'text-[0.6875rem] mt-1', style: { color: ink } },
                 'The two sheets are the surge reach today and the reach planned for 2050. ' +
                 'Watch which GROUND goes under when you change assumption set in the ' +
                 'Assumption Lab, rather than how far the sheet lifts: a 0.6 m difference is ' +
                 'nothing beside a building, and it is a great deal of land.')
             : null,
-          h('p', { className: 'text-[11px] mt-1', style: { color: dim } },
+          h('p', { className: 'text-[0.6875rem] mt-1', style: { color: dim } },
             'This is a view, not a workspace. Zoning, roads and everything else happen on the ' +
             'map or in the parcel table, and the model follows what you do there.'));
       }
@@ -2897,7 +2897,7 @@
         return h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
           PALETTE_IDS.concat(['water']).map(function (uid) {
             var u = USE_BY_ID[uid];
-            return h('span', { key: uid, className: 'inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded',
+            return h('span', { key: uid, className: 'inline-flex items-center gap-1 text-[0.625rem] px-1.5 py-0.5 rounded',
               style: { background: panelBg, border: '1px solid ' + panelBorder, color: ink } },
               h('span', { 'aria-hidden': 'true', className: 'inline-block rounded-sm',
                 style: { width: '11px', height: '11px', backgroundColor: u.fill,
@@ -2923,7 +2923,7 @@
                 outline: '1px solid rgba(15,23,42,0.4)' } }),
             'Parcel ' + selected),
           h('div', null,
-            h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
+            h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } },
               useLabel(use.id, plan) + '. ' + terr.elevationM + ' m elevation. ' +
               (terr.floodplain ? 'Inside ' + scen.floodLabel + '. ' : 'Outside ' + scen.floodLabel + '. ') +
               (unitsOnParcel(plan, selected) > 0
@@ -2932,10 +2932,10 @@
               ' Runoff coefficient C = ' + effectiveC(plan, selected, SET_BY_ID[plan.assumptionSetId]).toFixed(2) + '.'),
 
             water
-              ? h('p', { className: 'text-[11px] font-bold', style: { color: dim } },
+              ? h('p', { className: 'text-[0.6875rem] font-bold', style: { color: dim } },
                   t('stem.citylab.the_river_is_terrain_not_zoning_it_can', 'The river is terrain, not zoning. It cannot be built on.'))
               : h('div', null,
-                  h('div', { className: 'text-[11px] font-bold mb-1', style: { color: ink } }, t('stem.citylab.land_use', 'Land use')),
+                  h('div', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: ink } }, t('stem.citylab.land_use', 'Land use')),
                   h('div', { className: 'flex flex-wrap gap-1 mb-2' },
                     PALETTE_IDS.map(function (uid) {
                       var u = USE_BY_ID[uid];
@@ -2948,7 +2948,7 @@
                         onClick: function () {
                           applyPlan(setUse(plan, selected, uid), selected + ' set to ' + useLabel(u.id, plan) + '.');
                         },
-                        className: 'text-[10px] font-bold px-1.5 py-1 rounded border',
+                        className: 'text-[0.625rem] font-bold px-1.5 py-1 rounded border',
                         style: {
                           background: active ? u.fill : panelBg,
                           color: active ? '#ffffff' : ink,
@@ -2972,7 +2972,7 @@
                       applyPlan(toggleGreenInfra(plan, selected),
                         selected + ' green infrastructure ' + (plan.greenInfra[selected] ? 'removed' : 'added') + '.');
                     },
-                    className: 'text-[11px] font-bold px-2 py-1 rounded border w-full mb-2',
+                    className: 'text-[0.6875rem] font-bold px-2 py-1 rounded border w-full mb-2',
                     style: {
                       background: plan.greenInfra[selected] ? okColour : panelBg,
                       color: plan.greenInfra[selected] ? '#ffffff'
@@ -2985,14 +2985,14 @@
                       fmtMoney(COSTS.green_infra_per_ha) + '/ha)'
                     : 'Green infrastructure would change nothing here (this land already drains)')),
 
-            h('div', { className: 'text-[11px] font-bold mb-1 mt-1', style: { color: ink } }, t('stem.citylab.build_a_connection', 'Build a connection')),
+            h('div', { className: 'text-[0.6875rem] font-bold mb-1 mt-1', style: { color: ink } }, t('stem.citylab.build_a_connection', 'Build a connection')),
             h('div', { className: 'flex gap-1 mb-1' },
               [['local', 'Local road'], ['path', 'Walking path']].map(function (kv) {
                 return h('button', {
                   key: kv[0], type: 'button',
                   'aria-pressed': roadKind === kv[0] ? 'true' : 'false',
                   onClick: function () { setRoadKind(kv[0]); },
-                  className: 'text-[10px] font-bold px-2 py-1 rounded border flex-1',
+                  className: 'text-[0.625rem] font-bold px-2 py-1 rounded border flex-1',
                   style: { background: roadKind === kv[0] ? '#1f5eb0' : panelBg,
                     color: roadKind === kv[0] ? '#ffffff' : ink, borderColor: panelBorder }
                 }, kv[1]);
@@ -3016,7 +3016,7 @@
                     applyPlan(setEdge(plan, selected, n.id, existing ? null : roadKind),
                       (existing ? 'Removed' : 'Built') + ' a connection from ' + selected + ' to ' + n.id + '.');
                   },
-                  className: 'text-[10px] font-bold px-1.5 py-1 rounded border text-left',
+                  className: 'text-[0.625rem] font-bold px-1.5 py-1 rounded border text-left',
                   style: { background: existing ? 'rgba(42,120,214,0.18)' : panelBg, color: ink,
                     borderColor: panelBorder, opacity: isBase ? 0.55 : 1 }
                 }, n.dir + ' ' + n.id + ' · ' + verb + (existing || isBase ? '' : ' ' + fmtMoney(cost)) +
@@ -3029,7 +3029,7 @@
       function constraints() {
         return panel('brief', 'The planning board asked for',
           h('div', null,
-            h('p', { className: 'text-[11px] mb-2', style: { color: dim } }, scen.intro),
+            h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } }, scen.intro),
             h('ul', { className: 'space-y-1.5' },
               report.rows.map(function (row) {
                 // Rendering is driven by the check's own `unit` and `floor`
@@ -3045,7 +3045,7 @@
                 };
                 var value = fmtOne(row.actual) + (row.unit === 'ratio' ? ' of today' : '');
                 var target = (row.floor ? 'at least ' : 'at or under ') + fmtOne(row.target);
-                return h('li', { key: row.id, className: 'text-[11px] rounded p-1.5',
+                return h('li', { key: row.id, className: 'text-[0.6875rem] rounded p-1.5',
                   style: { background: onDark ? 'rgba(15,23,42,0.35)' : 'rgba(241,245,249,0.85)' } },
                   h('div', { className: 'flex items-start gap-1.5' },
                     h('span', { 'aria-hidden': 'true', style: { color: row.met ? okColour : missColour } },
@@ -3072,21 +3072,21 @@
                       })(),
                       row.detail ? h('span', { className: 'block mt-0.5', style: { color: dim } }, row.detail) : null)));
               })),
-            h('p', { className: 'text-[10px] mt-2', style: { color: dim } },
+            h('p', { className: 'text-[0.625rem] mt-2', style: { color: dim } },
               'The bar under each line is how much room is left before that requirement fails. ' +
               'A short bar means you are close to the edge of it, whether you are meeting it ' +
               'or not. Which one is tightest is for you to notice and to argue in the memo.'),
-            h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink } },
+            h('p', { className: 'text-[0.6875rem] mt-2 font-bold', style: { color: ink } },
               'Requirements met: ' + report.hardMet + ' of ' + report.hardTotal + ' required, ' +
               report.softMet + ' of ' + report.softTotal + ' targets.'),
-            h('p', { className: 'text-[10px] mt-1', style: { color: dim } },
+            h('p', { className: 'text-[0.625rem] mt-1', style: { color: dim } },
               'There is no single correct plan and this tool does not have one stored. It reports whether ' +
               'a plan meets the stated constraints. It does not judge whether a plan is good.')));
       }
 
       // ---- scorecard with the tier split made visible
       function indicatorRow(id, value, tier) {
-        return h('div', { key: id, className: 'flex items-baseline justify-between gap-2 text-[11px] py-0.5' },
+        return h('div', { key: id, className: 'flex items-baseline justify-between gap-2 text-[0.6875rem] py-0.5' },
           h('span', { style: { color: dim } }, INDICATOR_LABELS[id] || id),
           h('span', { className: 'font-bold tabular-nums', style: { color: ink } }, fmtIndicator(id, value)));
       }
@@ -3097,7 +3097,7 @@
           var ids = g.ids.filter(function (id) { return visible.indexOf(id) !== -1; });
           if (!ids.length) return null;
           return h('div', { key: g.label, className: 'mt-1.5' },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wide mb-0.5 pb-0.5',
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide mb-0.5 pb-0.5',
               style: { color: dim, borderBottom: '1px solid ' + panelBorder } }, g.label),
             ids.map(function (id) { return indicatorRow(id, values[id], tier); }));
         });
@@ -3109,10 +3109,10 @@
           h('button', {
             type: 'button', 'aria-expanded': open ? 'true' : 'false',
             onClick: function () { setOpenModel(open ? '' : id); },
-            className: 'text-[10px] font-bold underline',
+            className: 'text-[0.625rem] font-bold underline',
             style: { color: '#1f5eb0' }
           }, (open ? 'Hide' : 'Open') + ' the ' + title),
-          open ? h('div', { className: 'text-[10px] mt-1 p-2 rounded',
+          open ? h('div', { className: 'text-[0.625rem] mt-1 p-2 rounded',
             style: { background: onDark ? 'rgba(15,23,42,0.5)' : 'rgba(241,245,249,0.9)', color: dim } }, body) : null);
       }
 
@@ -3120,16 +3120,16 @@
         var a = SET_BY_ID[plan.assumptionSetId];
         return panel('score', 'Scorecard',
           h('div', null,
-            h('div', { className: 'text-[10px] font-black uppercase tracking-wide mb-1', style: { color: okColour } },
+            h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide mb-1', style: { color: okColour } },
               t('stem.citylab.measured', 'Measured')),
-            h('p', { className: 'text-[10px] mb-1', style: { color: dim } },
+            h('p', { className: 'text-[0.625rem] mb-1', style: { color: dim } },
               'Geometry and accounting over the plan as drawn. No coefficient, nothing to disagree with. ' +
               'You can check every one of these with a pencil.'),
             indicatorGroups(TIER1_GROUPS, TIER1_IDS, sc.tier1, 1),
 
-            h('div', { className: 'text-[10px] font-black uppercase tracking-wide mb-1 mt-3',
+            h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide mb-1 mt-3',
               style: { color: missColour } }, t('stem.citylab.modelled', 'Modelled')),
-            h('p', { className: 'text-[10px] mb-1', style: { color: dim } },
+            h('p', { className: 'text-[0.625rem] mb-1', style: { color: dim } },
               'A published formula with parameters. Currently using ' + a.label + '. ' +
               'Change the set in the Assumption Lab and watch which of these move.'),
             indicatorGroups(TIER2_GROUPS, TIER2_IDS, sc.tier2, 2),
@@ -3212,9 +3212,9 @@
                 'residents and park hectares per 1,000 residents are modelled rather than measured, ' +
                 'even though the home count itself is not.')),
 
-            h('div', { className: 'text-[10px] font-black uppercase tracking-wide mb-1 mt-3',
+            h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide mb-1 mt-3',
               style: { color: dim } }, t('stem.citylab.deliberately_not_modelled', 'Deliberately not modelled')),
-            h('p', { className: 'text-[10px]', style: { color: dim } },
+            h('p', { className: 'text-[0.625rem]', style: { color: dim } },
               'Rents, displacement, job creation, property values, crime and school quality are not ' +
               'produced as numbers here, and that is on purpose. The evidence on what a plan does to any ' +
               'of them is genuinely contested, and printing a number would hand you a disputed claim in the ' +
@@ -3222,7 +3222,7 @@
               'each one out as the argument it actually is.'),
             h('button', {
               type: 'button', onClick: function () { setTab('discuss'); },
-              className: 'text-[10px] font-bold underline mt-1', style: { color: '#1f5eb0' }
+              className: 'text-[0.625rem] font-bold underline mt-1', style: { color: '#1f5eb0' }
             }, t('stem.citylab.open_the_questions_this_tool_will_not_', 'Open the questions this tool will not answer'))));
       }
 
@@ -3243,19 +3243,19 @@
         return h('div', null,
           panel('lab-intro', 'Assumption Lab',
             h('div', null,
-              h('p', { className: 'text-[11px]', style: { color: dim } },
+              h('p', { className: 'text-[0.6875rem]', style: { color: dim } },
                 'Your plan does not change here. Only the parameters do. Run the same plan under two ' +
                 'documented sets and look at what moves. A conclusion that holds under both is one you ' +
                 'can defend to the planning board. A conclusion that flips is one that depends on a ' +
                 'number nobody has pinned down.'),
               h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
                 [['A', cmpA, setCmpA], ['B', cmpB, setCmpB]].map(function (col) {
-                  return h('label', { key: col[0], className: 'text-[11px] font-bold', style: { color: ink } },
+                  return h('label', { key: col[0], className: 'text-[0.6875rem] font-bold', style: { color: ink } },
                     'Set ' + col[0],
                     h('select', {
                       value: col[1],
                       onChange: function (e) { col[2](e.target.value); setCompared(false); },
-                      className: 'block w-full mt-0.5 text-[11px] rounded border px-1 py-1',
+                      className: 'block w-full mt-0.5 text-[0.6875rem] rounded border px-1 py-1',
                       style: { background: panelBg, color: ink, borderColor: panelBorder }
                     }, setDefs.map(function (s) {
                       return h('option', { key: s.id, value: s.id }, s.label);
@@ -3264,7 +3264,7 @@
               h('div', { className: 'mt-2 space-y-1' },
                 [cmpA, cmpB].map(function (sid, idx) {
                   var s = SET_BY_ID[sid];
-                  return h('p', { key: idx, className: 'text-[10px]', style: { color: dim } },
+                  return h('p', { key: idx, className: 'text-[0.625rem]', style: { color: dim } },
                     h('strong', { style: { color: ink } }, (idx === 0 ? 'A. ' : 'B. ') + s.label + ' '), s.blurb);
                 })),
               h('button', {
@@ -3282,7 +3282,7 @@
                       ? cmp.flipped.length + ' requirements changed verdict between the two sets.'
                       : 'Every requirement kept the same verdict under both sets.'));
                 },
-                className: 'mt-2 w-full text-[11px] font-bold px-2 py-1.5 rounded',
+                className: 'mt-2 w-full text-[0.6875rem] font-bold px-2 py-1.5 rounded',
                 style: { background: '#1f5eb0', color: '#ffffff' }
               }, t('stem.citylab.run_the_plan_under_both_sets', 'Run the plan under both sets')))),
 
@@ -3292,14 +3292,14 @@
                 ? h('div', { className: 'rounded p-2',
                     style: { background: onDark ? 'rgba(27,175,122,0.14)' : 'rgba(27,175,122,0.10)',
                       borderLeft: '4px solid ' + okColour } },
-                    h('p', { className: 'text-[11px] font-bold', style: { color: okColour } },
+                    h('p', { className: 'text-[0.6875rem] font-bold', style: { color: okColour } },
                       t('stem.citylab.every_requirement_kept_the_same_verdic', 'Every requirement kept the same verdict under both sets.')),
-                    h('p', { className: 'text-[11px] mt-1', style: { color: ink } },
+                    h('p', { className: 'text-[0.6875rem] mt-1', style: { color: ink } },
                       'Whatever this plan does or does not achieve, it does not hinge on which end ' +
                       'of the published range you believe. That is a plan you can defend without ' +
                       'first having to win an argument about the parameters.'))
                 : h('div', null,
-                    h('p', { className: 'text-[11px] font-bold mb-1.5', style: { color: missColour } },
+                    h('p', { className: 'text-[0.6875rem] font-bold mb-1.5', style: { color: missColour } },
                       cmp.flipped.length + ' requirement' + (cmp.flipped.length > 1 ? 's' : '') +
                       ' changed verdict between the two sets. That is the part of your plan you ' +
                       'cannot yet defend, because it rests on a number nobody has pinned down.'),
@@ -3310,28 +3310,28 @@
                       return h('div', { key: f.id, className: 'rounded p-2 mb-1.5',
                         style: { background: onDark ? 'rgba(235,104,52,0.12)' : 'rgba(235,104,52,0.09)',
                           borderLeft: '4px solid ' + missColour } },
-                        h('div', { className: 'text-[11px] font-bold mb-1', style: { color: ink } }, f.label),
+                        h('div', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: ink } }, f.label),
                         h('div', { className: 'grid grid-cols-2 gap-2' },
                           [[SET_BY_ID[cmpA], f.metUnderA, 'A'], [SET_BY_ID[cmpB], !f.metUnderA, 'B']]
                             .map(function (col) {
                               return h('div', { key: col[2], className: 'rounded p-1.5',
                                 style: { background: onDark ? 'rgba(15,23,42,0.45)' : 'rgba(255,255,255,0.75)' } },
-                                h('div', { className: 'text-[10px]', style: { color: dim } },
+                                h('div', { className: 'text-[0.625rem]', style: { color: dim } },
                                   'Set ' + col[2] + ', ' + col[0].label),
-                                h('div', { className: 'text-[11px] font-black',
+                                h('div', { className: 'text-[0.6875rem] font-black',
                                   style: { color: col[1] ? okColour : missColour } },
                                   (col[1] ? '✔ Met' : '○ Not met')));
                             })));
                     })),
-              h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink } },
+              h('p', { className: 'text-[0.6875rem] mt-2 font-bold', style: { color: ink } },
                 t('stem.citylab.which_of_your_conclusions_hold_under_b', 'Which of your conclusions hold under both sets? Those are the ones you can defend.')))) : null,
 
           compared ? panel('lab-rows', 'Indicator by indicator',
             h('div', null,
-              h('div', { className: 'text-[10px] font-black uppercase mb-1', style: { color: missColour } },
+              h('div', { className: 'text-[0.625rem] font-black uppercase mb-1', style: { color: missColour } },
                 'Moved when the assumptions moved (' + changed.length + ')'),
               h('div', { className: 'overflow-x-auto' },
-                h('table', { className: 'w-full text-[10px]', style: { color: ink } },
+                h('table', { className: 'w-full text-[0.625rem]', style: { color: ink } },
                   h('caption', { className: 'sr-only' }, t('stem.citylab.indicators_that_changed_between_assump', 'Indicators that changed between assumption set A and B')),
                   h('thead', null, h('tr', null,
                     h('th', { scope: 'col', className: 'text-left' }, t('stem.citylab.indicator', 'Indicator')),
@@ -3353,12 +3353,12 @@
                       h('td', { className: 'text-right tabular-nums font-bold', style: { color: ink } },
                         fmtDelta(r.id, r.b - r.a)));
                   })))),
-              h('div', { className: 'text-[10px] font-black uppercase mb-1 mt-3', style: { color: okColour } },
+              h('div', { className: 'text-[0.625rem] font-black uppercase mb-1 mt-3', style: { color: okColour } },
                 'Did not move at all (' + unchanged.length + ')'),
-              h('p', { className: 'text-[10px] mb-1', style: { color: dim } },
+              h('p', { className: 'text-[0.625rem] mb-1', style: { color: dim } },
                 'These are the measured quantities. They are counts and areas over the plan you drew, so no ' +
                 'assumption can touch them.'),
-              h('ul', { className: 'text-[10px] grid grid-cols-1 sm:grid-cols-2 gap-x-3', style: { color: ink } },
+              h('ul', { className: 'text-[0.625rem] grid grid-cols-1 sm:grid-cols-2 gap-x-3', style: { color: ink } },
                 unchanged.map(function (r) {
                   return h('li', { key: r.id }, (INDICATOR_LABELS[r.id] || r.id) + ': ' + fmtIndicator(r.id, r.a));
                 })))) : null
@@ -3371,11 +3371,11 @@
         var ids = allParcelIds();
         return panel('table', 'Parcel table',
           h('div', null,
-            h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
+            h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } },
               'The same plan as the map, and just as editable. Change land use here and the map and the ' +
               'scorecard update with it.'),
             h('div', { className: 'overflow-auto', style: { maxHeight: '460px' } },
-              h('table', { className: 'w-full text-[10px]', style: { color: ink } },
+              h('table', { className: 'w-full text-[0.625rem]', style: { color: ink } },
                 h('caption', { className: 'sr-only' },
                   t('stem.citylab.all_144_parcels_with_terrain_land_use_', 'All 144 parcels with terrain, land use and access. Land use is editable.')),
                 h('thead', null, h('tr', null,
@@ -3403,7 +3403,7 @@
                           applyPlan(setUse(plan, id, e.target.value), id + ' set to ' +
                             useLabel(e.target.value, plan) + '.');
                         },
-                        className: 'text-[10px] rounded border px-1',
+                        className: 'text-[0.625rem] rounded border px-1',
                         style: { background: panelBg, color: ink, borderColor: panelBorder }
                       }, PALETTE_IDS.map(function (uid) {
                         return h('option', { key: uid, value: uid }, useLabel(uid, plan));
@@ -3423,7 +3423,7 @@
                         onClick: function () {
                           applyPlan(toggleGreenInfra(plan, id), id + ' green infrastructure toggled.');
                         },
-                        className: 'text-[10px] px-1 rounded border',
+                        className: 'text-[0.625rem] px-1 rounded border',
                         style: { background: plan.greenInfra[id] ? okColour : panelBg,
                           color: plan.greenInfra[id] ? '#ffffff' : ink, borderColor: panelBorder }
                       }, plan.greenInfra[id] ? 'On' : 'Off')));
@@ -3542,19 +3542,19 @@
         var unmet = report.rows.filter(function (r) { return !r.met; });
         return panel('memo-standing', 'Where your plan stands',
           h('div', null,
-            h('p', { className: 'text-[11px] mb-1.5', style: { color: dim } },
+            h('p', { className: 'text-[0.6875rem] mb-1.5', style: { color: dim } },
               t('stem.citylab.repeated_here_so_you_can_see_what_you_', 'Repeated here so you can see what you are writing about without leaving this tab.')),
-            h('p', { className: 'text-[11px] font-bold mb-1', style: { color: ink } },
+            h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: ink } },
               report.hardMet + ' of ' + report.hardTotal + ' required, ' +
               report.softMet + ' of ' + report.softTotal + ' targets.'),
             unmet.length
-              ? h('ul', { className: 'text-[11px] list-disc pl-4', style: { color: ink } },
+              ? h('ul', { className: 'text-[0.6875rem] list-disc pl-4', style: { color: ink } },
                   unmet.map(function (r) {
                     return h('li', { key: r.id },
                       h('span', { style: { color: missColour, fontWeight: 700 } },
                         r.hard ? 'Required. ' : 'Target. '), r.label);
                   }))
-              : h('p', { className: 'text-[11px]', style: { color: okColour } },
+              : h('p', { className: 'text-[0.6875rem]', style: { color: okColour } },
                   'Everything the board asked for is met. The interesting question is now what it cost ' +
                   'you to get there, and that is what the memo is for.')));
       }
@@ -3564,11 +3564,11 @@
           memoStanding(),
           panel('memo', 'The memo is the deliverable',
             h('div', null,
-              h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
+              h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } },
                 'A plan that meets every requirement with nothing written underneath it is a plan nobody ' +
                 'can argue with, which is not the same as a good one. Name the constraint that pushed back ' +
                 'hardest, and say what you decided to give up.'),
-              h('label', { className: 'block text-[11px] font-bold mb-2', style: { color: ink } },
+              h('label', { className: 'block text-[0.6875rem] font-bold mb-2', style: { color: ink } },
                 t('stem.citylab.which_constraint_was_binding', 'Which constraint was binding?'),
                 h('select', {
                   value: plan.memo.bindingConstraint,
@@ -3578,14 +3578,14 @@
                       var next = clonePlan(prev); next.memo.bindingConstraint = v; return next;
                     });
                   },
-                  className: 'block w-full mt-0.5 text-[11px] rounded border px-1 py-1',
+                  className: 'block w-full mt-0.5 text-[0.6875rem] rounded border px-1 py-1',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }
                 },
                   h('option', { value: '' }, t('stem.citylab.choose_one', 'Choose one')),
                   scen.requirements.map(function (r) {
                     return h('option', { key: r.id, value: r.label }, r.label);
                   }))),
-              h('label', { className: 'block text-[11px] font-bold mb-2', style: { color: ink } },
+              h('label', { className: 'block text-[0.6875rem] font-bold mb-2', style: { color: ink } },
                 t('stem.citylab.what_did_you_give_up_and_why', 'What did you give up, and why?'),
                 h('textarea', {
                   value: plan.memo.tradeoff, rows: 4,
@@ -3595,7 +3595,7 @@
                       var next = clonePlan(prev); next.memo.tradeoff = v; return next;
                     });
                   },
-                  className: 'block w-full mt-0.5 text-[11px] rounded border px-1 py-1',
+                  className: 'block w-full mt-0.5 text-[0.6875rem] rounded border px-1 py-1',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }
                 })),
               h('div', { className: 'flex flex-wrap gap-2' },
@@ -3605,7 +3605,7 @@
                     download(scen.id + '-plan-memo.html', memoHtml(), 'text/html;charset=utf-8');
                     announceToSR('Plan memo downloaded.');
                   },
-                  className: 'text-[11px] font-bold px-2 py-1.5 rounded',
+                  className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded',
                   style: { background: '#1f5eb0', color: '#ffffff' }
                 }, t('stem.citylab.download_the_plan_memo', 'Download the plan memo')),
                 h('button', {
@@ -3614,11 +3614,11 @@
                     download(scen.id + '-plan.json', JSON.stringify(plan, null, 2), 'application/json');
                     announceToSR('Plan JSON downloaded.');
                   },
-                  className: 'text-[11px] font-bold px-2 py-1.5 rounded border',
+                  className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }
                 }, t('stem.citylab.export_plan_json', 'Export plan JSON')),
                 h('label', {
-                  className: 'text-[11px] font-bold px-2 py-1.5 rounded border cursor-pointer',
+                  className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border cursor-pointer',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }
                 }, t('stem.citylab.import_plan_json', 'Import plan JSON'),
                   h('input', {
@@ -3660,24 +3660,24 @@
                           setCompared(false);
                           setConfirmReset(false);
                         },
-                        className: 'text-[11px] font-bold px-2 py-1.5 rounded',
+                        className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded',
                         style: { background: missColour, color: '#ffffff' }
                       }, t('stem.citylab.yes_clear_the_plan', 'Yes, clear the plan')),
                       h('button', {
                         type: 'button',
                         onClick: function () { setConfirmReset(false); },
-                        className: 'text-[11px] font-bold px-2 py-1.5 rounded border',
+                        className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                         style: { background: panelBg, color: ink, borderColor: panelBorder }
                       }, t('stem.citylab.cancel', 'Cancel')))
                   : h('button', {
                       type: 'button',
                       onClick: function () { setConfirmReset(true); },
-                      className: 'text-[11px] font-bold px-2 py-1.5 rounded border',
+                      className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                       style: { background: 'transparent', color: missColour, borderColor: missColour }
                     }, t('stem.citylab.start_over', 'Start over'))),
               importNote
-                ? h('p', { className: 'text-[11px] mt-2', style: { color: dim } }, importNote)
-                : h('p', { className: 'text-[10px] mt-2', style: { color: dim } },
+                ? h('p', { className: 'text-[0.6875rem] mt-2', style: { color: dim } }, importNote)
+                : h('p', { className: 'text-[0.625rem] mt-2', style: { color: dim } },
                     'Import is merge-only: it starts from this town as it stands today and lays the ' +
                     'imported choices on top, so a plan file can never bring in terrain or a land use ' +
                     'this tool does not know.'))));
@@ -3687,12 +3687,12 @@
       function predictCard() {
         if (!predictPrompt) {
           return predictResult
-            ? h('p', { className: 'text-[10px] mb-2', style: { color: dim } }, predictResult)
+            ? h('p', { className: 'text-[0.625rem] mb-2', style: { color: dim } }, predictResult)
             : null;
         }
         return panel('predict', 'Before you look',
           h('div', null,
-            h('p', { className: 'text-[11px] mb-2', style: { color: ink } },
+            h('p', { className: 'text-[0.6875rem] mb-2', style: { color: ink } },
               'You have made a few changes since the last check, when the runoff coefficient was ' +
               predictPrompt.fromC.toFixed(3) + '. Without scrolling to the scorecard: has it gone ' +
               'up, gone down, or stayed about the same?'),
@@ -3701,11 +3701,11 @@
                 return h('button', {
                   key: g, type: 'button',
                   onClick: function () { answerPrediction(g); },
-                  className: 'text-[11px] font-bold px-2 py-1 rounded border flex-1',
+                  className: 'text-[0.6875rem] font-bold px-2 py-1 rounded border flex-1',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }
                 }, g);
               })),
-            h('p', { className: 'text-[10px] mt-1', style: { color: dim } },
+            h('p', { className: 'text-[0.625rem] mt-1', style: { color: dim } },
               t('stem.citylab.never_scored_it_is_a_note_to_yourself_', 'Never scored. It is a note to yourself about whether you had a model.'))));
       }
 
@@ -3726,33 +3726,33 @@
         return h('div', null,
           panel('disc-intro', 'The questions this tool will not answer',
             h('div', null,
-              h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
+              h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } },
                 'The scorecard leaves out rents, displacement, jobs, property values, crime ' +
                 'and school quality, because the evidence about what a plan does to any of ' +
                 'them is genuinely argued over. Leaving them out and saying nothing else ' +
                 'would be ducking them. So here they are, as the arguments they actually are.'),
-              h('p', { className: 'text-[11px] font-bold', style: { color: ink } },
+              h('p', { className: 'text-[0.6875rem] font-bold', style: { color: ink } },
                 'None of these has an answer key either. Each one names positions that ' +
                 'thoughtful people hold, and none of them is marked correct.'))),
 
           prompts.map(function (d, i) {
             return panel('disc-' + d.id, (i + 1) + '. ' + d.question,
               h('div', null,
-                d.why ? h('p', { className: 'text-[11px] mb-2 italic', style: { color: dim } }, d.why) : null,
+                d.why ? h('p', { className: 'text-[0.6875rem] mb-2 italic', style: { color: dim } }, d.why) : null,
                 h('ul', { className: 'space-y-1.5' },
                   d.sides.map(function (side, j) {
-                    return h('li', { key: j, className: 'text-[11px] rounded p-1.5',
+                    return h('li', { key: j, className: 'text-[0.6875rem] rounded p-1.5',
                       style: { background: onDark ? 'rgba(15,23,42,0.35)' : 'rgba(241,245,249,0.85)' } },
                       h('strong', { style: { color: ink } }, side.label + '. '),
                       h('span', { style: { color: dim } }, side.view));
                   })),
-                h('p', { className: 'text-[11px] mt-2 rounded p-1.5',
+                h('p', { className: 'text-[0.6875rem] mt-2 rounded p-1.5',
                   style: { color: ink, background: onDark ? 'rgba(42,120,214,0.14)' : 'rgba(42,120,214,0.10)' } },
                   h('strong', null, t('stem.citylab.what_this_tool_did', 'What this tool did: ')), d.toolSays)));
           }),
 
           panel('disc-close', 'Before you argue about it',
-            h('p', { className: 'text-[11px]', style: { color: dim } },
+            h('p', { className: 'text-[0.6875rem]', style: { color: dim } },
               'A useful move in any of these: work out which parts of the disagreement are ' +
               'about facts nobody has pinned down, and which are about what people think ' +
               'matters. Those are different arguments, and mixing them up is why planning ' +
@@ -3760,7 +3760,7 @@
               'the second kind except people talking to each other.'),
             h('button', {
               type: 'button', onClick: function () { setTab('history'); },
-              className: 'text-[10px] font-bold underline mt-1.5 block', style: { color: '#1f5eb0' }
+              className: 'text-[0.625rem] font-bold underline mt-1.5 block', style: { color: '#1f5eb0' }
             }, 'These are present-tense questions. The History tab is the other thing: ' +
                'places where the argument already happened.')));
       }
@@ -3768,23 +3768,23 @@
       function historyPanel() {
         function field(label, text, tone) {
           return h('div', { className: 'mt-1.5' },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wide',
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide',
               style: { color: tone || dim } }, label),
-            h('p', { className: 'text-[11px]', style: { color: ink } }, text));
+            h('p', { className: 'text-[0.6875rem]', style: { color: ink } }, text));
         }
         return h('div', null,
           panel('hist-intro', 'Places that actually exist',
             h('div', null,
-              h('p', { className: 'text-[11px] mb-2', style: { color: ink } },
+              h('p', { className: 'text-[0.6875rem] mb-2', style: { color: ink } },
                 'Riverbend, Mesa Hollow and Harborlight are invented. Everything on this tab ' +
                 'is not. These are things that were done, written down at the time, and kept.'),
               // The adjacency guard, stated once and hard, at the top.
               h('div', { className: 'rounded p-2',
                 style: { background: onDark ? 'rgba(235,104,52,0.12)' : 'rgba(235,104,52,0.09)',
                   borderLeft: '4px solid ' + missColour } },
-                h('p', { className: 'text-[11px] font-bold', style: { color: ink } },
+                h('p', { className: 'text-[0.6875rem] font-bold', style: { color: ink } },
                   t('stem.citylab.read_this_before_the_rest', 'Read this before the rest.')),
-                h('p', { className: 'text-[11px] mt-1', style: { color: ink } },
+                h('p', { className: 'text-[0.6875rem] mt-1', style: { color: ink } },
                   'This is history sitting next to a simulation, and that is a trap. Nothing ' +
                   'you did in the Design tab models any of what follows. The tool cannot tell ' +
                   'you why these things happened, what they caused, or what should have been ' +
@@ -3795,19 +3795,19 @@
           CASE_STUDIES.map(function (c) {
             return panel('hist-' + c.id, c.title,
               h('div', null,
-                h('p', { className: 'text-[10px] uppercase tracking-wide font-bold',
+                h('p', { className: 'text-[0.625rem] uppercase tracking-wide font-bold',
                   style: { color: dim } }, c.place + ', ' + c.period),
                 field('What is on the record', c.what, okColour),
                 field('Where the record is', c.record),
                 field('What is argued about', c.contested, missColour),
-                h('p', { className: 'text-[11px] mt-2 rounded p-1.5',
+                h('p', { className: 'text-[0.6875rem] mt-2 rounded p-1.5',
                   style: { color: ink,
                     background: onDark ? 'rgba(42,120,214,0.14)' : 'rgba(42,120,214,0.10)' } },
                   h('strong', null, t('stem.citylab.and_the_tool_you_just_used', 'And the tool you just used: ')), c.toolSays)));
           }),
 
           panel('hist-close', 'What to do with this',
-            h('div', { className: 'text-[11px] space-y-2', style: { color: dim } },
+            h('div', { className: 'text-[0.6875rem] space-y-2', style: { color: dim } },
               h('p', null, 'The archives are open. The maps and the descriptions are scanned ' +
                 'and searchable, the statutes are published, and many cities have their own ' +
                 'sheet. Looking up a real place is a better exercise than reading a summary ' +
@@ -3825,7 +3825,7 @@
         function bar(label, count, note) {
           var share = summary.n ? (count / summary.n) * 100 : 0;
           return h('div', { key: label, className: 'mb-1.5' },
-            h('div', { className: 'flex items-baseline justify-between gap-2 text-[11px]' },
+            h('div', { className: 'flex items-baseline justify-between gap-2 text-[0.6875rem]' },
               h('span', { style: { color: ink } }, label),
               h('span', { className: 'font-bold tabular-nums', style: { color: ink } },
                 count + ' of ' + summary.n)),
@@ -3833,19 +3833,19 @@
               style: { background: onDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)' } },
               h('div', { className: 'h-1.5 rounded',
                 style: { width: share + '%', background: '#1f5eb0' } })),
-            note ? h('p', { className: 'text-[10px] mt-0.5', style: { color: dim } }, note) : null);
+            note ? h('p', { className: 'text-[0.625rem] mt-0.5', style: { color: dim } }, note) : null);
         }
 
         return h('div', null,
           panel('class-load', 'Read a set of plans together',
             h('div', null,
-              h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
+              h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } },
                 'Load the plan JSON files your students exported. Everything happens on this ' +
                 'machine: nothing is uploaded, and the set is held in memory only, so closing ' +
                 'the tool clears it rather than leaving a class set on a shared computer.'),
               h('div', { className: 'flex flex-wrap gap-2 items-center' },
                 h('label', {
-                  className: 'text-[11px] font-bold px-2 py-1.5 rounded cursor-pointer',
+                  className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded cursor-pointer',
                   style: { background: '#1f5eb0', color: '#ffffff' }
                 }, t('stem.citylab.add_plan_files', 'Add plan files'),
                   h('input', {
@@ -3882,7 +3882,7 @@
                     setClassSet([]); setClassNote('Class set cleared.');
                     announceToSR('Class set cleared.');
                   },
-                  className: 'text-[11px] font-bold px-2 py-1.5 rounded border',
+                  className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                   style: { background: 'transparent', color: missColour, borderColor: missColour }
                 }, t('stem.citylab.clear_the_set', 'Clear the set')) : null,
                 classSet.length ? h('button', {
@@ -3893,19 +3893,19 @@
                       'text/csv;charset=utf-8');
                     announceToSR('Class CSV downloaded.');
                   },
-                  className: 'text-[11px] font-bold px-2 py-1.5 rounded border',
+                  className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }
                 }, t('stem.citylab.download_class_csv', 'Download class CSV')) : null),
-              classNote ? h('p', { className: 'text-[11px] mt-2', style: { color: dim } }, classNote) : null,
+              classNote ? h('p', { className: 'text-[0.6875rem] mt-2', style: { color: dim } }, classNote) : null,
               summary.otherTown
-                ? h('p', { className: 'text-[11px] mt-1', style: { color: missColour } },
+                ? h('p', { className: 'text-[0.6875rem] mt-1', style: { color: missColour } },
                     summary.otherTown + ' loaded plan' + (summary.otherTown === 1 ? ' is' : 's are') +
                     ' for a different town and are not counted here. Switch town at the top to read them.')
                 : null)),
 
           summary.n === 0 ? null : panel('class-req', 'What the class found hard, in ' + summary.town,
             h('div', null,
-              h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
+              h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } },
                 'n = ' + summary.n + '. Each bar is how many plans met that requirement.'),
               summary.perRequirement.map(function (r) {
                 return bar((r.hard ? 'Required. ' : 'Target. ') + r.label, r.met);
@@ -3914,7 +3914,7 @@
           summary.n === 0 ? null : panel('class-trade', 'What they gave up',
             summary.enoughToShowSignals
               ? h('div', null,
-                  h('p', { className: 'text-[11px] mb-2', style: { color: dim } },
+                  h('p', { className: 'text-[0.6875rem] mb-2', style: { color: dim } },
                     'The discussion starter. Two plans that both meet the brief can give up ' +
                     'completely different things, and that is the conversation worth having.'),
                   bar('Converted farmland', summary.tradeOffs.farmland),
@@ -3922,7 +3922,7 @@
                   bar('Put new homes in ' + scen.floodLabel, summary.tradeOffs.floodplain),
                   bar('Went over the bond', summary.tradeOffs.overBudget),
                   bar('Left homes without a park nearby', summary.tradeOffs.parkAccess))
-              : h('p', { className: 'text-[11px]', style: { color: dim } },
+              : h('p', { className: 'text-[0.6875rem]', style: { color: dim } },
                   'Held back until at least ' + summary.minN + ' plans are loaded. n = ' + summary.n +
                   '. With fewer than that, a distribution is a description of individuals.')),
 
@@ -3934,20 +3934,20 @@
               bar('Took the limited-move challenge', summary.usedChallenge),
               summary.enoughToShowSignals && Object.keys(summary.bindingChoice).length
                 ? h('div', { className: 'mt-2' },
-                    h('div', { className: 'text-[11px] font-bold mb-1', style: { color: ink } },
+                    h('div', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: ink } },
                       t('stem.citylab.which_constraint_they_named_as_binding', 'Which constraint they named as binding')),
-                    h('ul', { className: 'text-[11px] list-disc pl-4', style: { color: dim } },
+                    h('ul', { className: 'text-[0.6875rem] list-disc pl-4', style: { color: dim } },
                       Object.keys(summary.bindingChoice).map(function (k) {
                         return h('li', { key: k }, k + ': ' + summary.bindingChoice[k]);
                       })))
                 : null,
-              h('p', { className: 'text-[10px] mt-2', style: { color: dim } },
+              h('p', { className: 'text-[0.625rem] mt-2', style: { color: dim } },
                 'The memo text itself is never read here and never leaves in the CSV. Student ' +
                 'writing can contain names, so only whether a memo exists and which constraint ' +
                 'was picked from the list are counted.'))),
 
           panel('class-stance', 'What this screen is not',
-            h('p', { className: 'text-[11px]', style: { color: dim } },
+            h('p', { className: 'text-[0.6875rem]', style: { color: dim } },
               'This reports whether a plan meets stated constraints. It does not evaluate ' +
               'whether a plan is good, it does not rank students, and there is no answer key ' +
               'to compare against. Two plans can both meet every requirement and be completely ' +
@@ -3957,7 +3957,7 @@
       function aboutPanel() {
         return h('div', null,
           panel('about-1', 'What this tool does and does not do',
-            h('div', { className: 'text-[11px] space-y-2', style: { color: dim } },
+            h('div', { className: 'text-[0.6875rem] space-y-2', style: { color: dim } },
               h('p', null, scen.town + ' does not grow, tick, or keep score. It is frozen. Every number ' +
                 'you see is computed from the plan exactly as it stands, which means you can undo any ' +
                 'change and get exactly the number you had before.'),
@@ -3980,7 +3980,7 @@
                 'line. A parcel on the far bank of the river with no bridge is not two hundred metres ' +
                 'away. It is unreachable, and the tool says so.'))),
           panel('about-2', 'Keyboard and screen reader',
-            h('ul', { className: 'text-[11px] list-disc pl-4 space-y-1', style: { color: dim } },
+            h('ul', { className: 'text-[0.6875rem] list-disc pl-4 space-y-1', style: { color: dim } },
               h('li', null, 'Every parcel is a real button. Tab or arrow to it, press Enter or Space to ' +
                 'select it, then use the inspector below the map.'),
               h('li', null, 'The parcel table is not a summary. It is the same plan, fully editable, and ' +
@@ -4008,8 +4008,8 @@
                 },
                   h('span', { className: 'flex items-center gap-2' },
                     h('span', { className: 'text-sm', 'aria-hidden': 'true' }, b.icon),
-                    h('span', { className: 'text-[11px] font-black', style: { color: ink } }, b.tool)),
-                  h('span', { className: 'block text-[11px] mt-1', style: { color: dim } }, b.why));
+                    h('span', { className: 'text-[0.6875rem] font-black', style: { color: ink } }, b.tool)),
+                  h('span', { className: 'block text-[0.6875rem] mt-1', style: { color: dim } }, b.why));
               }))));
       }
 
@@ -4018,18 +4018,18 @@
           h('span', { className: 'text-lg', 'aria-hidden': 'true' }, '🏙️'),
           h('h2', { className: 'text-sm font-black', style: { color: ink } },
             'City Planning Lab · ' + scen.town),
-          h('label', { className: 'ml-auto text-[11px] font-bold flex items-center gap-1.5',
+          h('label', { className: 'ml-auto text-[0.6875rem] font-bold flex items-center gap-1.5',
             style: { color: dim } }, t('stem.citylab.town', 'Town'),
             h('select', {
               value: plan.scenarioId,
               'aria-label': t('stem.citylab.choose_which_town_to_plan', 'Choose which town to plan'),
               onChange: function (e) { switchScenario(e.target.value); },
-              className: 'text-[11px] rounded border px-1 py-0.5',
+              className: 'text-[0.6875rem] rounded border px-1 py-0.5',
               style: { background: panelBg, color: ink, borderColor: panelBorder }
             }, SCENARIO_IDS.map(function (sid) {
               return h('option', { key: sid, value: sid }, SCENARIOS[sid].town);
             })))),
-        h('p', { className: 'text-[10px] mb-2', style: { color: dim } }, scen.blurb),
+        h('p', { className: 'text-[0.625rem] mb-2', style: { color: dim } }, scen.blurb),
 
         h('div', { className: 'flex flex-wrap gap-1 mb-3', role: 'tablist',
           'aria-label': t('stem.citylab.city_planning_lab_sections', 'City Planning Lab sections') },
@@ -4039,7 +4039,7 @@
               key: tb.id, type: 'button', role: 'tab',
               'aria-selected': active ? 'true' : 'false',
               onClick: function () { setTab(tb.id); },
-              className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border',
+              className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border',
               style: { background: active ? '#1f5eb0' : panelBg, color: active ? '#ffffff' : ink,
                 borderColor: active ? '#1f5eb0' : panelBorder }
             }, tb.label);
@@ -4051,7 +4051,7 @@
               h('div', null,
                 boardControls(),
                 (plan.editCount || 0) === 0
-                  ? h('p', { className: 'text-[11px] mb-2 rounded p-1.5',
+                  ? h('p', { className: 'text-[0.6875rem] mb-2 rounded p-1.5',
                       style: { color: ink,
                         background: onDark ? 'rgba(42,120,214,0.14)' : 'rgba(42,120,214,0.10)' } },
                       'Nothing changed yet. This is ' + scen.town + ' as it stands today. ' +
@@ -4062,7 +4062,7 @@
                 boardView === 'model' ? null
                   : (boardView === 'elevation' ? elevationKey() : legend()),
                 boardView === 'model' ? null : scaleBar(),
-                h('p', { className: 'text-[10px] mt-2', style: { color: dim } },
+                h('p', { className: 'text-[0.625rem] mt-2', style: { color: dim } },
                   'Each parcel is one hectare, 100 m across. A blue inner edge marks ' +
                   scen.floodLabel + '. ' +
                   (scen.modelsSeaRise
@@ -4084,7 +4084,7 @@
         tab === 'class' ? classPanel() : null,
         tab === 'about' ? aboutPanel() : null,
 
-        h('p', { className: 'text-[10px] mt-3 text-center', style: { color: dim } },
+        h('p', { className: 'text-[0.625rem] mt-3 text-center', style: { color: dim } },
           'Runoff uses the rational method with published coefficients; costs are unit costs times ' +
           'quantities. Both are screening estimates for teaching, not engineering design. ' + scen.town +
           ' is a fictional town, so nothing here misrepresents a real place.')

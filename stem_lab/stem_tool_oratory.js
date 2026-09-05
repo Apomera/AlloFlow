@@ -4054,39 +4054,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               }[tempo];
               return h('div', { className: 'p-4 rounded-xl border ' + (isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-500') + ' space-y-3' },
                 h('h3', { className: 'text-sm font-black' }, t('stem.oratory.prosody_discovery', '⚙️ Prosody discovery')),
-                h('p', { className: 'text-[12px] leading-relaxed' }, t('stem.oratory.adjust_pitch_offset_pacing_volume_disc', 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.')),
+                h('p', { className: 'text-[0.75rem] leading-relaxed' }, t('stem.oratory.adjust_pitch_offset_pacing_volume_disc', 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
                   h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, tm.desc)
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, tm.desc)
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                   [{ k: 'pitch', l: 'Pitch (+Hz)', mn: 0, mx: 200, st: 5 },
                    { k: 'pace', l: 'Pace ×', mn: 0.5, mx: 2.0, st: 0.05 },
                    { k: 'volume', l: 'Volume gain dB', mn: -12, mx: 12, st: 0.5 }].map(function(s) {
                     return h('div', { key: s.k },
-                      h('label', { htmlFor: 'ph-' + s.k, className: 'block text-[11px] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
+                      h('label', { htmlFor: 'ph-' + s.k, className: 'block text-[0.6875rem] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
                       h('input', { id: 'ph-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, t('stem.oratory.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border border-slate-300 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.reset_2', '↺ Reset'))
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[0.6875rem] font-bold text-slate-700' }, t('stem.oratory.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[0.6875rem] font-semibold border border-slate-300 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.reset_2', '↺ Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.oratory.hypothesis_input', 'Oratory pace hypothesis'), placeholder: t('stem.oratory.hypothesis_how_does_pace_affect_audien', 'Hypothesis: How does pace affect audience comprehension?'),
-                  className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
+                  className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, t('stem.oratory.most_ted_talks_are_150_wpm_investigate', 'Most TED talks are ~150 wpm. Investigate why.')),
                     h('li', null, t('stem.oratory.when_does_pitch_variation_help_vs_dist', 'When does pitch variation help vs distract?')))),
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold cursor-pointer' },
+                h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.oratory.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.oratory.explanation_input', 'Oratory prosody explanation'), placeholder: t('stem.oratory.explain_how_prosody_shapes_oratory_imp', 'Explain how prosody shapes oratory impact.'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
-                h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.design_note_discrete_4_tempo_marker_no', 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
+                h('div', { className: 'text-[0.625rem] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.design_note_discrete_4_tempo_marker_no', 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.'))
               );
             })()
           ),

@@ -24,6 +24,6 @@ describe('Multiplication Table text accessibility', () => {
     loadTool('stem_lab/stem_tool_multtable.js', 'multtable');
     const html = renderTool('multtable', { multtable: {} });
     expect(html).not.toMatch(/text-\[(?:7|8|9)px\]/);
-    expect(html).toContain('text-[10px]');
+    expect(html).toContain('text-[0.625rem]');
   });
 });

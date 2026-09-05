@@ -480,9 +480,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
       function StatCard(props) {
         return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-          h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-700' }, props.label),
+          h('div', { className: 'text-[0.625rem] uppercase font-bold tracking-wider text-slate-700' }, props.label),
           h('div', { className: 'text-2xl font-black ' + (props.color || 'text-orange-700') }, props.value),
-          props.unit && h('div', { className: 'text-[10px] text-slate-700' }, props.unit)
+          props.unit && h('div', { className: 'text-[0.625rem] text-slate-700' }, props.unit)
         );
       }
 
@@ -490,7 +490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         return h('div', { className: 'bg-white rounded-xl p-3 shadow border border-slate-300' },
           h('label', { className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
             h('span', null, props.label),
-            h('span', { className: 'normal-case text-[11px] font-semibold ' + (props.valueColor || 'text-orange-700') }, props.valueText)
+            h('span', { className: 'normal-case text-[0.6875rem] font-semibold ' + (props.valueColor || 'text-orange-700') }, props.valueText)
           ),
           h('input', {
             // The visible caption is a <label> with no htmlFor wrapping a span,
@@ -508,7 +508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             'aria-valuetext': props.valueText,
             className: 'w-full ' + (props.accent || 'accent-orange-500')
           }),
-          props.hint && h('div', { className: 'text-[10px] text-slate-700 mt-1' }, props.hint)
+          props.hint && h('div', { className: 'text-[0.625rem] text-slate-700 mt-1' }, props.hint)
         );
       }
 
@@ -798,7 +798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             }, '✓'),
             notReady && h('span', {
               'aria-hidden': true,
-              className: 'absolute top-2 right-2 z-10 bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md'
+              className: 'absolute top-2 right-2 z-10 bg-slate-700 text-white text-[0.625rem] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md'
             }, __alloT('stem.weldlab.soon', 'Soon')),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
@@ -978,7 +978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'p-4 flex items-center gap-4 flex-wrap' },
                 h('div', { className: 'flex-shrink-0 text-center', style: { minWidth: 86 } },
                   h('div', { className: 'text-3xl font-black text-orange-800 leading-none' }, foundDefectTypes + ' / ' + totalDefectTypes),
-                  h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defects_id_d', 'Defects ID\'d'))
+                  h('div', { className: 'text-[0.625rem] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defects_id_d', 'Defects ID\'d'))
                 ),
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -1545,7 +1545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                           (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                       },
                         h('div', { className: 'text-base font-mono', 'aria-hidden': true }, j.icon),
-                        h('div', { className: 'text-[10px] mt-0.5' }, j.label)
+                        h('div', { className: 'text-[0.625rem] mt-0.5' }, j.label)
                       );
                     })
                   )
@@ -1571,7 +1571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                           (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                       },
                         h('div', { className: 'text-base', 'aria-hidden': true }, p.icon),
-                        h('div', { className: 'text-[10px] mt-0.5' }, p.label)
+                        h('div', { className: 'text-[0.625rem] mt-0.5' }, p.label)
                       );
                     })
                   )
@@ -2911,7 +2911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             }, __alloT('stem.weldlab.reset_camera', '↺ Reset camera'))
           ),
           // Hint strip
-          status === 'ready' && h('div', { className: 'mt-2 text-[11px] text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1' },
+          status === 'ready' && h('div', { className: 'mt-2 text-[0.6875rem] text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1' },
             h('span', null, __alloT('stem.weldlab.drag_to_orbit', '🖱 Drag to orbit')),
             h('span', null, __alloT('stem.weldlab.wheel_to_zoom', '⚙ Wheel to zoom')),
             h('span', null, __alloT('stem.weldlab.arrow_keys_for_keyboard_control', '⌨ Arrow keys + / − for keyboard control')),
@@ -2928,7 +2928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               'aria-label': __alloT('stem.weldlab.cross_section_profile_view_showing_pen', 'Cross-section profile view showing penetration depth, heat-affected zone, and reinforcement crown'),
               className: 'w-full block rounded-lg bg-slate-950'
             }),
-            h('div', { className: 'mt-1.5 text-[10px] text-slate-400 leading-snug' },
+            h('div', { className: 'mt-1.5 text-[0.625rem] text-slate-400 leading-snug' },
               __alloT('stem.weldlab.the_cross_section_view_is_what_an_insp', 'The cross-section view is what an inspector sees when they cut the weld in half + polish + etch with nital (carbon steel) or oxalic (stainless). '),
               __alloT('stem.weldlab.the_bright_dome_above_the_plate_is_the', 'The bright dome above the plate is the '),
               h('span', { className: 'text-amber-300 font-bold' }, __alloT('stem.weldlab.reinforcement_crown', 'reinforcement crown')),
@@ -2953,11 +2953,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     style: { backgroundColor: d.color, border: '1px solid var(--allo-stem-border, #475569)' }
                   }),
                   h('span', { className: 'font-bold' }, d.label),
-                  h('span', { className: 'text-slate-400 text-[11px]' }, '— ' + d.desc)
+                  h('span', { className: 'text-slate-400 text-[0.6875rem]' }, '— ' + d.desc)
                 );
               })
             ),
-            h('div', { className: 'mt-2 text-[11px] text-slate-400 leading-snug' },
+            h('div', { className: 'mt-2 text-[0.6875rem] text-slate-400 leading-snug' },
               __alloT('stem.weldlab.defects_appear_when_your_parameters_cr', '⚠ Defects appear when your parameters cross unsafe thresholds. Try '),
               h('span', { className: 'text-orange-300 font-bold' }, __alloT('stem.weldlab.v_14_a_300_ts_4_on_1_8_steel', 'V=14, A=300, TS=4 on 1/8" steel')),
               __alloT('stem.weldlab.to_trigger_burnthrough_try', ' to trigger burnthrough. Try '),
@@ -3603,7 +3603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   className: 'px-3 py-1.5 rounded-lg bg-orange-700 text-white text-xs font-bold border-2 border-orange-700 hover:bg-orange-800 transition focus:outline-none focus:ring-4 ring-orange-500/40 ' +
                     (revealAll || foundCount === totalDefects ? 'opacity-50 cursor-not-allowed' : '')
                 }, __alloT('stem.weldlab.inspect_next_zone_keyboard', '🔎 Inspect next zone (keyboard)')),
-                h('span', { className: 'text-[11px] text-slate-300' }, __alloT('stem.weldlab.keyboard_alternative_identifies_the_ne', 'Keyboard alternative — identifies the next un-found defect.'))
+                h('span', { className: 'text-[0.6875rem] text-slate-300' }, __alloT('stem.weldlab.keyboard_alternative_identifies_the_ne', 'Keyboard alternative — identifies the next un-found defect.'))
               )
             ),
             // Score + reveal
@@ -3799,10 +3799,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'bg-gradient-to-br ' + p.color + ' p-4 text-white' },
                     h('div', { className: 'flex items-center justify-between mb-1' },
                       h('span', { className: 'text-3xl' }, p.icon),
-                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full' }, __alloT('stem.weldlab.process_2', 'Process'))
+                      h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full' }, __alloT('stem.weldlab.process_2', 'Process'))
                     ),
                     h('div', { className: 'text-lg font-black' }, p.name),
-                    h('div', { className: 'text-[11px] opacity-90 font-medium' }, p.tagline)
+                    h('div', { className: 'text-[0.6875rem] opacity-90 font-medium' }, p.tagline)
                   ),
                   h('div', { className: 'p-3' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.best_for', 'Best For')),
@@ -4579,7 +4579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         )
                       ),
                       h('div', { className: 'text-xs font-bold text-slate-800' }, sym.name),
-                      h('div', { className: 'text-[10px] text-slate-700 mt-1' }, sym.use)
+                      h('div', { className: 'text-[0.625rem] text-slate-700 mt-1' }, sym.use)
                     );
                   })
                 )
@@ -4937,14 +4937,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('div', { className: 'font-black text-slate-800' }, g.name),
                           g.must
-                            ? h('span', { className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-900' }, __alloT('stem.weldlab.required', 'Required'))
-                            : h('span', { className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900' }, __alloT('stem.weldlab.when_req', 'When req.')),
+                            ? h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-900' }, __alloT('stem.weldlab.required', 'Required'))
+                            : h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900' }, __alloT('stem.weldlab.when_req', 'When req.')),
                           on && h('span', { className: 'text-emerald-600 font-bold ml-auto' }, '✓')
                         ),
                         h('div', { className: 'text-xs text-slate-700 mb-1' }, g.why),
                         h('div', { className: 'text-xs text-slate-800' },
                           h('span', { className: 'font-bold' }, 'Spec: '), g.rule),
-                        h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, g.osha)
+                        h('div', { className: 'text-[0.625rem] text-slate-700 font-mono mt-1' }, g.osha)
                       )
                     )
                   );
@@ -4977,7 +4977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
                   h('div', null,
                     h('h2', { className: 'text-xl font-black text-slate-800' }, sc.title),
-                    h('div', { className: 'text-[11px] text-slate-700 font-mono mt-0.5' }, sc.osha)
+                    h('div', { className: 'text-[0.6875rem] text-slate-700 font-mono mt-0.5' }, sc.osha)
                   ),
                   h('div', { className: 'p-4 bg-slate-100 rounded-xl border border-slate-300' },
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, sc.situation)
@@ -5308,7 +5308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       h('div', { className: 'text-lg font-black text-slate-800' }, c.name),
                       h('div', { className: 'text-sm font-bold text-emerald-700' }, c.pay)
                     ),
-                    h('div', { className: 'text-[11px] uppercase tracking-wider text-slate-700 font-bold mb-1' }, c.time),
+                    h('div', { className: 'text-[0.6875rem] uppercase tracking-wider text-slate-700 font-bold mb-1' }, c.time),
                     h('div', { className: 'text-sm text-slate-800 mb-2' }, c.what),
                     h('div', { className: 'text-xs text-slate-700' },
                       h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.weldlab.how_to_get_there', 'How to get there: ')), c.how)
@@ -5366,7 +5366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('div', { className: 'text-base font-black text-slate-800' }, e.name),
                     h('div', { className: 'text-xs text-slate-700 mt-0.5' }, e.industry),
                     h('div', { className: 'text-sm text-slate-800 mt-2' }, e.size),
-                    h('div', { className: 'text-[11px] font-mono text-blue-700 mt-1' }, e.site)
+                    h('div', { className: 'text-[0.6875rem] font-mono text-blue-700 mt-1' }, e.site)
                   );
                 })
               ),
@@ -5594,7 +5594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       )
                 ),
                 // Depth scale on the right
-                h('div', { 'aria-hidden': true, className: 'absolute right-2 top-2 bottom-2 flex flex-col justify-between text-[10px] font-mono text-cyan-200' },
+                h('div', { 'aria-hidden': true, className: 'absolute right-2 top-2 bottom-2 flex flex-col justify-between text-[0.625rem] font-mono text-cyan-200' },
                   h('div', null, __alloT('stem.weldlab.0_ft', '0 ft')),
                   h('div', null, __alloT('stem.weldlab.100_ft', '100 ft')),
                   h('div', null, __alloT('stem.weldlab.200_ft', '200 ft')),
@@ -6344,7 +6344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     ),
                     h('div', { className: 'p-3 bg-white' },
                       h('div', { className: 'text-xs text-slate-700 mb-2' }, t.desc),
-                      h('div', { className: 'text-[10px] font-mono text-slate-700 space-y-0.5' },
+                      h('div', { className: 'text-[0.625rem] font-mono text-slate-700 space-y-0.5' },
                         h('div', null, 'Travel: ' + t.travel + ' in/min'),
                         h('div', null, 'V tolerance: ±' + t.tolV + ' V'),
                         h('div', null, 'A tolerance: ±' + t.tolA + ' A')
@@ -6510,7 +6510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'text-5xl font-black text-orange-800', 'aria-label': foundKeys.length + ' of ' + allDefectKeys.length + ' defect types identified' },
                     foundKeys.length + ' / ' + allDefectKeys.length
                   ),
-                  h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defect_types_id_d', 'defect types ID\'d'))
+                  h('div', { className: 'text-[0.625rem] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defect_types_id_d', 'defect types ID\'d'))
                 ),
                 h('div', { className: 'flex-1 min-w-0 space-y-1' },
                   h('div', { className: 'flex items-center gap-2' },
@@ -6558,15 +6558,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
                         h('h3', { className: 'text-sm font-black text-slate-800' }, info.name),
-                        h('span', { className: 'text-[10px] font-mono text-emerald-700' }, '✓ ' + fmtDate(entry.firstFoundAt)),
-                        entry.foundCount > 1 && h('span', { className: 'text-[10px] text-slate-600 font-medium' }, '· ' + entry.foundCount + ' sightings')
+                        h('span', { className: 'text-[0.625rem] font-mono text-emerald-700' }, '✓ ' + fmtDate(entry.firstFoundAt)),
+                        entry.foundCount > 1 && h('span', { className: 'text-[0.625rem] text-slate-600 font-medium' }, '· ' + entry.foundCount + ' sightings')
                       ),
-                      h('div', { className: 'text-[11px] text-slate-700 mb-1 leading-snug' }, info.cause),
+                      h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1 leading-snug' }, info.cause),
                       sampleChips.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-1' },
                         sampleChips.map(function (sid) {
                           return h('span', {
                             key: sid,
-                            className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-900 border border-orange-300'
+                            className: 'inline-block px-2 py-0.5 rounded-full text-[0.625rem] font-bold bg-orange-100 text-orange-900 border border-orange-300'
                           }, '🔥 ' + sid);
                         })
                       )
@@ -6600,9 +6600,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
                         h('h3', { className: 'text-sm font-black text-slate-600' }, info.name),
-                        h('span', { className: 'text-[10px] font-mono uppercase tracking-wider text-slate-500' }, __alloT('stem.weldlab.not_yet_identified', 'Not yet identified'))
+                        h('span', { className: 'text-[0.625rem] font-mono uppercase tracking-wider text-slate-500' }, __alloT('stem.weldlab.not_yet_identified', 'Not yet identified'))
                       ),
-                      h('div', { className: 'text-[11px] italic text-slate-600 leading-snug' }, 'Hint: ' + info.cause.split('.')[0] + '.')
+                      h('div', { className: 'text-[0.6875rem] italic text-slate-600 leading-snug' }, 'Hint: ' + info.cause.split('.')[0] + '.')
                     )
                   );
                 })
@@ -6635,7 +6635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           h('div', { className: 'bg-gradient-to-r from-amber-700 via-orange-700 to-rose-600 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-3' },
             h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, defectCeleb.icon),
             h('div', null,
-              h('div', { className: 'text-[10px] font-black uppercase tracking-widest opacity-95' }, __alloT('stem.weldlab.new_defect_identified', 'New defect identified')),
+              h('div', { className: 'text-[0.625rem] font-black uppercase tracking-widest opacity-95' }, __alloT('stem.weldlab.new_defect_identified', 'New defect identified')),
               h('div', { className: 'text-lg font-black leading-tight' }, defectCeleb.name),
               h('div', { className: 'text-xs opacity-95 italic' }, 'Catalog: ' + defectCeleb.total + ' / ' + totalTypes + ' defect types')
             )
@@ -6777,7 +6777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       return h('div', { key: el.k },
                         h('label', {
                           htmlFor: inputId,
-                          className: 'block text-[11px] font-bold text-slate-700 mb-0.5'
+                          className: 'block text-[0.6875rem] font-bold text-slate-700 mb-0.5'
                         }, el.label, h('span', { className: 'font-normal text-slate-500' }, ' · ' + el.name)),
                         h('input', {
                           id: inputId,
@@ -6801,7 +6801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     ),
                     h('p', { className: 'text-sm text-slate-800' }, band.text)
                   ),
-                  h('p', { className: 'text-[11px] text-slate-600 italic' },
+                  h('p', { className: 'text-[0.6875rem] text-slate-600 italic' },
                     __alloT('stem.weldlab.ce_caveat', 'CE is one input, not the whole decision. Section thickness, joint restraint and the hydrogen level of your consumables all move the preheat requirement. Check the governing code (AWS D1.1 Annex) before setting a procedure.'))
                 ),
                 // ── Reference table, same bands ──

@@ -227,8 +227,8 @@ describe('Anatomy compare-surface contrast', () => {
     // greys for elements that are fine once settled.
     const source = fs.readFileSync(filePath, 'utf8');
     expect(source).toContain('.anatomy-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#475569;}');
-    expect(source).not.toContain("'text-[11px] text-rose-600 italic leading-relaxed'");
-    expect(source).toContain("'text-[11px] text-rose-700 italic leading-relaxed'");
+    expect(source).not.toContain("'text-[0.6875rem] text-rose-600 italic leading-relaxed'");
+    expect(source).toContain("'text-[0.6875rem] text-rose-700 italic leading-relaxed'");
 
     const root = parseMarkup(renderAnatomy(filePath, { selectedStructure: 'femur', _compareStructure: 'tibia' }));
     const tray = root.querySelector('[data-anatomy-compare-tray="true"]');

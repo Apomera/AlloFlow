@@ -2065,12 +2065,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div', { className: 'min-w-0' },
                   h('div', { className: 'flex items-center gap-2' },
                     h('button', { onClick: function(){setStemLabTool(null);}, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-sky-300', 'aria-label': 'Back to tools' }, h(ArrowLeft, {size:18})),
-                    h('span', { className: 'rounded-full bg-sky-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-sky-100 ring-1 ring-sky-200/30' }, 'Concept studio')
+                    h('span', { className: 'rounded-full bg-sky-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-sky-100 ring-1 ring-sky-200/30' }, 'Concept studio')
                   ),
                   h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\u222B Calculus Explorer'),
                   h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-sky-100' }, 'Connect change, accumulation, and limits through graphs, numerical evidence, and explanation.'),
                   h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
-                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-sky-200' }, 'Recommended next move'),
+                    h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-sky-200' }, 'Recommended next move'),
                     h('p', { className: 'mt-1 text-sm font-semibold text-white' }, calcNext)
                   )
                 ),
@@ -2082,7 +2082,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   ].map(function(metric) {
                     return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                       h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                      h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-sky-200' }, metric.label)
+                      h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-sky-200' }, metric.label)
                     );
                   })
                 )
@@ -2189,7 +2189,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     (correct?'✅ Correct! ':'Not quite - ') + comparisonText
                   ),
                   h('p', { className: 'text-xs text-slate-600' }, '💡 ' + reasoningText),
-                  h('button', {"aria-label":"Reset", onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'transition-colors mt-1 text-[11px] text-slate-600 hover:text-slate-800 font-bold' }, '\u21BA Reset')
+                  h('button', {"aria-label":"Reset", onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'transition-colors mt-1 text-[0.6875rem] text-slate-600 hover:text-slate-800 font-bold' }, '\u21BA Reset')
                 );
               })()
             ),
@@ -2199,13 +2199,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('button', { type:'button', 'aria-pressed':predictMode, onClick: function(){ upd('predictMode',!predictMode); upd('predictSubmitted',false); upd('predictInput',''); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (predictMode?'bg-violet-600 text-white':'bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100')
               }, predictMode ? '\uD83D\uDCCF Estimate Mode ON' : '\uD83D\uDCCF Try Estimate Mode'),
-              !predictMode && h('span', { className: 'text-[11px] text-slate-600' + onHostInk }, '\u2014 estimate the integral before it\u2019s revealed')
+              !predictMode && h('span', { className: 'text-[0.6875rem] text-slate-600' + onHostInk }, '\u2014 estimate the integral before it\u2019s revealed')
             ),
 
             predictMode && !predictSubmitted && h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', 'data-calculus-estimation-challenge': 'quantitative-calibration', style:{animation:'calcFade 0.3s ease'} },
               h('p', { className: 'text-sm font-bold text-violet-800 mb-1' }, '\uD83D\uDCCF What do you estimate \u222B[' + xMin + ',' + xMax2 + '] f(x) dx to be?'),
               h('p', { className: 'text-xs text-violet-600 mb-1 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
-              h('p', { className: 'text-[11px] text-violet-700 mb-3' }, 'This is quantitative calibration practice. The displayed difference is descriptive feedback, not a grade.'),
+              h('p', { className: 'text-[0.6875rem] text-violet-700 mb-3' }, 'This is quantitative calibration practice. The displayed difference is descriptive feedback, not a grade.'),
               h('div', { className: 'flex gap-2' },
                 h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': 'Integral estimate input', className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
                 h('button', {"aria-label":"Compare estimate with exact integral", disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Commit and compare \u2192')
@@ -2219,15 +2219,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               return h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', 'data-calculus-estimate-comparison': 'descriptive-calibration-ungraded', style:{animation:'calcFade 0.3s ease'} },
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center mb-3' },
                   h('div', { className: 'p-2 bg-white rounded-lg border border-violet-200' },
-                    h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase' }, 'Committed Estimate'),
+                    h('p', { className: 'text-[0.6875rem] font-bold text-violet-400 uppercase' }, 'Committed Estimate'),
                     h('p', { className: 'text-lg font-black text-violet-700' }, pred.toFixed(3))
                   ),
                   h('div', { className: 'p-2 bg-white rounded-lg border border-emerald-200' },
-                    h('p', { className: 'text-[11px] font-bold text-emerald-400 uppercase' }, 'Exact Integral'),
+                    h('p', { className: 'text-[0.6875rem] font-bold text-emerald-400 uppercase' }, 'Exact Integral'),
                     h('p', { className: 'text-lg font-black text-emerald-700', style:{animation:'calcPop 0.4s ease'} }, exact.toFixed(4))
                   ),
                   h('div', { className: 'p-2 bg-white rounded-lg border border-slate-400' },
-                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, pctOff == null ? 'Absolute Difference' : 'Absolute % Difference'),
+                    h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase' }, pctOff == null ? 'Absolute Difference' : 'Absolute % Difference'),
                     h('p', { className: 'text-sm font-black text-slate-600' }, pctOff == null ? absDiff.toFixed(3) : pctOff.toFixed(1) + '%')
                   )
                 ),
@@ -2237,27 +2237,27 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   pctOff < 15 ? 'Estimate within 15%. Compare your average-height \u00D7 width strategy with the graph.' :
                   'Use the difference to recalibrate: choose a representative height, multiply by interval width, and try again.'
                 ),
-                h('label', { htmlFor:'calc-estimate-reflection', className: 'block mt-3 text-[11px] font-bold text-violet-800' }, 'Calibration note (optional): what cue will you use on the next estimate?'),
+                h('label', { htmlFor:'calc-estimate-reflection', className: 'block mt-3 text-[0.6875rem] font-bold text-violet-800' }, 'Calibration note (optional): what cue will you use on the next estimate?'),
                 h('input', { id:'calc-estimate-reflection', type:'text', value:d.estimateReflection||'', onChange:function(e){upd('estimateReflection',e.target.value);}, 'aria-label':'Optional integral estimate calibration note', className:'mt-1 w-full px-2 py-1.5 border border-violet-300 rounded-lg text-xs' }),
-                h('button', {"aria-label":"Try another estimate", onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'transition-colors mt-2 text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
+                h('button', {"aria-label":"Try another estimate", onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'transition-colors mt-2 text-[0.6875rem] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
               );
             })(),
 
             // Analysis panel (only show if not in predict mode OR already submitted)
             (!predictMode || predictSubmitted) && h('div', { className: 'mt-3 grid grid-cols-5 gap-3' },
               h('div', { className: 'col-span-3 bg-red-50 rounded-xl border border-red-200 p-3' },
-                h('p', { className: 'text-[11px] font-bold text-red-700 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Analysis'),
+                h('p', { className: 'text-[0.6875rem] font-bold text-red-700 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Analysis'),
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                   h('div', { className: 'p-1.5 bg-white rounded-lg border', style:{animation:'calcPop 0.3s ease'} },
-                    h('p', { className: 'text-[11px] font-bold text-red-700' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
+                    h('p', { className: 'text-[0.6875rem] font-bold text-red-700' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
                     h('p', { className: 'text-sm font-bold text-red-800' }, area.toFixed(4))
                   ),
                   h('div', { className: 'p-1.5 bg-white rounded-lg border' },
-                    h('p', { className: 'text-[11px] font-bold text-red-700' }, 'Exact (\u222B)'),
+                    h('p', { className: 'text-[0.6875rem] font-bold text-red-700' }, 'Exact (\u222B)'),
                     h('p', { className: 'text-sm font-bold text-red-800' }, exact.toFixed(4))
                   ),
                   h('div', { className: 'p-1.5 bg-white rounded-lg border' },
-                    h('p', { id: 'err-stem_tool_calculus-474', role: 'alert', className: 'text-[11px] font-bold text-red-700' }, 'Error'),
+                    h('p', { id: 'err-stem_tool_calculus-474', role: 'alert', className: 'text-[0.6875rem] font-bold text-red-700' }, 'Error'),
                     h('p', { className: 'text-sm font-bold '+(err<0.01?'text-emerald-600':err<0.1?'text-yellow-600':'text-red-600') }, err.toFixed(6))
                   )
                 ),
@@ -2272,13 +2272,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   var below=false, above=false;
                   for(var _s=0;_s<=24;_s++){ var _y=evalF(xMin+(xMax2-xMin)*_s/24); if(_y<-1e-9)below=true; if(_y>1e-9)above=true; }
                   if(!(below&&above)) return null;
-                  return h('p',{className:'mt-2 text-[11px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1 leading-snug'},
+                  return h('p',{className:'mt-2 text-[0.6875rem] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1 leading-snug'},
                     h('span',{className:'font-bold text-blue-600'},'Blue'),' area (above the axis) adds; ',
                     h('span',{className:'font-bold text-orange-500'},'orange'),' area (below) subtracts. The integral is the NET signed area \u2014 not the total amount of region.');
                 })()
               ),
               h('div', { className: 'col-span-2 bg-slate-50 rounded-xl border p-2' },
-                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
+                h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
                 h('svg', { viewBox: '0 0 '+CW+' 60', role: 'img', 'aria-label': 'Calculus error versus rectangle count chart', className: 'w-full' },
                   h('line',{x1:Cpad,y1:55,x2:CW-Cpad,y2:55,stroke:'#e2e8f0',strokeWidth:0.5}),
                   h('polyline',{points:convData.map(function(cd){return convToX(finiteNum(cd.n, 2))+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#ef4444',strokeWidth:1.5}),
@@ -2291,8 +2291,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // ── ANTIDERIVATIVE BUILDER ────────────────────────────────────
             h('div', { className: 'mt-3 bg-cyan-50 rounded-xl border border-cyan-200 p-3' },
               h('div', { className: 'flex items-center justify-between mb-1' },
-                h('p', { className: 'text-[11px] font-bold text-cyan-700 uppercase tracking-wider' }, '\u270F\uFE0F Build the Antiderivative'),
-                h('p', { className: 'text-[11px] text-cyan-800 italic' }, 'Power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1)')
+                h('p', { className: 'text-[0.6875rem] font-bold text-cyan-700 uppercase tracking-wider' }, '\u270F\uFE0F Build the Antiderivative'),
+                h('p', { className: 'text-[0.6875rem] text-cyan-800 italic' }, 'Power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1)')
               ),
               h('p', { className: 'text-xs text-cyan-800 mb-2' }, 'For f(x) = ' + buildFStr(fa, fb, fc) + ', complete F(x):'),
               h('div', { className: 'flex items-center gap-1 flex-wrap' },
@@ -2305,7 +2305,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x + C'),
                 h('button', {"aria-label":"Check", disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'transition-colors ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-800' }, 'Check')
               ),
-              h('p', { className: 'mt-1.5 text-[11px] text-cyan-800 italic' }, 'Every antiderivative also carries a constant + C \u2014 but it cancels in F('+xMax2+') \u2212 F('+xMin+'), so a definite integral never needs it.'),
+              h('p', { className: 'mt-1.5 text-[0.6875rem] text-cyan-800 italic' }, 'Every antiderivative also carries a constant + C \u2014 but it cancels in F('+xMax2+') \u2212 F('+xMin+'), so a definite integral never needs it.'),
               antiChecked && (function(){
                 var okA=Math.abs(parseFloat(antiA)-fa)<0.01, okB=Math.abs(parseFloat(antiB)-fb)<0.01, okC=Math.abs(parseFloat(antiC2)-fc)<0.01, all=okA&&okB&&okC;
                 return h('div', { className:'mt-2', style:{animation:'calcPop 0.3s ease'} },
@@ -2315,7 +2315,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:okB?'text-emerald-600':'text-red-500'},(okB?'\u2713':'\u2717')+' x\u00B2/2 coefficient: should be '+fb),
                     h('p',{className:okC?'text-emerald-600':'text-red-500'},(okC?'\u2713':'\u2717')+' x coefficient: should be '+fc)
                   ),
-                  h('button',{"aria-label":"Clear and try again",onClick:function(){upd('antiChecked',false);upd('antiA','');upd('antiB','');upd('antiC2','');},className:'mt-1 text-[11px] text-cyan-600 hover:underline font-bold'},'\u21BA Clear and try again')
+                  h('button',{"aria-label":"Clear and try again",onClick:function(){upd('antiChecked',false);upd('antiA','');upd('antiB','');upd('antiC2','');},className:'mt-1 text-[0.6875rem] text-cyan-600 hover:underline font-bold'},'\u21BA Clear and try again')
                 );
               })()
             ),
@@ -2324,7 +2324,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('div', { className: 'grid grid-cols-2 gap-2 mt-3' },
               [{k:'a',label:'a (x\u00B2)',min:-3,max:3,step:0.5},{k:'b',label:'b (x)',min:-5,max:5,step:0.5},{k:'c',label:'c (const)',min:-5,max:5,step:0.5},{k:'xMin',label:'Lower a',min:-3,max:4,step:0.5},{k:'xMax',label:'Upper b',min:1,max:10,step:0.5},{k:'n',label:'n (subdivisions)',min:2,max:50,step:mode==='simpson'?2:1}].map(function(s){
                 return h('div',{ key:s.k,className:'text-center bg-slate-50 rounded-lg p-2 border'},
-                  h('label',{className:'text-[11px] font-bold text-red-600'},s.label+': '+(s.k==='n'?nRects:d[s.k])),
+                  h('label',{className:'text-[0.6875rem] font-bold text-red-600'},s.label+': '+(s.k==='n'?nRects:d[s.k])),
                   h('input',{type:'range',min:s.min,max:s.max,step:s.step,value:s.k==='n'?nRects:d[s.k],'aria-label':s.label,onChange:function(e){upd(s.k,parseFloat(e.target.value));upd('overUnderChecked',false);upd('predictSubmitted',false);upd('antiChecked',false);},className:'w-full accent-red-600'})
                 );
               })
@@ -2332,13 +2332,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Presets
             h('div', { className: 'mt-3 flex flex-wrap gap-1.5 items-center' },
-              h('span',{ className:'text-[11px] font-bold text-slate-600' + onHostInk},'Load:'),
+              h('span',{ className:'text-[0.6875rem] font-bold text-slate-600' + onHostInk},'Load:'),
               PRESETS.map(function(p){
                 return h('button',{ key:p.label,onClick:function(){
                   setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:p.a,b:p.b,c:p.c,xMin:p.xMin,xMax:p.xMax,n:p.n,overUnderChecked:false,predictSubmitted:false,antiChecked:false,antiA:'',antiB:'',antiC2:''})});});
                   addToast('\uD83E\uDD14 '+p.tip,'info');
                   stemBeep&&stemBeep('click');
-                },className:'px-2 py-1 rounded-lg text-[11px] font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all'},p.label);
+                },className:'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all'},p.label);
               })
             ),
 
@@ -2353,19 +2353,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'bg-red-50 rounded-xl border border-red-100 p-3 mb-3 grid grid-cols-2 gap-3' },
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'Function'),
+                h('p',{className:'text-[0.6875rem] font-bold text-red-700 uppercase mb-0.5'},'Function'),
                 h('p',{className:'text-sm font-bold text-slate-800 font-mono'},fStr)
               ),
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'f\u2032(x\u2080='+x0+') = slope'),
+                h('p',{className:'text-[0.6875rem] font-bold text-red-700 uppercase mb-0.5'},'f\u2032(x\u2080='+x0+') = slope'),
                 h('p',{className:'text-base font-black text-red-700',style:{animation:'calcPop 0.3s ease'}},slope.toFixed(4))
               ),
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'Tangent line'),
+                h('p',{className:'text-[0.6875rem] font-bold text-red-700 uppercase mb-0.5'},'Tangent line'),
                 h('p',{className:'text-xs font-bold text-slate-700 font-mono'},'y = '+slope.toFixed(2)+'(x\u2212'+x0+') + '+fy0.toFixed(2))
               ),
               h('div', null,
-                h('p',{className:'text-[11px] font-bold text-red-700 uppercase mb-0.5'},'Secant slope (h='+dh.toFixed(2)+')'),
+                h('p',{className:'text-[0.6875rem] font-bold text-red-700 uppercase mb-0.5'},'Secant slope (h='+dh.toFixed(2)+')'),
                 h('p',{className:'text-sm font-bold text-amber-800'},secantSlope.toFixed(4)+' \u2192 '+slope.toFixed(4))
               )
             ),
@@ -2374,25 +2374,25 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div',{className:'mt-2 grid grid-cols-2 gap-2'},
               h('div',{className:'bg-slate-50 rounded-lg border p-2'},
-                h('label',{className:'text-[11px] font-bold text-red-600'},'x\u2080 (tangent point): '+x0),
+                h('label',{className:'text-[0.6875rem] font-bold text-red-600'},'x\u2080 (tangent point): '+x0),
                 h('input',{type:'range','aria-label':'Tangent point x0',min:(xMin-1).toFixed(1),max:(xMax2+1).toFixed(1),step:0.1,value:x0,onChange:function(e){upd('x0',parseFloat(e.target.value));upd('derivInputChecked',false);},className:'w-full accent-red-600'})
               ),
               h('div',{className:'bg-slate-50 rounded-lg border p-2'},
-                h('label',{className:'text-[11px] font-bold text-amber-800'},'h (secant gap): '+dh.toFixed(2)),
+                h('label',{className:'text-[0.6875rem] font-bold text-amber-800'},'h (secant gap): '+dh.toFixed(2)),
                 h('input',{type:'range','aria-label':'Secant gap h',min:'0.02',max:'2',step:'0.02',value:dh,onChange:function(e){upd('secantH',parseFloat(e.target.value));},className:'w-full accent-amber-500'})
               )
             ),
 
             // Limit definition callout
             h('div',{ className:'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3'},
-              h('p',{className:'text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D The Limit Definition of the Derivative'),
+              h('p',{className:'text-[0.6875rem] font-bold text-amber-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D The Limit Definition of the Derivative'),
               h('p',{className:'text-xs font-mono text-amber-900 mb-2'},"f\u2032(x\u2080) = lim\u2095\u2192\u2080 [f(x\u2080 + h) \u2212 f(x\u2080)] / h"),
               h('p',{className:'text-xs text-amber-700'},'Drag h toward 0 above \u2014 watch the secant slope (\uD83D\uDFE1) converge to the true derivative (\uD83D\uDD34). When are they equal?')
             ),
 
             // ── POWER RULE TRAINER ────────────────────────────────────────
             h('div',{ className:'mt-3 bg-rose-50 rounded-xl border border-rose-200 p-3'},
-              h('p',{className:'text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-1'},'\u26A0\uFE0F Common mix-ups'),
+              h('p',{className:'text-[0.6875rem] font-bold text-rose-700 uppercase tracking-wider mb-1'},'\u26A0\uFE0F Common mix-ups'),
               h('ul',{className:'text-xs text-rose-800 space-y-1 list-disc list-inside'},
                 h('li',null, h('b',null,'f\u2032(x\u2080) is the SLOPE'),' \u2014 a single number, not the tangent line itself. The tangent is the line; the derivative is how steep it is.'),
                 h('li',null, h('b',null,'f\u2032(x) is a whole new function'),', not one value \u2014 it gives the slope at every x. Slide x\u2080 and watch it change.'),
@@ -2402,7 +2402,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'mt-3 bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-[11px] font-bold text-emerald-700 uppercase tracking-wider' }, '\u270F\uFE0F Power Rule Practice'),
+                h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700 uppercase tracking-wider' }, '\u270F\uFE0F Power Rule Practice'),
                 h('button', { onClick: function(){ upd('showDerivTrainer', !d.showDerivTrainer); upd('derivInputChecked', false); upd('derivInput1', ''); upd('derivInput2', ''); },
                   className: 'transition-colors text-xs font-bold text-emerald-800 hover:text-emerald-900'
                 }, d.showDerivTrainer ? 'Hide' : 'Try yourself \u2192')
@@ -2412,7 +2412,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ),
               d.showDerivTrainer && h('div', null,
                 h('p', { className: 'text-sm font-bold text-emerald-800 mb-1' }, 'If f(x) = ' + buildFStr(fa, fb, fc) + ', enter f\u2032(x):'),
-                h('p', { className: 'text-[11px] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
+                h('p', { className: 'text-[0.6875rem] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
                 h('div', { className: 'flex items-center gap-1 flex-wrap' },
                   h('span', { className: 'text-sm font-bold text-emerald-900' }, "f\u2032(x) = "),
                   h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':'Derivative x coefficient', onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
@@ -2428,7 +2428,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('p',{className:ok1?'text-emerald-600':'text-red-500'},(ok1?'\u2713':'\u2717')+' Coefficient of x: '+2*fa+' (d/dx['+fa+'x\u00B2] = 2\u00D7'+fa+'x = '+2*fa+'x)'),
                       h('p',{className:ok2?'text-emerald-600':'text-red-500'},(ok2?'\u2713':'\u2717')+' Constant: '+fb+' (d/dx['+fb+'x] = '+fb+')')
                     ),
-                    h('button',{"aria-label":"Try again",onClick:function(){upd('derivInputChecked',false);upd('derivInput1','');upd('derivInput2','');},className:'mt-1 text-[11px] text-emerald-600 hover:underline font-bold'},'\u21BA Try again')
+                    h('button',{"aria-label":"Try again",onClick:function(){upd('derivInputChecked',false);upd('derivInput1','');upd('derivInput2','');},className:'mt-1 text-[0.6875rem] text-emerald-600 hover:underline font-bold'},'\u21BA Try again')
                   );
                 })()
               )
@@ -2438,7 +2438,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('div',{className:'grid grid-cols-2 gap-2 mt-3'},
               [{k:'a',label:'a (x\u00B2)',min:-3,max:3,step:0.5},{k:'b',label:'b (x)',min:-5,max:5,step:0.5},{k:'c',label:'c (const)',min:-5,max:5,step:0.5},{k:'xMin',label:'View left',min:-5,max:3,step:0.5},{k:'xMax',label:'View right',min:1,max:10,step:0.5}].map(function(s){
                 return h('div',{key:s.k,className:'text-center bg-slate-50 rounded-lg p-2 border'},
-                  h('label',{className:'text-[11px] font-bold text-red-600'},s.label+': '+d[s.k]),
+                  h('label',{className:'text-[0.6875rem] font-bold text-red-600'},s.label+': '+d[s.k]),
                   h('input',{type:'range','aria-label':s.label,min:s.min,max:s.max,step:s.step,value:d[s.k],onChange:function(e){upd(s.k,parseFloat(e.target.value));upd('derivInputChecked',false);},className:'w-full accent-red-600'})
                 );
               })
@@ -2456,10 +2456,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             h('div',{ className:'flex flex-wrap gap-1.5 mb-2'},
               CALC_CHALLENGES.map(function(cm){
-                return h('button',{ "aria-label": "Start "+cm.label+" challenge",'aria-pressed':cMode===cm.id,key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?cm.activeClass+' text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
+                return h('button',{ "aria-label": "Start "+cm.label+" challenge",'aria-pressed':cMode===cm.id,key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-all '+(cMode===cm.id?cm.activeClass+' text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
               })
             ),
-            h('p',{className:'text-[11px] text-slate-600 italic mb-3' + onHostInk},
+            h('p',{className:'text-[0.6875rem] text-slate-600 italic mb-3' + onHostInk},
               cMode==='estimate'?'Pick the correct definite integral value from 4 choices.':
               cMode==='overunder'?'Decide if the Riemann sum is an over or underestimate — and understand why.':
               cMode==='method'?'Which approximation method gives the smallest error?':
@@ -2482,7 +2482,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             cq && !cq.answered && cMode==='exact' && h('div',{className:'bg-emerald-50 rounded-xl p-4 border border-emerald-200'},
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
-              h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C. Enter a decimal; round to 3 places when needed.'),
+              h('p',{className:'text-[0.6875rem] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C. Enter a decimal; round to 3 places when needed.'),
               h('div',{className:'flex gap-2'},
                 h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'','aria-label':'Exact integral value',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-600'}),
                 h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'},'Check \u2192')
@@ -2494,10 +2494,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             cHint && h('div',{className:'bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2 text-xs text-amber-800',style:{animation:'calcFade 0.3s ease'}},h('span',{className:'font-bold'},'\uD83D\uDCA1 Explanation: '),cHint),
             cq&&cq.answered&&cMode==='method'&&cq.errors&&h('div',{className:'mt-2 bg-slate-50 rounded-lg p-2 border'},
-              h('p',{className:'text-[11px] font-bold text-slate-600 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
+              h('p',{className:'text-[0.6875rem] font-bold text-slate-600 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
               h('div',{className:'grid grid-cols-5 gap-1 text-center'},['left','right','midpoint','trapezoid','simpson'].map(function(m){
-                return h('div',{key:m,className:'px-1 py-1 rounded text-[11px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-600 border')},
-                  h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[11px]'},cq.errors[m].toFixed(4)));
+                return h('div',{key:m,className:'px-1 py-1 rounded text-[0.6875rem] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-600 border')},
+                  h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[0.6875rem]'},cq.errors[m].toFixed(4)));
               }))
             )
           ),
@@ -2528,7 +2528,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{ id: 'err-stem_tool_calculus-724', role: 'alert',className:'text-xs font-bold text-red-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D Mission 1: The Error Halving Law'),
                   h('p',{ id: 'err-stem_tool_calculus-725', role: 'alert',className:'text-xs text-red-800'},'Goal: Discover what happens to the error when you double the number of rectangles.'),
                   h('div',{ role:'progressbar', 'aria-label':'Mission 1 progress', 'aria-valuemin':0, 'aria-valuemax':5, 'aria-valuenow':Math.min(step,5), 'aria-valuetext':'Step '+Math.min(step+1,5)+' of 5'},
-                    h('p',{className:'text-[10px] font-bold text-red-700 mb-1'},'Step '+Math.min(step+1,5)+' of 5'),
+                    h('p',{className:'text-[0.625rem] font-bold text-red-700 mb-1'},'Step '+Math.min(step+1,5)+' of 5'),
                     h('div',{ className:'flex gap-1', 'aria-hidden':'true'},
                       [0,1,2,3,4].map(function(i){
                         return h('div',{ key:i,className:'flex-1 h-1.5 rounded-full '+(step>i?'bg-red-500':step===i?'bg-red-300':'bg-slate-200')});
@@ -2596,9 +2596,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         h('p',{className:'text-sm font-bold text-red-700 mt-1'},ratio==null?'The n=8 error is 0, so the division ratio is undefined.':'Ratio: '+e4.toFixed(4)+' \u00F7 '+e8.toFixed(4)+' = '+ratio),
                         h('p',{className:'text-xs text-slate-600 italic mt-1'},ratio==null?'The recorded error reached 0 at n=8.':'When n doubled (4\u21928), error was divided by about '+ratio+'.'),
                         h('div',{className:'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-2','data-calculus-error-pattern-comparison':'descriptive-ungraded',role:'status','aria-live':'polite'},
-                          h('p',{className:'text-[11px] text-violet-900'},'Committed hypothesis: '+(hypothesisLabels[data.prediction1]||'not recorded')+'. Closest listed description of the measured n=8 error: '+hypothesisLabels[observedCategory]+'.'),
-                          h('p',{className:'text-[11px] font-bold text-violet-800'},patternAgrees?'Evidence agrees with your hypothesis.':'Evidence differs from your hypothesis.'),
-                          h('p',{className:'text-[10px] text-violet-700'},'Agreement is descriptive and ungraded; use the measured ratio to make the next estimate.')
+                          h('p',{className:'text-[0.6875rem] text-violet-900'},'Committed hypothesis: '+(hypothesisLabels[data.prediction1]||'not recorded')+'. Closest listed description of the measured n=8 error: '+hypothesisLabels[observedCategory]+'.'),
+                          h('p',{className:'text-[0.6875rem] font-bold text-violet-800'},patternAgrees?'Evidence agrees with your hypothesis.':'Evidence differs from your hypothesis.'),
+                          h('p',{className:'text-[0.625rem] text-violet-700'},'Agreement is descriptive and ungraded; use the measured ratio to make the next estimate.')
                         )
                       ),
                       h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now estimate the error at n=16 by applying the measured ratio again.'),
@@ -2627,7 +2627,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('div',{className:'bg-violet-50 rounded-xl border border-violet-200 p-3 mb-3',role:'status','aria-live':'polite','data-calculus-error-estimate-comparison':'descriptive-ungraded'},
                         h('p',{className:'text-sm font-bold text-violet-800 mb-1'},'Estimate compared with measured error \u2014 ungraded'),
                         h('p',{className:'text-xs text-violet-900'},'Committed estimate: '+pred.toFixed(4)+' \u00B7 Measured error: '+actual.toFixed(4)+' \u00B7 '+(pctOff==null?'Absolute difference: '+absDiff.toFixed(4):'Absolute % difference: '+pctOff.toFixed(0)+'%')),
-                        h('p',{className:'text-[11px] text-violet-700 mt-1'},'Closeness is calibration evidence. Mission completion comes from estimating, measuring, and explaining the pattern \u2014 not from matching.')
+                        h('p',{className:'text-[0.6875rem] text-violet-700 mt-1'},'Closeness is calibration evidence. Mission completion comes from estimating, measuring, and explaining the pattern \u2014 not from matching.')
                       ),
                       h('div',{className:'bg-slate-50 rounded-xl border p-3'},
                         h('p',{className:'text-xs font-bold text-slate-700 uppercase tracking-wider mb-2'},'\uD83D\uDCCC The Big Idea'),
@@ -2682,7 +2682,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:'text-xs text-slate-600'},'Committed hypothesis: '+data.prediction),
                     h('p',{className:'text-xs text-slate-600'},'Recorded smallest error: '+data.measured),
                     h('p',{className:'text-sm font-bold text-violet-700 mt-1'},data.prediction===data.measured?'Evidence agrees with your hypothesis.':'Evidence differs from your hypothesis \u2014 use the concept check below to explain why.'),
-                    h('p',{className:'text-[11px] text-slate-600 mt-1'},'Agreement is descriptive and ungraded; completing the comparison is what counts.')
+                    h('p',{className:'text-[0.6875rem] text-slate-600 mt-1'},'Agreement is descriptive and ungraded; completing the comparison is what counts.')
                   ),
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},"Concept check: why does Simpson's rule give zero error for this quadratic?"),
                   h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
@@ -2829,7 +2829,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('div',{className:'bg-emerald-50 rounded-xl border border-emerald-200 p-3'},
                     h('p',{className:'text-sm font-bold text-emerald-700 mb-2'},'\uD83C\uDF89 Mission Complete!'),
                     h('p',{className:'text-xs text-emerald-800 mb-1',role:'status','aria-live':'polite','data-calculus-distance-estimate-comparison':'descriptive-ungraded'},'Committed estimate: '+(isFinite(parseFloat(data.predict5))?parseFloat(data.predict5).toFixed(1):'not recorded')+' m \u00B7 Model result: 25.0 m \u00B7 Absolute difference: '+(isFinite(parseFloat(data.predict5))?Math.abs(parseFloat(data.predict5)-25).toFixed(1):'n/a')+' m.'),
-                    h('p',{className:'text-[11px] text-emerald-800 mb-1'},'This numerical comparison is descriptive and ungraded; completion comes from making and checking the estimate.'),
+                    h('p',{className:'text-[0.6875rem] text-emerald-800 mb-1'},'This numerical comparison is descriptive and ungraded; completion comes from making and checking the estimate.'),
                     h('p',{className:'text-xs text-emerald-800 mb-2'},'The Fundamental Theorem of Calculus says: \u222B\u2080\u1D57 v(t) dt = position at time t \u2212 position at t=0.'),
                     h('p',{className:'text-xs font-bold text-emerald-900'},"Real applications: physicists use this to calculate trajectories, economists to find accumulated profit, biologists to model population growth. The area under ANY rate curve gives the total accumulated quantity."),
                     awardStemXP&&awardStemXP('calculus',20,'Mission 4 complete')
@@ -2867,7 +2867,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               }
 
               function vizRangeControl(id, label, min, max, step, value, key, interactionKey, valueText) {
-                return h('label', { htmlFor: id, className: 'flex min-w-[180px] flex-1 items-center gap-2 text-[11px] font-bold text-slate-700' },
+                return h('label', { htmlFor: id, className: 'flex min-w-[180px] flex-1 items-center gap-2 text-[0.6875rem] font-bold text-slate-700' },
                   h('span', { className: 'whitespace-nowrap' }, label),
                   h('input', {
                     id: id, type: 'range', min: min, max: max, step: step, value: value,
@@ -2919,7 +2919,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('span', { className: 'font-bold' }, 'Visualize'),
                   h('span', { className: 'text-slate-400' }, '\u2022'),
                   h('span', {}, 'See the ideas before you see the formulas'),
-                  h('span', { className: 'ml-auto px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full' }, 'LIVE CANVAS')
+                  h('span', { className: 'ml-auto px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[0.625rem] font-bold rounded-full' }, 'LIVE CANVAS')
                 ),
                 // Sub-view selector
                 h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold mb-2', role: 'tablist', 'aria-label': 'Calculus visualization view' },
@@ -2946,7 +2946,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div', { role: 'tabpanel', id: 'calculus-viz-panel-' + vizView, 'aria-labelledby': 'calculus-viz-tab-' + vizView, tabIndex: 0 },
                 // Function picker (shown only for views that use it)
                 (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'riemann') &&
-                h('div', { className: 'flex gap-1 flex-wrap text-[11px] mb-2' },
+                h('div', { className: 'flex gap-1 flex-wrap text-[0.6875rem] mb-2' },
                   h('span', { className: 'text-slate-600 font-semibold self-center mr-1' + onHostInk }, 'f(x) ='),
                   Object.keys(CALC_FUNCS).map(function(fid) {
                     var active = vizFn === fid;
@@ -2971,7 +2971,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   vizView === 'slope' && vizRangeControl('calc-viz-slope-y', 'Seed y', -2.5, 2.5, 0.1, vizSlopeY, 'vizSlopeY', null, vizSlopeY.toFixed(1)),
                   vizView === 'slope' && h('button', {
                     onClick: addSlopeSeedFromControls,
-                    className: 'rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-800'
+                    className: 'rounded-lg bg-indigo-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-indigo-800'
                   }, 'Add solution curve')
                 ),
                 // Canvas wrapper (fullscreen target)
@@ -3014,7 +3014,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   }, '\u26F6')
                 ),
                 // Per-view explainer strip
-                h('div', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' + onHostInk },
+                h('div', { className: 'mt-2 text-[0.6875rem] text-slate-600 leading-relaxed' + onHostInk },
                   vizView === 'zoom'    && 'Use the point and zoom sliders, or drag across the canvas. Any smooth curve becomes a straight line up close; that local slope IS the derivative.',
                   vizView === 'tangent' && 'Use the tangent x\u2080 slider, or drag across the canvas. The tangent line swings while f\u2032(x) traces itself on the right panel.',
                   vizView === 'motion'  && 'Use the time slider, or drag across the canvas. Velocity = slope; acceleration = slope of velocity. Three panels update together.',
@@ -3065,50 +3065,50 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             return h('div', { key: 'derivHunt', 'data-calculus-live-inquiry': 'observe-log-explain' },
               h('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
                 h('h3', { className: 'text-sm font-black text-violet-700' }, '\uD83D\uDCC8 Derivative behavior exploration'),
-                h('p', { className: 'text-[12px] text-slate-700' }, 'The derivative value and behavior update live as you move the sliders. Treat them as visible model evidence: log distinct settings, compare them, then explain the pattern you observe. This activity is ungraded.'),
+                h('p', { className: 'text-[0.75rem] text-slate-700' }, 'The derivative value and behavior update live as you move the sliders. Treat them as visible model evidence: log distinct settings, compare them, then explain the pattern you observe. This activity is ungraded.'),
                 h('div', { className: 'p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-calculus-live-derivative-state': state, style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'f(x)=' + iq.a + 'x\u00B2 + ' + iq.b + 'x + ' + iq.c + ',  f\'(' + iq.xPoint + ')=' + derivAtX.toFixed(2))
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mt-1 font-mono' }, 'f(x)=' + iq.a + 'x\u00B2 + ' + iq.b + 'x + ' + iq.c + ',  f\'(' + iq.xPoint + ')=' + derivAtX.toFixed(2))
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3 sm:grid-cols-4' },
                   [{ k: 'a', l: 'a', mn: -3, mx: 3 }, { k: 'b', l: 'b', mn: -10, mx: 10 }, { k: 'c', l: 'c', mn: -10, mx: 10 }, { k: 'xPoint', l: 'x', mn: -10, mx: 10 }].map(function(control) {
                     return h('div', { key: control.k },
-                      h('label', { htmlFor: 'dh-' + control.k, className: 'block text-[11px] font-bold text-slate-700' }, control.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[control.k])),
+                      h('label', { htmlFor: 'dh-' + control.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, control.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[control.k])),
                       h('input', { id: 'dh-' + control.k, type: 'range', min: control.mn, max: control.mx, step: 1, value: iq[control.k],
                         onChange: function(e) { var patch = {}; patch[control.k] = parseInt(e.target.value, 10); setIQ(patch); },
                         className: 'w-full', 'aria-label': control.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { type: 'button', disabled: currentAlreadyLogged, 'aria-disabled': currentAlreadyLogged ? 'true' : 'false', onClick: function() { if (currentAlreadyLogged) return; setIQ({ log: inquiryLog.concat([{ key: currentLogKey, a: iq.a, b: iq.b, c: iq.c, x: iq.xPoint, d: derivAtX.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300 disabled:opacity-50' }, currentAlreadyLogged ? 'Current setting logged' : '\uD83D\uDCCB Log current evidence'),
-                  h('button', { type: 'button', onClick: function() { setIQ({ a: 1, b: 0, c: 0, xPoint: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset'),
-                  h('span', { className: 'text-[10px] text-slate-500', role: 'status', 'aria-live': 'polite' }, inquiryLog.length + '/2 evidence settings logged')
+                  h('button', { type: 'button', disabled: currentAlreadyLogged, 'aria-disabled': currentAlreadyLogged ? 'true' : 'false', onClick: function() { if (currentAlreadyLogged) return; setIQ({ log: inquiryLog.concat([{ key: currentLogKey, a: iq.a, b: iq.b, c: iq.c, x: iq.xPoint, d: derivAtX.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300 disabled:opacity-50' }, currentAlreadyLogged ? 'Current setting logged' : '\uD83D\uDCCB Log current evidence'),
+                  h('button', { type: 'button', onClick: function() { setIQ({ a: 1, b: 0, c: 0, xPoint: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset'),
+                  h('span', { className: 'text-[0.625rem] text-slate-500', role: 'status', 'aria-live': 'polite' }, inquiryLog.length + '/2 evidence settings logged')
                 ),
                 inquiryLog.length > 0 && h('div', { role: 'region', 'aria-label': 'Logged derivative evidence', className: 'rounded-lg border border-slate-200 bg-slate-50 p-2' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-600 mb-1' }, 'Evidence log'),
-                  h('ol', { className: 'space-y-1 text-[11px] text-slate-700' }, inquiryLog.map(function(entry, index) {
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-600 mb-1' }, 'Evidence log'),
+                  h('ol', { className: 'space-y-1 text-[0.6875rem] text-slate-700' }, inquiryLog.map(function(entry, index) {
                     var loggedMeta = stateMeta[entry.st];
                     return h('li', { key: derivativeLogKey(entry) + '-' + index, className: 'font-mono' }, (index + 1) + '. a=' + entry.a + ', b=' + entry.b + ', c=' + entry.c + ', x=' + entry.x + ' \u2192 f\'(x)=' + entry.d + '; ' + (loggedMeta ? loggedMeta.label : entry.st));
                   }))
                 ),
                 h('textarea', { 'aria-label': 'Working explanation from live derivative evidence', 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.',
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck? Show comparison prompts'),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
+                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck? Show comparison prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, 'Hold a, b, and c steady. Move x through a point where the derivative is near zero. How does the derivative sign change?'),
                     h('li', null, 'Keep b fixed and compare a positive a with a negative a. What changes about increasing and decreasing behavior?'),
                     h('li', null, 'When a is nonzero, compare the x-value where the derivative is near zero with -b/(2a).')),
-                  h('p', { className: 'mt-2 text-[10px] italic text-amber-800' }, 'These are comparison scaffolds, not a hidden result; the live values remain visible.')
+                  h('p', { className: 'mt-2 text-[0.625rem] italic text-amber-800' }, 'These are comparison scaffolds, not a hidden result; the live values remain visible.')
                 ),
-                h('p', { id: 'calc-deriv-evidence-ready', className: 'text-[10px] text-slate-600' }, evidenceReady ? 'Evidence ready: explain the pattern, including one logged comparison.' : 'Log at least two distinct settings before the final explanation.'),
+                h('p', { id: 'calc-deriv-evidence-ready', className: 'text-[0.625rem] text-slate-600' }, evidenceReady ? 'Evidence ready: explain the pattern, including one logged comparison.' : 'Log at least two distinct settings before the final explanation.'),
                 h('div', { className: 'flex items-center gap-2' },
                   h('input', { type: 'checkbox', id: 'calc-deriv-understood', checked: evidenceReady && !!iq.understood, disabled: !evidenceReady, 'aria-disabled': evidenceReady ? 'false' : 'true', 'aria-describedby': 'calc-deriv-evidence-ready', onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  h('label', { htmlFor: 'calc-deriv-understood', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' }, 'I can explain the pattern I observed')
+                  h('label', { htmlFor: 'calc-deriv-understood', className: 'text-[0.75rem] font-bold text-emerald-800 cursor-pointer' }, 'I can explain the pattern I observed')
                 ),
                 evidenceReady && iq.understood && h('textarea', { 'aria-label': 'Evidence-based derivative behavior explanation', 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.',
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Model note: the live marker and numerical derivative are visible, descriptive evidence. They are not a hidden prediction result or a score.')
+                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Model note: the live marker and numerical derivative are visible, descriptive evidence. They are not a hidden prediction result or a score.')
               )
             );
           })(),
@@ -3154,7 +3154,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       onClick: function () { save('aiLevel', L.id); },
                       'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
                       'aria-pressed': active,
-                      className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
+                      className: 'px-2 py-0.5 rounded text-[0.625rem] font-bold ' + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
                     }, L.label);
                   })
                 ),
@@ -3162,12 +3162,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   onClick: explain,
                   disabled: aiLoading,
                   'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
-                  className: 'transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                  className: 'transition-colors px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
                 }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
               ),
-              aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
+              aiError && h('p', { className: 'text-[0.6875rem] text-rose-600', role: 'alert' }, aiError),
               aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-600' }, 'Click \u201CExplain\u201D for the AI tutor to describe what you\u2019re computing right now.')
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, 'Click \u201CExplain\u201D for the AI tutor to describe what you\u2019re computing right now.')
             );
           })()
 

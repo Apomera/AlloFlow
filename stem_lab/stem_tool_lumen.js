@@ -2593,8 +2593,8 @@
             // backgroundImage (longhand), NOT the background shorthand: shorthand + background-clip
             // in one style attribute crashes jsdom 29's CSS parser (breaks the axe audit harness).
             h('span', { className: 'font-extrabold text-base tracking-tight', style: { backgroundImage: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen', 'Lumen')),
-            h('span', { className: 'text-[11px] text-slate-500 italic' }, __alloT('stem.lumen.honest_data_made_to_share', 'honest data, made to share')),
-            h('span', { className: 'text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto', style: { background: '#fffbeb', border: '1px solid #fde68a' } }, comp.variable + (comp.unit ? ' · ' + comp.unit : ''))
+            h('span', { className: 'text-[0.6875rem] text-slate-500 italic' }, __alloT('stem.lumen.honest_data_made_to_share', 'honest data, made to share')),
+            h('span', { className: 'text-[0.6875rem] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto', style: { background: '#fffbeb', border: '1px solid #fde68a' } }, comp.variable + (comp.unit ? ' · ' + comp.unit : ''))
           ));
           // Persistent, non-dismissible synthetic-data banner — fires whenever ANY
           // row is synthetic (generated OR a loaded example). Drives home that this
@@ -2603,7 +2603,7 @@
           if (compHasSynthetic(comp)) {
             kids.push(h('div', { key: 'synBanner', role: 'note', className: 'mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2', style: { background: '#6d28d9', color: '#ffffff' } },
               h('span', null, __alloT('stem.lumen.synthetic_practice_data_not_a_real_stu', '⚗ Synthetic practice data — NOT a real student.')),
-              h('span', { className: 'font-normal text-[11px]', style: { opacity: 0.9 } }, __alloT('stem.lumen.for_exploring_lumen_marked_on_every_ch', 'For exploring Lumen; marked on every chart + export, and blocked from a defensible formal export.'))));
+              h('span', { className: 'font-normal text-[0.6875rem]', style: { opacity: 0.9 } }, __alloT('stem.lumen.for_exploring_lumen_marked_on_every_ch', 'For exploring Lumen; marked on every chart + export, and blocked from a defensible formal export.'))));
           }
           // The AI-involvement dial (default L1 = zero callGemini) + the audience faces.
           var ceilBtn = function (lvl, label) {
@@ -2686,7 +2686,7 @@
                 h('button', { key: 'obSample', className: 'px-3 py-1.5 text-sm font-semibold rounded-lg text-white hover:opacity-90', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 3px rgba(234,88,12,0.3)' }, onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); } }, __alloT('stem.lumen.try_a_sample', 'Try a sample')),
                 h('button', { key: 'obPaste', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, __alloT('stem.lumen.paste_data', '⎘ Paste data')),
                 h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100 cursor-pointer' }, __alloT('stem.lumen.import_file', '⇪ Import file'))),
-              h('p', { className: 'mt-3 text-[11px] text-slate-500' }, __alloT('stem.lumen.honest_by_design_fewer_than_3_points_y', 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.'))));
+              h('p', { className: 'mt-3 text-[0.6875rem] text-slate-500' }, __alloT('stem.lumen.honest_by_design_fewer_than_3_points_y', 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.'))));
           }
 
           // Measure setup — name your own x/y variables. comp is rebuilt from
@@ -2832,7 +2832,7 @@
             };
             kids.push(h('div', { key: 'practicebox', id: 'lumen-practice-box', className: 'mt-3 p-3 rounded border border-violet-300', style: { background: '#f5f3ff' } },
               h('div', { className: 'text-sm font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.practice_data_samples', '⚗ Practice data & samples')),
-              h('p', { className: 'text-[11px] text-slate-600 mb-2' }, __alloT('stem.lumen.everything_here_is_marked_synthetic', 'Everything here loads clearly-marked synthetic practice data — great for exploring Lumen, watermarked on every chart and export, and never exportable as a defensible formal document.')),
+              h('p', { className: 'text-[0.6875rem] text-slate-600 mb-2' }, __alloT('stem.lumen.everything_here_is_marked_synthetic', 'Everything here loads clearly-marked synthetic practice data — great for exploring Lumen, watermarked on every chart and export, and never exportable as a defensible formal document.')),
               h('div', { className: 'flex items-end gap-2 flex-wrap' },
                 h('button', {
                   key: 'sampleBtn', className: 'px-3 py-1 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50',
@@ -2870,7 +2870,7 @@
           if (d.showPaste) {
             kids.push(h('div', { key: 'pastebox', id: 'lumen-paste-box', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
               h('div', { className: 'text-sm font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.paste_data_2', '⎘ Paste data')),
-              h('p', { className: 'text-[11px] text-slate-600 mb-2' }, __alloT('stem.lumen.paste_csv_tsv_or_json_straight_from_a_', 'Paste CSV, TSV, or JSON straight from a spreadsheet or export. The first row is treated as headers; you map x/y/phase and confirm before anything binds — same as a file import.')),
+              h('p', { className: 'text-[0.6875rem] text-slate-600 mb-2' }, __alloT('stem.lumen.paste_csv_tsv_or_json_straight_from_a_', 'Paste CSV, TSV, or JSON straight from a spreadsheet or export. The first row is treated as headers; you map x/y/phase and confirm before anything binds — same as a file import.')),
               h('textarea', {
                 value: d.pasteText == null ? '' : d.pasteText,
                 onChange: function (ev) { upd('pasteText', ev.target.value); },
@@ -2937,14 +2937,14 @@
                   h('select', { className: dropDownClass, value: imp.seriesCol == null ? '' : String(imp.seriesCol), onChange: function (ev) { setMap('seriesCol', ev.target.value); } },
                     [h('option', { key: 'none', value: '' }, __alloT('stem.lumen.none_3', '— none —'))].concat(colOpts))) : null)),
               h('div', { className: 'mt-3' },
-                h('div', { className: 'text-[11px] font-semibold text-slate-600 mb-1' }, 'First ' + previewRows.length + ' row(s) (of ' + (ip.rows || []).length + ') — headers NEVER reach the AI surface:'),
+                h('div', { className: 'text-[0.6875rem] font-semibold text-slate-600 mb-1' }, 'First ' + previewRows.length + ' row(s) (of ' + (ip.rows || []).length + ') — headers NEVER reach the AI surface:'),
                 h('div', { className: 'overflow-x-auto' },
-                  h('table', { className: 'min-w-full text-[11px]' },
+                  h('table', { className: 'min-w-full text-[0.6875rem]' },
                     h('thead', null, h('tr', null, (ip.headers || []).map(function (hd, i) { return h('th', { key: 'th' + i, scope: 'col', className: 'px-2 py-1 text-left bg-slate-100 border border-slate-200 font-semibold text-slate-700' }, hd || ('col' + (i + 1))); }))),
                     h('tbody', null, previewRows.map(function (r, ri) {
                       return h('tr', { key: 'tr' + ri }, r.map(function (c, ci) { return h('td', { key: 'td' + ri + '-' + ci, className: 'px-2 py-1 border border-slate-200 text-slate-700' }, c == null ? '' : String(c)); }));
                     }))))),
-              h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.lumen.imported_values_land_as_l0_verbatim_ec', 'Imported values land as L0 (verbatim echoes). Rows missing or non-numeric in the mapped x/y are reported on bind, never silently dropped. No AI call fires during ingest.'))));
+              h('p', { className: 'mt-2 text-[0.625rem] italic text-slate-500' }, __alloT('stem.lumen.imported_values_land_as_l0_verbatim_ec', 'Imported values land as L0 (verbatim echoes). Rows missing or non-numeric in the mapped x/y are reported on bind, never silently dropped. No AI call fires during ingest.'))));
           }
 
           // ═══════════════════════════════════════════════════════════════
@@ -3020,7 +3020,7 @@
               h('div', { className: 'flex items-start gap-3 flex-wrap' },
                 h('div', { className: 'flex-1 min-w-[200px]' },
                   h('div', { className: 'text-sm font-semibold text-cyan-900' }, __alloT('stem.lumen.benchmark_workspace_16_sourced', '▣ Benchmark workspace — verify norms against their primary source')),
-                  h('p', { className: 'text-[11px] text-slate-700 mt-1' },
+                  h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' },
                     __alloT('stem.lumen.drop_a_benchmark_document_text_extract', 'Drop a benchmark document. Text extracts deterministically (no AI). You byte-check each cell against the source and sign it off; verified cells fold into the NORM_SPINE JSON for paste-back. '),
                     h('strong', null, __alloT('stem.lumen.ai_search_is_intentionally_deferred_16', 'AI-search is intentionally deferred (§16.4 Phase 2B).')))),
                 h('label', {
@@ -3054,7 +3054,7 @@
                     ev.target.value = '';
                   }
                 })),
-              bw.fileName ? h('div', { className: 'mt-2 text-[11px] text-slate-700' }, 'Loaded: ', h('strong', null, bw.fileName), bw.fileType ? (' · ' + bw.fileType) : '', pagesText.length ? (' · ' + pagesText.length + ' page(s)') : '') : null,
+              bw.fileName ? h('div', { className: 'mt-2 text-[0.6875rem] text-slate-700' }, 'Loaded: ', h('strong', null, bw.fileName), bw.fileType ? (' · ' + bw.fileType) : '', pagesText.length ? (' · ' + pagesText.length + ' page(s)') : '') : null,
               bw.error ? h('p', { className: 'mt-2 text-xs text-rose-700' }, bw.error) : null,
               // Scaffold controls
               h('div', { className: 'mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs' },
@@ -3102,22 +3102,22 @@
               h('div', { className: 'mt-3 grid grid-cols-1 lg:grid-cols-2 gap-3' },
                 // Left: extracted-text pane
                 h('div', { className: 'p-2 rounded border border-slate-300 bg-white' },
-                  h('div', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.extracted_text_deterministic_no_ai_par', 'Extracted text (deterministic; no AI parse) — read here, type values on the right')),
+                  h('div', { className: 'text-[0.6875rem] font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.extracted_text_deterministic_no_ai_par', 'Extracted text (deterministic; no AI parse) — read here, type values on the right')),
                   pagesText.length > 1 ? h('div', { className: 'mb-1 flex flex-wrap gap-1' }, pagesText.map(function (p, i) {
-                    return h('button', { key: 'pg' + i, className: 'px-1.5 py-0.5 text-[10px] rounded border ' + (i === (bw.activePageIdx || 0) ? 'border-cyan-700 bg-cyan-50' : 'border-slate-300 hover:bg-slate-50'), onClick: function () { setBench({ activePageIdx: i }); } }, 'p' + (p.pageNum != null ? p.pageNum : (i + 1)));
+                    return h('button', { key: 'pg' + i, className: 'px-1.5 py-0.5 text-[0.625rem] rounded border ' + (i === (bw.activePageIdx || 0) ? 'border-cyan-700 bg-cyan-50' : 'border-slate-300 hover:bg-slate-50'), onClick: function () { setBench({ activePageIdx: i }); } }, 'p' + (p.pageNum != null ? p.pageNum : (i + 1)));
                   })) : null,
                   h('pre', { className: 'text-[10.5px] leading-snug whitespace-pre-wrap break-words max-h-72 overflow-auto bg-slate-50 p-2 rounded border border-slate-200' }, activePage ? activePage.text : 'No document loaded yet.')),
                 // Right: scaffold cells
                 h('div', { className: 'p-2 rounded border border-slate-300 bg-white' },
-                  h('div', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.scaffold_cells_fill_the_value_paste_th', 'Scaffold cells — fill the value, paste the source excerpt, tick to verify')),
+                  h('div', { className: 'text-[0.6875rem] font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.scaffold_cells_fill_the_value_paste_th', 'Scaffold cells — fill the value, paste the source excerpt, tick to verify')),
                   (bw.cells || []).length === 0 ? h('p', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.lumen.pick_a_grade_range_season_percentile_a', 'Pick a grade range / season / percentile above, then Rebuild scaffold.')) :
                   h('div', { className: 'space-y-2 max-h-96 overflow-auto pr-1' }, (bw.cells || []).map(function (c, idx) {
                     var v = validateProposedSpineCell(c);
                     var canVerify = v.ok && !c.verified;
                     return h('div', { key: c.id, className: 'p-2 rounded border ' + (c.verified ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white') },
-                      h('div', { className: 'flex items-center justify-between text-[11px] font-semibold text-slate-700' },
+                      h('div', { className: 'flex items-center justify-between text-[0.6875rem] font-semibold text-slate-700' },
                         h('span', null, 'Grade ' + c.grade + ' · ' + c.season + ' · p' + c.percentile + ' · ' + c.measure),
-                        c.verified ? h('span', { className: 'text-emerald-700 text-[10px]' }, '✓ verified ' + c.reviewedOn) : null),
+                        c.verified ? h('span', { className: 'text-emerald-700 text-[0.625rem]' }, '✓ verified ' + c.reviewedOn) : null),
                       h('div', { className: 'mt-1 grid grid-cols-2 gap-2' },
                         h('label', { className: 'text-[10.5px] text-slate-600' }, 'Value (' + c.unit + ')',
                           h('input', { type: 'number', step: 'any', value: c.value == null ? '' : c.value, disabled: c.verified,
@@ -3146,19 +3146,19 @@
                               setBench({ cells: next });
                               announce('Cell verified: G' + c.grade + ' ' + c.season + ' p' + c.percentile + ' = ' + c.value + '.');
                             } }, __alloT('stem.lumen.verify_this_cell', '✓ Verify this cell')),
-                        v.ok ? null : h('span', { className: 'text-[10px] text-amber-700' }, 'Needs: ' + v.errors.join(', '))));
+                        v.ok ? null : h('span', { className: 'text-[0.625rem] text-amber-700' }, 'Needs: ' + v.errors.join(', '))));
                   })))),
               // Spine JSON output
               (function () {
-                if (verifiedCount === 0) return h('p', { key: 'noOut', className: 'mt-3 text-[10px] italic text-slate-500' }, __alloT('stem.lumen.verify_at_least_one_cell_to_see_the_pa', 'Verify at least one cell to see the paste-back JSON.'));
+                if (verifiedCount === 0) return h('p', { key: 'noOut', className: 'mt-3 text-[0.625rem] italic text-slate-500' }, __alloT('stem.lumen.verify_at_least_one_cell_to_see_the_pa', 'Verify at least one cell to see the paste-back JSON.'));
                 var verified = (bw.cells || []).filter(function (c) { return c.verified === true; });
                 var bound = bindVerifiedCellsToSpine({}, verified);
                 var jsonOut = spineCellsToJSON(bound.cells, 2);
                 return h('div', { key: 'spineOut', className: 'mt-3 p-2 rounded border border-cyan-300 bg-white' },
-                  h('div', { className: 'text-[11px] font-semibold text-slate-700' }, __alloT('stem.lumen.spine_cells_json_paste_into_stem_tool_', 'Spine cells JSON (paste into stem_tool_lumen.js → NORM_SPINE.cells)')),
-                  bound.collisions.length ? h('p', { className: 'mt-1 text-[10px] text-amber-700' }, bound.collisions.length + ' cell(s) excluded: ' + bound.collisions.map(function (c) { return (c.id || c.idx) + ' (' + c.reason + ')'; }).join('; ')) : null,
+                  h('div', { className: 'text-[0.6875rem] font-semibold text-slate-700' }, __alloT('stem.lumen.spine_cells_json_paste_into_stem_tool_', 'Spine cells JSON (paste into stem_tool_lumen.js → NORM_SPINE.cells)')),
+                  bound.collisions.length ? h('p', { className: 'mt-1 text-[0.625rem] text-amber-700' }, bound.collisions.length + ' cell(s) excluded: ' + bound.collisions.map(function (c) { return (c.id || c.idx) + ' (' + c.reason + ')'; }).join('; ')) : null,
                   h('pre', { className: 'mt-1 text-[10.5px] leading-snug whitespace-pre-wrap break-words max-h-48 overflow-auto bg-slate-50 p-2 rounded border border-slate-200', id: 'lumen-spine-json' }, jsonOut),
-                  h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.lumen.after_pasting_setting_reviewedon_in_so', 'After pasting + setting reviewedOn in source, the spine\'s `validateNormSpine` returns "ready" and assertExportClean lets curated benchmark refs draw at a formal export. The signoff hash spans every truth-bearing field, so a stale (edited-after) cell re-blocks.')));
+                  h('p', { className: 'mt-2 text-[0.625rem] italic text-slate-500' }, __alloT('stem.lumen.after_pasting_setting_reviewedon_in_so', 'After pasting + setting reviewedOn in source, the spine\'s `validateNormSpine` returns "ready" and assertExportClean lets curated benchmark refs draw at a formal export. The signoff hash spans every truth-bearing field, so a stale (edited-after) cell re-blocks.')));
               })()));
           })();
 
@@ -3196,7 +3196,7 @@
                   seriesLegendSwatch(i),
                   h('span', null, (comp.seriesLabels && comp.seriesLabels[k]) || k));
               })),
-              h('p', { className: 'mt-1 text-[11px] text-slate-500' }, __alloT('stem.lumen.bars_are_per_cell_means_descriptive_sm', 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.'))));
+              h('p', { className: 'mt-1 text-[0.6875rem] text-slate-500' }, __alloT('stem.lumen.bars_are_per_cell_means_descriptive_sm', 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.'))));
           } else if (activeClaim) {
             // One-click copy of the finding SENTENCE. Safe to hand out by construction:
             // the prose-template invariant burns the level word + interval + n into the
@@ -3212,14 +3212,14 @@
             };
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2' },
-                h('div', { className: 'inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
+                h('div', { className: 'inline-flex items-center gap-1 text-[0.6875rem] font-bold rounded-full px-2 py-0.5', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', lineHeight: '1' } }, bundle.glyph),
                   h('span', null, bundle.label)),
-                h('button', { className: 'ml-auto text-[11px] underline text-slate-600 hover:text-slate-800', title: __alloT('stem.lumen.copy_finding_tooltip', 'Copy the finding sentence — the level word and interval travel with it.'), onClick: copyFinding }, __alloT('stem.lumen.copy_finding', '⧉ Copy finding'))),
+                h('button', { className: 'ml-auto text-[0.6875rem] underline text-slate-600 hover:text-slate-800', title: __alloT('stem.lumen.copy_finding_tooltip', 'Copy the finding sentence — the level word and interval travel with it.'), onClick: copyFinding }, __alloT('stem.lumen.copy_finding', '⧉ Copy finding'))),
               // Scatter shows the association sentence verbatim (it already carries r + interval + n + the
               // not-causation caveat); the trend/other views keep the audience-faced trend wording.
               h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience, compHasSynthetic(comp))),
-              (compHasSynthetic(comp) ? h('p', { key: 'synCard', className: 'mt-1 text-[11px] font-semibold', style: { color: '#6d28d9' } }, __alloT('stem.lumen.synthetic_practice_data_this_finding_i', '◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.')) : null)));
+              (compHasSynthetic(comp) ? h('p', { key: 'synCard', className: 'mt-1 text-[0.6875rem] font-semibold', style: { color: '#6d28d9' } }, __alloT('stem.lumen.synthetic_practice_data_this_finding_i', '◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.')) : null)));
           }
 
           var geo;
@@ -3454,7 +3454,7 @@
               kids.push(h('div', { key: 'aibar', className: 'mt-3 flex items-center gap-2 flex-wrap' },
                 h('button', { className: 'px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-700', onClick: fireAI },
                   d.aiLoading ? __alloT('stem.lumen.thinking', 'Thinking…') : (levelIndex(ceiling) >= 3 ? __alloT('stem.lumen.generate_ai_reading', 'Generate AI reading (hypotheses)') : __alloT('stem.lumen.generate_ai_reword', 'Generate AI re-word'))),
-                h('span', { className: 'text-[10px] text-slate-500' }, encode(levelIndex(ceiling) >= 3 ? 'L3' : 'L2').label + ' · ' + AI_CAVEAT)));
+                h('span', { className: 'text-[0.625rem] text-slate-500' }, encode(levelIndex(ceiling) >= 3 ? 'L3' : 'L2').label + ' · ' + AI_CAVEAT)));
               if (d.aiError) kids.push(h('div', { key: 'aierr', className: 'mt-1 text-xs italic text-slate-500' }, d.aiError));
               if (levelIndex(ceiling) >= 3 && Array.isArray(d.aiHyps) && d.aiHyps.length) {
                 var l3 = encode('L3');
@@ -3466,7 +3466,7 @@
                       h('span', { className: 'font-semibold text-xs', style: { color: l3.ink } }, hp.band),
                       h('span', null, hp.text + (hp.kind !== 'effect' ? ' (' + hp.kind + ')' : '')));
                   })),
-                  h('p', { className: 'mt-1 text-[10px] text-slate-500' }, HYP_CAVEAT + '. Regenerates each run. Export needs your sign-off.'),
+                  h('p', { className: 'mt-1 text-[0.625rem] text-slate-500' }, HYP_CAVEAT + '. Regenerates each run. Export needs your sign-off.'),
                   (audience === 'iep-team') ? h('div', { key: 'so', className: 'mt-1 text-xs' },
                     // The sign-off hash binds the hypotheses AND the claim's data hash — editing
                     // any observation re-derives the claim and this check (plus the export gate)
@@ -3485,7 +3485,7 @@
                   h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-600' },
                     h('span', { 'aria-hidden': 'true' }, l2.glyph), h('span', null, l2.label)),
                   h('p', { className: 'text-sm mt-1' }, d.aiText),
-                  h('p', { className: 'mt-1 text-[10px] text-slate-500' }, AI_CAVEAT)));
+                  h('p', { className: 'mt-1 text-[0.625rem] text-slate-500' }, AI_CAVEAT)));
               }
             }
           }
@@ -3539,7 +3539,7 @@
             // human-verified against its primary source first), so say that up front instead of
             // letting the picker refuse mysteriously. Disappears the moment the spine is 'ready'.
             if (validateNormSpine(NORM_SPINE).status === 'empty' && validateNormSpine(DIBELS8_ORF).status === 'empty' && !sourceRefs.length) {
-              kids.push(h('p', { key: 'benchEmpty', className: 'mt-1 text-[10px] italic text-slate-500' },
+              kids.push(h('p', { key: 'benchEmpty', className: 'mt-1 text-[0.625rem] italic text-slate-500' },
                 __alloT('stem.lumen.benchmark_spine_empty_note', 'The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.')));
             }
             if (d.benchMsg) kids.push(h('div', { key: 'benchmsg', className: 'mt-1 text-xs italic text-slate-500' }, d.benchMsg));
@@ -3588,23 +3588,23 @@
             })[state];
             return h('div', { key: 'evIQ', className: 'mt-3 p-3 rounded-lg', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
               h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, __alloT('stem.lumen.evidence_inquiry_a_what_if_sandbox_not', '🔬 Evidence Inquiry — a what-if sandbox (not your data)')),
-              h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, __alloT('stem.lumen.a_learning_sandbox_drag_these_hypothet', 'A learning sandbox: drag these HYPOTHETICAL dials — trend strength, sample size, baseline, and a what-if AI level — to feel where evidence sits between insufficient and over-interpreted. It does not read your data and does not change your live AI ceiling. No score, no reveal.')),
-              h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · slope/noise ' + slopeConfidence.toFixed(2)),
-              h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+              h('p', { className: 'text-[0.625rem] opacity-85 mb-2 leading-snug' }, __alloT('stem.lumen.a_learning_sandbox_drag_these_hypothet', 'A learning sandbox: drag these HYPOTHETICAL dials — trend strength, sample size, baseline, and a what-if AI level — to feel where evidence sits between insufficient and over-interpreted. It does not read your data and does not change your live AI ceiling. No score, no reveal.')),
+              h('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · slope/noise ' + slopeConfidence.toFixed(2)),
+              h('p', { className: 'text-[0.625rem] opacity-80 mb-2' }, sm.desc),
               h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
-                h('label', { className: 'text-[10px]' },
+                h('label', { className: 'text-[0.625rem]' },
                   h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.trend_strength', 'Trend strength')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trendStrength.toFixed(2))),
                   h('input', { type: 'range', min: 0, max: 2, step: 0.05, value: iq.trendStrength, onChange: function(e) { setKey('trendStrength', parseFloat(e.target.value)); }, className: 'w-full' })
                 ),
-                h('label', { className: 'text-[10px]' },
+                h('label', { className: 'text-[0.625rem]' },
                   h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.observations', 'Observations')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.sampleSize)),
                   h('input', { type: 'range', min: 2, max: 40, step: 1, value: iq.sampleSize, onChange: function(e) { setKey('sampleSize', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 ),
-                h('label', { className: 'text-[10px]' },
+                h('label', { className: 'text-[0.625rem]' },
                   h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.baseline_value', 'Baseline value')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.baseline)),
                   h('input', { type: 'range', min: 0, max: 200, step: 1, value: iq.baseline, onChange: function(e) { setKey('baseline', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 ),
-                h('label', { className: 'text-[10px]' },
+                h('label', { className: 'text-[0.625rem]' },
                   h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, __alloT('stem.lumen.what_if_ai_level_not_your_live_dial', 'What-if AI level (not your live dial)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, 'L' + iq.aiLevel)),
                   h('input', { type: 'range', min: 0, max: 3, step: 1, value: iq.aiLevel, onChange: function(e) { setKey('aiLevel', parseInt(e.target.value, 10)); }, className: 'w-full' })
                 )
@@ -3613,16 +3613,16 @@
                 h('button', { onClick: function() {
                   var t = new Date().toISOString().slice(11, 19);
                   setIQ({ log: iq.log.concat([{ t: t, ts: iq.trendStrength.toFixed(2), n: iq.sampleSize, bl: iq.baseline, ai: 'L' + iq.aiLevel, sc: slopeConfidence.toFixed(2), state: sm.label }]) });
-                }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.lumen.log_this_evidence_call', '📋 Log this evidence call')),
-                h('button', { onClick: function() { setIQ({ trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.lumen.reset', 'Reset'))
+                }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.lumen.log_this_evidence_call', '📋 Log this evidence call')),
+                h('button', { onClick: function() { setIQ({ trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1 }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.lumen.reset', 'Reset'))
               ),
-              iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+              iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[0.5625rem] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                 iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · trend ' + e.ts + ' n' + e.n + ' bl' + e.bl + ' ' + e.ai + ' → s/n ' + e.sc); })
               ),
-              h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, __alloT('stem.lumen.your_hypothesis_when_does_dialing_ai_u', 'Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)')),
-              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.lumen.hypothesis_input', 'Evidence trend hypothesis'), placeholder: __alloT('stem.lumen.e_g_past_l2_you_need_to_surface_the_sl', 'e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.lumen.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-              iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+              h('label', { className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, __alloT('stem.lumen.your_hypothesis_when_does_dialing_ai_u', 'Your hypothesis (when does dialing AI up start to mislead, and what guard would you add?)')),
+              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.lumen.hypothesis_input', 'Evidence trend hypothesis'), placeholder: __alloT('stem.lumen.e_g_past_l2_you_need_to_surface_the_sl', 'e.g., past L2 you need to surface the slope/noise ratio so the AI cannot manufacture certainty...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.lumen.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+              iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                 h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, __alloT('stem.lumen.open_questions_no_answer_key', 'Open questions (no answer key)')),
                 h('ul', { className: 'pl-4 m-0' },
                   h('li', null, __alloT('stem.lumen.why_does_lumen_default_to_l1_math_only', 'Why does Lumen DEFAULT to L1 (math only) and force you to opt up?')),
@@ -3631,16 +3631,16 @@
                   h('li', null, __alloT('stem.lumen.when_is_regression_to_the_mean_the_rea', 'When is regression to the mean the real explanation for an apparent trend?'))
                 )
               ),
-              h('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+              h('label', { className: 'flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1' },
                 h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                 h('span', null, __alloT('stem.lumen.i_can_explain_why_this_evidence_config', 'I can explain why this evidence configuration yields this evidentiary state.'))
               ),
-              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.lumen.explanation_input', 'Evidence trend explanation'), placeholder: __alloT('stem.lumen.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-              h('p', { className: 'm-0 text-[9px] italic opacity-60' }, __alloT('stem.lumen.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.'))
+              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.lumen.explanation_input', 'Evidence trend explanation'), placeholder: __alloT('stem.lumen.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+              h('p', { className: 'm-0 text-[0.5625rem] italic opacity-60' }, __alloT('stem.lumen.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.'))
             );
           })());
 
-          kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-700' },
+          kids.push(h('p', { key: 'foot', className: 'mt-3 text-[0.625rem] text-slate-700' },
             __alloT('stem.lumen.footer_privacy_honesty', 'Privacy & honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.')));
 
           // ── PRESENT MODE (additive overlay) ──────────────────────────────
@@ -3715,7 +3715,7 @@
                   ? h('div', { key: 'pchart', className: 'mt-3', style: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' } }, mkChartSvgRef('lumen-chart-present', 'presvg'))
                   : h('p', { key: 'pnochart', className: 'mt-3 text-sm text-slate-500' }, __alloT('stem.lumen.add_at_least_3_observations_to_show_a_', 'Add at least 3 observations to show a chart.'))),
                 h('p', { key: 'psummary', className: 'mt-3 text-sm text-slate-600' }, chartSummaryText(focusObs, activeClaim, sourceRefs, chartType)),
-                h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-500' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.')
+                h('p', { key: 'pfoot', className: 'mt-4 text-[0.6875rem] text-slate-500' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.')
               )
             ));
           }

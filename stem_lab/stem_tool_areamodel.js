@@ -425,7 +425,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
           // Skip-count overlay header (column scale + toggle)
           h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
-            h('label', { className: 'text-[11px] font-bold text-amber-800 flex items-center gap-1 cursor-pointer' },
+            h('label', { className: 'text-[0.6875rem] font-bold text-amber-800 flex items-center gap-1 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showSkipCount,
                 onChange: function() { sfxClick(); upd({ showSkipCount: !showSkipCount }); }
               }),
@@ -441,7 +441,7 @@ window.StemLab = window.StemLab || {
               'aria-hidden': 'false',
               style: { fontVariantNumeric: 'tabular-nums' }
             },
-              h('div', { className: 'text-[11px] font-bold text-amber-700 text-right pr-1 py-0.5' }, 'total'),
+              h('div', { className: 'text-[0.6875rem] font-bold text-amber-700 text-right pr-1 py-0.5' }, 'total'),
               Array.from({ length: rows }, function(_, ri) {
                 var runningTotal = (ri + 1) * cols;
                 var stepLabel = '+' + cols;
@@ -452,14 +452,14 @@ window.StemLab = window.StemLab || {
                     (isInHL ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-amber-50 text-amber-700 border border-amber-100'),
                   style: { minWidth: 48, height: ((cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) - (cols - 1) * 4) / cols }
                 },
-                  h('span', { className: 'text-[10px] text-amber-800 leading-none' }, ri === 0 ? cols : stepLabel),
+                  h('span', { className: 'text-[0.625rem] text-amber-800 leading-none' }, ri === 0 ? cols : stepLabel),
                   h('span', { className: 'text-base leading-tight' }, runningTotal)
                 );
               })
             ),
             // Row labels (1..rows) — paired with grid rows
             h('div', { className: 'flex flex-col gap-1 self-stretch', 'aria-hidden': 'true' },
-              h('div', { className: 'text-[11px] font-bold text-amber-600 py-0.5 text-center', style: { width: 18 } }, 'r'),
+              h('div', { className: 'text-[0.6875rem] font-bold text-amber-600 py-0.5 text-center', style: { width: 18 } }, 'r'),
               Array.from({ length: rows }, function(_, ri) {
                 var isInHL = ri < highlight.rows;
                 return h('div', {
@@ -485,7 +485,7 @@ window.StemLab = window.StemLab || {
                   var isInHL = ci < highlight.cols;
                   return h('div', {
                     key: 'cl-' + ci,
-                    className: 'text-center text-[11px] font-bold py-0.5 rounded ' +
+                    className: 'text-center text-[0.6875rem] font-bold py-0.5 rounded ' +
                       (isInHL ? 'bg-amber-200 text-amber-900' : 'text-amber-700')
                   }, ci + 1);
                 })
@@ -503,7 +503,7 @@ window.StemLab = window.StemLab || {
               }, cells),
               // Highlight dimension caption shown when student has selected a sub-region
               (highlight.rows > 0 && highlight.cols > 0) && h('div', {
-                className: 'text-center text-[11px] font-bold text-amber-700 mt-1'
+                className: 'text-center text-[0.6875rem] font-bold text-amber-700 mt-1'
               },
                 'Highlighted: ', h('span', { className: 'text-amber-900' }, highlight.rows + ' × ' + highlight.cols),
                 ' = ',
@@ -511,7 +511,7 @@ window.StemLab = window.StemLab || {
               )
             )
           ),
-          showSkipCount && h('p', { className: 'text-[11px] text-amber-700 italic mt-2 text-center' },
+          showSkipCount && h('p', { className: 'text-[0.6875rem] text-amber-700 italic mt-2 text-center' },
             'Each row adds ' + cols + '. ' + cols + ' + ' + cols + ' + ... (' + rows + ' times) = ' + cols + ' × ' + rows + ' = ' + (rows * cols)
           )
         );
@@ -745,12 +745,12 @@ window.StemLab = window.StemLab || {
                 onClick: function() { sfxClick(); upd({ wordCtxIdx: (wordCtxIdx + 1) % WORD_CONTEXTS.length }); },
                 disabled: isWordChallenge,
                 'aria-label': t('stem.areamodel.next_story_context', 'Next story context'),
-                className: 'px-2 py-1 text-[11px] font-bold bg-emerald-700 text-white rounded hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed'
+                className: 'px-2 py-1 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed'
               }, t('stem.areamodel.next', '🔀 Next'))
             ),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               h('div', {},
-                h('label', { className: 'block text-[10px] font-bold text-emerald-700 mb-0.5' }, t('stem.areamodel.a_rows_groups', 'A (rows / groups)')),
+                h('label', { className: 'block text-[0.625rem] font-bold text-emerald-700 mb-0.5' }, t('stem.areamodel.a_rows_groups', 'A (rows / groups)')),
                 h('input', { type: 'range', min: '2', max: '12', value: wpA,
                   onChange: function(e) { upd({ wordDims: { a: parseInt(e.target.value, 10), b: wpB } }); },
                   disabled: isWordChallenge,
@@ -760,7 +760,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-center text-base font-bold text-emerald-800' }, wpA)
               ),
               h('div', {},
-                h('label', { className: 'block text-[10px] font-bold text-emerald-700 mb-0.5' }, t('stem.areamodel.b_per_row_per_group', 'B (per row / per group)')),
+                h('label', { className: 'block text-[0.625rem] font-bold text-emerald-700 mb-0.5' }, t('stem.areamodel.b_per_row_per_group', 'B (per row / per group)')),
                 h('input', { type: 'range', min: '2', max: '12', value: wpB,
                   onChange: function(e) { upd({ wordDims: { a: wpA, b: parseInt(e.target.value, 10) } }); },
                   disabled: isWordChallenge,
@@ -776,7 +776,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4' },
             h('p', { className: 'text-sm font-bold text-emerald-900 leading-relaxed mb-3' }, '📖 ' + story),
             h('div', { className: 'flex flex-col items-center gap-2' },
-              h('div', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider' }, t('stem.areamodel.what_the_picture_shows', 'What the picture shows:')),
+              h('div', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase tracking-wider' }, t('stem.areamodel.what_the_picture_shows', 'What the picture shows:')),
               h('div', {
                 className: 'grid gap-0.5',
                 style: {
@@ -788,7 +788,7 @@ window.StemLab = window.StemLab || {
             shouldHideProduct
               ? h('div', { className: 'mt-3 text-center bg-amber-50 rounded-lg p-2 border border-amber-200', role: 'status' },
                   h('p', { className: 'text-xs font-bold text-amber-800' }, t('stem.areamodel.count_before_reveal', 'Count the grid, then enter the product in the challenge below.')),
-                  h('p', { className: 'text-[10px] text-amber-700 mt-1' }, wpA + ' groups of ' + wpB + ' = ?')
+                  h('p', { className: 'text-[0.625rem] text-amber-700 mt-1' }, wpA + ' groups of ' + wpB + ' = ?')
                 )
               : h('div', { className: 'mt-3 text-center bg-emerald-50 rounded-lg p-2 border border-emerald-100' },
                   h('p', { className: 'text-xs text-emerald-700' },
@@ -797,14 +797,14 @@ window.StemLab = window.StemLab || {
                     ' = ',
                     h('span', { className: 'text-2xl font-bold text-emerald-900' }, product)
                   ),
-                  h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' }, t('stem.areamodel.the_grid_is_the_picture_multiplication', 'The grid is the picture. Multiplication is the math.'))
+                  h('p', { className: 'text-[0.625rem] text-emerald-700 italic mt-1' }, t('stem.areamodel.the_grid_is_the_picture_multiplication', 'The grid is the picture. Multiplication is the math.'))
                 )
           ),
 
           // Word-problem challenge: pose a random story with hidden answer
           h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-[11px] font-bold text-emerald-800' }, t('stem.areamodel.word_problem_challenge', '🎯 Word problem challenge')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-emerald-800' }, t('stem.areamodel.word_problem_challenge', '🎯 Word problem challenge')),
               h('button', {
                 onClick: function() {
                   // Generate a random challenge: pick a context, factors, and ask for the product
@@ -828,7 +828,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-1 bg-emerald-700 text-white text-xs font-bold rounded hover:bg-emerald-800'
               }, t('stem.areamodel.new_word_problem_2', '▶ New word problem'))
             ),
-            h('p', { className: 'text-[11px] text-emerald-700 italic' },
+            h('p', { className: 'text-[0.6875rem] text-emerald-700 italic' },
               t('stem.areamodel.pick_a_story_look_at_the_matching_grid', 'Pick a story. Look at the matching grid. Multiplication is the count of things in a rectangle. 5 solved earns the 📝 Word Wizard badge.')
             )
           )
@@ -840,7 +840,7 @@ window.StemLab = window.StemLab || {
         var earned = Object.keys(badges).length;
         if (earned === 0) return null;
         return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-          h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
+          h('p', { className: 'text-[0.6875rem] font-bold text-amber-600 uppercase tracking-wider mb-2' },
             '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -882,7 +882,7 @@ window.StemLab = window.StemLab || {
             ['What is an area model?', 'How does distributive property work?', 'How to multiply 2-digit numbers?'].map(function(q) {
               return h('button', { 'aria-label': t('stem.areamodel.ask_question', 'Ask question'),
                 key: q, onClick: function() { upd({ aiQuestion: q }); },
-                className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
+                className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
               }, q);
             })
           ),
@@ -899,7 +899,7 @@ window.StemLab = window.StemLab || {
           h('h3', { className: 'text-lg font-bold text-amber-800' + onHostInk }, t('stem.areamodel.area_model', '\uD83D\uDFE7 Area Model')),
           h('div', { className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' + onHostInk }, 'Best: ' + bestStreak),
+            bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-600' + onHostInk }, 'Best: ' + bestStreak),
             h('span', { className: 'text-xs font-bold text-amber-800' + onHostInk }, score.correct + '/' + score.total),
             h('button', {
               onClick: function() {
@@ -929,7 +929,7 @@ window.StemLab = window.StemLab || {
               },
               'aria-label': t('stem.areamodel.reset_everything', 'Reset everything'),
               title: t('stem.areamodel.reset_all_dimensions_and_challenges', 'Reset all dimensions and challenges'),
-              className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
+              className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
             }, t('stem.areamodel.reset', '\u21BA Reset'))
           )
         ),
@@ -1081,13 +1081,13 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex gap-0.5 ml-2' },
                 ['easy', 'medium', 'hard'].map(function(d) {
                   return h('button', { key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
-                    className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
+                    className: 'text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                       (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-amber-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                   }, d);
                 })
               )
             ),
-            h('span', { className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/4 modes')
+            h('span', { className: 'text-[0.6875rem] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/4 modes')
           ),
 
           !challenge
@@ -1124,8 +1124,8 @@ window.StemLab = window.StemLab || {
               )
             : h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[11px] font-bold uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full' }, challenge.mode || viewMode),
-                  streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
+                  h('span', { className: 'text-[0.6875rem] font-bold uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full' }, challenge.mode || viewMode),
+                  streak > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
                 ),
                 h('p', { className: 'text-sm font-bold text-amber-800' }, challenge.question),
                 h('div', { className: 'flex gap-2' },
@@ -1164,7 +1164,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' + onHostInk },
+        h('div', { className: 'text-center text-[0.6875rem] text-slate-600 mt-2' + onHostInk },
           t('stem.areamodel.b_d_p_w_switch_mode_n_new_challenge_c_', '\u2328\uFE0F B/D/P/W: switch mode | N: new challenge | C: commutative | ?: AI tutor')
         ),
 
@@ -1308,39 +1308,39 @@ window.StemLab = window.StemLab || {
           }[state];
           return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-emerald-300 space-y-2' },
             h('h3', { className: 'text-sm font-black text-emerald-700' }, t('stem.areamodel.area_discovery', '📐 Area discovery')),
-            h('p', { className: 'text-[11px] text-slate-700' }, t('stem.areamodel.sliders_for_rows_cols_discrete_4_state', 'Sliders for rows × cols. Discrete 4-state classification. No score, no reveal.')),
+            h('p', { className: 'text-[0.6875rem] text-slate-700' }, t('stem.areamodel.sliders_for_rows_cols_discrete_4_state', 'Sliders for rows × cols. Discrete 4-state classification. No score, no reveal.')),
             h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
               h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
-              h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, iq.rows + ' × ' + iq.cols + ' = ' + area + ' sq units; perimeter = ' + perimeter + ' units')
+              h('div', { className: 'text-[0.625rem] text-slate-700 font-mono mt-1' }, iq.rows + ' × ' + iq.cols + ' = ' + area + ' sq units; perimeter = ' + perimeter + ' units')
             ),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               [{ k: 'rows', l: 'rows' }, { k: 'cols', l: 'cols' }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'ar-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
+                  h('label', { htmlFor: 'ar-' + s.k, className: 'block text-[0.625rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
                   h('input', { id: 'ar-' + s.k, type: 'range', min: 1, max: 12, step: 1, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                     className: 'w-full', 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rows, c: iq.cols, a: area, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, t('stem.areamodel.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ rows: 4, cols: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.areamodel.reset_2', '↺ Reset'))
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rows, c: iq.cols, a: area, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-700 border border-slate-300' }, t('stem.areamodel.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ rows: 4, cols: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.areamodel.reset_2', '↺ Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.areamodel.hypothesis_when_does_area_rows_cols', 'Hypothesis: When does area equal perimeter?'),
               'aria-label': t('stem.areamodel.area_hypothesis', 'Area relationship hypothesis'),
-              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.areamodel.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
+              className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300' }, t('stem.areamodel.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700' },
               h('ul', { className: 'list-disc pl-4 space-y-0.5' },
                 h('li', null, t('stem.areamodel.find_sizes_where_area_perimeter_rare_i', 'Find sizes where area = perimeter (rare integers).')),
                 h('li', null, t('stem.areamodel.when_does_swapping_rows_cols_change_an', 'When does swapping rows/cols change anything?')))),
-            h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+            h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               t('stem.areamodel.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.areamodel.explain_commutative_property_area_leng', 'Explain commutative property + area = length × width.'),
               'aria-label': t('stem.areamodel.area_explanation', 'Explain the area multiplication relationship'),
-              className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.areamodel.design_note_discrete_4_state_classific', 'Design note: discrete 4-state classification; no area-test score; no reveal — by design.'))
+              className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+            h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.areamodel.design_note_discrete_4_state_classific', 'Design note: discrete 4-state classification; no area-test score; no reveal — by design.'))
           );
         })()
         )

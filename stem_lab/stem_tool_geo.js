@@ -2118,17 +2118,17 @@ var d = labToolData || {};
 
                 React.createElement('p', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDDFA\uFE0F ' + geoTarget.name),
 
-                geoDifficulty === 'easy' && React.createElement('p', { className: 'text-[11px] text-slate-600' }, geoTarget.continent + ' \u2022 ' + geoTarget.region),
+                geoDifficulty === 'easy' && React.createElement('p', { className: 'text-[0.6875rem] text-slate-600' }, geoTarget.continent + ' \u2022 ' + geoTarget.region),
 
-                geoDifficulty === 'medium' && React.createElement('p', { className: 'text-[11px] text-slate-600' }, geoTarget.continent),
+                geoDifficulty === 'medium' && React.createElement('p', { className: 'text-[0.6875rem] text-slate-600' }, geoTarget.continent),
 
-                geoDifficulty === 'hard' && React.createElement('p', { className: 'text-[11px] text-slate-500 italic' }, __alloT('stem.geo.no_hints_on_hard', 'No hints on Hard')),
+                geoDifficulty === 'hard' && React.createElement('p', { className: 'text-[0.6875rem] text-slate-500 italic' }, __alloT('stem.geo.no_hints_on_hard', 'No hints on Hard')),
 
                 // Keyboard-reachable escape hatch: the map itself is pointer-only.
                 React.createElement('button', {
                   onClick: revealTarget,
                   disabled: !!geoFeedback,
-                  className: 'mt-1 px-3 py-1 rounded-full text-[11px] font-bold bg-white border border-slate-300 text-slate-700 hover:border-teal-600 hover:text-teal-800 disabled:opacity-50',
+                  className: 'mt-1 px-3 py-1 rounded-full text-[0.6875rem] font-bold bg-white border border-slate-300 text-slate-700 hover:border-teal-600 hover:text-teal-800 disabled:opacity-50',
                   title: __alloT('stem.geo.reveal_title', 'Show where it is (no points; the country goes to your review list)')
                 }, __alloT('stem.geo.show_me', '\uD83D\uDC41\uFE0F Show me')),
 
@@ -2143,12 +2143,12 @@ var d = labToolData || {};
                       : 'Keyboard mode off.');
                   },
                   'aria-pressed': geoCrosshair,
-                  className: 'mt-1 ml-2 px-3 py-1 rounded-full text-[11px] font-bold border transition-colors ' +
+                  className: 'mt-1 ml-2 px-3 py-1 rounded-full text-[0.6875rem] font-bold border transition-colors ' +
                              (geoCrosshair ? 'bg-teal-700 text-white border-teal-800' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-600 hover:text-teal-800'),
                   title: __alloT('stem.geo.keyboard_mode_title', 'Answer without a mouse: focus the map, arrow keys move the crosshair, + and - zoom, Enter answers.')
                 }, geoCrosshair ? __alloT('stem.geo.keyboard_mode_on', '\u2328\uFE0F Keyboard mode: on') : __alloT('stem.geo.keyboard_mode', '\u2328\uFE0F Keyboard mode')),
 
-                geoCrosshair && React.createElement('p', { className: 'text-[11px] text-teal-800 mt-1' },
+                geoCrosshair && React.createElement('p', { className: 'text-[0.6875rem] text-teal-800 mt-1' },
                   __alloT('stem.geo.keyboard_mode_help', 'Click the map once to focus it \u00B7 arrow keys move \u00B7 + and \u2212 zoom \u00B7 Enter answers with the country under the crosshair'))
 
               ),
@@ -2186,7 +2186,7 @@ var d = labToolData || {};
                 (!window.L || (!window._geoGeoJsonLayer.current && !d._geoOutlinesErr)) && React.createElement('div', {
                   className: 'absolute inset-x-0 top-2 flex justify-center pointer-events-none', 'aria-live': 'polite'
                 },
-                  React.createElement('span', { className: 'text-[11px] font-bold px-3 py-1 rounded-full bg-slate-900/80 text-white' },
+                  React.createElement('span', { className: 'text-[0.6875rem] font-bold px-3 py-1 rounded-full bg-slate-900/80 text-white' },
                     !window.L ? __alloT('stem.geo.loading_map', '\u23F3 Loading map\u2026') : __alloT('stem.geo.loading_country_outlines', '\u23F3 Loading country outlines\u2026'))
                 ),
 
@@ -2204,7 +2204,7 @@ var d = labToolData || {};
 
               // Progress (in-region count: geoAnswered spans every region)
 
-              React.createElement('div', { className: 'px-4 py-2 bg-slate-50 flex justify-between text-[11px] text-slate-600' },
+              React.createElement('div', { className: 'px-4 py-2 bg-slate-50 flex justify-between text-[0.6875rem] text-slate-600' },
 
                 React.createElement('span', null, '\u2705 ' + answeredInRegion + '/' + filteredCountries.length + ' found' +
                   ((filteredCountries.length > 0 && answeredInRegion >= filteredCountries.length) ? ' \u2014 all of them! Keep drilling, or pick a bigger region.' : '')),
@@ -2378,7 +2378,7 @@ var d = labToolData || {};
 
               // The hero above names seven continents but only six are answerable, which
               // reads as a missing button until you say why.
-              React.createElement('p', { className: 'text-[11px] text-slate-600 text-center mb-3 max-w-lg mx-auto' },
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 text-center mb-3 max-w-lg mx-auto' },
                 __alloT('stem.geo.antarctica_note', 'Six buttons, not seven: Antarctica has no countries, so it is never the answer. Australia and the Pacific islands are grouped here as Oceania.')),
 
               geoTarget && React.createElement('div', { className: 'max-w-lg mx-auto' },
@@ -2719,7 +2719,7 @@ var d = labToolData || {};
                       className: 'px-3 py-1 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200',
                       disabled: geoLandmarkIdx === 0
                     }, __alloT('stem.geo.previous', '\u25C0 Previous')),
-                    React.createElement('span', { className: 'text-[11px] text-slate-600 self-center' }, (lmSlot + 1) + '/' + lmCount), // wraps (used to show 21/20, 22/20 ...)
+                    React.createElement('span', { className: 'text-[0.6875rem] text-slate-600 self-center' }, (lmSlot + 1) + '/' + lmCount), // wraps (used to show 21/20, 22/20 ...)
                     React.createElement('button', {
                       onClick: function() {
                         upd('geoLandmarkIdx', geoLandmarkIdx + 1);
@@ -2808,7 +2808,7 @@ var d = labToolData || {};
                         answered
                           ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-600') },
                               c.area.toLocaleString() + ' km\u00b2')
-                          : React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, __alloT('stem.geo.click_if_bigger', 'Click if bigger'))
+                          : React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mt-1' }, __alloT('stem.geo.click_if_bigger', 'Click if bigger'))
 
                       );
 
@@ -2831,7 +2831,7 @@ var d = labToolData || {};
                         React.createElement('p', { className: 'text-xs text-slate-600 mt-1' },
                           '\uD83D\uDCCA ' + bigger.name + ' is about ' + times + '\u00d7 the area of ' + smaller.name +
                           (ratio >= 2 ? ' \u2014 you could fit roughly ' + Math.round(ratio) + ' of it inside.' : '.')),
-                        React.createElement('p', { className: 'text-[11px] text-slate-600 mt-0.5' },
+                        React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' },
                           __alloT('stem.geo.squares_to_scale', 'The two squares are drawn to one scale, so what you see is the real area ratio.'))
                       );
                     })()
@@ -2842,7 +2842,7 @@ var d = labToolData || {};
 
               })(),
 
-              React.createElement('p', { className: 'text-center text-[11px] text-slate-600 mt-3' }, __alloT('stem.geo.mercator_maps_distort_sizes_countries_', '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!'))
+              React.createElement('p', { className: 'text-center text-[0.6875rem] text-slate-600 mt-3' }, __alloT('stem.geo.mercator_maps_distort_sizes_countries_', '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!'))
 
             ),
 
@@ -2888,14 +2888,14 @@ var d = labToolData || {};
                     onChange: function(e) { upd('geoGlobeSearch', e.target.value); },
                     placeholder: __alloT('stem.geo.jump_to_a_country', 'Jump to a country\u2026'),
                     'aria-label': __alloT('stem.geo.jump_to_a_country_on_the_globe', 'Jump to a country on the globe'),
-                    className: 'px-2 py-1 rounded bg-slate-800 border border-slate-500 text-white placeholder-slate-400 text-[11px] w-40 focus:outline-none focus:ring-2 focus:ring-teal-400'
+                    className: 'px-2 py-1 rounded bg-slate-800 border border-slate-500 text-white placeholder-slate-400 text-[0.6875rem] w-40 focus:outline-none focus:ring-2 focus:ring-teal-400'
                   }),
                   React.createElement('datalist', { id: 'geo-globe-countries' },
                     countries.map(function(c) { return React.createElement('option', { key: c.iso, value: c.name }); })
                   ),
                   React.createElement('button', {
                     type: 'submit',
-                    className: 'px-2 py-1 rounded bg-teal-700 text-white text-[11px] font-bold hover:bg-teal-800'
+                    className: 'px-2 py-1 rounded bg-teal-700 text-white text-[0.6875rem] font-bold hover:bg-teal-800'
                   }, __alloT('stem.geo.go', 'Go'))
                 ),
                 React.createElement('button', {
@@ -2911,7 +2911,7 @@ var d = labToolData || {};
                   },
                   'aria-pressed': !!d.geoGlobeNight,
                   'aria-label': __alloT('stem.geo.toggle_day_night_view', 'Toggle day / night view'),
-                  className: 'px-2 py-0.5 rounded-full text-[11px] font-bold border transition-all ' + (d.geoGlobeNight ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-slate-500 text-slate-200 hover:border-slate-400')
+                  className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-bold border transition-all ' + (d.geoGlobeNight ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-slate-500 text-slate-200 hover:border-slate-400')
                 }, d.geoGlobeNight ? '\uD83C\uDF19 Night' : '\u2600\uFE0F Day')
               ),
 
@@ -2941,7 +2941,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                       React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCD'),
                       React.createElement('h4', { className: 'text-base font-bold' }, geoGlobeInfo.name),
-                      geoGlobeInfo.iso && React.createElement('span', { className: 'text-[10px] text-slate-300 font-mono bg-slate-700 px-1.5 py-0.5 rounded' }, geoGlobeInfo.iso)
+                      geoGlobeInfo.iso && React.createElement('span', { className: 'text-[0.625rem] text-slate-300 font-mono bg-slate-700 px-1.5 py-0.5 rounded' }, geoGlobeInfo.iso)
                     ),
                     geoGlobeInfo._unknown
                       ? React.createElement('p', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.geo.not_in_the_117_country_dataset_basic_i', 'Not in the 117-country dataset \u2014 basic info only.'))
@@ -3083,7 +3083,7 @@ var d = labToolData || {};
               // AI unavailable: say so once, up front, and point at the offline pack \u2014
               // the old build only surfaced it as an error toast after a failed click.
               typeof callGemini !== 'function' && React.createElement('p', {
-                className: 'text-[11px] text-amber-900 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 max-w-md mx-auto mb-3 text-center'
+                className: 'text-[0.6875rem] text-amber-900 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 max-w-md mx-auto mb-3 text-center'
               }, __alloT('stem.geo.ai_off_use_practice_pack', '\u26A0\uFE0F AI is switched off in this build, so Generate will not work. Practice pack builds questions from the built-in country data instead.')),
 
               // Quick presets
@@ -3098,7 +3098,7 @@ var d = labToolData || {};
 
                     onClick: function() { upd('geoQuizInput', preset); },
 
-                    className: 'px-2 py-1 bg-slate-100 rounded-full text-[11px] text-slate-600 hover:bg-teal-100 hover:text-teal-700 transition-all'
+                    className: 'px-2 py-1 bg-slate-100 rounded-full text-[0.6875rem] text-slate-600 hover:bg-teal-100 hover:text-teal-700 transition-all'
 
                   }, preset);
 
@@ -3189,8 +3189,8 @@ var d = labToolData || {};
                 return React.createElement('div', { className: 'max-w-md mx-auto bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200' },
 
                   React.createElement('div', { className: 'flex justify-between items-center mb-2' },
-                    React.createElement('p', { className: 'text-[11px] text-teal-700 font-bold' }, 'Question ' + (idx + 1) + ' / ' + total),
-                    React.createElement('p', { className: 'text-[11px] text-slate-600' }, '\u2705 ' + quizCorrectCount + ' correct')
+                    React.createElement('p', { className: 'text-[0.6875rem] text-teal-700 font-bold' }, 'Question ' + (idx + 1) + ' / ' + total),
+                    React.createElement('p', { className: 'text-[0.6875rem] text-slate-600' }, '\u2705 ' + quizCorrectCount + ' correct')
                   ),
 
                   // Progress bar
@@ -3200,7 +3200,7 @@ var d = labToolData || {};
 
                   React.createElement('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, q.question),
 
-                  q.hint && React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2' }, '\uD83D\uDCA1 Hint: ' + q.hint),
+                  q.hint && React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mb-2' }, '\uD83D\uDCA1 Hint: ' + q.hint),
 
                   // Feedback line (appears above input after answering)
                   answered && React.createElement('div', {
@@ -3257,13 +3257,13 @@ var d = labToolData || {};
                   React.createElement('div', { className: 'bg-teal-50 border-2 border-teal-300 rounded-xl px-4 py-3 text-center min-w-[120px]' },
                     React.createElement('div', { className: 'text-2xl' }, '\uD83C\uDFD9\uFE0F'),
                     React.createElement('div', { className: 'font-bold text-sm text-teal-800' }, geoDistA.name),
-                    React.createElement('div', { className: 'text-[11px] text-teal-800' }, geoDistA.capital)
+                    React.createElement('div', { className: 'text-[0.6875rem] text-teal-800' }, geoDistA.capital)
                   ),
                   React.createElement('div', { className: 'text-2xl text-slate-600' }, '\u2194\uFE0F'),
                   React.createElement('div', { className: 'bg-cyan-50 border-2 border-cyan-300 rounded-xl px-4 py-3 text-center min-w-[120px]' },
                     React.createElement('div', { className: 'text-2xl' }, '\uD83C\uDFD9\uFE0F'),
                     React.createElement('div', { className: 'font-bold text-sm text-cyan-800' }, geoDistB.name),
-                    React.createElement('div', { className: 'text-[11px] text-cyan-800' }, geoDistB.capital)
+                    React.createElement('div', { className: 'text-[0.6875rem] text-cyan-800' }, geoDistB.capital)
                   )
                 ),
 
@@ -3371,7 +3371,7 @@ var d = labToolData || {};
                   if (mins === 60) { h += 1; mins = 0; }
                   var flight = h > 0 ? (h + ' h ' + (mins < 10 ? '0' : '') + mins + ' min') : (mins + ' min');
                   var walkDays = Math.round(geoDistFeedback.actual / 32); // ~8 h a day at 4 km/h
-                  return React.createElement('p', { className: 'text-center text-[11px] text-slate-600' },
+                  return React.createElement('p', { className: 'text-center text-[0.6875rem] text-slate-600' },
                     '\u2708\uFE0F Nonstop at 900 km/h that is about ' + flight + ' in the air \u00B7 \uD83D\uDEB6 walking 8 hours a day, about ' + walkDays.toLocaleString() + ' days');
                 })(),
 
@@ -3426,53 +3426,53 @@ var d = labToolData || {};
               return h2('div', { className: 'p-5 space-y-4' },
                 h2('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 shadow-sm space-y-3' },
                   h2('h3', { className: 'text-sm font-black text-cyan-800' }, __alloT('stem.geo.distance_sense_heading', '\uD83C\uDF9A\uFE0F Distance sense')),
-                  h2('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.geo.dist_hunt_intro', 'Not a quiz \u2014 build a feel for how far "far" is. Slide to a distance, read which real journeys are about that long, and rate how confident you are. Log a few and compare them.')),
+                  h2('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.geo.dist_hunt_intro', 'Not a quiz \u2014 build a feel for how far "far" is. Slide to a distance, read which real journeys are about that long, and rate how confident you are. Log a few and compare them.')),
                   h2('div', { className: 'p-3 rounded-lg text-center', style: { background: cm.bg, border: '2px solid ' + cm.border }, role: 'status' },
                     h2('div', { className: 'text-base font-black', style: { color: cm.color } }, cm.label),
-                    h2('div', { className: 'text-[11px] text-slate-700 mt-1' }, cm.desc),
-                    h2('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, iqDist.toLocaleString() + ' km (' + Math.round(iqDist / KM_PER_MILE).toLocaleString() + ' mi) @ ' + iq.confidence + '% confidence')
+                    h2('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, cm.desc),
+                    h2('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, iqDist.toLocaleString() + ' km (' + Math.round(iqDist / KM_PER_MILE).toLocaleString() + ' mi) @ ' + iq.confidence + '% confidence')
                   ),
                   h2('div', { className: 'grid grid-cols-2 gap-3' },
                     [{ k: 'distance', l: __alloT('stem.geo.distance_km', 'Distance (km)'), mn: 100, mx: 20000, st: 100 },
                      { k: 'confidence', l: __alloT('stem.geo.confidence_pct', 'Confidence (%)'), mn: 0, mx: 100, st: 5 }].map(function(sl) {
                       return h2('div', { key: sl.k },
-                        h2('label', { htmlFor: 'ds-' + sl.k, className: 'block text-[11px] font-bold text-slate-700' }, sl.l + ': ', h2('span', { className: 'font-mono text-cyan-800' }, iq[sl.k])),
+                        h2('label', { htmlFor: 'ds-' + sl.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, sl.l + ': ', h2('span', { className: 'font-mono text-cyan-800' }, iq[sl.k])),
                         h2('input', { id: 'ds-' + sl.k, type: 'range', min: sl.mn, max: sl.mx, step: sl.st, value: iq[sl.k],
                           onChange: function(e) { var p = {}; p[sl.k] = parseInt(e.target.value, 10); setIQ(p); },
                           className: 'w-full', 'aria-valuetext': (sl.k === 'confidence' ? (iq[sl.k] + ' percent confidence') : (iq[sl.k] + ' kilometers')), 'aria-label': sl.l }));
                     })
                   ),
-                  h2('div', { className: 'text-[11px] text-slate-700' },
+                  h2('div', { className: 'text-[0.6875rem] text-slate-700' },
                     h2('div', { className: 'font-bold mb-1' }, __alloT('stem.geo.about_this_far', 'About this far, capital to capital:')),
                     h2('ul', { className: 'list-disc pl-5 space-y-0.5' }, nearby.map(function(n) {
                       return h2('li', { key: n.a.iso + n.b.iso }, n.a.capital + ' (' + n.a.name + ') \u2194 ' + n.b.capital + ' (' + n.b.name + '): ' + Math.round(n.km).toLocaleString() + ' km');
                     }))
                   ),
                   h2('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    h2('button', { onClick: function() { setIQ({ log: log.concat([{ d: iqDist, c: iq.confidence, cat: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300 hover:bg-slate-200' }, __alloT('stem.geo.log_this', '\uD83D\uDCCB Log this')),
-                    h2('button', { onClick: function() { setIQ({ distance: 5000, confidence: 70, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300 hover:bg-slate-100' }, __alloT('stem.geo.reset_2', '\u21BA Reset')),
-                    log.length > 0 && h2('span', { className: 'text-[11px] text-slate-600' }, log.map(function(e) { return (+e.d || 0).toLocaleString() + ' km @ ' + e.c + '%'; }).join(' \u00B7 '))
+                    h2('button', { onClick: function() { setIQ({ log: log.concat([{ d: iqDist, c: iq.confidence, cat: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300 hover:bg-slate-200' }, __alloT('stem.geo.log_this', '\uD83D\uDCCB Log this')),
+                    h2('button', { onClick: function() { setIQ({ distance: 5000, confidence: 70, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300 hover:bg-slate-100' }, __alloT('stem.geo.reset_2', '\u21BA Reset')),
+                    log.length > 0 && h2('span', { className: 'text-[0.6875rem] text-slate-600' }, log.map(function(e) { return (+e.d || 0).toLocaleString() + ' km @ ' + e.c + '%'; }).join(' \u00B7 '))
                   ),
                   h2('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.geo.hypothesis_what_is_the_maximum_great_c', 'Hypothesis: What is the maximum great-circle distance on Earth?'), 'aria-label': __alloT('stem.geo.hypothesis', 'Hypothesis'),
-                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                  !iq.stuckRevealed && h2('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.geo.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
-                  iq.stuckRevealed && h2('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                    className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  !iq.stuckRevealed && h2('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.geo.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
+                  iq.stuckRevealed && h2('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                     h2('ul', { className: 'list-disc pl-5 space-y-1' },
                       h2('li', null, __alloT('stem.geo.prompt_circumference', 'Earth\u2019s circumference is 40,075 km. If you kept going past the far side, would the distance keep growing?')),
                       h2('li', null, __alloT('stem.geo.prompt_antipode', 'The antipode of a place is the point exactly opposite it, straight through the centre of Earth. Where is the antipode of your school?')),
                       h2('li', null, __alloT('stem.geo.prompt_rhumb', 'A great circle is the shortest path on a sphere; a rhumb line keeps one compass heading. Which do pilots fly, and why?')))),
-                  h2('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h2('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                     h2('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     __alloT('stem.geo.i_understand_explain', 'I understand \u2014 explain in my own words')),
                   iq.understood && h2('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.geo.explain_how_distance_scales_translate_', 'Explain how distance scales translate to travel time.'), 'aria-label': __alloT('stem.geo.your_explanation', 'Your explanation'),
-                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })
+                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })
                 )
               );
             })(),
 
             // ── Badge shelf ──
             React.createElement('div', { className: 'px-4 py-2 border-t border-slate-100 flex flex-wrap gap-1 items-center' },
-              React.createElement('span', { className: 'text-[11px] text-slate-600 mr-1' }, 'Badges:'),
+              React.createElement('span', { className: 'text-[0.6875rem] text-slate-600 mr-1' }, 'Badges:'),
               GEO_BADGES.map(function(b) {
                 return React.createElement('span', {
                   key: b.id,
@@ -3499,7 +3499,7 @@ var d = labToolData || {};
 
                 React.createElement('button', {
                   onClick: function() { upd('geoStatsOpen', !geoStatsOpen); },
-                  className: 'w-full flex items-center justify-between text-[11px] text-slate-700 font-bold hover:text-teal-700 transition-colors',
+                  className: 'w-full flex items-center justify-between text-[0.6875rem] text-slate-700 font-bold hover:text-teal-700 transition-colors',
                   'aria-expanded': geoStatsOpen
                 },
                   React.createElement('span', null, '\uD83D\uDCCA My Progress' + (hasStats ? ' \u2014 ' + overallPct + '% overall (' + totalCorrect + '/' + totalAttempted + ')' : '')),
@@ -3507,14 +3507,14 @@ var d = labToolData || {};
                 ),
 
                 geoStatsOpen && React.createElement('div', { className: 'mt-2 space-y-1.5' },
-                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-600 italic text-center py-2' }, __alloT('stem.geo.answer_some_questions_to_see_your_prog', 'Answer some questions to see your progress per continent.')),
+                  !hasStats && React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 italic text-center py-2' }, __alloT('stem.geo.answer_some_questions_to_see_your_prog', 'Answer some questions to see your progress per continent.')),
                   hasStats && ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(function(cont) {
                     var s = geoSessionStats[cont];
                     var hasData = !!s;
                     var total = hasData ? s.c + s.w : 0;
                     var pct = total > 0 ? Math.round((s.c / total) * 100) : 0;
                     var barColor = !hasData ? '#cbd5e1' : pct >= 80 ? '#22c55e' : pct >= 50 ? '#fbbf24' : '#ef4444';
-                    return React.createElement('div', { key: cont, className: 'flex items-center gap-2 text-[11px]' },
+                    return React.createElement('div', { key: cont, className: 'flex items-center gap-2 text-[0.6875rem]' },
                       React.createElement('span', { className: 'inline-block w-2 h-2 rounded-full', style: { background: continentColors[cont] || '#a0aec0' } }),
                       React.createElement('span', { className: 'w-28 text-slate-700 font-medium' }, cont),
                       React.createElement('div', { className: 'flex-1 h-2 bg-slate-200 rounded-full overflow-hidden' },
@@ -3526,7 +3526,7 @@ var d = labToolData || {};
                         hasData ? (s.c + '/' + total + ' \u2014 ' + pct + '%') : 'not yet')
                     );
                   }),
-                  hasStats && React.createElement('div', { className: 'flex justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-200 mt-2' },
+                  hasStats && React.createElement('div', { className: 'flex justify-between text-[0.6875rem] text-slate-600 pt-1 border-t border-slate-200 mt-2' },
                     React.createElement('span', null, '\uD83C\uDFC6 ' + geoAnswered.length + ' mastered'),
                     React.createElement('span', null, '\uD83D\uDD01 ' + geoMissed.length + ' in review')
                   ),
@@ -3550,7 +3550,7 @@ var d = labToolData || {};
                         announceFeedback('Quiz narrowed to ' + weak.continent + ', where you are at ' + Math.round(weak.pct * 100) + ' percent this session.');
                       },
                       disabled: already,
-                      className: 'w-full mt-2 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ' +
+                      className: 'w-full mt-2 px-3 py-2 rounded-lg text-[0.6875rem] font-bold border transition-colors ' +
                                  (already ? 'bg-slate-100 border-slate-300 text-slate-600 cursor-default'
                                           : 'bg-white border-teal-700 text-teal-800 hover:bg-teal-50')
                     }, already
@@ -3563,7 +3563,7 @@ var d = labToolData || {};
                   // spaced-repetition set reviewable away from the screen too; each is a
                   // button so it can be studied on demand.
                   geoMissed.length > 0 && React.createElement('div', { className: 'mt-2 pt-2 border-t border-slate-200' },
-                    React.createElement('p', { className: 'text-[11px] text-slate-700 font-bold mb-1' },
+                    React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 font-bold mb-1' },
                       '\uD83D\uDD01 ' + __alloT('stem.geo.to_review', 'To review') + ' (' + geoMissed.length + ') \u2014 ' + __alloT('stem.geo.tap_one_to_study_it_now', 'tap one to study it now')),
                     React.createElement('div', { className: 'flex flex-wrap gap-1' },
                       geoMissed.map(function(iso) {
@@ -3579,7 +3579,7 @@ var d = labToolData || {};
                             window._geoLastZoomedRegion = null;
                             announceFeedback('Now studying ' + c.name + ', in ' + c.region + ', ' + c.continent + '.');
                           },
-                          className: 'px-2 py-1 rounded-full text-[11px] font-medium bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100',
+                          className: 'px-2 py-1 rounded-full text-[0.6875rem] font-medium bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100',
                           title: c.name + ' \u2014 ' + c.region + ', ' + c.continent
                         }, c.name);
                       })
@@ -3592,7 +3592,7 @@ var d = labToolData || {};
 
             // ── Bottom stats ──
 
-            React.createElement('div', { className: 'px-4 py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-t flex justify-between items-center text-[11px] text-slate-600' },
+            React.createElement('div', { className: 'px-4 py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-t flex justify-between items-center text-[0.6875rem] text-slate-600' },
 
               React.createElement('span', null, '\u2B50 Score: ' + geoScore + '  \u2022  \uD83D\uDD25 Streak: ' + geoStreak),
 
@@ -3955,7 +3955,7 @@ var d = labToolData || {};
                 },
                   isMatched
                     ? React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-lg'},matchedPair.icon), React.createElement('span',{className:'text-xs font-bold text-emerald-700'},matchedPair.theorem), React.createElement('span',{className:'text-xs text-emerald-500 ml-auto'},'✅'))
-                    : React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-[11px] text-slate-600 font-bold'},(slot+1)+'.'), React.createElement('span',{className:'text-xs text-slate-600'},pair.desc), !isMatched&&React.createElement('span',{className:'text-[11px] text-violet-400 ml-auto italic'},gp.matchDragOver===slot?'⬇ Drop!':gp.selectedMatch!=null?'👆 Click':'🧩 Drop'))
+                    : React.createElement('div',{className:'flex items-center gap-2'}, React.createElement('span',{className:'text-[0.6875rem] text-slate-600 font-bold'},(slot+1)+'.'), React.createElement('span',{className:'text-xs text-slate-600'},pair.desc), !isMatched&&React.createElement('span',{className:'text-[0.6875rem] text-violet-400 ml-auto italic'},gp.matchDragOver===slot?'⬇ Drop!':gp.selectedMatch!=null?'👆 Click':'🧩 Drop'))
                 );
               })
             ),
@@ -4038,8 +4038,8 @@ var d = labToolData || {};
                   onClick:()=>{ if(gp.selectedAngle!=null){sortAngle(gp.selectedAngle,ci);gpUpd('selectedAngle',null);} },
                   className:`p-2 rounded-xl border-2 min-h-[70px] transition-all text-center ${gp.sorterDragOver===ci?'border-violet-400 bg-violet-50 shadow-md':'border-slate-200 bg-slate-50 hover:border-slate-300'}`
                 },
-                  React.createElement('p',{className:'text-[11px] font-bold text-slate-600 mb-1'},cat),
-                  inBucket.map(a=>React.createElement('div',{key:a.id,className:'text-[11px] font-bold text-emerald-800 bg-emerald-100 rounded px-1 py-0.5 mb-0.5 gp-sort-bounce'},a.deg+'° ✅'))
+                  React.createElement('p',{className:'text-[0.6875rem] font-bold text-slate-600 mb-1'},cat),
+                  inBucket.map(a=>React.createElement('div',{key:a.id,className:'text-[0.6875rem] font-bold text-emerald-800 bg-emerald-100 rounded px-1 py-0.5 mb-0.5 gp-sort-bounce'},a.deg+'° ✅'))
                 );
               })
             ),
@@ -4222,11 +4222,11 @@ var d = labToolData || {};
             React.createElement('button',{onClick:()=>gpUpd('revealed',true),disabled:!(gp.prediction||'').trim(),className:'w-full py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 transition-all disabled:opacity-40'},'👁 Reveal Theorems')
           );
           return React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200'},
-            React.createElement('div',{className:'flex items-center justify-between mb-2'}, React.createElement('p',{className:'text-xs font-bold text-violet-700 uppercase'},'🔍 Detected Theorems'), gpInvestigate&&gpRevealed&&React.createElement('button',{onClick:()=>{gpUpd('revealed',false);gpUpd('prediction','');},className:'text-[11px] text-violet-500 underline hover:text-violet-700'},'Hide again')),
+            React.createElement('div',{className:'flex items-center justify-between mb-2'}, React.createElement('p',{className:'text-xs font-bold text-violet-700 uppercase'},'🔍 Detected Theorems'), gpInvestigate&&gpRevealed&&React.createElement('button',{onClick:()=>{gpUpd('revealed',false);gpUpd('prediction','');},className:'text-[0.6875rem] text-violet-500 underline hover:text-violet-700'},'Hide again')),
             React.createElement('div',{className:'space-y-2'},
               theorems.map((th,ti)=>React.createElement('div',{key:ti,className:`flex items-start gap-2 bg-white rounded-lg p-2.5 border ${th.valid?'border-emerald-200':'border-amber-200'}`},
                 React.createElement('span',{className:'text-lg leading-none pt-0.5'},th.icon),
-                React.createElement('div',{className:'flex-1 min-w-0'}, React.createElement('p',{className:`text-xs font-bold ${th.valid?'text-emerald-700':'text-amber-700'}`},th.label), React.createElement('p',{className:'text-[11px] text-slate-600 font-mono break-words'},th.desc), React.createElement('p',{className:'text-[11px] text-slate-600 mt-0.5 italic'},th.detail)),
+                React.createElement('div',{className:'flex-1 min-w-0'}, React.createElement('p',{className:`text-xs font-bold ${th.valid?'text-emerald-700':'text-amber-700'}`},th.label), React.createElement('p',{className:'text-[0.6875rem] text-slate-600 font-mono break-words'},th.desc), React.createElement('p',{className:'text-[0.6875rem] text-slate-600 mt-0.5 italic'},th.detail)),
                 React.createElement('span',{className:`text-xs font-bold ${th.valid?'text-emerald-500':'text-amber-500'}`},th.valid?'✓':'≈')
               ))
             )
@@ -4252,13 +4252,13 @@ var d = labToolData || {};
             // CSS for DnD animations
             React.createElement('style',null,'@keyframes gpSnapIn{0%{transform:scale(.8);opacity:.5}100%{transform:scale(1);opacity:1}} @keyframes gpShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}} .gp-snap{animation:gpSnapIn .3s ease} .gp-shake{animation:gpShake .4s ease}'),
             // Header
-            React.createElement('div',{className:'flex items-center gap-2 mb-3'}, React.createElement('div',{className:'w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-base'},'📝'), React.createElement('div',{className:'flex-1'}, React.createElement('h4',{className:'text-sm font-bold text-emerald-800'},proof.title), React.createElement('p',{className:'text-[11px] text-emerald-600 italic'},proof.theorem)), React.createElement('div',{className:`text-xs font-bold px-2 py-1 rounded-full ${pct===100?'bg-emerald-700 text-white':'bg-emerald-100 text-emerald-700'}`},pct+'%')),
+            React.createElement('div',{className:'flex items-center gap-2 mb-3'}, React.createElement('div',{className:'w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-base'},'📝'), React.createElement('div',{className:'flex-1'}, React.createElement('h4',{className:'text-sm font-bold text-emerald-800'},proof.title), React.createElement('p',{className:'text-[0.6875rem] text-emerald-600 italic'},proof.theorem)), React.createElement('div',{className:`text-xs font-bold px-2 py-1 rounded-full ${pct===100?'bg-emerald-700 text-white':'bg-emerald-100 text-emerald-700'}`},pct+'%')),
             React.createElement('div',{className:'w-full h-1.5 bg-emerald-200 rounded-full mb-3 overflow-hidden'}, React.createElement('div',{className:'h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500',style:{width:pct+'%'}})),
             // Proof selector
-            React.createElement('div',{className:'flex gap-1.5 mb-3 flex-wrap'}, GUIDED_PROOFS.map(p=>React.createElement('button',{key:p.id,onClick:()=>loadGuidedProof(p.id),className:`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${gpGuided.proofId===p.id?'bg-emerald-700 text-white':'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-600'}`},p.title.split(' ').slice(0,3).join(' ')))),
+            React.createElement('div',{className:'flex gap-1.5 mb-3 flex-wrap'}, GUIDED_PROOFS.map(p=>React.createElement('button',{key:p.id,onClick:()=>loadGuidedProof(p.id),className:`px-2 py-1 text-[0.6875rem] font-bold rounded-lg transition-all ${gpGuided.proofId===p.id?'bg-emerald-700 text-white':'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-600'}`},p.title.split(' ').slice(0,3).join(' ')))),
             // ── Reason Chip Bank (draggable) ──
             React.createElement('div',{className:'mb-3'},
-              React.createElement('p',{className:'text-[11px] font-bold text-emerald-700 uppercase mb-1.5'},'🧩 Drag a reason to the correct row (or click to select, then click the row):'),
+              React.createElement('p',{className:'text-[0.6875rem] font-bold text-emerald-700 uppercase mb-1.5'},'🧩 Drag a reason to the correct row (or click to select, then click the row):'),
               React.createElement('div',{className:'flex flex-wrap gap-1.5'},
                 availableReasons.map(reason => React.createElement('div',{ 
                   key:reason,
@@ -4269,14 +4269,14 @@ var d = labToolData || {};
                   'aria-label': 'Reason: '+reason+'. Press Enter to select, then choose a proof row.',
                   onKeyDown:e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); gpUpd('selectedChip', selectedChip===reason?null:reason); } },
                   onClick:()=>{ gpUpd('selectedChip', selectedChip===reason?null:reason); },
-                  className:`px-2.5 py-1.5 text-[11px] font-bold rounded-lg cursor-grab active:cursor-grabbing select-none transition-all shadow-sm hover:shadow-md hover:scale-105 ${selectedChip===reason?'bg-violet-700 text-white ring-2 ring-violet-300 scale-105':'bg-white text-emerald-700 border border-emerald-200 hover:border-emerald-400'}`,
+                  className:`px-2.5 py-1.5 text-[0.6875rem] font-bold rounded-lg cursor-grab active:cursor-grabbing select-none transition-all shadow-sm hover:shadow-md hover:scale-105 ${selectedChip===reason?'bg-violet-700 text-white ring-2 ring-violet-300 scale-105':'bg-white text-emerald-700 border border-emerald-200 hover:border-emerald-400'}`,
                   style:{touchAction:'none'}
                 }, '🧩 '+reason))
               )
             ),
             // ── Proof Table ──
             React.createElement('div',{className:'bg-white rounded-xl border border-emerald-200 overflow-hidden'},
-              React.createElement('div',{className:'grid grid-cols-12 bg-emerald-100 text-[11px] font-bold text-emerald-800 border-b border-emerald-200'}, React.createElement('div',{className:'col-span-1 p-2 text-center'},'#'), React.createElement('div',{className:'col-span-6 p-2'},'Statement'), React.createElement('div',{className:'col-span-4 p-2'},'Reason'), React.createElement('div',{className:'col-span-1 p-2 text-center'},'✓')),
+              React.createElement('div',{className:'grid grid-cols-12 bg-emerald-100 text-[0.6875rem] font-bold text-emerald-800 border-b border-emerald-200'}, React.createElement('div',{className:'col-span-1 p-2 text-center'},'#'), React.createElement('div',{className:'col-span-6 p-2'},'Statement'), React.createElement('div',{className:'col-span-4 p-2'},'Reason'), React.createElement('div',{className:'col-span-1 p-2 text-center'},'✓')),
               proof.steps.map((step,si)=>{
                 const ans=answers[si],isCorrect=ans&&ans.correct,canAnswer=!isCorrect&&(si===0||(answers[si-1]&&answers[si-1].correct));
                 const isHovered = dragOverStep===si;
@@ -4291,12 +4291,12 @@ var d = labToolData || {};
                   onClick:()=>{ if(canAnswer&&selectedChip){ placeChip(si,selectedChip); } }
                 },
                   React.createElement('div',{className:'col-span-1 p-2 text-center text-xs font-bold text-emerald-600'},si+1),
-                  React.createElement('div',{className:'col-span-6 p-2 text-[11px] text-slate-700 font-medium'},step.statement),
+                  React.createElement('div',{className:'col-span-6 p-2 text-[0.6875rem] text-slate-700 font-medium'},step.statement),
                   React.createElement('div',{className:'col-span-4 p-1.5'},
-                    isCorrect ? React.createElement('div',{className:'text-[11px] font-bold text-emerald-800 bg-emerald-100 rounded px-2 py-1 gp-snap'},'✅ '+step.reason)
-                    : canAnswer ? React.createElement('div',{className:`h-8 flex items-center justify-center rounded-lg border-2 border-dashed transition-all ${isHovered?'border-violet-400 bg-violet-50 text-violet-600':'border-emerald-200 text-emerald-400'} ${ans&&!isCorrect?'border-red-300 text-red-500':''} text-[11px] font-semibold`},
+                    isCorrect ? React.createElement('div',{className:'text-[0.6875rem] font-bold text-emerald-800 bg-emerald-100 rounded px-2 py-1 gp-snap'},'✅ '+step.reason)
+                    : canAnswer ? React.createElement('div',{className:`h-8 flex items-center justify-center rounded-lg border-2 border-dashed transition-all ${isHovered?'border-violet-400 bg-violet-50 text-violet-600':'border-emerald-200 text-emerald-400'} ${ans&&!isCorrect?'border-red-300 text-red-500':''} text-[0.6875rem] font-semibold`},
                         ans&&!isCorrect ? '❌ Try again — drag the correct reason here' : isHovered ? '⬇ Drop here!' : selectedChip ? '👆 Click to place' : '🧩 Drag reason here')
-                    : React.createElement('div',{className:'text-[11px] text-slate-600 italic px-2 py-1'},'🔒 Locked')
+                    : React.createElement('div',{className:'text-[0.6875rem] text-slate-600 italic px-2 py-1'},'🔒 Locked')
                   ),
                   React.createElement('div',{className:'col-span-1 p-2 text-center text-sm'},isCorrect?'✅':ans?'❌':canAnswer?'⭕':'⏳')
                 );
@@ -4305,9 +4305,9 @@ var d = labToolData || {};
             // Completion
             gpGuided.completed&&Object.values(answers).every(a=>a.correct)&&React.createElement('div',{className:'mt-3 p-3 bg-emerald-100 rounded-xl border border-emerald-300 text-center gp-snap'},
               React.createElement('p',{className:'text-sm font-bold text-emerald-700'},'🎉 Proof Complete! Q.E.D.'),
-              React.createElement('p',{className:'text-[11px] text-emerald-600 mt-1'},proof.theorem)
+              React.createElement('p',{className:'text-[0.6875rem] text-emerald-600 mt-1'},proof.theorem)
             ),
-            Object.values(answers).some(a=>!a.correct)&&React.createElement('div',{className:'mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200'}, React.createElement('p',{className:'text-[11px] text-amber-700'},'💡 Drag a different reason chip from the bank above. Think about which property directly justifies the statement.'))
+            Object.values(answers).some(a=>!a.correct)&&React.createElement('div',{className:'mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200'}, React.createElement('p',{className:'text-[0.6875rem] text-amber-700'},'💡 Drag a different reason chip from the bank above. Think about which property directly justifies the statement.'))
           );
         };
 
@@ -4318,13 +4318,13 @@ var d = labToolData || {};
             React.createElement('p',{className:'text-xs text-slate-600 mb-2' + onHostInk},'Each mission guides you to discover a theorem through measurement and prediction — no formulas given away!'),
             React.createElement('div',{className:'space-y-2'}, MISSIONS.map(m=>React.createElement('button',{key:m.id,onClick:()=>startMission(m.id),className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-violet-100 rounded-xl hover:border-violet-400 hover:bg-violet-50 text-left transition-all'},
               React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},m.icon),
-              React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-600'},'Discover the rule yourself through measurement & prediction'))
+              React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[0.6875rem] text-slate-600'},'Discover the rule yourself through measurement & prediction'))
             ))),
             React.createElement('div',{className:'mt-3 pt-3 border-t-2 border-violet-100'},
               React.createElement('p',{className:'text-sm font-bold text-orange-700 mb-2'},'🎲 Quick Activities'),
               React.createElement('button',{onClick:function(){gpUpd('mission',{id:'angle_sorter',step:0,data:{}});startAngleSorter();},className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-orange-100 rounded-xl hover:border-orange-400 hover:bg-orange-50 text-left transition-all'},
                 React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},'📐'),
-                React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[11px] text-slate-600'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))
+                React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[0.6875rem] text-slate-600'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))
               )
             )
           );
@@ -4332,7 +4332,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('span',{className:'text-xl'},'📐'),
               React.createElement('p',{className:'text-sm font-bold text-orange-700 flex-1'},'Angle Sorter'),
-              React.createElement('button',{onClick:function(){gpUpd('mission',null);gpUpd('sorter',null);},className:'text-[11px] text-slate-600 hover:text-slate-600 underline'},'Exit')
+              React.createElement('button',{onClick:function(){gpUpd('mission',null);gpUpd('sorter',null);},className:'text-[0.6875rem] text-slate-600 hover:text-slate-600 underline'},'Exit')
             ),
             renderAngleSorter()
           );
@@ -4341,7 +4341,7 @@ var d = labToolData || {};
           const step=gpMission.step, data=gpMission.data||{};
           if (step>=mission.steps.length) return React.createElement('div',{className:'bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border-2 border-emerald-300 text-center'},
             React.createElement('div',{className:'text-4xl mb-2'},'🎉'), React.createElement('h4',{className:'text-base font-bold text-emerald-800 mb-2'},'Mission Complete!'),
-            React.createElement('div',{className:'bg-emerald-100 rounded-xl p-3 border border-emerald-300 mb-3 text-left'}, React.createElement('p',{className:'text-[11px] font-bold text-emerald-600 uppercase mb-1'},'💡 The Big Idea'), React.createElement('p',{className:'text-sm text-emerald-800'},mission.bigIdea)),
+            React.createElement('div',{className:'bg-emerald-100 rounded-xl p-3 border border-emerald-300 mb-3 text-left'}, React.createElement('p',{className:'text-[0.6875rem] font-bold text-emerald-600 uppercase mb-1'},'💡 The Big Idea'), React.createElement('p',{className:'text-sm text-emerald-800'},mission.bigIdea)),
             React.createElement('div',{className:'flex gap-2'}, React.createElement('button',{onClick:()=>gpUpd('mission',null),className:'flex-1 py-2 bg-violet-700 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all'},'🧭 Try Another'), React.createElement('button',{onClick:()=>gpUpd('mission',{...gpMission,step:0,data:{}}),className:'flex-1 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'},'↺ Repeat'))
           );
           const cs=mission.steps[step], pct=Math.round(step/mission.steps.length*100);
@@ -4349,15 +4349,15 @@ var d = labToolData || {};
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('span',{className:'text-xl'},mission.icon),
               React.createElement('div',{className:'flex-1'}, React.createElement('p',{className:'text-sm font-bold text-violet-800'},mission.title), React.createElement('div',{className:'w-full h-1.5 bg-violet-100 rounded-full mt-1 overflow-hidden'}, React.createElement('div',{className:'h-full bg-gradient-to-r from-violet-400 to-purple-400 rounded-full transition-all duration-500',style:{width:pct+'%'}}))),
-              React.createElement('span',{className:'text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full'},`${step+1}/${mission.steps.length}`),
-              React.createElement('button',{onClick:()=>gpUpd('mission',null),className:'text-[11px] text-slate-600 hover:text-slate-600 underline'},'Exit')
+              React.createElement('span',{className:'text-[0.6875rem] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full'},`${step+1}/${mission.steps.length}`),
+              React.createElement('button',{onClick:()=>gpUpd('mission',null),className:'text-[0.6875rem] text-slate-600 hover:text-slate-600 underline'},'Exit')
             ),
             React.createElement('div',{className:'bg-white rounded-xl p-3 border-2 border-violet-200'},
-              cs.type==='action'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-violet-500 uppercase mb-1'},'📋 Do This'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-violet-700 text-white font-bold rounded-lg text-xs hover:bg-violet-600 transition-all'},'Done →')),
-              cs.type==='predict'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-amber-500 uppercase mb-1'},'🤔 Make a Prediction'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('input',{type:'text','aria-label':'Mission prediction',placeholder:cs.ph,value:data[cs.field]||'',onChange:e=>gpUpd('mission',{...gpMission,data:{...data,[cs.field]:e.target.value}}),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 font-semibold'}), React.createElement('button',{disabled:!(data[cs.field]||'').trim(),onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-xs hover:bg-amber-800 transition-all disabled:opacity-40'},'Commit Prediction →')),
-              cs.type==='check'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-blue-500 uppercase mb-1'},'🔬 Investigate'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-blue-700 text-white font-bold rounded-lg text-xs hover:bg-blue-600 transition-all'},'I verified it →')),
-              cs.type==='reflect'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-purple-500 uppercase mb-1'},'💭 Reflect'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('div',{className:'flex flex-col gap-1.5'}, cs.opts.map(opt=>React.createElement('button',{key:opt,onClick:()=>{ gpUpd('mission',{...gpMission,data:{...data,[cs.field]:opt}}); setTimeout(()=>{ advanceMission(step+1); if(opt===cs.correct&&typeof awardStemXP==='function') awardStemXP('geometryProver',5,'discovery'); },500); },className:`px-3 py-2 text-sm font-semibold rounded-lg border-2 text-left transition-all ${data[cs.field]===opt?'bg-purple-700 text-white border-purple-500':'bg-white text-slate-700 border-purple-200 hover:border-purple-400'}`},opt)))),
-              cs.type==='conclude'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-emerald-500 uppercase mb-1'},'🎯 Big Idea'), React.createElement('div',{className:'bg-emerald-50 rounded-xl p-3 border border-emerald-200 mb-2'}, React.createElement('p',{className:'text-sm text-emerald-800'},mission.bigIdea)), React.createElement('button',{onClick:()=>{ advanceMission(step+1); if(typeof awardStemXP==='function') awardStemXP('geometryProver',20,mission.id+' complete'); addToast('🎉 Discovery complete! +20 XP','success'); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); },className:'w-full py-2 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-800 transition-all'},'✅ Got it! Complete Mission'))
+              cs.type==='action'&&React.createElement('div',null, React.createElement('p',{className:'text-[0.6875rem] font-bold text-violet-500 uppercase mb-1'},'📋 Do This'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-violet-700 text-white font-bold rounded-lg text-xs hover:bg-violet-600 transition-all'},'Done →')),
+              cs.type==='predict'&&React.createElement('div',null, React.createElement('p',{className:'text-[0.6875rem] font-bold text-amber-500 uppercase mb-1'},'🤔 Make a Prediction'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('input',{type:'text','aria-label':'Mission prediction',placeholder:cs.ph,value:data[cs.field]||'',onChange:e=>gpUpd('mission',{...gpMission,data:{...data,[cs.field]:e.target.value}}),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 font-semibold'}), React.createElement('button',{disabled:!(data[cs.field]||'').trim(),onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-xs hover:bg-amber-800 transition-all disabled:opacity-40'},'Commit Prediction →')),
+              cs.type==='check'&&React.createElement('div',null, React.createElement('p',{className:'text-[0.6875rem] font-bold text-blue-500 uppercase mb-1'},'🔬 Investigate'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-blue-700 text-white font-bold rounded-lg text-xs hover:bg-blue-600 transition-all'},'I verified it →')),
+              cs.type==='reflect'&&React.createElement('div',null, React.createElement('p',{className:'text-[0.6875rem] font-bold text-purple-500 uppercase mb-1'},'💭 Reflect'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('div',{className:'flex flex-col gap-1.5'}, cs.opts.map(opt=>React.createElement('button',{key:opt,onClick:()=>{ gpUpd('mission',{...gpMission,data:{...data,[cs.field]:opt}}); setTimeout(()=>{ advanceMission(step+1); if(opt===cs.correct&&typeof awardStemXP==='function') awardStemXP('geometryProver',5,'discovery'); },500); },className:`px-3 py-2 text-sm font-semibold rounded-lg border-2 text-left transition-all ${data[cs.field]===opt?'bg-purple-700 text-white border-purple-500':'bg-white text-slate-700 border-purple-200 hover:border-purple-400'}`},opt)))),
+              cs.type==='conclude'&&React.createElement('div',null, React.createElement('p',{className:'text-[0.6875rem] font-bold text-emerald-500 uppercase mb-1'},'🎯 Big Idea'), React.createElement('div',{className:'bg-emerald-50 rounded-xl p-3 border border-emerald-200 mb-2'}, React.createElement('p',{className:'text-sm text-emerald-800'},mission.bigIdea)), React.createElement('button',{onClick:()=>{ advanceMission(step+1); if(typeof awardStemXP==='function') awardStemXP('geometryProver',20,mission.id+' complete'); addToast('🎉 Discovery complete! +20 XP','success'); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); },className:'w-full py-2 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-800 transition-all'},'✅ Got it! Complete Mission'))
             )
           );
         };
@@ -4383,7 +4383,7 @@ var d = labToolData || {};
             React.createElement('h3',{className:'text-lg font-bold text-violet-800' + onHostInk},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-700'},exploreScore.correct+'/'+exploreScore.total),
-              React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5'},'📸 Snapshot')
+              React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5'},'📸 Snapshot')
             )
           ),
           // Tab bar
@@ -4398,13 +4398,13 @@ var d = labToolData || {};
           React.createElement('div',{className:'flex items-center gap-2 px-3 py-1.5 rounded-lg border',style:{background:'linear-gradient(90deg,#f5f3ff,#ede9fe)',borderColor:'#c4b5fd'}},
             React.createElement('span',{className:'text-xs'},'🧭'),
             React.createElement('span',{className:'text-xs font-semibold text-violet-700 flex-1'},helperText),
-            React.createElement('span',{className:'text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full'},gpMode)
+            React.createElement('span',{className:'text-[0.6875rem] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full'},gpMode)
           ),
           // BUILD TAB
           gpTab==='build'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-build',tabIndex:0,className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('button',{'aria-pressed':gpInvestigate?'true':'false',onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-amber-400 focus:outline-none ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
-              React.createElement('span',{className:'text-[11px] text-slate-600 italic' + onHostInk},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
+              React.createElement('span',{className:'text-[0.6875rem] text-slate-600 italic' + onHostInk},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
               [{id:'freeform',label:'✏️ Freeform',color:'violet',action:()=>{gpUpd('mode','freeform');gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('guided',null);}},
@@ -4425,7 +4425,7 @@ var d = labToolData || {};
             renderTheoremPanel(),
             gpPoints.length>=2&&React.createElement('div',{className:'grid grid-cols-3 gap-2'},
               [['Points',gpPoints.length],['Segments',gpSegments.length],['Theorems',theorems.length]].map(([lbl,val])=>
-                React.createElement('div',{key:lbl,className:'bg-white rounded-xl p-2 border border-violet-100 text-center'}, React.createElement('div',{className:'text-[11px] font-bold text-violet-500 uppercase'},lbl), React.createElement('div',{className:'text-2xl font-bold text-violet-800'},val))
+                React.createElement('div',{key:lbl,className:'bg-white rounded-xl p-2 border border-violet-100 text-center'}, React.createElement('div',{className:'text-[0.6875rem] font-bold text-violet-500 uppercase'},lbl), React.createElement('div',{className:'text-2xl font-bold text-violet-800'},val))
               )
             ),
             gpMode==='guided'&&renderGuidedProof()
@@ -4443,7 +4443,7 @@ var d = labToolData || {};
             gpChallenge&&gpChallenge.type==='theorem_match'&&renderMatchGame(),
             gpChallenge&&gpChallenge.type!=='theorem_match'&&React.createElement('div',{className:'bg-violet-50 rounded-xl p-4 border-2 border-violet-200'},
               React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-3'},'🎯 '+gpChallenge.question),
-              gpChallenge.type==='polygon_sum'&&React.createElement('p',{className:'text-[11px] text-violet-600 italic mb-2'},'💡 How many triangles fit inside the polygon?'),
+              gpChallenge.type==='polygon_sum'&&React.createElement('p',{className:'text-[0.6875rem] text-violet-600 italic mb-2'},'💡 How many triangles fit inside the polygon?'),
               React.createElement('div',{className:'flex gap-2'},
                 React.createElement('input',{type:'text','aria-label':'Challenge answer in degrees',value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:'Your answer (°)',className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none'}),
                 React.createElement('button',{onClick:checkChallenge,className:'px-4 py-2 bg-violet-700 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all'},'✔ Check')
@@ -4453,14 +4453,14 @@ var d = labToolData || {};
             !gpChallenge&&React.createElement('div',{className:'bg-violet-50 rounded-xl p-4 border border-violet-200 text-center'},
               React.createElement('p',{className:'text-xs text-violet-600 mb-2'},'Challenges cover:'),
               React.createElement('div',{className:'flex flex-wrap gap-1.5 justify-center'},
-                ['Triangle angle sum','Vertical angles','Missing angle','Exterior angle','Polygon sums','Theorem Match'].map(t=>React.createElement('span',{key:t,className:'text-[11px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold'},t))
+                ['Triangle angle sum','Vertical angles','Missing angle','Exterior angle','Polygon sums','Theorem Match'].map(t=>React.createElement('span',{key:t,className:'text-[0.6875rem] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold'},t))
               )
             )
           ),
           // Footer
           React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200 text-center'},
-            React.createElement('p',{className:'text-[11px] text-violet-600'},React.createElement('strong',null,'📐 Euclidean Geometry'),' — drag points to explore how angles change.'),
-            React.createElement('p',{className:'text-[11px] text-slate-600 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
+            React.createElement('p',{className:'text-[0.6875rem] text-violet-600'},React.createElement('strong',null,'📐 Euclidean Geometry'),' — drag points to explore how angles change.'),
+            React.createElement('p',{className:'text-[0.6875rem] text-slate-600 mt-0.5'},'Place points • Draw segments • Drag to explore • Discover theorems')
           )
         );
       })();

@@ -24,11 +24,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
 {
-  "buttons": 111,
+  "buttons": 112,
   "inputs": 11,
-  "lengthBucket": 828,
+  "lengthBucket": 846,
   "selects": 3,
-  "sha": "dbf09cd9421e3339",
+  "sha": "a054d080e88f77f6",
   "svgs": 0,
 }
 `;
@@ -39,7 +39,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 726,
   "selects": 0,
-  "sha": "07d5f892f385a787",
+  "sha": "c4cd765e94373575",
   "svgs": 2,
 }
 `;
@@ -70,9 +70,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 24,
   "inputs": 0,
-  "lengthBucket": 165,
+  "lengthBucket": 166,
   "selects": 0,
-  "sha": "5b49d999ff6d19f3",
+  "sha": "9e577dfd9d926fc0",
   "svgs": 0,
 }
 `;
@@ -123,11 +123,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for solarSystem 1`] = `
 {
-  "buttons": 34,
+  "buttons": 38,
   "inputs": 1,
-  "lengthBucket": 207,
+  "lengthBucket": 223,
   "selects": 0,
-  "sha": "6df6844b8efbf6ae",
+  "sha": "95e66303b66f9c02",
   "svgs": 0,
 }
 `;

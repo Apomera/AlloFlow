@@ -793,12 +793,12 @@
         ? (props.routeComplete ? 'Finish your route' : 'Reflect on the evidence so far')
         : 'Capture what you learned'),
       props.routeQuestion
-        ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: bodyInk } },
+        ? h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: bodyInk } },
             props.routeIcon + ' ' + props.routeQuestion)
         : null,
       h('p', {
         id: helpId,
-        className: 'text-[11px] mt-1 leading-relaxed',
+        className: 'text-[0.6875rem] mt-1 leading-relaxed',
         style: { color: quietInk }
       }, 'Optional. There is no right answer and no score. Your note stays with your lab progress.'
         + (props.routeQuestion && !props.routeComplete && props.routeStepsRemaining
@@ -807,14 +807,14 @@
           : '')),
       h('form', { className: 'mt-2', onSubmit: submit },
         h('fieldset', { 'aria-describedby': helpId },
-          h('legend', { className: 'text-[11px] font-black mb-1', style: { color: bodyInk } },
+          h('legend', { className: 'text-[0.6875rem] font-black mb-1', style: { color: bodyInk } },
             'How ready are you to explain this question in your own words?'),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
             confidenceOptions.map(function (option) {
               var selected = confidence === option.id;
               return h('label', {
                 key: option.id,
-                className: 'min-h-11 flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-bold cursor-pointer',
+                className: 'min-h-11 flex items-center gap-2 rounded-lg border px-3 py-2 text-[0.6875rem] font-bold cursor-pointer',
                 style: selected
                   ? {
                       borderColor: '#22d3ee',
@@ -847,7 +847,7 @@
           )
         ),
         h('div', { className: 'mt-3' },
-          h('label', { htmlFor: ideaId, className: 'block text-[11px] font-black', style: { color: bodyInk } },
+          h('label', { htmlFor: ideaId, className: 'block text-[0.6875rem] font-black', style: { color: bodyInk } },
             'One idea I can explain now'),
           h('textarea', {
             id: ideaId,
@@ -867,12 +867,12 @@
           }),
           h('p', {
             id: ideaCountId,
-            className: 'mt-1 text-[10px] text-right',
+            className: 'mt-1 text-[0.625rem] text-right',
             style: { color: quietInk }
           }, idea.length + ' of 280 characters')
         ),
         h('div', { className: 'mt-3' },
-          h('label', { htmlFor: questionId, className: 'block text-[11px] font-black', style: { color: bodyInk } },
+          h('label', { htmlFor: questionId, className: 'block text-[0.6875rem] font-black', style: { color: bodyInk } },
             'One question I still have (optional)'),
           h('textarea', {
             id: questionId,
@@ -892,7 +892,7 @@
           }),
           h('p', {
             id: questionCountId,
-            className: 'mt-1 text-[10px] text-right',
+            className: 'mt-1 text-[0.625rem] text-right',
             style: { color: quietInk }
           }, question.length + ' of 280 characters')
         ),
@@ -900,7 +900,7 @@
           h('button', {
             type: 'submit',
             disabled: !canSave,
-            className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
+            className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black',
             style: {
               background: '#0e7490',
               border: '1px solid #0e7490',
@@ -912,7 +912,7 @@
             ? h('button', {
                 type: 'button',
                 onClick: clearReflection,
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
                 style: {
                   background: 'transparent',
                   border: '1px solid ' + fieldBorder,
@@ -925,7 +925,7 @@
             role: 'status',
             'aria-live': 'polite',
             'aria-atomic': 'true',
-            className: 'text-[11px] font-bold',
+            className: 'text-[0.6875rem] font-bold',
             style: { color: dark ? '#a7f3d0' : '#047857' }
           }, status)
         )
@@ -2947,11 +2947,11 @@
           style: { borderBottom: '1px solid ' + frameAccent + '44' }
         },
           h('span', {
-            className: 'nk-route-kicker-badge inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide',
+            className: 'nk-route-kicker-badge inline-flex items-center rounded-full px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide',
             style: { background: frameAccent + '20', border: '1px solid ' + frameAccent + '66', color: ink(frameAccent) }
           }, nkPath.icon + ' Route step ' + (routeAt + 1) + ' of ' + nkPath.steps.length),
           h('span', {
-            className: 'nk-route-kicker-question min-w-0 text-[11px] font-bold',
+            className: 'nk-route-kicker-question min-w-0 text-[0.6875rem] font-bold',
             style: { color: isDark ? '#cbd5e1' : '#475569' }
           }, nkPath.q)
         ) : null;
@@ -3012,7 +3012,7 @@
           'aria-label': visibleLabel + (aria && aria !== label ? '. ' + aria : ''),
           'data-nk-explored': explored ? 'true' : 'false',
           onClick: onClick,
-          className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+          className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
           style: on
             ? { background: accent, color: '#0b1020', border: '1px solid ' + accent }
             : (explored
@@ -3040,7 +3040,7 @@
           }
         },
           h('span', {
-            className: 'text-[10px] font-black',
+            className: 'text-[0.625rem] font-black',
             style: { color: ink(complete ? '#34d399' : accent) }
           }, value === 0 ? 'Try another option' : (complete ? 'Comparison goal reached' : 'Keep comparing')),
           h('progress', {
@@ -3051,7 +3051,7 @@
             style: { accentColor: complete ? '#059669' : accent }
           }),
           h('span', {
-            className: 'text-[10px] font-bold',
+            className: 'text-[0.625rem] font-bold',
             style: { color: isDark ? '#cbd5e1' : '#475569' }
           }, value + ' of ' + needed + ' ' + label + ' deliberately compared')
         );
@@ -3059,17 +3059,17 @@
       var slider = function (id, label, min, max, stepv, value, onChange, suffix) {
         var valueText = suffix == null ? String(value) : String(suffix);
         return h('div', { className: 'nk-slider flex items-center gap-2 mt-1.5' },
-          h('label', { htmlFor: id, className: 'text-[11px] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
+          h('label', { htmlFor: id, className: 'text-[0.6875rem] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
           h('input', {
             id: id, type: 'range', min: min, max: max, step: stepv, value: value,
             onChange: onChange, 'aria-valuetext': valueText,
             className: 'nk-slider-input flex-1 min-w-0 min-h-11 accent-violet-500'
           }),
-          h('output', { htmlFor: id, className: 'text-[11px] font-bold w-24 text-right', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, valueText));
+          h('output', { htmlFor: id, className: 'text-[0.6875rem] font-bold w-24 text-right', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, valueText));
       };
       var stat = function (label, value, colour) {
         return h('div', { key: label, className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.09)', border: '1px solid ' + colour + '50' } },
-          h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
+          h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
           h('p', { className: 'text-sm font-black', style: { color: ink(colour) } }, value));
       };
       // A disclosure, not a toggle button that swallows its own payload.
@@ -3094,9 +3094,9 @@
           },
             h('span', { className: 'flex items-center gap-2' },
               h('span', { className: 'flex-1' },
-                h('span', { className: 'block text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, title),
-                sub ? h('span', { className: 'block text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } }, sub) : null),
-              h('span', { className: 'text-[11px] font-bold', 'aria-hidden': 'true', style: { color: ink(accent) } }, on ? '▾' : '›'))),
+                h('span', { className: 'block text-[0.6875rem] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, title),
+                sub ? h('span', { className: 'block text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#475569' } }, sub) : null),
+              h('span', { className: 'text-[0.6875rem] font-bold', 'aria-hidden': 'true', style: { color: ink(accent) } }, on ? '▾' : '›'))),
           on ? h('div', { id: disclosureId, className: 'px-2.5 pb-2 -mt-0.5' }, body) : null);
       };
       // ── Think first, then check ────────────────────────────────────────
@@ -3119,7 +3119,7 @@
           key: 'ponder-' + id, className: 'mt-2 rounded-lg border p-2.5',
           style: { borderColor: accent + '55', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(255,255,255,0.75)' }
         },
-          h('p', { className: 'text-[11px] font-bold leading-relaxed', style: { color: ink(accent) } }, '🤔 ' + question),
+          h('p', { className: 'text-[0.6875rem] font-bold leading-relaxed', style: { color: ink(accent) } }, '🤔 ' + question),
           h('button', {
             type: 'button',
             'aria-expanded': open ? 'true' : 'false',
@@ -3131,21 +3131,21 @@
               if (!open) pushOnce('ponderSeen', id);
               if (typeof beep === 'function') beep();
             },
-            className: 'min-h-11 mt-1.5 px-3 py-2 rounded-lg text-[11px] font-black',
+            className: 'min-h-11 mt-1.5 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
             style: {
               background: open ? 'transparent' : accent,
               color: open ? ink(accent) : '#0b1020',
               border: '1px solid ' + accent
             }
           }, open ? 'Hide the answer' : 'Worked it out? Check'),
-          open ? h('p', { id: answerId, className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, answer) : null);
+          open ? h('p', { id: answerId, className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, answer) : null);
       };
       var para = function (txt, colour) {
-        return h('span', { className: 'block text-[11px] leading-relaxed mt-1', style: { color: ink(colour) || (isDark ? '#e2e8f0' : '#334155') } }, txt);
+        return h('span', { className: 'block text-[0.6875rem] leading-relaxed mt-1', style: { color: ink(colour) || (isDark ? '#e2e8f0' : '#334155') } }, txt);
       };
       var sourceNote = function (keys) {
         var items = keys.map(function (key) { return NK_SOURCES[key]; }).filter(Boolean);
-        return h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+        return h('p', { className: 'text-[0.625rem] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
           'Sources · reviewed ' + NK_REVIEWED + ': ',
           items.map(function (src, i) {
             return h(React.Fragment, { key: src.url }, i ? ' · ' : '',
@@ -3161,9 +3161,9 @@
               ? 'In an actual release, follow state and local officials. Whether to shelter, evacuate, or take KI depends on measurements and conditions this model cannot know.'
               : 'This personal-dose estimate is educational, not a medical assessment. Ask a qualified clinician, health physicist, or local radon program about a real exposure.'));
         return h('aside', { role: 'note', 'aria-label': 'Educational safety notice', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(248,113,113,0.6)', background: isDark ? 'rgba(69,10,10,0.35)' : 'rgba(254,242,242,0.95)' } },
-          h('p', { className: 'text-[11px] font-black', style: { color: ink('#ef4444') } }, 'Educational model — not emergency or medical instructions'),
-          h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#fecaca' : '#7f1d1d' } }, detail),
-          h('a', { href: NK_SOURCES.nrc.url, target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-1 text-[11px] font-bold underline', style: { color: ink('#ef4444') } }, 'Official NRC emergency guidance ↗'));
+          h('p', { className: 'text-[0.6875rem] font-black', style: { color: ink('#ef4444') } }, 'Educational model — not emergency or medical instructions'),
+          h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#fecaca' : '#7f1d1d' } }, detail),
+          h('a', { href: NK_SOURCES.nrc.url, target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-1 text-[0.6875rem] font-bold underline', style: { color: ink('#ef4444') } }, 'Official NRC emergency guidance ↗'));
       };
 
       // ── topic index ──
@@ -3666,7 +3666,7 @@
             key: dir, type: 'button',
             onClick: function () { nkGoTo(s); },
             'aria-label': (dir === 'prev' ? 'Back to step ' + at + ': ' : 'On to step ' + (at + 2) + ': ') + s.label,
-            className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold',
+            className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold',
             style: {
               background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.92)',
               color: isDark ? '#e2e8f0' : '#334155',
@@ -3683,7 +3683,7 @@
           h('span', {
             'data-nk-route-footer-count': id,
             'aria-hidden': 'true',
-            className: 'text-[10px] font-black',
+            className: 'text-[0.625rem] font-black',
             style: { color: ink(routeProgress.complete ? '#34d399' : accent) }
           }, routeProgress.count + '/' + routeProgress.total + ' opened'),
           h('progress', {
@@ -3696,7 +3696,7 @@
           prev ? stepBtn(prev, 'prev') : null,
           next ? stepBtn(next, 'next')
             : h('span', {
-                className: 'text-[11px] font-bold',
+                className: 'text-[0.6875rem] font-bold',
                 style: { color: ink(routeProgress.complete ? '#34d399' : '#22d3ee') }
               }, routeProgress.complete
                 ? '✓ Route complete'
@@ -3713,7 +3713,7 @@
           type: 'button', 'aria-pressed': on ? 'true' : 'false',
           'aria-label': label + (aria ? '. ' + aria : ''), onClick: onClick, disabled: !!locked,
           title: locked ? 'This setting follows your operating-system preference.' : undefined,
-          className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold',
+          className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold',
           style: Object.assign({}, on
             ? { background: '#22d3ee', color: '#0b1020', border: '1px solid #22d3ee' }
             : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') },
@@ -3742,7 +3742,7 @@
             background: isDark ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.96)'
           }
         },
-          h('table', { className: 'w-full text-left text-[11px]', style: { borderCollapse: 'collapse', minWidth: columns.length > 4 ? '42rem' : '30rem' } },
+          h('table', { className: 'w-full text-left text-[0.6875rem]', style: { borderCollapse: 'collapse', minWidth: columns.length > 4 ? '42rem' : '30rem' } },
             h('caption', { className: 'px-2.5 py-2 text-left font-black', style: { color: ink(accent) } }, caption),
             h('thead', null,
               h('tr', null, columns.map(function (column, i) {
@@ -3838,7 +3838,7 @@
             'aria-label': 'Routes & display. ' + (nkOpen ? 'Hide' : 'Show') + ' ' + NK_PATHS.length + ' question routes and the topic index, ' + NK_SECTIONS.length + ' topics'
               + (nkPath ? ', currently following the route "' + nkPath.q + '"' : ''),
             onClick: function () { upd({ nkOpen: !nkOpen }); if (typeof beep === 'function') beep(); },
-            className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-black',
+            className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-black',
             style: {
               background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(167,139,250,0.09)',
               color: isDark ? '#c4b5fd' : '#6d28d9',
@@ -3853,7 +3853,7 @@
               },
                 h('span', {
                   'data-nk-current-label': 'true',
-                  className: 'nk-mobile-route-label min-w-0 text-[11px] font-bold'
+                  className: 'nk-mobile-route-label min-w-0 text-[0.6875rem] font-bold'
                 }, nkSummaryLabel),
                 h('progress', {
                   'data-nk-current-meter': 'true',
@@ -3865,7 +3865,7 @@
                 }),
                 h('span', {
                   'data-nk-current-count': 'true',
-                  className: 'nk-mobile-route-count text-[10px] font-black flex-shrink-0'
+                  className: 'nk-mobile-route-count text-[0.625rem] font-black flex-shrink-0'
                 }, nkSummaryCount)
               )
             : null,
@@ -3876,14 +3876,14 @@
               placeholder: 'Search topics…',
               'aria-label': 'Search the ' + NK_SECTIONS.length + ' topics by name or keyword',
               onChange: function (e) { upd({ nkQuery: e.target.value, nkPath: null }); },
-              className: 'min-h-11 flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[11px]',
+              className: 'min-h-11 flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[0.6875rem]',
               style: {
                 background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
                 color: isDark ? '#e2e8f0' : '#1e293b',
                 border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
               }
             }),
-            h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('span', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
               nkPath
                 ? (nkActiveRouteProgress.complete
                   ? 'route complete'
@@ -3932,7 +3932,7 @@
           style: { maxHeight: '42vh', overflowY: 'auto' }
         },
           h('div', { className: 'mt-1.5' },
-            h('span', { className: 'block text-[10px] font-black mb-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('span', { className: 'block text-[0.625rem] font-black mb-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'START WITH A QUESTION'),
             h('div', { className: 'nk-route-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2' },
               NK_PATHS.map(function (route) {
@@ -3996,11 +3996,11 @@
                       'aria-hidden': 'true'
                     }, route.icon),
                     h('span', {
-                      className: 'flex-1 text-[11px] font-black leading-snug',
+                      className: 'flex-1 text-[0.6875rem] font-black leading-snug',
                       style: { color: on ? ink(route.accent) : (isDark ? '#f8fafc' : '#1e293b') }
                     }, route.q),
                     h('span', {
-                      className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-black flex-shrink-0',
+                      className: 'rounded-full border px-1.5 py-0.5 text-[0.625rem] font-black flex-shrink-0',
                       style: {
                         color: ink(progress.complete ? '#34d399' : ((on || progress.everComplete) ? route.accent : '#94a3b8')),
                         borderColor: progress.complete ? '#34d399' : ((on || progress.everComplete) ? route.accent : 'rgba(148,163,184,0.42)')
@@ -4008,7 +4008,7 @@
                     }, stateLabel)
                   ),
                   h('span', {
-                    className: 'block mt-1 text-[10px] leading-snug',
+                    className: 'block mt-1 text-[0.625rem] leading-snug',
                     style: { color: isDark ? '#cbd5e1' : '#475569' }
                   }, detail),
                   h('progress', {
@@ -4023,7 +4023,7 @@
               })
             ),
             nkPath ? h(React.Fragment, null,
-              h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
                 nkPath.why),
               h('div', {
                 'data-nk-route-overview': nkPath.id,
@@ -4033,7 +4033,7 @@
                   background: isDark ? 'rgba(8,47,73,0.3)' : 'rgba(236,254,255,0.9)'
                 }
               },
-                h('span', { className: 'text-[11px] font-black', style: { color: ink(nkActiveRouteProgress.complete ? '#34d399' : '#22d3ee') } },
+                h('span', { className: 'text-[0.6875rem] font-black', style: { color: ink(nkActiveRouteProgress.complete ? '#34d399' : '#22d3ee') } },
                   nkActiveRouteProgress.complete
                     ? '✓ Route complete'
                     : nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' steps opened'),
@@ -4052,7 +4052,7 @@
                       onClick: function () { nkGoTo(nkActiveRouteNext); },
                       'aria-label': 'Continue: ' + nkActiveRouteNext.label + '. Continue ' + nkPath.q + ' at step '
                         + (nkPath.steps.indexOf(nkActiveRouteNext.id) + 1),
-                      className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-black',
+                      className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
                       style: {
                         background: '#0e7490',
                         color: '#fff',
@@ -4067,7 +4067,7 @@
           // them read as "disabled" when they are not — they are the way OFF a
           // route — and any opacity drops the contrast of the text inside by
           // the same factor, which is not something to do to a live control.
-          nkPath ? h('span', { className: 'block text-[10px] font-black mt-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          nkPath ? h('span', { className: 'block text-[0.625rem] font-black mt-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'OR BROWSE BY CATEGORY') : null,
           h('div', { role: 'group', 'aria-label': 'Browse topics by category', className: 'nk-group-filters flex flex-wrap gap-1 mt-1.5' },
             NK_GROUPS.map(function (g) {
@@ -4084,7 +4084,7 @@
           // sticky bar would sit on a third of a phone screen permanently.
           h('div', { className: 'nk-topic-jumps flex flex-wrap gap-1 mt-1.5' },
             nkVisible.length === 0
-              ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+              ? h('span', { className: 'text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                   'No topic matches “' + (d.nkQuery || '') + '”.')
               : nkVisible.map(function (s, i) {
                   var opened = !!(nkPath && nkActiveRouteProgress.seen.indexOf(s.id) !== -1);
@@ -4103,7 +4103,7 @@
                     // every scroll, to move a highlight.
                     'data-nk-jump': s.id,
                     'data-nk-opened': opened ? 'true' : 'false',
-                    className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors',
+                    className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-colors',
                     style: {
                       background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(167,139,250,0.09)',
                       color: isDark ? '#e2e8f0' : '#334155',
@@ -4253,15 +4253,15 @@
               className: 'nk-hero-progress ml-auto flex flex-wrap justify-end gap-1.5'
             },
               h('li', {
-                className: 'rounded-full border px-2 py-1 text-[10px] font-bold',
+                className: 'rounded-full border px-2 py-1 text-[0.625rem] font-bold',
                 style: { color: ink('#22d3ee'), borderColor: 'rgba(34,211,238,0.5)', background: 'rgba(8,145,178,0.18)' }
               }, NK_PATHS.length + ' guided questions'),
               h('li', {
-                className: 'rounded-full border px-2 py-1 text-[10px] font-bold',
+                className: 'rounded-full border px-2 py-1 text-[0.625rem] font-bold',
                 style: { color: ink('#34d399'), borderColor: 'rgba(52,211,153,0.5)', background: 'rgba(6,78,59,0.24)' }
               }, nkPathsCompleted.length + '/' + NK_PATHS.length + ' routes complete'),
               h('li', {
-                className: 'rounded-full border px-2 py-1 text-[10px] font-bold',
+                className: 'rounded-full border px-2 py-1 text-[0.625rem] font-bold',
                 style: { color: ink('#c084fc'), borderColor: 'rgba(192,132,252,0.5)', background: 'rgba(88,28,135,0.22)' }
               }, evidenceMastered.length + '/' + EVIDENCE_CLAIMS.length + ' evidence mastered')
             )
@@ -4275,7 +4275,7 @@
         // ── 1. decay ──
         sec('halflife', '#a78bfa',
           heading(ink('#c4b5fd'), '⏳ 1. Half-life: stable under ordinary conditions'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'For a large sample, each half-life leaves half of what was there before — not half the original amount. Under ordinary laboratory and environmental conditions, temperature, pressure and chemistry do not measurably change most nuclear decay rates. Tiny exceptions exist for a few decay modes, especially electron capture, so “unchangeable” is an excellent practical rule rather than a universal law.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             ISOTOPES.map(function (x) {
@@ -4301,7 +4301,7 @@
             stat('Time passed', nkYears(elapsedYears), ink('#c4b5fd')),
             stat('Half-life', iso.hlText, ink('#fbbf24'))
           ),
-          h('p', { id: 'nk-decay-description', className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { id: 'nk-decay-description', className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             h('b', null, iso.name + ' (' + iso.decay + '): '), iso.use),
           nkChartTable(
             'decay',
@@ -4337,16 +4337,16 @@
         // ── 2. carbon dating ──
         sec('dating', '#22d3ee',
           heading(ink('#22d3ee'), '🦴 2. Read a date out of the decay'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Living things take in carbon-14 while alive and stop at death. Measure how much is left and you can run the half-life backwards to a date.'),
           slider('nk-c14', 'C-14 remaining', 1, 100, 1, c14Frac,
             function (e) { upd({ c14Frac: parseFloat(e.target.value) }); setAgeShown(false); setShownGuess(null); }, c14Frac + '%'),
           h('div', { className: 'flex flex-wrap items-end gap-2 mt-2' },
             h('div', { className: 'flex-1 min-w-[150px]' },
-              h('label', { htmlFor: 'nk-age-guess', className: 'block text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your estimate (years)'),
+              h('label', { htmlFor: 'nk-age-guess', className: 'block text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your estimate (years)'),
               h('input', { id: 'nk-age-guess', type: 'number', value: ageGuess, placeholder: 'e.g. 5730',
                 onChange: function (e) { setAgeGuess(e.target.value); },
-                className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[11px]',
+                className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[0.6875rem]',
                 style: { border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.32)' : 'rgba(100,116,139,0.3)'), background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } })),
             h('button', { type: 'button', 'aria-label': (ageShown ? 'Recalculate' : 'Reveal') + '. Calculate the age of the sample',
               onClick: function () {
@@ -4369,13 +4369,13 @@
                     (isNaN(g) ? '' : ' Your estimate was ' + nkFmt(Math.abs(g - c14Age), 0) + ' years ' + (g > c14Age ? 'high' : 'low') + '.'));
                 }
               },
-              className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white',
+              className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black text-white',
               style: { background: '#0e7490', border: '1px solid #0e7490' } }, ageShown ? 'Recalculate' : 'Reveal')
           ),
           ageShown ? h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.5)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(236,254,255,0.9)' } },
             h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-black', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(c14Age, 0) + ' radiocarbon years old'),
-            h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'age = 5730 × ln(100 / ' + c14Frac + ') / ln 2'),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'age = 5730 × ln(100 / ' + c14Frac + ') / ln 2'),
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'This is the idealised radiocarbon age from the measured fraction, not yet a calendar date. Real laboratories correct for contamination and reservoir effects, then use a calibration curve because atmospheric carbon-14 has varied over time.'),
             // Revealing the answer beside a guess and saying nothing about the
             // gap wastes the guess. The margin is the feedback.
@@ -4383,13 +4383,13 @@
               var offBy = shownGuess - c14Age;
               var pct = Math.abs(offBy) / c14Age * 100;
               var col = pct < 15 ? '#34d399' : (pct < 40 ? '#fbbf24' : '#fb923c');
-              return h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink(col) } },
+              return h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink(col) } },
                 pct < 15
                   ? '✓ Your estimate of ' + nkFmt(shownGuess, 0) + ' was within ' + nkFmt(pct, 0) + '% — that counts as dated.'
                   : 'You said ' + nkFmt(shownGuess, 0) + ', which is ' + nkFmt(Math.abs(offBy), 0) + ' years ' +
                     (offBy > 0 ? 'too old' : 'too young') + ' (' + nkFmt(pct, 0) + '% out). Halving what is left adds one half-life, not half the age — the clock is logarithmic.');
             })() : null,
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               c14Frac <= 2
                 ? 'Below about 1–2% remaining the measurement gets unreliable, which is why radiocarbon runs out at roughly 50,000 years. Older samples need a different clock — uranium-238 for rocks, potassium-argon for volcanic ash.'
                 : 'Real dating also corrects for the fact that atmospheric carbon-14 has varied over time. Calibration curves built from tree rings and corals handle that, which is why published dates say "cal BP".')
@@ -4400,7 +4400,7 @@
         // ── decay chain ──
         sec('chain', '#c084fc',
           heading(ink('#c084fc'), '⛓️ 3. The chain from uranium to lead — and why radon is in basements'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Most heavy nuclei do not reach stability in one step. Uranium-238 takes fourteen, alternating alpha and beta, and finishes as lead. One member of that chain is a gas, and that changes everything.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(192,132,252,0.35)', height: '230px' } },
             h('canvas', { ref: chainRef, role: 'img',
@@ -4408,7 +4408,7 @@
               'aria-describedby': 'nk-chain-description',
               'aria-label': 'The uranium-238 chain plotted on the chart of nuclides, neutrons across and protons up. It starts at uranium-238 with 92 protons and 146 neutrons, top right, and walks down-left to lead-206 with 82 protons and 124 neutrons, bottom left. Each of the eight alpha steps moves two protons down and two neutrons left; each of the six beta steps moves one proton up and one neutron left, which is the zigzag. Radon-222, the only gas, sits in the middle at 86 protons and 136 neutrons.',
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { id: 'nk-chain-description', className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { id: 'nk-chain-description', className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'Every alpha step takes the same diagonal down-left; every beta step kicks back up-left at a shallower one. That sawtooth is not decoration — it is why the chain crosses the same elements more than once, and why uranium appears twice in the list below. Choose a row to light up its nucleus here.'),
           h('div', { role: 'list', 'aria-label': 'Uranium-238 decay chain steps', className: 'space-y-1 max-h-72 overflow-y-auto pr-1' },
             U238_CHAIN.map(function (step, i) {
@@ -4434,19 +4434,19 @@
                       borderColor: step.gas ? 'rgba(251,191,36,0.5)' : (isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)') }
               },
                 h('span', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[10px] font-mono w-5 flex-shrink-0', style: { color: isDark ? '#94a3b8' : '#475569' } }, (i + 1)),
-                  h('span', { className: 'text-[11px] font-black w-16 flex-shrink-0', style: { color: ink(col) } }, step.sym),
-                  h('span', { className: 'text-[11px] font-mono flex-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, step.hl),
-                  step.gas ? h('span', { className: 'text-[10px] font-black px-1.5 py-0.5 rounded-full', style: { color: ink('#fbbf24'), border: '1px solid rgba(251,191,36,0.6)' } }, 'GAS') : null,
-                  h('span', { className: 'text-[11px] font-bold', style: { color: ink(col) } }, step.kind === 'stable' ? '■' : (step.kind === 'alpha' ? 'α' : 'β'))),
+                  h('span', { className: 'text-[0.625rem] font-mono w-5 flex-shrink-0', style: { color: isDark ? '#94a3b8' : '#475569' } }, (i + 1)),
+                  h('span', { className: 'text-[0.6875rem] font-black w-16 flex-shrink-0', style: { color: ink(col) } }, step.sym),
+                  h('span', { className: 'text-[0.6875rem] font-mono flex-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, step.hl),
+                  step.gas ? h('span', { className: 'text-[0.625rem] font-black px-1.5 py-0.5 rounded-full', style: { color: ink('#fbbf24'), border: '1px solid rgba(251,191,36,0.6)' } }, 'GAS') : null,
+                  h('span', { className: 'text-[0.6875rem] font-bold', style: { color: ink(col) } }, step.kind === 'stable' ? '■' : (step.kind === 'alpha' ? 'α' : 'β'))),
                 null),
-                on ? h('div', { className: 'px-2.5 pb-1.5 text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, step.note) : null);
+                on ? h('div', { className: 'px-2.5 pb-1.5 text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, step.note) : null);
             })
           ),
           nkExplorationProgress('chainSeen', U238_CHAIN.map(function (item) { return item.sym; }), 4, 'chain steps', '#c084fc'),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'Why the whole chain runs at uranium-238\'s pace'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#f59e0b') } }, 'Why the whole chain runs at uranium-238\'s pace'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Every step below the parent is far faster than it, so each daughter decays about as fast as it is made. The chain settles into secular equilibrium and the whole thing ticks along at the rate of the slowest step — 4.47 billion years. That is why radon keeps appearing in a basement year after year and never runs out: it is being made continuously from uranium in the ground beneath, and the supply lasts as long as the planet does.')
           ),
           ponder('chain', '#c084fc',
@@ -4457,7 +4457,7 @@
         // ── enrichment ──
         sec('enrichment', '#fb923c',
           heading(ink('#fb923c'), '🔢 4. Enrichment: why reactor fuel is not a bomb'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Natural uranium is 99.3% U-238 and only 0.72% the fissile U-235. Separating them is the hardest industrial step in the whole business — and the reason a power reactor is not a weapon waiting to happen.'),
           h('div', { role: 'list', className: 'space-y-1' },
             ENRICH_LEVELS.map(function (lv, i) {
@@ -4476,28 +4476,28 @@
                   : { background: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)' }
               },
                 h('span', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[11px] font-black w-14 flex-shrink-0', style: { color: ink(col) } }, lv.pct + '%'),
-                  h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, lv.name)),
+                  h('span', { className: 'text-[0.6875rem] font-black w-14 flex-shrink-0', style: { color: ink(col) } }, lv.pct + '%'),
+                  h('span', { className: 'text-[0.6875rem] font-bold flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, lv.name)),
                 h('span', { className: 'block h-1.5 rounded-full mt-1', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                   h('span', { className: 'block h-1.5 rounded-full', style: { width: Math.max(1, lv.pct) + '%', background: col } })),
                 null),
-                on ? h('div', { className: 'px-2.5 pb-1.5 text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, lv.use) : null);
+                on ? h('div', { className: 'px-2.5 pb-1.5 text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, lv.use) : null);
             })
           ),
           nkExplorationProgress('enrSeen', ENRICH_LEVELS.map(function (item) { return item.name; }), 3, 'enrichment levels', '#fb923c'),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(52,211,153,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,253,244,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#059669') } }, 'The answer to "could a reactor explode like a bomb?"'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#059669') } }, 'The answer to "could a reactor explode like a bomb?"'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'No, and not because of the safety systems. A weapon needs a fast chain reaction in material enriched above about 90%, held together for the microseconds it takes to run. Reactor fuel at 3–5% cannot sustain a fast chain reaction at ANY mass or shape: the U-238 that makes up the other 95% absorbs the fast neutrons before they find a U-235 nucleus. The fuel only works at all because a moderator slows the neutrons down first — and moderated neutrons are far too slow for the runaway a weapon needs. Chernobyl was a steam explosion that wrecked the building, not a nuclear detonation.')
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'This is also why enrichment is what arms-control regimes actually watch. The centrifuge cascade that takes uranium from 0.72% to 5% is most of the way, in separative work, to one that could reach 90% — so the equipment matters more than the material.')
         ),
 
         // ── 3. shielding ──
         sec('shielding', '#38bdf8',
           heading(ink('#38bdf8'), '🛡️ 5. What actually stops it'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             '"Radiation" is four different things that behave nothing alike. Pick one and try to stop it.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             RAD_TYPES.map(function (x) {
@@ -4563,7 +4563,7 @@
             return h('div', { className: 'mt-2' },
               h('div', { className: 'h-4 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                 h('div', { style: { height: '100%', width: nkClamp(through, 0, 100).toFixed(1) + '%', background: rad.colour, borderRadius: '999px', transition: 'width 160ms linear' } })),
-              h('p', { className: 'text-[11px] font-black mt-1', style: { color: ink(rad.colour) } },
+              h('p', { className: 'text-[0.6875rem] font-black mt-1', style: { color: ink(rad.colour) } },
                 nkFmt(through, through < 1 ? 3 : 1) + '% of the ' + rad.name.toLowerCase() + ' gets through ' + nkFmt(thick, 1) + ' cm of ' + shield.name.toLowerCase()),
               h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, nkShieldSpeech),
               // Neutrons are the one case where a single "% through" bar is not
@@ -4577,20 +4577,20 @@
                   shield.sigR < 0.001 ? '—' : nkFmt(neutronCollisions, 0) + ' on ' + shield.modName,
                   neutronHydrogenous ? '#34d399' : '#f87171')
               ) : null,
-              h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, verdict));
+              h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, verdict));
           })(),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: rad.colour + '60', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(rad.colour) } }, rad.symbol + '  ' + rad.name),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, rad.what),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, h('b', null, 'Stopped by: '), rad.stops),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#fca5a5' : '#b91c1c' } }, h('b', null, 'Why it matters: '), rad.danger)),
-          h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } }, shield.note),
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink(rad.colour) } }, rad.symbol + '  ' + rad.name),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, rad.what),
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, h('b', null, 'Stopped by: '), rad.stops),
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#fca5a5' : '#b91c1c' } }, h('b', null, 'Why it matters: '), rad.danger)),
+          h('p', { className: 'text-[0.6875rem] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } }, shield.note),
           // The consequence nobody mentions: capturing the neutron is not the
           // end of it. This is also why the four radiation types on this page
           // are not four independent problems.
           radId === 'neutron' ? h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(167,139,250,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(245,243,255,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#a78bfa') } }, 'And then the shield starts glowing'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#a78bfa') } }, 'And then the shield starts glowing'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'When hydrogen finally captures the thermalised neutron it becomes deuterium and emits a 2.2 MeV gamma — harder than anything caesium-137 produces. So a water shield solves the neutron problem by creating a gamma problem, which is why real shields are built in layers: something hydrogen-rich to slow the neutrons, boron to capture them without a penetrating photon, and then lead for the capture gammas that get made anyway. Neutron shielding is the clearest case in this section that the four kinds of radiation are one problem, not four.')
           ) : null
         ),
@@ -4598,9 +4598,9 @@
         // ── 4. chain reaction ──
         sec('criticality', '#34d399',
           heading(ink('#34d399'), '⚛️ 6. The chain reaction, and what holds it steady'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A uranium-235 nucleus absorbs a neutron, splits, and releases 2 or 3 more. k is how many of those go on to cause another fission. Everything about reactor control is holding k at exactly 1.'),
-          h('p', { className: 'text-[11px] mb-1 font-bold', style: { color: ink(kState === 'critical' ? '#34d399' : (kState === 'supercritical' ? '#f87171' : '#fbbf24')) } },
+          h('p', { className: 'text-[0.6875rem] mb-1 font-bold', style: { color: ink(kState === 'critical' ? '#34d399' : (kState === 'supercritical' ? '#f87171' : '#fbbf24')) } },
             kState === 'critical'
               ? '✓ k = 1.000. That is the whole job — and notice it is one position out of a hundred.'
               : (kState === 'supercritical'
@@ -4632,9 +4632,9 @@
               return h('div', { key: i, style: { flex: 1, height: (frac * 100) + '%', background: kState === 'supercritical' ? '#f87171' : (kState === 'critical' ? '#34d399' : '#60a5fa'), borderRadius: '2px 2px 0 0' } });
             })
           ),
-          h('p', { className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Neutrons per generation, on a log scale. Twelve generations is under a thousandth of a second.'),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             kState === 'critical'
               ? '✅ Critical: k = 1. Every fission causes exactly one more, and power holds steady. This is the normal operating state of every reactor on earth — not a warning word, despite what films suggest.'
               : (kState === 'supercritical'
@@ -4649,7 +4649,7 @@
         // ── binding energy: the one curve behind both ──
         sec('binding', '#38bdf8',
           heading(ink('#38bdf8'), '⛰️ 7. One curve explains fission AND fusion'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Binding energy per nucleon is how tightly each particle is held. The curve climbs steeply from hydrogen, peaks, then falls slowly — and HIGHER on this curve means more tightly bound. Move toward the peak from either side and the nuclei end up more tightly bound than they started, so the leftover energy comes out. Light nuclei get there by joining; heavy ones get there by splitting. One curve, two industries.'),
           h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '190px' } },
             h('canvas', { ref: beRef, role: 'img',
@@ -4657,7 +4657,7 @@
               'aria-describedby': 'nk-binding-description',
               'aria-label': 'Binding energy per nucleon against mass number. It climbs steeply from hydrogen at zero, through helium-4 at 7.07, peaks at nickel-62 at 8.795 MeV, then falls slowly to uranium-238 at 7.57. Light nuclei release energy by fusing up the left slope; heavy nuclei release it by splitting down the right slope.',
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { id: 'nk-binding-description', className: 'text-[10px] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { id: 'nk-binding-description', className: 'text-[0.625rem] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Mass number across, MeV per nucleon up. The marked peak is where nothing can release energy by changing at all.'),
           nkChartTable(
             'binding',
@@ -4684,21 +4684,21 @@
           ),
           nkExplorationProgress('reactionsSeen', REACTIONS.map(function (item) { return item.id; }), 3, 'reactions', '#38bdf8'),
           h('div', { className: 'rounded-lg border p-2.5', style: { borderColor: (beRxn.kind === 'fusion' ? '#f472b6' : beRxn.kind === 'fission' ? '#a78bfa' : '#94a3b8') + '70', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
-            h('p', { className: 'text-[11px] font-mono mb-1.5', style: { color: isDark ? '#e2e8f0' : '#334155' } }, beRxn.eq),
+            h('p', { className: 'text-[0.6875rem] font-mono mb-1.5', style: { color: isDark ? '#e2e8f0' : '#334155' } }, beRxn.eq),
             h('div', { className: 'nk-stat-grid grid gap-2' },
               stat('Energy released', nkFmt(beRxn.mev, beRxn.mev < 1 ? 6 : 1) + ' MeV', ink('#fbbf24')),
               stat('Per nucleon', nkFmt(beMevPerNucleon, beMevPerNucleon < 0.001 ? 7 : 2) + ' MeV', ink('#38bdf8')),
               stat('Mass converted', nkFmt(beMassPct, beMassPct < 0.001 ? 7 : 3) + '%', ink('#f472b6'))
             ),
-            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, beRxn.note),
-            h('p', { className: 'text-[11px] mt-1.5 font-mono', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, beRxn.note),
+            h('p', { className: 'text-[0.6875rem] mt-1.5 font-mono', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'E = Δm c², and 1 atomic mass unit = 931.494 MeV. The mass really is missing — weigh the products and they come out lighter than what went in.')
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'Fusion of deuterium and tritium releases about 3.5 MeV per nucleon; fission of uranium-235 about 0.85. Fusion wins per nucleon by roughly four to one — which is why it is worth the hundred-million-degree problem.'),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'A detail almost every textbook gets slightly wrong'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#f59e0b') } }, 'A detail almost every textbook gets slightly wrong'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'The peak is usually given as iron-56. The actual maximum is nickel-62 at ' + bePeak.be.toFixed(3) + ' MeV per nucleon, just above iron-58 and then iron-56 at 8.790. Iron-56 is the most ABUNDANT end point, because stellar burning makes nickel-56 which decays to it — that is a statement about supernovae, not about binding. Both facts are true; they are answers to different questions.')
           ),
           ponder('binding', '#38bdf8',
@@ -4710,15 +4710,15 @@
         // ── what a sievert actually is ──
         sec('weighting', '#e879f9',
           heading(ink('#e879f9'), '🎚️ 8. Gray and sievert: the same joule, weighted twice'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everything below this point is quoted in millisieverts, and a sievert is not a physical measurement. It is a physical measurement multiplied by two judgements about biology. Both multiplications are worth seeing, because alpha has little penetrating power through intact skin but is far more damaging when contamination reaches living tissue.'),
 
           slider('nk-absorbed', 'Energy absorbed', 0.1, 20, 0.1, absorbedMGy,
             function (e) { upd({ absorbedMGy: parseFloat(e.target.value) }); }, nkFmt(absorbedMGy, 1) + ' mGy'),
-          h('p', { className: 'text-[10px] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'The gray is joules per kilogram of tissue, and nothing else. It does not know what kind of radiation delivered them or which organ received them. It is the one honestly physical quantity here.'),
 
-          h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Delivered by'),
+          h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Delivered by'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             RAD_WEIGHTS.map(function (x) {
               return pill(wrId === x.id, x.colour, x.symbol + ' ' + x.name + '  ×' + x.wr, function () {
@@ -4730,9 +4730,9 @@
             })
           ),
           nkExplorationProgress('wrTried', RAD_WEIGHTS.map(function (item) { return item.id; }), 3, 'radiation types', '#e879f9'),
-          h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, wr.why),
+          h('p', { className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, wr.why),
 
-          h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'To which tissue'),
+          h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'To which tissue'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             [{ id: 'whole', name: 'Whole body', wt: 1 }].concat(TISSUE_WEIGHTS).map(function (x) {
               return pill(wtId === x.id, '#e879f9', x.name + '  ' + x.wt.toFixed(2), function () {
@@ -4744,41 +4744,41 @@
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
             h('div', { className: 'rounded-lg border p-2', style: { borderColor: 'rgba(148,163,184,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
-              h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'ABSORBED DOSE'),
+              h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'ABSORBED DOSE'),
               h('p', { className: 'text-sm font-black', style: { color: isDark ? '#e2e8f0' : '#334155' } }, nkFmt(absorbedMGy, 1) + ' mGy'),
-              h('p', { className: 'text-[10px] mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'Pure physics: joules per kilogram.')),
+              h('p', { className: 'text-[0.625rem] mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'Pure physics: joules per kilogram.')),
             h('div', { className: 'rounded-lg border p-2', style: { borderColor: wr.colour + '80', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
-              h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'EQUIVALENT DOSE'),
+              h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'EQUIVALENT DOSE'),
               h('p', { className: 'text-sm font-black', style: { color: ink(wr.colour) } }, nkFmt(equivalentMSv, 1) + ' mSv'),
-              h('p', { className: 'text-[10px] mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } }, '× w' + 'ᴿ' + ' = ' + wr.wr + ', for how concentrated the damage is.')),
+              h('p', { className: 'text-[0.625rem] mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } }, '× w' + 'ᴿ' + ' = ' + wr.wr + ', for how concentrated the damage is.')),
             h('div', { className: 'rounded-lg border p-2', style: { borderColor: 'rgba(232,121,249,0.6)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(253,244,255,0.9)' } },
-              h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'EFFECTIVE DOSE'),
+              h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'EFFECTIVE DOSE'),
               h('p', { className: 'text-sm font-black', style: { color: ink('#c026d3') } }, nkFmt(effectiveMSv, 2) + ' mSv'),
-              h('p', { className: 'text-[10px] mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } }, '× w' + 'ᵀ' + ' = ' + wtFactor.toFixed(2) + ', for how much that tissue contributes to whole-body risk.'))
+              h('p', { className: 'text-[0.625rem] mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } }, '× w' + 'ᵀ' + ' = ' + wtFactor.toFixed(2) + ', for how much that tissue contributes to whole-body risk.'))
           ),
 
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             wr.wr === 1
               ? 'With gamma or beta the first multiplication does nothing — 1 mGy is 1 mSv, and this is why the two units get used interchangeably and then quietly confused. Switch to alpha and watch what the same joule becomes.'
               : 'The same ' + nkFmt(absorbedMGy, 1) + ' mGy — the same energy, the same joules per kilogram — is now ' + nkFmt(equivalentMSv, 1) + ' mSv, because ' + wr.name.toLowerCase() + ' spends it in a much shorter track. Nothing about the amount of energy changed. Only what it did on the way in.'),
-          h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             wtId === 'whole'
               ? 'Irradiate the whole body and every tissue weight applies at once. They are defined to sum to exactly ' + wtSum.toFixed(2) + ', so effective dose and equivalent dose come out equal — the weights apportion risk, they never create or destroy it.'
               : 'Irradiating only the ' + (wt ? wt.name.toLowerCase() : '') + ' carries ' + (wtFactor * 100).toFixed(0) + '% of the whole-body detriment, so the effective dose is ' + (wtFactor * 100).toFixed(0) + '% of the equivalent dose. That is what makes a chest X-ray and a whole-body exposure comparable at all: effective dose is a common currency, deliberately constructed.'),
 
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,146,60,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,247,237,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#ea580c') } }, 'What effective dose is NOT'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#ea580c') } }, 'What effective dose is NOT'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'ICRP says this plainly and it is routinely ignored: effective dose is a protection quantity for setting limits and comparing procedures across a population. It is not a measure of harm to a particular person. The weights are averaged over both sexes and all ages, so applying them to one patient — to say "your scan gave you this much risk" — uses the number for something it was never built to do. Every figure in this tool is an effective dose, and that caveat rides along with all of them.')
           ),
-          h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Weighting factors from ICRP Publication 103 (2007), Tables 2 and 3. The neutron factor is shown as its ~1 MeV peak; the published value is a continuous function of energy from about 2.5 to 20.')
         ),
 
         // ── the clock that actually runs inside a person ──
         sec('biohalf', '#f472b6',
           heading(ink('#f472b6'), '🫀 9. Half-life inside a body is a different number'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every half-life so far has been PHYSICAL — how fast the nuclei fall apart, a rate that is effectively fixed under ordinary conditions. But a nuclide inside a person is also being excreted, and the two processes run at once. Decay and excretion are rates, so they add: 1/T' + 'ₑ' + ' = 1/T' + 'ₚ' + ' + 1/T' + 'ᵦ' + '. That makes the effective half-life shorter than EITHER of them — always. When the two are far apart the shorter one very nearly sets it on its own; when they are close, as they are for strontium and polonium below, neither number will do and only the formula gets you there.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             BIO_NUCLIDES.map(function (x) {
@@ -4796,7 +4796,7 @@
             stat('Biological half-life', nkYears(bio.tb / 365.25), ink('#38bdf8')),
             stat('Effective half-life', nkYears(bioEff / 365.25), ink(bio.colour))
           ),
-          h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Where it goes: ' + bio.where + '.'),
           h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mt-2', style: { borderColor: bio.colour + '59', height: '175px' } },
             h('canvas', { ref: bioRef, role: 'img',
@@ -4807,7 +4807,7 @@
                 ', but with excretion as well only ' + nkFmt(Math.pow(0.5, bioSpanDays / bioEff) * 100, 1) +
                 ' percent remains. The effective half-life is ' + nkYears(bioEff / 365.25) + '.',
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { id: 'nk-bio-description', className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { id: 'nk-bio-description', className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Grey: decay alone. Colour: what is actually left, once the body is also getting rid of it.'),
           nkChartTable(
             'biohalf',
@@ -4828,34 +4828,34 @@
             },
             bio.colour
           ),
-          h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink(bio.colour) } },
+          h('p', { className: 'text-[0.6875rem] mt-2 font-bold', style: { color: ink(bio.colour) } },
             bioDriver === 'biology'
               ? 'Biology is running this one. The physical half-life is ' + nkFmt(bioRatio, bioRatio > 100 ? 0 : 1) + ' times the biological one, so decay barely enters the calculation and the effective half-life lands within ' + nkFmt(Math.max(bioGapPct, 0.1), 1) + '% of the biological figure alone.'
               : (bioDriver === 'physics'
                 ? 'Physics is running this one. The body cannot clear it much faster than it decays, so decay sets the pace and the effective half-life comes out ' + nkFmt(bioGapPct, 0) + '% below the physical half-life.'
                 : 'Neither clock is running this one. The two half-lives are within a factor of ' + nkFmt(bioRatio, 1) + ' of each other, so decay and excretion contribute comparably and the effective half-life falls ' + nkFmt(bioGapPct, 0) + '% below even the shorter of them. Quote either number on its own here and you are wrong — this is the case that makes the formula necessary rather than decorative.')),
-          h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, bio.note),
+          h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, bio.note),
 
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,249,255,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#0284c7') } }, 'What potassium iodide tablets do, and what they do not'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#0284c7') } }, 'What potassium iodide tablets do, and what they do not'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'KI is one of the most misunderstood things in this entire subject. It is not an anti-radiation pill. It works on exactly one nuclide by exactly one mechanism: it saturates the thyroid with ordinary iodine so there is no room left to take up iodine-131. That is the whole of it. It does nothing about caesium, nothing about external gamma, nothing about any other part of a release — and taken without radioiodine present it is simply a drug with side effects, which is why authorities distribute it in advance and then tell people when to take it rather than leaving it to judgement.'),
             safetyNotice('ki')
           ),
-          h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Biological half-lives from the ICRP 30 and ICRP 137 biokinetic models, rounded. Unlike physical half-lives, which are constants of nature, these vary substantially with age, diet, chemical form and the individual — caesium clears roughly twice as fast in a small child as in an adult. Treat them as the right order of magnitude, not as measurements of you.')
         ),
 
         sec('mydose', '#22d3ee',
           heading(ink('#22d3ee'), '🧮 10. Estimate your own annual dose'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everyone is exposed, all the time, mostly from the ground and from radon. Put your own numbers in and see where yours comes from.'),
           safetyNotice('dose'),
           slider('ds-alt', 'Home altitude', 0, 3000, 50, dsAlt,
             function (e) { upd({ dsAlt: parseFloat(e.target.value), doseEstimated: true }); }, nkFmt(dsAlt, 0) + ' m'),
           slider('ds-fly', 'Flying per year', 0, 200, 2, dsFlights,
             function (e) { upd({ dsFlights: parseFloat(e.target.value), doseEstimated: true }); }, nkFmt(dsFlights, 0) + ' hours'),
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Radon at home'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Radon at home'),
           h('div', { className: 'flex flex-wrap gap-1' },
             RADON_LEVELS.map(function (r) {
               return pill(dsRadon === r.id, '#f87171', r.name, function () {
@@ -4864,21 +4864,21 @@
               }, 'Set home radon to ' + r.name + ', ' + r.v + ' millisieverts a year');
             })
           ),
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Scans this year'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Scans this year'),
           h('div', { className: 'space-y-1' },
             SCAN_TYPES.map(function (sc) {
               var n = dsScans[sc.id] || 0;
               return h('div', { key: sc.id, className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, sc.name),
-                h('span', { className: 'text-[11px] font-mono w-16 text-right', style: { color: isDark ? '#94a3b8' : '#475569' } }, sc.v + ' mSv'),
+                h('span', { className: 'text-[0.6875rem] flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, sc.name),
+                h('span', { className: 'text-[0.6875rem] font-mono w-16 text-right', style: { color: isDark ? '#94a3b8' : '#475569' } }, sc.v + ' mSv'),
                 h('button', { type: 'button', 'aria-label': 'One fewer ' + sc.name,
                   onClick: function () { var nx = Object.assign({}, dsScans); nx[sc.id] = Math.max(0, n - 1); upd({ dsScans: nx, doseEstimated: true }); },
-                  className: 'min-h-11 w-11 rounded-lg text-[11px] font-black',
+                  className: 'min-h-11 w-11 rounded-lg text-[0.6875rem] font-black',
                   style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '−'),
-                h('span', { className: 'text-[11px] font-black w-6 text-center', style: { color: ink('#22d3ee') } }, n),
+                h('span', { className: 'text-[0.6875rem] font-black w-6 text-center', style: { color: ink('#22d3ee') } }, n),
                 h('button', { type: 'button', 'aria-label': 'One more ' + sc.name,
                   onClick: function () { var nx = Object.assign({}, dsScans); nx[sc.id] = n + 1; upd({ dsScans: nx, doseEstimated: true }); },
-                  className: 'min-h-11 w-11 rounded-lg text-[11px] font-black',
+                  className: 'min-h-11 w-11 rounded-lg text-[0.6875rem] font-black',
                   style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '+'));
             })
           ),
@@ -4888,19 +4888,19 @@
             h('div', { role: 'list', className: 'space-y-1' },
               dsParts.filter(function (p) { return p.v > 0; }).sort(function (x, y) { return y.v - x.v; }).map(function (p) {
                 return h('div', { key: p.name, role: 'listitem', 'aria-label': p.name + ', ' + p.v.toFixed(2) + ' millisieverts', className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[11px] w-32 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, p.name),
+                  h('span', { className: 'text-[0.6875rem] w-32 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, p.name),
                   h('div', { className: 'flex-1 h-2.5 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                     h('div', { style: { height: '100%', width: Math.max(1, (p.v / Math.max(dsTotal, 0.01)) * 100) + '%', background: p.colour, borderRadius: '999px' } })),
-                  h('span', { className: 'text-[11px] font-mono w-14 text-right', style: { color: ink(p.colour) } }, p.v.toFixed(2)));
+                  h('span', { className: 'text-[0.6875rem] font-mono w-14 text-right', style: { color: ink(p.colour) } }, p.v.toFixed(2)));
               })
             ),
-            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               dsTotal > 6
                 ? 'That is well above the 2.4 mSv world average — look at which bar is longest. If it is radon, that is the one worth acting on, and a test kit costs very little.'
                 : (dsTotal > 3.5
                   ? 'Somewhat above the 2.4 mSv world average, which is unremarkable. Radon is usually the largest single term and the only one most people can change.'
                   : 'Close to or below the 2.4 mSv world average. Note how little of it is anything anyone chose.')),
-            h('p', { className: 'text-[11px] mt-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'For scale, the occupational limit is 20 mSv a year and the lowest dose with a clearly measurable cancer link is around 100 mSv.')
           )
         ),
@@ -4908,7 +4908,7 @@
         // ── 5. dose ──
         sec('doseladder', '#fbbf24',
           heading(ink('#fbbf24'), '📏 11. How much is a lot? The dose ladder'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Doses span eight orders of magnitude, so this scale is logarithmic — each step along it is ten times the last. Choose any row.'),
           h('div', { role: 'list', className: 'space-y-1' },
             DOSES.map(function (dz, i) {
@@ -4928,18 +4928,18 @@
                   : { background: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)' }
               },
                 h('span', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, dz.name),
-                  h('span', { className: 'text-[11px] font-mono', style: { color: ink(col) } }, dz.mSv < 1 ? dz.mSv + ' mSv' : nkFmt(dz.mSv, 0) + ' mSv')),
+                  h('span', { className: 'text-[0.6875rem] font-bold flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, dz.name),
+                  h('span', { className: 'text-[0.6875rem] font-mono', style: { color: ink(col) } }, dz.mSv < 1 ? dz.mSv + ' mSv' : nkFmt(dz.mSv, 0) + ' mSv')),
                 h('span', { className: 'block h-1.5 rounded-full mt-1', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                   h('span', { className: 'block h-1.5 rounded-full', style: { width: Math.max(1.5, frac * 100) + '%', background: col } })),
                 null),
-                on ? h('div', { className: 'px-2.5 pb-1.5 text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, dz.note) : null);
+                on ? h('div', { className: 'px-2.5 pb-1.5 text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, dz.note) : null);
             })
           ),
           nkExplorationProgress('dosesSeen', DOSES.map(function (item) { return item.name; }), 5, 'dose examples', '#fbbf24'),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'Where the science is genuinely unsettled'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#f59e0b') } }, 'Where the science is genuinely unsettled'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'At and above about 100 mSv, excess cancer risk is measurable in survivor studies. Below that, epidemiological studies have limited statistical power because ordinary cancer is common and the possible addition is small. Regulators use the linear no-threshold model as a cautious protection assumption. Evidence at low dose remains uncertain rather than proving either zero risk or a measured effect; be wary of claims that treat either conclusion as settled.')
           )
         ),
@@ -4947,10 +4947,10 @@
         // ── low-dose risk: the argument behind every number above ──
         sec('lowdose', '#e879f9',
           heading(ink('#e879f9'), '📉 12. How risky is a small dose? Why one event gets two death tolls'),
-          h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everything above 100 mSv on the ladder is measured. Everything below it is modelled — and the model you pick is where the public argument actually lives. Two people can quote the same accident, use the same physics, make no arithmetic error, and differ by a factor of a hundred on the death toll. Here is how.'),
 
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Pick an exposure'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Pick an exposure'),
           h('div', { className: 'flex flex-wrap gap-1' },
             COLLECTIVE_CASES.map(function (c) {
               return pill(ldCase.id === c.id, c.colour, c.name, function () {
@@ -4964,9 +4964,9 @@
           // The divergence, always visible. Selecting a model below explains one
           // row; this table is why the reader should care that there is a choice.
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(232,121,249,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(253,244,255,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#e879f9') } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#e879f9') } },
               ldBig(ldCase.people) + (ldCase.people === 1 ? ' person' : ' people') + ' × ' + ldDose(ldCase.mSv) + ' mSv = ' + nkFmt(ldPersonSv, 2) + ' person-sieverts'),
-            h('p', { className: 'text-[11px] mb-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { className: 'text-[0.6875rem] mb-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
               ldCase.people === 1
                 ? 'One dose. Four ways to turn it into a personal risk.'
                 : 'One collective dose. Four ways to turn it into a number of people.'),
@@ -4982,17 +4982,17 @@
                   className: 'flex items-center gap-2 rounded-md px-1.5 py-1',
                   style: ldModel.id === m.id ? { background: m.colour + '1f' } : null
                 },
-                  h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, m.short),
-                  h('span', { className: 'text-[11px] font-mono font-black text-right', style: { color: ink(m.colour) } }, txt));
+                  h('span', { className: 'text-[0.6875rem] font-bold flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, m.short),
+                  h('span', { className: 'text-[0.6875rem] font-mono font-black text-right', style: { color: ink(m.colour) } }, txt));
               })
             ),
             h('div', { className: 'mt-2 rounded-md border p-2', style: { borderColor: ldTier.colour + '88', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(255,255,255,0.85)' } },
-              h('p', { className: 'text-[11px] font-black', style: { color: ink(ldTier.colour) } }, 'Can you use this sum? ' + ldTier.label),
-              h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ldTier.what)),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ldCase.note)
+              h('p', { className: 'text-[0.6875rem] font-black', style: { color: ink(ldTier.colour) } }, 'Can you use this sum? ' + ldTier.label),
+              h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ldTier.what)),
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ldCase.note)
           ),
 
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Now read one model properly'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Now read one model properly'),
           h('div', { className: 'flex flex-wrap gap-1' },
             RISK_MODELS.map(function (m) {
               return pill(ldModel.id === m.id, m.colour, m.short, function () {
@@ -5011,7 +5011,7 @@
           ),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: ldModel.colour + '77', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.92)' } },
             h('p', { className: 'text-sm font-black', style: { color: ink(ldModel.colour) } }, ldModel.name),
-            h('p', { className: 'text-[11px] font-mono mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { className: 'text-[0.6875rem] font-mono mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
               ldModel.coeff == null ? 'No agreed coefficient' : nkFmt(ldModel.coeff * 100, 1) + '% per sievert'
                 + (ldModel.threshold ? ', and nothing at all below ' + ldModel.threshold + ' mSv' : '')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2' },
@@ -5021,8 +5021,8 @@
                { k: 'The case against it', v: ldModel.against, c: '#f87171' }
               ].map(function (x) {
                 return h('div', { key: x.k },
-                  h('p', { className: 'text-[10px] font-black', style: { color: ink(x.c) } }, x.k.toUpperCase()),
-                  h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, x.v));
+                  h('p', { className: 'text-[0.625rem] font-black', style: { color: ink(x.c) } }, x.k.toUpperCase()),
+                  h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, x.v));
               })
             )
           ),
@@ -5030,8 +5030,8 @@
           // The part that is usually left out: not "scientists disagree" but
           // the reason the disagreement cannot be settled by measuring harder.
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(236,254,255,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#0891b2') } }, 'So why not just go and measure it?'),
-            h('p', { className: 'text-[11px] leading-relaxed mb-1', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#0891b2') } }, 'So why not just go and measure it?'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed mb-1', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'People have tried, and the obstacle is not funding or will — it is arithmetic. About a quarter of everyone dies of cancer anyway, so to see a small addition you need an exposed group and a matched unexposed group big enough that the difference is not noise. Set the dose and read off how many people that takes.'),
             slider('ld-pow', 'Dose to detect', 0, 30, 1, ldPowIdx,
               function (e) { upd({ ldPow: parseFloat(e.target.value) }); },
@@ -5039,19 +5039,19 @@
             h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
               stat('People needed in each group', ldBig(ldCohort), '#22d3ee'),
               stat('Both groups together', ldBig(ldCohort * 2), '#a78bfa')),
-            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Ten times smaller dose, a HUNDRED times the people: the excess enters the sizing squared, so the requirement grows as the inverse square of the dose. At 10 mSv — one CT scan — the answer is already larger than any radiation cohort ever assembled; at 1 mSv it exceeds the population of most countries. Published estimates agree: Brenner and colleagues put the 10 mSv study at roughly 5 million per group under slightly more favourable assumptions.'),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Slide it to 100 mSv and watch what the calculation says: about a hundred thousand people per group. The atomic-bomb survivor study follows roughly that many — and 100 mSv is exactly where this tool says the excess becomes measurable. That is not a coincidence, and it is the check on this arithmetic: the same formula that says the low-dose question is unanswerable correctly predicts where the answer we DO have came from.'),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'Two-proportion sample size at 5% significance and 80% power, against a 25% baseline lifetime cancer mortality, using the ICRP coefficient. It assumes something even a perfect study could not have: that every person\'s dose is known exactly and nothing else differs between the groups. The real requirement is larger.')
           ),
 
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.6)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'What this section is NOT saying'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#f59e0b') } }, 'What this section is NOT saying'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Not that low-dose radiation is harmless: no threshold has ever been demonstrated, and the best evidence at low dose RATE — the pooled nuclear-worker cohorts — is consistent with a straight line rather than a floor. Not that the regulators are wrong either: assuming linearity when you cannot measure is the cautious choice, and caution is what a limit is for. What remains genuinely disputed among radiation biologists is the shape of the curve below about 100 mSv, and the honest answer to "how many will this kill" at those doses is that the arithmetic gives a number and the world may not. Be equally suspicious of anyone who quotes that number as a body count and of anyone who tells you it is zero.'),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'This is where the Chernobyl range in section 15 comes from. Apply the model to the most exposed few hundred thousand people and you get a projection of a few thousand; apply the same model to a whole continent receiving doses smaller than the difference between two towns\' background, and you get tens of thousands. Neither side fabricated anything. They chose a different population, and the model does not know it is being asked something it cannot answer.')
           ),
           safetyNotice('dose'),
@@ -5061,7 +5061,7 @@
         // ── counting: where every number above actually comes from ──
         sec('detect', '#2dd4bf',
           heading(ink('#2dd4bf'), '🔬 13. Measure it yourself — and why one short count lies'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every figure above came out of a detector, and a detector does not measure sieverts. It measures clicks — and radioactive decay is random, so the same source counted twice gives two different answers. Neither is wrong. Take some counts and watch it happen.'),
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2' },
@@ -5070,13 +5070,13 @@
              { u: 'Millisievert (mSv)', w: 'What YOUR BODY absorbs', p: 'Energy deposited per kilogram of tissue, weighted for how much damage that kind of radiation does. Getting here from counts needs a calibrated instrument and the photon energy.', c: '#fbbf24' }
             ].map(function (x) {
               return h('div', { key: x.u, className: 'rounded-lg border p-2', style: { borderColor: x.c + '55', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
-                h('p', { className: 'text-[11px] font-black', style: { color: ink(x.c) } }, x.u),
-                h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, x.w),
-                h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, x.p));
+                h('p', { className: 'text-[0.6875rem] font-black', style: { color: ink(x.c) } }, x.u),
+                h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } }, x.w),
+                h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, x.p));
             })
           ),
 
-          h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Put something in front of the tube'),
+          h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Put something in front of the tube'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             COUNT_SOURCES.map(function (s) {
               return pill(cdSrcId === s.id, '#2dd4bf', s.name, function () {
@@ -5084,12 +5084,12 @@
               }, 'Measure ' + s.name + '. ' + s.desc);
             })
           ),
-          h('p', { className: 'text-[11px] mb-1 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-1 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             cdSrc.bq > 0 ? cdSrc.desc + ' — ' + nkFmt(cdSrc.bq, 0) + ' Bq, giving off about ' + nkFmt(cdSrc.gps, 0) + ' gammas a second in all directions.' : cdSrc.desc),
 
           slider('nk-cd-dist', 'Distance', 3, 60, 1, cdDist,
             function (e) { cdReset({ cdDist: parseFloat(e.target.value) }); }, nkFmt(cdDist, 0) + ' cm'),
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Count for'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Count for'),
           h('div', { className: 'flex flex-wrap gap-1' },
             COUNT_TIMES.map(function (tt) {
               return pill(cdTime === tt, '#2dd4bf', tt < 60 ? tt + ' s' : (tt / 60) + ' min', function () {
@@ -5102,7 +5102,7 @@
               ref: countTakeButtonRef,
               type: 'button', onClick: cdTakeCount,
               'aria-label': 'Take a count. Measure ' + cdSrc.name + ' for ' + cdTime + ' seconds at ' + cdDist + ' centimetres, with a matching background count',
-              className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-black',
+              className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
               style: { background: '#2dd4bf', color: '#0b1020', border: '1px solid #2dd4bf' }
             }, '⏱️ Take a count'),
             cdRuns.length ? h('button', {
@@ -5113,7 +5113,7 @@
                 cdReset({});
               },
               'aria-label': 'Clear the ' + cdRuns.length + ' counts taken so far',
-              className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+              className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
             }, 'Clear') : null
           ),
@@ -5125,7 +5125,7 @@
               stat('Net rate', cdNet.toFixed(cdNet < 1 ? 3 : 2) + ' /s', ink(cdDetected ? '#fbbf24' : '#f87171')),
               stat('Uncertainty', '± ' + cdSigma.toFixed(cdSigma < 1 ? 3 : 2) + ' /s', ink('#a78bfa'))
             ),
-            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               cdSrcId === 'none'
                 ? 'Two background counts, one subtracted from the other. The net should be zero and it is not — it lands either side of zero, and a NEGATIVE net is not an error. It is what "measurement noise" means, and it is the floor beneath every other reading you take here.'
                 : (!cdDetected
@@ -5133,9 +5133,9 @@
                   : (cdRel > 0.10
                     ? 'Detected — but loosely. ±' + nkFmt(cdRel * 100, 0) + '% on the net rate. You could honestly say the source is there; you could not honestly compare it with another reading this close. A four-times-longer count halves this.'
                     : 'Detected and pinned down: ±' + nkFmt(cdRel * 100, 1) + '%. This is a number you could put in a lab report and defend.'))),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'The whole of counting statistics is one rule: a count of N carries an uncertainty of √N. Your ' + nkFmt(cdLast.g, 0) + ' counts are ' + nkFmt(cdLast.g, 0) + ' ± ' + nkFmt(Math.sqrt(cdLast.g), 1) + ', which is ±' + nkFmt(100 / Math.sqrt(Math.max(cdLast.g, 1)), 1) + '% on their own. Precision is bought with time, and only ever at the square root of it.')
-          ) : h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          ) : h('p', { className: 'text-[0.6875rem] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'No counts yet. Each press runs the detector twice: once with the source, once with it removed, for the same length of time. That second run is not optional — you cannot subtract a background you never measured.'),
 
           cdRuns.length > 1 ? (function () {
@@ -5145,7 +5145,7 @@
             var mn = Math.min.apply(null, cdNets), mx = Math.max.apply(null, cdNets);
             var mean = cdNets.reduce(function (a, b) { return a + b; }, 0) / cdNets.length;
             return h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(45,212,191,0.45)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,253,250,0.9)' } },
-              h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#0d9488') } },
+              h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#0d9488') } },
                 'Your last ' + cdRuns.length + ' counts, all of the same unchanged source'),
               h('div', { className: 'relative h-8 rounded-lg', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(100,116,139,0.1)' } },
                 h('div', { style: { position: 'absolute', left: nkClamp((cdTrueNet - lo) / span, 0, 1) * 100 + '%', top: 0, bottom: 0, width: '2px', background: '#fbbf24' } }),
@@ -5153,7 +5153,7 @@
                   return h('div', { key: i, style: { position: 'absolute', left: 'calc(' + nkClamp((v - lo) / span, 0, 1) * 100 + '% - 4px)', top: 'calc(50% - 4px)', width: '8px', height: '8px', borderRadius: '999px', background: '#2dd4bf', opacity: 0.45 + 0.55 * (i / Math.max(1, cdNets.length - 1)) } });
                 })
               ),
-              h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
                 'Ranged from ' + mn.toFixed(3) + ' to ' + mx.toFixed(3) + ' counts per second, averaging ' + mean.toFixed(3) + '. The gold line is the rate this source and geometry genuinely produce: ' + cdTrueNet.toFixed(3) + ' /s. Nothing about the source changed between runs. ' +
                 (cdTime <= 10
                   ? 'At ' + cdTime + ' seconds a count, that scatter is enormous — this is exactly how a short measurement misleads someone into thinking a reading "went up".'
@@ -5170,7 +5170,7 @@
                 nkFmt(cdDist * 2, 0) + ' centimetres quarters it to ' + cdNetRateAt(cdDist * 2).toFixed(3) + '.' +
                 (cdLast ? ' Your last measurement sits at ' + cdNet.toFixed(3) + ', off the curve by counting noise alone.' : ''),
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { id: 'nk-count-description', className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { id: 'nk-count-description', className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'The curve is the inverse square law, and it is not a property of radiation — it is a property of spheres. The same gammas spread over a surface four times larger when you step twice as far back. Doubling your distance does more than most shielding, costs nothing, and is why the first rule of a radiation area is stand further away.'),
           nkChartTable(
             'counter',
@@ -5212,15 +5212,15 @@
             },
             '#2dd4bf'
           ),
-          cdDist < 6 ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#fb923c') } },
+          cdDist < 6 ? h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink('#fb923c') } },
             '⚠️ Below about 6 cm the model is stretched. The tube window is no longer small compared with the distance, so the neat 1/d² stops holding and a real measurement would read lower than the curve promises.') : null,
 
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,146,60,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,247,237,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#ea580c') } }, 'The trap in every cheap counter'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#ea580c') } }, 'The trap in every cheap counter'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Consumer Geiger counters show a number in µSv/h, which makes them look like dose meters. They are not. The tube counts clicks and the display multiplies by one fixed factor — almost always the one that is correct for caesium-137 at 662 keV. Point the same instrument at a lower-energy source and the reading can be out by a factor of several, in either direction. This is the single most common way a well-meaning measurement ends up wrong on the internet: the instrument is fine, the counting is fine, and the conversion was never valid for what was being measured.')
           ),
-          h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'End-window GM tube, 6.16 cm² window, intrinsic efficiency 0.8–1.0% and background 25 counts/min — typical of school apparatus at sea level. Counts are drawn from a Poisson distribution, the real statistics of decay. Detection threshold is the Currie critical level for a paired background, 2.33√(2N_b), a 5% chance of crying wolf. Source activities: 37 kBq check sources, potassium at 31.7 Bq per gram of natural K, K-40 emitting its 1461 keV gamma in 10.6% of decays.')
         ),
 
@@ -5228,10 +5228,10 @@
         sec('protect', '#38bdf8',
           heading(ink('#38bdf8'), '⏱️ 14. Time, distance, shielding — all three levers'),
           safetyNotice('medical'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Section 5 covered what stops radiation and section 13 covered distance. There is a third lever, it is free, and it is the one a radiation worker reaches for first: leave sooner. Dose is dose rate accumulated over time. A steady rate is simple multiplication; when a radionuclide is decaying, the rate must be integrated as it falls.'),
 
-          h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'What are you standing near?'),
+          h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'What are you standing near?'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             PROTECT_SOURCES.map(function (x) {
               return pill(ptSrcId === x.id, x.colour, x.name, function () {
@@ -5241,7 +5241,7 @@
               }, x.name + ', ' + x.nuclide + ', ' + x.gbq + ' gigabecquerels');
             })
           ),
-          h('p', { className: 'text-[11px] mb-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             ptSrc.nuclide + ', ' + nkFmt(ptSrc.gbq, 1) + ' GBq — initially ' + nkFmt(ptGamma, 4) + ' mSv/h at 1 metre per GBq, worked out from its decay scheme. Physical half-life: ' + ptTimeLabel(ptSrc.halfLifeH) + '.'),
 
           slider('pt-dist', 'Your distance', 0.3, 10, 0.1, ptDist,
@@ -5300,7 +5300,7 @@
             '#38bdf8'
           ),
 
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'How long until you reach…'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'How long until you reach…'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             DOSE_LIMITS.map(function (L) {
               return pill(ptLimitId === L.id, '#38bdf8', L.name + ' (' + L.mSv + ' mSv)', function () {
@@ -5312,21 +5312,21 @@
           h('div', { className: 'rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,249,255,0.9)' } },
             h('p', { className: 'text-sm font-black', style: { color: ink('#0284c7') } },
               isFinite(ptStayH) ? ptTimeLabel(ptStayH) : 'Selected limit not reached'),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               isFinite(ptStayH)
                 ? 'to accumulate ' + ptLimit.mSv + ' mSv at ' + nkFmt(ptDist, 1) + ' m'
                   + (ptThick > 0 ? ' behind ' + nkFmt(ptThick, 1) + ' cm of ' + ptShield.name.toLowerCase() : ', unshielded')
                   + ', after physical decay is included.'
                 : 'The source is not harmless: it starts at ' + nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv/h here. But all of its remaining physical activity would deliver about ' + nkFmt(ptMaxDose, ptMaxDose < 1 ? 3 : 1) + ' mSv at this fixed position, below the selected ' + ptLimit.mSv + ' mSv.'),
-            (ptSrcId === 'tc99m' || ptSrcId === 'i131') ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            (ptSrcId === 'tc99m' || ptSrcId === 'i131') ? h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Conservative simplification: this integrates physical decay only. A patient also clears the nuclide biologically, so a measured external dose rate normally falls faster. Follow the nuclear-medicine team’s written instructions, not this classroom estimate.') : null,
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               ptSrcId === 'tc99m'
                 ? 'This is the number families are never given. Sitting an arm\'s length from someone who has just had a scan, all day, does not get near a year\'s background — and the isotope is largely gone by tomorrow anyway. The honest advice is ordinary caution for a day, not distance from the people who need you.'
                 : (ptSrcId === 'i131'
                   ? 'Seven times the activity and a harder gamma, which is why this patient sleeps alone and keeps their distance from children for a few days. Not because the risk is dramatic, but because the cost of the precaution is a few days and the cost of skipping it is avoidable dose to someone who gets no benefit from it.'
                   : 'Sealed sources like this are safe because of the housing, not the isotope. Every serious accident with one has the same shape: the source came out of its shielding, or never went back in, and the person nearby had no way to know.')),
-            h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#fbbf24') } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 font-bold', style: { color: ink('#fbbf24') } },
               '⏱️ With a steady source, halve your time and you halve your dose. A short-lived source changes while you wait, so this calculator integrates the falling rate.')
           ),
 
@@ -5339,21 +5339,21 @@
                w: 'In this narrow-beam model, one half-value layer halves the initial rate again. Scattered photons make real thick shields perform less neatly.', c: '#60a5fa' }
             ].map(function (x) {
               return h('div', { key: x.k, className: 'rounded-lg border p-2', style: { borderColor: x.c + '60', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
-                h('p', { className: 'text-[10px] font-black', style: { color: ink(x.c) } }, x.k),
-                h('p', { className: 'text-[11px] font-black mt-0.5', style: { color: isDark ? '#fff' : '#1e293b' } }, x.v),
-                h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, x.w));
+                h('p', { className: 'text-[0.625rem] font-black', style: { color: ink(x.c) } }, x.k),
+                h('p', { className: 'text-[0.6875rem] font-black mt-0.5', style: { color: isDark ? '#fff' : '#1e293b' } }, x.v),
+                h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, x.w));
             })
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'For a source whose rate is effectively steady during a visit, the three halves multiply: 1/2 × 1/2 × 1/2 = 1/8 of the starting dose. The time card above uses decay-aware integration instead of forcing that shortcut onto short-lived medical isotopes.'),
-          h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Initial dose rate is computed from each nuclide\'s decay scheme with NIST mass energy-absorption coefficients for air, and time-to-dose integrates its physical half-life. The results sit within 3% of published gamma constants. The shield still uses the 1 MeV coefficients from section 5 and narrow-beam attenuation with no buildup factor, so a real thick shield performs somewhat worse. Patient geometry and biological clearance are also simplified. Treat this as the right order of magnitude and the right shape, never as a stay-time instruction.')
         ),
 
         // ── 6. accidents ──
         sec('accidents', '#f87171',
           heading(ink('#f87171'), '📋 15. The three accidents, in the actual numbers'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'These are the events that shaped how the world thinks about nuclear power. The figures below come from UNSCEAR and the relevant national reports, and where the range is disputed the tool says so.'),
           h('div', { className: 'space-y-1' },
             INCIDENTS.map(function (inc) {
@@ -5361,8 +5361,8 @@
               return expandRow(inc.id, on, '#f87171', inc.name + ' (' + inc.year + ')', inc.place + ' · ' + inc.level,
                 h('span', null,
                   para(h('b', null, 'What happened: ') ? inc.what : inc.what),
-                  h('span', { className: 'block text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#fca5a5' : '#b91c1c' } }, h('b', null, 'The toll: '), inc.toll),
-                  h('span', { className: 'block text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#166534' } }, h('b', null, 'What changed: '), inc.changed)),
+                  h('span', { className: 'block text-[0.6875rem] leading-relaxed mt-1.5', style: { color: isDark ? '#fca5a5' : '#b91c1c' } }, h('b', null, 'The toll: '), inc.toll),
+                  h('span', { className: 'block text-[0.6875rem] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#166534' } }, h('b', null, 'What changed: '), inc.changed)),
                 function () {
                   upd({ incPick: on ? null : inc.id });
                   if (!on) pushOnce('incidentsRead', inc.id);
@@ -5371,7 +5371,7 @@
                 (on ? 'Hide' : 'Read') + ' the full account of ' + inc.name);
             })
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'The evidence supports a narrower pattern: emergency responses can cause substantial non-radiological harm through evacuation, displacement, lost care and psychological distress. At Fukushima that harm is well documented; at Chernobyl its scale relative to projected radiation effects remains model-dependent. This is not an argument that radiation is harmless. It is why emergency planning has to weigh both kinds of harm.'),
           sourceNote(['unscear', 'reconstruction', 'mhlw'])
         ),
@@ -5381,9 +5381,9 @@
         sec('shelter', '#a3e635',
           heading(ink('#84cc16'), '🏠 16. Shelter or evacuate? Work the numbers'),
           safetyNotice('emergency'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Fukushima Prefecture records 2,350 disaster-related deaths through 2025, a broad legal category that includes illness after injury and the physical burden of evacuation life. No acute radiation deaths occurred, and UNSCEAR has documented no resident health effects directly attributable to radiation. Worker compensation decisions are a separate category and do not prove individual causation. These figures cannot be reduced to a simple evacuation-versus-radiation score; they show why emergency choices have costs on both sides.'),
-          h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'In this deliberately limited dose model, sheltering combines two levers from section 14: a building is shielding, and staying put means less time in the open than driving through a plume. The arithmetic compares those dose paths only; medical vulnerability, changing plume direction and official measurements still govern a real decision.'),
 
           slider('sh-rate', 'Outdoor dose rate', 0.1, 30, 0.1, shRate,
@@ -5393,7 +5393,7 @@
           slider('sh-evac', 'Hours to get clear', 0.5, 12, 0.5, shEvac,
             function (e) { upd({ shEvac: parseFloat(e.target.value), shelterUsed: true }); }, nkFmt(shEvac, 1) + ' h'),
 
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Where would you be sheltering?'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Where would you be sheltering?'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             SHELTER_PLACES.map(function (x) {
               return pill(shPlaceId === x.id, x.colour, x.name + '  ×' + x.drf, function () {
@@ -5403,8 +5403,8 @@
               }, x.name + ', dose reduction factor ' + x.drf);
             })
           ),
-          h('p', { className: 'text-[11px] mb-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, shPlace.note),
-          h('p', { className: 'text-[10px] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, shPlace.note),
+          h('p', { className: 'text-[0.625rem] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Published range for this kind of building: ×' + shPlace.range + '. The tool uses ×' + shPlace.drf + '.'),
 
           h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(163,230,53,0.35)', height: '180px' } },
@@ -5459,17 +5459,17 @@
               shSheltering
                 ? 'On dose alone: stay where you are'
                 : 'On dose alone: leaving costs less'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Break-even is ' + nkFmt(shBreakEven, 1) + ' hours in the open. '
               + (shSheltering
                 ? 'You said it would take ' + nkFmt(shEvac, 1) + ' hours to get clear, which is longer than that, so the drive costs more dose than the walls save. This is the case people find counter-intuitive, and it is the ordinary one when a release is short and the roads are full.'
                 : 'You said ' + nkFmt(shEvac, 1) + ' hours, which beats it, so leaving wins on dose. That is the ordinary case when a release goes on for days — no building shields you for a week.')),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Push the release out to several days and watch the answer flip: sheltering is a way of waiting out a plume, not a way of living somewhere contaminated. This classroom comparison cannot issue real guidance: officials may order sheltering or evacuation as measurements and travel conditions change.')
           ),
           sourceNote(['nrc', 'unscear', 'reconstruction', 'mhlw']),
 
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Where does that land against the published thresholds?'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Where does that land against the published thresholds?'),
           h('div', { role: 'list', className: 'space-y-1' },
             PAG_LEVELS.map(function (L) {
               var hit = Math.min(shShelterDose, shEvacDose) >= L.mSv;
@@ -5477,26 +5477,26 @@
                 style: hit
                   ? { background: 'rgba(248,113,113,0.14)', borderColor: '#f87171' }
                   : { background: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)' } },
-                h('p', { className: 'text-[11px] font-bold', style: { color: hit ? ink('#f87171') : (isDark ? '#e2e8f0' : '#334155') } },
+                h('p', { className: 'text-[0.6875rem] font-bold', style: { color: hit ? ink('#f87171') : (isDark ? '#e2e8f0' : '#334155') } },
                   (hit ? '⚠️ ' : '') + L.name + ' — ' + L.mSv + ' mSv, ' + L.window),
-                h('p', { className: 'text-[11px] mt-0.5 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, L.what));
+                h('p', { className: 'text-[0.6875rem] mt-0.5 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, L.what));
             })
           ),
 
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(248,113,113,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(254,242,242,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#dc2626') } }, 'What this calculation leaves out, and it is the important part'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#dc2626') } }, 'What this calculation leaves out, and it is the important part'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Everything above is dose, and radiation dose was not identified as the cause of deaths in Fukushima’s disaster-related-death total. Moving a hospital ward or a care home has risks that do not appear anywhere in this arithmetic: disrupted treatment, patients on ventilators, people with dementia moved somewhere unfamiliar, and prolonged displacement. Those stresses contributed to the official 2,350 total, but the legal category does not assign every case to one evacuation order. The lesson was not never evacuate; it was to decide per population rather than per map, because moving a frail patient can be more dangerous than moving a healthy adult.'),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'It also leaves out everything after the plume: contaminated ground, food and water controls, and whether people can return. A dose comparison over the first few days is one input to that decision, not the decision.')
           ),
-          h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Shielding factors from FEMA and EPA emergency planning guidance for cloud and ground shine, quoted as the ranges they are given as. Thresholds from the US EPA PAG Manual (2017) and IAEA GSR Part 7. The model is deliberately the simplest one that can flip: constant outdoor rate, a single building factor, and no credit for driving away from the plume rather than along it — which in a real evacuation matters as much as the hours do.')
         ),
 
         sec('reactors', '#38bdf8',
           heading(ink('#38bdf8'), '🏭 17. Reactor designs, and where SMRs really stand'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every row says how it works, what makes it safe, and — the part usually left out — what the catch is.'),
           h('div', { className: 'space-y-1' },
             REACTORS.map(function (r) {
@@ -5519,20 +5519,20 @@
                   className: 'min-h-11 w-full text-left rounded-lg px-2.5 py-2'
                 },
                   h('span', { className: 'flex items-center gap-2 flex-wrap' },
-                    h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#fff' : '#1e293b' } }, r.name),
-                    h('span', { className: 'text-[10px] font-black px-1.5 py-0.5 rounded-full', style: { color: badge, border: '1px solid ' + badge + '70' } }, r.status),
-                    h('span', { className: 'text-[11px] font-bold', 'aria-hidden': 'true', style: { color: ink('#38bdf8') } }, on ? '▾' : '›')),
-                  h('span', { className: 'block text-[11px] mt-0.5', style: { color: isDark ? '#cbd5e1' : '#475569' } }, r.share)),
+                    h('span', { className: 'text-[0.6875rem] font-bold flex-1', style: { color: isDark ? '#fff' : '#1e293b' } }, r.name),
+                    h('span', { className: 'text-[0.625rem] font-black px-1.5 py-0.5 rounded-full', style: { color: badge, border: '1px solid ' + badge + '70' } }, r.status),
+                    h('span', { className: 'text-[0.6875rem] font-bold', 'aria-hidden': 'true', style: { color: ink('#38bdf8') } }, on ? '▾' : '›')),
+                  h('span', { className: 'block text-[0.6875rem] mt-0.5', style: { color: isDark ? '#cbd5e1' : '#475569' } }, r.share)),
                 on ? h('div', { id: bodyId, className: 'px-2.5 pb-2 -mt-0.5' },
                   para(r.how),
-                  h('p', { className: 'text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#166534' } }, h('b', null, 'Safety: '), r.safety),
-                  h('p', { className: 'text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#fbbf24' : '#b45309' } }, h('b', null, 'The catch: '), r.catch)
+                  h('p', { className: 'text-[0.6875rem] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#166534' } }, h('b', null, 'Safety: '), r.safety),
+                  h('p', { className: 'text-[0.6875rem] leading-relaxed mt-1.5', style: { color: isDark ? '#fbbf24' : '#b45309' } }, h('b', null, 'The catch: '), r.catch)
                 ) : null);
             })
           ),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'On small modular reactors specifically'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#f59e0b') } }, 'On small modular reactors specifically'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'The engineering case is real: a small core can be cooled by convection and gravity alone, so a station blackout stops being the scenario that keeps operators awake. Factory production should also beat pouring concrete on site, where Western projects have overrun badly. But as of now almost none are operating commercially — China\'s HTR-PM since 2023, and a Russian floating plant. NuScale had the first US design approval and its flagship project was cancelled in 2023 when projected power costs rose from about $58 to $89 per MWh. Factory economics need order volume that does not yet exist, and several designs need HALEU fuel with a supply chain still being built. The right posture is interested, not convinced.'),
             sourceNote(['nuscale', 'iter', 'nif'])
           )
@@ -5542,7 +5542,7 @@
         // ── 8. waste ──
         sec('waste', '#94a3b8',
           heading(isDark ? '#cbd5e1' : '#475569', '🗄️ 18. The waste question, taken seriously'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'This is the objection that survives every other answer, so it deserves a straight one — including the part that genuinely has no solution.'),
           h('div', { className: 'space-y-1' },
             WASTE_FACTS.map(function (w, i) {
@@ -5562,36 +5562,36 @@
         // ── 9. comparison ──
         sec('compare', '#a3e635',
           heading(ink('#84cc16'), '⚖️ 19. Compared with the alternatives'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Risk only means something next to the risk of the thing you would do instead. Both charts are full life cycle, including mining, construction and accidents.'),
-          h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Deaths per terawatt-hour of electricity'),
+          h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Deaths per terawatt-hour of electricity'),
           h('div', { role: 'list', className: 'space-y-1' },
             DEATHS_TWH.map(function (r) {
               return h('div', { key: r.name, role: 'listitem', 'aria-label': r.name + ', ' + r.v + ' deaths per terawatt hour', className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
+                h('span', { className: 'text-[0.6875rem] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
                 h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                   h('div', { style: { height: '100%', width: Math.max(1, nkLogFrac(r.v, 0.01, 25) * 100) + '%', background: r.colour, borderRadius: '999px' } })),
-                h('span', { className: 'text-[11px] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v));
+                h('span', { className: 'text-[0.6875rem] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v));
             })
           ),
-          h('p', { className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Logarithmic scale. Markandya & Wilkinson (2007) and Sovacool et al. (2016), compiled by Our World in Data. Nuclear\'s figure includes Chernobyl and Fukushima.'),
 
-          h('p', { className: 'text-[11px] font-bold mt-3 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Lifecycle CO₂, grams per kWh'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-3 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Lifecycle CO₂, grams per kWh'),
           h('div', { role: 'list', className: 'space-y-1' },
             CO2_KWH.map(function (r) {
               return h('div', { key: r.name, role: 'listitem', 'aria-label': r.name + ', ' + r.v + ' grams CO2 per kilowatt hour', className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
+                h('span', { className: 'text-[0.6875rem] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
                 h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                   h('div', { style: { height: '100%', width: Math.max(1, (r.v / 820) * 100) + '%', background: r.colour, borderRadius: '999px' } })),
-                h('span', { className: 'text-[11px] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v));
+                h('span', { className: 'text-[0.6875rem] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v));
             })
           ),
-          h('p', { className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'Linear scale. IPCC AR5 Annex III medians.'),
+          h('p', { className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'Linear scale. IPCC AR5 Annex III medians.'),
 
           h('div', { className: 'mt-3 rounded-lg border p-2.5', style: { borderColor: 'rgba(163,230,53,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(247,254,231,0.9)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#65a30d') } }, 'What these charts do and do not settle'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#65a30d') } }, 'What these charts do and do not settle'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'They show that on deaths and on carbon, nuclear sits with wind and solar rather than with fossil fuels — and that is not a close call. They do not settle the argument, because the real objections to nuclear are mostly not about these two numbers. They are about capital cost, build times that have run to a decade or more in the West, waste policy that no country except Finland has finished, and weapons proliferation. Anyone who tells you the deaths-per-TWh chart ends the debate is skipping the parts that are actually hard.')
           ),
           ponder('compare', '#84cc16',
@@ -5602,14 +5602,14 @@
         // ── reactor operation simulator ──
         sec('operate', '#34d399',
           heading(ink('#34d399'), '🎛️ 20. Operate a reactor'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A modern reactor, run properly. The two accident conditions are here as engineering case studies — the point is to watch the physics do it, not to score a disaster.'),
 
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-2' },
             h('div', { className: 'nk-rx-core-view relative rounded-xl overflow-hidden border' + ((rxViewerStatus === 'failed' || (!rxViewerStatus && RX_MISSING === 'host')) ? ' nk-rx-core-unavailable' : ''), style: { borderColor: 'rgba(52,211,153,0.4)', height: '260px', background: isDark ? '#0b1220' : '#dfe6ef' } },
               h('div', { ref: rxAttach, style: { position: 'absolute', inset: 0 } }),
               rxViewerStatus !== 'ready' ? h('div', { role: 'status', className: 'absolute inset-0 flex items-center justify-center text-center p-4', style: { background: isDark ? 'rgba(11,18,32,0.92)' : 'rgba(223,230,239,0.92)' } },
-                h('p', { className: 'text-[11px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+                h('p', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                   rxViewerStatus === 'loading' ? 'Loading the 3D core…'
                     : (RX_MISSING === 'host'
                       ? 'The 3D core needs a newer host module than this build has. The control panel beside it still works in full.'
@@ -5644,12 +5644,12 @@
               className: 'nk-rx-metric rounded-lg p-2 text-center',
               style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.09)', border: '1px solid rgba(52,211,153,0.35)' }
             },
-              h('dt', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, metric[1]),
+              h('dt', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, metric[1]),
               h('dd', { className: 'nk-rx-value text-sm font-black', style: { color: isDark ? '#6ee7b7' : '#047857' } },
                 h('output', { id: metric[0] }, metric[2])),
               h('dd', {
                 id: metric[0] + '-tone',
-                className: 'nk-rx-tone mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black'
+                className: 'nk-rx-tone mt-1 inline-flex rounded-full px-2 py-0.5 text-[0.625rem] font-black'
               }, tone.label));
           })),
 
@@ -5659,7 +5659,7 @@
               'aria-label': 'Show current status. Read a text snapshot of the reactor',
               'aria-controls': 'rx-status-summary',
               onClick: rxAnnounceStatus,
-              className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+              className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
               style: {
                 background: isDark ? 'rgba(96,165,250,0.14)' : 'rgba(239,246,255,0.96)',
                 color: isDark ? '#bfdbfe' : '#1d4ed8',
@@ -5670,7 +5670,7 @@
           h('p', {
             id: 'rx-status-summary',
             hidden: !rxStatusSnapshot,
-            className: 'mt-2 rounded-lg border p-2.5 text-[11px] leading-relaxed',
+            className: 'mt-2 rounded-lg border p-2.5 text-[0.6875rem] leading-relaxed',
             style: {
               borderColor: isDark ? 'rgba(96,165,250,0.5)' : 'rgba(37,99,235,0.38)',
               background: isDark ? 'rgba(30,58,138,0.16)' : 'rgba(239,246,255,0.96)',
@@ -5686,7 +5686,7 @@
             className: 'nk-rx-control-group mt-3 rounded-xl border p-2.5',
             style: { borderColor: 'rgba(52,211,153,0.4)', background: isDark ? 'rgba(6,78,59,0.1)' : 'rgba(240,253,244,0.7)' }
           },
-            h('legend', { className: 'px-1.5 text-[11px] font-black', style: { color: ink('#34d399') } }, '1 · Choose scenario'),
+            h('legend', { className: 'px-1.5 text-[0.6875rem] font-black', style: { color: ink('#34d399') } }, '1 · Choose scenario'),
             h('div', { className: 'flex flex-wrap gap-1' },
               RX_SCENARIOS.map(function (s) {
                 return pill(rxScenario === s.id, '#34d399', s.name, function () {
@@ -5699,7 +5699,7 @@
                 }, 'Run the scenario: ' + s.name + '. ' + s.goal);
               })
             ),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               h('b', null, rxScenObj.goal + ' '), rxScenObj.brief),
 
             h('div', {
@@ -5715,16 +5715,16 @@
           },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
               h('p', {
-                id: 'rx-objective-heading', className: 'text-[10px] font-black uppercase tracking-wide',
+                id: 'rx-objective-heading', className: 'text-[0.625rem] font-black uppercase tracking-wide',
                 style: { color: isDark ? '#6ee7b7' : '#047857' }
               }, 'Objective progress'),
               h('span', {
                 id: 'rx-objective-tone',
-                className: 'nk-rx-tone inline-flex rounded-full px-2 py-0.5 text-[10px] font-black'
+                className: 'nk-rx-tone inline-flex rounded-full px-2 py-0.5 text-[0.625rem] font-black'
               }, rxObjectiveVisualTone.label)
             ),
             h('p', {
-              id: 'rx-objective-step', className: 'mt-1 text-[11px] font-black',
+              id: 'rx-objective-step', className: 'mt-1 text-[0.6875rem] font-black',
               style: { color: isDark ? '#d1fae5' : '#065f46' }
             }, rxObjective.label),
             h('progress', {
@@ -5735,7 +5735,7 @@
               className: 'mt-2 w-full h-3', style: { accentColor: '#059669' }
             }),
             h('output', {
-              id: 'rx-objective-detail', className: 'block mt-1 text-[11px] leading-relaxed',
+              id: 'rx-objective-detail', className: 'block mt-1 text-[0.6875rem] leading-relaxed',
               style: { color: isDark ? '#d1fae5' : '#166534' }
             }, rxObjective.detail)
             )
@@ -5746,7 +5746,7 @@
             className: 'nk-rx-control-group mt-2 rounded-xl border p-2.5',
             style: { borderColor: 'rgba(96,165,250,0.4)', background: isDark ? 'rgba(30,58,138,0.1)' : 'rgba(239,246,255,0.72)' }
           },
-            h('legend', { className: 'px-1.5 text-[11px] font-black', style: { color: ink('#60a5fa') } }, '2 · Choose core design'),
+            h('legend', { className: 'px-1.5 text-[0.6875rem] font-black', style: { color: ink('#60a5fa') } }, '2 · Choose core design'),
             h('div', { className: 'flex flex-wrap gap-1' },
               RX_MODES.map(function (m) {
                 return pill(rxMode === m.id, m.id === 'rbmk' ? '#f87171' : '#60a5fa', m.name, function () {
@@ -5757,7 +5757,7 @@
                 }, 'Switch the core to ' + m.name);
               })
             ),
-            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: rxMode === 'rbmk' ? (isDark ? '#fca5a5' : '#b91c1c') : (isDark ? '#cbd5e1' : '#475569') } }, rxModeObj.blurb)
+            h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: rxMode === 'rbmk' ? (isDark ? '#fca5a5' : '#b91c1c') : (isDark ? '#cbd5e1' : '#475569') } }, rxModeObj.blurb)
           ),
 
           h('fieldset', {
@@ -5765,12 +5765,12 @@
             className: 'nk-rx-control-group mt-2 rounded-xl border p-2.5',
             style: { borderColor: 'rgba(251,191,36,0.42)', background: isDark ? 'rgba(120,53,15,0.1)' : 'rgba(255,251,235,0.74)' }
           },
-            h('legend', { className: 'px-1.5 text-[11px] font-black', style: { color: ink('#fbbf24') } }, '3 · Operate the reactor'),
+            h('legend', { className: 'px-1.5 text-[0.6875rem] font-black', style: { color: ink('#fbbf24') } }, '3 · Operate the reactor'),
             h('div', { className: 'flex flex-wrap items-center gap-2' },
             h('button', { ref: rxStartButtonRef, type: 'button', 'aria-pressed': rxUi.running ? 'true' : 'false',
               'aria-label': rxUi.running ? 'Pause. Pause the simulation' : 'Run. Start the simulation',
               onClick: function () { rxPatchUi({ running: !rxUi.running }); if (typeof beep === 'function') beep(); },
-              className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
+              className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black',
               style: rxUi.running ? { background: '#f59e0b', color: '#0b1020', border: '1px solid #f59e0b' } : { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
             }, rxUi.running ? '⏸ Pause' : '▶ Run'),
             h('button', { type: 'button', 'aria-label': 'Scram: drop every control rod immediately',
@@ -5780,11 +5780,11 @@
                 if (typeof beep === 'function') beep();
                 if (typeof announceToSR === 'function') announceToSR('Scrammed. Fission stopped. Decay heat continues.');
               },
-              className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white',
+              className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black text-white',
               style: { background: '#dc2626', border: '1px solid #dc2626' } }, '🛑 SCRAM'),
             h('button', { type: 'button', 'aria-label': 'Reset. Return the reactor to its starting condition',
               onClick: function () { rxRestart(); if (typeof beep === 'function') beep(); },
-              className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+              className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '↺ Reset'),
             h('button', { type: 'button', 'aria-pressed': rxUi.pumps ? 'true' : 'false',
               'aria-label': rxUi.pumps ? 'Pumps on. Stop the coolant pumps' : 'Pumps off. Restore the coolant pumps',
@@ -5794,7 +5794,7 @@
                 rxPatchUi({ pumps: pumps });
                 if (typeof beep === 'function') beep();
               },
-              className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+              className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
               style: rxUi.pumps
                 ? { background: 'rgba(96,165,250,0.18)', color: isDark ? '#bfdbfe' : '#1d4ed8', border: '1px solid #60a5fa' }
                 : { background: 'rgba(248,113,113,0.18)', color: isDark ? '#fecaca' : '#b91c1c', border: '1px solid #f87171' }
@@ -5802,7 +5802,7 @@
             ),
 
             h('div', { className: 'nk-slider flex items-center gap-2 mt-2' },
-            h('label', { htmlFor: 'rx-rods', className: 'text-[11px] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Control rods'),
+            h('label', { htmlFor: 'rx-rods', className: 'text-[0.6875rem] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Control rods'),
             h('input', { id: 'rx-rods', type: 'range', min: 0, max: 100, step: 5,
               value: rxUi.rodStep,
               'aria-valuetext': rxUi.rodStep + ' percent inserted',
@@ -5812,24 +5812,24 @@
                 rxPatchUi({ rodStep: value, scrammed: false });
               },
               className: 'flex-1 min-h-11 accent-emerald-500' }),
-            h('span', { className: 'text-[11px] font-bold w-24 text-right', style: { color: isDark ? '#6ee7b7' : '#047857' } }, rxUi.rodStep + '% in')
+            h('span', { className: 'text-[0.6875rem] font-bold w-24 text-right', style: { color: isDark ? '#6ee7b7' : '#047857' } }, rxUi.rodStep + '% in')
             ),
 
             rxUi.verdict ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5',
             style: { borderColor: rxUi.verdict.ok ? 'rgba(52,211,153,0.6)' : 'rgba(248,113,113,0.6)', background: isDark ? 'rgba(15,23,42,0.7)' : (rxUi.verdict.ok ? 'rgba(240,253,244,0.9)' : 'rgba(254,242,242,0.9)') } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(rxUi.verdict.ok ? '#059669' : '#dc2626') } }, rxUi.verdict.ok ? '✅ Scenario complete' : '⚠️ Run ended'),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, rxUi.verdict.why),
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink(rxUi.verdict.ok ? '#059669' : '#dc2626') } }, rxUi.verdict.ok ? '✅ Scenario complete' : '⚠️ Run ended'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, rxUi.verdict.why),
             h('button', { type: 'button', 'aria-label': 'Try again. Reset the reactor scenario',
               onClick: function () {
                 rxRetryFocusRef.current = true;
                 rxRestart();
               },
-              className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-[11px] font-bold text-white',
+              className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-[0.6875rem] font-bold text-white',
               style: { background: '#065f46', border: '1px solid #065f46' } }, 'Try again')
             ) : null
           ),
 
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Parts of the core'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Parts of the core'),
           h('div', { className: 'flex flex-wrap gap-1' },
             RX_PARTS.map(function (p) {
               var on = d.rxPart === p.id;
@@ -5841,7 +5841,7 @@
                   if (!on) { pushOnce('rxPartsSeen', p.id); if (typeof announceToSR === 'function') announceToSR(p.label + '. ' + p.desc); }
                   if (typeof beep === 'function') beep();
                 },
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
                 style: on ? { background: p.color, color: '#0b1020', border: '1px solid ' + p.color }
                   : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
               }, p.label);
@@ -5850,30 +5850,30 @@
           (function () {
             var p = RX_PARTS.filter(function (x) { return x.id === d.rxPart; })[0];
             return p ? h('div', { id: 'nk-rx-part-' + p.id, className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: p.color + '80', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.92)' } },
-              h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(p.color) } }, p.label),
-              h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, p.desc)) : null;
+              h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink(p.color) } }, p.label),
+              h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, p.desc)) : null;
           })(),
 
-          h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'One-group point kinetics with the prompt-jump approximation: β = 0.0065, Λ = 10⁻⁴ s, λ = 0.0767 /s. Decay heat uses the Wigner-Way approximation. Temperature, void and xenon feedbacks are order-of-magnitude realistic for teaching, not a licensing model.')
         ),
 
         // ── evidence challenge ──
         sec('evidence', '#22d3ee',
           heading(ink('#22d3ee'), '🔎 21. Evidence challenge: what does the evidence earn?'),
-          h('p', { id: 'nk-evidence-intro', className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { id: 'nk-evidence-intro', className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Classify each claim using only the evidence given. There is no timer and no penalty for revising an answer. “Not settled” is a full scientific verdict when the evidence cannot distinguish the possibilities.'
               + (nkPath ? ' This route asks only about evidence from the sections you just opened.' : '')),
 
           h('div', { className: 'flex flex-wrap items-center gap-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.45)', background: isDark ? 'rgba(8,47,73,0.3)' : 'rgba(236,254,255,0.9)' } },
-            h('span', { className: 'text-[11px] font-black', style: { color: ink('#22d3ee') } },
+            h('span', { className: 'text-[0.6875rem] font-black', style: { color: ink('#22d3ee') } },
               nkPath ? 'Route evidence' : 'Evidence mastery'),
             h('progress', {
               value: activeEvidenceMastered.length, max: evidenceClaims.length,
               'aria-label': activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' evidence claims mastered',
               className: 'flex-1 min-w-[8rem] h-3', style: { accentColor: '#0891b2' }
             }),
-            h('span', { className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('span', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' mastered')
           ),
 
@@ -5895,7 +5895,7 @@
                       });
                       if (claim.id === evidenceClaim.id) nkFocusEvidenceClaim();
                     },
-                    className: 'min-h-11 min-w-11 px-3 py-2 rounded-lg text-[11px] font-black',
+                    className: 'min-h-11 min-w-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
                     style: current
                       ? { background: '#22d3ee', color: '#0b1020', border: '1px solid #22d3ee' }
                       : { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(255,255,255,0.95)', color: mastered ? ink('#34d399') : (isDark ? '#e2e8f0' : '#334155'), border: '1px solid ' + (mastered ? '#34d399' : (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')) }
@@ -5915,7 +5915,7 @@
               'Claim ' + (evidenceIndex + 1) + ' of ' + evidenceClaims.length),
             h('p', { id: 'nk-evidence-statement', className: 'text-sm font-black leading-relaxed', style: { color: isDark ? '#fff' : '#1e293b' } },
               '“' + evidenceClaim.claim + '”'),
-            h('p', { id: 'nk-evidence-question', className: 'text-[10px] mt-1 mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { id: 'nk-evidence-question', className: 'text-[0.625rem] mt-1 mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'Which verdict is justified by the evidence in this lab?'),
 
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
@@ -5923,7 +5923,7 @@
                 var selected = evidenceChoice === verdict.id;
                 return h('label', {
                   key: verdict.id,
-                  className: 'min-h-11 flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-bold cursor-pointer',
+                  className: 'min-h-11 flex items-center gap-2 rounded-lg border px-3 py-2 text-[0.6875rem] font-bold cursor-pointer',
                   style: selected
                     ? { background: isDark ? 'rgba(34,211,238,0.2)' : 'rgba(207,250,254,0.95)', color: isDark ? '#cffafe' : '#164e63', borderColor: '#22d3ee' }
                     : { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(248,250,252,0.96)', color: isDark ? '#e2e8f0' : '#334155', borderColor: isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.25)' }
@@ -5957,24 +5957,24 @@
                       background: isDark ? (evidenceCorrect ? 'rgba(6,78,59,0.28)' : 'rgba(120,53,15,0.28)') : (evidenceCorrect ? 'rgba(236,253,245,0.96)' : 'rgba(255,251,235,0.98)')
                     }
                   },
-                    h('p', { className: 'text-[11px] font-black', style: { color: ink(evidenceCorrect ? '#059669' : '#f59e0b') } },
+                    h('p', { className: 'text-[0.6875rem] font-black', style: { color: ink(evidenceCorrect ? '#059669' : '#f59e0b') } },
                       evidenceCorrect ? '✓ Evidence match' : '↺ Take another look'),
-                    h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, evidenceClaim.evidence),
+                    h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, evidenceClaim.evidence),
                     !evidenceCorrect && !evidenceAnswerVisible
-                      ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#f59e0b') } },
+                      ? h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink('#f59e0b') } },
                           'Use that evidence to revise your verdict, or reveal the best-supported answer when you need it.')
                       : null,
                     h('div', { id: 'nk-evidence-answer', hidden: !evidenceAnswerVisible },
-                      h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: isDark ? '#f8fafc' : '#1e293b' } },
+                      h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: isDark ? '#f8fafc' : '#1e293b' } },
                         'Best verdict: ' + evidenceVerdict.label + '.'),
-                      h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#22d3ee') } }, evidenceClaim.takeaway)
+                      h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink('#22d3ee') } }, evidenceClaim.takeaway)
                     )
                   ),
                   h('div', { className: 'mt-2 flex flex-wrap gap-2' },
                     h('button', {
                       type: 'button', onClick: function () { nkReviewTopic(evidenceClaim.section); },
                       'aria-label': 'Review the supporting topic for claim ' + (evidenceIndex + 1),
-                      className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                      className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
                       style: { background: isDark ? 'rgba(148,163,184,0.12)' : '#fff', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
                     }, 'Review the supporting topic'),
                     !evidenceCorrect && evidenceMastered.indexOf(evidenceClaim.id) === -1 ? h('button', {
@@ -5987,14 +5987,14 @@
                         upd({ evidenceRevealed: revealed });
                         if (typeof beep === 'function') beep();
                       },
-                      className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                      className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
                       style: { background: 'transparent', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? 'rgba(251,191,36,0.55)' : 'rgba(217,119,6,0.5)') }
                     }, evidenceAnswerVisible ? 'Hide best verdict' : 'Show best verdict') : null
                   )
                 )
               : h('p', {
                   id: 'nk-evidence-feedback',
-                  className: 'text-[10px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' }
+                  className: 'text-[0.625rem] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' }
                 }, evidenceChoice ? 'Choice selected. Check the evidence when you are ready.' : 'Choose a verdict to continue.'),
 
             h('div', { className: 'mt-2 flex flex-wrap gap-2' },
@@ -6036,7 +6036,7 @@
                     if (typeof awardXP === 'function') awardXP('nuclear_evidence', 15, 'Mastered the evidence challenge');
                   }
                 },
-                className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
+                className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black',
                 style: { background: '#0e7490', color: '#fff', border: '1px solid #0e7490', opacity: !evidenceChoice ? 0.55 : 1 }
               }, evidenceIsChecked ? 'Check again' : 'Check the evidence'),
               evidenceIsChecked && evidenceClaims.length > 1 ? h('button', {
@@ -6058,7 +6058,7 @@
                   // Focus moves to the newly named fieldset after this commit;
                   // announcing its claim number here would say it twice.
                 },
-                className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
+                className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black',
                 style: { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
               }, evidenceIndex < evidenceClaims.length - 1 ? 'Next claim →' : (activeEvidenceComplete ? 'Review claim 1' : 'Review an unfinished claim')) : null,
               h('button', {
@@ -6090,7 +6090,7 @@
                   // the post-commit handoff effect will not run.
                   if (!claimChanges) nkFocusEvidenceClaim();
                 },
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
                 style: { background: 'transparent', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
               }, 'Start over')
             )
@@ -6101,8 +6101,8 @@
             className: 'mt-3 rounded-lg border p-2.5',
             style: { borderColor: 'rgba(52,211,153,0.65)', background: isDark ? 'rgba(6,78,59,0.28)' : 'rgba(236,253,245,0.96)' }
           },
-            h('p', { className: 'text-[11px] font-black', style: { color: ink('#059669') } }, '✓ Challenge complete'),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#d1fae5' : '#065f46' } },
+            h('p', { className: 'text-[0.6875rem] font-black', style: { color: ink('#059669') } }, '✓ Challenge complete'),
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#d1fae5' : '#065f46' } },
               nkPath
                 ? 'You judged the evidence taught on this route. That mastery also carries into the full five-claim challenge.'
                 : 'You separated direct support, contradiction, and uncertainty across all five claims. Revisit any number above to compare the reasoning again.')
@@ -6142,16 +6142,16 @@
               },
                 h('span', { className: 'flex items-center gap-2' },
                   h('span', { className: 'text-sm', 'aria-hidden': 'true' }, b.icon),
-                  h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#fff' : '#1e293b' } }, b.name),
-                  h('span', { className: 'ml-auto text-[11px] font-bold', style: { color: ink('#94a3b8') } }, '→')),
-                h('span', { className: 'block text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, b.why));
+                  h('span', { className: 'text-[0.6875rem] font-black', style: { color: isDark ? '#fff' : '#1e293b' } }, b.name),
+                  h('span', { className: 'ml-auto text-[0.6875rem] font-bold', style: { color: ink('#94a3b8') } }, '→')),
+                h('span', { className: 'block text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, b.why));
             })
           )
         )
         ),
 
         h('footer', { className: 'mt-3 rounded-lg border p-3 text-center', style: { borderColor: isDark ? 'rgba(148,163,184,.25)' : 'rgba(100,116,139,.22)' } },
-          h('p', { className: 'text-[10px] leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { className: 'text-[0.625rem] leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Reviewed ' + NK_REVIEWED + '. Half-lives use NNDC NuDat 3; attenuation uses NIST XCOM at 1 MeV; dose and accident context uses UNSCEAR, ICRP 103 and NCRP 160. Where a figure is disputed, the tool gives the range rather than choosing.'),
           sourceNote(['nudat', 'nist', 'unscear', 'icrp103', 'inworks', 'nrc', 'iter', 'nif', 'nuscale']))
       );

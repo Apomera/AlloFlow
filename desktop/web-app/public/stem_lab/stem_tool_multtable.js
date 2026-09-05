@@ -790,7 +790,7 @@ window.StemLab = window.StemLab || {
           rows.push(h('div', { key: 'vrow-' + ri, className: 'flex items-center gap-2' },
             visualSkipOn && h('div', { className: 'text-xs font-bold text-amber-700 font-mono w-12 text-right pr-1', style: { fontVariantNumeric: 'tabular-nums' } },
               (ri === 0 ? b : '+' + b),
-              h('span', { className: 'block text-[10px] text-amber-700' }, '=' + runningTotal)
+              h('span', { className: 'block text-[0.625rem] text-amber-700' }, '=' + runningTotal)
             ),
             h('div', { className: 'flex', style: { gap: dotGap } }, dots)
           ));
@@ -819,7 +819,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-center text-xl font-bold text-amber-800' }, b)
               )
             ),
-            h('div', { className: 'flex flex-wrap items-center gap-3 mt-2 text-[11px]' },
+            h('div', { className: 'flex flex-wrap items-center gap-3 mt-2 text-[0.6875rem]' },
               h('label', { className: 'font-bold text-amber-700 flex items-center gap-1 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: visualSkipOn,
                   onChange: function() { playSound('default'); extUpd({ visualSkipOn: !visualSkipOn }); }
@@ -841,7 +841,7 @@ window.StemLab = window.StemLab || {
                 a + ' × ' + b + ' = ',
                 h('span', { className: 'text-3xl text-amber-700 ml-2' }, product)
               ),
-              h('p', { className: 'text-[11px] text-amber-700 italic mt-1' },
+              h('p', { className: 'text-[0.6875rem] text-amber-700 italic mt-1' },
                 a + ' rows of ' + b + ' = ' + a + ' groups of ' + b + ' = ' + b + ' added ' + a + ' times'
               )
             ),
@@ -851,17 +851,17 @@ window.StemLab = window.StemLab || {
           // Repeated-addition row + commutativity twin
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
-              h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' }, t('stem.multtable.repeated_addition', '➕ Repeated addition')),
+              h('p', { className: 'text-[0.625rem] font-bold text-amber-700 uppercase tracking-wider mb-1' }, t('stem.multtable.repeated_addition', '➕ Repeated addition')),
               h('p', { className: 'text-sm font-mono font-bold text-amber-900' },
                 Array.from({ length: a }, function() { return b; }).join(' + ') + ' = ' + product
               )
             ),
             h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
-              h('p', { className: 'text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1' }, t('stem.multtable.commutativity_twin', '⇄ Commutativity twin')),
+              h('p', { className: 'text-[0.625rem] font-bold text-violet-700 uppercase tracking-wider mb-1' }, t('stem.multtable.commutativity_twin', '⇄ Commutativity twin')),
               h('p', { className: 'text-sm font-mono font-bold text-violet-900' },
                 a + ' × ' + b + ' = ' + b + ' × ' + a + ' = ' + product
               ),
-              h('p', { className: 'text-[10px] text-violet-700 italic mt-0.5' },
+              h('p', { className: 'text-[0.625rem] text-violet-700 italic mt-0.5' },
                 t('stem.multtable.same_dots_just_turned_sideways_learn_o', 'Same dots, just turned sideways. Learn one fact, know two.')
               )
             )
@@ -869,36 +869,36 @@ window.StemLab = window.StemLab || {
 
           // Memory trick (when this fact is in TRICKY_15)
           trickHere && h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border-2 border-fuchsia-300' },
-            h('p', { className: 'text-[11px] font-bold text-fuchsia-800 uppercase tracking-wider mb-1' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-fuchsia-800 uppercase tracking-wider mb-1' },
               trickHere.icon + ' Memory trick for ' + a + ' × ' + b
             ),
             h('p', { className: 'text-sm text-fuchsia-900 leading-relaxed' }, trickHere.trick),
-            h('p', { className: 'text-[10px] text-fuchsia-700 italic mt-1' },
+            h('p', { className: 'text-[0.625rem] text-fuchsia-700 italic mt-1' },
               t('stem.multtable.this_is_one_of_the_tricky_15_facts_the', 'This is one of the Tricky 15 facts — the small set that needs real recall. Switch to Practice → "Tricky 15" mode to drill it.')
             )
           ),
 
           // Fact family (multiplication ↔ division bridge)
           h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
-            h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, t('stem.multtable.fact_family_multiplication_division', '👨‍👩‍👧 Fact family — multiplication ↔ division')),
+            h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, t('stem.multtable.fact_family_multiplication_division', '👨‍👩‍👧 Fact family — multiplication ↔ division')),
             h('p', { className: 'text-xs font-mono font-bold text-emerald-900' },
               a + ' × ' + b + ' = ' + product +
               (a === b ? '' : ',  ' + b + ' × ' + a + ' = ' + product) +
               ',  ' + product + ' ÷ ' + a + ' = ' + b +
               (a === b ? '' : ',  ' + product + ' ÷ ' + b + ' = ' + a)
             ),
-            h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' },
+            h('p', { className: 'text-[0.625rem] text-emerald-700 italic mt-1' },
               t('stem.multtable.same_numbers_four_faces_knowing_one_fa', 'Same numbers, four faces. Knowing one fact gives you the others.')
             )
           ),
 
           // Quick presets focusing on hard facts (the "tricky middle" of the table)
           h('div', { className: 'flex flex-wrap items-center gap-1.5' },
-            h('span', { className: 'text-[11px] font-bold text-amber-700 self-center mr-1' }, t('stem.multtable.tricky_facts_to_visualize', 'Tricky facts to visualize:')),
+            h('span', { className: 'text-[0.6875rem] font-bold text-amber-700 self-center mr-1' }, t('stem.multtable.tricky_facts_to_visualize', 'Tricky facts to visualize:')),
             [[6,7],[6,8],[6,9],[7,7],[7,8],[7,9],[8,8],[8,9],[9,9],[11,12],[12,12]].map(function(pair) {
               return h('button', { key: 'vp-' + pair[0] + '-' + pair[1],
                 onClick: function() { extUpd({ visualA: pair[0], visualB: pair[1] }); },
-                className: 'px-2 py-0.5 rounded text-[11px] font-mono bg-white text-amber-700 border border-amber-300 hover:bg-amber-100'
+                className: 'px-2 py-0.5 rounded text-[0.6875rem] font-mono bg-white text-amber-700 border border-amber-300 hover:bg-amber-100'
               }, pair[0] + '×' + pair[1]);
             })
           )
@@ -950,7 +950,7 @@ window.StemLab = window.StemLab || {
         var selectedPattern = patternId ? PATTERNS.find(function(p) { return p.id === patternId; }) : null;
 
         // Build the 12×12 table with pattern highlighting
-        var headerRow = [h('th', { key: 'corner', scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-indigo-400' }, '×')];
+        var headerRow = [h('th', { key: 'corner', scope: 'col', className: 'w-8 h-8 text-[0.6875rem] font-bold text-indigo-400' }, '×')];
         for (var hc = 0; hc < maxNum; hc++) {
           var isColHighlight = selectedPattern && (selectedPattern.cellMatches(-1, hc) || selectedPattern.cellMatches(hc, hc));
           // Actually simpler: header is highlighted if the column has any highlighted cells
@@ -978,7 +978,7 @@ window.StemLab = window.StemLab || {
             var isMatch = selectedPattern && selectedPattern.cellMatches(br, bc);
             cells.push(h('td', {
               key: 'pc-' + br + '-' + bc,
-              className: 'w-8 h-8 text-[11px] font-mono border border-slate-100 transition-all ' +
+              className: 'w-8 h-8 text-[0.6875rem] font-mono border border-slate-100 transition-all ' +
                 (isMatch ? 'font-bold text-white allo-mt-pattern-cell' : 'text-slate-600'),
               style: isMatch ? { backgroundColor: selectedPattern.accent, opacity: 0.92 } : null
             }, val));
@@ -989,7 +989,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'space-y-3' },
           // Pattern chip selector
           h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
-            h('p', { className: 'text-[11px] font-bold text-indigo-800 mb-2' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-indigo-800 mb-2' },
               t('stem.multtable.pick_a_pattern_to_highlight_the_table_', '🔍 Pick a pattern to highlight. The table is full of structure — once you see it, half the facts become predictable.')
             ),
             h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -1017,7 +1017,7 @@ window.StemLab = window.StemLab || {
                     announceToSR(active ? 'Pattern off' : 'Pattern: ' + p.label);
                   },
                   'aria-pressed': active,
-                  className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' +
+                  className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                     (active ? 'text-white shadow-sm' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'),
                   style: active ? { backgroundColor: p.accent, borderColor: p.accent } : null
                 }, p.icon + ' ' + p.label);
@@ -1100,7 +1100,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', { onClick: function() { setStemLabTool(null); if (_mt.active) { _mtUpd({ active: false, paused: false }); if (labToolData._multTimerInterval) { clearInterval(labToolData._multTimerInterval); labToolData._multTimerInterval = null; } } }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-pink-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-pink-100 ring-1 ring-pink-200/30' }, 'Fact strategy studio')
+                  h('span', { className: 'rounded-full bg-pink-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-pink-100 ring-1 ring-pink-200/30' }, 'Fact strategy studio')
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.multtable.multiplication_table', '\uD83D\uDD22 Multiplication Table')),
                 h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-pink-100' }, 'Use arrays, patterns, and fact families to reason toward fluent multiplication and division.'),
@@ -1114,7 +1114,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
                   );
                 })
               )
@@ -1136,7 +1136,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-pink-100 bg-white/80 p-2' },
             h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': t('stem.multtable.toggle_hidden_mode_h', 'Toggle hidden mode (H)'),
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
-              className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
+              className: 'text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-600 bg-slate-100 border-slate-200 hover:bg-slate-200'),
               title: t('stem.multtable.toggle_hidden_mode_h_2', 'Toggle hidden mode (H)')
             }, multTableHidden ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Visible'),
@@ -1148,12 +1148,12 @@ window.StemLab = window.StemLab || {
             // Badge count
             earnedCount > 0 && h('button', { 'aria-label': t('stem.multtable.view_badges_b', 'View badges (B)'),
               onClick: function() { extUpd({ showBadges: !_ext.showBadges }); },
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
+              className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
               title: t('stem.multtable.view_badges_b_2', 'View badges (B)')
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             // AI tutor button
             h('button', { onClick: askAI,
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border border-purple-600 text-purple-600 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: ctx.isDark || ctx.isContrast ? 'var(--allo-stem-button-text, #e2e8f0)' : undefined },
+              className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border border-purple-600 text-purple-600 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: ctx.isDark || ctx.isContrast ? 'var(--allo-stem-button-text, #e2e8f0)' : undefined },
               title: t('stem.multtable.ai_tutor', 'AI Tutor (?)')
             }, t('stem.multtable.ai', '\uD83E\uDDE0 AI')),
             // Mute toggle (v3)
@@ -1182,7 +1182,7 @@ window.StemLab = window.StemLab || {
               },
               'aria-label': t('stem.multtable.reset', 'Reset'),
               title: t('stem.multtable.reset_all', 'Reset all'),
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full text-rose-700 border border-rose-200 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: ctx.isDark || ctx.isContrast ? 'var(--allo-stem-button-text, #e2e8f0)' : undefined }
+              className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full text-rose-700 border border-rose-200 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: ctx.isDark || ctx.isContrast ? 'var(--allo-stem-button-text, #e2e8f0)' : undefined }
             }, t('stem.multtable.reset_2', '\u21BA Reset'))
         ),
 
@@ -1240,7 +1240,7 @@ window.StemLab = window.StemLab || {
                 title: badge.desc
               },
                 h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.label)
+                h('div', { className: 'text-[0.6875rem] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.label)
               );
             })
           )
@@ -1262,13 +1262,13 @@ window.StemLab = window.StemLab || {
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
           !_ext.aiLoading && h('button', { 'aria-label': t('stem.multtable.ask_again', 'Ask Again'),
             onClick: askAI,
-            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all'
+            className: 'mt-2 text-[0.6875rem] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all'
           }, t('stem.multtable.ask_again_2', '\uD83D\uDD04 Ask Again'))
         ),
 
         // ── Quiz-mode toggle (Mult / Div / Mixed) ──
         h('div', { className: 'flex items-center gap-2 flex-wrap' },
-          h('span', { className: 'text-[11px] font-bold text-slate-700' }, 'Direction:'),
+          h('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, 'Direction:'),
           [
             { id: 'mult',  label: t('stem.multtable.multiplication', 'Multiplication'), color: 'bg-pink-700' },
             { id: 'div',   label: t('stem.multtable.division', 'Division'),       color: 'bg-cyan-700' },
@@ -1278,7 +1278,7 @@ window.StemLab = window.StemLab || {
             return h('button', { key: 'qm-' + qm.id,
               onClick: function() { playSound('default'); extUpd({ quizMode: qm.id }); },
               'aria-pressed': active,
-              className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' +
+              className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                 (active ? qm.color + ' text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-400')
             }, qm.label);
           })
@@ -1290,7 +1290,7 @@ window.StemLab = window.StemLab || {
             var active = exploreDifficulty === dm.id;
             return h('button', { key: dm.id,
               onClick: function() { setExploreDifficulty(dm.id); },
-              className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' +
+              className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                 (active
                   ? dm.id === 'easy' ? 'bg-green-700 text-white shadow-sm'
                     : dm.id === 'medium' ? 'bg-blue-700 text-white shadow-sm'
@@ -1443,7 +1443,7 @@ window.StemLab = window.StemLab || {
         (function() {
           var totalTracked = Object.keys(factScores).length;
           var masteryRow = h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
-            h('label', { className: 'text-[11px] font-bold text-emerald-800 flex items-center gap-1 cursor-pointer' },
+            h('label', { className: 'text-[0.6875rem] font-bold text-emerald-800 flex items-center gap-1 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showHeatmap,
                 onChange: function() { playSound('default'); extUpd({ showHeatmap: !showHeatmap }); }
               }),
@@ -1475,18 +1475,18 @@ window.StemLab = window.StemLab || {
                   announceToSR(unavailable);
                 });
               },
-              className: 'ml-auto text-[10px] font-bold text-rose-600 hover:text-rose-800 underline'
+              className: 'ml-auto text-[0.625rem] font-bold text-rose-600 hover:text-rose-800 underline'
             }, t('stem.multtable.clear_mastery_data', 'Clear mastery data'))
           );
           if (!showHeatmap) return masteryRow;
           // Build the 12×12 mastery heatmap
           var rows = [];
-          var headerCells = [h('th', { key: 'mh-corner', scope: 'col', className: 'w-7 h-7 text-[10px] font-bold text-emerald-400' }, '×')];
+          var headerCells = [h('th', { key: 'mh-corner', scope: 'col', className: 'w-7 h-7 text-[0.625rem] font-bold text-emerald-400' }, '×')];
           for (var hc = 0; hc < maxNum; hc++) {
-            headerCells.push(h('th', { key: 'mh-' + hc, scope: 'col', className: 'w-7 h-7 text-[10px] font-bold text-emerald-500' }, hc + 1));
+            headerCells.push(h('th', { key: 'mh-' + hc, scope: 'col', className: 'w-7 h-7 text-[0.625rem] font-bold text-emerald-500' }, hc + 1));
           }
           for (var hr = 0; hr < maxNum; hr++) {
-            var cells = [h('td', { key: 'mhr-' + hr, className: 'w-7 h-7 text-[10px] font-bold text-emerald-500' }, hr + 1)];
+            var cells = [h('td', { key: 'mhr-' + hr, className: 'w-7 h-7 text-[0.625rem] font-bold text-emerald-500' }, hr + 1)];
             for (var hcc = 0; hcc < maxNum; hcc++) {
               var key = tkey(hr + 1, hcc + 1);
               var score = factScores[key];
@@ -1512,14 +1512,14 @@ window.StemLab = window.StemLab || {
                   };
                 }(hr, hcc),
                 style: { backgroundColor: bgColor, color: textColor, cursor: 'pointer' },
-                className: 'w-7 h-7 text-[10px] font-mono border border-slate-200 transition-all hover:scale-110'
+                className: 'w-7 h-7 text-[0.625rem] font-mono border border-slate-200 transition-all hover:scale-110'
               }, content));
             }
             rows.push(h('tr', { key: 'mhrow-' + hr }, cells));
           }
           return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3' },
             masteryRow,
-            h('p', { className: 'text-[10px] text-emerald-700 italic mb-2' },
+            h('p', { className: 'text-[0.625rem] text-emerald-700 italic mb-2' },
               t('stem.multtable.each_cell_a_multiplication_fact_color_', 'Each cell = a multiplication fact. Color = your mastery so far. Click any cell to drill that exact fact.')
             ),
             h('div', { className: 'overflow-x-auto' },
@@ -1528,7 +1528,7 @@ window.StemLab = window.StemLab || {
                 h('tbody', null, rows)
               )
             ),
-            h('div', { className: 'flex items-center justify-center gap-3 mt-2 text-[10px]' },
+            h('div', { className: 'flex items-center justify-center gap-3 mt-2 text-[0.625rem]' },
               h('span', { className: 'inline-flex items-center gap-1' },
                 h('span', { className: 'inline-block w-3 h-3 rounded', style: { backgroundColor: '#f1f5f9' } }), 'untried'),
               h('span', { className: 'inline-flex items-center gap-1' },
@@ -1555,7 +1555,7 @@ window.StemLab = window.StemLab || {
           h('table', { className: 'border-collapse w-full text-center' },
             h('caption', { className: 'sr-only' }, t('stem.multtable.12_by_12_multiplication_table', '12 by 12 multiplication table')), h('thead', null,
               h('tr', null,
-                h('th', { scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-pink-400' }, '\u00D7'),
+                h('th', { scope: 'col', className: 'w-8 h-8 text-[0.6875rem] font-bold text-pink-400' }, '\u00D7'),
                 Array.from({ length: maxNum }).map(function(_, c) {
                   var isColHL = multTableHover && multTableHover.c === c + 1;
                   return h('th', { scope: 'col', key: c, className: 'w-8 h-8 text-xs font-bold ' + (isColHL ? 'text-pink-800 bg-pink-100' : 'text-pink-700') }, c + 1);
@@ -1592,7 +1592,7 @@ window.StemLab = window.StemLab || {
                         setInputDisabled(false);
                       },
                       title: isCommPair ? 'Commutative pair: ' + (c + 1) + '×' + (r + 1) + ' = ' + (r + 1) + '×' + (c + 1) + ' = ' + val : undefined,
-                      className: 'w-8 h-8 text-[11px] font-mono cursor-pointer transition-all border border-slate-100 ' +
+                      className: 'w-8 h-8 text-[0.6875rem] font-mono cursor-pointer transition-all border border-slate-100 ' +
                         (isHighlighted
                           ? 'bg-amber-400 text-amber-900 font-bold ring-2 ring-amber-500 ring-offset-1 rounded scale-110 shadow-lg animate-pulse motion-reduce:animate-none'
                           : isExact
@@ -1690,18 +1690,18 @@ window.StemLab = window.StemLab || {
           multTableFeedback && multTableFeedback.correct && multTableFeedback.factFamily && h('div', {
             className: 'mt-2 mx-auto bg-pink-50 rounded-lg px-3 py-2 border border-pink-200 max-w-md text-center'
           },
-            h('p', { className: 'text-[10px] font-bold text-pink-700 uppercase tracking-wider mb-1' }, t('stem.multtable.fact_family_same_numbers_four_faces', '👨‍👩‍👧 Fact family — same numbers, four faces')),
-            h('p', { className: 'text-[11px] font-mono text-pink-900' }, multTableFeedback.factFamily)
+            h('p', { className: 'text-[0.625rem] font-bold text-pink-700 uppercase tracking-wider mb-1' }, t('stem.multtable.fact_family_same_numbers_four_faces', '👨‍👩‍👧 Fact family — same numbers, four faces')),
+            h('p', { className: 'text-[0.6875rem] font-mono text-pink-900' }, multTableFeedback.factFamily)
           ),
 
           // Memory trick (when wrong AND the fact is in TRICKY_15)
           multTableFeedback && !multTableFeedback.correct && multTableFeedback.isTricky && MEMORY_TRICKS[multTableFeedback.trickKey] && h('div', {
             className: 'mt-2 mx-auto bg-amber-50 rounded-lg px-3 py-2 border border-amber-200 max-w-md'
           },
-            h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' },
+            h('p', { className: 'text-[0.625rem] font-bold text-amber-700 uppercase tracking-wider mb-1' },
               MEMORY_TRICKS[multTableFeedback.trickKey].icon + ' Memory trick'
             ),
-            h('p', { className: 'text-[12px] text-amber-900 leading-relaxed' }, MEMORY_TRICKS[multTableFeedback.trickKey].trick)
+            h('p', { className: 'text-[0.75rem] text-amber-900 leading-relaxed' }, MEMORY_TRICKS[multTableFeedback.trickKey].trick)
           ),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
@@ -1712,13 +1712,13 @@ window.StemLab = window.StemLab || {
                 nextProblem();
                 setTimeout(function() { var _inp = document.getElementById('multtable-input'); if (_inp) _inp.focus(); }, 50);
               },
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-700 transition-all'
+              className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-700 transition-all'
             }, autoAdvancePending ? t('stem.multtable.skip_next_2', 'Skip \u2192 Next') : t('stem.multtable.next_when_ready', 'Next question'))
           )
         ),
 
         // ── Keyboard shortcuts legend ──
-        h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
+        h('div', { className: 'text-[0.6875rem] text-slate-600 text-center space-x-3' },
           h('span', null, t('stem.multtable.q_quiz', 'Q Quiz')),
           h('span', null, t('stem.multtable.s_speed', 'S Speed')),
           h('span', null, t('stem.multtable.h_hidden', 'H Hidden')),
@@ -1727,7 +1727,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Legend ──
-        h('div', { className: 'text-[11px] text-slate-600 text-center' },
+        h('div', { className: 'text-[0.6875rem] text-slate-600 text-center' },
           h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), t('stem.multtable.perfect_squares_2', ' Perfect squares'),
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), t('stem.multtable.hover_cross', ' Hover cross'),
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-700 rounded mr-1' }), t('stem.multtable.selected', ' Selected'),
@@ -1753,40 +1753,40 @@ window.StemLab = window.StemLab || {
             h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className: 'cursor-pointer text-sm font-bold text-indigo-800' }, t('stem.multtable.teacher_data_activity', 'Teacher activity: explore a hypothetical mastery threshold')),
             h('p', { className: 'text-sm text-slate-700' }, t('stem.multtable.simulation_notice', 'This is simulated data, not your practice results. Use the mastery heatmap above to review answers you have actually given.')),
             h('h3', { className: 'text-sm font-black text-indigo-700' }, t('stem.multtable.fact_mastery_discovery', '🎯 Fact mastery discovery')),
-            h('p', { className: 'text-[11px] text-slate-700' }, t('stem.multtable.sliders_for_mastery_threshold_and_sele', 'Sliders for mastery threshold and selected factor. Discrete 3-state outcome. No score, no reveal.')),
+            h('p', { className: 'text-[0.6875rem] text-slate-700' }, t('stem.multtable.sliders_for_mastery_threshold_and_sele', 'Sliders for mastery threshold and selected factor. Discrete 3-state outcome. No score, no reveal.')),
             h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
               h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
-              h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'Factor ' + iq.factor + ' simulated accuracy = ' + perf + '%')
+              h('div', { className: 'text-[0.625rem] text-slate-700 mt-1 font-mono' }, 'Factor ' + iq.factor + ' simulated accuracy = ' + perf + '%')
             ),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               [{ k: 'threshold', l: 'Mastery threshold %', mn: 60, mx: 100, st: 5 },
                { k: 'factor', l: 'Factor', mn: 1, mx: 12, st: 1 }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'fm-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-indigo-700' }, iq[s.k])),
+                  h('label', { htmlFor: 'fm-' + s.k, className: 'block text-[0.625rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-indigo-700' }, iq[s.k])),
                   h('input', { id: 'fm-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                     className: 'w-full', 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.threshold, f: iq.factor, p: perf, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, t('stem.multtable.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ threshold: 80, factor: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.multtable.reset_5', '↺ Reset'))
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.threshold, f: iq.factor, p: perf, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-700 border border-slate-300' }, t('stem.multtable.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ threshold: 80, factor: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.multtable.reset_5', '↺ Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.multtable.hypothesis_how_does_threshold_change_f', 'Hypothesis: How does threshold change feedback for struggling learners?'),
               'aria-label': t('stem.multtable.mastery_hypothesis', 'Mastery threshold hypothesis'),
-              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.multtable.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
+              className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300' }, t('stem.multtable.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700' },
               h('ul', { className: 'list-disc pl-4 space-y-0.5' },
                 h('li', null, t('stem.multtable.what_if_mastery_100_what_gets_praised', 'What if mastery = 100%? What gets praised?')),
                 h('li', null, t('stem.multtable.how_does_color_coding_affect_motivatio', 'How does color-coding affect motivation?')))),
-            h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+            h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               t('stem.multtable.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.multtable.explain_mastery_learning_thresholds', 'Explain mastery learning thresholds.'),
               'aria-label': t('stem.multtable.mastery_explanation', 'Explain mastery learning thresholds'),
-              className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.multtable.threshold_reflection', 'How does changing the threshold change the support you would offer? A label alone cannot explain a learner’s understanding.'))
+              className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+            h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.multtable.threshold_reflection', 'How does changing the threshold change the support you would offer? A label alone cannot explain a learner’s understanding.'))
           );
         })()
         )  // end of Practice tab wrapper

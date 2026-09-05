@@ -317,7 +317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       }
 
       // The safety rule, stated wherever a student might be about to type.
-      var safetyNote = h('div', { role: 'note', className: 'rounded-xl px-3 py-2 mb-3 text-[11px] leading-snug font-bold',
+      var safetyNote = h('div', { role: 'note', className: 'rounded-xl px-3 py-2 mb-3 text-[0.6875rem] leading-snug font-bold',
         style: { background: 'rgba(190,18,60,0.08)', border: '1px solid rgba(190,18,60,0.35)', color: pal.text } },
         '🔒 ' + __alloT('stem.paperTrail.safety', 'Practice only. Every example here is filled in for a made-up person, Sam Rivera. Never type your real Social Security number, bank details, or passwords into a practice tool — including this one.'));
 
@@ -341,8 +341,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
                 style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
               },
                 h('div', { className: 'font-black text-sm' }, doc.icon + ' ' + doc.title + (done ? ' ✓' : '')),
-                h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } }, doc.blurb),
-                h('div', { className: 'text-[10px] mt-1 font-bold', style: { color: pal.accent } }, doc.fields.length + ' ' + __alloT('stem.paperTrail.fields', 'fields'))
+                h('div', { className: 'text-[0.6875rem] mt-0.5', style: { color: pal.muted } }, doc.blurb),
+                h('div', { className: 'text-[0.625rem] mt-1 font-bold', style: { color: pal.accent } }, doc.fields.length + ' ' + __alloT('stem.paperTrail.fields', 'fields'))
               );
             })
           ),
@@ -352,21 +352,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
               className: 'text-left rounded-2xl p-3', style: { background: pal.card, border: '2px solid ' + pal.border, color: pal.text }
             },
               h('div', { className: 'font-black text-sm' }, '🛡️ ' + __alloT('stem.paperTrail.pressure', 'Pressure scenarios')),
-              h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } }, __alloT('stem.paperTrail.pressure_sub', 'What to do when someone wants you to sign now.') + ' ' + Object.keys(scenDone).length + '/' + SCENARIOS.length)
+              h('div', { className: 'text-[0.6875rem] mt-0.5', style: { color: pal.muted } }, __alloT('stem.paperTrail.pressure_sub', 'What to do when someone wants you to sign now.') + ' ' + Object.keys(scenDone).length + '/' + SCENARIOS.length)
             ),
             h('button', {
               onClick: function() { setPT({ view: 'scripts' }); },
               className: 'text-left rounded-2xl p-3', style: { background: pal.card, border: '2px solid ' + pal.border, color: pal.text }
             },
               h('div', { className: 'font-black text-sm' }, '💬 ' + __alloT('stem.paperTrail.scripts', 'What to say')),
-              h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } }, __alloT('stem.paperTrail.scripts_sub', 'Six sentences that buy you time. Asking is a skill.'))
+              h('div', { className: 'text-[0.6875rem] mt-0.5', style: { color: pal.muted } }, __alloT('stem.paperTrail.scripts_sub', 'Six sentences that buy you time. Asking is a skill.'))
             ),
             h('button', {
               onClick: function() { setPT({ view: 'work' }); },
               className: 'text-left rounded-2xl p-3 sm:col-span-2', style: { background: pal.card, border: '2px solid ' + pal.border, color: pal.text }
             },
               h('div', { className: 'font-black text-sm' }, '⚖️ ' + __alloT('stem.paperTrail.work_title', 'Work rights & disclosure')),
-              h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } },
+              h('div', { className: 'text-[0.6875rem] mt-0.5', style: { color: pal.muted } },
                 __alloT('stem.paperTrail.work_sub', 'What replaces your school plan after graduation, how to ask for what you need, and whether to disclose at all.') + ' ' + Object.keys(d.workDone || {}).length + '/' + WORK_SCENARIOS.length)
             )
           )
@@ -405,10 +405,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
                   style: { color: pal.text, background: f.kind === 'normal' ? 'transparent' : k.bg }
                 },
                   h('span', { className: 'font-bold text-sm' }, (open ? '▾ ' : '▸ ') + f.label),
-                  f.kind !== 'normal' ? h('span', { className: 'text-[10px] font-black uppercase tracking-wider', style: { color: k.color } }, k.label) : null
+                  f.kind !== 'normal' ? h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wider', style: { color: k.color } }, k.label) : null
                 ),
                 open ? h('div', { className: 'px-3 pb-3' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-wider mb-1', style: { color: pal.accent } }, __alloT('stem.paperTrail.asking', 'What they are actually asking')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wider mb-1', style: { color: pal.accent } }, __alloT('stem.paperTrail.asking', 'What they are actually asking')),
                   h('p', { className: 'text-sm leading-relaxed mb-2', style: { color: pal.text } }, f.asking),
                   h('div', { className: 'rounded-lg px-2 py-1.5 text-xs', style: { background: pal.card, border: '1px dashed ' + pal.border, color: pal.text } },
                     h('span', { className: 'font-black', style: { color: pal.muted } }, __alloT('stem.paperTrail.sam_wrote', 'Sam wrote: ')), f.answer)
@@ -416,7 +416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
               );
             })
           ),
-          h('p', { className: 'text-[11px] mt-3', style: { color: pal.muted } },
+          h('p', { className: 'text-[0.6875rem] mt-3', style: { color: pal.muted } },
             __alloT('stem.paperTrail.doc_foot', 'Real versions of these documents differ by employer, landlord, and state. The questions they ask are remarkably consistent.'))
         );
       }
@@ -439,7 +439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail')),
             h('h2', { className: 'text-lg font-black' }, '🛡️ ' + __alloT('stem.paperTrail.pressure', 'Pressure scenarios')),
-            h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (idx + 1) + ' / ' + SCENARIOS.length)
+            h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.muted } }, (idx + 1) + ' / ' + SCENARIOS.length)
           ),
           sc ? h('div', null,
             h('div', { className: 'rounded-xl p-3 mb-3 text-sm font-semibold', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, sc.text),
@@ -494,11 +494,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
                   style: { color: pal.text }
                 },
                   h('span', { className: 'font-bold text-sm' }, (open ? '▾ ' : '▸ ') + c.title),
-                  c.cite ? h('span', { className: 'text-[10px] font-black uppercase tracking-wider', style: { color: pal.accent } }, c.cite) : null
+                  c.cite ? h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wider', style: { color: pal.accent } }, c.cite) : null
                 ),
                 open ? h('div', { className: 'px-3 pb-3' },
                   h('p', { className: 'text-sm leading-relaxed', style: { color: pal.text } }, c.body),
-                  c.cite ? h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } },
+                  c.cite ? h('p', { className: 'text-[0.6875rem] mt-2', style: { color: pal.muted } },
                     __alloT('stem.paperTrail.read_law', 'Read the actual text of ') + c.cite + __alloT('stem.paperTrail.read_law2', ' in the Education Law Navigator — nothing there is paraphrased.')) : null
                 ) : null
               );
@@ -507,7 +507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
               h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '🤔 ' + __alloT('stem.paperTrail.disclosure_title', 'Disclosure decisions')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (wIdx + 1) + ' / ' + WORK_SCENARIOS.length)
+              h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.muted } }, (wIdx + 1) + ' / ' + WORK_SCENARIOS.length)
             ),
             h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
               __alloT('stem.paperTrail.disclosure_sub', 'These are not scored. Every option below is a real choice someone might make, with a real consequence — pick the one you would actually make, then read what follows from it.')),
@@ -553,7 +553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
               return h('li', { key: i, className: 'rounded-xl px-3 py-2 text-sm', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, '“' + s + '”');
             })
           ),
-          h('p', { className: 'text-[11px] mt-3 leading-snug', style: { color: pal.muted } },
+          h('p', { className: 'text-[0.6875rem] mt-3 leading-snug', style: { color: pal.muted } },
             __alloT('stem.paperTrail.scripts_foot', 'If someone refuses all six, that refusal is information about them, not about you.'))
         );
       }

@@ -382,12 +382,12 @@ describe('STEM dynamic active-state contrast', () => {
   });
 
   it.each([
-    ['stem_tool_a11yauditor.js', 'bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold hover:bg-emerald-200'],
+    ['stem_tool_a11yauditor.js', 'bg-emerald-100 text-emerald-800 rounded-lg text-[0.6875rem] font-bold hover:bg-emerald-200'],
     ['stem_tool_numberline.js', 'bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200'],
     ['stem_tool_spaceexplorer.js', 'bg-cyan-700 text-white hover:bg-cyan-800'],
     ['stem_tool_wave.js', 'bg-emerald-700 text-white'],
     ['stem_tool_worldbuilder.js', 'bg-red-100 text-red-800 hover:bg-red-200'],
-    ['stem_tool_areamodel.js', 'text-[10px] text-amber-800 leading-none'],
+    ['stem_tool_areamodel.js', 'text-[0.625rem] text-amber-800 leading-none'],
     ['stem_tool_areamodel.js', 'bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200'],
     ['stem_tool_brainatlas.js', 'border-emerald-700 bg-emerald-700 text-white'],
     ['stem_tool_circuit.js', 'bg-green-700 text-white border-green-800'],
@@ -414,7 +414,7 @@ describe('STEM dynamic active-state contrast', () => {
     ['stem_tool_galaxy.js', 'bg-amber-700 text-white hover:bg-amber-800'],
     ['stem_tool_galaxy.js', 'bg-red-50 text-red-700 border border-red-200'],
     ['stem_tool_physics.js', 'bg-sky-700 text-white'],
-    ['stem_tool_physics.js', 'bg-amber-700 text-white text-[11px] font-bold rounded-lg hover:bg-amber-800'],
+    ['stem_tool_physics.js', 'bg-amber-700 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-amber-800'],
     ['stem_tool_physics.js', 'bg-red-100 border-red-400 text-red-700'],
     ['stem_tool_birdlab.js', 'bg-emerald-700 text-white'],
     ['stem_tool_birdlab.js', 'bg-lime-700 text-white hover:bg-lime-800 active:scale-[0.97]'],
@@ -434,7 +434,7 @@ describe('STEM dynamic active-state contrast', () => {
     ['stem_tool_nutritionlab.js', 'bg-amber-700 text-white border-amber-800 shadow'],
     ['stem_tool_nutritionlab.js', 'bg-emerald-700 text-white hover:bg-emerald-800'],
     ['stem_tool_coordgrid.js', 'bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200'],
-    ['stem_tool_coordgrid.js', 'bg-amber-100 text-amber-800 font-bold rounded-lg text-[11px] hover:bg-amber-200'],
+    ['stem_tool_coordgrid.js', 'bg-amber-100 text-amber-800 font-bold rounded-lg text-[0.6875rem] hover:bg-amber-200'],
     ['stem_tool_coordgrid.js', 'bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800'],
     ['stem_tool_coordgrid.js', 'bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-800'],
     ['stem_tool_coordgrid.js', 'bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200'],
@@ -447,7 +447,7 @@ describe('STEM dynamic active-state contrast', () => {
     ['stem_tool_migration.js', 'bg-slate-200 text-slate-700'],
     ['stem_tool_migration.js', 'bg-sky-700 text-white ring-2 ring-sky-300'],
     ['stem_tool_migration.js', 'bg-sky-700 text-white'],
-    ['stem_tool_companionplanting.js', 'border border-slate-500 bg-white p-2 text-[10px]']
+    ['stem_tool_companionplanting.js', 'border border-slate-500 bg-white p-2 text-[0.625rem]']
   ])('%s pins its accessible dynamic state', (fileName, treatment) => {
     expect(readFileSync(resolve(process.cwd(), 'stem_lab', fileName), 'utf8')).toContain(treatment);
   });
@@ -472,8 +472,8 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_singing.js', 'bg-red-50 text-red-700'],
       ['stem_tool_singing.js', 'bg-blue-700 text-white'],
       ['stem_tool_spacecolony.js', 'bg-orange-700 text-orange-100'],
-      ['stem_tool_spacecolony.js', 'bg-indigo-800 text-indigo-300 text-[11px] hover:bg-indigo-900'],
-      ['stem_tool_spacecolony.js', 'bg-yellow-800 text-yellow-200 text-[11px] font-bold hover:bg-yellow-900'],
+      ['stem_tool_spacecolony.js', 'bg-indigo-800 text-indigo-300 text-[0.6875rem] hover:bg-indigo-900'],
+      ['stem_tool_spacecolony.js', 'bg-yellow-800 text-yellow-200 text-[0.6875rem] font-bold hover:bg-yellow-900'],
       ['stem_tool_spacecolony.js', 'bg-slate-800 text-slate-300'],
       ['stem_tool_allobotsage.js', 'border-slate-400 bg-slate-50 text-slate-600'],
       ['stem_tool_allobotsage.js', 'bg-emerald-700 text-white'],
@@ -541,7 +541,7 @@ describe('STEM dynamic active-state contrast', () => {
       // The emerald/teal chips moved to the dark-theme translucent treatment
       // in the 2026-08-28 workspace sweep (emerald-100 text over /15 fills on
       // the dark canvas); the light-theme pins below survived it.
-      ['stem_tool_universe.js', 'bg-emerald-300/15 px-1.5 py-0.5 text-[10px] font-black text-emerald-100'],
+      ['stem_tool_universe.js', 'bg-emerald-300/15 px-1.5 py-0.5 text-[0.625rem] font-black text-emerald-100'],
       ['stem_tool_universe.js', 'bg-violet-100 text-violet-700 hover:bg-violet-200'],
       ['stem_tool_universe.js', 'bg-slate-100 border-slate-400 text-slate-700'],
       ['stem_tool_universe.js', 'bg-green-100 text-green-700'],
@@ -590,7 +590,7 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_dna.js', 'bg-purple-200 text-purple-800 cursor-wait'],
       // dna's control grew utility classes in the 2026-08 sweep; the contrast
       // pair (blue-700 on blue-50, hover blue-100) is unchanged.
-      ['stem_tool_dna.js', 'bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-blue-700 transition-all hover:bg-blue-100'],
+      ['stem_tool_dna.js', 'bg-blue-50 px-3 py-1.5 text-[0.6875rem] font-bold text-blue-700 transition-all hover:bg-blue-100'],
       ['stem_tool_dna.js', 'bg-green-700 text-white border-green-800']
     ];
     const sources = new Map();
@@ -819,7 +819,7 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_companionplanting.js', 'bg-white px-1 text-indigo-700'],
       ['stem_tool_companionplanting.js', 'hover:bg-emerald-800'],
       ['stem_tool_companionplanting.js', 'border-dashed border-slate-400 bg-slate-50 text-slate-600'],
-      ['stem_tool_companionplanting.js', 'rounded-lg bg-rose-600 px-2.5 py-1.5 text-[10px] font-black text-white'],
+      ['stem_tool_companionplanting.js', 'rounded-lg bg-rose-600 px-2.5 py-1.5 text-[0.625rem] font-black text-white'],
       ['stem_tool_companionplanting.js', 'cursor-not-allowed border-slate-400 bg-slate-100 text-slate-600'],
       ['stem_tool_companionplanting.js', 'text-red-800 transition-colors hover:bg-red-200'],
       ['stem_tool_companionplanting.js', 'text-orange-800 transition-colors hover:bg-orange-200'],
@@ -828,7 +828,7 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_companionplanting.js', 'bg-slate-100 text-slate-700'],
       ['stem_tool_companionplanting.js', 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'],
       ['stem_tool_companionplanting.js', 'bg-white text-green-700 border border-green-400'],
-      ['stem_tool_companionplanting.js', 'border-white bg-emerald-700 text-[8px] font-black text-white'],
+      ['stem_tool_companionplanting.js', 'border-white bg-emerald-700 text-[0.5rem] font-black text-white'],
       ['stem_tool_money.js', 'hover:bg-amber-800'],
       ['stem_tool_money.js', 'text-red-300 border border-red-900'],
       ['stem_tool_money.js', 'bg-emerald-700 text-white border-emerald-800'],
@@ -881,7 +881,7 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_beehive.js', 'bg-amber-100 text-amber-800 hover:bg-amber-200'],
       ['stem_tool_beehive.js', 'bg-amber-50 text-amber-800 hover:bg-amber-100'],
       ['stem_tool_beehive.js', 'bg-slate-50 text-slate-700 border border-slate-400'],
-      ['stem_tool_beehive.js', 'rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-black text-white'],
+      ['stem_tool_beehive.js', 'rounded-lg bg-emerald-700 px-3 py-2 text-[0.625rem] font-black text-white'],
       ['stem_tool_assessmentliteracy.js', 'bg-cyan-700 text-white hover:bg-cyan-800'],
       ['stem_tool_assessmentliteracy.js', 'bg-purple-700 text-white'],
       ['stem_tool_assessmentliteracy.js', 'hover:bg-purple-700'],

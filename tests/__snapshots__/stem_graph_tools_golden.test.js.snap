@@ -17,9 +17,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 30,
   "circles": 1,
   "inputs": 9,
-  "lengthBucket": 131,
+  "lengthBucket": 132,
   "paths": 0,
-  "sha": "2e57610449149ad2",
+  "sha": "f66fe880367554ed",
   "svgs": 2,
 }
 `;
@@ -31,7 +31,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 59,
   "paths": 0,
-  "sha": "40290364d8ed6bd1",
+  "sha": "bc8f5b31d9b65c52",
   "svgs": 1,
 }
 `;
@@ -41,9 +41,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 36,
   "circles": 0,
   "inputs": 21,
-  "lengthBucket": 97,
+  "lengthBucket": 98,
   "paths": 0,
-  "sha": "7384faa54a18888f",
+  "sha": "3fba841708a60b04",
   "svgs": 1,
 }
 `;
@@ -53,9 +53,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 47,
   "circles": 3,
   "inputs": 8,
-  "lengthBucket": 126,
+  "lengthBucket": 127,
   "paths": 0,
-  "sha": "86276975eb735dd9",
+  "sha": "e383073567fd7532",
   "svgs": 1,
 }
 `;
@@ -67,7 +67,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 0,
   "lengthBucket": 47,
   "paths": 0,
-  "sha": "ed0436e5e810ce01",
+  "sha": "8bfff91025e69bdd",
   "svgs": 0,
 }
 `;
@@ -79,7 +79,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 0,
   "lengthBucket": 42,
   "paths": 0,
-  "sha": "d015be39e256cc73",
+  "sha": "e922a8f49299c928",
   "svgs": 1,
 }
 `;
@@ -101,9 +101,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 30,
   "circles": 0,
   "inputs": 7,
-  "lengthBucket": 94,
+  "lengthBucket": 95,
   "paths": 0,
-  "sha": "bc889d94743fc8ec",
+  "sha": "f375d05b0c50d1e8",
   "svgs": 1,
 }
 `;
@@ -115,7 +115,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 127,
   "paths": 1,
-  "sha": "ce75108324d7ffed",
+  "sha": "3e5d1bbff0bc26c3",
   "svgs": 1,
 }
 `;
@@ -125,9 +125,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 39,
   "circles": 5,
   "inputs": 4,
-  "lengthBucket": 148,
+  "lengthBucket": 149,
   "paths": 1,
-  "sha": "c3d33900cf3fde38",
+  "sha": "eaf5c93bcd6665a5",
   "svgs": 1,
 }
 `;
@@ -136,10 +136,10 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
 {
   "buttons": 22,
   "circles": 0,
-  "inputs": 1,
-  "lengthBucket": 81,
+  "inputs": 2,
+  "lengthBucket": 84,
   "paths": 0,
-  "sha": "63a69813ada02cc7",
+  "sha": "e49da47bc8577c44",
   "svgs": 0,
 }
 `;

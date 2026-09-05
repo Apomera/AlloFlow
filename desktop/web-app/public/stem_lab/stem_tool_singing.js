@@ -3960,16 +3960,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                           h('span', { className: 'text-lg' }, tip.icon),
                           h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, __alloT('stem.singing.prevention_' + tipIdx + '_title', tip.title)),
                           tip.priority === 'critical' && h('span', {
-                            className: 'text-[11px] font-bold uppercase px-1.5 py-0.5 rounded ' +
+                            className: 'text-[0.6875rem] font-bold uppercase px-1.5 py-0.5 rounded ' +
                               (isDark ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700')
                           }, t('stem.singing.critical', 'Critical'))),
-                        h('p', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.singing.prevention_' + tipIdx + '_tip', tip.tip)));
+                        h('p', { className: 'text-[0.6875rem] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.singing.prevention_' + tipIdx + '_tip', tip.tip)));
                     }))),
                 // Common injuries reference
                 h('div', { className: 'mt-3' },
                   h('h4', { className: headingClass + ' text-xs mb-2 flex items-center gap-2' },
                     '\u26A0\uFE0F', t('stem.singing.common_vocal_injuries', 'Common Vocal Injuries')),
-                  h('p', { className: subTextClass + ' text-[11px] mb-2 italic' },
+                  h('p', { className: subTextClass + ' text-[0.6875rem] mb-2 italic' },
                     t('stem.singing.understanding_these_conditions_helps_y', 'Understanding these conditions helps you recognize warning signs early. If you experience persistent symptoms, see a doctor.')),
                   h('div', { className: 'space-y-2' },
                     VOCAL_INJURIES.map(function(injury) {
@@ -3992,14 +3992,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                             h('span', { className: 'text-lg' }, injury.emoji),
                             h('span', { className: 'font-bold text-xs ' + (isDark ? 'text-white' : 'text-slate-800') }, injury.name),
                             h('span', {
-                              className: 'text-[11px] font-bold uppercase px-1.5 py-0.5 rounded ml-1 ' +
+                              className: 'text-[0.6875rem] font-bold uppercase px-1.5 py-0.5 rounded ml-1 ' +
                                 (injury.severity === 'serious' ? (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700')
                                   : injury.severity === 'moderate' ? (isDark ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700')
                                     : (isDark ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'))
                             }, injury.severity)),
                           h('span', { className: 'text-xs' }, isExpanded ? '\u25B2' : '\u25BC')),
                         isExpanded && h('div', {
-                          className: 'px-3 pb-3 space-y-2 text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600')
+                          className: 'px-3 pb-3 space-y-2 text-[0.6875rem] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600')
                         },
                           h('div', null, h('span', { className: 'font-bold' }, t('stem.singing.what_is_it_2', 'What is it? ')), injury.what),
                           h('div', null, h('span', { className: 'font-bold' }, 'Causes: '), injury.causes),
@@ -4787,37 +4787,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               }[tone];
               return h('div', { className: cardClass + ' space-y-3' },
                 h('h3', { className: 'text-sm font-black' }, t('stem.singing.resonance_discovery', '🎙️ Resonance discovery')),
-                h('p', { className: 'text-[12px]' }, t('stem.singing.sliders_for_throat_openness_soft_palat', 'Sliders for throat openness, soft palate lift. Discrete 4-tone classification. No score, no reveal.')),
+                h('p', { className: 'text-[0.75rem]' }, t('stem.singing.sliders_for_throat_openness_soft_palat', 'Sliders for throat openness, soft palate lift. Discrete 4-tone classification. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
                   h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, tm.desc)
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, tm.desc)
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   [{ k: 'throat', l: 'Throat openness (%)' }, { k: 'palate', l: 'Soft palate lift (%)' }].map(function(s) {
                     return h('div', { key: s.k },
-                      h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[11px] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
+                      h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[0.6875rem] font-bold' }, s.l + ': ', h('span', { className: 'font-mono' }, iq[s.k])),
                       h('input', { id: 'rh-' + s.k, type: 'range', 'aria-valuetext': iq[s.k] + '%', min: 0, max: 100, step: 5, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.throat, p: iq.palate, st: tone }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, t('stem.singing.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border ' + (isDark ? 'text-slate-300 border-slate-600' : 'text-slate-600 border-slate-300') }, t('stem.singing.reset', '↺ Reset'))
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.throat, p: iq.palate, st: tone }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[0.6875rem] font-bold text-slate-700' }, t('stem.singing.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[0.6875rem] font-semibold border ' + (isDark ? 'text-slate-300 border-slate-600' : 'text-slate-600 border-slate-300') }, t('stem.singing.reset', '↺ Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.singing.hypothesis_input', 'Resonance discovery hypothesis'), placeholder: t('stem.singing.hypothesis_what_anatomical_adjustments', 'Hypothesis: What anatomical adjustments produce rich tone?'),
-                  className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.singing.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
+                  className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.singing.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, t('stem.singing.why_do_classical_singers_lift_the_pala', 'Why do classical singers lift the palate?')),
                     h('li', null, t('stem.singing.how_does_throat_openness_affect_overto', 'How does throat openness affect overtone series?')))),
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold cursor-pointer' },
+                h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.singing.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.singing.explanation_input', 'Resonance discovery explanation'), placeholder: t('stem.singing.explain_how_resonance_cavity_shape_con', 'Explain how resonance cavity shape controls vocal tone.'),
-                  className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug mt-2 bg-white text-slate-800', rows: 3 }),
-                h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, t('stem.singing.design_note_discrete_4_tone_marker_no_', 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-600 rounded p-2 font-mono leading-snug mt-2 bg-white text-slate-800', rows: 3 }),
+                h('div', { className: 'text-[0.625rem] italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, t('stem.singing.design_note_discrete_4_tone_marker_no_', 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.'))
               );
             })()
           ),

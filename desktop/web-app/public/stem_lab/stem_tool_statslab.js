@@ -1866,17 +1866,17 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'absolute -right-6 -top-8 text-8xl opacity-[0.06]', 'aria-hidden': 'true' }, '📊'),
           h('div', { className: 'relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]' },
             h('div', null,
-              h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-indigo-300' }, 'Research analysis command · Stage ' + analysisStage + '/4'),
+              h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.15em] text-indigo-300' }, 'Research analysis command · Stage ' + analysisStage + '/4'),
               h('h2', { id: 'statslab-command-title', className: 'mt-2 text-xl sm:text-2xl font-black text-white' }, analysisMission.icon + ' ' + analysisMission.title),
               h('p', { className: 'mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed' }, analysisMission.detail),
               h('div', { className: 'mt-4 grid grid-cols-3 gap-2', 'aria-label': 'Statistics workflow status' },
-                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[10px] font-bold text-slate-200' }, metric[1])); })
+                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-200' }, metric[1])); })
               )
             ),
             h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': 'Statistics evidence route' },
-              h('div', { className: 'flex items-center justify-between gap-3' }, h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, 'Evidence route'), h('span', { className: 'text-lg font-black text-white' }, analysisStage + '/4')),
+              h('div', { className: 'flex items-center justify-between gap-3' }, h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-300' }, 'Evidence route'), h('span', { className: 'text-lg font-black text-white' }, analysisStage + '/4')),
               h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-800', role: 'progressbar', 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': analysisStage, 'aria-label': 'Statistics analysis stage ' + analysisStage + ' of 4' }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400', style: { width: (analysisStage / 4 * 100) + '%' } })),
-              h('ol', { className: 'mt-4 space-y-1.5 text-[11px] text-slate-300' }, ['Question', 'Sample', 'Test', 'Conclusion'].map(function(step, i) { return h('li', { key: step, className: 'flex items-center gap-2' }, h('span', { className: i < analysisStage ? 'text-emerald-400' : 'text-slate-600', 'aria-hidden': 'true' }, i < analysisStage ? '●' : '○'), h('span', null, step)); }))
+              h('ol', { className: 'mt-4 space-y-1.5 text-[0.6875rem] text-slate-300' }, ['Question', 'Sample', 'Test', 'Conclusion'].map(function(step, i) { return h('li', { key: step, className: 'flex items-center gap-2' }, h('span', { className: i < analysisStage ? 'text-emerald-400' : 'text-slate-600', 'aria-hidden': 'true' }, i < analysisStage ? '●' : '○'), h('span', null, step)); }))
             )
           )
         ),

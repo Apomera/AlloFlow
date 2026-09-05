@@ -415,12 +415,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         function ctlBtn(label, onClick, pressed, aria) {
           return h('button', {
             onClick: onClick, 'aria-label': aria || label, 'aria-pressed': pressed === undefined ? undefined : !!pressed,
-            className: 'rounded-lg px-2 py-1 text-[11px] font-bold border transition-colors',
+            className: 'rounded-lg px-2 py-1 text-[0.6875rem] font-bold border transition-colors',
             style: pressed ? { background: pal.btn, color: '#fff', borderColor: pal.btn } : { background: pal.panel, color: pal.text, borderColor: pal.border }
           }, label);
         }
         return h('div', { className: 'flex items-center gap-1.5 flex-wrap mt-2', role: 'group', 'aria-label': __alloT('stem.lawNav.reading_controls', 'Reading controls') },
-          h('span', { className: 'text-[10px] font-bold uppercase tracking-wider mr-1', style: { color: pal.muted } }, __alloT('stem.lawNav.reading', 'Reading')),
+          h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mr-1', style: { color: pal.muted } }, __alloT('stem.lawNav.reading', 'Reading')),
           ctlBtn('A−', function() { setLN({ readSize: Math.max(12, readSize - 1) }); }, undefined, __alloT('stem.lawNav.smaller', 'Smaller text')),
           ctlBtn('A+', function() { setLN({ readSize: Math.min(26, readSize + 1) }); }, undefined, __alloT('stem.lawNav.larger', 'Larger text')),
           ctlBtn('↕', function() { setLN({ readSpacing: readSpacing >= 2.2 ? 1.4 : Math.round((readSpacing + 0.3) * 10) / 10 }); }, undefined, __alloT('stem.lawNav.spacing', 'Line spacing')),
@@ -515,7 +515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         var age = doc.retrievedAt ? daysSince(doc.retrievedAt) : null;
         var stale = age !== null && age > STALE_DAYS;
         return h('div', {
-          className: 'rounded-xl px-3 py-2 text-[11px] leading-snug',
+          className: 'rounded-xl px-3 py-2 text-[0.6875rem] leading-snug',
           style: { background: stale ? 'rgba(245,158,11,0.12)' : pal.card, border: '1px solid ' + (stale ? 'rgba(245,158,11,0.45)' : pal.border), color: stale ? (isDark ? '#fcd34d' : '#92400e') : pal.muted }
         },
           h('strong', { style: { color: stale ? undefined : pal.text } }, doc.citation + ' · ' + doc.publisher),
@@ -529,7 +529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         );
       }
 
-      var disclaimer = h('p', { className: 'text-[11px] mt-3 leading-snug', style: { color: pal.muted } },
+      var disclaimer = h('p', { className: 'text-[0.6875rem] mt-3 leading-snug', style: { color: pal.muted } },
         __alloT('stem.lawNav.disclaimer', 'This tool reproduces published regulation text for reading and orientation. It is not legal advice, it is not a complete statement of your rights, and state and district procedures vary. For advice about a specific child, talk to your school team, your state parent center, or an attorney.'));
 
       // ── Load failure: say so, render nothing else ─────────────────────────
@@ -540,7 +540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           h('div', { role: 'alert', className: 'rounded-xl p-4 text-sm', style: { background: 'rgba(190,18,60,0.1)', border: '1px solid rgba(190,18,60,0.4)', color: pal.text } },
             h('p', { className: 'font-bold mb-1' }, __alloT('stem.lawNav.err_title', 'The official text could not be loaded.')),
             h('p', null, __alloT('stem.lawNav.err_body', 'This tool only ever shows regulation text it has actually fetched, so it will not display anything from memory instead. Check your connection and try again, or open the official source directly.')),
-            h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } }, loadErr)
+            h('p', { className: 'text-[0.6875rem] mt-2', style: { color: pal.muted } }, loadErr)
           ),
           disclaimer
         );
@@ -601,11 +601,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
               },
                 h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
                   h('span', { className: 'font-black text-sm' }, (m.jurisdiction === 'federal' ? '🇺🇸 ' : '📍 ') + m.short),
-                  h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                  h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
                     isPointer ? __alloT('stem.lawNav.links_out', 'official site ↗') : (m.sectionCount + ' ' + __alloT('stem.lawNav.sections', 'sections')))
                 ),
-                h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } }, m.display),
-                h('div', { className: 'text-[10px] mt-1', style: { color: pal.muted } },
+                h('div', { className: 'text-[0.6875rem] mt-0.5', style: { color: pal.muted } }, m.display),
+                h('div', { className: 'text-[0.625rem] mt-1', style: { color: pal.muted } },
                   m.citation + (m.currentAsOf ? ' · ' + __alloT('stem.lawNav.current_as_of', 'current as of') + ' ' + m.currentAsOf : '') +
                   (isPointer ? ' · ' + __alloT('stem.lawNav.not_ingested', 'full text not ingested — opens the official site') : ''))
               );
@@ -640,8 +640,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                         onClick: function() { setLN({ view: 'section', slug: p.meta.slug, section: s.number, viewed: Object.assign({}, d.viewed || {}, (function(o) { o[p.meta.slug + '#' + s.number] = true; return o; })({})) }); },
                         className: 'text-left font-black text-sm mb-1 w-full', style: { color: pal.accent }
                       }, s.heading || s.number),
-                      h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, s.paragraphs.slice(0, 2).join(' ').slice(0, 420) + (s.paragraphs.join(' ').length > 420 ? '…' : '')),
-                      h('span', { className: 'text-[10px]', style: { color: pal.muted } }, __alloT('stem.lawNav.tap_full', 'Open for the full text'))
+                      h('p', { className: 'text-[0.75rem] leading-relaxed', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, s.paragraphs.slice(0, 2).join(' ').slice(0, 420) + (s.paragraphs.join(' ').length > 420 ? '…' : '')),
+                      h('span', { className: 'text-[0.625rem]', style: { color: pal.muted } }, __alloT('stem.lawNav.tap_full', 'Open for the full text'))
                     );
                   })
                 );
@@ -654,10 +654,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                 if (sm.status !== 'ingested') {
                   return h('div', { key: sm.slug, className: 'rounded-xl p-3', style: { background: pal.card, border: '1px dashed ' + pal.border } },
                     h('div', { className: 'font-black text-sm mb-1' }, sm.short + ' — ' + sm.jurisdictionName),
-                    h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.muted } },
+                    h('p', { className: 'text-[0.75rem] leading-relaxed', style: { color: pal.muted } },
                       __alloT('stem.lawNav.state_not_ingested', 'The full text of this state regulation is not in the corpus yet, so nothing is shown here. This tool will not paraphrase a rule it has not fetched.')),
-                    sm.note ? h('p', { className: 'text-[11px] mt-1', style: { color: pal.muted } }, sm.note) : null,
-                    h('a', { href: sm.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'text-[11px] font-bold', style: { color: pal.accent, textDecoration: 'underline' } },
+                    sm.note ? h('p', { className: 'text-[0.6875rem] mt-1', style: { color: pal.muted } }, sm.note) : null,
+                    h('a', { href: sm.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'text-[0.6875rem] font-bold', style: { color: pal.accent, textDecoration: 'underline' } },
                       __alloT('stem.lawNav.open_state', 'Open the official state source ↗'))
                   );
                 }
@@ -671,18 +671,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                         // MUSER marks its OWN requirements in italics; surface that
                         // distinction rather than making the reader infer it.
                         hit.stateRule ? h('span', {
-                          className: 'text-[10px] font-bold rounded-full px-2 py-0.5',
+                          className: 'text-[0.625rem] font-bold rounded-full px-2 py-0.5',
                           style: { background: 'rgba(180,83,9,0.15)', color: isDark ? '#fbbf24' : '#92400e', border: '1px solid rgba(180,83,9,0.4)' },
                           title: __alloT('stem.lawNav.state_added_tip', 'Italicized in MUSER, which marks Maine\'s own requirement rather than adopted federal text')
                         }, __alloT('stem.lawNav.state_added', 'State requirement')) : null),
-                      h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, hit.text.slice(0, 420) + (hit.text.length > 420 ? '…' : '')));
+                      h('p', { className: 'text-[0.75rem] leading-relaxed', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, hit.text.slice(0, 420) + (hit.text.length > 420 ? '…' : '')));
                   }) : h('p', { className: 'text-xs mt-2', style: { color: pal.muted } },
                     __alloT('stem.lawNav.no_state_hit', 'No paragraph in this state document contains that phrase. That is a search result, not a finding that the state is silent — open the document and read it.'))
                 );
               }) : h('p', { className: 'text-xs', style: { color: pal.muted } }, __alloT('stem.lawNav.no_state', 'No state document is configured.'))
             )
           ),
-          h('p', { className: 'text-[11px] mt-3 leading-snug', style: { color: pal.muted } },
+          h('p', { className: 'text-[0.6875rem] mt-3 leading-snug', style: { color: pal.muted } },
             __alloT('stem.lawNav.compare_note', 'States may add protections beyond the federal floor but may not offer less. An empty state panel means this corpus has not ingested that state\'s text — never that the state has no rule.')),
           disclaimer
         );
@@ -708,7 +708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
               className: 'w-full rounded-xl px-3 py-2 text-sm',
               style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text }
             }),
-            query ? h('p', { className: 'text-[11px] mt-1', style: { color: pal.muted } },
+            query ? h('p', { className: 'text-[0.6875rem] mt-1', style: { color: pal.muted } },
               results.length + ' ' + __alloT('stem.lawNav.matches', 'sections contain that phrase') + (results.length >= 60 ? ' ' + __alloT('stem.lawNav.capped', '(showing the first 60)') : '')) : null
           ),
           !doc ? h('p', { className: 'text-sm', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')) :
@@ -726,11 +726,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                 style: { background: pal.panel, borderColor: pal.border, color: pal.text }
               },
                 h('div', { className: 'font-bold text-sm', style: { color: pal.accent } }, s.heading || ('§ ' + s.number)),
-                query ? h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } }, buildSnippet(s, query.toLowerCase())) : null
+                query ? h('div', { className: 'text-[0.6875rem] mt-0.5', style: { color: pal.muted } }, buildSnippet(s, query.toLowerCase())) : null
               );
             })
           ),
-          !query && doc && doc.sections.length > 80 ? h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } },
+          !query && doc && doc.sections.length > 80 ? h('p', { className: 'text-[0.6875rem] mt-2', style: { color: pal.muted } },
             __alloT('stem.lawNav.more_hint', 'Showing the first 80 sections — search to reach the rest.')) : null,
           disclaimer
         );
@@ -805,7 +805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         smeta ? provenance(smeta) : null,
         // Freshness badge — the reader must always know WHICH copy this is.
         canLive ? h('div', {
-          className: 'rounded-xl px-3 py-2 mt-2 text-[11px] flex items-center gap-2 flex-wrap',
+          className: 'rounded-xl px-3 py-2 mt-2 text-[0.6875rem] flex items-center gap-2 flex-wrap',
           style: usingLive
             ? { background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.4)', color: isDark ? '#6ee7b7' : '#065f46' }
             : { background: pal.card, border: '1px solid ' + pal.border, color: pal.muted }
@@ -818,20 +818,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           usingLive && live.sec.currentAsOf ? h('span', null, __alloT('stem.lawNav.current_as_of', 'current as of') + ' ' + live.sec.currentAsOf) : null,
           h('button', {
             onClick: function() { refreshLive(true); },
-            className: 'ml-auto rounded-lg px-2 py-1 text-[11px] font-bold border',
+            className: 'ml-auto rounded-lg px-2 py-1 text-[0.6875rem] font-bold border',
             style: { background: pal.panel, borderColor: pal.border, color: pal.text }
           }, __alloT('stem.lawNav.recheck', 'Check again'))
         ) : null,
         // ── Amendment context (title-level) + save-to-meeting-prep ──────────
         sec ? h('div', { className: 'flex items-center gap-2 flex-wrap mt-2' },
           canLive && _liveAmended ? h('span', {
-            className: 'text-[11px] rounded-lg px-2 py-1',
+            className: 'text-[0.6875rem] rounded-lg px-2 py-1',
             style: { background: pal.card, border: '1px solid ' + pal.border, color: pal.muted },
             title: __alloT('stem.lawNav.amended_tip', 'Reported by eCFR for the whole title, not this section alone')
           }, __alloT('stem.lawNav.amended', 'Title last amended') + ' ' + _liveAmended) : null,
           // Honesty: we can say when the TITLE changed. We cannot say this
           // SECTION is unchanged, and must not imply it.
-          canLive && _liveAmended ? h('span', { className: 'text-[10px]', style: { color: pal.muted } },
+          canLive && _liveAmended ? h('span', { className: 'text-[0.625rem]', style: { color: pal.muted } },
             __alloT('stem.lawNav.amended_caveat', '(section-level history is not shown — absence of a change here is not evidence of none)')) : null,
           (function() {
             var saved = (ctx.toolData && ctx.toolData._alloCitations) || [];
@@ -847,7 +847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                 announceToSR(__alloT('stem.lawNav.saved_sr', 'Saved to your meeting prep list.'));
               },
               disabled: already,
-              className: 'ml-auto rounded-lg px-2.5 py-1 text-[11px] font-bold border disabled:opacity-60',
+              className: 'ml-auto rounded-lg px-2.5 py-1 text-[0.6875rem] font-bold border disabled:opacity-60',
               style: { background: pal.panel, borderColor: pal.border, color: pal.text }
             }, already ? '✓ ' + __alloT('stem.lawNav.saved', 'In meeting prep') : '📌 ' + __alloT('stem.lawNav.save', 'Save for my meeting'));
           })()
@@ -855,7 +855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         sec ? readingControls() : null,
         !sec ? h('p', { className: 'text-sm mt-3', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')) :
         h('div', { className: 'rounded-2xl p-4 mt-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
-          h('p', { className: 'text-[10px] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
+          h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
             usingLive ? __alloT('stem.lawNav.verbatim_live', 'Verbatim text, fetched live from eCFR')
                       : __alloT('stem.lawNav.verbatim', 'Verbatim text as published')),
           // readStyle changes size/spacing/typeface/measure only. The words,
@@ -876,7 +876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           var terms = definedTermsIn(sdoc2, sec, 12);
           if (!terms.length) return null;
           return h('div', { className: 'rounded-2xl p-3 mt-3', style: { background: pal.card, border: '1px solid ' + pal.border } },
-            h('p', { className: 'text-[10px] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
+            h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
               __alloT('stem.lawNav.defined_here', 'Words this law defines for itself')),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               terms.map(function(t) {
@@ -885,14 +885,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                   key: t.term,
                   onClick: function() { setOpenDef(open ? null : t); if (!open) announceToSR(t.term + '. ' + __alloT('stem.lawNav.def_shown', 'Definition shown below.')); },
                   'aria-expanded': !!open,
-                  className: 'rounded-full px-2.5 py-1 text-[11px] font-bold border transition-colors',
+                  className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-bold border transition-colors',
                   style: open ? { background: pal.btn, color: '#fff', borderColor: pal.btn } : { background: pal.panel, color: pal.text, borderColor: pal.border }
                 }, t.term);
               })
             ),
             openDef ? h('div', { className: 'rounded-xl p-3 mt-2', style: { background: pal.panel, border: '1px solid ' + pal.border } },
               h('p', { style: Object.assign({}, readStyle, { color: pal.text }) }, openDef.text),
-              h('p', { className: 'text-[10px] mt-2', style: { color: pal.muted } },
+              h('p', { className: 'text-[0.625rem] mt-2', style: { color: pal.muted } },
                 __alloT('stem.lawNav.def_from', 'Quoted from') + ' ' + (smeta ? smeta.short : '') + ' § ' + openDef.sectionNumber + ' — ' +
                 __alloT('stem.lawNav.def_verbatim', 'the law\'s own words, not a plain-language gloss'))
             ) : null
@@ -904,10 +904,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             className: 'rounded-lg px-4 py-2 text-xs font-black text-white disabled:opacity-60',
             style: { background: pal.btn }
           }, ai.busy ? __alloT('stem.lawNav.explaining', 'Reading the passage…') : __alloT('stem.lawNav.explain', '💬 Explain this passage in plain language')),
-          h('p', { className: 'text-[10px] mt-1', style: { color: pal.muted } },
+          h('p', { className: 'text-[0.625rem] mt-1', style: { color: pal.muted } },
             __alloT('stem.lawNav.explain_note', 'The assistant is given only the passage above and is instructed to say "this passage does not say" rather than fill gaps from memory. Always read the official text yourself.')),
           ai.text && ai.forSection === activeSection ? h('div', { className: 'rounded-xl p-3 mt-2 text-sm leading-relaxed', style: { background: pal.card, border: '1px solid ' + pal.border, color: pal.text } },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider mb-1', style: { color: pal.muted } }, __alloT('stem.lawNav.plain', 'Plain-language help — not the law itself')),
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-1', style: { color: pal.muted } }, __alloT('stem.lawNav.plain', 'Plain-language help — not the law itself')),
             ai.text) : null
         ) : null,
         disclaimer

@@ -7315,10 +7315,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }[state];
             return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 shadow-sm space-y-3' },
               h('h3', { className: 'text-sm font-black text-orange-700' }, t('stem.fireecology.fire_regime_discovery', '🔥 Fire regime discovery')),
-              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret', 'Explore an arbitrary classroom index built from fuel accumulation, return interval, and drought severity. It is not a fire-behavior or ecosystem forecast.')),
+              h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret', 'Explore an arbitrary classroom index built from fuel accumulation, return interval, and drought severity. It is not a fire-behavior or ecosystem forecast.')),
               h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                 h('div', { className: 'text-base font-black', style: { color: tintLight(sm.color) } }, sm.label),
-                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
               ),
               // The classroom index (fuel × drought ÷ interval) as a PICTURE, drawn from the
               // SAME formula and thresholds the status box uses, so the two can never disagree:
@@ -7367,30 +7367,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                  { k: 'interval', l: 'Fire return (yr)', mn: 1, mx: 100, st: 1 },
                  { k: 'drought', l: 'Drought severity', mn: 0, mx: 10, st: 0.5 }].map(function(s) {
                   return h('div', { key: s.k },
-                    h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
+                    h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
                     h('input', { id: 'rh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                       className: 'w-full', 'aria-label': s.l }));
                 })
               ),
               h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ f: iq.fuel, i: iq.interval, d: iq.drought, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.fireecology.log_2', '📋 Log')),
-                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-500' }, t('stem.fireecology.reset', '↺ Reset'))
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ f: iq.fuel, i: iq.interval, d: iq.drought, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.fireecology.log_2', '📋 Log')),
+                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, t('stem.fireecology.reset', '↺ Reset'))
               ),
               h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.fireecology.hypothesis_input', 'Fire regime hypothesis'), placeholder: t('stem.fireecology.hypothesis_how_does_drought_magnify_fu', 'Hypothesis: How does drought magnify fuel-load risk?'),
-                className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.fireecology.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.fireecology.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
                   h('li', null, t('stem.fireecology.cultural_burns_used_5_10_yr_intervals_', 'Compare intervals only after naming the ecosystem, season, and stewardship objective.')),
                   h('li', null, t('stem.fireecology.why_does_80_year_fire_suppression_crea', 'How can long fire exclusion alter fuels in some fire-adapted ecosystems?')))),
               h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.fireecology.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.fireecology.explanation_input', 'Fire regime explanation'), placeholder: t('stem.fireecology.explain_how_fuel_load_fire_interval_an', 'Explain how fuel load, fire interval, and drought jointly determine fire regime.'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.fireecology.design_note_discrete_4_state_fire_regi', 'Model limit: arbitrary index = fuel accumulation x drought severity / return interval. It omits fuel type and arrangement, wind, slope, ignition, season, prior treatments, and local ecology; labels are inquiry prompts, not predictions.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+              h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.fireecology.design_note_discrete_4_state_fire_regi', 'Model limit: arbitrary index = fuel accumulation x drought severity / return interval. It omits fuel type and arrangement, wind, slope, ignition, season, prior treatments, and local ecology; labels are inquiry prompts, not predictions.'))
             );
           })() : null),
 

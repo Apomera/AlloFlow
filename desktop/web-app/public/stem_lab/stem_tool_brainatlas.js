@@ -9544,9 +9544,9 @@ var d = labToolData.brainAtlas || {};
               // SVG: bars
               return React.createElement('div', { className: 'brainatlas-nt-inquiry p-3 mb-3', "data-brainatlas-nt-inquiry": "true", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
                 React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.brainatlas.neurotransmitter_inquiry_predict_the_s', '\uD83D\uDD2C Neurotransmitter Inquiry \u2014 Explore the State')),
-                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.brainatlas.set_five_neurotransmitter_levels_predi', 'Set five neurotransmitter levels, then observe how the modeled state changes. The result updates live; record a hypothesis or pattern you notice. This is not a clinical interpretation.')),
-                React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
-                React.createElement('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
+                React.createElement('p', { className: 'text-[0.625rem] opacity-85 mb-2 leading-snug' }, t('stem.brainatlas.set_five_neurotransmitter_levels_predi', 'Set five neurotransmitter levels, then observe how the modeled state changes. The result updates live; record a hypothesis or pattern you notice. This is not a clinical interpretation.')),
+                React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
+                React.createElement('p', { className: 'text-[0.625rem] opacity-80 mb-2' }, sm.desc),
                 React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-2' },
                   [
                     { label: t('stem.brainatlas.arousal', 'Arousal'), val: arousal.toFixed(0) },
@@ -9555,8 +9555,8 @@ var d = labToolData.brainAtlas || {};
                     { label: t('stem.brainatlas.anxiety_idx', 'Anxiety idx'), val: anxiety.toFixed(0) }
                   ].map(function(m) {
                     return React.createElement('div', { key: m.label, className: 'p-1 rounded text-center', style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                      React.createElement('div', { className: 'text-[8px] opacity-60' }, m.label),
-                      React.createElement('div', { className: 'text-[11px] font-bold font-mono', style: { color: sm.color } }, m.val)
+                      React.createElement('div', { className: 'text-[0.5rem] opacity-60' }, m.label),
+                      React.createElement('div', { className: 'text-[0.6875rem] font-bold font-mono', style: { color: sm.color } }, m.val)
                     );
                   })
                 ),
@@ -9576,7 +9576,7 @@ var d = labToolData.brainAtlas || {};
                 ),
                 React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2 mb-2' },
                   nts.map(function(nt) {
-                    return React.createElement('label', { key: nt.k, className: 'text-[10px]' },
+                    return React.createElement('label', { key: nt.k, className: 'text-[0.625rem]' },
                       React.createElement('div', { className: 'flex justify-between mb-0.5' }, React.createElement('span', null, nt.label), React.createElement('span', { className: 'font-mono font-bold', style: { color: nt.col } }, iq[nt.k])),
                       React.createElement('input', { type: 'range', min: 0, max: 100, step: 5, value: iq[nt.k], onChange: function(e) { setKey(nt.k, parseInt(e.target.value, 10)); }, className: 'w-full' })
                     );
@@ -9586,16 +9586,16 @@ var d = labToolData.brainAtlas || {};
                   React.createElement('button', { onClick: function() {
                     var t = new Date().toISOString().slice(11, 19);
                     setIQ({ log: iq.log.concat([{ t: t, da: iq.dopamine, sh: iq.serotonin, ga: iq.gaba, glu: iq.glutamate, ne: iq.norepi, state: sm.label }]) });
-                  }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.brainatlas.log_this_profile', '\uD83D\uDCCB Log this profile')),
-                  React.createElement('button', { onClick: function() { setIQ({ dopamine: 50, serotonin: 50, gaba: 50, glutamate: 50, norepi: 50 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.brainatlas.reset', 'Reset'))
+                  }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.brainatlas.log_this_profile', '\uD83D\uDCCB Log this profile')),
+                  React.createElement('button', { onClick: function() { setIQ({ dopamine: 50, serotonin: 50, gaba: 50, glutamate: 50, norepi: 50 }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.brainatlas.reset', 'Reset'))
                 ),
-                iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[0.5625rem] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return React.createElement('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 DA' + e.da + ' 5HT' + e.sh + ' GABA' + e.ga + ' Glu' + e.glu + ' NE' + e.ne); })
                 ),
-                React.createElement('label', { htmlFor: 'brainatlas-nt-hypothesis', className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.brainatlas.your_hypothesis_which_two_neurotransmi', 'Your hypothesis (which two neurotransmitters most strongly trade off in shaping affect?)')),
-                React.createElement('textarea', { id: 'brainatlas-nt-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.e_g_gaba_and_glutamate_are_functional_', 'e.g., GABA and glutamate are functional opposites (inhibitory vs excitatory)...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.brainatlas.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
-                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                React.createElement('label', { htmlFor: 'brainatlas-nt-hypothesis', className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, t('stem.brainatlas.your_hypothesis_which_two_neurotransmi', 'Your hypothesis (which two neurotransmitters most strongly trade off in shaping affect?)')),
+                React.createElement('textarea', { id: 'brainatlas-nt-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.e_g_gaba_and_glutamate_are_functional_', 'e.g., GABA and glutamate are functional opposites (inhibitory vs excitatory)...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.brainatlas.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                   React.createElement('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.brainatlas.open_questions_no_answer_key', 'Open questions (no answer key)')),
                   React.createElement('ul', { className: 'pl-4 m-0' },
                     React.createElement('li', null, t('stem.brainatlas.gaba_and_glutamate_are_inhibitory_exci', 'GABA and glutamate are inhibitory/excitatory \u2014 what does that mean at the synapse, not just at the system level?')),
@@ -9604,12 +9604,12 @@ var d = labToolData.brainAtlas || {};
                     React.createElement('li', null, t('stem.brainatlas.what_states_would_you_not_expect_to_se', 'What states would you NOT expect to see in this five-axis space, and what would they require?'))
                   )
                 ),
-                React.createElement('label', { className: 'flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1' },
+                React.createElement('label', { className: 'flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1' },
                   React.createElement('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                   React.createElement('span', null, t('stem.brainatlas.i_can_explain_why_this_nt_profile_is_a', 'I can explain why this NT profile is associated with this functional state.'))
                 ),
-                iq.understood && React.createElement(React.Fragment, null, React.createElement('label', { htmlFor: 'brainatlas-nt-explanation', className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.brainatlas.explanation_label', 'Explain your prediction')), React.createElement('textarea', { id: 'brainatlas-nt-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })),
-                React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.brainatlas.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Mapping from neurotransmitter levels to felt states is a teaching heuristic, NOT a clinical model. The "chemical imbalance" theory of mood disorders is contested; receptor sensitivity, network dynamics, and lifecycle/context matter at least as much.'))
+                iq.understood && React.createElement(React.Fragment, null, React.createElement('label', { htmlFor: 'brainatlas-nt-explanation', className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, t('stem.brainatlas.explanation_label', 'Explain your prediction')), React.createElement('textarea', { id: 'brainatlas-nt-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })),
+                React.createElement('p', { className: 'm-0 text-[0.5625rem] italic opacity-60' }, t('stem.brainatlas.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Mapping from neurotransmitter levels to felt states is a teaching heuristic, NOT a clinical model. The "chemical imbalance" theory of mood disorders is contested; receptor sensitivity, network dynamics, and lifecycle/context matter at least as much.'))
               );
             })(),
 
@@ -11334,9 +11334,9 @@ var d = labToolData.brainAtlas || {};
 
                     },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-amber-700 uppercase mb-0.5" }, t('stem.brainatlas.tolerance_receptor_desensitization', "\u26A0\uFE0F Tolerance \u0026 Receptor Desensitization")),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 uppercase mb-0.5" }, t('stem.brainatlas.tolerance_receptor_desensitization', "\u26A0\uFE0F Tolerance \u0026 Receptor Desensitization")),
 
-                      React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-600 leading-relaxed" },
 
                         t('stem.brainatlas.with_repeated_exposure_postsynaptic_re', "With repeated exposure, postsynaptic receptors undergo downregulation \u2014 the cell reduces receptor density or sensitivity (internalization) to compensate for excess stimulation. This means higher doses are needed to achieve the same effect, driving the cycle of tolerance and dependence. Abrupt cessation can cause withdrawal as the nervous system has adapted to the drug\u2019s presence.")
 
@@ -11358,19 +11358,19 @@ var d = labToolData.brainAtlas || {};
                 React.createElement("h4", { className: "text-sm font-black text-purple-800 flex items-center gap-2" }, t('stem.brainatlas.how_neurons_fire_the_action_potential', "\u26A1 How Neurons Fire: The Action Potential")),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[11px] font-bold text-purple-600 uppercase mb-1" }, t('stem.brainatlas.ion_chemistry', "\uD83E\uDDEA Ion Chemistry")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-purple-600 uppercase mb-1" }, t('stem.brainatlas.ion_chemistry', "\uD83E\uDDEA Ion Chemistry")),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t('stem.brainatlas.at_rest_the_neuron_is_polarized_at_70m', "At rest, the neuron is polarized at -70mV. Na\u207A (sodium) is concentrated outside; K\u207A (potassium) inside. The Na\u207A/K\u207A pump maintains this gradient using ATP energy (3 Na\u207A out, 2 K\u207A in)."))
                   ),
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[11px] font-bold text-orange-600 uppercase mb-1" }, t('stem.brainatlas.all_or_nothing_firing', "\u26A1 All-or-Nothing Firing")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-orange-600 uppercase mb-1" }, t('stem.brainatlas.all_or_nothing_firing', "\u26A1 All-or-Nothing Firing")),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t('stem.brainatlas.when_stimulation_reaches_threshold_55m', "When stimulation reaches threshold (-55mV), voltage-gated Na\u207A channels open and the neuron fires at FULL strength. There is no \u201Chalf\u201D signal \u2014 it either fires completely or not at all. Stronger stimuli increase firing RATE, not intensity."))
                   ),
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, t('stem.brainatlas.recovery_cycle', "\uD83D\uDD04 Recovery Cycle")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-green-600 uppercase mb-1" }, t('stem.brainatlas.recovery_cycle', "\uD83D\uDD04 Recovery Cycle")),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t('stem.brainatlas.after_firing_na_channels_close_k_chann', "After firing: Na\u207A channels close, K\u207A channels open \u2192 repolarization. The membrane briefly overshoots to -80mV (hyperpolarization), creating a refractory period where the neuron cannot fire again. This ensures one-way signal travel."))
                   )
                 ),
-                React.createElement("p", { className: "text-[11px] text-purple-500 italic text-center" }, t('stem.brainatlas.saltatory_conduction_signals_jump_betw', "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s."))
+                React.createElement("p", { className: "text-[0.6875rem] text-purple-500 italic text-center" }, t('stem.brainatlas.saltatory_conduction_signals_jump_betw', "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s."))
               ),
 
               // \u2500\u2500\u2500 Stimulation Lab (predict the effect) \u2500\u2500\u2500
@@ -11383,7 +11383,7 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("li", null, React.createElement("strong", null, t('stem.brainatlas.verdict_real_small', 'Real, but small and not diagnostic')), ": ", t('stem.brainatlas.verdict_real_small_meaning', 'Group-level differences replicate, but they are small, overlap almost completely between groups, and cannot classify an individual.')),
                   React.createElement("li", null, React.createElement("strong", null, t('stem.brainatlas.verdict_promising', 'Promising, not proven')), ": ", t('stem.brainatlas.verdict_promising_meaning', 'An early result worth following, but not yet validated in new populations or real-world use.'))
                 ),
-                React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, t('stem.brainatlas.neuromyths_panel_note', 'Nothing here is a diagnosis or a treatment claim. Where a condition is discussed, differences are described at the group level only, and support decisions belong with the student, family, and clinical team.'))
+                React.createElement("p", { className: "text-[0.6875rem] text-slate-500 italic" }, t('stem.brainatlas.neuromyths_panel_note', 'Nothing here is a diagnosis or a treatment claim. Where a condition is discussed, differences are described at the group level only, and support decisions belong with the student, family, and clinical team.'))
               ),
               currentView.isNeuromyths && (function () {
                 var hlIdx = (parseInt(d.mythHeadlineIdx, 10) || 0) % MYTH_HEADLINES.length;
@@ -11397,7 +11397,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("h4", { id: "brainatlas-headline-heading", className: "font-black text-violet-800 text-sm" }, t('stem.brainatlas.headline_check_title', 'Headline check')),
                     React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700", "data-brainatlas-headline-position": "true" }, (hlIdx + 1) + ' / ' + MYTH_HEADLINES.length)
                   ),
-                  React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, t('stem.brainatlas.headline_check_intro', 'These headlines are invented for practice, but each one echoes a claim you will meet. Sort it into the verdict the evidence supports. This is practice, not a grade.')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-500 italic" }, t('stem.brainatlas.headline_check_intro', 'These headlines are invented for practice, but each one echoes a claim you will meet. Sort it into the verdict the evidence supports. This is practice, not a grade.')),
                   React.createElement("blockquote", { className: "text-sm text-slate-800 font-bold border-l-4 border-violet-300 pl-3", "data-brainatlas-headline-text": "true" }, '\u201C' + hl.headline + '\u201D'),
                   React.createElement("div", { role: "radiogroup", "aria-label": t('stem.brainatlas.headline_check_choose', 'Which verdict fits this headline?'), className: "grid grid-cols-1 gap-1.5" },
                     verdictKeys.map(function (vk) {
@@ -11408,7 +11408,7 @@ var d = labToolData.brainAtlas || {};
                           upd('mythHeadlineFeedback', { id: hl.id, chosen: vk, correct: isCorrect });
                           if (typeof announceToSR === 'function') announceToSR(isCorrect ? (t('stem.brainatlas.headline_fits', 'Yes, that verdict fits.') || 'Yes, that verdict fits.') : (t('stem.brainatlas.headline_different', 'The evidence points to a different verdict.') || 'The evidence points to a different verdict.'));
                         },
-                        className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
+                        className: "w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] font-medium border-2 transition-all " +
                           (hlShow && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : hlShow && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-violet-300 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
                       }, (hlShow && isCorrect ? '\u2705 ' : hlShow && wasChosen ? '\u274C ' : '') + meta.label);
                     })
@@ -11432,7 +11432,7 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("h4", { className: "font-black text-amber-800 text-sm" }, t('stem.brainatlas.stimulation_lab_2', "\u26A1 Stimulation Lab")),
                   React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700" }, "\u2B50 " + (d.stimScore || 0))
                 ),
-                React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, t('stem.brainatlas.wilder_penfield_mapped_the_brain_by_ge', "Wilder Penfield mapped the brain by gently stimulating awake patients during surgery. Predict what the patient would experience.")),
+                React.createElement("p", { className: "text-[0.6875rem] text-slate-500 italic" }, t('stem.brainatlas.wilder_penfield_mapped_the_brain_by_ge', "Wilder Penfield mapped the brain by gently stimulating awake patients during surgery. Predict what the patient would experience.")),
                 (function () {
                   var sc = STIM_SCENARIOS[(d.stimIdx || 0) % STIM_SCENARIOS.length];
                   var fb = d.stimFeedback; var show = fb !== null && fb !== undefined;
@@ -11444,7 +11444,7 @@ var d = labToolData.brainAtlas || {};
                         var isCorrect = oi === sc.correctIdx; var wasChosen = show && fb.chosen === oi;
                         return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
                           onClick: function () { upd('stimFeedback', { chosen: oi, correct: isCorrect }); if (isCorrect) upd('stimScore', (d.stimScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
-                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
+                          className: "w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] font-medium border-2 transition-all " +
                             (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-amber-300 text-slate-600 hover:bg-amber-50 active:scale-[0.97]')
                         }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optText);
                       })
@@ -11466,7 +11466,7 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("h4", { className: "font-black text-sky-800 text-sm" }, t('stem.brainatlas.patient_simulator_ai', "\uD83E\uDDD1\u200D\u2695\uFE0F Patient Simulator (AI)")),
                   React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700" }, "\u2B50 " + (d.patientScore || 0))
                 ),
-                React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, t('stem.brainatlas.a_simulated_patient_ai_reacts_to_a_hid', "A simulated patient (AI) reacts to a hidden stimulation. Read what they say, then guess which region was stimulated. The patient never names the region.")),
+                React.createElement("p", { className: "text-[0.6875rem] text-slate-500 italic" }, t('stem.brainatlas.a_simulated_patient_ai_reacts_to_a_hid', "A simulated patient (AI) reacts to a hidden stimulation. Read what they say, then guess which region was stimulated. The patient never names the region.")),
                 (function () {
                   var loading = !!d.patientLoading; var text = d.patientText || ""; var opts = d.patientOpts || []; var guess = d.patientGuess;
                   var show = guess !== null && guess !== undefined;
@@ -11474,7 +11474,7 @@ var d = labToolData.brainAtlas || {};
                   if (loading) { return React.createElement("p", { className: "text-xs text-sky-700 italic py-2" }, t('stem.brainatlas.the_patient_is_responding', "\u23F3 The patient is responding...")); }
                   return React.createElement("div", { className: "space-y-2" },
                     React.createElement("div", { className: "rounded-lg bg-sky-50 border border-sky-200 p-3" },
-                      React.createElement("p", { className: "text-[10px] font-bold text-sky-600 uppercase mb-0.5" }, t('stem.brainatlas.the_patient_says', "The patient says")),
+                      React.createElement("p", { className: "text-[0.625rem] font-bold text-sky-600 uppercase mb-0.5" }, t('stem.brainatlas.the_patient_says', "The patient says")),
                       React.createElement("p", { className: "text-sm text-slate-800 italic" }, "\u201C" + text + "\u201D")
                     ),
                     React.createElement("p", { className: "text-xs text-slate-600 font-bold" }, t('stem.brainatlas.which_region_was_stimulated', "Which region was stimulated?")),
@@ -11483,7 +11483,7 @@ var d = labToolData.brainAtlas || {};
                         var isCorrect = optTarget === d.patientCorrect; var wasChosen = show && guess.chosen === optTarget;
                         return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
                           onClick: function () { upd('patientGuess', { chosen: optTarget, correct: isCorrect }); if (isCorrect) upd('patientScore', (d.patientScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
-                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
+                          className: "w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] font-medium border-2 transition-all " +
                             (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-sky-300 text-slate-600 hover:bg-sky-50 active:scale-[0.97]')
                         }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optTarget);
                       })
@@ -11541,7 +11541,7 @@ var d = labToolData.brainAtlas || {};
 
                         },
 
-                        className: "brainatlas-quiz-option w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
+                        className: "brainatlas-quiz-option w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] leading-relaxed font-medium transition-all border-2 " +
 
                           (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
 
@@ -11621,7 +11621,7 @@ var d = labToolData.brainAtlas || {};
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
-                          className: "px-2 py-1 rounded-md text-[11px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'transition-colors text-white/70 hover:text-white/90'),
+                          className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'transition-colors text-white/70 hover:text-white/90'),
 
                           style: isActive ? { background: meta.color } : {}
 
@@ -11675,7 +11675,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.frequency', "Frequency")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.frequency', "Frequency")),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.freq)
 
@@ -11683,7 +11683,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.amplitude', "Amplitude")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.amplitude', "Amplitude")),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.amp)
 
@@ -11691,7 +11691,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.mental_states', "Mental States")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.mental_states', "Mental States")),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.states)
 
@@ -11699,7 +11699,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.eeg_location', "EEG Location")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, t('stem.brainatlas.eeg_location', "EEG Location")),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.eeg)
 
@@ -11709,7 +11709,7 @@ var d = labToolData.brainAtlas || {};
 
                   })(),
 
-                  React.createElement("p", { className: "text-[11px] text-white/55 mt-2 italic text-center" }, (function () {
+                  React.createElement("p", { className: "text-[0.6875rem] text-white/55 mt-2 italic text-center" }, (function () {
 
                     var WAVE_META = {
 
@@ -12054,38 +12054,38 @@ var d = labToolData.brainAtlas || {};
 
                       !plainLesson && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, currentView.isPrenatal ? (t('stem.brainatlas.what_is_forming', 'What is forming') || 'What is forming') : currentView.isNeuromyths ? (t('stem.brainatlas.what_the_evidence_says', 'What the evidence says') || 'What the evidence says') : t('stem.brainatlas.function', "Function")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, currentView.isPrenatal ? (t('stem.brainatlas.what_is_forming', 'What is forming') || 'What is forming') : currentView.isNeuromyths ? (t('stem.brainatlas.what_the_evidence_says', 'What the evidence says') || 'What the evidence says') : t('stem.brainatlas.function', "Function")),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
                       ),
                       currentView.isPrenatal && sel.context && React.createElement("div", null,
-                        React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase mb-0.5" }, t('stem.brainatlas.also_happening', 'Also happening')),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-teal-700 uppercase mb-0.5" }, t('stem.brainatlas.also_happening', 'Also happening')),
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.context)
                       ),
 
                       currentView.isPrenatal && sel.continues && React.createElement("div", null,
-                        React.createElement("p", { className: "text-[11px] font-bold text-pink-700 uppercase mb-0.5" }, t('stem.brainatlas.development_continues', 'Development continues')),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-pink-700 uppercase mb-0.5" }, t('stem.brainatlas.development_continues', 'Development continues')),
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-pink-50 rounded-lg p-2" }, sel.continues)
                       ),
                       currentView.isNeuromyths && sel.verdict && (function () {
                         var verdictMeta = BRAIN_ATLAS_MYTH_VERDICTS[sel.verdict] || BRAIN_ATLAS_MYTH_VERDICTS.debunked;
                         return React.createElement("div", { className: "brainatlas-myth-verdict", "data-brainatlas-myth-verdict": sel.verdict, style: { borderLeftColor: verdictMeta.color } },
-                          React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: verdictMeta.color } }, t('stem.brainatlas.evidence_verdict', 'Evidence verdict')),
+                          React.createElement("p", { className: "text-[0.6875rem] font-bold uppercase mb-0.5", style: { color: verdictMeta.color } }, t('stem.brainatlas.evidence_verdict', 'Evidence verdict')),
                           React.createElement("p", { className: "text-sm font-bold", style: { color: verdictMeta.color } }, verdictMeta.label),
                           React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, verdictMeta.meaning)
                         );
                       })(),
                       currentView.isNeuromyths && sel.claim && React.createElement("div", null,
-                        React.createElement("p", { className: "text-[11px] font-bold text-rose-700 uppercase mb-0.5" }, t('stem.brainatlas.the_claim', 'The claim')),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-rose-700 uppercase mb-0.5" }, t('stem.brainatlas.the_claim', 'The claim')),
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.claim)
                       ),
                       currentView.isNeuromyths && sel.instead && React.createElement("div", null,
-                        React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase mb-0.5" }, t('stem.brainatlas.instead_try', 'Instead, try')),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-teal-700 uppercase mb-0.5" }, t('stem.brainatlas.instead_try', 'Instead, try')),
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.instead)
                       ),
                       currentView.isNeuromyths && sel.source && React.createElement("div", null,
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.source', 'Source')),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.source', 'Source')),
                         sel.sourceUrl ? React.createElement("a", { className: "text-xs text-sky-700 underline leading-relaxed", href: sel.sourceUrl, target: "_blank", rel: "noopener noreferrer" }, sel.source) : React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, sel.source)
                       ),
 
@@ -12126,7 +12126,7 @@ var d = labToolData.brainAtlas || {};
                       ) :
                       React.createElement("div", { className: "brainatlas-plain-summary", "data-brainatlas-plain-summary": "true" },
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.student_takeaway', 'Student takeaway')),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.student_takeaway', 'Student takeaway')),
 
                         React.createElement("p", null, brainAtlasPlainTakeaway(sel))
 
@@ -12134,7 +12134,7 @@ var d = labToolData.brainAtlas || {};
 
                       showAdvancedDetail && sel.brodmann && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.brodmann_areas', "Brodmann Areas")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.brodmann_areas', "Brodmann Areas")),
 
                         React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
 
@@ -12142,7 +12142,7 @@ var d = labToolData.brainAtlas || {};
 
                       showAdvancedDetail && sel.blood && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.blood_supply', "Blood Supply")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.blood_supply', "Blood Supply")),
 
                         React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
 
@@ -12150,7 +12150,7 @@ var d = labToolData.brainAtlas || {};
 
                       showAdvancedDetail && sel.category && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-purple-500 uppercase mb-0.5" }, t('stem.brainatlas.category', "\u2697\uFE0F Category")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-purple-500 uppercase mb-0.5" }, t('stem.brainatlas.category', "\u2697\uFE0F Category")),
 
                         React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
 
@@ -12158,7 +12158,7 @@ var d = labToolData.brainAtlas || {};
 
                       showAdvancedDetail && sel.synthesis && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.synthesis_pathway', "\uD83E\uDDEC Synthesis Pathway")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.synthesis_pathway', "\uD83E\uDDEC Synthesis Pathway")),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
 
@@ -12166,7 +12166,7 @@ var d = labToolData.brainAtlas || {};
 
                       showAdvancedDetail && sel.receptors && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.receptor_subtypes', "\uD83C\uDFAF Receptor Subtypes")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.receptor_subtypes', "\uD83C\uDFAF Receptor Subtypes")),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
 
@@ -12174,7 +12174,7 @@ var d = labToolData.brainAtlas || {};
 
                       showAdvancedDetail && sel.pathways && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.neural_pathways', "\uD83D\uDEE4\uFE0F Neural Pathways")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.neural_pathways', "\uD83D\uDEE4\uFE0F Neural Pathways")),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
 
@@ -12182,7 +12182,7 @@ var d = labToolData.brainAtlas || {};
 
                       showAdvancedDetail && sel.drugs && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-blue-600 uppercase mb-0.5" }, t('stem.brainatlas.pharmacology', "\uD83D\uDC8A Pharmacology")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-blue-600 uppercase mb-0.5" }, t('stem.brainatlas.pharmacology', "\uD83D\uDC8A Pharmacology")),
 
                         React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
 
@@ -12190,7 +12190,7 @@ var d = labToolData.brainAtlas || {};
 
                       !plainLesson && sel.conditions && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, t('stem.brainatlas.associated_conditions', "\u26A0 Associated Conditions")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-600 uppercase mb-0.5" }, t('stem.brainatlas.associated_conditions', "\u26A0 Associated Conditions")),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
 
@@ -12198,7 +12198,7 @@ var d = labToolData.brainAtlas || {};
 
                       !plainLesson && sel.damage && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-rose-500 uppercase mb-0.5" }, t('stem.brainatlas.if_damaged_2', "\uD83C\uDFE5 If Damaged")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-rose-500 uppercase mb-0.5" }, t('stem.brainatlas.if_damaged_2', "\uD83C\uDFE5 If Damaged")),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
 
@@ -12292,7 +12292,7 @@ var d = labToolData.brainAtlas || {};
 
                           React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
 
-                            React.createElement("p", { className: "text-[11px] font-bold text-purple-600 uppercase" }, t('stem.brainatlas.explain_at_my_level', "\u2728 Explain at my level")),
+                            React.createElement("p", { className: "text-[0.6875rem] font-bold text-purple-600 uppercase" }, t('stem.brainatlas.explain_at_my_level', "\u2728 Explain at my level")),
 
                             React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": t('stem.brainatlas.reading_level', "Reading level") },
 
@@ -12310,7 +12310,7 @@ var d = labToolData.brainAtlas || {};
 
                                   "aria-pressed": active,
 
-                                  className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-purple-50 active:scale-[0.97]')
+                                  className: "px-2 py-0.5 rounded text-[0.625rem] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-purple-50 active:scale-[0.97]')
 
                                 }, L.label);
 
@@ -12326,13 +12326,13 @@ var d = labToolData.brainAtlas || {};
 
                               "aria-label": "Generate AI explanation for " + sel.name + " at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
 
-                              className: "transition-colors px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1 active:scale-[0.97]"
+                              className: "transition-colors px-2.5 py-1 rounded text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1 active:scale-[0.97]"
 
                             }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
 
                           ),
 
-                          aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                          aiError && React.createElement("p", { className: "text-[0.6875rem] text-rose-600", role: "alert" }, aiError),
 
                           aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-purple-50 rounded-lg p-2" }, aiText)
 

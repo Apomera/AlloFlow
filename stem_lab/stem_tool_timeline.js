@@ -256,7 +256,7 @@
           h('div', null, (aiOn ? '✨ ' + t('stem.timeline.ai_on', 'AI is ON — it reads your text and pulls out the dated events.')
             : '🌱 ' + t('stem.timeline.ai_off', 'AI hints are off — use “Build by hand” to add events yourself in the timeline window.'))),
           h('div', null, '🔒 ' + t('stem.timeline.privacy', 'Your text and the timeline stay in memory — nothing is saved or graded.'))),
-        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed' },
           t('stem.timeline.credit', 'Timeline rendering: TimelineJS by Northwestern University Knight Lab (timeline.knightlab.com), free and open source under the Mozilla Public License. The timeline library loads from Knight Lab’s CDN, so this tool needs internet.'))
       );
     }

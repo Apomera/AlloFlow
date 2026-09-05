@@ -24,7 +24,7 @@ describe('Base Ten text accessibility', () => {
     loadTool('stem_lab/stem_tool_manipulatives.js', 'base10');
     const html = renderTool('base10', { base10: {} });
     expect(html).not.toMatch(/text-\[(?:7|8|9)px\]/);
-    expect(html).toContain('text-[10px]');
+    expect(html).toContain('text-[0.625rem]');
   });
 
   it('provides named, keyboard-operable slide-rule controls', () => {

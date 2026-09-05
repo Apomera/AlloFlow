@@ -18070,7 +18070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         return h('div', { className: 'p-4 rounded-xl bg-white border border-slate-200 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.cephalopodlab.camouflage_discovery', '🎨 Camouflage discovery')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             'You are the octopus. Pick a background. Adjust your skin\'s brightness, hue, and pattern coarseness. The red predator-eye fades as you become harder to detect. There is no score number, no "right answer," and no reveal button. Sweep the sliders. Notice when detection drops fast and when it does not. Type what you discover.'),
           // Background + octopus visualization
           h('div', { className: 'mb-3 rounded border border-slate-200 overflow-hidden' },
@@ -18119,12 +18119,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 );
               })()
             ),
-            h('div', { className: 'text-[10px] text-slate-600 px-2 py-1 bg-slate-50 text-center' },
+            h('div', { className: 'text-[0.625rem] text-slate-600 px-2 py-1 bg-slate-50 text-center' },
               'Substrate: ' + sub.label + '   |   Brightness slider ' + st.brightness + '%, Hue ' + st.hue + '%, Coarseness ' + st.coarseness + '%')
           ),
           // Substrate picker (discrete choice — but pure environment, not answer)
           h('div', { className: 'mb-3' },
-            h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.cephalopodlab.choose_your_background', 'Choose your background:')),
+            h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.cephalopodlab.choose_your_background', 'Choose your background:')),
             h('div', { className: 'flex flex-wrap gap-1' },
               Object.keys(SUBSTRATES).map(function(k) {
                 var active = st.substrate === k;
@@ -18132,7 +18132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   key: k,
                   onClick: function() { setCH({ substrate: k }); },
                   'aria-pressed': active,
-                  className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + (active ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')
+                  className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors ' + (active ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')
                 }, SUBSTRATES[k].label);
               })
             )
@@ -18145,7 +18145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               { key: 'coarseness', label: __alloT('stem.cephalopodlab.pattern_coarseness_smooth_disruptive', 'Pattern coarseness (smooth ↔ disruptive)'), val: st.coarseness, min: 0, max: 100 }
             ].map(function(s) {
               return h('div', { key: s.key },
-                h('label', { htmlFor: 'ch-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                h('label', { htmlFor: 'ch-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
                   s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val + '%')),
                 h('input', {
                   id: 'ch-' + s.key, type: 'range', min: s.min, max: s.max, step: 1, value: s.val,
@@ -18157,13 +18157,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           ),
           // Log + reset
           h('div', { className: 'flex flex-wrap gap-2 items-center mb-3' },
-            h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.cephalopodlab.log_observation', '📋 Log observation')),
-            h('button', { onClick: function() { setCH({ substrate: 'sand', brightness: 50, hue: 50, coarseness: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.cephalopodlab.reset', '↺ Reset')),
-            (st.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (st.log || []).length + ' observations logged')
+            h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.cephalopodlab.log_observation', '📋 Log observation')),
+            h('button', { onClick: function() { setCH({ substrate: 'sand', brightness: 50, hue: 50, coarseness: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.cephalopodlab.reset', '↺ Reset')),
+            (st.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (st.log || []).length + ' observations logged')
           ),
           // Observation log table
           (st.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
-            h('table', { className: 'text-[10px] w-full border-collapse' },
+            h('table', { className: 'text-[0.625rem] w-full border-collapse' },
               h('caption', { className: 'sr-only' }, __alloT('stem.cephalopodlab.camouflage_observations_caption', 'Camouflage observations')),
               h('thead', null, h('tr', { className: 'bg-slate-100' },
                 ['substrate', 'brightness', 'hue', 'coarseness', 'detection'].map(function(c, i) {
@@ -18183,22 +18183,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           ),
           // Free-text hypothesis
           h('div', { className: 'mb-3' },
-            h('label', { htmlFor: 'ch-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+            h('label', { htmlFor: 'ch-hypo', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
               __alloT('stem.cephalopodlab.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
             h('textarea', {
               id: 'ch-hypo', value: st.hypothesis || '',
               onChange: function(e) { setCH({ hypothesis: e.target.value }); },
               placeholder: __alloT('stem.cephalopodlab.what_single_slider_seems_to_matter_mos', 'What single slider seems to matter MOST for hiding on the coral? What about on the open sea? Type your own theory.'),
-              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3
+              className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3
             })
           ),
           // Opt-in open questions
           h('div', { className: 'mb-3' },
             !st.stuckRevealed && h('button', {
               onClick: function() { setCH({ stuckRevealed: true }); },
-              className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300'
+              className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-300'
             }, __alloT('stem.cephalopodlab.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
-            st.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+            st.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
               h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.cephalopodlab.open_questions_investigate_by_manipula', 'Open questions — investigate by manipulating:')),
               h('ul', { className: 'list-disc pl-5 space-y-1' },
                 h('li', null, __alloT('stem.cephalopodlab.pick_the_open_sea_substrate_sweep_coar', 'Pick the open-sea substrate. Sweep coarseness from 0 to 100. Does detection care? Now switch to coral and repeat. What changed?')),
@@ -18207,27 +18207,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('li', null, __alloT('stem.cephalopodlab.compare_your_best_detection_on_smooth_', 'Compare your best detection on smooth sand vs patchy coral. Is one substrate inherently easier to hide on? Why might that be?')),
                 h('li', null, __alloT('stem.cephalopodlab.real_cephalopods_are_color_blind_but_h', 'Real cephalopods are color-blind but have superb shape and contrast vision. What does that suggest about how they perceive matching success?'))
               ),
-              h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, __alloT('stem.cephalopodlab.no_answers_will_be_revealed_here_inves', 'No answers will be revealed here. Investigate.'))
+              h('div', { className: 'text-[0.625rem] italic text-amber-700 mt-2' }, __alloT('stem.cephalopodlab.no_answers_will_be_revealed_here_inves', 'No answers will be revealed here. Investigate.'))
             )
           ),
           // Self-mark + explanation
           h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('input', { type: 'checkbox', id: 'ch-und', checked: !!st.understood, onChange: function(e) { setCH({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-              h('label', { htmlFor: 'ch-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
+              h('label', { htmlFor: 'ch-und', className: 'text-[0.75rem] font-bold text-emerald-900 cursor-pointer' },
                 __alloT('stem.cephalopodlab.i_think_i_understand_the_pattern_now_l', 'I think I understand the pattern now — let me explain it in my own words'))
             ),
-            st.understood && h('label', { htmlFor: 'ch-explanation', className: 'block text-[11px] font-bold text-emerald-900 mb-1' },
+            st.understood && h('label', { htmlFor: 'ch-explanation', className: 'block text-[0.6875rem] font-bold text-emerald-900 mb-1' },
               __alloT('stem.cephalopodlab.explain_your_reasoning', 'Explain your reasoning')),
             st.understood && h('textarea', {
               id: 'ch-explanation', value: st.explanation || '', onChange: function(e) { setCH({ explanation: e.target.value }); },
               placeholder: __alloT('stem.cephalopodlab.explain_in_your_own_words_what_does_ef', 'Explain in your own words: what does effective camouflage require? Why does pattern matter more on patchy substrates than on smooth ones? Why might disruptive coloration sometimes beat uniform matching?'),
-              className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white', rows: 4
+              className: 'w-full text-[0.75rem] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white', rows: 4
             }),
-            st.understood && (st.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+            st.understood && (st.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700' },
               __alloT('stem.cephalopodlab.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
           ),
-          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic' },
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.625rem] text-slate-600 italic' },
             __alloT('stem.cephalopodlab.design_note_no_score_number_no_right_a', 'Design note: no score number, no right-answer chip, no reveal button. Detection is shown visually (predator eye fades) so the feedback signal does not become a score to maximize. The point is the inquiry, not the number.'))
         );
       }

@@ -9675,10 +9675,10 @@
           className: 'pointer-events-none absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#183b32]/40 shadow-[0_0_0_2px_rgba(24,59,50,.8)]',
           style: { left: Number((prep && prep.x) || 50) + '%', top: Number((prep && prep.y) || 50) + '%' }
         }), h('span', {
-          'aria-hidden': 'true', className: 'pointer-events-none absolute left-3 bottom-2 max-w-[70%] truncate text-[10px] font-black uppercase tracking-[.14em] px-2 py-1 rounded-full bg-white/90 text-[#29483f] shadow-sm'
+          'aria-hidden': 'true', className: 'pointer-events-none absolute left-3 bottom-2 max-w-[70%] truncate text-[0.625rem] font-black uppercase tracking-[.14em] px-2 py-1 rounded-full bg-white/90 text-[#29483f] shadow-sm'
         }, (cardPresentation ? cardPresentation.mark + ' · ' : '') + item.kind), cardPresentation && h('span', {
           'aria-hidden': 'true', 'data-sourcebook-card-rights': item.rightsType,
-          className: 'pointer-events-none absolute right-3 top-2 max-w-[58%] truncate rounded-full bg-emerald-100/95 px-2 py-1 text-[10px] font-black text-emerald-950 shadow-sm'
+          className: 'pointer-events-none absolute right-3 top-2 max-w-[58%] truncate rounded-full bg-emerald-100/95 px-2 py-1 text-[0.625rem] font-black text-emerald-950 shadow-sm'
         }, '✓ ' + item.rightsShort));
       }
 
@@ -9708,7 +9708,7 @@
           key: item.id, 'data-sourcebook-result-card': item.id, 'data-sourcebook-active': active.id === item.id ? 'true' : 'false',
           className: 'group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ' + (checked ? 'border-amber-500 ring-2 ring-amber-200' : (comparing ? 'border-sky-500 ring-2 ring-sky-200' : (active.id === item.id ? 'border-[#2f6b59] ring-2 ring-[#aad3c5]' : 'border-[#cad6d0]')))
         }, showingCollection && h('label', {
-          className: 'absolute left-3 top-3 z-10 inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-xl border border-[#9cada6] bg-white/95 px-3 text-[11px] font-black text-[#29483f] shadow-sm'
+          className: 'absolute left-3 top-3 z-10 inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-xl border border-[#9cada6] bg-white/95 px-3 text-[0.6875rem] font-black text-[#29483f] shadow-sm'
         },
           h('input', {
             type: 'checkbox', checked: checked, disabled: palettePackageBusy, onChange: function () { togglePaletteCheck(item.id); },
@@ -9723,13 +9723,13 @@
           'aria-controls': 'sourcebook-detail-panel',
           'aria-label': __alloTf('stem.sourcebook.aria_inspect_and_prepare', 'Inspect and prepare {title} from {provider}. Reuse rights: {rights}.', { title: item.title, provider: providerInfo.name, rights: item.rightsShort }) + (item.provider === MUSEUMS_VICTORIA_PROVIDER ? ' ' + __alloT('stem.sourcebook.aria_review_cultural_context', 'Review the source record for cultural context before use.') : '')
         }, preview(item, { mode: 'fit', zoom: 100, x: 50, y: 50 }, boardView === 'gallery' ? 180 : (item.kind === 'Archival' || item.kind === 'Botanical' ? 280 : 210), null, false, providerInfo),
-          h('span', { 'aria-hidden': 'true', className: 'pointer-events-none absolute bottom-2 right-3 rounded-full bg-[#183b32]/95 px-2.5 py-1 text-[10px] font-black text-white shadow-sm' }, __alloT('stem.sourcebook.inspect_prepare', 'Inspect & prepare'))
+          h('span', { 'aria-hidden': 'true', className: 'pointer-events-none absolute bottom-2 right-3 rounded-full bg-[#183b32]/95 px-2.5 py-1 text-[0.625rem] font-black text-white shadow-sm' }, __alloT('stem.sourcebook.inspect_prepare', 'Inspect & prepare'))
         ),
         h('div', { className: boardView === 'gallery' ? 'p-3' : 'p-4' }, imageRecoveryControls(item),
-          h('p', { 'data-sourcebook-card-provider': providerInfo.name, className: 'mb-1 text-[10px] font-black uppercase tracking-[.12em] text-[#4d685e]' }, providerInfo.name),
+          h('p', { 'data-sourcebook-card-provider': providerInfo.name, className: 'mb-1 text-[0.625rem] font-black uppercase tracking-[.12em] text-[#4d685e]' }, providerInfo.name),
           h('div', { className: 'min-w-0' },
             h('h3', { className: 'font-black text-[#18352d] leading-tight' }, item.title),
-            h('p', { className: 'mt-1 text-[11px] text-[#5c6e67]' }, item.creator + ' · ' + item.year),
+            h('p', { className: 'mt-1 text-[0.6875rem] text-[#5c6e67]' }, item.creator + ' · ' + item.year),
             (function () {
               var strip = swatchesFor(item);
               return strip && strip.length ? h('ul', { className: 'mt-1.5 flex gap-1', 'aria-label': __alloT('stem.sourcebook.card_swatches', 'Colour swatches read from this image'), 'data-sourcebook-card-swatches': item.id }, strip.slice(0, 6).map(function (swatch) {
@@ -9738,7 +9738,7 @@
             })()
           ),
           h('div', {
-            className: 'mt-2 flex flex-wrap gap-1.5 text-[11px] font-black',
+            className: 'mt-2 flex flex-wrap gap-1.5 text-[0.6875rem] font-black',
             'data-sourcebook-card-summary': 'true'
           },
             h('span', {
@@ -9753,21 +9753,21 @@
           ),
           item.provider === MUSEUMS_VICTORIA_PROVIDER && h('p', {
             'data-sourcebook-cultural-context': 'card',
-            className: 'mt-2 inline-flex rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-950',
+            className: 'mt-2 inline-flex rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[0.625rem] font-black text-amber-950',
             title: __alloT('stem.sourcebook.review_the_source_record_for_cultural_', 'Review the source record for cultural context and any community guidance before reuse.')
           }, __alloT('stem.sourcebook.review_context_source_record', 'Review context · source record')),
-          item.recommended && h('p', { className: 'mt-2 inline-flex rounded-full bg-[#183b32] px-2.5 py-1 text-[11px] font-black uppercase tracking-[.1em] text-white' }, item.recommendationSource || 'Recommended'),
+          item.recommended && h('p', { className: 'mt-2 inline-flex rounded-full bg-[#183b32] px-2.5 py-1 text-[0.6875rem] font-black uppercase tracking-[.1em] text-white' }, item.recommendationSource || 'Recommended'),
           showingCollection && h('p', {
-            className: 'mt-2 ml-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ' + (cardAccessibility.status === 'suggested' ? 'bg-amber-100 text-amber-950' : (cardAccessibility.status === 'decorative' ? 'bg-sky-100 text-sky-950' : 'bg-emerald-100 text-emerald-950')),
+            className: 'mt-2 ml-1 inline-flex rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + (cardAccessibility.status === 'suggested' ? 'bg-amber-100 text-amber-950' : (cardAccessibility.status === 'decorative' ? 'bg-sky-100 text-sky-950' : 'bg-emerald-100 text-emerald-950')),
             'data-sourcebook-card-accessibility': cardAccessibility.status
           }, cardAccessibility.status === 'suggested' ? 'Alt text - review suggestion' : (cardAccessibility.status === 'decorative' ? 'Accessibility - decorative' : (cardAccessibility.source === 'user-edited' ? 'Alt text - user-edited' : 'Alt text - confirmed'))),
           showingCollection && h('p', {
-            className: 'mt-2 ml-1 inline-flex rounded-full bg-violet-100 px-2.5 py-1 text-[10px] font-black text-violet-950',
+            className: 'mt-2 ml-1 inline-flex rounded-full bg-violet-100 px-2.5 py-1 text-[0.625rem] font-black text-violet-950',
             'data-sourcebook-card-usage-intent': cardUsageIntent.id,
             title: cardUsageIntent.description
           }, (cardUsageIntent.suggested ? 'Suggested · ' : '') + cardUsageIntent.shortLabel),
           match && !item.recommended && h('p', {
-            className: 'mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ' + (match.label === 'Strong match' ? 'bg-emerald-100 text-emerald-950' : (match.label === 'Related match' ? 'bg-sky-100 text-sky-950' : 'bg-slate-100 text-slate-700')),
+            className: 'mt-2 inline-flex rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + (match.label === 'Strong match' ? 'bg-emerald-100 text-emerald-950' : (match.label === 'Related match' ? 'bg-sky-100 text-sky-950' : 'bg-slate-100 text-slate-700')),
             title: match.matches.length ? 'Matched source metadata: ' + match.matches.join(', ') : 'This broader result is retained for visual exploration'
           }, match.label + (match.matches.length ? ' · ' + match.matches.slice(0, 2).join(', ') : '')),
           boardView === 'research' && h('p', { className: 'mt-3 text-xs leading-relaxed text-[#40564e]' }, item.description)
@@ -9825,13 +9825,13 @@
           imageRecoveryControls(item),
           h('div', { className: 'p-5 space-y-4' },
             h('div', null,
-              h('p', { className: 'text-[10px] uppercase tracking-[.2em] font-black text-[#5a6b5c]' }, item.provider + ' · ' + item.kind),
+              h('p', { className: 'text-[0.625rem] uppercase tracking-[.2em] font-black text-[#5a6b5c]' }, item.provider + ' · ' + item.kind),
               h('h2', { className: 'font-serif text-2xl font-black text-[#19372e] mt-1 leading-tight' }, item.title),
               h('p', { className: 'text-xs text-[#596b63] mt-2' }, item.creator + ' · ' + item.year + (item.medium ? ' · ' + item.medium : ''))
             ),
             h('section', { className: 'rounded-2xl border border-[#b8ccc3] bg-[#eaf2ee] p-4', 'aria-label': __alloT('stem.sourcebook.explore_related_visual_sources', 'Explore related visual sources') },
               match && h('div', { className: 'mb-3' },
-                h('p', { className: 'text-[10px] font-black uppercase tracking-[.14em] text-[#4d685e]' }, __alloT('stem.sourcebook.why_this_appears', 'Why this appears')),
+                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.14em] text-[#4d685e]' }, __alloT('stem.sourcebook.why_this_appears', 'Why this appears')),
                 h('p', { className: 'mt-1 text-xs font-black text-[#1f493c]' }, match.label + (match.matches.length ? ' · matched ' + match.matches.slice(0, 3).join(', ') : ' · broader visual option'))
               ),
               h('button', {
@@ -9843,17 +9843,17 @@
             h('section', { className: 'rounded-2xl border border-[#c7d2cc] bg-white p-4', 'aria-labelledby': 'sourcebook-print-readiness-title' },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('h3', { id: 'sourcebook-print-readiness-title', className: 'font-black text-sm text-[#243e35]' }, __alloT('stem.sourcebook.print_readiness', 'Print readiness')),
-                h('span', { className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + readinessBadgeClasses(readiness) }, readiness.label)
+                h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + readinessBadgeClasses(readiness) }, readiness.label)
               ),
               readiness.width
-                ? h('div', { className: 'mt-3 space-y-1 text-[11px] font-bold leading-relaxed text-[#50645c]' },
+                ? h('div', { className: 'mt-3 space-y-1 text-[0.6875rem] font-bold leading-relaxed text-[#50645c]' },
                     h('p', null, readiness.width + ' x ' + readiness.height + ' px - ' + (readiness.dimensionSource === 'iiif-prepared' ? 'verified IIIF prepared-rendition dimensions' : (readiness.dimensionSource === 'catalog' ? 'catalog dimensions (preparation estimate)' : 'loaded preview measurement'))),
                     h('p', null, readiness.print300 + (readiness.print300cm ? ' · ' + readiness.print300cm : '')),
                     h('p', null, readiness.print150 + (readiness.print150cm ? ' · ' + readiness.print150cm : '')),
                     activePrep.mode !== 'fit' && h('p', null, 'Prepared output: ' + readiness.outputLabel + (readiness.upscale > 1.05 ? ' - ' + readiness.upscale + 'x enlargement' : ' - no material enlargement'))
                   )
-                : h('p', { className: 'mt-3 text-[11px] font-bold leading-relaxed text-[#50645c]' }, __alloT('stem.sourcebook.pixel_dimensions_are_not_present_in_th', 'Pixel dimensions are not present in this catalog record yet.')),
-              h('p', { className: 'mt-2 text-[11px] leading-relaxed text-[#50645c]' }, readiness.note),
+                : h('p', { className: 'mt-3 text-[0.6875rem] font-bold leading-relaxed text-[#50645c]' }, __alloT('stem.sourcebook.pixel_dimensions_are_not_present_in_th', 'Pixel dimensions are not present in this catalog record yet.')),
+              h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-[#50645c]' }, readiness.note),
               canSeekSharper && h('button', {
                 type: 'button', disabled: searchActive, onClick: function () { findSharperAlternative(item); },
                 className: 'mt-3 min-h-[42px] w-full rounded-xl border border-amber-500 bg-amber-50 px-3 text-xs font-black text-amber-950 hover:bg-amber-100 disabled:cursor-wait disabled:opacity-50',
@@ -9868,7 +9868,7 @@
                   onClick: function () {
                     copyText(swatchesText(swatchesFor(item))).then(function (copied) { toast(copied ? __alloT('stem.sourcebook.msg_swatches_copied', 'Swatch hex codes copied.') : __alloT('stem.sourcebook.msg_swatches_not_copied', 'Swatches could not be copied in this browser.'), copied ? 'success' : 'error'); });
                   },
-                  className: 'min-h-[36px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42]'
+                  className: 'min-h-[36px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42]'
                 }, __alloT('stem.sourcebook.copy_hex', 'Copy hex'))
               ),
               swatchesFor(item) === undefined
@@ -9879,29 +9879,29 @@
                     className: 'mt-2 min-h-[40px] w-full rounded-xl border border-[#a9bbb3] bg-[#f2f6f3] px-3 text-xs font-black text-[#294d42] hover:bg-[#e6efe9]'
                   }, __alloT('stem.sourcebook.read_colours', 'Read colours from this image'))
                 : (swatchesFor(item) === null
-                  ? h('p', { className: 'mt-2 text-[11px] text-[#4f625b]', role: 'status' }, __alloT('stem.sourcebook.swatches_reading', 'Reading colours from the preview...'))
+                  ? h('p', { className: 'mt-2 text-[0.6875rem] text-[#4f625b]', role: 'status' }, __alloT('stem.sourcebook.swatches_reading', 'Reading colours from the preview...'))
                   : (swatchesFor(item).length
                   ? h('ul', { className: 'mt-2 grid grid-cols-3 gap-2', 'aria-label': __alloT('stem.sourcebook.dominant_colours', 'Dominant colours in this image') }, swatchesFor(item).map(function (swatch) {
-                      return h('li', { key: swatch.hex, className: 'flex items-center gap-2 text-[11px] font-black text-[#294d42]' },
+                      return h('li', { key: swatch.hex, className: 'flex items-center gap-2 text-[0.6875rem] font-black text-[#294d42]' },
                         h('span', { 'aria-hidden': 'true', className: 'inline-block h-6 w-6 rounded-md border border-[#c8d4ce]', style: { background: swatch.hex } }),
                         h('span', null, swatch.hex.toUpperCase()),
                         h('span', { className: 'sr-only' }, ' ' + swatch.share + '%'));
                     }))
-                  : h('p', { className: 'mt-2 text-[11px] text-[#4f625b]' }, __alloT('stem.sourcebook.swatches_unavailable', 'Colours could not be read from this preview in this browser.'))))
+                  : h('p', { className: 'mt-2 text-[0.6875rem] text-[#4f625b]' }, __alloT('stem.sourcebook.swatches_unavailable', 'Colours could not be read from this preview in this browser.'))))
             ),
             h('section', { className: 'rounded-2xl bg-white border border-[#c8d4ce] p-4', 'aria-labelledby': 'sourcebook-rights-title' },
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { 'aria-hidden': 'true', className: 'w-2.5 h-2.5 rounded-full bg-emerald-600' }),
                 h('h3', { id: 'sourcebook-rights-title', className: 'font-black text-sm text-[#243e35]' }, item.license)
               ),
-              h('p', { className: 'mt-2 text-[11px] leading-relaxed text-[#4f625b]' }, item.rightsNote),
-              derivativeUseGuidance(item.rightsType) && h('p', { className: 'mt-2 rounded-xl border border-[#b8ccc3] bg-[#eaf2ee] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#1f493c]', 'data-sourcebook-derivative-guidance': item.rightsType },
-                h('span', { className: 'block text-[10px] font-black uppercase tracking-[.12em] text-[#4d685e]' }, __alloT('stem.sourcebook.for_your_own_work', 'For your own work')),
+              h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-[#4f625b]' }, item.rightsNote),
+              derivativeUseGuidance(item.rightsType) && h('p', { className: 'mt-2 rounded-xl border border-[#b8ccc3] bg-[#eaf2ee] px-3 py-2 text-[0.6875rem] font-bold leading-relaxed text-[#1f493c]', 'data-sourcebook-derivative-guidance': item.rightsType },
+                h('span', { className: 'block text-[0.625rem] font-black uppercase tracking-[.12em] text-[#4d685e]' }, __alloT('stem.sourcebook.for_your_own_work', 'For your own work')),
                 derivativeUseGuidance(item.rightsType)
               ),
               item.rightsMetadataSource && h('details', { className: 'mt-3 rounded-xl border border-[#d3dfda] bg-[#f6faf8] px-3 py-2' },
-                h('summary', { className: 'cursor-pointer text-[11px] font-black text-[#315c50]' }, __alloT('stem.sourcebook.how_reuse_rights_were_checked', 'How reuse rights were checked')),
-                h('p', { className: 'mt-2 break-words text-[10px] leading-relaxed text-[#5a6f67]', 'data-sourcebook-rights-evidence': 'true' }, item.rightsMetadataSource)
+                h('summary', { className: 'cursor-pointer text-[0.6875rem] font-black text-[#315c50]' }, __alloT('stem.sourcebook.how_reuse_rights_were_checked', 'How reuse rights were checked')),
+                h('p', { className: 'mt-2 break-words text-[0.625rem] leading-relaxed text-[#5a6f67]', 'data-sourcebook-rights-evidence': 'true' }, item.rightsMetadataSource)
               ),
               item.licenseUrl && h('a', { href: item.licenseUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_open_license_terms', 'Open license terms for {title} in a new tab', { title: item.title }), className: 'inline-block mt-2 mr-3 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.license_terms', 'License terms ↗')),
               h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_verify_on_source_record', 'Verify {title} on its source record in a new tab', { title: item.title }), className: 'inline-block mt-2 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.verify_on_source_record', 'Verify on source record ↗'))
@@ -9912,19 +9912,19 @@
               'aria-label': __alloT('stem.sourcebook.museums_victoria_context_check', 'Museums Victoria context check')
             },
               h('h3', { className: 'text-sm font-black' }, __alloT('stem.sourcebook.review_context', 'Review context')),
-              h('p', { className: 'mt-2 text-[11px] font-bold leading-relaxed' }, __alloT('stem.sourcebook.reuse_rights_are_verified_for_this_ima', 'Reuse rights are verified for this image. Review the source record for cultural context and appropriateness before use.')),
+              h('p', { className: 'mt-2 text-[0.6875rem] font-bold leading-relaxed' }, __alloT('stem.sourcebook.reuse_rights_are_verified_for_this_ima', 'Reuse rights are verified for this image. Review the source record for cultural context and appropriateness before use.')),
               h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'mt-2 inline-block text-xs font-black underline underline-offset-2' }, __alloT('stem.sourcebook.review_source_record', 'Review source record ↗'))
             ),
             h('section', { className: 'space-y-3', 'aria-labelledby': 'sourcebook-prepare-title' },
               h('div', { className: 'flex items-center justify-between' },
                 h('h3', { id: 'sourcebook-prepare-title', className: 'font-black text-sm text-[#243e35]' }, __alloT('stem.sourcebook.prepare_for_use', 'Prepare for use')),
-                h('span', { className: 'text-[10px] text-[#56655e]' }, __alloT('stem.sourcebook.saved_per_item', 'Saved per item'))
+                h('span', { className: 'text-[0.625rem] text-[#56655e]' }, __alloT('stem.sourcebook.saved_per_item', 'Saved per item'))
               ),
               h('div', {
                 className: 'rounded-2xl border border-violet-200 bg-violet-50 p-3',
                 'data-sourcebook-usage-intent': activeUsageIntent.id
               },
-                h('label', { className: 'block text-[11px] font-black text-violet-950' }, __alloT('stem.sourcebook.intended_use', 'Intended use'),
+                h('label', { className: 'block text-[0.6875rem] font-black text-violet-950' }, __alloT('stem.sourcebook.intended_use', 'Intended use'),
                   h('select', {
                     value: activePrep.usageIntent,
                     onChange: function (event) { updatePrep(item.id, { usageIntent: event.target.value, usagePlan: '' }); },
@@ -9934,15 +9934,15 @@
                     return h('option', { key: intentId, value: intentId }, USAGE_INTENTS[intentId].label);
                   }))
                 ),
-                h('p', { className: 'mt-2 text-[10px] font-bold leading-relaxed text-violet-900' },
+                h('p', { className: 'mt-2 text-[0.625rem] font-bold leading-relaxed text-violet-900' },
                   (activeUsageIntent.suggested ? 'Suggested by Sourcebook: ' : (activeUsageIntent.planId ? activeUsageIntent.sourceLabel + ': ' : 'Planned by you: ')) + activeUsageIntent.label + '. ' + activeUsageIntent.description
                 )
               ),
               h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.preparation_presets', 'Preparation presets') },
-                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'fit', aspect: 'original', zoom: 100, x: 50, y: 50 }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.full_image', 'Full image')),
-                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'landscape', zoom: 125, x: 50, y: 50, usageIntent: 'background' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.page_background', 'Page background')),
-                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'banner', zoom: 145, x: 50, y: 35, usageIntent: 'accent' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.header_strip', 'Header strip')),
-                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'tile', aspect: 'square', tile: 160, usageIntent: 'texture' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.repeat_pattern', 'Repeat pattern'))
+                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'fit', aspect: 'original', zoom: 100, x: 50, y: 50 }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.full_image', 'Full image')),
+                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'landscape', zoom: 125, x: 50, y: 50, usageIntent: 'background' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.page_background', 'Page background')),
+                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'banner', zoom: 145, x: 50, y: 35, usageIntent: 'accent' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.header_strip', 'Header strip')),
+                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'tile', aspect: 'square', tile: 160, usageIntent: 'texture' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.repeat_pattern', 'Repeat pattern'))
               ),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 controlButton('Fit', activePrep.mode === 'fit', function () { updatePrep(item.id, { mode: 'fit' }); }),
@@ -9950,19 +9950,19 @@
                 controlButton('Repeat / tile', activePrep.mode === 'tile', function () { updatePrep(item.id, { mode: 'tile' }); })
               ),
               h('fieldset', { className: 'rounded-2xl border border-[#c8d4ce] bg-[#f2f6f3] p-3', 'data-sourcebook-study-aids': 'true' },
-                h('legend', { className: 'px-1 text-[11px] font-black text-[#445950]' }, __alloT('stem.sourcebook.study_aids', 'Study aids for artists')),
+                h('legend', { className: 'px-1 text-[0.6875rem] font-black text-[#445950]' }, __alloT('stem.sourcebook.study_aids', 'Study aids for artists')),
                 h('div', { className: 'mt-1 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.study_aid_toggles', 'Study aid toggles') },
                   controlButton(__alloT('stem.sourcebook.study_grayscale', 'Grayscale'), activePrep.grayscale, function () { updatePrep(item.id, { grayscale: !activePrep.grayscale, posterize: false }); }, { 'aria-pressed': activePrep.grayscale ? 'true' : 'false', 'data-sourcebook-study': 'grayscale' }),
                   controlButton(__alloT('stem.sourcebook.study_values', '5 values'), activePrep.posterize, function () { updatePrep(item.id, { posterize: !activePrep.posterize, grayscale: false }); }, { 'aria-pressed': activePrep.posterize ? 'true' : 'false', 'data-sourcebook-study': 'posterize' }),
                   controlButton(__alloT('stem.sourcebook.study_flip', 'Flip'), activePrep.flip, function () { updatePrep(item.id, { flip: !activePrep.flip }); }, { 'aria-pressed': activePrep.flip ? 'true' : 'false', 'data-sourcebook-study': 'flip' }),
                   controlButton(__alloT('stem.sourcebook.study_grid', 'Thirds grid'), activePrep.grid, function () { updatePrep(item.id, { grid: !activePrep.grid }); }, { 'aria-pressed': activePrep.grid ? 'true' : 'false', 'data-sourcebook-study': 'grid' })
                 ),
-                h('p', { className: 'mt-2 text-[10px] font-bold leading-relaxed text-[#53675f]' }, studyPreparationSummary(activePrep)
+                h('p', { className: 'mt-2 text-[0.625rem] font-bold leading-relaxed text-[#53675f]' }, studyPreparationSummary(activePrep)
                   ? __alloT('stem.sourcebook.study_active_prefix', 'Active: ') + studyPreparationSummary(activePrep) + '. ' + __alloT('stem.sourcebook.study_baked_note', 'Grayscale, values, and flip are baked into prepared downloads; the grid stays on screen.')
                   : __alloT('stem.sourcebook.study_help', 'Check values, composition, and drawing accuracy the way a master study does. Flip catches lopsided drawings; five values show the light structure.'))
               ),
               h('div', { className: 'rounded-2xl border border-[#c8d4ce] bg-white p-3', 'data-sourcebook-note': item.id },
-                h('label', { htmlFor: 'sourcebook-note-' + item.id, className: 'block text-[11px] font-black text-[#36574c]' }, __alloT('stem.sourcebook.note_label', 'Why I saved this')),
+                h('label', { htmlFor: 'sourcebook-note-' + item.id, className: 'block text-[0.6875rem] font-black text-[#36574c]' }, __alloT('stem.sourcebook.note_label', 'Why I saved this')),
                 h('textarea', {
                   id: 'sourcebook-note-' + item.id,
                   value: activePrep.note,
@@ -9972,35 +9972,35 @@
                   onChange: function (event) { updatePrep(item.id, { note: event.target.value }); },
                   className: 'mt-1 w-full resize-y rounded-xl border border-[#9eb5ab] bg-white px-3 py-2 text-xs leading-relaxed text-[#243e35] focus:border-[#276b57] focus:outline-none focus:ring-2 focus:ring-[#276b57]/30'
                 }),
-                h('p', { className: 'mt-1 text-[9px] font-bold text-[#5b6d65]' }, __alloT('stem.sourcebook.note_help', 'Saved with the asset; travels with the palette package, manifest, and reference board.') + ' ' + activePrep.note.length + '/600')
+                h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5b6d65]' }, __alloT('stem.sourcebook.note_help', 'Saved with the asset; travels with the palette package, manifest, and reference board.') + ' ' + activePrep.note.length + '/600')
               ),
               activePrep.mode !== 'fit' && h('fieldset', { className: 'rounded-2xl border border-[#c8d4ce] bg-[#f2f6f3] p-3' },
-                h('legend', { className: 'px-1 text-[11px] font-black text-[#445950]' }, __alloT('stem.sourcebook.output_shape', 'Output shape')),
+                h('legend', { className: 'px-1 text-[0.6875rem] font-black text-[#445950]' }, __alloT('stem.sourcebook.output_shape', 'Output shape')),
                 h('div', { className: 'mt-1 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.prepared_image_output_shape', 'Prepared image output shape') }, Object.keys(PREPARATION_FORMATS).map(function (aspect) {
                   return controlButton(PREPARATION_FORMATS[aspect].label, activePrep.aspect === aspect, function () { updatePrep(item.id, { aspect: aspect }); }, { key: aspect, 'aria-pressed': activePrep.aspect === aspect });
                 }))
               ),
               activePrep.mode !== 'tile' && h('div', { className: 'grid grid-cols-1 gap-3' },
-                activePrep.mode === 'crop' && h('p', { className: 'rounded-xl bg-[#e8f0ec] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#38564d]' }, __alloT('stem.sourcebook.click_the_preview_to_place_the_crop_fo', 'Click the preview to place the crop focal point, or use the sliders.')),
+                activePrep.mode === 'crop' && h('p', { className: 'rounded-xl bg-[#e8f0ec] px-3 py-2 text-[0.6875rem] font-bold leading-relaxed text-[#38564d]' }, __alloT('stem.sourcebook.click_the_preview_to_place_the_crop_fo', 'Click the preview to place the crop focal point, or use the sliders.')),
                 (activePrep.zoom !== 100 || activePrep.x !== 50 || activePrep.y !== 50) && h('button', {
                   type: 'button', onClick: function () { updatePrep(item.id, { zoom: 100, x: 50, y: 50 }); },
                   'data-sourcebook-recentre-crop': item.id,
-                  className: 'min-h-[36px] w-full rounded-xl border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#53685f] hover:bg-[#f2f6f3]'
+                  className: 'min-h-[36px] w-full rounded-xl border border-[#b6c4be] bg-white px-3 text-[0.6875rem] font-black text-[#53685f] hover:bg-[#f2f6f3]'
                 }, __alloT('stem.sourcebook.recentre_crop', 'Re-centre crop and reset zoom')),
-                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_zoom_percent', 'Zoom {value}%', { value: activePrep.zoom }),
+                h('label', { className: 'text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_zoom_percent', 'Zoom {value}%', { value: activePrep.zoom }),
                   h('input', { type: 'range', min: 100, max: 220, step: 5, value: activePrep.zoom, onChange: function (event) { updatePrep(item.id, { zoom: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.image_zoom', 'Image zoom') })
                 ),
-                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_horizontal_percent', 'Horizontal {value}%', { value: activePrep.x }),
+                h('label', { className: 'text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_horizontal_percent', 'Horizontal {value}%', { value: activePrep.x }),
                   h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.x, onChange: function (event) { updatePrep(item.id, { x: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.horizontal_crop_focus', 'Horizontal crop focus') })
                 ),
-                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_vertical_percent', 'Vertical {value}%', { value: activePrep.y }),
+                h('label', { className: 'text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_vertical_percent', 'Vertical {value}%', { value: activePrep.y }),
                   h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.y, onChange: function (event) { updatePrep(item.id, { y: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.vertical_crop_focus', 'Vertical crop focus') })
                 )
               ),
-              activePrep.mode === 'tile' && h('label', { className: 'block text-[11px] font-bold text-[#445950]' }, 'Tile size ' + activePrep.tile + ' px',
+              activePrep.mode === 'tile' && h('label', { className: 'block text-[0.6875rem] font-bold text-[#445950]' }, 'Tile size ' + activePrep.tile + ' px',
                 h('input', { type: 'range', min: 60, max: 360, step: 10, value: activePrep.tile, onChange: function (event) { updatePrep(item.id, { tile: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.repeated_tile_size', 'Repeated tile size') })
               ),
-              h('p', { className: 'rounded-xl bg-[#eef3f0] px-3 py-2 text-[10px] font-bold text-[#53675f]', role: 'status' }, activePrep.mode === 'fit'
+              h('p', { className: 'rounded-xl bg-[#eef3f0] px-3 py-2 text-[0.625rem] font-bold text-[#53675f]', role: 'status' }, activePrep.mode === 'fit'
                 ? 'Full image keeps the original image dimensions.'
                 : activeDimensions.label + ' output - ' + activeDimensions.width + ' x ' + activeDimensions.height + ' px PNG.')
             ),
@@ -10012,35 +10012,35 @@
               h('div', { className: 'flex items-center justify-between gap-3' },
                 h('h3', { id: 'sourcebook-accessibility-title', className: 'text-sm font-black text-[#243e35]' }, __alloT('stem.sourcebook.accessibility_for_reuse', 'Accessibility for reuse')),
                 h('span', {
-                  className: 'rounded-full border border-[#9db9ad] bg-white px-2 py-1 text-[9px] font-black uppercase tracking-wide text-[#35594c]',
+                  className: 'rounded-full border border-[#9db9ad] bg-white px-2 py-1 text-[0.5625rem] font-black uppercase tracking-wide text-[#35594c]',
                   'data-sourcebook-alt-text-source': accessibility.source,
                   'data-sourcebook-alt-text-reviewed': accessibility.reviewed ? 'true' : 'false'
                 }, accessibility.source === 'user-edited' ? 'User-edited' : (accessibility.decorative ? 'Decorative' : (accessibility.reviewed ? 'Catalog - confirmed' : 'Review needed')))
               ),
-              h('p', { className: 'text-[11px] font-bold leading-relaxed text-[#4e645b]' }, __alloT('stem.sourcebook.this_is_a_metadata_grounded_starting_p', 'This is a metadata-grounded starting point, not a visual AI description. Confirm it against the full image and the context where it will be used.')),
+              h('p', { className: 'text-[0.6875rem] font-bold leading-relaxed text-[#4e645b]' }, __alloT('stem.sourcebook.this_is_a_metadata_grounded_starting_p', 'This is a metadata-grounded starting point, not a visual AI description. Confirm it against the full image and the context where it will be used.')),
               h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.image_purpose', 'Image purpose') },
                 h('button', {
                   type: 'button',
                   onClick: function () { updatePrep(item.id, { decorative: false }); },
                   'aria-pressed': accessibility.decorative ? 'false' : 'true',
                   'data-sourcebook-image-purpose': 'informative',
-                  className: 'min-h-[42px] rounded-xl border px-3 text-[11px] font-black ' + (accessibility.decorative ? 'border-[#b4c4bd] bg-white text-[#456158]' : 'border-[#276b57] bg-[#dcece5] text-[#174a3b]')
+                  className: 'min-h-[42px] rounded-xl border px-3 text-[0.6875rem] font-black ' + (accessibility.decorative ? 'border-[#b4c4bd] bg-white text-[#456158]' : 'border-[#276b57] bg-[#dcece5] text-[#174a3b]')
                 }, __alloT('stem.sourcebook.informative', 'Informative')),
                 h('button', {
                   type: 'button',
                   onClick: function () { updatePrep(item.id, { decorative: true }); },
                   'aria-pressed': accessibility.decorative ? 'true' : 'false',
                   'data-sourcebook-image-purpose': 'decorative',
-                  className: 'min-h-[42px] rounded-xl border px-3 text-[11px] font-black ' + (accessibility.decorative ? 'border-[#276b57] bg-[#dcece5] text-[#174a3b]' : 'border-[#b4c4bd] bg-white text-[#456158]')
+                  className: 'min-h-[42px] rounded-xl border px-3 text-[0.6875rem] font-black ' + (accessibility.decorative ? 'border-[#276b57] bg-[#dcece5] text-[#174a3b]' : 'border-[#b4c4bd] bg-white text-[#456158]')
                 }, __alloT('stem.sourcebook.decorative', 'Decorative'))
               ),
               accessibility.decorative
                 ? h('div', { className: 'rounded-xl border border-[#b7c9c0] bg-white p-3', 'data-sourcebook-decorative-note': 'true' },
                     h('p', { className: 'text-xs font-black text-[#274d40]' }, __alloT('stem.sourcebook.decorative_empty_alt_text', 'Decorative: empty alt text')),
-                    h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed text-[#596b63]' }, __alloT('stem.sourcebook.exports_use_alt_so_assistive_technolog', 'Exports use alt="" so assistive technology can skip this image. Use this only when nearby content already conveys its meaning.'))
+                    h('p', { className: 'mt-1 text-[0.625rem] font-bold leading-relaxed text-[#596b63]' }, __alloT('stem.sourcebook.exports_use_alt_so_assistive_technolog', 'Exports use alt="" so assistive technology can skip this image. Use this only when nearby content already conveys its meaning.'))
                   )
                 : h('div', { className: 'space-y-2' },
-                    h('label', { htmlFor: 'sourcebook-alt-' + item.id, className: 'block text-[11px] font-black text-[#36574c]' }, __alloT('stem.sourcebook.alt_text', 'Alt text')),
+                    h('label', { htmlFor: 'sourcebook-alt-' + item.id, className: 'block text-[0.6875rem] font-black text-[#36574c]' }, __alloT('stem.sourcebook.alt_text', 'Alt text')),
                     h('textarea', {
                       id: 'sourcebook-alt-' + item.id,
                       value: accessibility.altText,
@@ -10051,7 +10051,7 @@
                       'data-sourcebook-alt-text': 'editor',
                       'aria-describedby': 'sourcebook-alt-help-' + item.id
                     }),
-                    h('div', { className: 'flex items-center justify-between gap-3 text-[9px] font-bold text-[#5b6d65]' },
+                    h('div', { className: 'flex items-center justify-between gap-3 text-[0.5625rem] font-bold text-[#5b6d65]' },
                       h('span', { id: 'sourcebook-alt-help-' + item.id }, accessibility.source === 'user-edited' ? __alloT('stem.sourcebook.saved_with_asset', 'Saved with this asset.') : __alloT('stem.sourcebook.suggested_from_catalog', 'Suggested from verified catalog metadata.')),
                       h('span', null, accessibility.altText.length + '/300')
                     ),
@@ -10062,17 +10062,17 @@
                         toast(__alloT('stem.sourcebook.msg_alt_text_marked_reviewed_for_this_asset', 'Alt text marked reviewed for this asset.'), 'success');
                         announce(__alloT('stem.sourcebook.msg_sourcebook_alt_text_marked_reviewed', 'Sourcebook alt text marked reviewed'));
                       },
-                      className: 'min-h-[38px] rounded-lg bg-[#276b57] px-3 text-[10px] font-black text-white hover:bg-[#1f5847]',
+                      className: 'min-h-[38px] rounded-lg bg-[#276b57] px-3 text-[0.625rem] font-black text-white hover:bg-[#1f5847]',
                       'data-sourcebook-confirm-alt-text': item.id
                     }, __alloT('stem.sourcebook.confirm_this_alt_text', 'Confirm this alt text')),
                     accessibility.source === 'catalog-metadata' && accessibility.reviewed && h('p', {
-                      className: 'rounded-lg bg-emerald-100 px-3 py-2 text-[10px] font-black text-emerald-950',
+                      className: 'rounded-lg bg-emerald-100 px-3 py-2 text-[0.625rem] font-black text-emerald-950',
                       'data-sourcebook-alt-text-confirmed': item.id
                     }, __alloT('stem.sourcebook.confirmed_for_this_asset', 'Confirmed for this asset.')),
                     accessibility.source === 'user-edited' && h('button', {
                       type: 'button',
                       onClick: function () { updatePrep(item.id, { decorative: false, altText: '', altTextCustomized: false, altTextReviewed: false }); },
-                      className: 'min-h-[36px] rounded-lg border border-[#9eb5ab] bg-white px-3 text-[10px] font-black text-[#36574c] hover:bg-[#f6faf8]'
+                      className: 'min-h-[36px] rounded-lg border border-[#9eb5ab] bg-white px-3 text-[0.625rem] font-black text-[#36574c] hover:bg-[#f6faf8]'
                     }, __alloT('stem.sourcebook.reset_to_metadata', 'Reset to metadata'))
                   )
             ),
@@ -10115,9 +10115,9 @@
         h('style', null, SOURCEBOOK_THEME_CSS),
         h('header', { className: 'relative overflow-hidden rounded-3xl border border-[#a9c2b8] bg-[#e8efe9] p-5 md:p-7 mb-5' },
           h('div', { 'aria-hidden': 'true', className: 'absolute -right-12 -top-16 w-64 h-64 rounded-full border-[36px] border-[#c8ddd4] opacity-70' }),
-          h('div', { 'aria-hidden': 'true', className: 'absolute right-12 bottom-0 text-[110px] leading-none font-serif text-[#d1e1da] select-none' }, 'S'),
+          h('div', { 'aria-hidden': 'true', className: 'absolute right-12 bottom-0 text-[6.875rem] leading-none font-serif text-[#d1e1da] select-none' }, 'S'),
           h('div', { className: 'relative max-w-3xl' },
-            h('p', { className: 'text-[10px] uppercase tracking-[.28em] font-black text-[#507064]' }, __alloT('stem.sourcebook.ai_optional_rights_first', 'AI optional · rights-first')),
+            h('p', { className: 'text-[0.625rem] uppercase tracking-[.28em] font-black text-[#507064]' }, __alloT('stem.sourcebook.ai_optional_rights_first', 'AI optional · rights-first')),
             h('div', { className: 'flex items-center gap-3 mt-1' },
               h('span', { 'aria-hidden': 'true', className: 'shrink-0 w-11 h-11 rounded-2xl bg-[#183b32] text-[#f7f2e7] inline-flex items-center justify-center text-2xl font-serif shadow-lg' }, 'S'),
               h('div', null,
@@ -10125,17 +10125,17 @@
                 h('p', { className: 'mt-1 text-sm text-[#426157]' }, __alloT('stem.sourcebook.describe_what_you_need_sourcebook_sear', 'Describe what you need. Sourcebook searches large public collections, checks item-level rights, and selects a strong starter palette for educational materials or artwork.')),
                 h('details', { className: 'mt-2 text-[#557168]' },
                   h('summary', { className: 'min-h-[32px] cursor-pointer text-xs font-bold' }, __alloT('stem.sourcebook.collections_searched', 'Collections searched')),
-                h('p', { className: 'mt-1 text-[11px] font-bold text-[#557168]' }, __alloT('stem.sourcebook.federated_search_covers_commons_nation', 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.'))
+                h('p', { className: 'mt-1 text-[0.6875rem] font-bold text-[#557168]' }, __alloT('stem.sourcebook.federated_search_covers_commons_nation', 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.'))
                 )
               )
             ),
             h('div', { className: 'mt-4 rounded-2xl border border-[#a7c0b5] bg-white/75 px-3.5 py-3 shadow-sm', role: 'status', 'data-sourcebook-ai-mode': capability.mode },
               h('div', { className: 'flex flex-wrap items-center gap-2' },
-                h('span', { className: 'rounded-full bg-[#183b32] px-2.5 py-1 text-[10px] font-black uppercase tracking-[.12em] text-white' }, __alloT('stem.sourcebook.ai_is_optional', 'AI is optional')),
+                h('span', { className: 'rounded-full bg-[#183b32] px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[.12em] text-white' }, __alloT('stem.sourcebook.ai_is_optional', 'AI is optional')),
                 h('strong', { className: 'text-xs text-[#244a3f]' }, capability.label)
               ),
-              h('p', { className: 'mt-1.5 text-[11px] font-bold leading-relaxed text-[#45635a]' }, capability.description),
-              h('p', { className: 'mt-1 text-[11px] leading-relaxed text-[#536d64]' }, __alloT('stem.sourcebook.search_rights_verification_saving_prep', 'Search, rights verification, saving, preparation, and printing work without AI. Rights gates never depend on an AI judgment.'))
+              h('p', { className: 'mt-1.5 text-[0.6875rem] font-bold leading-relaxed text-[#45635a]' }, capability.description),
+              h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-[#536d64]' }, __alloT('stem.sourcebook.search_rights_verification_saving_prep', 'Search, rights verification, saving, preparation, and printing work without AI. Rights gates never depend on an AI judgment.'))
             )
           )
         ),
@@ -10174,23 +10174,23 @@
                 inspirationIndexRef.current += 1;
                 submitSearch(inspiredQuery);
               },
-              className: 'min-h-[40px] rounded-full border border-[#183b32] bg-[#183b32] px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-[#245447]',
+              className: 'min-h-[40px] rounded-full border border-[#183b32] bg-[#183b32] px-3 py-2 text-[0.6875rem] font-black text-white shadow-sm hover:bg-[#245447]',
               title: __alloT('stem.sourcebook.start_a_rotating_rights_verified_visua', 'Start a rotating rights-verified visual discovery search')
             }, __alloT('stem.sourcebook.inspire_me', '✦ Inspire me')),
             STARTERS.map(function (starter) {
-              return h('button', { key: starter, type: 'button', onClick: function () { submitSearch(starter); }, className: 'min-h-[40px] px-3 py-2 rounded-full border border-[#c2d0ca] bg-[#f4f7f5] text-[11px] font-bold text-[#456057] hover:bg-[#e7efeb]' }, starter);
+              return h('button', { key: starter, type: 'button', onClick: function () { submitSearch(starter); }, className: 'min-h-[40px] px-3 py-2 rounded-full border border-[#c2d0ca] bg-[#f4f7f5] text-[0.6875rem] font-bold text-[#456057] hover:bg-[#e7efeb]' }, starter);
             })
           ),
           recentSearches.length > 0 && h('div', { className: 'mt-3 flex flex-wrap items-center gap-2', 'aria-label': __alloT('stem.sourcebook.recent_sourcebook_searches', 'Recent Sourcebook searches') },
-            h('span', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#5b7067]' }, __alloT('stem.sourcebook.recent', 'Recent')),
+            h('span', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#5b7067]' }, __alloT('stem.sourcebook.recent', 'Recent')),
             recentSearches.map(function (recent) {
               return h('button', {
                 key: recent, type: 'button', onClick: function () { submitSearch(recent); },
-                className: 'min-h-[40px] max-w-[260px] truncate rounded-full border border-[#b7c8c0] bg-white px-3 py-2 text-[11px] font-bold text-[#38564d]',
+                className: 'min-h-[40px] max-w-[260px] truncate rounded-full border border-[#b7c8c0] bg-white px-3 py-2 text-[0.6875rem] font-bold text-[#38564d]',
                 title: recent
               }, recent);
             }),
-            h('button', { type: 'button', onClick: clearSearchHistory, className: 'min-h-[40px] px-2 py-2 text-[11px] font-black text-[#8a3f32] underline underline-offset-2' }, __alloT('stem.sourcebook.clear_recent', 'Clear recent'))
+            h('button', { type: 'button', onClick: clearSearchHistory, className: 'min-h-[40px] px-2 py-2 text-[0.6875rem] font-black text-[#8a3f32] underline underline-offset-2' }, __alloT('stem.sourcebook.clear_recent', 'Clear recent'))
           )
         ),
         selectedItems.length > 0 && h('section', {
@@ -10199,7 +10199,7 @@
           'aria-label': __alloT('stem.sourcebook.saved_sourcebook_palette_tray', 'Saved Sourcebook palette tray')
         },
           h('div', { className: 'shrink-0 px-1' },
-            h('p', { className: 'text-[11px] font-black uppercase tracking-[.12em] text-[#49635a]' }, __alloT('stem.sourcebook.palette', 'Palette')),
+            h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[.12em] text-[#49635a]' }, __alloT('stem.sourcebook.palette', 'Palette')),
             h('p', { className: 'text-xs font-black text-[#18352d]' }, selectedItems.length + ' saved' + (checkedPaletteItems.length ? ' · ' + checkedPaletteItems.length + ' selected' : ''))
           ),
           h('div', { className: 'flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5', role: 'list', 'aria-label': __alloT('stem.sourcebook.palette_thumbnails', 'Palette thumbnails') }, selectedItems.map(function (item) {
@@ -10214,7 +10214,7 @@
               'aria-controls': 'sourcebook-detail-panel'
             },
               sourcebookImage(item, { alt: '', className: 'h-full w-full object-cover' }),
-              isChecked && h('span', { 'aria-hidden': 'true', className: 'absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-bl-md bg-amber-700 text-[9px] font-black text-white' }, '✓')
+              isChecked && h('span', { 'aria-hidden': 'true', className: 'absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-bl-md bg-amber-700 text-[0.5625rem] font-black text-white' }, '✓')
             );
           })),
           h('button', { type: 'button', onClick: function () { setShowingCollection(true); }, className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, showingCollection ? 'Viewing palette' : 'View palette')
@@ -10264,7 +10264,7 @@
           (savedSmkVerificationStatus === 'error' || savedSmkVerificationStatus === 'partial') && h('button', {
             type: 'button',
             onClick: function () { retrySavedSourceRecords(); },
-            className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/80 px-3 py-2 text-[11px] font-black',
+            className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/80 px-3 py-2 text-[0.6875rem] font-black',
             'data-sourcebook-retry-verification': 'true'
           }, __alloT('stem.sourcebook.retry_verification', 'Retry verification'))
         ),
@@ -10286,12 +10286,12 @@
           ref: liveStatusRef, tabIndex: -1, role: 'status', 'aria-live': 'polite', 'data-sourcebook-live-status': liveStatus
         },
           h('span', { className: 'min-w-0 flex-1' }, liveMessage || __alloT('stem.sourcebook.msg_searching_public_collections_default', 'Searching public collections and checking item-level rights metadata…')),
-          searchActive && h('button', { type: 'button', onClick: function () { stopLiveRequest(); }, className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/70 px-3 py-2 text-[11px] font-black', 'aria-label': __alloT('stem.sourcebook.stop_the_active_sourcebook_search', 'Stop the active Sourcebook search') }, __alloT('stem.sourcebook.stop_search', 'Stop search'))
+          searchActive && h('button', { type: 'button', onClick: function () { stopLiveRequest(); }, className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/70 px-3 py-2 text-[0.6875rem] font-black', 'aria-label': __alloT('stem.sourcebook.stop_the_active_sourcebook_search', 'Stop the active Sourcebook search') }, __alloT('stem.sourcebook.stop_search', 'Stop search'))
         ),
         providerReportList.length > 0 && h('details', { className: 'sb-no-print mb-4 rounded-2xl border border-[#bfd0c8] bg-[#f7faf8] px-3 py-2', open: searchActive || providerRetryableCount > 0 || undefined, 'aria-label': __alloT('stem.sourcebook.provider_search_progress', 'Provider search progress') },
           h('summary', { className: 'flex min-h-[40px] cursor-pointer items-center text-xs font-black text-[#315248]' },
             h('span', { className: 'mr-auto' }, searchActive ? 'Searching public collections…' : 'Collection search report'),
-            h('span', { className: 'text-[11px] font-bold' }, providerReportList.filter(function (report) { return report.status === 'ready' || report.status === 'cached'; }).length + ' of ' + providerReportList.length + ' responded' + (providerRetryableCount ? ' / ' + providerRetryableCount + ' need attention' : (providerDeepenableCount ? ' / open to search one collection deeper' : '')))
+            h('span', { className: 'text-[0.6875rem] font-bold' }, providerReportList.filter(function (report) { return report.status === 'ready' || report.status === 'cached'; }).length + ' of ' + providerReportList.length + ' responded' + (providerRetryableCount ? ' / ' + providerRetryableCount + ' need attention' : (providerDeepenableCount ? ' / open to search one collection deeper' : '')))
           ),
           h('div', { className: 'mt-2 grid gap-2 border-t border-[#d8e3de] pt-2 sm:grid-cols-2 lg:grid-cols-3', 'aria-live': 'polite' }, providerReportList.map(function (report) {
           var good = report.status === 'ready' || report.status === 'cached';
@@ -10305,23 +10305,23 @@
           var statusLabel = report.status === 'ready' ? __alloTf('stem.sourcebook.status_count_verified', '{count} verified', { count: report.count }) : (report.status === 'cached' ? __alloTf('stem.sourcebook.status_count_cached', '{count} cached', { count: report.count }) : (report.status === 'cooldown' ? __alloT('stem.sourcebook.status_cooling_down', 'Cooling down') : (report.status === 'retrying' ? __alloT('stem.sourcebook.status_retrying_once', 'Retrying once') : (report.status === 'cancelled' ? __alloT('stem.sourcebook.status_stopped', 'Stopped') : (report.status === 'error' ? __alloT('stem.sourcebook.status_unavailable', 'Unavailable') : __alloT('stem.sourcebook.status_searching', 'Searching'))))));
           return h('div', { key: report.provider, className: 'rounded-xl border px-3 py-2 ' + tone },
             h('div', { className: 'flex items-center justify-between gap-2' },
-              h('strong', { className: 'truncate text-[11px]' }, report.provider),
-              h('span', { className: 'shrink-0 text-[11px] font-black uppercase tracking-[.06em]' }, statusLabel)
+              h('strong', { className: 'truncate text-[0.6875rem]' }, report.provider),
+              h('span', { className: 'shrink-0 text-[0.6875rem] font-black uppercase tracking-[.06em]' }, statusLabel)
             ),
-            report.message && h('p', { className: 'mt-1 text-[11px] leading-snug opacity-80' }, report.message),
+            report.message && h('p', { className: 'mt-1 text-[0.6875rem] leading-snug opacity-80' }, report.message),
             h('p', {
-              className: 'mt-1 text-[10px] font-black uppercase tracking-[.05em] opacity-70',
+              className: 'mt-1 text-[0.625rem] font-black uppercase tracking-[.05em] opacity-70',
               'data-sourcebook-provider-batch': report.provider
             }, __alloTf('stem.sourcebook.label_collection_batch_loaded', 'Collection batch {batch} / {count} loaded on board', { batch: report.batch + 1, count: loadedProviderCount })),
             hasProviderAction && h('div', { className: 'mt-2 border-t border-current/20 pt-2' },
-              h('p', { className: 'mb-2 text-[10px] font-bold leading-snug opacity-80' }, canRetry
+              h('p', { className: 'mb-2 text-[0.625rem] font-bold leading-snug opacity-80' }, canRetry
                 ? 'Retries this collection batch only; current verified board stays intact.'
                 : 'Checks only the next query batch in this collection; other collections are not requested.'),
               h('button', {
                 type: 'button',
                 onClick: function () { if (canRetry) retryProviderCollection(report.provider); else searchDeeperProviderCollection(report.provider); },
                 disabled: searchActive || !!retryingProvider,
-                className: 'min-h-[44px] w-full rounded-lg border border-current bg-white/80 px-3 py-2 text-[11px] font-black disabled:cursor-wait disabled:opacity-60',
+                className: 'min-h-[44px] w-full rounded-lg border border-current bg-white/80 px-3 py-2 text-[0.6875rem] font-black disabled:cursor-wait disabled:opacity-60',
                 'aria-label': (canRetry ? 'Retry only ' : 'Search next batch only in ') + report.provider,
                 'data-sourcebook-retry-provider': canRetry ? report.provider : undefined,
                 'data-sourcebook-deepen-provider': canSearchDeeper ? report.provider : undefined
@@ -10336,28 +10336,28 @@
         },
           h('div', { className: 'flex flex-col gap-2 border-b border-[#d3e5dc] px-4 py-3 sm:flex-row sm:items-start sm:justify-between' },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#4b7969]' }, __alloT('stem.sourcebook.coverage_guide', 'Coverage guide')),
+              h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] text-[#4b7969]' }, __alloT('stem.sourcebook.coverage_guide', 'Coverage guide')),
               h('h3', { id: 'sourcebook-coverage-guide-title', className: 'mt-1 text-sm font-black text-[#183b32]' }, __alloT('stem.sourcebook.choose_the_most_useful_next_collection', 'Choose the most useful next collection')),
-              h('p', { className: 'mt-1 max-w-2xl text-[11px] font-semibold leading-relaxed text-[#597269]' }, __alloT('stem.sourcebook.deterministic_source_routing_one_colle', 'Deterministic source routing / one collection request. Your current rights-verified board and palette stay intact.'))
+              h('p', { className: 'mt-1 max-w-2xl text-[0.6875rem] font-semibold leading-relaxed text-[#597269]' }, __alloT('stem.sourcebook.deterministic_source_routing_one_colle', 'Deterministic source routing / one collection request. Your current rights-verified board and palette stay intact.'))
             ),
-            h('span', { className: 'w-fit rounded-full border border-[#b8d7ca] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[.08em] text-[#31584c]' }, kind === 'All' ? 'Balanced coverage' : kind + ' route')
+            h('span', { className: 'w-fit rounded-full border border-[#b8d7ca] bg-white px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[.08em] text-[#31584c]' }, kind === 'All' ? 'Balanced coverage' : kind + ' route')
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 px-4 pt-3', 'aria-label': __alloT('stem.sourcebook.collection_coverage_summary', 'Collection coverage summary') },
             h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'contributed' },
               h('strong', { className: 'block text-lg leading-none text-emerald-900' }, coverageGuide.contributedCount),
-              h('span', { className: 'mt-1 block text-[9px] font-black uppercase tracking-[.08em] text-emerald-800' }, __alloT('stem.sourcebook.contributed', 'Contributed'))
+              h('span', { className: 'mt-1 block text-[0.5625rem] font-black uppercase tracking-[.08em] text-emerald-800' }, __alloT('stem.sourcebook.contributed', 'Contributed'))
             ),
             h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'empty' },
               h('strong', { className: 'block text-lg leading-none text-slate-800' }, coverageGuide.emptyCount),
-              h('span', { className: 'mt-1 block text-[9px] font-black uppercase tracking-[.08em] text-slate-600' }, __alloT('stem.sourcebook.no_match_yet', 'No match yet'))
+              h('span', { className: 'mt-1 block text-[0.5625rem] font-black uppercase tracking-[.08em] text-slate-600' }, __alloT('stem.sourcebook.no_match_yet', 'No match yet'))
             ),
             h('div', { className: 'rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'attention' },
               h('strong', { className: 'block text-lg leading-none text-amber-900' }, coverageGuide.attentionCount + coverageGuide.cooldownCount),
-              h('span', { className: 'mt-1 block text-[9px] font-black uppercase tracking-[.08em] text-amber-800' }, __alloT('stem.sourcebook.need_attention', 'Need attention'))
+              h('span', { className: 'mt-1 block text-[0.5625rem] font-black uppercase tracking-[.08em] text-amber-800' }, __alloT('stem.sourcebook.need_attention', 'Need attention'))
             )
           ),
           h('div', { className: 'px-4 pt-3', 'aria-label': __alloTf('stem.sourcebook.aria_collection_reports_resolved', 'Collection reports resolved {percent} percent', { percent: coverageGuide.completionPercent }) },
-            h('div', { className: 'flex items-center justify-between text-[10px] font-black uppercase tracking-[.07em] text-[#526c62]' },
+            h('div', { className: 'flex items-center justify-between text-[0.625rem] font-black uppercase tracking-[.07em] text-[#526c62]' },
               h('span', null, coverageGuide.checkedCount + ' checked / ' + coverageGuide.totalCount + ' reporting'),
               h('span', null, coverageGuide.completionPercent + '% resolved')
             ),
@@ -10367,9 +10367,9 @@
           ),
           coverageGuide.nextProvider ? h('div', { className: 'm-4 mt-3 flex flex-col gap-3 rounded-xl border border-[#b6cec3] bg-white p-3 sm:flex-row sm:items-center' },
             h('div', { className: 'min-w-0 flex-1' },
-              h('p', { className: 'text-[10px] font-black uppercase tracking-[.08em] text-[#658076]' }, 'Recommended next / batch ' + (coverageGuide.nextBatch + 1)),
+              h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.08em] text-[#658076]' }, 'Recommended next / batch ' + (coverageGuide.nextBatch + 1)),
               h('strong', { className: 'mt-0.5 block text-sm text-[#183b32]' }, coverageGuide.nextProvider),
-              h('p', { className: 'mt-1 text-[11px] font-semibold leading-relaxed text-[#597269]' }, coverageGuide.reason)
+              h('p', { className: 'mt-1 text-[0.6875rem] font-semibold leading-relaxed text-[#597269]' }, coverageGuide.reason)
             ),
             h('button', {
               type: 'button',
@@ -10380,7 +10380,7 @@
               'data-sourcebook-smart-expand': coverageGuide.nextProvider,
               'data-sourcebook-coverage-next-batch': coverageGuide.nextBatch
             }, retryingProvider === coverageGuide.nextProvider ? 'Searching...' : 'Search this collection next')
-          ) : h('p', { className: 'm-4 mt-3 rounded-xl border border-[#d4e2dc] bg-white px-3 py-3 text-[11px] font-bold leading-relaxed text-[#526c62]' }, __alloT('stem.sourcebook.no_additional_targeted_batch_is_availa', 'No additional targeted batch is available from the collections that responded. Retry any collection needing attention or start a broader query.'))
+          ) : h('p', { className: 'm-4 mt-3 rounded-xl border border-[#d4e2dc] bg-white px-3 py-3 text-[0.6875rem] font-bold leading-relaxed text-[#526c62]' }, __alloT('stem.sourcebook.no_additional_targeted_batch_is_availa', 'No additional targeted batch is available from the collections that responded. Retry any collection needing attention or start a broader query.'))
         ),
         query && discoveryNote && h('div', { className: 'sb-no-print mb-4 rounded-xl border border-[#b9c9c2] bg-[#f7f4eb] px-3 py-2 text-xs text-[#395248]' },
           h('strong', null, __alloT('stem.sourcebook.selection_note', 'Selection note: ')), discoveryNote
@@ -10388,11 +10388,11 @@
         h('details', { className: 'sb-no-print mb-5 rounded-2xl border border-[#b9c9c2] bg-white px-3 py-2' },
           h('summary', { className: 'flex min-h-[42px] cursor-pointer items-center text-xs font-black text-[#315248]' },
             h('span', { className: 'mr-auto' }, __alloT('stem.sourcebook.filters_and_search_options', 'Filters and search options')),
-            h('span', { className: 'rounded-full bg-[#e9f1ed] px-2.5 py-1 text-[11px]' }, kind + ' · ' + (provider === 'All' ? LIVE_PROVIDER_NAMES.length + ' collections' : provider) + ' · ' + (rightsScope === 'pd' ? 'Public Domain' : (rightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY')))
+            h('span', { className: 'rounded-full bg-[#e9f1ed] px-2.5 py-1 text-[0.6875rem]' }, kind + ' · ' + (provider === 'All' ? LIVE_PROVIDER_NAMES.length + ' collections' : provider) + ' · ' + (rightsScope === 'pd' ? 'Public Domain' : (rightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY')))
           ),
           h('div', { className: 'mt-3 space-y-3 border-t border-[#d8e0dc] pt-3' },
             h('p', {
-              className: 'rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[11px] font-bold leading-relaxed text-sky-950',
+              className: 'rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[0.6875rem] font-bold leading-relaxed text-sky-950',
               'data-sourcebook-search-settings-note': 'true'
             }, __alloT('stem.sourcebook.changing_material_type_reuse_scope_or_', 'Changing material type, reuse scope, or search scope starts a fresh rights-checked collection search. Use Explore loaded board below for instant filtering.')),
             h('div', { className: 'flex gap-2 flex-wrap', 'aria-label': __alloT('stem.sourcebook.material_type_filters', 'Material type filters') }, kinds.map(function (value) { return controlButton(value, kind === value, function () { setFilter('kind', value); }); })),
@@ -10407,23 +10407,23 @@
                 h('label', { className: 'text-xs font-black text-[#4d645b]' }, __alloT('stem.sourcebook.search_scope', 'Search scope '),
                   h('select', { value: provider, onChange: function (event) { setFilter('provider', event.target.value); }, className: 'ml-1 min-h-[42px] rounded-xl border border-[#a9bbb4] bg-white px-3 text-xs font-bold' }, providers.map(function (value) { return h('option', { key: value, value: value }, value); }))
                 ),
-                h('p', { className: 'mt-1 text-[10px] font-bold text-[#62766e]' }, __alloT('stem.sourcebook.changing_this_starts_a_new_collection_', 'Changing this starts a new collection search.'))
+                h('p', { className: 'mt-1 text-[0.625rem] font-bold text-[#62766e]' }, __alloT('stem.sourcebook.changing_this_starts_a_new_collection_', 'Changing this starts a new collection search.'))
               ),
-              h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#c2d0ca] bg-[#eef4f0] px-3 text-[11px] font-black text-[#31584c]', title: capability.visionAi ? 'Let Gemini compare a temporary contact sheet of rights-verified thumbnails' : 'Visual AI is not connected. Sourcebook still searches and ranks rights-verified catalog metadata.' },
+              h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#c2d0ca] bg-[#eef4f0] px-3 text-[0.6875rem] font-black text-[#31584c]', title: capability.visionAi ? 'Let Gemini compare a temporary contact sheet of rights-verified thumbnails' : 'Visual AI is not connected. Sourcebook still searches and ranks rights-verified catalog metadata.' },
                 h('input', { type: 'checkbox', checked: visualReview && capability.visionAi, disabled: !capability.visionAi, onChange: function (event) { var checked = !!event.target.checked; setVisualReview(checked); patch({ visualReview: checked }); }, className: 'h-4 w-4 accent-[#183b32]' }),
                 capability.visionAi ? 'Visual AI review' : 'Visual AI unavailable · metadata ranking active'
               )
             ),
-            rightsScope === 'all' && h('p', { className: 'text-[11px] font-bold text-[#6a5143]' }, __alloT('stem.sourcebook.cc_by_results_require_the_attribution_', 'CC BY results require the attribution Sourcebook preserves in every package and handoff.'))
+            rightsScope === 'all' && h('p', { className: 'text-[0.6875rem] font-bold text-[#6a5143]' }, __alloT('stem.sourcebook.cc_by_results_require_the_attribution_', 'CC BY results require the attribution Sourcebook preserves in every package and handoff.'))
           )
         ),
         h('div', { className: 'grid lg:grid-cols-[minmax(0,1fr)_350px] gap-5 items-start' },
           h('main', { className: 'min-w-0' },
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3 mb-3' },
               h('div', null,
-                h('p', { className: 'text-[10px] uppercase tracking-[.18em] font-black text-[#5c6f67]' }, showingCollection ? __alloT('stem.sourcebook.saved_working_set', 'Saved working set') : (query ? __alloT('stem.sourcebook.public_collections', 'Public collections') : __alloT('stem.sourcebook.offline_shelf', 'Offline fallback shelf'))),
+                h('p', { className: 'text-[0.625rem] uppercase tracking-[.18em] font-black text-[#5c6f67]' }, showingCollection ? __alloT('stem.sourcebook.saved_working_set', 'Saved working set') : (query ? __alloT('stem.sourcebook.public_collections', 'Public collections') : __alloT('stem.sourcebook.offline_shelf', 'Offline fallback shelf'))),
                 h('h2', { id: 'sourcebook-results-title', tabIndex: -1, className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? refinedResults.length + ' matches for “' + query + '”' : 'Browse the starting shelf')),
-                !showingCollection && h('p', { className: 'mt-1 text-[11px] font-bold text-[#597067]' }, publicDomainResultCount + ' public-domain result' + (publicDomainResultCount === 1 ? '' : 's') + ' available')
+                !showingCollection && h('p', { className: 'mt-1 text-[0.6875rem] font-bold text-[#597067]' }, publicDomainResultCount + ' public-domain result' + (publicDomainResultCount === 1 ? '' : 's') + ' available')
               ),
               h('div', { className: 'sb-no-print flex flex-wrap justify-end gap-2' },
                 controlButton('Results (' + combinedResults.length + ')', !showingCollection, function () { setShowingCollection(false); }),
@@ -10447,23 +10447,23 @@
               h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                 h('div', null,
                   h('h3', { className: 'font-serif text-lg font-black text-[#183b32]' }, __alloT('stem.sourcebook.explore_loaded_board', 'Explore loaded board')),
-                  h('p', { className: 'mt-0.5 text-[10px] font-black uppercase tracking-[.1em] text-[#587168]' }, __alloT('stem.sourcebook.instant_filters_no_new_search', 'Instant filters · no new search'))
+                  h('p', { className: 'mt-0.5 text-[0.625rem] font-black uppercase tracking-[.1em] text-[#587168]' }, __alloT('stem.sourcebook.instant_filters_no_new_search', 'Instant filters · no new search'))
                 ),
                 hasLoadedLocalFilters && h('button', {
                   type: 'button', onClick: clearLoadedFilters,
-                  className: 'min-h-[40px] rounded-xl border border-[#8fa99f] bg-white px-3 text-[11px] font-black text-[#31584c]',
+                  className: 'min-h-[40px] rounded-xl border border-[#8fa99f] bg-white px-3 text-[0.6875rem] font-black text-[#31584c]',
                   'data-sourcebook-clear-loaded-filters': 'true'
                 }, __alloT('stem.sourcebook.clear_local_filters', 'Clear local filters'))
               ),
               h('div', { className: 'mt-3 space-y-3' },
                 h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.collection', 'Collection')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.collection', 'Collection')),
                   h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': __alloT('stem.sourcebook.filter_loaded_results_by_collection', 'Filter loaded results by collection') },
                     h('button', {
                       type: 'button', onClick: function () { chooseLoadedProvider('All'); },
                       'aria-pressed': effectiveLoadedProviderFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-provider': 'All',
-                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedProviderFilter === 'All' ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb6ad] bg-white text-[#31584c]')
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedProviderFilter === 'All' ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb6ad] bg-white text-[#31584c]')
                     }, 'All · ' + combinedResults.length),
                     loadedProviderCoverageList.map(function (entry) {
                       var selected = effectiveLoadedProviderFilter === entry.provider;
@@ -10471,19 +10471,19 @@
                         key: entry.provider, type: 'button', onClick: function () { chooseLoadedProvider(entry.provider); },
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-loaded-provider': entry.provider,
-                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb6ad] bg-white text-[#31584c]')
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (selected ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb6ad] bg-white text-[#31584c]')
                       }, entry.provider + ' · ' + entry.count);
                     })
                   )
                 ),
                 loadedKindCoverageList.length > 0 && h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.visual_type', 'Visual type')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.visual_type', 'Visual type')),
                   h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': __alloT('stem.sourcebook.filter_loaded_results_by_visual_type', 'Filter loaded results by visual type') },
                     h('button', {
                       type: 'button', onClick: function () { chooseLoadedKind('All'); },
                       'aria-pressed': effectiveLoadedKindFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-kind': 'All',
-                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedKindFilter === 'All' ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedKindFilter === 'All' ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
                     }, 'All types · ' + loadedProviderResults.length),
                     loadedKindCoverageList.map(function (entry) {
                       var selected = effectiveLoadedKindFilter === entry.kind;
@@ -10491,19 +10491,19 @@
                         key: entry.kind, type: 'button', onClick: function () { chooseLoadedKind(entry.kind); },
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-loaded-kind': entry.kind,
-                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (selected ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
                       }, entry.kind + ' · ' + entry.count);
                     })
                   )
                 ),
                 loadedRightsCoverageList.length > 0 && h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.reuse_status', 'Reuse status')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.reuse_status', 'Reuse status')),
                   h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': __alloT('stem.sourcebook.filter_loaded_results_by_reuse_status', 'Filter loaded results by reuse status') },
                     h('button', {
                       type: 'button', onClick: function () { chooseLoadedRights('All'); },
                       'aria-pressed': effectiveLoadedRightsFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-rights': 'All',
-                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedRightsFilter === 'All' ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-200 bg-white text-emerald-900')
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedRightsFilter === 'All' ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-200 bg-white text-emerald-900')
                     }, 'All allowed · ' + loadedKindResults.length),
                     loadedRightsCoverageList.map(function (entry) {
                       var selected = effectiveLoadedRightsFilter === entry.rightsType;
@@ -10511,7 +10511,7 @@
                         key: entry.rightsType, type: 'button', onClick: function () { chooseLoadedRights(entry.rightsType); },
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-loaded-rights': entry.rightsType,
-                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : (entry.rightsType === 'ccby' ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-white text-emerald-900'))
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : (entry.rightsType === 'ccby' ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-white text-emerald-900'))
                       }, entry.label + ' · ' + entry.count);
                     })
                   )
@@ -10519,13 +10519,13 @@
               ),
               (loadedEraCoverageList.length > 1 || loadedCreatorCoverageList.length > 0 || loadedMediumCoverageList.length > 0) && h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2', 'data-sourcebook-art-facets': 'true' },
                 loadedMediumCoverageList.length > 0 && h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5 sm:col-span-2' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.medium_facet', 'Medium (from catalog records)')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.medium_facet', 'Medium (from catalog records)')),
                   h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': __alloT('stem.sourcebook.filter_loaded_results_by_medium', 'Filter loaded results by medium') },
                     h('button', {
                       type: 'button', onClick: function () { chooseLoadedMedium('All'); },
                       'aria-pressed': effectiveLoadedMediumFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-medium': 'All',
-                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedMediumFilter === 'All' ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedMediumFilter === 'All' ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
                     }, __alloT('stem.sourcebook.all_media', 'All media')),
                     loadedMediumCoverageList.map(function (entry) {
                       var selected = effectiveLoadedMediumFilter === entry.medium;
@@ -10533,20 +10533,20 @@
                         key: entry.medium, type: 'button', onClick: function () { chooseLoadedMedium(entry.medium); },
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-loaded-medium': entry.medium,
-                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (selected ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
                       }, entry.medium + ' · ' + entry.count);
                     })
                   ),
-                  h('p', { className: 'mt-1 text-[10px] font-bold text-[#5b6d65]' }, __alloT('stem.sourcebook.medium_facet_note', 'Only records whose catalog lists a medium or technique appear here; Commons and Openverse records carry none.'))
+                  h('p', { className: 'mt-1 text-[0.625rem] font-bold text-[#5b6d65]' }, __alloT('stem.sourcebook.medium_facet_note', 'Only records whose catalog lists a medium or technique appear here; Commons and Openverse records carry none.'))
                 ),
                 loadedEraCoverageList.length > 1 && h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.century', 'Century')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.century', 'Century')),
                   h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': __alloT('stem.sourcebook.filter_loaded_results_by_century', 'Filter loaded results by century') },
                     h('button', {
                       type: 'button', onClick: function () { chooseLoadedEra('All'); },
                       'aria-pressed': effectiveLoadedEraFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-era': 'All',
-                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedEraFilter === 'All' ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedEraFilter === 'All' ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
                     }, __alloT('stem.sourcebook.all_centuries', 'All centuries')),
                     loadedEraCoverageList.map(function (entry) {
                       var selected = effectiveLoadedEraFilter === entry.era;
@@ -10554,19 +10554,19 @@
                         key: entry.era, type: 'button', onClick: function () { chooseLoadedEra(entry.era); },
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-loaded-era': entry.era,
-                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (selected ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
                       }, entry.era + ' · ' + entry.count);
                     })
                   )
                 ),
                 loadedCreatorCoverageList.length > 0 && h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.artist', 'Artist or maker')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#536c63]' }, __alloT('stem.sourcebook.artist', 'Artist or maker')),
                   h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': __alloT('stem.sourcebook.filter_loaded_results_by_artist', 'Filter loaded results by artist or maker') },
                     h('button', {
                       type: 'button', onClick: function () { chooseLoadedCreator('All'); },
                       'aria-pressed': effectiveLoadedCreatorFilter === 'All' ? 'true' : 'false',
                       'data-sourcebook-loaded-creator': 'All',
-                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedCreatorFilter === 'All' ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[0.6875rem] font-black ' + (effectiveLoadedCreatorFilter === 'All' ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
                     }, __alloT('stem.sourcebook.all_artists', 'All artists')),
                     loadedCreatorCoverageList.map(function (entry) {
                       var selected = effectiveLoadedCreatorFilter === entry.creator;
@@ -10575,13 +10575,13 @@
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-loaded-creator': entry.creator,
                         title: entry.creator,
-                        className: 'min-h-[44px] max-w-[220px] shrink-0 truncate rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
+                        className: 'min-h-[44px] max-w-[220px] shrink-0 truncate rounded-full border px-3 text-[0.6875rem] font-black ' + (selected ? 'border-[#245a49] bg-[#245a49] text-white' : 'border-[#b6c5bf] bg-white text-[#244c40]')
                       }, entry.creator + ' · ' + entry.count);
                     })
                   )
                 )
               ),
-              h('p', { className: 'mt-3 rounded-lg bg-[#183b32] px-3 py-2 text-[10px] font-bold text-white', role: 'status', 'aria-live': 'polite', 'data-sourcebook-loaded-facet-status': 'true' },
+              h('p', { className: 'mt-3 rounded-lg bg-[#183b32] px-3 py-2 text-[0.625rem] font-bold text-white', role: 'status', 'aria-live': 'polite', 'data-sourcebook-loaded-facet-status': 'true' },
                 __alloTn('stem.sourcebook.label_showing_n_of_total_verified', combinedResults.length, 'Showing {shown} of {count} loaded rights-verified result', 'Showing {shown} of {count} loaded rights-verified results', { shown: loadedFacetResults.length })
                   + (effectiveLoadedProviderFilter === 'All' ? ' across all loaded collections' : ' from ' + effectiveLoadedProviderFilter)
                   + (effectiveLoadedKindFilter === 'All' ? '' : ' · ' + effectiveLoadedKindFilter)
@@ -10595,7 +10595,7 @@
               className: 'sb-no-print mb-3 grid gap-2 rounded-2xl border border-[#b9c9c2] bg-white p-3 sm:grid-cols-[minmax(0,1fr)_auto]',
               'aria-label': __alloT('stem.sourcebook.refine_loaded_sourcebook_results', 'Refine loaded Sourcebook results')
             },
-              h('label', { className: 'min-w-0 text-[11px] font-black text-[#38564d]' }, __alloT('stem.sourcebook.filter_loaded_results', 'Filter loaded results'),
+              h('label', { className: 'min-w-0 text-[0.6875rem] font-black text-[#38564d]' }, __alloT('stem.sourcebook.filter_loaded_results', 'Filter loaded results'),
                 h('input', {
                   type: 'search', value: boardFilter, onChange: function (event) { setBoardFilter(event.target.value); },
                   placeholder: __alloT('stem.sourcebook.filter_by_title_creator_source_materia', 'Filter by title, creator, source, material, or license'),
@@ -10603,7 +10603,7 @@
                   'aria-describedby': 'sourcebook-board-filter-count'
                 })
               ),
-              h('label', { className: 'text-[11px] font-black text-[#38564d]' }, __alloT('stem.sourcebook.sort_loaded_results', 'Sort loaded results'),
+              h('label', { className: 'text-[0.6875rem] font-black text-[#38564d]' }, __alloT('stem.sourcebook.sort_loaded_results', 'Sort loaded results'),
                 h('select', {
                   value: boardSort,
                   onChange: function (event) { var nextSort = event.target.value; setBoardSort(nextSort); patch({ boardSort: nextSort }); },
@@ -10616,7 +10616,7 @@
                   h('option', { value: 'print' }, __alloT('stem.sourcebook.print_readiness_2', 'Print readiness'))
                 )
               ),
-              h('p', { id: 'sourcebook-board-filter-count', className: 'text-[10px] font-bold text-[#5a7168] sm:col-span-2', role: 'status' },
+              h('p', { id: 'sourcebook-board-filter-count', className: 'text-[0.625rem] font-bold text-[#5a7168] sm:col-span-2', role: 'status' },
                 refinedResults.length + ' of ' + loadedFacetResults.length + ' locally selected result' + (loadedFacetResults.length === 1 ? '' : 's') + ' match the text and sort controls' + (boardFilter.trim() ? ', including local filter "' + boardFilter.trim() + '"' : '') + '. ' + combinedResults.length + ' total rights-verified results are loaded. ' + visible.length + ' currently rendered.'
               )
             ),
@@ -10624,14 +10624,14 @@
               className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[#b9c9c2] bg-[#eef4f0] p-3',
               'aria-label': __alloT('stem.sourcebook.live_result_expansion_and_curation_con', 'Live result expansion and curation controls')
             },
-              h('span', { className: 'mr-auto text-[11px] font-bold text-[#476158]' }, liveResults.length + ' verified live assets across ' + (searchPage + 1) + ' search batch' + (searchPage ? 'es' : '')),
+              h('span', { className: 'mr-auto text-[0.6875rem] font-bold text-[#476158]' }, liveResults.length + ' verified live assets across ' + (searchPage + 1) + ' search batch' + (searchPage ? 'es' : '')),
               h('div', { className: 'flex flex-wrap items-center gap-1.5', 'aria-label': __alloT('stem.sourcebook.live_match_quality', 'Live match quality') },
-                h('span', { className: 'rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-950', title: __alloT('stem.sourcebook.catalog_metadata_directly_supports_the', 'Catalog metadata directly supports the request') }, liveMatchQuality.strong + ' strong'),
-                h('span', { className: 'rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-black text-sky-950', title: __alloT('stem.sourcebook.some_catalog_metadata_supports_the_req', 'Some catalog metadata supports the request') }, liveMatchQuality.related + ' related'),
-                liveMatchQuality.broad > 0 && h('span', { className: 'rounded-full bg-slate-200 px-2.5 py-1 text-[10px] font-black text-slate-700', title: __alloT('stem.sourcebook.useful_for_exploration_but_not_automat', 'Useful for exploration, but not automatically recommended') }, liveMatchQuality.broad + ' broad')
+                h('span', { className: 'rounded-full bg-emerald-100 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950', title: __alloT('stem.sourcebook.catalog_metadata_directly_supports_the', 'Catalog metadata directly supports the request') }, liveMatchQuality.strong + ' strong'),
+                h('span', { className: 'rounded-full bg-sky-100 px-2.5 py-1 text-[0.625rem] font-black text-sky-950', title: __alloT('stem.sourcebook.some_catalog_metadata_supports_the_req', 'Some catalog metadata supports the request') }, liveMatchQuality.related + ' related'),
+                liveMatchQuality.broad > 0 && h('span', { className: 'rounded-full bg-slate-200 px-2.5 py-1 text-[0.625rem] font-black text-slate-700', title: __alloT('stem.sourcebook.useful_for_exploration_but_not_automat', 'Useful for exploration, but not automatically recommended') }, liveMatchQuality.broad + ' broad')
               ),
-              h('span', { className: 'rounded-full border border-[#aac0b7] bg-white px-2.5 py-1 text-[10px] font-black text-[#426157]', title: __alloT('stem.sourcebook.up_to_96_verified_results_are_saved_fo', 'Up to 96 verified results are saved for seven days; rights-sensitive sources are checked or require a fresh search when restored') }, __alloT('stem.sourcebook.board_saved_for_7_days', 'Board saved for 7 days')),
-              yaleLiveResultCount > 0 && h('span', { className: 'rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 text-[10px] font-black text-sky-950', title: __alloT('stem.sourcebook.saved_yale_results_are_hidden_until_th', 'Saved Yale results are hidden until their exact LUX object and IIIF canvas rights are checked again') }, __alloT('stem.sourcebook.yale_rechecked_after_reload', 'Yale: rechecked after reload')),
+              h('span', { className: 'rounded-full border border-[#aac0b7] bg-white px-2.5 py-1 text-[0.625rem] font-black text-[#426157]', title: __alloT('stem.sourcebook.up_to_96_verified_results_are_saved_fo', 'Up to 96 verified results are saved for seven days; rights-sensitive sources are checked or require a fresh search when restored') }, __alloT('stem.sourcebook.board_saved_for_7_days', 'Board saved for 7 days')),
+              yaleLiveResultCount > 0 && h('span', { className: 'rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 text-[0.625rem] font-black text-sky-950', title: __alloT('stem.sourcebook.saved_yale_results_are_hidden_until_th', 'Saved Yale results are hidden until their exact LUX object and IIIF canvas rights are checked again') }, __alloT('stem.sourcebook.yale_rechecked_after_reload', 'Yale: rechecked after reload')),
               h('button', {
                 type: 'button', disabled: !canLoadMore || liveStatus === 'loading' || liveStatus === 'loading-more', onClick: loadMoreResults,
                 className: 'min-h-[40px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40'
@@ -10648,12 +10648,12 @@
             },
               h('div', { className: 'grid gap-4 p-4 md:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end' },
                 h('div', null,
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.2em] text-[#a8c9bd]' }, curationBusy ? 'Reviewing the verified board…' : 'Ready-made starting point'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.2em] text-[#a8c9bd]' }, curationBusy ? 'Reviewing the verified board…' : 'Ready-made starting point'),
                   h('h3', { className: 'mt-1 font-serif text-2xl font-black leading-tight text-white' }, __alloTf('stem.sourcebook.selected_visuals', 'Sourcebook selected {count} visuals', { count: recommendedItems.length })),
                   h('p', { className: 'mt-1 max-w-2xl text-xs leading-relaxed text-[#d3e3dd]' }, __alloT('stem.sourcebook.use_this_rights_verified_set_as_is_or_', 'Use this rights-verified set as-is, or inspect any pick before adding it to your palette. The full result board remains below.')),
-                  h('p', { className: 'mt-2 max-w-2xl text-[11px] font-bold leading-relaxed text-[#c7ddd5]' }, __alloT('stem.sourcebook.automatic_picks_must_have_matching_tit', 'Automatic picks must have matching title, description, or tag metadata. Broad results stay on the board for exploration and are never added automatically.')),
-                  h('p', { className: 'mt-2 text-[11px] font-bold text-[#afcec3]' }, 'Chosen from ' + liveResults.length + ' verified results · ' + recommendedCoverage.providerCount + ' collection' + (recommendedCoverage.providerCount === 1 ? '' : 's') + ' · ' + recommendedCoverage.kindCount + ' visual type' + (recommendedCoverage.kindCount === 1 ? '' : 's')),
-                  activePinnedRecommendationIds.length > 0 && h('p', { className: 'mt-2 inline-flex rounded-full bg-amber-300 px-2.5 py-1 text-[10px] font-black text-amber-950' }, activePinnedRecommendationIds.length + ' pick' + (activePinnedRecommendationIds.length === 1 ? '' : 's') + ' kept for the next refinement')
+                  h('p', { className: 'mt-2 max-w-2xl text-[0.6875rem] font-bold leading-relaxed text-[#c7ddd5]' }, __alloT('stem.sourcebook.automatic_picks_must_have_matching_tit', 'Automatic picks must have matching title, description, or tag metadata. Broad results stay on the board for exploration and are never added automatically.')),
+                  h('p', { className: 'mt-2 text-[0.6875rem] font-bold text-[#afcec3]' }, 'Chosen from ' + liveResults.length + ' verified results · ' + recommendedCoverage.providerCount + ' collection' + (recommendedCoverage.providerCount === 1 ? '' : 's') + ' · ' + recommendedCoverage.kindCount + ' visual type' + (recommendedCoverage.kindCount === 1 ? '' : 's')),
+                  activePinnedRecommendationIds.length > 0 && h('p', { className: 'mt-2 inline-flex rounded-full bg-amber-300 px-2.5 py-1 text-[0.625rem] font-black text-amber-950' }, activePinnedRecommendationIds.length + ' pick' + (activePinnedRecommendationIds.length === 1 ? '' : 's') + ' kept for the next refinement')
                 ),
                 h('div', { className: 'flex flex-wrap gap-2 lg:max-w-[360px] lg:justify-end' },
                   h('button', {
@@ -10680,7 +10680,7 @@
                 'aria-label': __alloT('stem.sourcebook.refine_the_curated_sourcebook_selectio', 'Refine the curated Sourcebook selection')
               },
                 h('div', { className: 'grid gap-2 md:grid-cols-[minmax(220px,1fr)_auto]' },
-                  h('label', { className: 'min-w-0 text-[11px] font-black text-[#dbe9e4]' }, __alloT('stem.sourcebook.tell_sourcebook_how_to_adjust_these_pi', 'Tell Sourcebook how to adjust these picks'),
+                  h('label', { className: 'min-w-0 text-[0.6875rem] font-black text-[#dbe9e4]' }, __alloT('stem.sourcebook.tell_sourcebook_how_to_adjust_these_pi', 'Tell Sourcebook how to adjust these picks'),
                     h('input', {
                       type: 'text', value: refinementDraft, maxLength: 160,
                       onChange: function (event) { setRefinementDraft(event.target.value); },
@@ -10691,9 +10691,9 @@
                   h('button', { type: 'submit', disabled: curationBusy || !refinementDraft.trim(), className: 'min-h-[44px] self-end rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32] disabled:opacity-50' }, curationBusy ? 'Refining…' : 'Refine picks')
                 ),
                 h('div', { className: 'mt-2 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.quick_palette_refinements', 'Quick palette refinements') }, ['stronger linework', 'more scientific', 'more archival', 'less decorative'].map(function (suggestion) {
-                  return h('button', { key: suggestion, type: 'button', disabled: curationBusy, onClick: function () { refreshCuration(suggestion); }, className: 'min-h-[36px] rounded-full border border-[#75988c] bg-white/10 px-3 text-[10px] font-black text-[#e3eee9] disabled:opacity-50' }, suggestion);
+                  return h('button', { key: suggestion, type: 'button', disabled: curationBusy, onClick: function () { refreshCuration(suggestion); }, className: 'min-h-[36px] rounded-full border border-[#75988c] bg-white/10 px-3 text-[0.625rem] font-black text-[#e3eee9] disabled:opacity-50' }, suggestion);
                 })),
-                h('p', { className: 'mt-2 text-[10px] font-bold text-[#a8c9bd]' }, activePinnedRecommendationIds.length
+                h('p', { className: 'mt-2 text-[0.625rem] font-bold text-[#a8c9bd]' }, activePinnedRecommendationIds.length
                   ? 'Kept picks stay in the set; Sourcebook re-evaluates the remaining slots without another provider request.'
                   : 'This re-evaluates only the current rights-verified board, so it is fast and does not make another provider request.')
               ),
@@ -10711,31 +10711,31 @@
                   },
                     h('div', { className: 'relative' },
                       preview(item, { mode: 'fit', zoom: 100, x: 50, y: 50 }, recommendedItems.length <= 4 ? 185 : 150),
-                      h('span', { className: 'absolute left-2 top-2 grid h-7 min-w-7 place-items-center rounded-full bg-[#183b32] px-2 text-[11px] font-black text-white shadow-md' }, '#' + (index + 1)),
+                      h('span', { className: 'absolute left-2 top-2 grid h-7 min-w-7 place-items-center rounded-full bg-[#183b32] px-2 text-[0.6875rem] font-black text-white shadow-md' }, '#' + (index + 1)),
                       (saved || pinned) && h('span', { className: 'absolute right-2 top-2 flex flex-col items-end gap-1' },
-                        pinned && h('span', { className: 'rounded-full bg-[#183b32] px-2 py-1 text-[10px] font-black text-white shadow-sm' }, __alloT('stem.sourcebook.kept', 'Kept')),
-                        saved && h('span', { className: 'rounded-full bg-amber-400 px-2 py-1 text-[10px] font-black text-amber-950 shadow-sm' }, __alloT('stem.sourcebook.saved', 'Saved'))
+                        pinned && h('span', { className: 'rounded-full bg-[#183b32] px-2 py-1 text-[0.625rem] font-black text-white shadow-sm' }, __alloT('stem.sourcebook.kept', 'Kept')),
+                        saved && h('span', { className: 'rounded-full bg-amber-400 px-2 py-1 text-[0.625rem] font-black text-amber-950 shadow-sm' }, __alloT('stem.sourcebook.saved', 'Saved'))
                       )
                     ),
                     h('div', { className: 'p-3' },
-                      h('p', { className: 'truncate text-[9px] font-black uppercase tracking-[.12em] text-[#60736b]' }, item.provider),
+                      h('p', { className: 'truncate text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60736b]' }, item.provider),
                       h('h4', { className: 'mt-1 line-clamp-2 text-sm font-black leading-tight' }, item.title),
-                      h('p', { className: 'mt-2 line-clamp-2 text-[10px] font-bold leading-relaxed text-[#4f655c]' }, explainSelection(item, selectionQuery, kind))
+                      h('p', { className: 'mt-2 line-clamp-2 text-[0.625rem] font-bold leading-relaxed text-[#4f655c]' }, explainSelection(item, selectionQuery, kind))
                     )
                   ),
                   h('div', { className: 'px-3 pb-3' },
                     h('button', {
                       type: 'button', onClick: function () { togglePinnedRecommendation(item); }, 'aria-pressed': pinned,
-                      className: 'min-h-[38px] w-full rounded-xl border px-3 text-[10px] font-black ' + (pinned ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb3aa] bg-white text-[#294d42]'),
+                      className: 'min-h-[38px] w-full rounded-xl border px-3 text-[0.625rem] font-black ' + (pinned ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb3aa] bg-white text-[#294d42]'),
                       title: pinned ? 'Allow Sourcebook to replace this pick during the next refinement' : 'Preserve this pick while Sourcebook refines the remaining slots'
                     }, pinned ? '✓ Keep during refinement' : 'Keep this pick')
                   )
                 );
               })),
               h('div', { className: 'flex flex-wrap items-center gap-2 p-3 md:px-5', 'aria-label': __alloT('stem.sourcebook.curated_palette_source_coverage', 'Curated palette source coverage') },
-                h('span', { className: 'mr-1 text-[10px] font-black uppercase tracking-[.14em] text-[#a8c9bd]' }, __alloT('stem.sourcebook.source_coverage', 'Source coverage')),
-                recommendedCoverage.providers.map(function (entry) { return h('span', { key: entry.name, className: 'rounded-full border border-[#58786d] bg-white/10 px-2.5 py-1 text-[10px] font-bold text-[#e3eee9]' }, entry.name + ' ' + entry.count); }),
-                h('span', { className: 'ml-auto rounded-full bg-emerald-200 px-2.5 py-1 text-[10px] font-black text-emerald-950' }, __alloT('stem.sourcebook.every_pick_passed_the_reuse_rights_gat', '✓ Every pick passed the reuse-rights gate'))
+                h('span', { className: 'mr-1 text-[0.625rem] font-black uppercase tracking-[.14em] text-[#a8c9bd]' }, __alloT('stem.sourcebook.source_coverage', 'Source coverage')),
+                recommendedCoverage.providers.map(function (entry) { return h('span', { key: entry.name, className: 'rounded-full border border-[#58786d] bg-white/10 px-2.5 py-1 text-[0.625rem] font-bold text-[#e3eee9]' }, entry.name + ' ' + entry.count); }),
+                h('span', { className: 'ml-auto rounded-full bg-emerald-200 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950' }, __alloT('stem.sourcebook.every_pick_passed_the_reuse_rights_gat', '✓ Every pick passed the reuse-rights gate'))
               )
             ),
             showingCollection && h('div', { className: 'sb-no-print flex flex-wrap gap-2 mb-3' },
@@ -10745,12 +10745,12 @@
                 paletteImportBusy === 'import' ? __alloT('stem.sourcebook.verifying_import', 'Verifying import…') : __alloT('stem.sourcebook.import_json', 'Import .json'),
                 h('input', { type: 'file', accept: '.json,application/json', disabled: palettePackageBusy || !!paletteImportBusy || !!checkpointBusy || savedSmkVerificationStatus === 'loading', onChange: importPaletteManifest, className: 'sr-only', 'aria-label': __alloT('stem.sourcebook.import_sourcebook_palette_manifest', 'Import Sourcebook palette manifest') })
               ),
-              h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#294d42]' },
+              h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#b6c4be] bg-white px-3 text-[0.6875rem] font-black text-[#294d42]' },
                 __alloT('stem.sourcebook.board_columns', 'Board columns'),
                 h('select', {
                   value: String(referenceBoardColumns), 'data-sourcebook-board-columns': String(referenceBoardColumns),
                   onChange: function (event) { var value = Number(event.target.value) || 0; setReferenceBoardColumns(value); patch({ referenceBoardColumns: value }); },
-                  className: 'rounded-lg border border-[#b6c4be] bg-white px-2 py-1 text-[11px] font-black text-[#183b32]',
+                  className: 'rounded-lg border border-[#b6c4be] bg-white px-2 py-1 text-[0.6875rem] font-black text-[#183b32]',
                   'aria-label': __alloT('stem.sourcebook.board_columns_aria', 'Reference board column count')
                 },
                   h('option', { value: '0' }, __alloT('stem.sourcebook.board_columns_auto', 'Auto')),
@@ -10786,20 +10786,20 @@
                 return h('a', { key: page.page, href: page.dataUrl, download: page.filename, className: 'inline-flex min-h-[44px] items-center rounded-lg bg-[#245a49] px-4 text-sm font-bold text-white' }, __alloTn('stem.sourcebook.download_board_page', page.count, 'Download page {page} ({count} image)', 'Download page {page} ({count} images)', { page: page.page }));
               }))
             ),
-            palettePackageBusy && h('div', { className: 'sb-no-print mb-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[11px] font-bold text-sky-950', role: 'status', 'aria-live': 'polite', 'data-sourcebook-package-progress': 'true' },
+            palettePackageBusy && h('div', { className: 'sb-no-print mb-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[0.6875rem] font-bold text-sky-950', role: 'status', 'aria-live': 'polite', 'data-sourcebook-package-progress': 'true' },
               h('div', { className: 'flex items-center justify-between gap-3' },
                 h('span', null, __alloTf('stem.sourcebook.preparing_source_images', 'Preparing source images {done} of {total}', { done: palettePackageProgress, total: palettePackageTotal })),
-                h('span', { className: 'text-[9px] font-black uppercase tracking-[.1em]' }, __alloT('stem.sourcebook.3_at_a_time', '3 at a time'))
+                h('span', { className: 'text-[0.5625rem] font-black uppercase tracking-[.1em]' }, __alloT('stem.sourcebook.3_at_a_time', '3 at a time'))
               ),
               h('progress', { value: palettePackageProgress, max: Math.max(1, palettePackageTotal), className: 'mt-2 block h-2 w-full accent-[#245a49]', 'aria-label': __alloT('stem.sourcebook.palette_package_preparation_progress', 'Palette package preparation progress') }),
-              h('p', { className: 'mt-1 text-[9px] font-medium' }, __alloT('stem.sourcebook.no_package_is_downloaded_unless_every_', 'No package is downloaded unless every selected source image is prepared successfully.')),
+              h('p', { className: 'mt-1 text-[0.5625rem] font-medium' }, __alloT('stem.sourcebook.no_package_is_downloaded_unless_every_', 'No package is downloaded unless every selected source image is prepared successfully.')),
               h('button', { type: 'button', onClick: function () { cancelPalettePackage('user'); }, className: 'mt-2 min-h-[44px] rounded-lg border border-sky-800 bg-white px-4 text-sm font-bold text-sky-950', 'data-sourcebook-cancel-package': 'true' }, __alloT('stem.sourcebook.cancel_package', 'Cancel package preparation'))
             ),
             showingCollection && selectedItems.length > 0 && h('div', {
               className: 'sb-no-print mb-3 grid gap-3 rounded-2xl border border-[#b9c9c2] bg-white p-3 md:grid-cols-[minmax(0,1fr)_auto]',
               'aria-label': __alloT('stem.sourcebook.manage_sourcebook_palette_selection', 'Manage Sourcebook palette selection')
             },
-              h('label', { className: 'min-w-0 text-[11px] font-black text-[#38564d]' }, __alloT('stem.sourcebook.filter_this_palette', 'Filter this palette'),
+              h('label', { className: 'min-w-0 text-[0.6875rem] font-black text-[#38564d]' }, __alloT('stem.sourcebook.filter_this_palette', 'Filter this palette'),
                 h('input', {
                   type: 'search', value: paletteFilter, onChange: function (event) { setPaletteFilter(event.target.value); },
                   placeholder: __alloT('stem.sourcebook.find_a_saved_title_creator_source_mate', 'Find a saved title, creator, source, material, or license'),
@@ -10807,11 +10807,11 @@
                 })
               ),
               h('div', { className: 'flex flex-wrap items-end gap-2' },
-                h('button', { type: 'button', disabled: !filteredPaletteItems.length, onClick: function () { selectVisiblePaletteItems(filteredPaletteItems); }, className: 'min-h-[40px] rounded-xl border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40] disabled:opacity-40' }, 'Select shown (' + filteredPaletteItems.length + ')'),
-                h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: function () { setCheckedPaletteIds([]); }, className: 'min-h-[40px] rounded-xl border border-[#aebdb7] bg-white px-3 text-[11px] font-black text-[#53685f] disabled:opacity-40' }, __alloT('stem.sourcebook.clear_selection', 'Clear selection')),
-                h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: removeCheckedPaletteItems, className: 'min-h-[40px] rounded-xl border border-red-300 bg-red-50 px-3 text-[11px] font-black text-red-800 disabled:opacity-40' }, __alloTf('stem.sourcebook.remove_selected_count', 'Remove selected ({count})', { count: checkedPaletteItems.length }))
+                h('button', { type: 'button', disabled: !filteredPaletteItems.length, onClick: function () { selectVisiblePaletteItems(filteredPaletteItems); }, className: 'min-h-[40px] rounded-xl border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40] disabled:opacity-40' }, 'Select shown (' + filteredPaletteItems.length + ')'),
+                h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: function () { setCheckedPaletteIds([]); }, className: 'min-h-[40px] rounded-xl border border-[#aebdb7] bg-white px-3 text-[0.6875rem] font-black text-[#53685f] disabled:opacity-40' }, __alloT('stem.sourcebook.clear_selection', 'Clear selection')),
+                h('button', { type: 'button', disabled: !checkedPaletteItems.length, onClick: removeCheckedPaletteItems, className: 'min-h-[40px] rounded-xl border border-red-300 bg-red-50 px-3 text-[0.6875rem] font-black text-red-800 disabled:opacity-40' }, __alloTf('stem.sourcebook.remove_selected_count', 'Remove selected ({count})', { count: checkedPaletteItems.length }))
               ),
-              h('p', { className: 'text-[10px] font-bold text-[#5a7168] md:col-span-2', role: 'status', 'aria-live': 'polite' },
+              h('p', { className: 'text-[0.625rem] font-bold text-[#5a7168] md:col-span-2', role: 'status', 'aria-live': 'polite' },
                 checkedPaletteItems.length
                   ? checkedPaletteItems.length + ' selected. Preparation, package, JSON, credits, and print actions now use this selection in palette order.'
                   : 'No subset selected. Preparation and output actions use all ' + selectedItems.length + ' palette assets.'
@@ -10825,11 +10825,11 @@
               h('summary', { className: 'min-h-[44px] cursor-pointer px-4 py-3 text-sm font-bold text-violet-950' }, __alloT('stem.sourcebook.optional_role_planning', 'Optional: plan how to use your images')),
               h('div', { className: 'grid gap-3 border-b border-violet-200 bg-white p-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-center' },
                 h('div', null,
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.15em] text-violet-700' }, __alloT('stem.sourcebook.reuse_plan', 'Reuse plan')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.15em] text-violet-700' }, __alloT('stem.sourcebook.reuse_plan', 'Reuse plan')),
                   h('h2', { id: 'sourcebook-usage-plan-title', className: 'mt-1 font-serif text-lg font-black text-[#2f254d]' }, __alloT('stem.sourcebook.plan_how_each_asset_will_be_used', 'Plan how each asset will be used')),
-                  h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-violet-900' }, __alloT('stem.sourcebook.sourcebook_can_suggest_a_role_from_the', 'Sourcebook can suggest a role from the material type and preparation, or you can set one. The plan travels with JSON, source packages, print sheets, and Page Designer handoff.'))
+                  h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-relaxed text-violet-900' }, __alloT('stem.sourcebook.sourcebook_can_suggest_a_role_from_the', 'Sourcebook can suggest a role from the material type and preparation, or you can set one. The plan travels with JSON, source packages, print sheets, and Page Designer handoff.'))
                 ),
-                h('label', { className: 'text-[10px] font-black text-violet-950' }, (checkedPaletteItems.length ? 'Set use for selected assets' : 'Set use for all palette assets'),
+                h('label', { className: 'text-[0.625rem] font-black text-violet-950' }, (checkedPaletteItems.length ? 'Set use for selected assets' : 'Set use for all palette assets'),
                   h('select', {
                     value: '',
                     onChange: function (event) { if (event.target.value) applyUsageIntentToPalette(event.target.value); },
@@ -10848,16 +10848,16 @@
                 paletteUsageSummary.entries.map(function (entry) {
                   return h('span', {
                     key: entry.id,
-                    className: 'rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[10px] font-black text-violet-950',
+                    className: 'rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[0.625rem] font-black text-violet-950',
                     'data-sourcebook-usage-count': entry.id + ':' + entry.count
                   }, entry.label + ' ' + entry.count);
                 }),
-                h('span', { className: 'ml-auto text-[10px] font-bold text-violet-800' }, paletteUsageSummary.automatic + ' suggested · ' + paletteUsageSummary.sourcebookPlanned + ' Sourcebook-planned · ' + paletteUsageSummary.manual + ' set by you')
+                h('span', { className: 'ml-auto text-[0.625rem] font-bold text-violet-800' }, paletteUsageSummary.automatic + ' suggested · ' + paletteUsageSummary.sourcebookPlanned + ' Sourcebook-planned · ' + paletteUsageSummary.manual + ' set by you')
               ),
               h('div', { className: 'grid gap-3 border-t border-violet-200 bg-[#f7f4ff] p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center' },
                 h('div', null,
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.14em] text-violet-700' }, __alloT('stem.sourcebook.one_click_role_planning', 'One-click role planning')),
-                  h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-violet-900' }, __alloT('stem.sourcebook.sourcebook_balances_roles_from_catalog', 'Sourcebook balances roles from catalog metadata, preparation, dimensions, and set coverage. Roles you assigned yourself stay unchanged, and no new search or AI request is made.'))
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.14em] text-violet-700' }, __alloT('stem.sourcebook.one_click_role_planning', 'One-click role planning')),
+                  h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-relaxed text-violet-900' }, __alloT('stem.sourcebook.sourcebook_balances_roles_from_catalog', 'Sourcebook balances roles from catalog metadata, preparation, dimensions, and set coverage. Roles you assigned yourself stay unchanged, and no new search or AI request is made.'))
                 ),
                 h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': checkedPaletteItems.length ? 'Plan roles for selected palette assets' : 'Plan roles for the full palette' },
                   USAGE_PLAN_ORDER.map(function (planId) {
@@ -10866,7 +10866,7 @@
                       key: planId,
                       type: 'button',
                       onClick: function () { applyUsagePlanToPalette(planId); },
-                      className: 'min-h-[40px] rounded-xl border border-violet-500 bg-white px-3 text-[11px] font-black text-violet-950 hover:bg-violet-100',
+                      className: 'min-h-[40px] rounded-xl border border-violet-500 bg-white px-3 text-[0.6875rem] font-black text-violet-950 hover:bg-violet-100',
                       title: usagePlan.description,
                       'data-sourcebook-usage-plan-action': planId
                     }, usagePlan.buttonLabel);
@@ -10879,11 +10879,11 @@
               },
                 h('div', { className: 'flex flex-col gap-3 border-b border-violet-100 bg-[#fbfaff] p-4 sm:flex-row sm:items-center' },
                   h('div', { className: 'min-w-0 flex-1' },
-                    h('p', { className: 'text-[10px] font-black uppercase tracking-[.14em] text-violet-700' }, __alloT('stem.sourcebook.visual_set_map', 'Visual set map')),
-                    h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-[#4b4164]' }, paletteRoleBoard.description)
+                    h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.14em] text-violet-700' }, __alloT('stem.sourcebook.visual_set_map', 'Visual set map')),
+                    h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-relaxed text-[#4b4164]' }, paletteRoleBoard.description)
                   ),
                   h('span', {
-                    className: 'self-start rounded-full border px-3 py-1.5 text-[10px] font-black ' + (paletteRoleBoard.ready ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900'),
+                    className: 'self-start rounded-full border px-3 py-1.5 text-[0.625rem] font-black ' + (paletteRoleBoard.ready ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900'),
                     'data-sourcebook-role-coverage': paletteRoleBoard.coveragePercent
                   }, paletteRoleBoard.coveragePercent + '% covered \u00b7 ' + paletteRoleBoard.total + '/' + paletteRoleBoard.goal + ' assets \u00b7 ' + paletteRoleBoard.planLabel)
                 ),
@@ -10920,9 +10920,9 @@
                     },
                       h('div', { className: 'flex items-start justify-between gap-2' },
                         h('h3', { className: 'text-xs font-black text-[#30264f]' }, group.label),
-                        h('span', { className: 'shrink-0 rounded-full bg-white px-2 py-1 text-[9px] font-black text-violet-800' }, group.required ? group.count + '/' + group.required : group.count + ' saved')
+                        h('span', { className: 'shrink-0 rounded-full bg-white px-2 py-1 text-[0.5625rem] font-black text-violet-800' }, group.required ? group.count + '/' + group.required : group.count + ' saved')
                       ),
-                      h('p', { className: 'mt-1 text-[9px] font-semibold leading-relaxed text-[#665d79]' }, group.description),
+                      h('p', { className: 'mt-1 text-[0.5625rem] font-semibold leading-relaxed text-[#665d79]' }, group.description),
                       h('div', { className: 'mt-3 grid grid-cols-4 gap-2' },
                         group.items.slice(0, 4).map(function (roleItem) {
                           return h('button', {
@@ -10935,7 +10935,7 @@
                             'data-sourcebook-role-asset': roleItem.id
                           },
                             h('img', { src: roleItem.imageUrl, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer', className: 'h-full w-full object-cover transition-transform group-hover:scale-105' }),
-                            h('span', { className: 'absolute bottom-1 right-1 grid h-5 min-w-5 place-items-center rounded-full border border-white/70 bg-[#183b32]/90 px-1 text-[9px] font-black text-white', 'aria-hidden': 'true' }, providerPresentation(roleItem.provider).mark)
+                            h('span', { className: 'absolute bottom-1 right-1 grid h-5 min-w-5 place-items-center rounded-full border border-white/70 bg-[#183b32]/90 px-1 text-[0.5625rem] font-black text-white', 'aria-hidden': 'true' }, providerPresentation(roleItem.provider).mark)
                           );
                         }),
                         group.missing > 0 && h('div', {
@@ -10943,13 +10943,13 @@
                           'data-sourcebook-role-gap': group.id,
                           'data-sourcebook-role-action': roleAction.mode
                         },
-                          h('span', { className: 'text-[10px] font-black text-amber-900' }, __alloTf('stem.sourcebook.label_needs_role_count', 'Needs {count} {role}', { count: group.missing, role: group.shortLabel.toLowerCase() })),
-                          h('span', { className: 'mt-1 text-[8px] font-bold uppercase tracking-[.1em] text-amber-700' }, roleAction.mode === 'replace' ? 'Rebalance opportunity' : 'Suggested gap'),
+                          h('span', { className: 'text-[0.625rem] font-black text-amber-900' }, __alloTf('stem.sourcebook.label_needs_role_count', 'Needs {count} {role}', { count: group.missing, role: group.shortLabel.toLowerCase() })),
+                          h('span', { className: 'mt-1 text-[0.5rem] font-bold uppercase tracking-[.1em] text-amber-700' }, roleAction.mode === 'replace' ? 'Rebalance opportunity' : 'Suggested gap'),
                           h('button', {
                             type: 'button',
                             disabled: roleFillDisabled,
                             onClick: function () { fillPaletteRoleGap(group); },
-                            className: 'mt-2 min-h-[36px] rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-[9px] font-black text-amber-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-55',
+                            className: 'mt-2 min-h-[36px] rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-[0.5625rem] font-black text-amber-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-55',
                             'data-sourcebook-fill-role': group.id,
                             'aria-label': roleFillVerificationBlocked
                               ? 'Verify saved source records before filling this role'
@@ -10960,7 +10960,7 @@
                                   : 'Find and add up to ' + roleFillCount + ' rights-verified assets for the ' + group.label + ' role within the palette goal'))
                           }, roleFillLabel),
                           h('span', {
-                            className: 'mt-1.5 text-[8px] font-bold leading-snug text-amber-800',
+                            className: 'mt-1.5 text-[0.5rem] font-bold leading-snug text-amber-800',
                             'data-sourcebook-role-action-detail': roleAction.mode
                           }, roleAction.mode === 'replace'
                             ? 'Keeps ' + roleAction.goal + ' assets \u00b7 replaces ' + roleFillCount + (replacementRoleLabels ? ' from ' + replacementRoleLabels : '') + ' \u00b7 undo available'
@@ -10969,11 +10969,11 @@
                               : 'Adds only within the ' + roleAction.goal + '-asset goal.'))
                         )
                       ),
-                      group.items.length > 4 && h('p', { className: 'mt-2 text-[9px] font-black text-violet-700' }, '+' + (group.items.length - 4) + ' more in this role')
+                      group.items.length > 4 && h('p', { className: 'mt-2 text-[0.5625rem] font-black text-violet-700' }, '+' + (group.items.length - 4) + ' more in this role')
                     );
                   })
                 ),
-                h('div', { className: 'flex flex-col gap-1 border-t border-violet-100 bg-[#f7f4ff] px-4 py-3 text-[10px] font-bold text-violet-900 sm:flex-row sm:items-center sm:justify-between' },
+                h('div', { className: 'flex flex-col gap-1 border-t border-violet-100 bg-[#f7f4ff] px-4 py-3 text-[0.625rem] font-bold text-violet-900 sm:flex-row sm:items-center sm:justify-between' },
                   h('span', { 'data-sourcebook-role-gaps': paletteRoleBoard.missing.length }, paletteRoleBoard.ready ? 'All planned roles covered' : 'Suggested gaps: ' + paletteRoleBoard.missingLabel),
                   h('div', { className: 'flex flex-col gap-0.5 text-left sm:text-right' },
                     h('span', null, __alloT('stem.sourcebook.advisory_only_missing_roles_never_bloc', 'Advisory only - missing roles never block output.')),
@@ -10990,42 +10990,42 @@
             },
               h('div', { className: 'flex flex-col gap-3 border-b border-[#d3dfda] bg-[#183b32] p-4 text-white sm:flex-row sm:items-center' },
                 h('div', { className: 'min-w-0 flex-1' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, checkedPaletteItems.length ? 'Selected output' : 'Full palette output'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, checkedPaletteItems.length ? 'Selected output' : 'Full palette output'),
                   h('h2', { id: 'sourcebook-output-preflight-title', tabIndex: -1, className: 'mt-1 font-serif text-xl font-black' }, __alloT('stem.sourcebook.output_preflight', 'Output preflight')),
-                  h('p', { className: 'mt-1 text-[11px] font-semibold text-[#d1e0db]' }, __alloT('stem.sourcebook.a_truthful_snapshot_of_intended_use_re', 'A truthful snapshot of intended use, reuse rights, accessibility review, print evidence, and attribution before download.'))
+                  h('p', { className: 'mt-1 text-[0.6875rem] font-semibold text-[#d1e0db]' }, __alloT('stem.sourcebook.a_truthful_snapshot_of_intended_use_re', 'A truthful snapshot of intended use, reuse rights, accessibility review, print evidence, and attribution before download.'))
                 ),
                 h('div', { className: 'flex flex-wrap items-center gap-2' },
                   h('span', {
-                    className: 'rounded-full px-3 py-1.5 text-[10px] font-black ' + (outputPreflightSummary.ready ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'),
+                    className: 'rounded-full px-3 py-1.5 text-[0.625rem] font-black ' + (outputPreflightSummary.ready ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'),
                     'data-sourcebook-preflight-status': outputPreflightSummary.pendingChecks
                   }, outputPreflightSummary.ready ? 'Ready for output' : outputPreflightSummary.pendingChecks + ' check' + (outputPreflightSummary.pendingChecks === 1 ? '' : 's') + ' remain'),
-                  h('span', { className: 'rounded-full border border-[#65867a] bg-white/10 px-3 py-1.5 text-[10px] font-black', 'data-sourcebook-output-count': exportItems.length }, exportItems.length + ' asset' + (exportItems.length === 1 ? '' : 's'))
+                  h('span', { className: 'rounded-full border border-[#65867a] bg-white/10 px-3 py-1.5 text-[0.625rem] font-black', 'data-sourcebook-output-count': exportItems.length }, exportItems.length + ' asset' + (exportItems.length === 1 ? '' : 's'))
                 )
               ),
               h('div', { className: 'grid gap-px bg-[#dbe5e1] sm:grid-cols-2 xl:grid-cols-4' },
                 h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-rights': outputPreflightSummary.rightsVerified + '/' + outputPreflightSummary.total },
-                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.rights_check_passed', 'Rights check passed:')),
+                  h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.rights_check_passed', 'Rights check passed:')),
                   h('p', { className: 'mt-1 text-lg font-black text-emerald-800' }, outputPreflightSummary.rightsVerified + '/' + outputPreflightSummary.total),
-                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, exportRightsSummary || 'No output assets')
+                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, exportRightsSummary || 'No output assets')
                 ),
                 h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-accessibility': outputPreflightSummary.accessibilityReviewed + '/' + outputPreflightSummary.total },
-                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.accessibility_reviewed', 'Accessibility reviewed')),
+                  h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.accessibility_reviewed', 'Accessibility reviewed')),
                   h('p', { className: 'mt-1 text-lg font-black ' + (outputPreflightSummary.accessibilitySuggested ? 'text-amber-800' : 'text-emerald-800') }, outputPreflightSummary.accessibilityReviewed + '/' + outputPreflightSummary.total),
-                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, outputPreflightSummary.accessibilitySuggested ? outputPreflightSummary.accessibilitySuggested + ' catalog suggestion' + (outputPreflightSummary.accessibilitySuggested === 1 ? '' : 's') + ' to review' : 'Every image purpose is confirmed')
+                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, outputPreflightSummary.accessibilitySuggested ? outputPreflightSummary.accessibilitySuggested + ' catalog suggestion' + (outputPreflightSummary.accessibilitySuggested === 1 ? '' : 's') + ' to review' : 'Every image purpose is confirmed')
                 ),
                 h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-print': outputPrintSupported + '/' + outputPreflightSummary.total },
-                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.print_supported', 'Print supported')),
+                  h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.print_supported', 'Print supported')),
                   h('p', { className: 'mt-1 text-lg font-black ' + (outputPreflightSummary.printAttention || outputPreflightSummary.printVerify ? 'text-amber-800' : 'text-emerald-800') }, outputPrintSupported + '/' + outputPreflightSummary.total),
-                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, outputPreflightSummary.printAttention + ' need attention | ' + outputPreflightSummary.printVerify + ' verify full-size')
+                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, outputPreflightSummary.printAttention + ' need attention | ' + outputPreflightSummary.printVerify + ' verify full-size')
                 ),
                 h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-attribution': outputPreflightSummary.attributionRequired },
-                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.cc_by_attribution', 'CC BY attribution')),
+                  h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, __alloT('stem.sourcebook.cc_by_attribution', 'CC BY attribution')),
                   h('p', { className: 'mt-1 text-lg font-black text-[#31584c]' }, outputPreflightSummary.attributionRequired),
-                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, outputPreflightSummary.attributionRequired ? 'Required credits are included in output' : 'No CC BY credit required')
+                  h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-[#5a6d65]' }, outputPreflightSummary.attributionRequired ? 'Required credits are included in output' : 'No CC BY credit required')
                 )
               ),
               h('div', { className: 'flex flex-col gap-3 border-t border-[#d3dfda] bg-[#f1f6f3] p-3 lg:flex-row lg:items-center' },
-                h('p', { className: 'min-w-0 flex-1 text-[10px] font-bold leading-relaxed text-[#4d655c]', role: 'status', 'aria-live': 'polite' },
+                h('p', { className: 'min-w-0 flex-1 text-[0.625rem] font-bold leading-relaxed text-[#4d655c]', role: 'status', 'aria-live': 'polite' },
                   outputPreflightSummary.ready
                     ? 'All output checks currently have supporting evidence.'
                     : outputReviewRows.length + ' asset' + (outputReviewRows.length === 1 ? '' : 's') + ' account for ' + outputPreflightSummary.pendingChecks + ' remaining evidence check' + (outputPreflightSummary.pendingChecks === 1 ? '' : 's') + '. Output remains available with every review note preserved.'
@@ -11063,7 +11063,7 @@
                 open: outputReviewRows.length > 0,
                 'data-sourcebook-preflight-queue': outputReviewRows.length
               },
-                h('summary', { className: 'cursor-pointer px-4 py-3 text-[11px] font-black text-[#244c40] hover:bg-[#f5f8f6]' },
+                h('summary', { className: 'cursor-pointer px-4 py-3 text-[0.6875rem] font-black text-[#244c40] hover:bg-[#f5f8f6]' },
                   outputReviewRows.length
                     ? 'Asset review queue · ' + outputReviewRows.length + ' need action'
                     : 'Asset-level preflight receipt · ' + outputPreflightRows.length + ' ready'
@@ -11078,7 +11078,7 @@
                     h('div', { className: 'flex items-start gap-3' },
                       h('div', { className: 'min-w-0 flex-1' },
                         h('p', { className: 'truncate text-xs font-black text-[#18352d]' }, row.title),
-                        h('p', { className: 'mt-0.5 truncate text-[9px] font-bold uppercase tracking-[.1em] text-[#60736b]' }, row.provider)
+                        h('p', { className: 'mt-0.5 truncate text-[0.5625rem] font-bold uppercase tracking-[.1em] text-[#60736b]' }, row.provider)
                       ),
                       h('button', {
                         type: 'button',
@@ -11089,17 +11089,17 @@
                           inspectSourcebookItem(rowItem);
                           announce(__alloTf('stem.sourcebook.msg_inspecting_output_checks', 'Inspecting output checks for {title}', { title: rowItem.title }));
                         },
-                        className: 'min-h-[38px] shrink-0 rounded-lg border border-[#8fa69d] bg-white px-3 text-[10px] font-black text-[#244c40]'
+                        className: 'min-h-[38px] shrink-0 rounded-lg border border-[#8fa69d] bg-white px-3 text-[0.625rem] font-black text-[#244c40]'
                       }, row.status === 'review' ? 'Review' : 'Inspect')
                     ),
                     h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
-                      h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[9px] font-black text-violet-950' }, row.usageIntentLabel + (row.usageIntentSuggested ? ' · suggested' : (row.usageIntentPlanId ? ' · ' + USAGE_PLANS[row.usageIntentPlanId].label : ''))),
-                      h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (row.rightsVerified ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-950') }, row.rightsVerified ? 'Rights verified' : 'Rights blocked'),
-                      h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (row.accessibilityReviewed ? 'bg-emerald-100 text-emerald-950' : 'bg-amber-100 text-amber-950') }, row.accessibilityLabel),
-                      h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + ((row.printStatus === 'ready' || row.printStatus === 'usable') ? 'bg-sky-100 text-sky-950' : 'bg-amber-100 text-amber-950') }, row.printLabel),
-                      row.attributionRequired && h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[9px] font-black text-violet-950' }, __alloT('stem.sourcebook.credit_required', 'Credit required'))
+                      h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[0.5625rem] font-black text-violet-950' }, row.usageIntentLabel + (row.usageIntentSuggested ? ' · suggested' : (row.usageIntentPlanId ? ' · ' + USAGE_PLANS[row.usageIntentPlanId].label : ''))),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[0.5625rem] font-black ' + (row.rightsVerified ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-950') }, row.rightsVerified ? 'Rights verified' : 'Rights blocked'),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[0.5625rem] font-black ' + (row.accessibilityReviewed ? 'bg-emerald-100 text-emerald-950' : 'bg-amber-100 text-amber-950') }, row.accessibilityLabel),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[0.5625rem] font-black ' + ((row.printStatus === 'ready' || row.printStatus === 'usable') ? 'bg-sky-100 text-sky-950' : 'bg-amber-100 text-amber-950') }, row.printLabel),
+                      row.attributionRequired && h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[0.5625rem] font-black text-violet-950' }, __alloT('stem.sourcebook.credit_required', 'Credit required'))
                     ),
-                    h('p', { className: 'mt-2 text-[10px] font-bold leading-relaxed text-[#53685f]' },
+                    h('p', { className: 'mt-2 text-[0.625rem] font-bold leading-relaxed text-[#53685f]' },
                       row.actions.length ? 'Next: ' + row.actions.join('; ') + '.' : 'All current evidence checks pass.'
                     )
                   );
@@ -11113,12 +11113,12 @@
             },
               h('div', { className: 'grid gap-3 border-b border-[#c7d8d1] bg-white p-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center' },
                 h('div', null,
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.15em] text-[#507167]' }, __alloT('stem.sourcebook.accessibility_review_queue', 'Accessibility review queue')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.15em] text-[#507167]' }, __alloT('stem.sourcebook.accessibility_review_queue', 'Accessibility review queue')),
                   h('h2', { id: 'sourcebook-palette-accessibility-title', className: 'mt-1 font-serif text-lg font-black text-[#18352d]' }, __alloT('stem.sourcebook.check_image_purpose_and_alt_text', 'Check image purpose and alt text')),
-                  h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-[#53685f]' }, __alloT('stem.sourcebook.catalog_suggestions_remain_clearly_lab', 'Catalog suggestions remain clearly labeled until you confirm them, edit them, or mark the image decorative. Export stays available and preserves the review status.'))
+                  h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-relaxed text-[#53685f]' }, __alloT('stem.sourcebook.catalog_suggestions_remain_clearly_lab', 'Catalog suggestions remain clearly labeled until you confirm them, edit them, or mark the image decorative. Export stays available and preserves the review status.'))
                 ),
                 h('div', { className: 'rounded-xl border border-[#b6cbc2] bg-[#eef5f1] p-3' },
-                  h('div', { className: 'flex items-center justify-between gap-2 text-[10px] font-black text-[#31584c]' },
+                  h('div', { className: 'flex items-center justify-between gap-2 text-[0.625rem] font-black text-[#31584c]' },
                     h('span', { 'data-sourcebook-accessibility-progress': paletteAccessibilitySummary.reviewed + '/' + paletteAccessibilitySummary.total }, paletteAccessibilitySummary.reviewed + ' of ' + paletteAccessibilitySummary.total + ' reviewed'),
                     h('span', null, paletteAccessibilitySummary.total ? Math.round((paletteAccessibilitySummary.reviewed / paletteAccessibilitySummary.total) * 100) + '%' : '0%')
                   ),
@@ -11143,11 +11143,11 @@
                   onClick: function () { setPaletteAccessibilityFilter(entry.id); },
                   'aria-pressed': selected ? 'true' : 'false',
                   'data-sourcebook-accessibility-filter': entry.id,
-                  className: 'min-h-[38px] rounded-full border px-3 text-[10px] font-black ' + (selected ? 'border-[#276b57] bg-[#276b57] text-white' : 'border-[#aabeb5] bg-white text-[#35594d]')
+                  className: 'min-h-[38px] rounded-full border px-3 text-[0.625rem] font-black ' + (selected ? 'border-[#276b57] bg-[#276b57] text-white' : 'border-[#aabeb5] bg-white text-[#35594d]')
                 }, entry.label + ' (' + entry.count + ')');
               })),
               h('div', { className: 'flex flex-col gap-3 border-t border-[#d5e1dc] bg-[#edf4f1] p-3 sm:flex-row sm:items-center' },
-                h('p', { className: 'min-w-0 flex-1 text-[10px] font-bold leading-relaxed text-[#4d655c]', role: 'status', 'aria-live': 'polite' },
+                h('p', { className: 'min-w-0 flex-1 text-[0.625rem] font-bold leading-relaxed text-[#4d655c]', role: 'status', 'aria-live': 'polite' },
                   paletteAccessibilitySummary.userEdited + ' user-edited | ' + paletteAccessibilitySummary.suggested + ' catalog suggestion' + (paletteAccessibilitySummary.suggested === 1 ? '' : 's') + ' to review | ' + paletteAccessibilitySummary.decorative + ' decorative'
                 ),
                 h('button', {
@@ -11168,19 +11168,19 @@
               className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-[#c4d2cc] bg-[#f5f7f4] px-3 py-2',
               'aria-label': __alloT('stem.sourcebook.prepare_every_palette_asset', 'Prepare every palette asset')
             },
-              h('span', { className: 'mr-1 text-[11px] font-black text-[#38564d]' }, checkedPaletteItems.length ? 'Prepare selected (' + checkedPaletteItems.length + ')' : 'Prepare all'),
-              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('fit'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Fit selected' : 'Fit all'),
-              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('crop'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Crop selected' : 'Crop all'),
-              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('tile'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Tile selected' : 'Tile all'),
-              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('reset'); }, className: 'min-h-[36px] rounded-lg border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#53685f]' }, checkedPaletteItems.length ? __alloT('stem.sourcebook.label_reset_selected', 'Reset selected') : __alloT('stem.sourcebook.label_reset_all', 'Reset all'))
+              h('span', { className: 'mr-1 text-[0.6875rem] font-black text-[#38564d]' }, checkedPaletteItems.length ? 'Prepare selected (' + checkedPaletteItems.length + ')' : 'Prepare all'),
+              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('fit'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Fit selected' : 'Fit all'),
+              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('crop'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Crop selected' : 'Crop all'),
+              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('tile'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[0.6875rem] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Tile selected' : 'Tile all'),
+              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('reset'); }, className: 'min-h-[36px] rounded-lg border border-[#b6c4be] bg-white px-3 text-[0.6875rem] font-black text-[#53685f]' }, checkedPaletteItems.length ? __alloT('stem.sourcebook.label_reset_selected', 'Reset selected') : __alloT('stem.sourcebook.label_reset_all', 'Reset all'))
             ),
             !showingCollection && searchActive && liveResults.length === 0 && h('section', {
               className: 'sb-no-print mb-4 rounded-2xl border border-sky-200 bg-sky-50/70 p-3',
               'aria-label': __alloT('stem.sourcebook.sourcebook_search_loading_previews', 'Sourcebook search loading previews'), role: 'status', 'aria-live': 'polite'
             },
               h('div', { className: 'mb-2 flex items-center justify-between gap-3' },
-                h('p', { className: 'text-[11px] font-black text-sky-950' }, __alloT('stem.sourcebook.rights_checking_live_previews', 'Rights-checking live previews…')),
-                h('p', { className: 'text-[10px] font-bold text-sky-800' }, __alloT('stem.sourcebook.the_verified_fallback_shelf_remains_br', 'The verified fallback shelf remains browsable below'))
+                h('p', { className: 'text-[0.6875rem] font-black text-sky-950' }, __alloT('stem.sourcebook.rights_checking_live_previews', 'Rights-checking live previews…')),
+                h('p', { className: 'text-[0.625rem] font-bold text-sky-800' }, __alloT('stem.sourcebook.the_verified_fallback_shelf_remains_br', 'The verified fallback shelf remains browsable below'))
               ),
               h('div', { className: 'grid grid-cols-3 gap-2', 'aria-hidden': 'true' }, [0, 1, 2].map(function (index) {
                 return h('div', { key: index, className: 'overflow-hidden rounded-xl border border-sky-100 bg-white' },
@@ -11198,7 +11198,7 @@
             },
               h('div', { className: 'flex flex-col gap-3 p-3 sm:flex-row sm:items-center' },
                 h('div', { className: 'min-w-0 flex-1' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.14em] text-sky-800' }, __alloT('stem.sourcebook.compare_before_saving', 'Compare before saving')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.14em] text-sky-800' }, __alloT('stem.sourcebook.compare_before_saving', 'Compare before saving')),
                   h('p', { className: 'mt-1 text-xs font-bold leading-relaxed text-[#38564d]' }, comparisonItems.length + ' of ' + COMPARISON_MAX_ASSETS + ' rights-verified candidates selected. ' + (comparisonItems.length < 2 ? 'Add one more to review them side by side.' : 'Review source, reuse, relevance, and print readiness without another search.'))
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
@@ -11218,16 +11218,16 @@
                 return h('div', { key: item.id, className: 'flex min-w-0 items-center gap-2 bg-white p-2.5' },
                   h('div', { className: 'relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-[#e8ece7]' },
                     sourcebookImage(item, { alt: '', loading: 'lazy', className: 'h-full w-full object-cover' }),
-                    h('span', { 'aria-hidden': 'true', className: 'absolute left-1 top-1 rounded-full bg-[#183b32] px-1.5 py-0.5 text-[9px] font-black text-white' }, index + 1)
+                    h('span', { 'aria-hidden': 'true', className: 'absolute left-1 top-1 rounded-full bg-[#183b32] px-1.5 py-0.5 text-[0.5625rem] font-black text-white' }, index + 1)
                   ),
                   h('div', { className: 'min-w-0 flex-1' },
-                    h('p', { className: 'truncate text-[9px] font-black uppercase tracking-[.08em] text-[#60766d]' }, item.provider),
-                    h('p', { className: 'mt-0.5 line-clamp-2 text-[11px] font-black leading-tight text-[#18352d]' }, item.title),
-                    h('p', { className: 'mt-1 text-[9px] font-bold text-emerald-800' }, item.rightsShort)
+                    h('p', { className: 'truncate text-[0.5625rem] font-black uppercase tracking-[.08em] text-[#60766d]' }, item.provider),
+                    h('p', { className: 'mt-0.5 line-clamp-2 text-[0.6875rem] font-black leading-tight text-[#18352d]' }, item.title),
+                    h('p', { className: 'mt-1 text-[0.5625rem] font-bold text-emerald-800' }, item.rightsShort)
                   ),
                   h('button', {
                     type: 'button', onClick: function () { toggleComparison(item); },
-                    className: 'min-h-[40px] shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black text-slate-700',
+                    className: 'min-h-[40px] shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[0.625rem] font-black text-slate-700',
                     'aria-label': __alloTf('stem.sourcebook.aria_remove_from_comparison', 'Remove {title} from comparison', { title: item.title }),
                     'data-sourcebook-comparison-remove': item.id
                   }, __alloT('stem.sourcebook.remove', 'Remove'))
@@ -11241,9 +11241,9 @@
             },
               h('div', { className: 'flex flex-col gap-3 border-b border-[#cbdcd5] bg-[#183b32] p-4 text-white sm:flex-row sm:items-center' },
                 h('div', { className: 'min-w-0 flex-1' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, __alloT('stem.sourcebook.local_evaluation_no_new_provider_reque', 'Local evaluation / no new provider request')),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, __alloT('stem.sourcebook.local_evaluation_no_new_provider_reque', 'Local evaluation / no new provider request')),
                   h('h2', { id: 'sourcebook-comparison-title', tabIndex: -1, className: 'mt-1 font-serif text-xl font-black' }, __alloTf('stem.sourcebook.compare_sources', 'Compare {count} visual sources', { count: comparisonItems.length })),
-                  h('p', { className: 'mt-1 text-[11px] font-semibold text-[#d2e2dc]' }, __alloT('stem.sourcebook.every_candidate_still_passes_the_activ', 'Every candidate still passes the active reuse-rights scope. Saving remains a separate, explicit action.'))
+                  h('p', { className: 'mt-1 text-[0.6875rem] font-semibold text-[#d2e2dc]' }, __alloT('stem.sourcebook.every_candidate_still_passes_the_activ', 'Every candidate still passes the active reuse-rights scope. Saving remains a separate, explicit action.'))
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   h('div', { className: 'flex overflow-hidden rounded-xl border border-[#6f9185]', role: 'group', 'aria-label': __alloT('stem.sourcebook.compare_view_mode', 'Comparison view mode'), 'data-sourcebook-compare-view': comparisonView },
@@ -11284,15 +11284,15 @@
                 },
                   h('div', { className: 'relative h-44 overflow-hidden bg-[#e8ece7]' },
                     sourcebookImage(item, { alt: '', loading: 'lazy', className: 'h-full w-full object-contain', style: { filter: COMPARISON_VIEW_FILTERS[comparisonView] } }),
-                    h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[10px] font-black text-white' }, __alloTf('stem.sourcebook.label_candidate_n', 'Candidate {n}', { n: index + 1 })),
-                    h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-950' }, item.rightsShort)
+                    h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[0.625rem] font-black text-white' }, __alloTf('stem.sourcebook.label_candidate_n', 'Candidate {n}', { n: index + 1 })),
+                    h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950' }, item.rightsShort)
                   ),
                   h('div', { className: 'p-4' },
-                    h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, item.provider),
+                    h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] text-[#60766d]' }, item.provider),
                     h('h3', { className: 'mt-1 text-base font-black leading-tight text-[#18352d]' }, item.title),
-                    h('p', { className: 'mt-1 text-[11px] text-[#5c6e67]' }, item.creator + ' / ' + item.year),
-                    item.provider === MUSEUMS_VICTORIA_PROVIDER && h('p', { className: 'mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10px] font-black text-amber-950' }, __alloT('stem.sourcebook.review_the_source_record_for_cultural__2', 'Review the source record for cultural context and community guidance.')),
-                    h('dl', { className: 'mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[11px]' },
+                    h('p', { className: 'mt-1 text-[0.6875rem] text-[#5c6e67]' }, item.creator + ' / ' + item.year),
+                    item.provider === MUSEUMS_VICTORIA_PROVIDER && h('p', { className: 'mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5 text-[0.625rem] font-black text-amber-950' }, __alloT('stem.sourcebook.review_the_source_record_for_cultural__2', 'Review the source record for cultural context and community guidance.')),
+                    h('dl', { className: 'mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[0.6875rem]' },
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.match', 'Match')),
                       h('dd', { className: 'font-bold text-[#18352d]' }, itemMatch ? itemMatch.label : 'Browse match'),
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.source_2', 'Source')),
@@ -11306,8 +11306,8 @@
                       h('dt', { className: 'font-black text-[#526b62]' }, __alloT('stem.sourcebook.material', 'Material')),
                       h('dd', { className: 'font-bold text-[#18352d]' }, item.kind)
                     ),
-                    h('p', { className: 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[10px] font-bold leading-relaxed text-emerald-950' }, item.license + '. ' + item.rightsNote),
-                    h('p', { className: 'mt-2 line-clamp-3 text-[10px] font-semibold leading-relaxed text-[#5c6e67]' }, 'Credit: ' + attributionText(item)),
+                    h('p', { className: 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[0.625rem] font-bold leading-relaxed text-emerald-950' }, item.license + '. ' + item.rightsNote),
+                    h('p', { className: 'mt-2 line-clamp-3 text-[0.625rem] font-semibold leading-relaxed text-[#5c6e67]' }, 'Credit: ' + attributionText(item)),
                     h('div', { className: 'mt-3 flex flex-wrap gap-2' },
                       h('button', {
                         type: 'button', disabled: itemSaved, onClick: function () { if (!itemSaved) toggleSaved(item); },
@@ -11335,7 +11335,7 @@
             }, visible.map(resultCard).concat(!showingCollection && searchActive && liveResults.length > 0 ? [
               h('div', { key: 'sourcebook-streaming-placeholder', className: 'sb-no-print overflow-hidden rounded-2xl border border-dashed border-sky-300 bg-sky-50/70', role: 'status' },
                 h('div', { className: 'h-[180px] animate-pulse bg-gradient-to-br from-sky-100 via-white to-emerald-100 motion-reduce:animate-none' }),
-                h('p', { className: 'p-3 text-[11px] font-black text-sky-950' }, __alloT('stem.sourcebook.checking_the_remaining_public_collecti', 'Checking the remaining public collections…'))
+                h('p', { className: 'p-3 text-[0.6875rem] font-black text-sky-950' }, __alloT('stem.sourcebook.checking_the_remaining_public_collecti', 'Checking the remaining public collections…'))
               )
             ] : [])) : h('div', { className: 'rounded-3xl border-2 border-dashed border-[#b7c7c0] bg-[#f5f7f4] p-10 text-center' },
               h('div', { 'aria-hidden': 'true', className: 'text-4xl' }, '⌕'),
@@ -11350,7 +11350,7 @@
             },
               h('div', null,
                 h('p', { className: 'text-xs font-black text-[#29483f]', role: 'status', 'aria-live': 'polite' }, __alloTf('stem.sourcebook.label_showing_n_of_total_loaded', 'Showing {shown} of {total} loaded results', { shown: visible.length, total: refinedResults.length })),
-                h('p', { className: 'mt-1 text-[11px] leading-relaxed text-[#5a6f67]' }, __alloT('stem.sourcebook.these_assets_are_already_rights_checke', 'These assets are already rights-checked and loaded. Reveal more without starting another provider search.'))
+                h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-[#5a6f67]' }, __alloT('stem.sourcebook.these_assets_are_already_rights_checke', 'These assets are already rights-checked and loaded. Reveal more without starting another provider search.'))
               ),
               h('button', {
                 type: 'button',
@@ -11368,17 +11368,17 @@
             ),            h('section', { className: 'sb-no-print mt-6 rounded-3xl bg-[#1d3a32] text-[#edf5f1] p-5', 'aria-labelledby': 'sourcebook-more-title' },
               h('div', { className: 'flex items-start justify-between gap-3' },
                 h('div', null,
-                  h('p', { className: 'text-[11px] uppercase tracking-[.16em] font-black text-[#a9c8bd]' }, __alloT('stem.sourcebook.search_beyond_this_board', 'Search beyond this board')),
+                  h('p', { className: 'text-[0.6875rem] uppercase tracking-[.16em] font-black text-[#a9c8bd]' }, __alloT('stem.sourcebook.search_beyond_this_board', 'Search beyond this board')),
                   h('h2', { id: 'sourcebook-more-title', className: 'font-serif text-xl font-black' }, __alloT('stem.sourcebook.open_a_public_collection_directly', 'Open a public collection directly'))
                 ),
-                h('span', { className: 'text-[11px] rounded-full bg-[#315248] px-3 py-1' }, __alloT('stem.sourcebook.direct_links', 'Direct links'))
+                h('span', { className: 'text-[0.6875rem] rounded-full bg-[#315248] px-3 py-1' }, __alloT('stem.sourcebook.direct_links', 'Direct links'))
               ),
               h('p', { className: 'mt-2 text-xs leading-relaxed text-[#cadbd5]' }, __alloT('stem.sourcebook.sourcebook_s_built_in_shelf_works_offl', 'Sourcebook’s built-in shelf works offline once loaded. Provider links are optional handoffs and may show items that have not passed Sourcebook’s allowlist; only results shown on the Sourcebook board are admitted.')),
               h('div', { className: 'grid sm:grid-cols-2 gap-2 mt-4' }, PROVIDERS.map(function (source) {
                 return h('a', { key: source.id, href: source.search(query || draft), target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_open_provider_search', 'Open {name} search in a new tab', { name: source.name }), className: 'rounded-2xl border border-[#527067] bg-[#27473e] p-3 hover:bg-[#31564b]' },
                   h('div', { className: 'flex items-center gap-3' },
-                    h('span', { 'aria-hidden': 'true', className: 'w-9 h-9 rounded-xl bg-[#e5eee9] text-[#1e493d] inline-flex items-center justify-center text-[10px] font-black' }, source.mark),
-                    h('div', null, h('p', { className: 'text-xs font-black' }, source.name + ' ↗'), h('p', { className: 'text-[11px] text-[#b8cec6] mt-0.5' }, source.note))
+                    h('span', { 'aria-hidden': 'true', className: 'w-9 h-9 rounded-xl bg-[#e5eee9] text-[#1e493d] inline-flex items-center justify-center text-[0.625rem] font-black' }, source.mark),
+                    h('div', null, h('p', { className: 'text-xs font-black' }, source.name + ' ↗'), h('p', { className: 'text-[0.6875rem] text-[#b8cec6] mt-0.5' }, source.note))
                   )
                 );
               }))
@@ -11405,7 +11405,7 @@
             detailPanel(active)
           )
         ),
-        h('footer', { className: 'mt-5 p-4 rounded-2xl border border-[#d2d9d5] bg-[#faf8f2] text-[11px] leading-relaxed text-[#5d6d66]' },
+        h('footer', { className: 'mt-5 p-4 rounded-2xl border border-[#d2d9d5] bg-[#faf8f2] text-[0.6875rem] leading-relaxed text-[#5d6d66]' },
           h('strong', { className: 'text-[#334a41]' }, __alloT('stem.sourcebook.rights_allowlist', 'Rights allowlist: ')),
           __alloT('stem.sourcebook.public_domain_is_the_default_you_may_d', 'Public Domain is the default. You may deliberately add exact CC0 or CC BY records; CC BY items retain a required attribution line. Unknown, restricted, “no known restrictions,” noncommercial, share-alike, and incompatible licenses are excluded. Always verify the linked item record for the use you intend.')
         )

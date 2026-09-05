@@ -77,7 +77,7 @@ describe('Volume Lab accessibility', () => {
     const text = source();
     expect(text).not.toMatch(/text-\[(?:[0-9])px\]/);
     expect(text).not.toMatch(/fontSize:\s*(?:[0-9](?:\.[0-9]+)?)\b/);
-    expect(text).toContain('text-[10px] font-bold uppercase');
+    expect(text).toContain('text-[0.625rem] font-bold uppercase');
   });
 
   it('marks the detached export-only canvas as absent from the accessibility tree', () => {

@@ -660,7 +660,7 @@ window.StemLab = window.StemLab || {
           h('line', { key: 'tk' + a, x1: cx + (r - tickLen) * Math.cos(-ar), y1: cy + (r - tickLen) * Math.sin(-ar), x2: cx + (r + 2) * Math.cos(-ar), y2: cy + (r + 2) * Math.sin(-ar), stroke: major ? '#7c3aed' : '#a78bfa', strokeWidth: major ? 2 : mid ? 1.5 : 0.8 })
         ];
         if (a % 30 === 0) {
-          els.push(h('text', { key: 'tl' + a, x: cx + (r + 16) * Math.cos(-ar), y: cy + (r + 16) * Math.sin(-ar) + 3, textAnchor: 'middle', className: 'text-[11px] fill-purple-400 font-mono select-none' }, a + '\u00B0'));
+          els.push(h('text', { key: 'tl' + a, x: cx + (r + 16) * Math.cos(-ar), y: cy + (r + 16) * Math.sin(-ar) + 3, textAnchor: 'middle', className: 'text-[0.6875rem] fill-purple-400 font-mono select-none' }, a + '\u00B0'));
         }
         return h(React.Fragment, { key: 'tg' + a }, els);
       });
@@ -672,7 +672,7 @@ window.StemLab = window.StemLab || {
         var py = cy + (rayLen * 0.7) * Math.sin(-pr);
         return h('g', { key: 'pin' + i },
           h('circle', { cx: px, cy: py, r: 10, fill: '#fbbf24', fillOpacity: 0.7, stroke: '#f59e0b', strokeWidth: 1.5 }),
-          h('text', { x: px, y: py + 3, textAnchor: 'middle', className: 'text-[10px] fill-amber-900 font-bold select-none' }, pin.deg + '\u00B0')
+          h('text', { x: px, y: py + 3, textAnchor: 'middle', className: 'text-[0.625rem] fill-amber-900 font-bold select-none' }, pin.deg + '\u00B0')
         );
       });
 
@@ -726,12 +726,12 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-violet-300', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-violet-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-violet-100 ring-1 ring-violet-200/30' }, 'Angle investigation studio')
+                  h('span', { className: 'rounded-full bg-violet-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-violet-100 ring-1 ring-violet-200/30' }, 'Angle investigation studio')
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.angles.angle_explorer', '\uD83D\uDCD0 Angle Explorer')),
                 h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-violet-100' }, 'Estimate, construct, and justify angle relationships with precise visual evidence.'),
                 h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-violet-200' }, 'Recommended next move'),
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-violet-200' }, 'Recommended next move'),
                   h('p', { className: 'mt-1 text-sm font-semibold text-white' }, angleNext)
                 )
               ),
@@ -743,7 +743,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                     h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                    h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-violet-200' }, metric.label)
+                    h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-violet-200' }, metric.label)
                   );
                 })
               )
@@ -766,11 +766,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2' },
             h('div', { className: 'text-xs font-bold text-emerald-700' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
             streak > 0 && h('div', { className: 'text-xs font-bold text-amber-700' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('div', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak)
+            bestStreak > 0 && h('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Best: ' + bestStreak)
           ),
           h('div', { className: 'flex items-center gap-1' },
             // Badge count
-            h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200') },
+            h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200') },
               '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             // Sound toggle
             h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1.5 py-0.5 rounded transition-colors hover:bg-slate-100', title: t('stem.angles.sound_effects', 'Sound effects') },
@@ -783,10 +783,10 @@ window.StemLab = window.StemLab || {
                 addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
                 logAngle(angleValue, 'snapshot');
               },
-              className: 'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
+              className: 'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8'),
             // SVG Export
-            h('button', { 'aria-label': 'SVG', onClick: exportSVG, className: 'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all' },
+            h('button', { 'aria-label': 'SVG', onClick: exportSVG, className: 'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all' },
               t('stem.angles.svg', '\uD83D\uDCE5 SVG'))
           )
         ),
@@ -800,8 +800,8 @@ window.StemLab = window.StemLab || {
               return h('div', { key: badge.id, className: 'flex items-center gap-2 p-2 rounded-lg transition-all ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-400 opacity-50') },
                 h('span', { className: 'text-lg', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
-                  h('div', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
-                  h('div', { className: 'text-[11px] ' + (earned ? 'text-amber-600' : 'text-slate-600') }, __alloT('stem.angles.' + (badge.id) + '_desc', badge.desc))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
+                  h('div', { className: 'text-[0.6875rem] ' + (earned ? 'text-amber-600' : 'text-slate-600') }, __alloT('stem.angles.' + (badge.id) + '_desc', badge.desc))
                 )
               );
             })
@@ -870,11 +870,11 @@ window.StemLab = window.StemLab || {
               h('line', { x1: cx, y1: cy, x2: rayEndX, y2: rayEndY, stroke: '#7c3aed', strokeWidth: 3, strokeLinecap: 'round' }),
               // Bisector ray (dashed)
               showBisector && h('line', { x1: cx, y1: cy, x2: bisEndX, y2: bisEndY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,3', strokeLinecap: 'round' }),
-              showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[11px] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
+              showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[0.6875rem] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
               // Second ray
               showSecondRay && h('line', { x1: cx, y1: cy, x2: ray2EndX, y2: ray2EndY, stroke: '#06b6d4', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '8,3' }),
               showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': 'Second angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': secondAngle + ' degrees', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
-              showSecondRay && h('text', { x: cx, y: cy + arcR + 22, textAnchor: 'middle', className: 'text-[11px] fill-cyan-600 font-bold select-none' }, '\u2220 Between: ' + angleBetween + '\u00B0'),
+              showSecondRay && h('text', { x: cx, y: cy + arcR + 22, textAnchor: 'middle', className: 'text-[0.6875rem] fill-cyan-600 font-bold select-none' }, '\u2220 Between: ' + angleBetween + '\u00B0'),
               // Arc
               angleValue > 0 && angleValue < 360 && h('path', {
                 d: 'M ' + (cx + arcR) + ' ' + cy + ' A ' + arcR + ' ' + arcR + ' 0 ' + largeArc + ' 0 ' + arcEndX + ' ' + arcEndY,
@@ -891,7 +891,7 @@ window.StemLab = window.StemLab || {
               // Center dot
               h('circle', { cx: cx, cy: cy, r: 4, fill: '#334155' }),
               // Vertex label
-              h('text', { x: cx - 12, y: cy + 5, className: 'text-[11px] fill-slate-500 font-mono select-none' }, 'V')
+              h('text', { x: cx - 12, y: cy + 5, className: 'text-[0.6875rem] fill-slate-500 font-mono select-none' }, 'V')
             ),
             // Overlay: type badge
             h('div', { className: 'absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold ' + cc.bg + ' ' + cc.text + ' ' + cc.border + ' border' }, angleClass)
@@ -900,19 +900,19 @@ window.StemLab = window.StemLab || {
           // ── Controls row ──
           h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-4' },
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.angle', 'Angle')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.angle', 'Angle')),
               h('div', { className: 'text-xl font-bold text-purple-800' }, estimateActive ? '?' : convertedAngle)
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.type', 'Type')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.type', 'Type')),
               h('div', { className: 'text-base font-bold ' + cc.text }, angleClass)
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.explement', 'Explement')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.explement', 'Explement')),
               h('div', { className: 'text-base font-bold text-slate-700' }, estimateActive ? '?' : explementary + '\u00B0')
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center col-span-1' },
-              h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.unit', 'Unit')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.unit', 'Unit')),
               h('select', { value: angleUnit, onChange: function(e) { upd('angleUnit', e.target.value); }, 'aria-label': t('stem.angles.angle_unit', 'Angle unit'), className: 'text-xs font-bold text-purple-800 bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer w-full text-center' },
                 h('option', { value: 'deg' }, t('stem.angles.degrees', 'Degrees')),
                 h('option', { value: 'rad' }, t('stem.angles.radians', 'Radians')),
@@ -926,22 +926,22 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-3 border border-purple-100' },
             h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-valuetext': convertedAngle, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600', style: { boxSizing: 'content-box', padding: '8px 0', backgroundClip: 'content-box' } }),
             h('div', { className: 'flex justify-between mt-1' },
-              h('span', { className: 'text-[11px] text-slate-600' }, '0\u00B0'),
+              h('span', { className: 'text-[0.6875rem] text-slate-600' }, '0\u00B0'),
               h('div', { className: 'flex gap-2' },
-                h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
+                h('label', { className: 'flex items-center gap-1 text-[0.6875rem] text-slate-600 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: snapEnabled, onChange: function() { upd('snapEnabled', !snapEnabled); }, className: 'accent-purple-500' }),
                   t('stem.angles.snap_15', 'Snap 15\u00B0')
                 ),
-                h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
+                h('label', { className: 'flex items-center gap-1 text-[0.6875rem] text-slate-600 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: showBisector, onChange: function() { upd('showBisector', !showBisector); }, className: 'accent-amber-500' }),
                   t('stem.angles.bisector', 'Bisector')
                 ),
-                h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
+                h('label', { className: 'flex items-center gap-1 text-[0.6875rem] text-slate-600 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: showSecondRay, onChange: function() { upd('showSecondRay', !showSecondRay); }, className: 'accent-cyan-500' }),
                   t('stem.angles.2nd_ray', '2nd Ray')
                 )
               ),
-              h('span', { className: 'text-[11px] text-slate-600' }, '360\u00B0')
+              h('span', { className: 'text-[0.6875rem] text-slate-600' }, '360\u00B0')
             )
           ),
 
@@ -949,17 +949,17 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             [0, 30, 45, 60, 90, 120, 135, 150, 180, 270, 360].map(function(a) {
               return h('button', { 'aria-label': 'Set angle to ' + a + ' degrees', 'aria-pressed': angleValue === a, key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
-                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
+                className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
               }, a + '\u00B0');
             }),
-            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: t('stem.angles.pin_this_angle_on_protractor', 'Pin this angle on protractor') }, t('stem.angles.pin', '\uD83D\uDCCC Pin'))
+            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: t('stem.angles.pin_this_angle_on_protractor', 'Pin this angle on protractor') }, t('stem.angles.pin', '\uD83D\uDCCC Pin'))
           ),
 
           // Pinned angles
           anglePins.length > 0 && h('div', { className: 'flex gap-1.5 flex-wrap items-center' },
-            h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Pins:'),
+            h('span', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, 'Pins:'),
             anglePins.map(function(pin, i) {
-              return h('button', { 'aria-label': t('stem.angles.complementary', 'Complementary'), key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-red-100 hover:text-red-700 hover:border-red-700 transition-all', title: t('stem.angles.click_to_remove', 'Click to remove') },
+              return h('button', { 'aria-label': t('stem.angles.complementary', 'Complementary'), key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-red-100 hover:text-red-700 hover:border-red-700 transition-all', title: t('stem.angles.click_to_remove', 'Click to remove') },
                 pin.deg + '\u00B0 \u2715'
               );
             })
@@ -968,25 +968,25 @@ window.StemLab = window.StemLab || {
           // ── Supplementary / Complementary / Relationships ──
           h('div', { className: 'flex gap-2 flex-wrap' },
             complementary != null && h('div', { className: 'flex-1 bg-blue-50 rounded-lg p-2 border border-blue-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-blue-700 uppercase' }, t('stem.angles.complementary_2', 'Complementary')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-blue-700 uppercase' }, t('stem.angles.complementary_2', 'Complementary')),
               h('div', { className: 'text-sm font-bold text-blue-700' }, complementary + '\u00B0'),
-              h('div', { className: 'text-[11px] text-blue-800' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
+              h('div', { className: 'text-[0.6875rem] text-blue-800' }, angleValue + '\u00B0 + ' + complementary + '\u00B0 = 90\u00B0')
             ),
             supplementary != null && h('div', { className: 'flex-1 bg-teal-50 rounded-lg p-2 border border-teal-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-teal-700 uppercase' }, t('stem.angles.supplementary', 'Supplementary')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-teal-700 uppercase' }, t('stem.angles.supplementary', 'Supplementary')),
               h('div', { className: 'text-sm font-bold text-teal-700' }, supplementary + '\u00B0'),
-              h('div', { className: 'text-[11px] text-teal-700' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
+              h('div', { className: 'text-[0.6875rem] text-teal-700' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
             ),
             h('div', { className: 'flex-1 bg-indigo-50 rounded-lg p-2 border border-indigo-100 text-center min-w-[120px]' },
-              h('div', { className: 'text-[11px] font-bold text-indigo-700 uppercase' }, t('stem.angles.vertical_angle', 'Vertical Angle')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-indigo-700 uppercase' }, t('stem.angles.vertical_angle', 'Vertical Angle')),
               h('div', { className: 'text-sm font-bold text-indigo-700' }, verticalAngle + '\u00B0'),
-              h('div', { className: 'text-[11px] text-indigo-800' }, t('stem.angles.vertical_angles_are_equal', 'Vertical angles are equal!'))
+              h('div', { className: 'text-[0.6875rem] text-indigo-800' }, t('stem.angles.vertical_angles_are_equal', 'Vertical angles are equal!'))
             )
           ),
 
           // ── Real-world examples ──
           h('div', { className: cc.bg + ' rounded-xl p-3 border ' + cc.border },
-            h('div', { className: 'text-[11px] font-bold ' + cc.text + ' uppercase mb-1.5' }, '\uD83C\uDF0D Real-World ' + angleClass + ' Angles'),
+            h('div', { className: 'text-[0.6875rem] font-bold ' + cc.text + ' uppercase mb-1.5' }, '\uD83C\uDF0D Real-World ' + angleClass + ' Angles'),
             h('div', { className: 'space-y-1' },
               (realWorldExamples[angleClass] || []).map(function(ex, i) {
                 return h('div', { key: i, className: 'flex items-center gap-2 text-xs text-slate-700' },
@@ -1000,8 +1000,8 @@ window.StemLab = window.StemLab || {
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-1.5' },
-              h('span', { className: 'text-[11px] font-bold text-pink-600 uppercase' }, t('stem.angles.ai_angle_tutor', '\uD83E\uDD16 AI Angle Tutor')),
-              h('button', { 'aria-label': t('stem.angles.click_to_get_personalized_angle_tips', 'Click to get personalized angle tips!'), onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
+              h('span', { className: 'text-[0.6875rem] font-bold text-pink-600 uppercase' }, t('stem.angles.ai_angle_tutor', '\uD83E\uDD16 AI Angle Tutor')),
+              h('button', { 'aria-label': t('stem.angles.click_to_get_personalized_angle_tips', 'Click to get personalized angle tips!'), onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[0.6875rem] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
                 aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask for Tips')
             ),
             aiAdvice
@@ -1015,7 +1015,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         activeTab === 'challenges' && h('div', { className: 'space-y-3' },
           // Tolerance indicator
-          h('div', { className: 'flex items-center gap-2 text-[11px]' },
+          h('div', { className: 'flex items-center gap-2 text-[0.6875rem]' },
             h('span', { className: 'text-slate-600' + (ctx.isContrast ? ' text-white' : '') }, 'Difficulty:'),
             h('span', { className: 'font-bold ' + (tolerance <= 2 ? 'text-red-600' : tolerance <= 3 ? 'text-orange-700' : 'text-green-700') },
               tolerance <= 2 ? '\uD83D\uDD25 Expert (\u00B1' + tolerance + '\u00B0)' : tolerance <= 3 ? '\u26A1 Medium (\u00B1' + tolerance + '\u00B0)' : '\uD83C\uDF3F Easy (\u00B1' + tolerance + '\u00B0)'
@@ -1183,8 +1183,8 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-lg' }, ref.icon),
                     h('span', { className: 'font-bold text-sm text-' + ref.color + '-700' }, ref.type)
                   ),
-                  h('div', { className: 'text-[11px] text-' + ref.color + '-700 font-mono' }, ref.range),
-                  h('div', { className: 'text-[11px] text-' + ref.color + '-700 mt-0.5' }, 'Example: ' + ref.ex)
+                  h('div', { className: 'text-[0.6875rem] text-' + ref.color + '-700 font-mono' }, ref.range),
+                  h('div', { className: 'text-[0.6875rem] text-' + ref.color + '-700 mt-0.5' }, 'Example: ' + ref.ex)
                 );
               })
             )
@@ -1205,8 +1205,8 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-base' }, rel.icon),
                     h('span', { className: 'text-sm font-bold text-' + rel.color + '-700', style: { overflowWrap: 'anywhere' } }, rel.name)
                   ),
-                  h('div', { className: 'text-[11px] text-' + rel.color + '-700 mb-1' }, rel.desc),
-                  h('div', { className: 'text-[11px] text-' + rel.color + '-700 font-mono' }, rel.example)
+                  h('div', { className: 'text-[0.6875rem] text-' + rel.color + '-700 mb-1' }, rel.desc),
+                  h('div', { className: 'text-[0.6875rem] text-' + rel.color + '-700 font-mono' }, rel.example)
                 );
               })
             )
@@ -1217,17 +1217,17 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-emerald-700 uppercase mb-3' }, t('stem.angles.triangle_angle_sum_a_b_c_180', '\uD83D\uDD3A Triangle Angle Sum (\u2220A + \u2220B + \u2220C = 180\u00B0)')),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '\u2220A'),
+                h('div', { className: 'text-[0.6875rem] font-bold text-emerald-700 mb-1' }, '\u2220A'),
                 h('input', { type: 'range', min: 5, max: 170, value: triAngle1, onChange: function(e) { upd('triAngle1', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-valuetext': triAngle1 + '°', 'aria-label': 'Angle A: ' + triAngle1 + ' degrees' }),
                 h('div', { className: 'text-center text-sm font-bold text-emerald-800' }, triAngle1 + '\u00B0')
               ),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '\u2220B'),
+                h('div', { className: 'text-[0.6875rem] font-bold text-emerald-700 mb-1' }, '\u2220B'),
                 h('input', { type: 'range', min: 5, max: 170, value: triAngle2, onChange: function(e) { upd('triAngle2', parseInt(e.target.value)); }, className: 'w-full accent-emerald-500', 'aria-valuetext': triAngle2 + '°', 'aria-label': 'Angle B: ' + triAngle2 + ' degrees' }),
                 h('div', { className: 'text-center text-sm font-bold text-emerald-800' }, triAngle2 + '\u00B0')
               ),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, t('stem.angles.c_computed', '\u2220C (computed)')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-emerald-700 mb-1' }, t('stem.angles.c_computed', '\u2220C (computed)')),
                 h('div', { className: 'text-center text-2xl font-bold mt-1 ' + (triValid ? 'text-emerald-700' : 'text-red-600') }, triAngle3 + '\u00B0')
               )
             ),
@@ -1237,7 +1237,7 @@ window.StemLab = window.StemLab || {
                 : '\u26A0\uFE0F Invalid triangle! \u2220C must be > 0\u00B0'
             ),
             // Triangle classification
-            triValid && h('div', { className: 'mt-2 text-[11px] text-emerald-700 text-center' },
+            triValid && h('div', { className: 'mt-2 text-[0.6875rem] text-emerald-700 text-center' },
               'This is a ' +
               (triAngle1 === 60 && triAngle2 === 60 ? 'Equilateral' :
                (triAngle1 === triAngle2 || triAngle1 === triAngle3 || triAngle2 === triAngle3) ? 'Isosceles' : 'Scalene') +
@@ -1261,26 +1261,26 @@ window.StemLab = window.StemLab || {
                   upd('polygonsExplored', explored);
                   checkBadges({ polygonsExplored: explored });
                 },
-                  className: 'px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
+                  className: 'px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                     (active ? 'bg-violet-700 text-white shadow' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600')
                 }, p.icon + ' ' + p.name);
               })
             ),
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase' }, t('stem.angles.interior_angle', 'Interior Angle')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-700 uppercase' }, t('stem.angles.interior_angle', 'Interior Angle')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyInterior(selectedPolygon).toFixed(1) + '\u00B0')
               ),
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase' }, t('stem.angles.exterior_angle', 'Exterior Angle')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-700 uppercase' }, t('stem.angles.exterior_angle', 'Exterior Angle')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyExterior(selectedPolygon).toFixed(1) + '\u00B0')
               ),
               h('div', { className: 'bg-violet-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-violet-700 uppercase' }, t('stem.angles.angle_sum', 'Angle Sum')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-700 uppercase' }, t('stem.angles.angle_sum', 'Angle Sum')),
                 h('div', { className: 'text-xl font-bold text-violet-800' }, polyAngleSum(selectedPolygon) + '\u00B0')
               )
             ),
-            h('div', { className: 'mt-2 text-[11px] text-violet-700 text-center' },
+            h('div', { className: 'mt-2 text-[0.6875rem] text-violet-700 text-center' },
               'Formula: Interior = (n\u22122)\u00D7180\u00B0 \u00F7 n, where n = ' + selectedPolygon)
           )
         ),
@@ -1295,14 +1295,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-sky-700 uppercase mb-3' }, t('stem.angles.clock_angle_calculator', '\uD83D\uDD52 Clock Angle Calculator')),
             h('div', { className: 'flex gap-4 items-center justify-center mb-3' },
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-sky-700 mb-1' }, t('stem.angles.hour', 'Hour')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-sky-700 mb-1' }, t('stem.angles.hour', 'Hour')),
                 h('select', { value: clockHour, onChange: function(e) { upd('clockHour', parseInt(e.target.value)); }, 'aria-label': t('stem.angles.clock_hour', 'Clock hour'), className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [1,2,3,4,5,6,7,8,9,10,11,12].map(function(hr) { return h('option', { key: hr, value: hr }, hr); })
                 )
               ),
               h('span', { className: 'text-2xl font-bold text-sky-700' }, ':'),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-sky-700 mb-1' }, t('stem.angles.minute', 'Minute')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-sky-700 mb-1' }, t('stem.angles.minute', 'Minute')),
                 h('select', { value: clockMinute, onChange: function(e) { upd('clockMinute', parseInt(e.target.value)); }, 'aria-label': t('stem.angles.clock_minute', 'Clock minute'), className: 'px-3 py-1.5 border-2 border-sky-500 rounded-lg text-sm font-bold text-sky-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
                   [0,5,10,15,20,25,30,35,40,45,50,55].map(function(m) { return h('option', { key: m, value: m }, m < 10 ? '0' + m : m); })
                 )
@@ -1315,7 +1315,7 @@ window.StemLab = window.StemLab || {
                 // Hour numbers
                 [1,2,3,4,5,6,7,8,9,10,11,12].map(function(n) {
                   var na = (n * 30 - 90) * Math.PI / 180;
-                  return h('text', { key: n, x: 60 + 42 * Math.cos(na), y: 60 + 42 * Math.sin(na) + 4, textAnchor: 'middle', className: 'text-[11px] fill-sky-700 font-bold select-none' }, n);
+                  return h('text', { key: n, x: 60 + 42 * Math.cos(na), y: 60 + 42 * Math.sin(na) + 4, textAnchor: 'middle', className: 'text-[0.6875rem] fill-sky-700 font-bold select-none' }, n);
                 }),
                 // Hour hand
                 (function() {
@@ -1333,8 +1333,8 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-center' },
               h('div', { className: 'text-2xl font-bold text-sky-800' }, clockAngle.toFixed(1) + '\u00B0'),
               h('div', { className: 'text-xs text-sky-700' }, 'Angle between hands at ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute),
-              h('div', { className: 'text-[11px] mt-1 font-bold ' + (classColors[classifyAngle(Math.round(clockAngle))] || classColors['Acute']).text }, classifyAngle(Math.round(clockAngle)) + ' angle'),
-              h('button', { 'aria-label': t('stem.angles.show_on_protractor', 'Show on protractor'), onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[11px] font-bold text-sky-700 underline' }, t('stem.angles.show_on_protractor_2', '\u2192 Show on protractor'))
+              h('div', { className: 'text-[0.6875rem] mt-1 font-bold ' + (classColors[classifyAngle(Math.round(clockAngle))] || classColors['Acute']).text }, classifyAngle(Math.round(clockAngle)) + ' angle'),
+              h('button', { 'aria-label': t('stem.angles.show_on_protractor', 'Show on protractor'), onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[0.6875rem] font-bold text-sky-700 underline' }, t('stem.angles.show_on_protractor_2', '\u2192 Show on protractor'))
             )
           ),
 
@@ -1343,23 +1343,23 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-3' }, t('stem.angles.angle_unit_converter', '\uD83D\uDD04 Angle Unit Converter')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-3' },
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.degrees_2', 'Degrees')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-green-700 uppercase' }, t('stem.angles.degrees_2', 'Degrees')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, angleValue + '\u00B0')
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.radians_2', 'Radians')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-green-700 uppercase' }, t('stem.angles.radians_2', 'Radians')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toRadians(angleValue))
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.gradians_2', 'Gradians')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-green-700 uppercase' }, t('stem.angles.gradians_2', 'Gradians')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toGradians(angleValue))
               ),
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.turns_2', 'Turns')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-green-700 uppercase' }, t('stem.angles.turns_2', 'Turns')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toTurns(angleValue))
               )
             ),
-            h('div', { className: 'mt-2 text-[11px] text-green-700 text-center' },
+            h('div', { className: 'mt-2 text-[0.6875rem] text-green-700 text-center' },
               t('stem.angles.rad_180_200_grad_0_5_turns', '\u03C0 rad = 180\u00B0 = 200 grad = 0.5 turns'))
           ),
 
@@ -1367,14 +1367,14 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold text-slate-700 uppercase' }, t('stem.angles.recent_angles', '\uD83D\uDCDC Recent Angles')),
-              angleHistory.length > 0 && h('button', { 'aria-label': t('stem.angles.clear', 'Clear'), onClick: function() { upd('angleHistory', []); }, className: 'text-[11px] text-slate-600 hover:text-red-400' }, t('stem.angles.clear_2', 'Clear'))
+              angleHistory.length > 0 && h('button', { 'aria-label': t('stem.angles.clear', 'Clear'), onClick: function() { upd('angleHistory', []); }, className: 'text-[0.6875rem] text-slate-600 hover:text-red-400' }, t('stem.angles.clear_2', 'Clear'))
             ),
             angleHistory.length === 0
               ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, t('stem.angles.no_angles_explored_yet', 'No angles explored yet'))
               : h('div', { className: 'flex gap-1.5 flex-wrap' },
                   angleHistory.slice(0, 15).map(function(entry, i) {
                     return h('button', { 'aria-label': t('stem.angles.set_angle_value', 'Set Angle Value'), key: i, onClick: function() { setAngleValue(entry.deg); upd('activeTab', 'explore'); },
-                      className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-400 transition-all'
+                      className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-400 transition-all'
                     }, entry.deg + '\u00B0');
                   })
                 )
@@ -1539,7 +1539,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-200' },
           h('div', null,
             h('h3', { className: 'text-base font-black text-rose-900' }, t('stem.angles.angles_reference_library', '\uD83D\uDCD0 Angles Reference Library')),
-            h('div', { className: 'text-[11px] text-rose-700 mt-0.5' }, t('stem.angles.interactive_geometry_references_pick_a', 'Interactive geometry references \u2014 pick a topic.'))
+            h('div', { className: 'text-[0.6875rem] text-rose-700 mt-0.5' }, t('stem.angles.interactive_geometry_references_pick_a', 'Interactive geometry references \u2014 pick a topic.'))
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
@@ -1619,7 +1619,7 @@ window.StemLab = window.StemLab || {
           return h('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
@@ -1629,7 +1629,7 @@ window.StemLab = window.StemLab || {
             // (reading 'map')" and crashed the whole protractor tool on render.
             if (!g.tabs) return renderBtn(g, g.color || 'slate');
             return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              h('span', { 'aria-hidden': 'true', className: 'text-[10px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              h('span', { 'aria-hidden': 'true', className: 'text-[0.625rem] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
             );
           })
@@ -1644,10 +1644,10 @@ window.StemLab = window.StemLab || {
               return h('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
                   h('span', { className: 'text-xl text-rose-600 font-mono' }, a.icon),
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, a.name),
-                  h('span', { className: 'text-[11px] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-mono' }, a.range)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, a.name),
+                  h('span', { className: 'text-[0.6875rem] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-mono' }, a.range)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.desc)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, a.desc)
               );
             })
           )
@@ -1661,11 +1661,11 @@ window.StemLab = window.StemLab || {
             ANGLE_RELATIONSHIPS.map(function(r, i) {
               return h('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, r.name),
-                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, r.condition)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, r.name),
+                  h('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, r.condition)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-0.5' }, h('strong', null, 'Example: '), r.example),
-                h('div', { className: 'text-[11px] text-slate-600 italic' }, r.visual)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-0.5' }, h('strong', null, 'Example: '), r.example),
+                h('div', { className: 'text-[0.6875rem] text-slate-600 italic' }, r.visual)
               );
             })
           )
@@ -1675,9 +1675,9 @@ window.StemLab = window.StemLab || {
       function renderPolygonsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.polygon_angle_sums', '\u2B21 Polygon angle sums')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.interior_angle_sum_n_2_180_for_any_n_s', 'Interior angle sum = (n \u2212 2) \u00D7 180\u00B0 for any n-sided polygon. Each exterior angle of a REGULAR polygon = 360\u00B0/n. Sum of exterior angles always = 360\u00B0.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.interior_angle_sum_n_2_180_for_any_n_s', 'Interior angle sum = (n \u2212 2) \u00D7 180\u00B0 for any n-sided polygon. Each exterior angle of a REGULAR polygon = 360\u00B0/n. Sum of exterior angles always = 360\u00B0.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['n', 'Name', 'Sum interior', 'Each (regular)', 'Each exterior', 'Notes'].map(function(hh, i) {
@@ -1693,7 +1693,7 @@ window.StemLab = window.StemLab || {
                     h('td', { className: 'px-2 py-1 text-slate-700' }, p.interiorSum),
                     h('td', { className: 'px-2 py-1 text-slate-700' }, p.regularInterior),
                     h('td', { className: 'px-2 py-1 text-slate-700' }, p.exteriorEach),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, p.notes)
                   );
                 })
               )
@@ -1705,16 +1705,16 @@ window.StemLab = window.StemLab || {
       function renderTrigSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.sin_trigonometric_functions', 'sin Trigonometric functions')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.soh_cah_toa_sine_opp_hyp_cosine_adj_hy', 'SOH-CAH-TOA: Sine = Opp/Hyp, Cosine = Adj/Hyp, Tangent = Opp/Adj. The trig functions express ratios of right-triangle sides; extended to all angles via the unit circle.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.soh_cah_toa_sine_opp_hyp_cosine_adj_hy', 'SOH-CAH-TOA: Sine = Opp/Hyp, Cosine = Adj/Hyp, Tangent = Opp/Adj. The trig functions express ratios of right-triangle sides; extended to all angles via the unit circle.')),
           h('div', { className: 'space-y-2' },
             TRIG_REF.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
                   h('span', { className: 'text-base font-black text-rose-700 font-mono min-w-[48px]' }, t.fn),
-                  h('span', { className: 'text-[11px] font-bold text-slate-700' }, t.mnemonic),
-                  h('span', { className: 'text-[10px] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, t.range)
+                  h('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, t.mnemonic),
+                  h('span', { className: 'text-[0.625rem] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, t.range)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.notes)
               );
             })
           )
@@ -1724,9 +1724,9 @@ window.StemLab = window.StemLab || {
       function renderSpecialSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.special_angles_unit_circle', '\u2605 Special angles (unit circle)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.these_angles_their_trig_values_are_wor', 'These angles + their trig values are worth memorizing \u2014 they appear constantly in math, physics, and engineering.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.these_angles_their_trig_values_are_wor', 'These angles + their trig values are worth memorizing \u2014 they appear constantly in math, physics, and engineering.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Degrees', 'Radians', 'sin', 'cos', 'tan', 'Notes'].map(function(hh, i) {
@@ -1742,7 +1742,7 @@ window.StemLab = window.StemLab || {
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, s.sin),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, s.cos),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, s.tan),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, s.notes)
                   );
                 })
               )
@@ -1758,15 +1758,15 @@ window.StemLab = window.StemLab || {
             ANGLE_UNITS.map(function(u, i) {
               return h('div', { key: 'u'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, u.unit),
-                  h('span', { className: 'text-[11px] font-bold ml-2 text-rose-700' }, u.symbol),
-                  h('span', { className: 'text-[10px] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, u.fullCircle)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, u.unit),
+                  h('span', { className: 'text-[0.6875rem] font-bold ml-2 text-rose-700' }, u.symbol),
+                  h('span', { className: 'text-[0.625rem] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, u.fullCircle)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, u.use)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, u.use)
               );
             })
           ),
-          h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+          h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900' },
             h('strong', null, t('stem.angles.conversions', '\uD83D\uDD01 Conversions: ')), t('stem.angles.1_rad_180_57_296_1_180_0_01745_rad_1_g', '1 rad = 180/\u03C0 \u2248 57.296\u00B0. 1\u00B0 = \u03C0/180 \u2248 0.01745 rad. 1 gon = 0.9\u00B0. Most calculators have a degrees/radians mode toggle \u2014 make sure you\'re in the right mode!')
           )
         );
@@ -1779,10 +1779,10 @@ window.StemLab = window.StemLab || {
             REAL_WORLD_ANGLES.map(function(r, i) {
               return h('div', { key: 'r'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, r.thing),
-                  h('span', { className: 'text-[11px] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold' }, r.angle)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, r.thing),
+                  h('span', { className: 'text-[0.6875rem] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold' }, r.angle)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, r.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, r.notes)
               );
             })
           )
@@ -1795,8 +1795,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             ANGLE_TRICKS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-2.5 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, t.trick),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.use)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, t.trick),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.use)
               );
             })
           )
@@ -1806,12 +1806,12 @@ window.StemLab = window.StemLab || {
       function renderCompassSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.compass_bearings_16_point', '\uD83E\uDDED Compass bearings (16-point)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.bearings_measured_clockwise_from_north', 'Bearings measured CLOCKWISE from north. Standard 16-point compass has 22.5\u00B0 between adjacent directions.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.bearings_measured_clockwise_from_north', 'Bearings measured CLOCKWISE from north. Standard 16-point compass has 22.5\u00B0 between adjacent directions.')),
           h('div', { className: 'grid grid-cols-4 gap-2' },
             COMPASS_BEARINGS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded-md bg-slate-50 border border-slate-200 text-center' },
                 h('div', { className: 'text-base font-black text-rose-700' }, c.dir),
-                h('div', { className: 'text-[10px] font-mono text-slate-600' }, c.bearing)
+                h('div', { className: 'text-[0.625rem] font-mono text-slate-600' }, c.bearing)
               );
             })
           )
@@ -1928,52 +1928,52 @@ window.StemLab = window.StemLab || {
         var correct = currentQuiz && !isNaN(userAns) && Math.abs(userAns - currentQuiz.expected) <= currentQuiz.tolerance;
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.angles.pisa_linked_representations', '🗼 Pisa: linked representations')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             t('stem.angles.three_views_of_the_same_trigonometric_', 'Three views of the SAME trigonometric setup. Drag the angle (or tower height) slider — every representation updates simultaneously. Then take the inverse-problem quiz: solve a real measurement from only one representation.')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
             h('div', null,
-              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, t('stem.angles.1_phenomenon_the_tower', '1. Phenomenon — the tower')),
+              h('div', { className: 'text-[0.625rem] uppercase font-bold text-slate-500 tracking-wider mb-1' }, t('stem.angles.1_phenomenon_the_tower', '1. Phenomenon — the tower')),
               towerSVG()
             ),
             h('div', null,
-              h('div', { className: 'text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1' }, t('stem.angles.2_geometric_decomposition', '2. Geometric decomposition')),
+              h('div', { className: 'text-[0.625rem] uppercase font-bold text-slate-500 tracking-wider mb-1' }, t('stem.angles.2_geometric_decomposition', '2. Geometric decomposition')),
               triangleSVG()
             )
           ),
           h('div', { className: 'mb-3 p-3 rounded-lg bg-rose-50 border border-rose-200' },
-            h('div', { className: 'text-[10px] uppercase font-bold text-rose-700 tracking-wider mb-1' }, t('stem.angles.3_equation', '3. Equation')),
-            h('div', { className: 'font-mono text-[16px] text-rose-900 text-center my-2' }, t('stem.angles.tan_opposite_adjacent', 'tan(θ) = opposite / adjacent')),
-            h('div', { className: 'font-mono text-[14px] text-rose-800 text-center' },
+            h('div', { className: 'text-[0.625rem] uppercase font-bold text-rose-700 tracking-wider mb-1' }, t('stem.angles.3_equation', '3. Equation')),
+            h('div', { className: 'font-mono text-[1rem] text-rose-900 text-center my-2' }, t('stem.angles.tan_opposite_adjacent', 'tan(θ) = opposite / adjacent')),
+            h('div', { className: 'font-mono text-[0.875rem] text-rose-800 text-center' },
               'tan(' + theta.toFixed(1) + '°) = ' + opp.toFixed(2) + ' / ' + adj.toFixed(2) + ' = ' + tanVal.toFixed(4)
             ),
-            h('div', { className: 'text-[11px] text-rose-700 italic text-center mt-1' }, t('stem.angles.change_the_angle_and_watch_all_three_u', 'Change the angle and watch all three update together — this is what "the same idea, three representations" means.'))
+            h('div', { className: 'text-[0.6875rem] text-rose-700 italic text-center mt-1' }, t('stem.angles.change_the_angle_and_watch_all_three_u', 'Change the angle and watch all three update together — this is what "the same idea, three representations" means.'))
           ),
           h('div', { className: 'p-3 rounded-lg bg-slate-50 border border-slate-200 mb-3' },
-            h('label', { htmlFor: 'pisaAngle', className: 'block text-[11px] font-bold text-slate-700' }, 'Tilt angle θ: ' + theta.toFixed(1) + '°'),
+            h('label', { htmlFor: 'pisaAngle', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Tilt angle θ: ' + theta.toFixed(1) + '°'),
             h('input', { id: 'pisaAngle', type: 'range', min: 0, max: 30, step: 0.1, value: theta, onChange: function(e) { setPC({ angleDeg: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-valuetext': theta.toFixed(1) + '°', 'aria-label': t('stem.angles.tilt_angle_in_degrees', 'Tilt angle in degrees') }),
-            h('label', { htmlFor: 'pisaHeight', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, 'Tower height: ' + towerH + ' m'),
+            h('label', { htmlFor: 'pisaHeight', className: 'block text-[0.6875rem] font-bold text-slate-700 mt-2' }, 'Tower height: ' + towerH + ' m'),
             h('input', { id: 'pisaHeight', type: 'range', min: 20, max: 100, step: 1, value: towerH, onChange: function(e) { setPC({ towerHeight: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-valuetext': towerH + ' m', 'aria-label': t('stem.angles.tower_height_in_meters', 'Tower height in meters') }),
-            h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, t('stem.angles.pisa_is_roughly_56_m_tall_leaning_4_to', '(Pisa is roughly 56 m tall, leaning ≈ 4° today)'))
+            h('p', { className: 'text-[0.625rem] text-slate-500 italic mt-1' }, t('stem.angles.pisa_is_roughly_56_m_tall_leaning_4_to', '(Pisa is roughly 56 m tall, leaning ≈ 4° today)'))
           ),
           h('div', { className: 'p-3 rounded-lg bg-amber-50 border border-amber-200' },
-            h('div', { className: 'text-[12px] font-black text-amber-900 mb-2' }, t('stem.angles.inverse_problem_quiz', '🧩 Inverse-problem quiz')),
-            h('p', { className: 'text-[11px] text-amber-800 mb-2' }, t('stem.angles.each_quiz_gives_you_partial_info_use_t', 'Each quiz gives you partial info. Use the relationships you discovered above to compute the missing value.')),
+            h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-2' }, t('stem.angles.inverse_problem_quiz', '🧩 Inverse-problem quiz')),
+            h('p', { className: 'text-[0.6875rem] text-amber-800 mb-2' }, t('stem.angles.each_quiz_gives_you_partial_info_use_t', 'Each quiz gives you partial info. Use the relationships you discovered above to compute the missing value.')),
             h('div', { className: 'flex flex-wrap gap-1 mb-2' },
               QUIZ_QS.map(function(q, i) {
                 return h('button', { key: q.id, onClick: function() { startQuiz(q); },
-                  className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-amber-400 focus:outline-none ' + (state.quizQ === q.id ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-100')
+                  className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus:ring-2 focus:ring-amber-400 focus:outline-none ' + (state.quizQ === q.id ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-100')
                 }, 'Quiz #' + (i + 1));
               })
             ),
             currentQuiz && h('div', { className: 'mt-2 p-2 rounded bg-white border border-amber-300' },
-              h('div', { className: 'text-[12px] text-slate-700 mb-1' }, h('strong', null, 'Given: '), currentQuiz.given + '; ' + currentQuiz.given2),
-              h('div', { className: 'text-[12px] text-slate-700 mb-2' }, h('strong', null, 'Find: '), currentQuiz.ask),
+              h('div', { className: 'text-[0.75rem] text-slate-700 mb-1' }, h('strong', null, 'Given: '), currentQuiz.given + '; ' + currentQuiz.given2),
+              h('div', { className: 'text-[0.75rem] text-slate-700 mb-2' }, h('strong', null, 'Find: '), currentQuiz.ask),
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                h('input', { type: 'number', step: 'any', value: state.quizAns, onChange: function(e) { setPC({ quizAns: e.target.value, quizRevealed: false }); }, placeholder: t('stem.angles.your_answer', 'your answer'), className: 'px-2 py-1 rounded border border-slate-300 text-[12px] w-32 focus:ring-2 focus:ring-amber-400 focus:outline-none', 'aria-label': t('stem.angles.your_answer_2', 'Your answer') }),
-                h('button', { onClick: submitQuiz, disabled: state.quizAns === '', className: 'px-3 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, t('stem.angles.check_5', 'Check')),
-                state.quizRevealed && h('span', { className: 'text-[11px] font-bold ' + (correct ? 'text-green-700' : 'text-rose-700') }, correct ? '✓ Within tolerance' : '✗ Expected ≈ ' + currentQuiz.expected.toFixed(2))
+                h('input', { type: 'number', step: 'any', value: state.quizAns, onChange: function(e) { setPC({ quizAns: e.target.value, quizRevealed: false }); }, placeholder: t('stem.angles.your_answer', 'your answer'), className: 'px-2 py-1 rounded border border-slate-300 text-[0.75rem] w-32 focus:ring-2 focus:ring-amber-400 focus:outline-none', 'aria-label': t('stem.angles.your_answer_2', 'Your answer') }),
+                h('button', { onClick: submitQuiz, disabled: state.quizAns === '', className: 'px-3 py-1 rounded text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, t('stem.angles.check_5', 'Check')),
+                state.quizRevealed && h('span', { className: 'text-[0.6875rem] font-bold ' + (correct ? 'text-green-700' : 'text-rose-700') }, correct ? '✓ Within tolerance' : '✗ Expected ≈ ' + currentQuiz.expected.toFixed(2))
               ),
-              state.quizRevealed && h('p', { className: 'text-[11px] text-slate-700 mt-1 italic' }, t('stem.angles.tip_rearrange_tan_opp_adj_if_you_know_', 'Tip: rearrange tan(θ) = opp/adj — if you know θ and one side, you can solve for the other. If you know both sides, take arctan.'))
+              state.quizRevealed && h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1 italic' }, t('stem.angles.tip_rearrange_tan_opp_adj_if_you_know_', 'Tip: rearrange tan(θ) = opp/adj — if you know θ and one side, you can solve for the other. If you know both sides, take arctan.'))
             )
           )
         );
@@ -1985,8 +1985,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             ANGLES_GLOSSARY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900' }, g.term),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900' }, g.term),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.def)
               );
             })
           )
@@ -2164,9 +2164,9 @@ window.StemLab = window.StemLab || {
       function renderPythagSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.a_b_pythagorean_theorem', 'a²+b² Pythagorean theorem')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.in_a_right_triangle_a_b_c_where_c_is_t', 'In a right triangle, a² + b² = c² where c is the hypotenuse. Sets of integers (a, b, c) that satisfy this are called Pythagorean triples. A "primitive" triple has no common factor.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.in_a_right_triangle_a_b_c_where_c_is_t', 'In a right triangle, a² + b² = c² where c is the hypotenuse. Sets of integers (a, b, c) that satisfy this are called Pythagorean triples. A "primitive" triple has no common factor.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['a', 'b', 'c', 'Notes'].map(function(hh, i) {
@@ -2180,13 +2180,13 @@ window.StemLab = window.StemLab || {
                     h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.a),
                     h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.b),
                     h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.c),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px] italic' }, t.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem] italic' }, t.notes)
                   );
                 })
               )
             )
           ),
-          h('div', { className: 'mt-3 p-2.5 rounded bg-rose-50 border border-rose-200 text-[11px] text-rose-900' },
+          h('div', { className: 'mt-3 p-2.5 rounded bg-rose-50 border border-rose-200 text-[0.6875rem] text-rose-900' },
             h('strong', null, t('stem.angles.generating_primitive_triples', 'Generating primitive triples: ')), t('stem.angles.for_positive_integers_m_n_with_no_comm', 'For positive integers m > n with no common factor and not both odd, a = m² − n², b = 2mn, c = m² + n². Tries m=2, n=1 → (3,4,5).')
           )
         );
@@ -2196,29 +2196,29 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.triangle_types_and_formulas', '△ Triangle types and formulas')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.classification', 'Classification')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.classification', 'Classification')),
             h('div', { className: 'space-y-1' },
               TRIANGLE_TYPES.map(function(t, i) {
                 return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    h('span', { className: 'text-[11px] font-black text-slate-800' }, t.type),
-                    h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto' }, t.angles)
+                    h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, t.type),
+                    h('span', { className: 'text-[0.625rem] text-rose-700 font-mono ml-auto' }, t.angles)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700 italic mb-0.5' }, t.sides),
-                  h('div', { className: 'text-[10px] text-slate-700' }, t.notes)
+                  h('div', { className: 'text-[0.625rem] text-slate-700 italic mb-0.5' }, t.sides),
+                  h('div', { className: 'text-[0.625rem] text-slate-700' }, t.notes)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.key_formulas', 'Key formulas')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.key_formulas', 'Key formulas')),
           h('div', { className: 'space-y-1' },
             TRIANGLE_FORMULAS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                  h('span', { className: 'text-[11px] font-black text-slate-800' }, f.name),
-                  h('span', { className: 'text-[11px] font-mono ml-auto text-rose-700 font-bold' }, f.formula)
+                  h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, f.name),
+                  h('span', { className: 'text-[0.6875rem] font-mono ml-auto text-rose-700 font-bold' }, f.formula)
                 ),
-                h('div', { className: 'text-[10px] text-slate-700' }, f.notes)
+                h('div', { className: 'text-[0.625rem] text-slate-700' }, f.notes)
               );
             })
           )
@@ -2232,10 +2232,10 @@ window.StemLab = window.StemLab || {
             CIRCLE_FACTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                  h('span', { className: 'text-[11px] font-black text-slate-800' }, c.name),
-                  h('span', { className: 'text-[11px] font-mono ml-auto text-rose-700 font-bold' }, c.formula)
+                  h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[0.6875rem] font-mono ml-auto text-rose-700 font-bold' }, c.formula)
                 ),
-                h('div', { className: 'text-[10px] text-slate-700' }, c.notes)
+                h('div', { className: 'text-[0.625rem] text-slate-700' }, c.notes)
               );
             })
           )
@@ -2246,7 +2246,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.3d_solids_volumes_and_surface_areas', '⬢ 3D solids — volumes and surface areas')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Solid', 'Volume (V)', 'Surface area (SA)', 'Notes'].map(function(hh, i) {
@@ -2258,9 +2258,9 @@ window.StemLab = window.StemLab || {
                 SOLID_VOLUMES.map(function(s, i) {
                   return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.name),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, s.V),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 text-[10px]' }, s.SA),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, s.V),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 text-[0.625rem]' }, s.SA),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, s.notes)
                   );
                 })
               )
@@ -2275,10 +2275,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             TRANSFORMATIONS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, t.name),
-                h('div', { className: 'text-[11px] text-rose-700 font-bold mb-1' }, t.effect),
-                h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Preserves: '), t.preserves),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, t.name),
+                h('div', { className: 'text-[0.6875rem] text-rose-700 font-bold mb-1' }, t.effect),
+                h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, 'Preserves: '), t.preserves),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.notes)
               );
             })
           )
@@ -2292,11 +2292,11 @@ window.StemLab = window.StemLab || {
             COORD_SYSTEMS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.name),
-                  h('span', { className: 'text-[11px] font-mono text-rose-700 font-bold ml-auto px-2 py-0.5 rounded bg-rose-100' }, c.coords)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[0.6875rem] font-mono text-rose-700 font-bold ml-auto px-2 py-0.5 rounded bg-rose-100' }, c.coords)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Use: '), c.use),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Use: '), c.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.notes)
               );
             })
           )
@@ -2309,8 +2309,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             VECTOR_NOTES.map(function(v, i) {
               return h('div', { key: 'v'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, v.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, v.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, v.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, v.detail)
               );
             })
           )
@@ -2324,11 +2324,11 @@ window.StemLab = window.StemLab || {
             SYMMETRY_TYPES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.name),
-                  h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto' }, s.count)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.name),
+                  h('span', { className: 'text-[0.625rem] text-rose-700 font-mono ml-auto' }, s.count)
                 ),
-                h('div', { className: 'text-[10px] text-slate-700 italic mb-1' }, 'Example: ' + s.example),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+                h('div', { className: 'text-[0.625rem] text-slate-700 italic mb-1' }, 'Example: ' + s.example),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.notes)
               );
             })
           )
@@ -2341,8 +2341,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             TILING_FACTS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, t.name),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, t.name),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.detail)
               );
             })
           )
@@ -2356,10 +2356,10 @@ window.StemLab = window.StemLab || {
             GEOMETRY_HISTORY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-0.5' },
-                  h('span', { className: 'text-[10px] font-mono text-rose-700 font-bold' }, g.year),
-                  h('span', { className: 'text-[12px] font-black text-rose-900' }, g.who)
+                  h('span', { className: 'text-[0.625rem] font-mono text-rose-700 font-bold' }, g.year),
+                  h('span', { className: 'text-[0.75rem] font-black text-rose-900' }, g.who)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.what)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.what)
               );
             })
           )
@@ -2372,8 +2372,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             ANGLE_CAREERS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, c.career),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.use)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, c.career),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.use)
               );
             })
           )
@@ -2459,9 +2459,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             CLASSIC_THEOREMS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-1' }, t.theorem),
-                h('div', { className: 'text-[11px] text-slate-800 font-mono mb-1' }, t.statement),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed italic' }, t.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-1' }, t.theorem),
+                h('div', { className: 'text-[0.6875rem] text-slate-800 font-mono mb-1' }, t.statement),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed italic' }, t.notes)
               );
             })
           )
@@ -2501,8 +2501,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             SHAPE_FACTS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, f.fact),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, f.fact),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -2543,28 +2543,28 @@ window.StemLab = window.StemLab || {
       function renderFlagDesignSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.flag_geometry_2', '🚩 Flag geometry')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.flags_are_codified_geometry_every_nati', 'Flags are codified geometry. Every national flag has precise specifications: aspect ratio, color codes, charge positions, star angles.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.flags_are_codified_geometry_every_nati', 'Flags are codified geometry. Every national flag has precise specifications: aspect ratio, color codes, charge positions, star angles.')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.selected_national_organizational_flags', 'Selected national + organizational flags')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.selected_national_organizational_flags', 'Selected national + organizational flags')),
             h('div', { className: 'space-y-2' },
               FLAG_GEOMETRY.map(function(f, i) {
                 return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                    h('span', { className: 'text-[12px] font-black text-slate-800' }, f.flag),
-                    h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto px-2 py-0.5 rounded bg-rose-100' }, f.ratio)
+                    h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, f.flag),
+                    h('span', { className: 'text-[0.625rem] text-rose-700 font-mono ml-auto px-2 py-0.5 rounded bg-rose-100' }, f.ratio)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Features: '), f.features),
-                  h('div', { className: 'text-[10px] text-slate-600 italic' }, f.notes)
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, 'Features: '), f.features),
+                  h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, f.notes)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.flag_design_principles', 'Flag design principles')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.flag_design_principles', 'Flag design principles')),
           h('div', { className: 'space-y-1' },
             FLAG_GEOMETRY_NOTES.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[11px] font-black text-rose-900 mb-0.5' }, n.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+                h('div', { className: 'text-[0.6875rem] font-black text-rose-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.detail)
               );
             })
           )
@@ -2614,10 +2614,10 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.roof_pitch_ramp_grade_tables', '◢ Roof pitch + ramp grade tables')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.roof_pitches_rise_run_notation', 'Roof pitches (rise:run notation)')),
-            h('p', { className: 'text-[11px] text-slate-700 mb-2' }, t('stem.angles.x_12_means_x_inches_rise_per_12_inches', 'X:12 means X inches rise per 12 inches of horizontal run.')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.roof_pitches_rise_run_notation', 'Roof pitches (rise:run notation)')),
+            h('p', { className: 'text-[0.6875rem] text-slate-700 mb-2' }, t('stem.angles.x_12_means_x_inches_rise_per_12_inches', 'X:12 means X inches rise per 12 inches of horizontal run.')),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'min-w-full text-[11px] border-collapse' },
+              h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
                 h('thead', null,
                   h('tr', { className: 'bg-slate-100' },
                     ['Pitch (X:12)', 'Angle', '% slope', 'Notes'].map(function(hh, i) {
@@ -2631,16 +2631,16 @@ window.StemLab = window.StemLab || {
                       h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, r.name),
                       h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, r.degrees),
                       h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, r.percent),
-                      h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                      h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, r.notes)
                     );
                   })
                 )
               )
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.ramp_grades_transportation_slopes', 'Ramp grades + transportation slopes')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.ramp_grades_transportation_slopes', 'Ramp grades + transportation slopes')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Use case', 'Grade', 'Angle', 'Notes'].map(function(hh, i) {
@@ -2652,9 +2652,9 @@ window.StemLab = window.StemLab || {
                 RAMP_GRADES.map(function(g, i) {
                   return h('tr', { key: 'g'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, g.use),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, g.grade),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, g.degrees),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, g.grade),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, g.degrees),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, g.notes)
                   );
                 })
               )
@@ -2715,7 +2715,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.notable_peaks_their_slopes', '⛰ Notable peaks + their slopes')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Peak', 'Height', 'Range', 'Country', 'Notes'].map(function(hh, i) {
@@ -2727,10 +2727,10 @@ window.StemLab = window.StemLab || {
                 MOUNTAINS.map(function(m, i) {
                   return h('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.peak),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, m.height),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, m.range),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, m.country),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, m.height),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, m.range),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, m.country),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, m.notes)
                   );
                 })
               )
@@ -2742,9 +2742,9 @@ window.StemLab = window.StemLab || {
       function renderPlanetsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.solar_system_planets_dwarf_planets', '🪐 Solar system planets + dwarf planets')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.axial_tilt_drives_seasons_tilt_90_mean', 'Axial tilt drives seasons. Tilt > 90° means retrograde rotation (Venus, Uranus, Pluto).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.axial_tilt_drives_seasons_tilt_90_mean', 'Axial tilt drives seasons. Tilt > 90° means retrograde rotation (Venus, Uranus, Pluto).')),
           h('div', { className: 'overflow-x-auto mb-3' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Planet', 'Diameter', 'Distance', 'Day', 'Year', 'Tilt', 'Notes'].map(function(hh, i) {
@@ -2756,23 +2756,23 @@ window.StemLab = window.StemLab || {
                 PLANET_DATA.map(function(p, i) {
                   return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.planet),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.diameter),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.distance),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.day),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, p.year),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, p.tilt),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, p.diameter),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, p.distance),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, p.day),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, p.year),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, p.tilt),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, p.notes)
                   );
                 })
               )
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.angles.solar_system_facts', 'Solar system facts')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.solar_system_facts', 'Solar system facts')),
           h('div', { className: 'space-y-1' },
             SOLAR_SYSTEM_FACTS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[11px] font-black text-rose-900 mb-0.5' }, f.fact),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                h('div', { className: 'text-[0.6875rem] font-black text-rose-900 mb-0.5' }, f.fact),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -2860,9 +2860,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             GEOMETRY_PUZZLES.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-1' }, p.name),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1 italic' }, p.description),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, '→ '), p.answer)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-1' }, p.name),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1 italic' }, p.description),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, h('strong', null, '→ '), p.answer)
               );
             })
           )
@@ -2875,8 +2875,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             FAMOUS_TILINGS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, t.name),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, t.name),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.detail)
               );
             })
           )
@@ -2886,9 +2886,9 @@ window.StemLab = window.StemLab || {
       function renderCitiesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.world_city_coordinates', '🌆 World city coordinates')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.latitude_longitude_in_decimal_degrees_', 'Latitude + longitude in decimal degrees. Lat: 0° = equator, ±90° = poles. Lon: 0° = Greenwich, ±180° = international date line area.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.latitude_longitude_in_decimal_degrees_', 'Latitude + longitude in decimal degrees. Lat: 0° = equator, ±90° = poles. Lon: 0° = Greenwich, ±180° = international date line area.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['City', 'Latitude', 'Longitude', 'Notes'].map(function(hh, i) {
@@ -2900,9 +2900,9 @@ window.StemLab = window.StemLab || {
                 WORLD_CITIES.map(function(c, i) {
                   return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.city),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, c.lat),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, c.lon),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, c.lat),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, c.lon),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -3056,7 +3056,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.mathematical_physical_constants', 'π Mathematical + physical constants')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Symbol', 'Value', 'Notes'].map(function(hh, i) {
@@ -3068,8 +3068,8 @@ window.StemLab = window.StemLab || {
                 MATH_CONSTANTS.map(function(c, i) {
                   return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-mono font-black text-rose-700' }, c.symbol),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, c.value),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, c.value),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -3082,7 +3082,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.earth_measurements_2', '🌎 Earth measurements')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Measurement', 'Value', 'Notes'].map(function(hh, i) {
@@ -3094,8 +3094,8 @@ window.StemLab = window.StemLab || {
                 EARTH_DATA.map(function(e, i) {
                   return h('tr', { key: 'e'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, e.measurement),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, e.value),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, e.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, e.value),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, e.notes)
                   );
                 })
               )
@@ -3111,14 +3111,14 @@ window.StemLab = window.StemLab || {
             FAMOUS_BUILDINGS.map(function(b, i) {
               return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, b.building),
-                  h('span', { className: 'text-[10px] text-rose-700 font-mono ml-auto px-2 py-0.5 rounded bg-rose-100' }, b.height)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, b.building),
+                  h('span', { className: 'text-[0.625rem] text-rose-700 font-mono ml-auto px-2 py-0.5 rounded bg-rose-100' }, b.height)
                 ),
-                h('div', { className: 'flex items-baseline gap-3 text-[10px] mb-1 flex-wrap' },
+                h('div', { className: 'flex items-baseline gap-3 text-[0.625rem] mb-1 flex-wrap' },
                   h('span', { className: 'font-mono text-slate-600' }, 'Built: ' + b.built),
                   h('span', { className: 'font-mono text-rose-700 font-bold' }, b.angles)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, b.notes)
               );
             })
           )
@@ -3129,7 +3129,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.famous_mathematical_curves', '∿ Famous mathematical curves')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Curve', 'Equation', 'Notes'].map(function(hh, i) {
@@ -3141,8 +3141,8 @@ window.StemLab = window.StemLab || {
                 FAMOUS_CURVES.map(function(c, i) {
                   return h('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, c.equation),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, c.equation),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -3158,10 +3158,10 @@ window.StemLab = window.StemLab || {
             GREAT_MATHEMATICIANS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-0.5 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-rose-900' }, m.name),
-                  h('span', { className: 'text-[10px] font-mono text-slate-500 ml-auto' }, m.year)
+                  h('span', { className: 'text-[0.75rem] font-black text-rose-900' }, m.name),
+                  h('span', { className: 'text-[0.625rem] font-mono text-slate-500 ml-auto' }, m.year)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.contrib)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.contrib)
               );
             })
           )
@@ -3172,7 +3172,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.practical_angle_standards', '🛠 Practical angle standards')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Context', 'Angle', 'Notes'].map(function(hh, i) {
@@ -3184,8 +3184,8 @@ window.StemLab = window.StemLab || {
                 PRACTICAL_ANGLES.map(function(p, i) {
                   return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.context),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[10px]' }, p.angle),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold text-[0.625rem]' }, p.angle),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, p.notes)
                   );
                 })
               )
@@ -3351,17 +3351,17 @@ window.StemLab = window.StemLab || {
       function renderConicsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.conic_sections_2', '◉ Conic sections')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.curves_formed_when_a_plane_intersects_', 'Curves formed when a plane intersects a (double) cone. The angle of the plane to the cone\'s axis determines the curve type.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.curves_formed_when_a_plane_intersects_', 'Curves formed when a plane intersects a (double) cone. The angle of the plane to the cone\'s axis determines the curve type.')),
           h('div', { className: 'space-y-2' },
             CONIC_SECTIONS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.name),
-                  h('span', { className: 'text-[10px] font-mono text-rose-700 ml-auto px-2 py-0.5 rounded bg-rose-100' }, c.eccentricity)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.name),
+                  h('span', { className: 'text-[0.625rem] font-mono text-rose-700 ml-auto px-2 py-0.5 rounded bg-rose-100' }, c.eccentricity)
                 ),
-                h('div', { className: 'text-[11px] font-mono text-rose-700 font-bold mb-1' }, c.equation),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Cut: '), c.cut),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.use)
+                h('div', { className: 'text-[0.6875rem] font-mono text-rose-700 font-bold mb-1' }, c.equation),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Cut: '), c.cut),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.use)
               );
             })
           )
@@ -3371,9 +3371,9 @@ window.StemLab = window.StemLab || {
       function renderPlatonicSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.platonic_solids_2', '⬡ Platonic solids')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.the_only_5_convex_regular_polyhedra_al', 'The only 5 convex regular polyhedra. All faces are congruent regular polygons, same number meeting at each vertex.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.the_only_5_convex_regular_polyhedra_al', 'The only 5 convex regular polyhedra. All faces are congruent regular polygons, same number meeting at each vertex.')),
           h('div', { className: 'overflow-x-auto mb-3' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Name', 'Faces', 'V', 'E', 'Dual', 'Notes'].map(function(hh, i) {
@@ -3385,11 +3385,11 @@ window.StemLab = window.StemLab || {
                 PLATONIC_SOLIDS.map(function(p, i) {
                   return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.name),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.faces),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, p.faces),
                     h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, p.vertices),
                     h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, p.edges),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.dual),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, p.dual),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, p.notes)
                   );
                 })
               )
@@ -3398,8 +3398,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             PLATONIC_NOTES.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[11px] font-black text-rose-900 mb-0.5' }, n.note),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+                h('div', { className: 'text-[0.6875rem] font-black text-rose-900 mb-0.5' }, n.note),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.detail)
               );
             })
           )
@@ -3409,12 +3409,12 @@ window.StemLab = window.StemLab || {
       function renderFractalsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.fractals_2', '❄ Fractals')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.shapes_that_exhibit_self_similarity_at', 'Shapes that exhibit self-similarity at every scale. Coined by Benoit Mandelbrot (1975) from Latin fractus, "broken".')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.shapes_that_exhibit_self_similarity_at', 'Shapes that exhibit self-similarity at every scale. Coined by Benoit Mandelbrot (1975) from Latin fractus, "broken".')),
           h('div', { className: 'space-y-2' },
             FRACTAL_NOTES.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, f.name),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, f.name),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -3424,12 +3424,12 @@ window.StemLab = window.StemLab || {
       function renderNoneuclidSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.non_euclidean_geometry', '⊕ Non-Euclidean geometry')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.geometries_on_curved_surfaces_euclid_s', 'Geometries on curved surfaces. Euclid\'s parallel postulate doesn\'t hold. Discovered 1820s (Lobachevsky, Bolyai, Gauss).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.geometries_on_curved_surfaces_euclid_s', 'Geometries on curved surfaces. Euclid\'s parallel postulate doesn\'t hold. Discovered 1820s (Lobachevsky, Bolyai, Gauss).')),
           h('div', { className: 'space-y-1' },
             NONEUCLID_FACTS.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, n.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.detail)
               );
             })
           )
@@ -3439,14 +3439,14 @@ window.StemLab = window.StemLab || {
       function renderProjectionSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.map_projections_2', '🗺 Map projections')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.projecting_curved_earth_onto_a_flat_ma', 'Projecting curved Earth onto a flat map ALWAYS distorts something — angles, areas, distances, or shapes. Each projection optimizes for different uses.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.projecting_curved_earth_onto_a_flat_ma', 'Projecting curved Earth onto a flat map ALWAYS distorts something — angles, areas, distances, or shapes. Each projection optimizes for different uses.')),
           h('div', { className: 'space-y-2' },
             MAP_PROJECTIONS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.name),
-                h('div', { className: 'text-[11px] text-rose-700 font-bold mb-1' }, 'Preserves: ' + m.preserves),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Distorts: '), m.distorts),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h('strong', null, 'Use: '), m.use)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, m.name),
+                h('div', { className: 'text-[0.6875rem] text-rose-700 font-bold mb-1' }, 'Preserves: ' + m.preserves),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Distorts: '), m.distorts),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, h('strong', null, 'Use: '), m.use)
               );
             })
           )
@@ -3459,8 +3459,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             SUNDIAL_NOTES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, s.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, s.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
               );
             })
           )
@@ -3470,14 +3470,14 @@ window.StemLab = window.StemLab || {
       function renderGoldenRatioSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.golden_ratio_2', 'φ Golden ratio')),
-          h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3' },
+          h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900 mb-3' },
             h('strong', null, t('stem.angles.reality_check', '⚠ Reality check: ')), t('stem.angles.many_popular_claims_about_the_golden_r', 'Many popular claims about the golden ratio in art, architecture, and "beauty" are unsupported or invented retroactively. The mathematical properties are real + beautiful; the cultural claims often aren\'t.')
           ),
           h('div', { className: 'space-y-1' },
             GOLDEN_RATIO.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, g.fact),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, g.fact),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.detail)
               );
             })
           )
@@ -3487,12 +3487,12 @@ window.StemLab = window.StemLab || {
       function renderOrigamiSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.origami_geometry_2', '✦ Origami geometry')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.origami_connects_geometry_to_engineeri', 'Origami connects geometry to engineering, biology, and design. Mathematical theorems govern what folds are possible.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.origami_connects_geometry_to_engineeri', 'Origami connects geometry to engineering, biology, and design. Mathematical theorems govern what folds are possible.')),
           h('div', { className: 'space-y-1' },
             ORIGAMI_FACTS.map(function(o, i) {
               return h('div', { key: 'o'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, o.fact),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, o.fact),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, o.detail)
               );
             })
           )
@@ -3502,15 +3502,15 @@ window.StemLab = window.StemLab || {
       function renderSportsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angles_in_sports_2', '🏆 Angles in sports')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.many_athletic_skills_depend_on_launch_', 'Many athletic skills depend on launch angles. The classic "45° is optimal" is true only for projectiles launched + landing at the same height (without air resistance).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.many_athletic_skills_depend_on_launch_', 'Many athletic skills depend on launch angles. The classic "45° is optimal" is true only for projectiles launched + landing at the same height (without air resistance).')),
           h('div', { className: 'space-y-2' },
             SPORTS_ANGLES.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.sport),
-                  h('span', { className: 'text-[11px] font-mono text-rose-700 font-bold ml-auto px-2 py-0.5 rounded bg-rose-100' }, s.angle)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.sport),
+                  h('span', { className: 'text-[0.6875rem] font-mono text-rose-700 font-bold ml-auto px-2 py-0.5 rounded bg-rose-100' }, s.angle)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.notes)
               );
             })
           )
@@ -3523,8 +3523,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             ART_ANGLES.map(function(a, i) {
               return h('div', { key: 'a'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-rose-900 mb-0.5' }, a.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, a.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, a.detail)
               );
             })
           )
@@ -3537,9 +3537,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             MEASURING_TOOLS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, t.tool),
-                h('div', { className: 'text-[11px] text-rose-700 font-bold mb-1' }, 'Use: ' + t.use),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, t.tool),
+                h('div', { className: 'text-[0.6875rem] text-rose-700 font-bold mb-1' }, 'Use: ' + t.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.notes)
               );
             })
           )

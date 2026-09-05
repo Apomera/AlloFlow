@@ -23011,12 +23011,12 @@ var d = labToolData.cell || {};
               'Current action: ' + activePlayControlInput + '. Biological mechanism: ' + activePlayControlMechanism + '. Observe: ' + activePlayControlObservation + '.' :
               'Live biology loop: ' + activePlayControlInput + ' \u2192 ' + activePlayControlMechanism + ' \u2192 ' + activePlayControlObservation + '. Try the input, then watch the mechanism and result.';
           var activePlayControlLoopClass = activePlayPredictionPending ?
-            'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-violet-300/60 bg-violet-300/10 px-2 py-1.5 text-[10px] font-bold leading-snug shadow-sm' :
+            'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-violet-300/60 bg-violet-300/10 px-2 py-1.5 text-[0.625rem] font-bold leading-snug shadow-sm' :
             activePlayFirstActionPromptActive ?
-            'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-amber-300/60 bg-amber-300/10 px-2 py-1.5 text-[10px] font-bold leading-snug shadow-sm' :
+            'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-amber-300/60 bg-amber-300/10 px-2 py-1.5 text-[0.625rem] font-bold leading-snug shadow-sm' :
             activePlayFirstActionRegisteredReady ?
-              'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-emerald-300/40 bg-emerald-400/10 px-2 py-1.5 text-[10px] font-bold leading-snug' :
-              'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 border-t border-white/10 pt-1.5 text-[10px] font-bold leading-snug';
+              'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-emerald-300/40 bg-emerald-400/10 px-2 py-1.5 text-[0.625rem] font-bold leading-snug' :
+              'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 border-t border-white/10 pt-1.5 text-[0.625rem] font-bold leading-snug';
           var activePlayCueLabel = activePlayCue ? (activePlayCue.phase === 'holding' ? 'Holding light' : activePlayCue.phase === 'near' ? 'Target nearby' : activePlayCue.phase === 'paused' ? 'Targets unavailable' : activePlayCue.phase === 'restocked' ? 'Targets ready' : activePlayCue.phase === 'repeat' ? 'Already observed' : activePlayCue.phase === 'reset' ? 'Exposure reset' : activePlayCue.phase === 'overlap' || activePlayCue.phase === 'contact' ? 'Contact check' : activePlayCue.phase === 'evidence' ? 'Evidence recorded' : 'Biology signal') : null;
           var activePlayTargetProximity = activePlayPredictionPending ? 'waiting' :
             activeMissionComplete ? 'mastered' :
@@ -23371,9 +23371,9 @@ var d = labToolData.cell || {};
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83D\uDD2C Cell Simulator"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-teal-100 text-teal-800 text-[11px] font-bold rounded-full" }, "CELL v3"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-teal-100 text-teal-800 text-[0.6875rem] font-bold rounded-full" }, "CELL v3"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[0.6875rem] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
 
               React.createElement("span", { className: "text-xs text-slate-600 ml-1" + onHostInk }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'microdissection' ? 'Microdissection' : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : d.mode === 'interior' ? 'Inside the Cell' : "\uD83D\uDC41 Observe"),
 
@@ -23471,8 +23471,8 @@ var d = labToolData.cell || {};
                       },
                         React.createElement('div', { className: 'text-2xl mb-1' }, c.icon),
                         React.createElement('div', { className: 'text-sm font-black mb-1', style: { color: theme.text } }, c.label),
-                        React.createElement('div', { className: 'text-[10px] text-slate-600 italic mb-1' }, __alloT('stem.cell.' + (c.id) + '_desc', c.desc)),
-                        React.createElement('div', { className: 'text-[10px] font-mono', style: { color: theme.text } }, c.modes.length + ' modes')
+                        React.createElement('div', { className: 'text-[0.625rem] text-slate-600 italic mb-1' }, __alloT('stem.cell.' + (c.id) + '_desc', c.desc)),
+                        React.createElement('div', { className: 'text-[0.625rem] font-mono', style: { color: theme.text } }, c.modes.length + ' modes')
                       );
                     })
                   ));
@@ -23512,7 +23512,7 @@ var d = labToolData.cell || {};
                 React.createElement("div", { className: "space-y-3" },
                   React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
                     React.createElement("div", null,
-                      React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-700" }, "Cell Lab Command Deck"),
+                      React.createElement("div", { className: "text-[0.6875rem] font-black uppercase text-emerald-700" }, "Cell Lab Command Deck"),
                       React.createElement("h4", { className: "mt-1 text-xl font-black text-slate-900" }, cellModeLabelMap[activeCellMode] || "Observe"),
                       React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" }, d.mode === "play" ? (activePlayTutorial ? "Current mission: " + activePlayTutorial.objective + " Your controls model " + activePlayTutorial.movement.toLowerCase() + "." : "Choose an organism below, read its short briefing, then control or inspect it to model a real biological strategy.") : "Start with the living petri dish, inspect organelles, then trace how matter and energy move through cell processes before testing your understanding.")
                     ),
@@ -23528,9 +23528,9 @@ var d = labToolData.cell || {};
                       { label: 'Quests', value: completedChallengeCount + '/' + CELL_CHALLENGES.length, sub: 'mission progress' }
                     ].map(function(stat) {
                       return React.createElement("div", { key: stat.label, className: "min-w-0 rounded-lg border border-white bg-white/90 p-3 shadow-sm" },
-                        React.createElement("div", { className: "text-[11px] font-bold uppercase text-slate-500" }, stat.label),
+                        React.createElement("div", { className: "text-[0.6875rem] font-bold uppercase text-slate-500" }, stat.label),
                         React.createElement("div", { className: "mt-1 truncate text-lg font-black text-slate-900" }, stat.value),
-                        React.createElement("div", { className: "truncate text-[11px] text-slate-500" }, stat.sub)
+                        React.createElement("div", { className: "truncate text-[0.6875rem] text-slate-500" }, stat.sub)
                       );
                     })
                   )
@@ -23553,9 +23553,9 @@ var d = labToolData.cell || {};
                     },
                       React.createElement("div", { className: "mb-1 flex items-center justify-between gap-2" },
                         React.createElement("span", { className: "text-sm font-black text-slate-900" }, route.label),
-                        React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? cellDarkenAccent(route.accent) : route.accent + '18', color: active ? '#fff' : cellDarkenAccent(route.accent) } }, active ? 'Active' : 'Open')
+                        React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.6875rem] font-bold", style: { background: active ? cellDarkenAccent(route.accent) : route.accent + '18', color: active ? '#fff' : cellDarkenAccent(route.accent) } }, active ? 'Active' : 'Open')
                       ),
-                      React.createElement("p", { className: "text-[11px] leading-snug text-slate-500" }, route.desc)
+                      React.createElement("p", { className: "text-[0.6875rem] leading-snug text-slate-500" }, route.desc)
                     );
                   })
                 )
@@ -23567,7 +23567,7 @@ var d = labToolData.cell || {};
                 React.createElement('h4', { className: 'text-xs font-bold text-green-800 uppercase tracking-wider flex items-center gap-1.5' },
                   React.createElement('span', null, '🏆'), React.createElement('span', null, 'Quest Progress')
                 ),
-                React.createElement('span', { className: 'text-[11px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full' },
+                React.createElement('span', { className: 'text-[0.6875rem] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full' },
                   CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length + '/' + CELL_CHALLENGES.length
                 )
               ),
@@ -23581,8 +23581,8 @@ var d = labToolData.cell || {};
                     title: chal.desc
                   },
                     React.createElement('span', { className: 'text-lg mb-1' }, chal.icon),
-                    React.createElement('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
-                    React.createElement('span', { className: 'text-[10px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600') },
+                    React.createElement('span', { className: 'text-[0.625rem] font-bold leading-tight' }, chal.label),
+                    React.createElement('span', { className: 'text-[0.625rem] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600') },
                       isDone ? 'Done' : 'Locked'
                     )
                   );
@@ -23666,7 +23666,7 @@ var d = labToolData.cell || {};
               ),
 
               React.createElement("div", { "data-cell-stage-hud": true, className: "absolute left-3 right-3 top-3 z-20 rounded-lg border border-white/10 bg-slate-950/75 px-3 py-2 text-white shadow-lg backdrop-blur", style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', columnGap: '8px', rowGap: '4px' } },
-                React.createElement("div", { "data-cell-hud-heading": true, "data-cell-hud-phase": d.mode === 'play' && activePlayDef ? activePlayLearningPhase : undefined, className: "min-w-0 text-[11px] font-black uppercase tracking-wide " + (d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'predict' ? "text-violet-200" : d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'explain' ? "text-amber-200" : d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'control' ? "text-cyan-200" : "text-emerald-200") }, d.mode === 'play' && activePlayDef ? activePlayHudHeading : d.mode === 'play' ? "Choose a Cell Mission" : d.quizMode ? "Observation Challenge" : "Living Petri Dish"),
+                React.createElement("div", { "data-cell-hud-heading": true, "data-cell-hud-phase": d.mode === 'play' && activePlayDef ? activePlayLearningPhase : undefined, className: "min-w-0 text-[0.6875rem] font-black uppercase tracking-wide " + (d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'predict' ? "text-violet-200" : d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'explain' ? "text-amber-200" : d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'control' ? "text-cyan-200" : "text-emerald-200") }, d.mode === 'play' && activePlayDef ? activePlayHudHeading : d.mode === 'play' ? "Choose a Cell Mission" : d.quizMode ? "Observation Challenge" : "Living Petri Dish"),
                 React.createElement("div", { "data-cell-hud-actions": true, className: "flex flex-wrap justify-end gap-1.5" },
                   activePlayDef ? React.createElement(activePlayPredictionPending || activeMissionEvidenceComplete && !activeMissionComplete ? "button" : "span", {
                     "data-cell-mission-progress": true,
@@ -23677,7 +23677,7 @@ var d = labToolData.cell || {};
                     "data-cell-prediction-handoff": activePlayPredictionPending ? true : undefined,
                     type: activePlayPredictionPending || activeMissionEvidenceComplete && !activeMissionComplete ? "button" : undefined,
                     onClick: activePlayPredictionPending ? openCellPredictionTutorial : activeMissionEvidenceComplete && !activeMissionComplete ? function () { focusCellPlayRegion('[data-cell-mission-checkpoint]', '[data-cell-explanation-option]'); } : undefined,
-                    className: "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-black transition motion-reduce:transition-none " + (activePlayPredictionPending ? "border-violet-300/70 bg-violet-300/25 text-violet-50 shadow-[0_0_0_2px_rgba(196,181,253,0.14)] hover:bg-violet-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.97]" : activeMissionEvidenceComplete && !activeMissionComplete ? "border-amber-300/70 bg-amber-300/25 text-amber-50 shadow-[0_0_0_2px_rgba(252,211,77,0.14)] hover:bg-amber-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.97]" : activePlayLearningPhase === 'control' ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100" : "border-emerald-300/40 bg-emerald-400/15 text-emerald-100"),
+                    className: "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[0.6875rem] font-black transition motion-reduce:transition-none " + (activePlayPredictionPending ? "border-violet-300/70 bg-violet-300/25 text-violet-50 shadow-[0_0_0_2px_rgba(196,181,253,0.14)] hover:bg-violet-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.97]" : activeMissionEvidenceComplete && !activeMissionComplete ? "border-amber-300/70 bg-amber-300/25 text-amber-50 shadow-[0_0_0_2px_rgba(252,211,77,0.14)] hover:bg-amber-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.97]" : activePlayLearningPhase === 'control' ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100" : "border-emerald-300/40 bg-emerald-400/15 text-emerald-100"),
                     "aria-label": activePlayProgressAria
                   },
                     React.createElement("span", { "data-cell-learning-phase-label": true }, activePlayLearningPhaseLabel),
@@ -23688,25 +23688,25 @@ var d = labToolData.cell || {};
                         }),
                         React.createElement("span", { className: "tabular-nums" }, activePlayProgress + "/3")
                       )
-                  ) : React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100" }, "Observed " + observedCount),
-                  !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100 sm:inline-flex" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
-                  !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100 sm:inline-flex" }, effectiveCellPaused ? "Paused" : "Running"),
+                  ) : React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[0.6875rem] font-black text-emerald-100" }, "Observed " + observedCount),
+                  !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[0.6875rem] font-black text-cyan-100 sm:inline-flex" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
+                  !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[0.6875rem] font-black text-amber-100 sm:inline-flex" }, effectiveCellPaused ? "Paused" : "Running"),
                   activePlayDef && React.createElement("button", {
                     type: "button", "data-cell-play-hud": true, onClick: openCellPlayTutorial, "aria-label": "Open " + activePlayDef.label + " mission tutorial",
-                    className: "inline-flex items-center gap-1 rounded-full border border-violet-300/50 bg-violet-400/20 px-2.5 py-1 text-[11px] font-black text-violet-100 hover:bg-violet-400/35 active:scale-[0.97]"
+                    className: "inline-flex items-center gap-1 rounded-full border border-violet-300/50 bg-violet-400/20 px-2.5 py-1 text-[0.6875rem] font-black text-violet-100 hover:bg-violet-400/35 active:scale-[0.97]"
                   },
                     React.createElement("span", { "aria-hidden": true }, "\u24D8"),
                     React.createElement("span", { "data-cell-play-hud-label": true }, "Tutorial")
                   ),
                   activePlayDef && React.createElement("button", {
                     type: "button", "data-cell-center-player": true, onClick: centerActiveCellPlayOrganism, "aria-label": "Center " + activePlayDef.label + " in the live dish",
-                    className: "inline-flex items-center gap-1 rounded-full border border-cyan-300/50 bg-cyan-400/20 px-2.5 py-1 text-[11px] font-black text-cyan-100 hover:bg-cyan-400/35 active:scale-[0.97]"
+                    className: "inline-flex items-center gap-1 rounded-full border border-cyan-300/50 bg-cyan-400/20 px-2.5 py-1 text-[0.6875rem] font-black text-cyan-100 hover:bg-cyan-400/35 active:scale-[0.97]"
                   },
                     React.createElement("span", { "aria-hidden": true }, "\u25CE"),
                     React.createElement("span", { "data-cell-center-player-label": true }, "Center")
                   )
                 ),
-                React.createElement("div", { "data-cell-hud-summary": true, className: "flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px] leading-snug text-slate-200", style: { gridColumn: '1 / -1' } },
+                React.createElement("div", { "data-cell-hud-summary": true, className: "flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[0.6875rem] leading-snug text-slate-200", style: { gridColumn: '1 / -1' } },
                   activePlayDef && activePlayTutorial ? React.createElement(React.Fragment, null,
                     React.createElement("strong", { "data-cell-hud-organism": true, className: "font-black text-white" }, activePlayDef.label),
                     React.createElement("span", { className: "font-black uppercase tracking-wide text-emerald-200" }, "Mission"),
@@ -23740,26 +23740,26 @@ var d = labToolData.cell || {};
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { "data-cell-target-glyph": true, className: "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-sm font-black", style: { color: activeTargetVisual.color, borderColor: activeTargetVisual.ring, background: activeTargetVisual.color + '22' }, "aria-hidden": "true" }, activeTargetVisual.glyph),
                   React.createElement("div", { className: "min-w-0" },
-                    React.createElement("span", { "data-cell-target-key-full": true, className: "block text-[9px] font-black uppercase tracking-widest text-slate-300" }, "Target key  |  " + activeTargetVisual.keyline),
-                    React.createElement("strong", { "data-cell-target-name-full": true, className: "block text-[11px] leading-tight text-white" }, activePlayTutorial.target),
-                    React.createElement("span", { "data-cell-target-key-compact": true, className: "hidden text-[10px] font-black uppercase tracking-wide text-white" }, activeTargetVisual.shortLabel + " target  |  " + activeTargetVisual.compactKeyline)
+                    React.createElement("span", { "data-cell-target-key-full": true, className: "block text-[0.5625rem] font-black uppercase tracking-widest text-slate-300" }, "Target key  |  " + activeTargetVisual.keyline),
+                    React.createElement("strong", { "data-cell-target-name-full": true, className: "block text-[0.6875rem] leading-tight text-white" }, activePlayTutorial.target),
+                    React.createElement("span", { "data-cell-target-key-compact": true, className: "hidden text-[0.625rem] font-black uppercase tracking-wide text-white" }, activeTargetVisual.shortLabel + " target  |  " + activeTargetVisual.compactKeyline)
                   )
                 ),
                 React.createElement("div", { "data-cell-mission-ribbon": true, "data-cell-ribbon-state": activePlayMissionRibbonState, role: "status", "aria-live": "polite", "aria-atomic": "true", className: "hidden rounded-lg border border-white/15 bg-white/5 px-2.5 py-2" },
                   React.createElement("span", { "data-cell-mission-ribbon-announcement": true, className: "sr-only" }, activePlayMissionRibbonAria),
                   React.createElement("div", { className: "flex items-center justify-between gap-2", "aria-hidden": "true" },
-                    React.createElement("strong", { "data-cell-mission-ribbon-label": true, className: "text-[11px] font-black uppercase tracking-wide " + (activePlayMissionRibbonState === 'predict' ? "text-violet-200" : activePlayMissionRibbonState === 'control' ? "text-cyan-200" : activePlayMissionRibbonState === 'explain' ? "text-amber-200" : "text-emerald-200") }, activePlayMissionRibbonLabel),
-                    React.createElement("span", { "data-cell-mission-ribbon-progress": true, className: "rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-black tabular-nums text-white" }, activePlayProgress + "/3")
+                    React.createElement("strong", { "data-cell-mission-ribbon-label": true, className: "text-[0.6875rem] font-black uppercase tracking-wide " + (activePlayMissionRibbonState === 'predict' ? "text-violet-200" : activePlayMissionRibbonState === 'control' ? "text-cyan-200" : activePlayMissionRibbonState === 'explain' ? "text-amber-200" : "text-emerald-200") }, activePlayMissionRibbonLabel),
+                    React.createElement("span", { "data-cell-mission-ribbon-progress": true, className: "rounded-full bg-white/10 px-2 py-0.5 text-[0.6875rem] font-black tabular-nums text-white" }, activePlayProgress + "/3")
                   ),
-                  React.createElement("strong", { "data-cell-mission-ribbon-primary": true, className: "mt-1 block text-[14px] font-black leading-tight text-white", "aria-hidden": "true" }, activePlayMissionRibbonPrimary),
-                  React.createElement("p", { "data-cell-mission-ribbon-secondary": true, className: "mt-1 text-[12px] font-bold leading-snug text-slate-200", "aria-hidden": "true" }, activePlayMissionRibbonSecondary),
+                  React.createElement("strong", { "data-cell-mission-ribbon-primary": true, className: "mt-1 block text-[0.875rem] font-black leading-tight text-white", "aria-hidden": "true" }, activePlayMissionRibbonPrimary),
+                  React.createElement("p", { "data-cell-mission-ribbon-secondary": true, className: "mt-1 text-[0.75rem] font-bold leading-snug text-slate-200", "aria-hidden": "true" }, activePlayMissionRibbonSecondary),
                   activePlayLightHoldActive && React.createElement("div", { "data-cell-mission-ribbon-light-progress": true, className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/20", role: "progressbar", "aria-label": "Continuous light exposure", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": activePlayCue.progressPct, "aria-valuetext": activePlayCue.progressPct + " percent of one light-energy evidence cycle" },
                     React.createElement("div", { className: "h-full rounded-full bg-amber-300 transition-[width] motion-reduce:transition-none", style: { width: activePlayCue.progressPct + "%" }, "aria-hidden": "true" })
                   )
                 ),
-                React.createElement("div", { "data-cell-target-proximity": true, "data-cell-proximity": activePlayTargetProximity, "data-cell-direction": activePlayTargetDirection || "pending", className: "mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 border-t border-white/10 pt-1.5 text-[10px] leading-snug", "aria-label": activePlayTargetStatusText },
+                React.createElement("div", { "data-cell-target-proximity": true, "data-cell-proximity": activePlayTargetProximity, "data-cell-direction": activePlayTargetDirection || "pending", className: "mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 border-t border-white/10 pt-1.5 text-[0.625rem] leading-snug", "aria-label": activePlayTargetStatusText },
                   React.createElement("span", { className: "font-black uppercase tracking-wide text-slate-300" }, "Target status"),
-                  React.createElement("strong", { className: "text-[11px] font-black " + (activePlayTargetProximity === "waiting" ? "text-violet-200" : activePlayTargetProximity === "recorded" || activePlayTargetProximity === "mastered" ? "text-emerald-200" : "text-amber-200") }, activePlayTargetProximityLabel),
+                  React.createElement("strong", { className: "text-[0.6875rem] font-black " + (activePlayTargetProximity === "waiting" ? "text-violet-200" : activePlayTargetProximity === "recorded" || activePlayTargetProximity === "mastered" ? "text-emerald-200" : "text-amber-200") }, activePlayTargetProximityLabel),
                   activePlayTargetDirectionLabel && React.createElement("span", { className: "font-black uppercase text-white" }, React.createElement("span", { "aria-hidden": "true" }, activePlayTargetDirectionGlyph + " "), activePlayTargetDirectionLabel),
                   React.createElement("span", { className: "font-bold " + (activePlayTargetProximity === "waiting" ? "text-violet-100" : "text-emerald-200") }, "\u2014 " + activePlayTargetInstruction)
                 ),
@@ -23769,8 +23769,8 @@ var d = labToolData.cell || {};
                     var stepTone = stepState === 'complete' ? 'border-emerald-300/40 bg-emerald-400/20 text-emerald-100' :
                       stepState === 'current' ? 'border-amber-300/60 bg-amber-300/20 text-amber-100 ring-1 ring-amber-300/30' :
                       'border-white/10 bg-white/5 text-slate-400';
-                    return React.createElement("span", { key: step, role: "listitem", "data-cell-approach-step": index, "data-cell-step-state": stepState, "aria-current": stepState === 'current' ? 'step' : undefined, "aria-label": step + ', ' + (stepState === 'current' ? 'current step' : stepState), className: "inline-flex min-w-0 items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[9px] font-black uppercase tracking-wide " + stepTone },
-                      React.createElement("span", { className: "flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-black/20 text-[8px]", "aria-hidden": "true" }, stepState === 'complete' ? "\u2713" : String(index + 1)),
+                    return React.createElement("span", { key: step, role: "listitem", "data-cell-approach-step": index, "data-cell-step-state": stepState, "aria-current": stepState === 'current' ? 'step' : undefined, "aria-label": step + ', ' + (stepState === 'current' ? 'current step' : stepState), className: "inline-flex min-w-0 items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[0.5625rem] font-black uppercase tracking-wide " + stepTone },
+                      React.createElement("span", { className: "flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-black/20 text-[0.5rem]", "aria-hidden": "true" }, stepState === 'complete' ? "\u2713" : String(index + 1)),
                       React.createElement("span", { className: "truncate" }, step)
                     );
                   })
@@ -23794,45 +23794,45 @@ var d = labToolData.cell || {};
                 ),
                 !activeMissionEvidenceComplete && activePlayCue && !activePlayCueConsolidated ? React.createElement("div", { "data-cell-target-guide-note": true, "data-cell-guide-critical": activePlayCue.phase === 'paused' ? "true" : undefined, "data-cell-mission-cue": true, "data-cell-cue-layout": "standalone", className: "mt-2 rounded-lg border border-white/10 bg-white/5 p-2" },
                   React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                    React.createElement("strong", { className: "text-[9px] font-black uppercase tracking-wide text-amber-200" }, activePlayCueLabel),
-                    activePlayCue.progressPct !== null && activePlayCue.kind === 'light' && React.createElement("span", { className: "text-[9px] font-black tabular-nums text-white" }, activePlayCue.progressPct + "%")
+                    React.createElement("strong", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-amber-200" }, activePlayCueLabel),
+                    activePlayCue.progressPct !== null && activePlayCue.kind === 'light' && React.createElement("span", { className: "text-[0.5625rem] font-black tabular-nums text-white" }, activePlayCue.progressPct + "%")
                   ),
-                  React.createElement("p", { className: "mt-0.5 text-[10px] font-bold leading-snug text-emerald-100" }, activePlayCue.text),
+                  React.createElement("p", { className: "mt-0.5 text-[0.625rem] font-bold leading-snug text-emerald-100" }, activePlayCue.text),
                   activePlayCue.progressPct !== null && activePlayCue.kind === 'light' && React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/20", role: "progressbar", "aria-label": "Continuous light exposure", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": activePlayCue.progressPct, "aria-valuetext": activePlayCue.progressPct + " percent of one light-energy evidence cycle" },
                     React.createElement("div", { className: "h-full rounded-full bg-amber-300 transition-[width]", style: { width: activePlayCue.progressPct + "%" }, "aria-hidden": "true" })
                   ),
-                  activePlayCue.phase === 'paused' && (activePlayCue.kind === 'food' || activePlayCue.kind === 'pathogen') && React.createElement("button", { type: "button", "data-cell-recover-targets": true, onClick: recoverCellMissionTargets, "aria-label": "Reset unavailable mission targets and resume the simulation", className: "mt-2 min-h-9 w-full rounded-lg bg-amber-300 px-3 py-2 text-[10px] font-black text-slate-950 shadow-sm hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "Reset targets & resume"),
+                  activePlayCue.phase === 'paused' && (activePlayCue.kind === 'food' || activePlayCue.kind === 'pathogen') && React.createElement("button", { type: "button", "data-cell-recover-targets": true, onClick: recoverCellMissionTargets, "aria-label": "Reset unavailable mission targets and resume the simulation", className: "mt-2 min-h-9 w-full rounded-lg bg-amber-300 px-3 py-2 text-[0.625rem] font-black text-slate-950 shadow-sm hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "Reset targets & resume"),
                   activePlayCue.announcement && React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, activePlayCue.announcement)
-                ) : !activeMissionEvidenceComplete && !activePlayCue ? React.createElement("p", { "data-cell-target-guide-note": true, className: "mt-1 text-[10px] font-bold leading-snug " + (activePlayPredictionPending ? "text-violet-200" : "text-emerald-200") }, activePlayPredictionPending ? "Make the Predict decision; target guidance begins when controls unlock." : activePlayTutorial.stationary ? "Compass names the next structure and where to select it." : "Compass label reads target \u00B7 distance \u00B7 direction.") : null,
+                ) : !activeMissionEvidenceComplete && !activePlayCue ? React.createElement("p", { "data-cell-target-guide-note": true, className: "mt-1 text-[0.625rem] font-bold leading-snug " + (activePlayPredictionPending ? "text-violet-200" : "text-emerald-200") }, activePlayPredictionPending ? "Make the Predict decision; target guidance begins when controls unlock." : activePlayTutorial.stationary ? "Compass names the next structure and where to select it." : "Compass label reads target \u00B7 distance \u00B7 direction.") : null,
                 activeMissionEvidenceComplete && !activeMissionComplete ? React.createElement("div", { "data-cell-evidence-to-explain": true, role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": "Evidence set: 3 of 3 observations. " + ((activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence") + ". Next: open the evidence explanation.", className: "mt-2 rounded-lg border border-amber-300/40 bg-gradient-to-r from-emerald-400/15 to-amber-300/15 p-2" },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                    React.createElement("strong", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-200" }, "\u2713 Evidence set"),
-                    React.createElement("span", { className: "rounded-full bg-emerald-300 px-2 py-0.5 text-[9px] font-black text-emerald-950" }, "3/3 observations")
+                    React.createElement("strong", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-200" }, "\u2713 Evidence set"),
+                    React.createElement("span", { className: "rounded-full bg-emerald-300 px-2 py-0.5 text-[0.5625rem] font-black text-emerald-950" }, "3/3 observations")
                   ),
-                  React.createElement("p", { "data-cell-evidence-ready-chain": true, className: "mt-1 text-[10px] font-black leading-snug text-white" }, (activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence"),
+                  React.createElement("p", { "data-cell-evidence-ready-chain": true, className: "mt-1 text-[0.625rem] font-black leading-snug text-white" }, (activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence"),
                   React.createElement("div", { className: "mt-2 flex items-start gap-2 border-t border-amber-200/20 pt-2" },
-                    React.createElement("span", { className: "inline-flex shrink-0 rounded-full bg-amber-300 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-slate-950" }, "4 \u00B7 Explain"),
-                    React.createElement("p", { className: "min-w-0 flex-1 text-[10px] font-bold leading-snug text-amber-50" }, "Choose Explain 3/3 above, then match this evidence to the biology.")
+                    React.createElement("span", { className: "inline-flex shrink-0 rounded-full bg-amber-300 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-slate-950" }, "4 \u00B7 Explain"),
+                    React.createElement("p", { className: "min-w-0 flex-1 text-[0.625rem] font-bold leading-snug text-amber-50" }, "Choose Explain 3/3 above, then match this evidence to the biology.")
                   )
                 ) : !activeMissionEvidenceComplete && activePlayFeedback && React.createElement("div", { "data-cell-evidence-feedback": true, "data-cell-evidence-layout": activePlayCueConsolidated ? "consolidated" : "feedback-only", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 rounded-lg border border-emerald-300/30 bg-emerald-400/15 p-2" },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                    React.createElement("strong", { "data-cell-evidence-chain": true, "aria-label": "Structure-to-function evidence: " + ((activePlayTutorial.controlLoop && activePlayTutorial.controlLoop.evidence) || "Structure produces evidence"), className: "text-[10px] font-black uppercase tracking-wide text-emerald-200" }, "Observed  |  " + ((activePlayTutorial.controlLoop && activePlayTutorial.controlLoop.evidence) || "Structure produces evidence")),
-                    React.createElement("span", { className: "rounded-full bg-emerald-300 px-2 py-0.5 text-[9px] font-black text-emerald-950" }, "Evidence " + activePlayFeedback.count + "/3")
+                    React.createElement("strong", { "data-cell-evidence-chain": true, "aria-label": "Structure-to-function evidence: " + ((activePlayTutorial.controlLoop && activePlayTutorial.controlLoop.evidence) || "Structure produces evidence"), className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-200" }, "Observed  |  " + ((activePlayTutorial.controlLoop && activePlayTutorial.controlLoop.evidence) || "Structure produces evidence")),
+                    React.createElement("span", { className: "rounded-full bg-emerald-300 px-2 py-0.5 text-[0.5625rem] font-black text-emerald-950" }, "Evidence " + activePlayFeedback.count + "/3")
                   ),
-                  activePlayPredictionText && React.createElement("p", { "data-cell-prediction-compare": true, className: "mt-1 text-[10px] font-bold leading-snug text-amber-100" }, React.createElement("strong", null, "Your prediction: "), activePlayPredictionText),
-                  React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-white" }, activePlayFeedback.text),
+                  activePlayPredictionText && React.createElement("p", { "data-cell-prediction-compare": true, className: "mt-1 text-[0.625rem] font-bold leading-snug text-amber-100" }, React.createElement("strong", null, "Your prediction: "), activePlayPredictionText),
+                  React.createElement("p", { className: "mt-1 text-[0.625rem] leading-snug text-white" }, activePlayFeedback.text),
                   activePlayCueConsolidated && React.createElement("div", { "data-cell-target-guide-note": true, "data-cell-mission-cue": true, "data-cell-cue-layout": "consolidated", "aria-label": "Next action: " + activePlayCue.text, className: "mt-2 flex items-start gap-2 border-t border-emerald-200/20 pt-2" },
-                    React.createElement("span", { className: "inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-slate-950" }, React.createElement("span", { "aria-hidden": "true" }, "\u2192"), "Next"),
-                    React.createElement("p", { className: "min-w-0 flex-1 text-[10px] font-bold leading-snug text-amber-50" }, activePlayCue.text),
+                    React.createElement("span", { className: "inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-slate-950" }, React.createElement("span", { "aria-hidden": "true" }, "\u2192"), "Next"),
+                    React.createElement("p", { className: "min-w-0 flex-1 text-[0.625rem] font-bold leading-snug text-amber-50" }, activePlayCue.text),
                     activePlayCue.announcement && React.createElement("span", { className: "sr-only" }, activePlayCue.announcement)
                   )
                 )
               ),
 
               d.playAsOrganism && activePlayTutorial && activePlayPredictionPending && !activeMissionEvidenceComplete && React.createElement("button", { type: "button", "data-cell-control-lock": true, "data-cell-control-lock-state": "waiting", onClick: openCellPredictionTutorial, "aria-label": "Predict or start without a prediction to unlock " + activePlayDef.label + " controls", className: "absolute left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-0.5 rounded-2xl border border-violet-200/70 bg-slate-950/90 px-4 py-2.5 text-center text-white shadow-2xl backdrop-blur transition motion-reduce:transition-none hover:border-white hover:bg-violet-950/95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white active:scale-[0.98]", style: { bottom: '44px', width: 'min(240px, calc(100% - 16px))' } },
-                React.createElement("span", { className: "text-[9px] font-black uppercase tracking-widest text-violet-200" }, "1 \u00B7 Predict"),
+                React.createElement("span", { className: "text-[0.5625rem] font-black uppercase tracking-widest text-violet-200" }, "1 \u00B7 Predict"),
                 React.createElement("strong", { className: "text-xs font-black text-white" }, "Unlock controls"),
-                React.createElement("span", { className: "text-[9px] font-bold leading-snug text-violet-100" }, "Choose what you expect or start without a prediction.")
+                React.createElement("span", { className: "text-[0.5625rem] font-bold leading-snug text-violet-100" }, "Choose what you expect or start without a prediction.")
               ),
 
               d.playAsOrganism && activePlayTutorial && !activePlayTutorial.stationary && !activePlayPredictionPending && !activeMissionEvidenceComplete && (function () {
@@ -23872,11 +23872,11 @@ var d = labToolData.cell || {};
                 return React.createElement("div", { "data-cell-direction-pad": true, "data-cell-active-direction": activePlayControlMoving ? activePlayControlDirection : "idle", "data-cell-first-action-state": activePlayFirstActionState, className: "absolute bottom-14 left-1/2 z-20 grid -translate-x-1/2 grid-cols-3 gap-1 rounded-2xl border border-white/20 bg-slate-950/70 p-2 shadow-2xl backdrop-blur", style: padStyle, role: "group", "aria-label": "Move " + activePlayDef.label + (activePlayControlMoving ? ". Current input: " + activePlayControlDirection + "." : ". No direction pressed.") + (padOnboarding ? " First action: press or hold any direction." : padRegistered ? " First control registered. Repeat a direction to keep steering." : ""), "aria-describedby": "cell-live-biology-loop" },
                   directionButton('ArrowUp', '\u2191', 'Move up - model ' + activePlayTutorial.movement, 'col-start-2'),
                   directionButton('ArrowLeft', '\u2190', 'Move left - model ' + activePlayTutorial.movement, 'col-start-1 row-start-2'),
-                  React.createElement("div", { "data-cell-pad-readout": true, "data-cell-pad-state": activePlayControlMoving ? "active" : padOnboarding ? "start" : padRegistered ? "linked" : "ready", className: "col-start-2 row-start-2 flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 px-1 text-center text-[10px] font-black uppercase leading-tight text-emerald-100", "aria-hidden": "true" },
+                  React.createElement("div", { "data-cell-pad-readout": true, "data-cell-pad-state": activePlayControlMoving ? "active" : padOnboarding ? "start" : padRegistered ? "linked" : "ready", className: "col-start-2 row-start-2 flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 px-1 text-center text-[0.625rem] font-black uppercase leading-tight text-emerald-100", "aria-hidden": "true" },
                     activePlayControlMoving ? React.createElement(React.Fragment, null,
-                      React.createElement("span", { className: "block text-[11px] text-amber-100" }, activePlayControlDirection)
-                    ) : padOnboarding ? React.createElement("span", { className: "block text-[10px] text-amber-100" }, "Start") :
-                      padRegistered ? React.createElement("span", { className: "block text-[10px] text-emerald-200" }, "\u2713 Linked") : "Ready"
+                      React.createElement("span", { className: "block text-[0.6875rem] text-amber-100" }, activePlayControlDirection)
+                    ) : padOnboarding ? React.createElement("span", { className: "block text-[0.625rem] text-amber-100" }, "Start") :
+                      padRegistered ? React.createElement("span", { className: "block text-[0.625rem] text-emerald-200" }, "\u2713 Linked") : "Ready"
                   ),
                   directionButton('ArrowRight', '\u2192', 'Move right - model ' + activePlayTutorial.movement, 'col-start-3 row-start-2'),
                   directionButton('ArrowDown', '\u2193', 'Move down - model ' + activePlayTutorial.movement, 'col-start-2 row-start-3')
@@ -23884,7 +23884,7 @@ var d = labToolData.cell || {};
               })(),
               // Zoom overlay
 
-              React.createElement("div", { "data-cell-stage-utility": "zoom", className: "absolute bottom-12 sm:bottom-3 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600" },
+              React.createElement("div", { "data-cell-stage-utility": "zoom", className: "absolute bottom-12 sm:bottom-3 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[0.6875rem] font-bold text-slate-600" },
 
                 "\uD83D\uDD2C",
 
@@ -23904,14 +23904,14 @@ var d = labToolData.cell || {};
                   type: "button",
                   "aria-label": "Reset microscope view",
                   onClick: function () { var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1); cellSound('select'); },
-                  className: "rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-black text-slate-700 hover:bg-white active:scale-[0.97]"
+                  className: "rounded bg-slate-100 px-1.5 py-0.5 text-[0.6875rem] font-black text-slate-700 hover:bg-white active:scale-[0.97]"
                 }, "\u21BA")
 
               ),
 
               // Speed controls
 
-              React.createElement("div", { "data-cell-stage-utility": "speed", className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-600" },
+              React.createElement("div", { "data-cell-stage-utility": "speed", className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[0.6875rem] font-bold text-slate-600" },
 
                 "\u23E9",
 
@@ -24010,7 +24010,7 @@ var d = labToolData.cell || {};
 
                       React.createElement("h3", { id: "cell-playinstr-title", className: "text-white font-black text-base" }, "60-second mission briefing: " + org.label),
 
-                      React.createElement("p", { className: "text-white/90 text-[11px] mt-1 font-bold" }, tutorial.classification + "  |  Movement: " + tutorial.movement)
+                      React.createElement("p", { className: "text-white/90 text-[0.6875rem] mt-1 font-bold" }, tutorial.classification + "  |  Movement: " + tutorial.movement)
 
                     ),
 
@@ -24028,7 +24028,7 @@ var d = labToolData.cell || {};
 
                           React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Mission goal  |  " + org.activity),
 
-                          React.createElement("p", { "data-cell-tutorial-target-key": true, className: "text-[11px] leading-relaxed text-slate-600" }, tutorial.objective + " Target key: " + cellPlayTargetVisualFor(tutorial).keyline + ". Earn +" + org.xp + " XP per success!")
+                          React.createElement("p", { "data-cell-tutorial-target-key": true, className: "text-[0.6875rem] leading-relaxed text-slate-600" }, tutorial.objective + " Target key: " + cellPlayTargetVisualFor(tutorial).keyline + ". Earn +" + org.xp + " XP per success!")
 
                         )
 
@@ -24042,13 +24042,13 @@ var d = labToolData.cell || {};
                                 stepState === 'skipped' ? "border-slate-500 bg-white text-slate-500" :
                                   "border-slate-200 bg-white text-slate-500";
                             return React.createElement("div", { key: step.key, role: "listitem", "data-cell-tutorial-step": step.key, "data-cell-tutorial-step-state": stepState, "aria-current": stepState === 'current' ? 'step' : undefined, "aria-label": "Step " + (stepIndex + 1) + ", " + step.label + ", " + stepState, className: "flex min-w-0 flex-col items-center justify-center rounded-lg border px-1 py-1.5 text-center " + stepTone },
-                              React.createElement("span", { className: "flex h-5 w-5 items-center justify-center rounded-full bg-white/70 text-[9px] font-black", "aria-hidden": "true" }, stepState === 'complete' ? "\u2713" : stepState === 'skipped' ? "\u2014" : String(stepIndex + 1)),
-                              React.createElement("strong", { className: "mt-0.5 text-[9px] leading-tight" }, step.label),
-                              stepState === 'current' && React.createElement("span", { className: "text-[8px] font-black uppercase tracking-wide" }, "Now")
+                              React.createElement("span", { className: "flex h-5 w-5 items-center justify-center rounded-full bg-white/70 text-[0.5625rem] font-black", "aria-hidden": "true" }, stepState === 'complete' ? "\u2713" : stepState === 'skipped' ? "\u2014" : String(stepIndex + 1)),
+                              React.createElement("strong", { className: "mt-0.5 text-[0.5625rem] leading-tight" }, step.label),
+                              stepState === 'current' && React.createElement("span", { className: "text-[0.5rem] font-black uppercase tracking-wide" }, "Now")
                             );
                           })
                         ),
-                        React.createElement("p", { "data-cell-tutorial-phase-guidance": true, role: "status", "aria-live": "polite", className: "mt-2 text-[10px] font-bold leading-snug text-slate-700" }, tutorialLearningPhaseGuidance)
+                        React.createElement("p", { "data-cell-tutorial-phase-guidance": true, role: "status", "aria-live": "polite", className: "mt-2 text-[0.625rem] font-bold leading-snug text-slate-700" }, tutorialLearningPhaseGuidance)
                       ),
 
 
@@ -24057,14 +24057,14 @@ var d = labToolData.cell || {};
                         React.createElement("span", { className: "text-lg flex-shrink-0", "aria-hidden": "true" }, "\uD83D\uDCAC"),
                         React.createElement("div", { className: "min-w-0 flex-1" },
                           React.createElement("p", { className: "text-xs font-black text-amber-900" }, "1  |  Predict before play"),
-                          React.createElement("p", { className: "mt-1 text-[11px] font-bold leading-relaxed text-slate-700" }, tutorialPrediction.prompt),
+                          React.createElement("p", { className: "mt-1 text-[0.6875rem] font-bold leading-relaxed text-slate-700" }, tutorialPrediction.prompt),
                           React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2", role: "group", "aria-label": "Prediction choices: " + tutorialPrediction.prompt },
                             tutorialPrediction.options.map(function (predictionOption, predictionIndex) {
                               var predictionSelected = tutorialPredictionChoice === predictionIndex;
-                              return React.createElement("button", { key: predictionIndex, type: "button", "data-cell-prediction-option": predictionIndex, "aria-pressed": predictionSelected, "aria-label": "Prediction option " + (predictionIndex + 1) + ": " + predictionOption, disabled: tutorialPredictionLocked, onClick: function () { recordCellPlayPrediction(org.id, predictionIndex); }, className: "min-h-10 rounded-lg border px-2.5 py-2 text-left text-[10px] font-bold leading-snug transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 disabled:cursor-not-allowed disabled:opacity-70 " + (predictionSelected ? "border-amber-700 bg-amber-700 text-white" : "border-amber-300 bg-white text-slate-800 hover:border-amber-600 hover:bg-amber-100") }, predictionOption);
+                              return React.createElement("button", { key: predictionIndex, type: "button", "data-cell-prediction-option": predictionIndex, "aria-pressed": predictionSelected, "aria-label": "Prediction option " + (predictionIndex + 1) + ": " + predictionOption, disabled: tutorialPredictionLocked, onClick: function () { recordCellPlayPrediction(org.id, predictionIndex); }, className: "min-h-10 rounded-lg border px-2.5 py-2 text-left text-[0.625rem] font-bold leading-snug transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 disabled:cursor-not-allowed disabled:opacity-70 " + (predictionSelected ? "border-amber-700 bg-amber-700 text-white" : "border-amber-300 bg-white text-slate-800 hover:border-amber-600 hover:bg-amber-100") }, predictionOption);
                             })
                           ),
-                          React.createElement("p", { "data-cell-prediction-status": true, role: "status", "aria-live": "polite", className: "mt-1.5 text-[10px] leading-snug text-amber-900" }, tutorialPredictionChoice !== null ? "Prediction saved: " + tutorialPrediction.options[tutorialPredictionChoice] + (tutorialPredictionLocked ? " Compare it with the evidence." : " You can revise it until evidence is collected.") : tutorialPredictionLocked ? "Prediction skipped for this attempt. Restart to predict before collecting evidence." : tutorialPredictionSkipped ? "You chose to start without a prediction. You can still add one before evidence is collected." : "Choose one. Predictions are not graded; evidence can confirm or revise your thinking.")
+                          React.createElement("p", { "data-cell-prediction-status": true, role: "status", "aria-live": "polite", className: "mt-1.5 text-[0.625rem] leading-snug text-amber-900" }, tutorialPredictionChoice !== null ? "Prediction saved: " + tutorialPrediction.options[tutorialPredictionChoice] + (tutorialPredictionLocked ? " Compare it with the evidence." : " You can revise it until evidence is collected.") : tutorialPredictionLocked ? "Prediction skipped for this attempt. Restart to predict before collecting evidence." : tutorialPredictionSkipped ? "You chose to start without a prediction. You can still add one before evidence is collected." : "Choose one. Predictions are not graded; evidence can confirm or revise your thinking.")
                         )
                       ),
                       // Controls
@@ -24083,13 +24083,13 @@ var d = labToolData.cell || {};
 
                               ["W/\u2191", "A/\u2190", "S/\u2193", "D/\u2192"].map(function (k) {
 
-                                return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-white rounded text-[11px] font-mono font-bold text-slate-600 border border-slate-400" }, k);
+                                return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-white rounded text-[0.6875rem] font-mono font-bold text-slate-600 border border-slate-400" }, k);
 
                               })
 
                             ),
 
-                            React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600 mt-1" }, tutorial.control)
+                            React.createElement("p", { className: "text-[0.6875rem] leading-relaxed text-slate-600 mt-1" }, tutorial.control)
 
                           )
 
@@ -24097,30 +24097,30 @@ var d = labToolData.cell || {};
 
                         React.createElement("div", { "data-cell-tutorial-control-map": true, role: "group", "aria-label": tutorialControlAria, className: "mt-2 grid items-stretch gap-1", style: { gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr)' } },
                           React.createElement("div", { className: "min-w-0 rounded-lg border border-violet-200 bg-white px-1.5 py-2 text-center shadow-sm" },
-                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-violet-700" }, "Your input"),
-                            React.createElement("strong", { "data-cell-tutorial-control-input": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-800" }, tutorialControlInput)
+                            React.createElement("span", { className: "block text-[0.5rem] font-black uppercase tracking-wide text-violet-700" }, "Your input"),
+                            React.createElement("strong", { "data-cell-tutorial-control-input": true, className: "mt-0.5 block text-[0.625rem] leading-tight text-slate-800" }, tutorialControlInput)
                           ),
                           React.createElement("span", { className: "self-center text-xs font-black text-sky-600", "aria-hidden": "true" }, "\u2192"),
                           React.createElement("div", { className: "min-w-0 rounded-lg border border-sky-300 bg-white px-1.5 py-2 text-center shadow-sm" },
-                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-sky-700" }, "Cell response"),
-                            React.createElement("strong", { "data-cell-tutorial-control-mechanism": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-800" }, tutorialControlMechanism)
+                            React.createElement("span", { className: "block text-[0.5rem] font-black uppercase tracking-wide text-sky-700" }, "Cell response"),
+                            React.createElement("strong", { "data-cell-tutorial-control-mechanism": true, className: "mt-0.5 block text-[0.625rem] leading-tight text-slate-800" }, tutorialControlMechanism)
                           ),
                           React.createElement("span", { className: "self-center text-xs font-black text-emerald-600", "aria-hidden": "true" }, "\u2192"),
                           React.createElement("div", { className: "min-w-0 rounded-lg border border-emerald-200 bg-white px-1.5 py-2 text-center shadow-sm" },
-                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-emerald-700" }, "Watch for"),
-                            React.createElement("strong", { "data-cell-tutorial-control-result": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-800" }, tutorialControlResult)
+                            React.createElement("span", { className: "block text-[0.5rem] font-black uppercase tracking-wide text-emerald-700" }, "Watch for"),
+                            React.createElement("strong", { "data-cell-tutorial-control-result": true, className: "mt-0.5 block text-[0.625rem] leading-tight text-slate-800" }, tutorialControlResult)
                           )
                         ),
 
                         React.createElement("div", { "data-cell-tutorial-evidence-preview": true, "aria-label": "Step 3 Observe. Collect 3 observations. Evidence: " + tutorialControlEvidence, className: "mt-1.5 flex items-start gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5" },
-                          React.createElement("span", { className: "text-[10px]", "aria-hidden": "true" }, "\uD83D\uDD0E"),
+                          React.createElement("span", { className: "text-[0.625rem]", "aria-hidden": "true" }, "\uD83D\uDD0E"),
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("strong", { className: "block text-[9px] font-black uppercase tracking-wide text-emerald-900" }, "3  |  Observe evidence"),
-                            React.createElement("p", { className: "text-[9px] font-bold leading-snug text-emerald-900" }, "Collect 3 observations: ", React.createElement("strong", null, tutorialControlEvidence))
+                            React.createElement("strong", { className: "block text-[0.5625rem] font-black uppercase tracking-wide text-emerald-900" }, "3  |  Observe evidence"),
+                            React.createElement("p", { className: "text-[0.5625rem] font-bold leading-snug text-emerald-900" }, "Collect 3 observations: ", React.createElement("strong", null, tutorialControlEvidence))
                           )
                         ),
 
-                        React.createElement("p", { "data-cell-tutorial-prediction-handoff": true, className: "mt-1.5 text-[9px] font-bold leading-snug text-amber-900" }, "Prediction check: compare this live cause-and-effect chain with the expectation you saved above.")
+                        React.createElement("p", { "data-cell-tutorial-prediction-handoff": true, className: "mt-1.5 text-[0.5625rem] font-bold leading-snug text-amber-900" }, "Prediction check: compare this live cause-and-effect chain with the expectation you saved above.")
 
                       ),
 
@@ -24128,10 +24128,10 @@ var d = labToolData.cell || {};
                         React.createElement("span", { className: "text-lg flex-shrink-0", "aria-hidden": "true" }, "\uD83E\uDDEC"),
                         React.createElement("div", null,
                           React.createElement("p", { className: "text-xs font-black text-violet-800" }, "4  |  Explain with evidence"),
-                          React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-700" }, tutorial.connection),
-                          React.createElement("p", { className: "mt-2 text-[11px] font-bold text-emerald-800" }, "Watch for: " + tutorial.watch),
-                          React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-500" }, "Model note: " + tutorial.note),
-                          React.createElement("p", { className: "mt-1 text-[10px] font-bold leading-relaxed text-violet-800" }, "After 3 observations, choose the explanation that best connects this structure to its function.")
+                          React.createElement("p", { className: "text-[0.6875rem] leading-relaxed text-slate-700" }, tutorial.connection),
+                          React.createElement("p", { className: "mt-2 text-[0.6875rem] font-bold text-emerald-800" }, "Watch for: " + tutorial.watch),
+                          React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-500" }, "Model note: " + tutorial.note),
+                          React.createElement("p", { className: "mt-1 text-[0.625rem] font-bold leading-relaxed text-violet-800" }, "After 3 observations, choose the explanation that best connects this structure to its function.")
                         )
                       )
 
@@ -24141,21 +24141,21 @@ var d = labToolData.cell || {};
 
                     React.createElement("div", { "data-cell-tutorial-action-bar": true, className: "flex-shrink-0 space-y-2 border-t border-slate-200 bg-white px-5 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]" },
                       React.createElement("div", { "data-cell-tutorial-action-reminder": true, role: "note", "aria-label": tutorialControlReminderAria, className: "rounded-xl border border-sky-200 bg-gradient-to-r from-violet-50 via-sky-50 to-emerald-50 px-2.5 py-2" },
-                        React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-[0.14em] text-sky-900" }, "Control causes a biological response"),
+                        React.createElement("span", { className: "block text-[0.5rem] font-black uppercase tracking-[0.14em] text-sky-900" }, "Control causes a biological response"),
                         React.createElement("div", { className: "mt-1 grid items-stretch gap-1", style: { gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr)' } },
                           React.createElement("div", { className: "min-w-0 text-center" },
-                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-violet-700" }, "Your input"),
-                            React.createElement("strong", { "data-cell-tutorial-reminder-input": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-900" }, tutorialControlInput)
+                            React.createElement("span", { className: "block text-[0.5rem] font-black uppercase tracking-wide text-violet-700" }, "Your input"),
+                            React.createElement("strong", { "data-cell-tutorial-reminder-input": true, className: "mt-0.5 block text-[0.625rem] leading-tight text-slate-900" }, tutorialControlInput)
                           ),
                           React.createElement("span", { className: "self-center text-xs font-black text-sky-600", "aria-hidden": "true" }, "\u2192"),
                           React.createElement("div", { className: "min-w-0 text-center" },
-                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-sky-700" }, "Cell response"),
-                            React.createElement("strong", { "data-cell-tutorial-reminder-mechanism": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-900" }, tutorialControlMechanism)
+                            React.createElement("span", { className: "block text-[0.5rem] font-black uppercase tracking-wide text-sky-700" }, "Cell response"),
+                            React.createElement("strong", { "data-cell-tutorial-reminder-mechanism": true, className: "mt-0.5 block text-[0.625rem] leading-tight text-slate-900" }, tutorialControlMechanism)
                           ),
                           React.createElement("span", { className: "self-center text-xs font-black text-emerald-600", "aria-hidden": "true" }, "\u2192"),
                           React.createElement("div", { className: "min-w-0 text-center" },
-                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-emerald-700" }, "Watch for"),
-                            React.createElement("strong", { "data-cell-tutorial-reminder-result": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-900" }, tutorialControlResult)
+                            React.createElement("span", { className: "block text-[0.5rem] font-black uppercase tracking-wide text-emerald-700" }, "Watch for"),
+                            React.createElement("strong", { "data-cell-tutorial-reminder-result": true, className: "mt-0.5 block text-[0.625rem] leading-tight text-slate-900" }, tutorialControlResult)
                           )
                         )
                       ),
@@ -24164,10 +24164,10 @@ var d = labToolData.cell || {};
                         className: "w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100",
                         style: { background: 'linear-gradient(135deg, ' + org.color + ', ' + org.color + 'cc)' }
                       }, "\uD83D\uDE80 " + tutorialActionText),
-                      tutorialPredictionPending && React.createElement("button", { type: "button", "data-cell-skip-prediction": true, "aria-label": "Start " + org.label + " mission without a prediction", onClick: function () { recordCellPlayPredictionSkip(org.id); recordCellTutorialSeen(org.id); finishCellPlayTutorial(true); }, className: "min-h-10 w-full rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-black text-amber-950 hover:border-amber-500 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Start without prediction"),
-                      tutorialPredictionPending && React.createElement("button", { type: "button", "data-cell-dismiss-prediction": true, "aria-label": "Close " + org.label + " briefing and keep prediction pending", onClick: function () { finishCellPlayTutorial(false); }, className: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:border-violet-400 hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700" }, "Not now · return to choices"),
-                      tutorialCanRestart && React.createElement("button", { type: "button", "data-cell-restart-attempt": true, onClick: function () { launchCellPlayMission(org.id, true); }, className: "w-full rounded-xl border border-slate-500 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-50" }, "Restart current attempt"),
-                      tutorialCanRestart && React.createElement("p", { className: "text-center text-[10px] leading-snug text-slate-500" }, "Resets this attempt's 0-3 evidence. Completed mastery remains saved.")
+                      tutorialPredictionPending && React.createElement("button", { type: "button", "data-cell-skip-prediction": true, "aria-label": "Start " + org.label + " mission without a prediction", onClick: function () { recordCellPlayPredictionSkip(org.id); recordCellTutorialSeen(org.id); finishCellPlayTutorial(true); }, className: "min-h-10 w-full rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[0.6875rem] font-black text-amber-950 hover:border-amber-500 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Start without prediction"),
+                      tutorialPredictionPending && React.createElement("button", { type: "button", "data-cell-dismiss-prediction": true, "aria-label": "Close " + org.label + " briefing and keep prediction pending", onClick: function () { finishCellPlayTutorial(false); }, className: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-[0.6875rem] font-black text-slate-700 hover:border-violet-400 hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700" }, "Not now · return to choices"),
+                      tutorialCanRestart && React.createElement("button", { type: "button", "data-cell-restart-attempt": true, onClick: function () { launchCellPlayMission(org.id, true); }, className: "w-full rounded-xl border border-slate-500 bg-white px-3 py-2 text-[0.6875rem] font-black text-slate-700 hover:bg-slate-50" }, "Restart current attempt"),
+                      tutorialCanRestart && React.createElement("p", { className: "text-center text-[0.625rem] leading-snug text-slate-500" }, "Resets this attempt's 0-3 evidence. Completed mastery remains saved.")
                     )
 
                   )
@@ -24180,88 +24180,88 @@ var d = labToolData.cell || {};
             d.mode === 'play' && activePlayDef && activePlayTutorial && React.createElement("section", { "data-cell-mission-checkpoint": true, className: "mt-3 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm", "aria-labelledby": "cell-mission-checkpoint-title" },
               React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3 bg-gradient-to-r from-violet-50 via-white to-emerald-50 px-4 py-3" },
                 React.createElement("div", { className: "min-w-0 flex-1" },
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-violet-700" }, "Mission loop  |  Predict \u2192 Control \u2192 Observe \u2192 Explain"),
+                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.18em] text-violet-700" }, "Mission loop  |  Predict \u2192 Control \u2192 Observe \u2192 Explain"),
                   React.createElement("h3", { id: "cell-mission-checkpoint-title", className: "mt-1 text-sm font-black text-slate-900" }, activeMissionComplete ? "\u2713 " + activePlayDef.label + " mission complete" : activeMissionEvidenceComplete ? "Targets found \u2014 explain the biology" : activePlayDef.label + " mission in progress"),
-                  React.createElement("p", { "data-cell-strategy-contrast": activeStrategyContrast ? true : undefined, className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, activeMissionComplete ? (activeStrategyContrast ? "Learning loop complete. Strategy contrast: " + activeStrategyContrast : "You connected the prediction, control, observation, and explanation across every organism mission.") : activeMissionEvidenceComplete ? "You collected 3 pieces of evidence. Use the reflection prompt to complete the learning loop." : "Find " + (3 - activePlayProgress) + " more target" + (3 - activePlayProgress === 1 ? "" : "s") + ". Each success is evidence for the structure-function relationship.")
+                  React.createElement("p", { "data-cell-strategy-contrast": activeStrategyContrast ? true : undefined, className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, activeMissionComplete ? (activeStrategyContrast ? "Learning loop complete. Strategy contrast: " + activeStrategyContrast : "You connected the prediction, control, observation, and explanation across every organism mission.") : activeMissionEvidenceComplete ? "You collected 3 pieces of evidence. Use the reflection prompt to complete the learning loop." : "Find " + (3 - activePlayProgress) + " more target" + (3 - activePlayProgress === 1 ? "" : "s") + ". Each success is evidence for the structure-function relationship.")
                 ),
                 React.createElement("div", { className: "flex flex-col items-end gap-1" },
-                  React.createElement("span", { className: "rounded-full bg-slate-900 px-3 py-1 text-[11px] font-black text-white" }, activePlayProgress + "/3 evidence"),
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, activePlayLifetimeSuccesses + " lifetime successes")
+                  React.createElement("span", { className: "rounded-full bg-slate-900 px-3 py-1 text-[0.6875rem] font-black text-white" }, activePlayProgress + "/3 evidence"),
+                  React.createElement("span", { className: "text-[0.625rem] font-bold text-slate-500" }, activePlayLifetimeSuccesses + " lifetime successes")
                 )
               ),
               React.createElement("div", { className: "space-y-2 border-t border-slate-100 p-3" },
                 React.createElement("article", { "data-cell-prediction-stage": true, "data-cell-learning-step": "predict", "data-cell-checkpoint-step": "predict", "data-cell-checkpoint-state": activePredictionCheckpointState, "data-cell-prediction-stage-state": activePlayPredictionStageState, "aria-current": activePredictionCheckpointState === 'current' ? "step" : undefined, className: "rounded-xl border p-3 transition-colors " + (activePredictionCheckpointState === 'current' ? "border-amber-400 bg-amber-50 shadow-sm ring-2 ring-amber-100" : activePlayPredictionStageState === 'reviewed' || activePlayPredictionStageState === 'saved' ? "border-emerald-200 bg-emerald-50/70" : activePlayPredictionStageState === 'compare' ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50") },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activePredictionCheckpointState === 'current' || activePlayPredictionStageState === 'compare' ? "text-amber-800" : activePredictionCheckpointState === 'complete' ? "text-emerald-800" : "text-slate-600") }, "1  |  Predict"),
-                    React.createElement("span", { "data-cell-prediction-stage-status": true, "data-cell-checkpoint-status": "predict", className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activePlayPredictionStageState === 'reviewed' || activePlayPredictionStageState === 'saved' ? "bg-emerald-700 text-white" : activePlayPredictionStageState === 'compare' ? "bg-amber-700 text-white" : activePlayPredictionStageState === 'skipped' ? "bg-slate-200 text-slate-700" : "bg-amber-700 text-white") }, activePlayPredictionStageLabel)
+                    React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (activePredictionCheckpointState === 'current' || activePlayPredictionStageState === 'compare' ? "text-amber-800" : activePredictionCheckpointState === 'complete' ? "text-emerald-800" : "text-slate-600") }, "1  |  Predict"),
+                    React.createElement("span", { "data-cell-prediction-stage-status": true, "data-cell-checkpoint-status": "predict", className: "rounded-full px-2 py-0.5 text-[0.5625rem] font-black " + (activePlayPredictionStageState === 'reviewed' || activePlayPredictionStageState === 'saved' ? "bg-emerald-700 text-white" : activePlayPredictionStageState === 'compare' ? "bg-amber-700 text-white" : activePlayPredictionStageState === 'skipped' ? "bg-slate-200 text-slate-700" : "bg-amber-700 text-white") }, activePlayPredictionStageLabel)
                   ),
-                  React.createElement("p", { "data-cell-prediction-summary": true, className: "mt-1 text-[11px] font-bold leading-relaxed text-slate-800" },
+                  React.createElement("p", { "data-cell-prediction-summary": true, className: "mt-1 text-[0.6875rem] font-bold leading-relaxed text-slate-800" },
                     activePlayPredictionText ? React.createElement(React.Fragment, null, React.createElement("strong", null, "Your prediction: "), activePlayPredictionText) :
                       activePlayPredictionStageState === 'ready' ? React.createElement(React.Fragment, null, React.createElement("strong", null, "Prediction question: "), activePlayTutorial.prediction.prompt) :
                         "No prediction was recorded before evidence collection."
                   ),
-                  React.createElement("p", { "data-cell-prediction-guidance": true, className: "mt-1 text-[10px] leading-snug text-slate-600" }, activePlayPredictionStageGuidance),
-                  activePlayPredictionPending && React.createElement("button", { type: "button", "data-cell-prediction-action": true, onClick: openCellPredictionTutorial, "aria-label": "Make an " + activePlayDef.label + " prediction before collecting evidence", className: "mt-2 inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-amber-700 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 sm:w-auto" }, "Make prediction ", React.createElement("span", { "aria-hidden": true }, "\u2192"))
+                  React.createElement("p", { "data-cell-prediction-guidance": true, className: "mt-1 text-[0.625rem] leading-snug text-slate-600" }, activePlayPredictionStageGuidance),
+                  activePlayPredictionPending && React.createElement("button", { type: "button", "data-cell-prediction-action": true, onClick: openCellPredictionTutorial, "aria-label": "Make an " + activePlayDef.label + " prediction before collecting evidence", className: "mt-2 inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-amber-700 px-3 py-2 text-[0.6875rem] font-black text-white shadow-sm hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 sm:w-auto" }, "Make prediction ", React.createElement("span", { "aria-hidden": true }, "\u2192"))
                 ),
                 React.createElement("div", { className: "grid gap-2 md:grid-cols-3" },
                 React.createElement("article", { "data-cell-checkpoint-step": "control", "data-cell-checkpoint-state": activeControlCheckpointState, "aria-current": activeControlCheckpointState === 'current' ? "step" : undefined, className: "rounded-xl border p-3 transition-colors " + (activeControlCheckpointState === 'current' ? "border-violet-400 bg-violet-50 shadow-sm ring-2 ring-violet-100" : activeControlCheckpointState === 'complete' ? "border-emerald-200 bg-emerald-50/70" : "border-slate-200 bg-slate-50") },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activeControlCheckpointState === 'current' ? "text-violet-800" : activeControlCheckpointState === 'complete' ? "text-emerald-800" : "text-slate-500") }, "2  |  Control"),
-                    React.createElement("span", { "data-cell-checkpoint-status": "control", className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activeControlCheckpointState === 'current' ? "bg-violet-700 text-white" : activeControlCheckpointState === 'complete' ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-700") }, activeControlCheckpointLabel)
+                    React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (activeControlCheckpointState === 'current' ? "text-violet-800" : activeControlCheckpointState === 'complete' ? "text-emerald-800" : "text-slate-500") }, "2  |  Control"),
+                    React.createElement("span", { "data-cell-checkpoint-status": "control", className: "rounded-full px-2 py-0.5 text-[0.5625rem] font-black " + (activeControlCheckpointState === 'current' ? "bg-violet-700 text-white" : activeControlCheckpointState === 'complete' ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-700") }, activeControlCheckpointLabel)
                   ),
                   React.createElement("p", { className: "mt-1 text-xs font-black text-slate-900" }, activePlayTutorial.movement),
-                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, activePlayTutorial.stationary ? "Inspect and select structure labels." : "Steer with keys or the direction pad.")
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, activePlayTutorial.stationary ? "Inspect and select structure labels." : "Steer with keys or the direction pad.")
                 ),
                 React.createElement("article", { "data-cell-checkpoint-step": "observe", "data-cell-checkpoint-state": activeObserveCheckpointState, "aria-current": activeObserveCheckpointState === 'current' ? "step" : undefined, className: "rounded-xl border p-3 transition-colors " + (activeObserveCheckpointState === 'current' ? "border-emerald-400 bg-emerald-50 shadow-sm ring-2 ring-emerald-100" : activeObserveCheckpointState === 'complete' ? "border-emerald-200 bg-emerald-50/70" : "border-slate-200 bg-slate-50") },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activeObserveCheckpointState === 'upcoming' ? "text-slate-500" : "text-emerald-800") }, "3  |  Observe"),
-                    React.createElement("span", { "data-cell-checkpoint-status": "observe", className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activeObserveCheckpointState === 'upcoming' ? "bg-slate-200 text-slate-700" : "bg-emerald-700 text-white") }, activeObserveCheckpointLabel)
+                    React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (activeObserveCheckpointState === 'upcoming' ? "text-slate-500" : "text-emerald-800") }, "3  |  Observe"),
+                    React.createElement("span", { "data-cell-checkpoint-status": "observe", className: "rounded-full px-2 py-0.5 text-[0.5625rem] font-black " + (activeObserveCheckpointState === 'upcoming' ? "bg-slate-200 text-slate-700" : "bg-emerald-700 text-white") }, activeObserveCheckpointLabel)
                   ),
-                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, activePlayTutorial.watch),
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, activePlayTutorial.watch),
                   React.createElement("div", { className: "mt-2 flex gap-1", "aria-label": activePlayProgress + " of 3 evidence checkpoints complete" },
                     [0, 1, 2].map(function (step) { return React.createElement("span", { key: step, className: "h-2 flex-1 rounded-full " + (step < activePlayProgress ? "bg-emerald-500" : "bg-emerald-100"), "aria-hidden": "true" }); })
                   )
                 ),
                 React.createElement("article", { "data-cell-checkpoint-step": "explain", "data-cell-checkpoint-state": activeExplainCheckpointState, "aria-current": activeExplainCheckpointState === 'current' ? "step" : undefined, className: "rounded-xl border p-3 transition-colors " + (activeExplainCheckpointState === 'complete' ? "border-emerald-300 bg-emerald-50" : activeExplainCheckpointState === 'current' ? "border-amber-400 bg-amber-50 shadow-sm ring-2 ring-amber-100" : "border-slate-200 bg-slate-50") },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activeExplainCheckpointState === 'complete' ? "text-emerald-800" : activeExplainCheckpointState === 'current' ? "text-amber-800" : "text-slate-500") }, "4  |  Explain"),
-                    React.createElement("span", { "data-cell-checkpoint-status": "explain", className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activeExplainCheckpointState === 'complete' ? "bg-emerald-700 text-white" : activeExplainCheckpointState === 'current' ? "bg-amber-700 text-white" : "bg-slate-200 text-slate-700") }, activeExplainCheckpointLabel)
+                    React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (activeExplainCheckpointState === 'complete' ? "text-emerald-800" : activeExplainCheckpointState === 'current' ? "text-amber-800" : "text-slate-500") }, "4  |  Explain"),
+                    React.createElement("span", { "data-cell-checkpoint-status": "explain", className: "rounded-full px-2 py-0.5 text-[0.5625rem] font-black " + (activeExplainCheckpointState === 'complete' ? "bg-emerald-700 text-white" : activeExplainCheckpointState === 'current' ? "bg-amber-700 text-white" : "bg-slate-200 text-slate-700") }, activeExplainCheckpointLabel)
                   ),
-                  React.createElement("p", { className: "mt-1 text-[11px] font-bold leading-relaxed text-slate-800" }, activePlayTutorial.reflect),
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] font-bold leading-relaxed text-slate-800" }, activePlayTutorial.reflect),
                   activeReflectionComplete ? React.createElement("div", { "data-cell-explanation-result": true, role: "status", "aria-live": "polite", className: "mt-2 rounded-lg border border-emerald-200 bg-white p-2" },
-                    React.createElement("strong", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "\u2713 Evidence matched"),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, (activeExplanationSelectedOption && activeExplanationSelectedOption.correct ? activeExplanationSelectedOption : activeCorrectExplanation).text)
+                    React.createElement("strong", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, "\u2713 Evidence matched"),
+                    React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, (activeExplanationSelectedOption && activeExplanationSelectedOption.correct ? activeExplanationSelectedOption : activeCorrectExplanation).text)
                   ) : activeMissionEvidenceComplete && activeExplanationCheck ? React.createElement("div", { "data-cell-explanation-check": true, className: "mt-2" },
                     React.createElement("div", { "data-cell-explanation-evidence-summary": true, className: "mb-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2", "aria-label": "Evidence to use: 3 of 3 observations. " + ((activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence") },
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                        React.createElement("strong", { className: "text-[9px] font-black uppercase tracking-wide text-emerald-800" }, "Evidence to use"),
-                        React.createElement("span", { className: "rounded-full bg-emerald-700 px-2 py-0.5 text-[9px] font-black text-white" }, "3/3 observed")
+                        React.createElement("strong", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-emerald-800" }, "Evidence to use"),
+                        React.createElement("span", { className: "rounded-full bg-emerald-700 px-2 py-0.5 text-[0.5625rem] font-black text-white" }, "3/3 observed")
                       ),
-                      React.createElement("p", { className: "mt-1 text-[10px] font-black leading-snug text-slate-800" }, (activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence")
+                      React.createElement("p", { className: "mt-1 text-[0.625rem] font-black leading-snug text-slate-800" }, (activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence")
                     ),
-                    React.createElement("p", { className: "text-[10px] font-black leading-snug text-amber-900" }, activeExplanationCheck.prompt),
+                    React.createElement("p", { className: "text-[0.625rem] font-black leading-snug text-amber-900" }, activeExplanationCheck.prompt),
                     React.createElement("div", { className: "mt-2 space-y-1.5", role: "group", "aria-label": "Choose the explanation best supported by mission evidence" },
                       activeExplanationCheck.options.map(function (option, optionIndex) {
                         var explanationSelected = activeExplanationChoice === optionIndex;
-                        return React.createElement("button", { key: optionIndex, type: "button", "data-cell-explanation-option": optionIndex, "aria-pressed": explanationSelected, "aria-label": "Explanation " + String.fromCharCode(65 + optionIndex) + ": " + option.text, onClick: function () { recordCellPlayExplanation(activePlayDef.id, optionIndex); cellSound(option.correct ? 'correct' : 'wrong'); if (option.correct) focusCellNextStepAction(); }, className: "flex min-h-11 w-full items-start gap-2 rounded-lg border px-2.5 py-2 text-left text-[10px] font-bold leading-snug transition " + (explanationSelected && !option.correct ? "border-rose-300 bg-rose-50 text-rose-900" : "border-slate-200 bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50") },
-                          React.createElement("span", { className: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-[9px] font-black text-white", "aria-hidden": "true" }, String.fromCharCode(65 + optionIndex)),
+                        return React.createElement("button", { key: optionIndex, type: "button", "data-cell-explanation-option": optionIndex, "aria-pressed": explanationSelected, "aria-label": "Explanation " + String.fromCharCode(65 + optionIndex) + ": " + option.text, onClick: function () { recordCellPlayExplanation(activePlayDef.id, optionIndex); cellSound(option.correct ? 'correct' : 'wrong'); if (option.correct) focusCellNextStepAction(); }, className: "flex min-h-11 w-full items-start gap-2 rounded-lg border px-2.5 py-2 text-left text-[0.625rem] font-bold leading-snug transition " + (explanationSelected && !option.correct ? "border-rose-300 bg-rose-50 text-rose-900" : "border-slate-200 bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50") },
+                          React.createElement("span", { className: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-[0.5625rem] font-black text-white", "aria-hidden": "true" }, String.fromCharCode(65 + optionIndex)),
                           React.createElement("span", null, option.text)
                         );
                       })
                     ),
-                    activeExplanationSelectedOption && !activeExplanationSelectedOption.correct && React.createElement("p", { "data-cell-explanation-feedback": true, role: "alert", className: "mt-2 rounded-lg bg-rose-100 p-2 text-[10px] font-bold leading-snug text-rose-900" }, activePlayMission.explanationFeedback)
-                  ) : React.createElement("div", { "data-cell-explanation-locked": true, className: "mt-2 rounded-lg bg-slate-200 px-2.5 py-2 text-center text-[10px] font-black text-slate-600" }, "Collect 3 targets to unlock two evidence explanations.")
+                    activeExplanationSelectedOption && !activeExplanationSelectedOption.correct && React.createElement("p", { "data-cell-explanation-feedback": true, role: "alert", className: "mt-2 rounded-lg bg-rose-100 p-2 text-[0.625rem] font-bold leading-snug text-rose-900" }, activePlayMission.explanationFeedback)
+                  ) : React.createElement("div", { "data-cell-explanation-locked": true, className: "mt-2 rounded-lg bg-slate-200 px-2.5 py-2 text-center text-[0.625rem] font-black text-slate-600" }, "Collect 3 targets to unlock two evidence explanations.")
                 )
                 )
               ),
               React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-3 py-2.5" },
-                React.createElement("p", { className: "max-w-2xl text-[10px] leading-relaxed text-slate-500" }, "Model boundary: " + activePlayTutorial.note),
+                React.createElement("p", { className: "max-w-2xl text-[0.625rem] leading-relaxed text-slate-500" }, "Model boundary: " + activePlayTutorial.note),
                 React.createElement("div", { className: "flex flex-wrap gap-2" },
-                  React.createElement("button", { type: "button", onClick: openCellPlayTutorial, className: "min-h-9 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-[11px] font-black text-violet-800 hover:bg-violet-100" }, "Review briefing"),
-                  activeMissionComplete && React.createElement("button", { type: "button", onClick: function () { launchCellPlayMission(activePlayDef.id, true); }, className: "min-h-9 rounded-lg bg-emerald-700 px-3 py-2 text-[11px] font-black text-white hover:bg-emerald-800" }, "Replay mission"),
-                  activeMissionComplete && nextCellMissionDef && React.createElement("button", { type: "button", "aria-label": "Compare movement strategies: " + activePlayDef.label + " and " + nextCellMissionDef.label, onClick: function () { launchCellPlayMission(nextCellMissionDef.id, true); var stage = document.querySelector('[data-cell-stage]'); if (stage) stage.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'start' }); }, className: "min-h-9 rounded-lg bg-violet-700 px-3 py-2 text-[11px] font-black text-white hover:bg-violet-800" }, "Compare next: " + nextCellMissionDef.label),
-                  activeMissionComplete && !nextCellMissionDef && React.createElement("span", { className: "inline-flex min-h-9 items-center rounded-lg bg-amber-100 px-3 py-2 text-[11px] font-black text-amber-900" }, "\u2713 All organism missions complete"),
-                  React.createElement("button", { type: "button", onClick: function () { var chooser = document.querySelector('[data-cell-organism-chooser]'); if (chooser) { chooser.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'start' }); var preferredId = d.playAsOrganism || (recommendedCellMissionDef && recommendedCellMissionDef.id); var preferredChoice = preferredId ? chooser.querySelector('[data-cell-organism-option="' + preferredId + '"]') : null; if (!preferredChoice) preferredChoice = chooser.querySelector('[data-cell-recommended-card], [data-cell-organism-option]'); if (preferredChoice && preferredChoice.focus) preferredChoice.focus({ preventScroll: true }); } }, className: "min-h-9 rounded-lg border border-slate-500 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-50" }, "Switch organism")
+                  React.createElement("button", { type: "button", onClick: openCellPlayTutorial, className: "min-h-9 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-[0.6875rem] font-black text-violet-800 hover:bg-violet-100" }, "Review briefing"),
+                  activeMissionComplete && React.createElement("button", { type: "button", onClick: function () { launchCellPlayMission(activePlayDef.id, true); }, className: "min-h-9 rounded-lg bg-emerald-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-emerald-800" }, "Replay mission"),
+                  activeMissionComplete && nextCellMissionDef && React.createElement("button", { type: "button", "aria-label": "Compare movement strategies: " + activePlayDef.label + " and " + nextCellMissionDef.label, onClick: function () { launchCellPlayMission(nextCellMissionDef.id, true); var stage = document.querySelector('[data-cell-stage]'); if (stage) stage.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'start' }); }, className: "min-h-9 rounded-lg bg-violet-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-violet-800" }, "Compare next: " + nextCellMissionDef.label),
+                  activeMissionComplete && !nextCellMissionDef && React.createElement("span", { className: "inline-flex min-h-9 items-center rounded-lg bg-amber-100 px-3 py-2 text-[0.6875rem] font-black text-amber-900" }, "\u2713 All organism missions complete"),
+                  React.createElement("button", { type: "button", onClick: function () { var chooser = document.querySelector('[data-cell-organism-chooser]'); if (chooser) { chooser.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'start' }); var preferredId = d.playAsOrganism || (recommendedCellMissionDef && recommendedCellMissionDef.id); var preferredChoice = preferredId ? chooser.querySelector('[data-cell-organism-option="' + preferredId + '"]') : null; if (!preferredChoice) preferredChoice = chooser.querySelector('[data-cell-recommended-card], [data-cell-organism-option]'); if (preferredChoice && preferredChoice.focus) preferredChoice.focus({ preventScroll: true }); } }, className: "min-h-9 rounded-lg border border-slate-500 bg-white px-3 py-2 text-[0.6875rem] font-black text-slate-700 hover:bg-slate-50" }, "Switch organism")
                 )
               )
             ),
@@ -24309,7 +24309,7 @@ var d = labToolData.cell || {};
 
                     },
 
-                    className: "text-[10px] font-bold text-green-700 hover:text-green-800 px-2 py-0.5 bg-green-50 rounded hover:bg-green-100 transition-all border border-green-200 active:scale-[0.97]"
+                    className: "text-[0.625rem] font-bold text-green-700 hover:text-green-800 px-2 py-0.5 bg-green-50 rounded hover:bg-green-100 transition-all border border-green-200 active:scale-[0.97]"
 
                   }, "Show All"),
 
@@ -24342,7 +24342,7 @@ var d = labToolData.cell || {};
 
                     },
 
-                    className: "text-[10px] font-bold text-slate-600 hover:text-slate-700 px-2 py-0.5 bg-slate-100 rounded hover:bg-slate-200 transition-all border border-slate-200 active:scale-[0.97]"
+                    className: "text-[0.625rem] font-bold text-slate-600 hover:text-slate-700 px-2 py-0.5 bg-slate-100 rounded hover:bg-slate-200 transition-all border border-slate-200 active:scale-[0.97]"
 
                   }, "Clear All")
 
@@ -24405,11 +24405,11 @@ var d = labToolData.cell || {};
 
                       React.createElement("span", null, org.icon),
 
-                      React.createElement("span", { className: "text-[10px] leading-none" }, org.label)
+                      React.createElement("span", { className: "text-[0.625rem] leading-none" }, org.label)
 
                     ),
 
-                    React.createElement("span", { className: "text-[10px]" }, isActive ? "🟢" : "⚫")
+                    React.createElement("span", { className: "text-[0.625rem]" }, isActive ? "🟢" : "⚫")
 
                   );
 
@@ -24436,10 +24436,10 @@ var d = labToolData.cell || {};
               React.createElement("div", { className: "col-span-full mb-1 flex flex-wrap items-end justify-between gap-2 border-b border-slate-100 pb-2" },
                 React.createElement("div", null,
                   React.createElement("h4", { id: "cell-organism-chooser-title", className: "text-sm font-black text-slate-900" }, d.mode === 'play' ? "Choose your organism" : "Choose an organism to inspect"),
-                  React.createElement("p", { className: "text-[11px] text-slate-500" }, d.mode === 'play' ? "Compare what you do, how the cell responds, and each mission goal\u2014or follow your recommended next step." : "Each card previews its movement strategy and activity."),
-                  d.mode === 'play' && React.createElement("p", { "data-cell-chooser-mobile-hint": true, className: "mt-1 hidden text-[10px] font-bold leading-snug text-violet-700" }, "Current, selected, and recommended cards stay expanded. Tap any compact card to reveal its learning map.")
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-500" }, d.mode === 'play' ? "Compare what you do, how the cell responds, and each mission goal\u2014or follow your recommended next step." : "Each card previews its movement strategy and activity."),
+                  d.mode === 'play' && React.createElement("p", { "data-cell-chooser-mobile-hint": true, className: "mt-1 hidden text-[0.625rem] font-bold leading-snug text-violet-700" }, "Current, selected, and recommended cards stay expanded. Tap any compact card to reveal its learning map.")
                 ),
-                React.createElement("span", { "data-cell-mastery-summary": d.mode === 'play' ? true : undefined, className: "rounded-full px-2.5 py-1 text-[10px] font-black " + (d.mode === 'play' ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600") }, d.mode === 'play' ? completedCellMissionCount + " / " + ORGANISMS.length + " missions complete" : ORGANISMS.length + " models")
+                React.createElement("span", { "data-cell-mastery-summary": d.mode === 'play' ? true : undefined, className: "rounded-full px-2.5 py-1 text-[0.625rem] font-black " + (d.mode === 'play' ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600") }, d.mode === 'play' ? completedCellMissionCount + " / " + ORGANISMS.length + " missions complete" : ORGANISMS.length + " models")
               ),
               d.mode === 'play' && React.createElement("aside", {
                 "data-cell-next-step": true,
@@ -24450,7 +24450,7 @@ var d = labToolData.cell || {};
               },
                 recommendedCellMissionDef && recommendedCellMissionTutorial ? React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" },
                   React.createElement("div", { className: "min-w-0 flex-1" },
-                    React.createElement("div", { className: "text-[9px] font-black uppercase tracking-[0.18em] text-violet-700" }, recommendedCellMissionEyebrow),
+                    React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-[0.18em] text-violet-700" }, recommendedCellMissionEyebrow),
                     React.createElement("h5", { id: "cell-next-step-title", className: "mt-0.5 text-sm font-black text-slate-950" },
                       recommendedCellMissionAction === 'explain' ? "Finish the " + recommendedCellMissionDef.label + " explanation" :
                       recommendedCellMissionAction === 'predict' ? "Predict for " + recommendedCellMissionDef.label + " before play" :
@@ -24458,10 +24458,10 @@ var d = labToolData.cell || {};
                       recommendedCellMissionAction === 'compare' ? "Compare next: " + recommendedCellMissionDef.label :
                       "Start with " + recommendedCellMissionDef.label
                     ),
-                    recommendedCellMissionAction === 'compare' && activeStrategyContrast && React.createElement("p", { "data-cell-next-step-reason": true, className: "mt-1 text-[10px] font-bold leading-snug text-violet-800" }, "Why this is next: " + activeStrategyContrast),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-slate-700" }, recommendedCellMissionAction === 'predict' ? "Choose what you expect to observe; Control unlocks after you predict or explicitly skip." : recommendedCellMissionAction === 'explain' ? "Evidence ready: use your 3 observations to choose the biology explanation they support." : "Goal: " + recommendedCellMissionTutorial.objective),
-                    React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-slate-600" }, "You'll learn: " + recommendedCellMissionTutorial.connection),
-                    React.createElement("p", { className: "mt-1 text-[10px] font-black leading-snug text-cyan-800" }, "Control loop: " + recommendedCellMissionTutorial.controlLoop.input + " \u2192 " + recommendedCellMissionTutorial.controlLoop.action + " \u2192 " + recommendedCellMissionTutorial.controlLoop.outcome)
+                    recommendedCellMissionAction === 'compare' && activeStrategyContrast && React.createElement("p", { "data-cell-next-step-reason": true, className: "mt-1 text-[0.625rem] font-bold leading-snug text-violet-800" }, "Why this is next: " + activeStrategyContrast),
+                    React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-snug text-slate-700" }, recommendedCellMissionAction === 'predict' ? "Choose what you expect to observe; Control unlocks after you predict or explicitly skip." : recommendedCellMissionAction === 'explain' ? "Evidence ready: use your 3 observations to choose the biology explanation they support." : "Goal: " + recommendedCellMissionTutorial.objective),
+                    React.createElement("p", { className: "mt-1 text-[0.625rem] leading-snug text-slate-600" }, "You'll learn: " + recommendedCellMissionTutorial.connection),
+                    React.createElement("p", { className: "mt-1 text-[0.625rem] font-black leading-snug text-cyan-800" }, "Control loop: " + recommendedCellMissionTutorial.controlLoop.input + " \u2192 " + recommendedCellMissionTutorial.controlLoop.action + " \u2192 " + recommendedCellMissionTutorial.controlLoop.outcome)
                   ),
                   React.createElement("button", {
                     type: "button",
@@ -24472,7 +24472,7 @@ var d = labToolData.cell || {};
                   }, recommendedCellMissionAction === 'predict' ? "Make prediction" : recommendedCellMissionAction === 'explain' ? "Finish explanation" : recommendedCellMissionAction === 'continue' ? "Return to dish" : recommendedCellMissionAction === 'compare' ? "Start comparison" : "Start mission")
                 ) : React.createElement("div", { className: "rounded-lg bg-emerald-50 p-2" },
                   React.createElement("h5", { id: "cell-next-step-title", className: "text-sm font-black text-emerald-900" }, "\u2713 All 11 organism missions mastered"),
-                  React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-emerald-800" }, "You completed every Predict \u2192 Control \u2192 Observe \u2192 Explain loop. Choose any organism below to replay and compare its strategy.")
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-snug text-emerald-800" }, "You completed every Predict \u2192 Control \u2192 Observe \u2192 Explain loop. Choose any organism below to replay and compare its strategy.")
                 )
               ),
               React.createElement("div", { "data-cell-organism-grid": true, className: "col-span-full grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4" },
@@ -24548,24 +24548,24 @@ var d = labToolData.cell || {};
                 },
                   React.createElement("span", { "data-cell-organism-card-header": true, className: "flex items-start justify-between gap-2 text-xs font-black" },
                     React.createElement("span", { "data-cell-card-identity": true, className: "flex min-w-0 items-center gap-2" }, React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, org.icon), React.createElement("span", null, org.label)),
-                    d.mode === 'play' && React.createElement("span", { "data-cell-card-status": chooserStatusText, className: "flex-shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide " + (chooserCurrentAttempt ? "bg-violet-100 text-violet-800" : chooserMissionComplete ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700") }, chooserStatusText)
+                    d.mode === 'play' && React.createElement("span", { "data-cell-card-status": chooserStatusText, className: "flex-shrink-0 rounded-full px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide " + (chooserCurrentAttempt ? "bg-violet-100 text-violet-800" : chooserMissionComplete ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700") }, chooserStatusText)
                   ),
                   d.mode === 'play' && (d.playAsOrganism === org.id || chooserMissionComplete || (chooserRecommended && !chooserCurrentAttempt)) && React.createElement("span", { className: "mt-2 flex flex-wrap gap-1" },
-                    d.playAsOrganism === org.id && React.createElement("span", { className: "inline-flex rounded-full bg-violet-700 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white" }, "\u25B6 Current player"),
-                    chooserRecommended && !chooserCurrentAttempt && React.createElement("span", { className: "inline-flex rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-amber-950" }, "\u2605 Recommended"),
-                    chooserMissionComplete && React.createElement("span", { "data-cell-mission-mastered": org.id, className: "inline-flex rounded-full bg-emerald-700 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white" }, "\u2713 Mission complete")
+                    d.playAsOrganism === org.id && React.createElement("span", { className: "inline-flex rounded-full bg-violet-700 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-white" }, "\u25B6 Current player"),
+                    chooserRecommended && !chooserCurrentAttempt && React.createElement("span", { className: "inline-flex rounded-full bg-amber-400 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-amber-950" }, "\u2605 Recommended"),
+                    chooserMissionComplete && React.createElement("span", { "data-cell-mission-mastered": org.id, className: "inline-flex rounded-full bg-emerald-700 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-white" }, "\u2713 Mission complete")
                   ),
                   d.mode === 'play' && React.createElement("span", { id: chooserDescriptionId, className: "sr-only" }, chooserAccessibleSummary),
                   React.createElement("span", { "data-cell-organism-card-detail": true, "aria-hidden": d.mode === 'play' ? "true" : undefined, className: "block" },
                     d.mode === 'play' && chooserTutorial ? React.createElement("span", { "data-cell-card-control-map": true, "aria-label": org.label + " control mapping: " + chooserControlLoop.input + ", then " + chooserControlLoop.action + ".", className: "mt-2 block" },
-                      React.createElement("span", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-500" }, "Your input ", React.createElement("span", { className: "text-cyan-700", "aria-hidden": "true" }, "\u2192"), " Cell response"),
-                      React.createElement("span", { className: "mt-0.5 flex flex-wrap items-baseline gap-x-1 text-[10px] font-black leading-snug" },
+                      React.createElement("span", { className: "block text-[0.5625rem] font-black uppercase tracking-wide text-slate-500" }, "Your input ", React.createElement("span", { className: "text-cyan-700", "aria-hidden": "true" }, "\u2192"), " Cell response"),
+                      React.createElement("span", { className: "mt-0.5 flex flex-wrap items-baseline gap-x-1 text-[0.625rem] font-black leading-snug" },
                         React.createElement("strong", { "data-cell-card-control-input": true, className: "text-violet-800" }, chooserControlLoop.input),
                         React.createElement("span", { className: "text-slate-400", "aria-hidden": "true" }, "\u2192"),
                         React.createElement("strong", { "data-cell-card-control-response": true, className: "text-cyan-800" }, chooserControlLoop.action)
                       )
-                    ) : React.createElement("span", { className: "mt-2 block text-[10px] font-bold uppercase tracking-wide text-slate-500" }, chooserTutorial ? chooserTutorial.movement : org.activity),
-                    React.createElement("span", { className: "mt-1 block text-[10px] leading-snug text-slate-600" }, d.mode === 'play' && chooserTutorial ? "Mission \u00B7 " + chooserTutorial.objective : org.activity)
+                    ) : React.createElement("span", { className: "mt-2 block text-[0.625rem] font-bold uppercase tracking-wide text-slate-500" }, chooserTutorial ? chooserTutorial.movement : org.activity),
+                    React.createElement("span", { className: "mt-1 block text-[0.625rem] leading-snug text-slate-600" }, d.mode === 'play' && chooserTutorial ? "Mission \u00B7 " + chooserTutorial.objective : org.activity)
                   ));
 
               })
@@ -24591,7 +24591,7 @@ var d = labToolData.cell || {};
 
                   React.createElement("div", {
                     "data-cell-selected-organism-eyebrow": true,
-                    className: "mb-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-slate-600"
+                    className: "mb-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-slate-600"
                   },
                     React.createElement("span", { "aria-hidden": true }, d.playAsOrganism === selDef.id ? "\u25CF" : "\u25C7"),
                     d.playAsOrganism === selDef.id ? "Current organism" : "Mission preview"
@@ -24609,7 +24609,7 @@ var d = labToolData.cell || {};
                     "data-cell-back-to-organisms": true,
                     "aria-label": "Return to organism choices from " + selDef.label + " details",
                     onClick: function () { focusCellOrganismChoices(selDef.id); },
-                    className: "inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-500 bg-white px-2.5 py-1.5 text-[10px] font-black text-slate-700 hover:bg-slate-50"
+                    className: "inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-500 bg-white px-2.5 py-1.5 text-[0.625rem] font-black text-slate-700 hover:bg-slate-50"
                   }, React.createElement("span", { "aria-hidden": true }, "\u2190"), "All organisms"),
                   d.mode === 'play' && React.createElement("button", {
                     type: "button",
@@ -24625,7 +24625,7 @@ var d = labToolData.cell || {};
 
               // Activity description
 
-              React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 mt-1 text-[11px]" },
+              React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 mt-1 text-[0.6875rem]" },
 
                 React.createElement("span", { className: "font-bold text-slate-700" }, "\u{1F3AF} " + selDef.activity + ": "),
 
@@ -24642,14 +24642,14 @@ var d = labToolData.cell || {};
                 className: "mt-3 rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50 to-cyan-50 p-3"
               },
                 React.createElement("div", { className: "mb-2 flex flex-wrap gap-1.5" },
-                  React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-800 shadow-sm" }, selectedPlayTutorial.classification),
-                  React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-cyan-800 shadow-sm" }, "Movement: " + selectedPlayTutorial.movement)
+                  React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800 shadow-sm" }, selectedPlayTutorial.classification),
+                  React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-cyan-800 shadow-sm" }, "Movement: " + selectedPlayTutorial.movement)
                 ),
                 React.createElement("h5", { className: "text-xs font-black text-slate-900" }, "How the gameplay teaches the biology"),
                 React.createElement("div", { className: "mt-2 grid gap-2 md:grid-cols-3" },
-                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[10px] font-black uppercase text-violet-700" }, "Control"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, selectedPlayTutorial.control)),
-                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[10px] font-black uppercase text-emerald-700" }, "Mission"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, selectedPlayTutorial.objective)),
-                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[10px] font-black uppercase text-cyan-700" }, "Learning link"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, selectedPlayTutorial.connection))
+                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[0.625rem] font-black uppercase text-violet-700" }, "Control"), React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, selectedPlayTutorial.control)),
+                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[0.625rem] font-black uppercase text-emerald-700" }, "Mission"), React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, selectedPlayTutorial.objective)),
+                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[0.625rem] font-black uppercase text-cyan-700" }, "Learning link"), React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, selectedPlayTutorial.connection))
                 ),
                 React.createElement("div", {
                   "data-cell-structure-spotlight": true,
@@ -24658,10 +24658,10 @@ var d = labToolData.cell || {};
                   className: "mt-2 rounded-lg border border-white/90 bg-white/70 p-2.5 shadow-sm"
                 },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-800" }, "\uD83E\uDDEC Mission anatomy"),
-                    React.createElement("span", { className: "rounded-full bg-violet-100 px-2 py-0.5 text-[9px] font-black text-violet-800" }, selectedPlayTutorial.focusStructures.length + " structures to watch")
+                    React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-800" }, "\uD83E\uDDEC Mission anatomy"),
+                    React.createElement("span", { className: "rounded-full bg-violet-100 px-2 py-0.5 text-[0.5625rem] font-black text-violet-800" }, selectedPlayTutorial.focusStructures.length + " structures to watch")
                   ),
-                  React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "These structures make the mission's biology visible. Find their highlighted rows below to locate them in the model."),
+                  React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-600" }, "These structures make the mission's biology visible. Find their highlighted rows below to locate them in the model."),
                   React.createElement("div", { role: "list", className: "mt-2 flex flex-wrap gap-1.5" },
                     selectedPlayTutorial.focusStructures.map(function (structureName) {
                       var structureDef = (selDef.anatomy || []).find(function (a) { return a.name === structureName; });
@@ -24669,7 +24669,7 @@ var d = labToolData.cell || {};
                         key: structureName,
                         role: "listitem",
                         "data-cell-focus-structure": structureName,
-                        className: "inline-flex items-center gap-1 rounded-full border border-violet-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 shadow-sm"
+                        className: "inline-flex items-center gap-1 rounded-full border border-violet-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-slate-700 shadow-sm"
                       },
                         React.createElement("span", { "aria-hidden": true, style: { color: selDef.color } }, structureDef && structureDef.icon ? structureDef.icon : "\u25CF"),
                         structureName
@@ -24686,7 +24686,7 @@ var d = labToolData.cell || {};
 
                   var discovered = (d.discoveries || []).indexOf(selDef.id + '_' + i) !== -1;
 
-                  return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[11px] py-0.5" },
+                  return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[0.6875rem] py-0.5" },
 
                     React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-600 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
 
@@ -24703,10 +24703,10 @@ var d = labToolData.cell || {};
               selDef.anatomy && React.createElement("div", { "data-cell-anatomy-explorer": true, className: "mt-2 border-t border-slate-100 pt-2" },
 
                 React.createElement("div", { className: "mb-1 flex flex-wrap items-center justify-between gap-1.5" },
-                  React.createElement("p", { className: "text-[11px] font-black text-slate-700 uppercase" }, "\uD83E\uDDEC Explore structures"),
-                  React.createElement("span", { className: "text-[9px] font-bold text-emerald-700" }, "\u2197 Select a row \u2192 live dish")
+                  React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-700 uppercase" }, "\uD83E\uDDEC Explore structures"),
+                  React.createElement("span", { className: "text-[0.5625rem] font-bold text-emerald-700" }, "\u2197 Select a row \u2192 live dish")
                 ),
-                selectedPlayTutorial && React.createElement("p", { className: "mb-1.5 text-[10px] leading-relaxed text-slate-500" }, "Mission-focus rows are highlighted so structure and function stay connected to the gameplay."),
+                selectedPlayTutorial && React.createElement("p", { className: "mb-1.5 text-[0.625rem] leading-relaxed text-slate-500" }, "Mission-focus rows are highlighted so structure and function stay connected to the gameplay."),
 
                 React.createElement("div", { className: "grid grid-cols-1 gap-1" },
 
@@ -24760,11 +24760,11 @@ var d = labToolData.cell || {};
                       React.createElement("span", null,
 
                         React.createElement("span", { className: "font-bold text-slate-800" }, a.name + ": "),
-                        missionFocus && React.createElement("span", { className: "mr-1 inline-flex rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-black uppercase text-violet-800" }, "Mission focus"),
+                        missionFocus && React.createElement("span", { className: "mr-1 inline-flex rounded-full bg-violet-100 px-1.5 py-0.5 text-[0.5625rem] font-black uppercase text-violet-800" }, "Mission focus"),
 
                         React.createElement("span", { className: "text-slate-600 leading-relaxed" }, a.fn),
 
-                        React.createElement("span", { className: "ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black text-emerald-700 transition-colors hover:text-emerald-800" }, "\u2197 Show in live dish")
+                        React.createElement("span", { className: "ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[0.5625rem] font-black text-emerald-700 transition-colors hover:text-emerald-800" }, "\u2197 Show in live dish")
 
                       )
 
@@ -24941,7 +24941,7 @@ var d = labToolData.cell || {};
 
                           else { upd("quizStreak", 0); cellSound('wrong'); }
 
-                        }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 " +
+                        }, className: "px-2.5 py-1.5 text-[0.6875rem] font-bold rounded-lg border-2 transition-all hover:scale-105 " +
                           (d.quizFeedback
                             ? (isCorrect
                               ? "border-green-400 bg-green-50 text-green-700"
@@ -25027,8 +25027,8 @@ var d = labToolData.cell || {};
                   return React.createElement("div", { key: b.id, className: "flex items-center gap-2 p-2 rounded-lg " + (earned ? "bg-amber-100 border border-amber-300" : "bg-white/60 border border-slate-400") },
                     React.createElement("span", { className: "text-lg" }, earned ? b.icon : "\uD83D\uDD12"),
                     React.createElement("div", null,
-                      React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-600") }, b.label),
-                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-600") }, __alloT('stem.cell.' + (key) + '_desc', b.desc))
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold " + (earned ? "text-amber-800" : "text-slate-600") }, b.label),
+                      React.createElement("p", { className: "text-[0.6875rem] " + (earned ? "text-amber-600" : "text-slate-600") }, __alloT('stem.cell.' + (key) + '_desc', b.desc))
                     )
                   );
                 })
@@ -25317,17 +25317,17 @@ var d = labToolData.cell || {};
                   return cel;
                 });
               }              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true },
-                h('p', { className: 'text-[13px] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
+                h('p', { className: 'text-[0.8125rem] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
                 // cell-type toggle
                 h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell type' },
                   CTYPES.map(function (c) {
                     var on = c.id === ctype;
                     return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
                   })),
-                h('div', { className: 'text-[12px] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': 'Study progress' },
+                h('div', { className: 'text-[0.75rem] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': 'Study progress' },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-900' }, 'Study progress • ' + (((CTYPES.find(function (c) { return c.id === ctype; }) || {}).label) || ctype)), h('p', { className: 'mt-0.5 text-[11px] text-sky-800' }, directoryMasteredCount + ' mastered • ' + directoryReviewCount + ' in review • ' + Math.max(0, orgKeys.length - directoryMasteredCount) + ' remaining')) ,
-                    h('button', { onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-900' }, 'Study progress • ' + (((CTYPES.find(function (c) { return c.id === ctype; }) || {}).label) || ctype)), h('p', { className: 'mt-0.5 text-[0.6875rem] text-sky-800' }, directoryMasteredCount + ' mastered • ' + directoryReviewCount + ' in review • ' + Math.max(0, orgKeys.length - directoryMasteredCount) + ' remaining')) ,
+                    h('button', { onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
                   ),
                   h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': directoryProgressPct, 'aria-label': 'Mastery progress' }, h('div', { className: 'h-full rounded-full bg-sky-600 transition-all', style: { width: directoryProgressPct + '%' } })),
                   h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] font-bold text-sky-800' },
@@ -25338,22 +25338,22 @@ var d = labToolData.cell || {};
                 ),
                 h('details', { className: 'mb-2 rounded-xl border border-slate-300 bg-slate-50 p-3', 'data-cell-progress-portability': true },
                   h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Portable progress record'),
-                  h('p', { className: 'mt-1 text-[11px] leading-snug text-slate-600' }, 'Export this versioned record to continue on another device, or paste one from a previous session. Importing restores each cell type separately.'),
-                  h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-500 bg-white px-2.5 py-2 font-mono text-[10px] leading-snug text-slate-800', 'aria-label': 'Portable cell progress JSON' }),
+                  h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-600' }, 'Export this versioned record to continue on another device, or paste one from a previous session. Importing restores each cell type separately.'),
+                  h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-500 bg-white px-2.5 py-2 font-mono text-[0.625rem] leading-snug text-slate-800', 'aria-label': 'Portable cell progress JSON' }),
                   h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
-                    h('button', { onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
-                    h('button', { onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
-                    h('button', { onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[11px] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
+                    h('button', { onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
+                    h('button', { onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
+                    h('button', { onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
                   ),
-                  progressNotice && h('p', { className: 'mt-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[11px] text-slate-700', role: 'status', 'aria-live': 'polite' }, progressNotice),
+                  progressNotice && h('p', { className: 'mt-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[0.6875rem] text-slate-700', role: 'status', 'aria-live': 'polite' }, progressNotice),
                   h('div', { className: 'mt-3', 'data-cell-progress-overview': true, role: 'region', 'aria-label': 'Progress across cell types' },
                     h('p', { className: 'text-[10.5px] font-black uppercase tracking-wide text-slate-600' }, 'Portfolio overview'),
                     h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, portfolioOverview.map(function (item) {
                       var mastery = item.total ? Math.round(item.mastered / item.total * 100) : 0;
                       return h('button', { key: 'portfolio-' + item.type, onClick: function () { switchInteriorType(item.type); }, 'aria-pressed': ctype === item.type ? 'true' : 'false', className: 'rounded-lg border bg-white p-2 text-left transition-colors hover:border-sky-500 ' + (ctype === item.type ? 'ring-2 ring-sky-400' : '') },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[11px] font-black text-slate-800' }, item.label), h('span', { className: 'text-[10px] font-black text-sky-800' }, mastery + '%')) ,
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, item.label), h('span', { className: 'text-[0.625rem] font-black text-sky-800' }, mastery + '%')) ,
                         h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100' }, h('div', { className: 'h-full rounded-full bg-sky-500', style: { width: mastery + '%' } })),
-                        h('div', { className: 'mt-1 text-[10px] font-bold text-slate-500' }, item.explored + '/' + item.total + ' explored • ' + item.review + ' review')
+                        h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-500' }, item.explored + '/' + item.total + ' explored • ' + item.review + ' review')
                       );
                     }))
                   )
@@ -25366,7 +25366,7 @@ var d = labToolData.cell || {};
                   h('button', { 'data-cell-depth-toggle': true, 'aria-pressed': depthMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDepthMode = !depthMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (depthMode ? 'border-amber-800 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, depthMode ? 'Hide optical section' : 'Optical section'),
                   h('button', { 'data-cell-microdissection-link': true, onClick: moveToMicrodissection, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100 transition-colors active:scale-[0.97]' }, sel ? 'Prepare selected section →' : 'Prepare focal section →'),
                   h('button', { 'data-cell-adaptive-quiz': true, 'aria-pressed': adaptiveQuizActive ? 'true' : 'false', onClick: adaptiveQuizActive ? stopAdaptiveQuiz : startAdaptiveQuiz, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (adaptiveQuizActive ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100') }, adaptiveQuizActive ? 'Exit adaptive check' : 'Adaptive check'),
-                  h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-600' }, 'Guided pathways:'),
+                  h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-slate-600' }, 'Guided pathways:'),
                   availableGuides.map(function (id) {
                     var g = INTERIOR_GUIDES[id], active = id === guideId;
                     return h('button', { key: id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { startGuide(id); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-amber-700 text-white border-amber-800' : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100') }, g.label);
@@ -25375,47 +25375,47 @@ var d = labToolData.cell || {};
                 h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2', 'data-cell-zoom-control': true },
                   h('label', { htmlFor: 'cell-detail-zoom', className: 'text-xs font-black text-sky-900' }, 'Detail zoom ' + Math.round(zoomLevel * 100) + '%'),
                   h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-sky-600', 'aria-label': 'Cell diagram detail zoom' }),
-                  h('span', { className: 'text-[10px] text-sky-800' }, '85%–125% • centered on the cell')
+                  h('span', { className: 'text-[0.625rem] text-sky-800' }, '85%–125% • centered on the cell')
                 ),
                 depthMode && h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2', 'data-cell-depth-control': true },
                   h('label', { htmlFor: 'cell-optical-depth', className: 'text-xs font-black text-amber-900' }, 'Optical section ' + Math.round(depthLevel) + '%'),
                   h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-amber-600', 'aria-label': 'Optical section depth' }),
-                  h('span', { className: 'text-[10px] text-amber-800' }, 'Focal slice • structures outside this plane fade')
+                  h('span', { className: 'text-[0.625rem] text-amber-800' }, 'Focal slice • structures outside this plane fade')
                 ),
                 h('div', { className: 'mb-2 rounded-lg border border-lime-200 bg-lime-50 px-3 py-2', 'data-cell-specialization-control': true },
                   h('div', { className: 'flex flex-wrap items-center gap-2' },
                     h('span', { className: 'text-xs font-black text-lime-900' }, 'Specialization lens'),
                     specializationOptions.map(function (option) {
                       var active = option.id === specializationId;
-                      return h('button', { key: option.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorSpecialization = option.id; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold transition-colors ' + (active ? 'border-lime-800 bg-lime-700 text-white' : 'border-lime-300 bg-white text-lime-900 hover:bg-lime-100') }, option.label);
+                      return h('button', { key: option.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorSpecialization = option.id; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (active ? 'border-lime-800 bg-lime-700 text-white' : 'border-lime-300 bg-white text-lime-900 hover:bg-lime-100') }, option.label);
                     })
                   ),
-                  h('p', { className: 'mt-1 text-[11px] leading-snug text-lime-900' }, (specializationOptions.find(function (item) { return item.id === specializationId; }) || specializationOptions[0]).note)
+                  h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-lime-900' }, (specializationOptions.find(function (item) { return item.id === specializationId; }) || specializationOptions[0]).note)
                 ),
                 h('div', { className: 'mb-2', 'data-cell-structure-directory': true },
                   h('button', { 'aria-expanded': directoryOpen ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = !directoryOpen; return cel; }); }, className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-black transition-colors ' + (directoryOpen ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100') }, directoryOpen ? 'Hide structure directory' : 'Open structure directory', h('span', { className: 'float-right font-normal opacity-80' }, directoryOpen ? 'collapse' : 'study by role')),
                   directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': 'Structure directory' },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[10px] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[0.625rem] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
                     h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                      h('input', { type: 'search', value: directoryQuery, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[11px] text-slate-800', 'aria-label': 'Search structure directory' }),
-                      h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[11px] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
-                      h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[11px] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
+                      h('input', { type: 'search', value: directoryQuery, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': 'Search structure directory' }),
+                      h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
+                      h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
                     ),
                     h('div', { className: 'flex flex-wrap items-center gap-1.5' },
-                      h('span', { className: 'mr-1 text-[11px] font-black uppercase tracking-wide text-violet-900' }, 'Group:'),
-                      h('button', { 'aria-pressed': directoryGroup === 'all' ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = 'all'; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (directoryGroup === 'all' ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, 'All structures'),
+                      h('span', { className: 'mr-1 text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Group:'),
+                      h('button', { 'aria-pressed': directoryGroup === 'all' ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = 'all'; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (directoryGroup === 'all' ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, 'All structures'),
                       directoryGroups.map(function (group) {
                         var active = directoryGroup === group.id;
-                        return h('button', { key: 'directory-group-' + group.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = group.id; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (active ? 'text-white' : 'bg-white text-violet-900 hover:bg-violet-100'), style: active ? { background: group.color, borderColor: group.color } : { borderColor: group.color } }, group.label);
+                        return h('button', { key: 'directory-group-' + group.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = group.id; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (active ? 'text-white' : 'bg-white text-violet-900 hover:bg-violet-100'), style: active ? { background: group.color, borderColor: group.color } : { borderColor: group.color } }, group.label);
                       })
                     ),
-                    h('p', { className: 'mt-2 text-[11px] leading-snug text-violet-900' }, directoryGroup === 'all' ? 'Choose a structure to spotlight it in the diagram. Explored items carry a checkmark.' : (directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).note),
-                    directoryVisibleKeys.length === 0 && h('p', { className: 'mt-2 rounded-md border border-dashed border-violet-300 bg-white px-2.5 py-2 text-[11px] text-violet-900' }, 'No structures match this search and filter.'),
+                    h('p', { className: 'mt-2 text-[0.6875rem] leading-snug text-violet-900' }, directoryGroup === 'all' ? 'Choose a structure to spotlight it in the diagram. Explored items carry a checkmark.' : (directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).note),
+                    directoryVisibleKeys.length === 0 && h('p', { className: 'mt-2 rounded-md border border-dashed border-violet-300 bg-white px-2.5 py-2 text-[0.6875rem] text-violet-900' }, 'No structures match this search and filter.'),
                     h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' }, directoryVisibleKeys.map(function (key) {
                       var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
                       return h('button', { key: 'directory-' + key, onClick: function () { pick(key); }, 'aria-label': item.name + ': ' + item.fn, className: 'rounded-lg border bg-white p-2.5 text-left transition-colors hover:border-violet-600 ' + (sel === key ? 'ring-2 ring-violet-500' : ''), style: { borderColor: item.color } },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black text-slate-900' }, item.name), explored ? h('span', { className: 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-black text-emerald-800' }, 'Explored') : h('span', { className: 'text-[10px] font-bold text-slate-400' }, 'New')),
-                        h('p', { className: 'mt-1 text-[11px] leading-snug text-slate-700' }, item.fn),
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black text-slate-900' }, item.name), explored ? h('span', { className: 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-[0.625rem] font-black text-emerald-800' }, 'Explored') : h('span', { className: 'text-[0.625rem] font-bold text-slate-400' }, 'New')),
+                        h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-700' }, item.fn),
                         h('p', { className: 'mt-1 text-[10.5px] leading-snug text-slate-500' }, 'Mechanism: ' + item.structure)
                       );
                     }))
@@ -25425,41 +25425,41 @@ var d = labToolData.cell || {};
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('div', null,
                       h('span', { className: 'text-xs font-black uppercase tracking-wide text-orange-900' }, 'Check your reasoning before reveal'),
-                      h('p', { className: 'mt-1 text-[11px] font-bold leading-snug text-orange-800' }, 'This is a concept check, not an experiment prediction.'),
-                      h('p', { className: 'mt-1 text-[12px] leading-snug text-orange-950' }, currentCheck.prompt)
+                      h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-snug text-orange-800' }, 'This is a concept check, not an experiment prediction.'),
+                      h('p', { className: 'mt-1 text-[0.75rem] leading-snug text-orange-950' }, currentCheck.prompt)
                     ),
-                    checkRevealed ? h('button', { onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[11px] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
+                    checkRevealed ? h('button', { onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
                   ),
                   h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Concept check answers' },
                     currentCheck.options.map(function (option, index) {
                       var chosen = checkChoice === index;
                       var correct = checkRevealed && index === currentCheck.answer;
                       var wrong = checkRevealed && chosen && !correct;
-                      return h('button', { key: option, 'aria-pressed': chosen ? 'true' : 'false', disabled: checkRevealed, onClick: function () { answerCheck(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-orange-800 bg-orange-700 text-white' : 'border-orange-300 bg-white text-orange-950 hover:bg-orange-100') }, option);
+                      return h('button', { key: option, 'aria-pressed': chosen ? 'true' : 'false', disabled: checkRevealed, onClick: function () { answerCheck(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-orange-800 bg-orange-700 text-white' : 'border-orange-300 bg-white text-orange-950 hover:bg-orange-100') }, option);
                     })
                   ),
-                  checkRevealed && h('div', { className: 'mt-2 rounded-md border border-orange-200 bg-white px-2.5 py-2 text-[12px] leading-relaxed text-orange-950', 'data-cell-concept-feedback': checkChoice === currentCheck.answer ? 'correct' : 'retry', role: 'status', 'aria-live': 'polite' }, (checkChoice === currentCheck.answer ? 'Reasoning check: correct. ' : 'Reasoning check: not yet. ') + currentCheck.explanation)
+                  checkRevealed && h('div', { className: 'mt-2 rounded-md border border-orange-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-orange-950', 'data-cell-concept-feedback': checkChoice === currentCheck.answer ? 'correct' : 'retry', role: 'status', 'aria-live': 'polite' }, (checkChoice === currentCheck.answer ? 'Reasoning check: correct. ' : 'Reasoning check: not yet. ') + currentCheck.explanation)
                 ),
                 adaptiveQuizActive && adaptiveQuizItem && h('div', { className: 'mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-cell-adaptive-quiz': true, role: 'region', 'aria-label': 'Adaptive organelle check' },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[10px] font-bold text-fuchsia-800' }, 'Review-first retrieval • ' + adaptiveQuizCorrect + ' correct / ' + adaptiveQuizAttempts + ' attempts')),
-                    h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[11px] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[0.625rem] font-bold text-fuchsia-800' }, 'Review-first retrieval • ' + adaptiveQuizCorrect + ' correct / ' + adaptiveQuizAttempts + ' attempts')),
+                    h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
                   ),
-                  h('p', { className: 'mt-2 text-[12px] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
-                  h('p', { className: 'mt-1 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[12px] leading-relaxed text-fuchsia-950' }, adaptiveQuizItem.fn),
+                  h('p', { className: 'mt-2 text-[0.75rem] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
+                  h('p', { className: 'mt-1 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950' }, adaptiveQuizItem.fn),
                   h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Adaptive check answers' }, adaptiveOptions.map(function (key, index) {
                     var chosen = adaptiveQuizChoice === index;
                     var correct = adaptiveQuizRevealed && index === adaptiveAnswer;
                     var wrong = adaptiveQuizRevealed && chosen && !correct;
-                    return h('button', { key: 'adaptive-answer-' + key, 'aria-pressed': chosen ? 'true' : 'false', disabled: adaptiveQuizRevealed, onClick: function () { answerAdaptiveQuiz(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-white text-fuchsia-950 hover:bg-fuchsia-100') }, CELL_ORGANELLES[key].name);
+                    return h('button', { key: 'adaptive-answer-' + key, 'aria-pressed': chosen ? 'true' : 'false', disabled: adaptiveQuizRevealed, onClick: function () { answerAdaptiveQuiz(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-white text-fuchsia-950 hover:bg-fuchsia-100') }, CELL_ORGANELLES[key].name);
                   })),
-                  adaptiveQuizRevealed && h('div', { className: 'mt-2 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[12px] leading-relaxed text-fuchsia-950', role: 'status', 'aria-live': 'polite' }, (adaptiveQuizChoice === adaptiveAnswer ? 'Correct. ' : 'Not quite. ') + adaptiveQuizItem.structure + ' Connections: ' + adaptiveQuizItem.connections),
-                  adaptiveQuizRevealed && h('button', { onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-fuchsia-800' }, 'Next review item')
+                  adaptiveQuizRevealed && h('div', { className: 'mt-2 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950', role: 'status', 'aria-live': 'polite' }, (adaptiveQuizChoice === adaptiveAnswer ? 'Correct. ' : 'Not quite. ') + adaptiveQuizItem.structure + ' Connections: ' + adaptiveQuizItem.connections),
+                  adaptiveQuizRevealed && h('button', { onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[0.6875rem] font-bold text-white hover:bg-fuchsia-800' }, 'Next review item')
                 ),
                 compareMode && h('div', { className: 'mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3', 'data-cell-comparison': true },
                   h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-indigo-800' }, 'Compare cell architectures'), h('p', { className: 'text-[11px] text-indigo-700' }, 'The same schematic scale and color language make shared and unique structures easier to spot.')),
-                    h('span', { className: 'rounded-full bg-white px-2 py-1 text-[10px] font-black text-indigo-700' }, '3 cell types')
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-indigo-800' }, 'Compare cell architectures'), h('p', { className: 'text-[0.6875rem] text-indigo-700' }, 'The same schematic scale and color language make shared and unique structures easier to spot.')),
+                    h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-indigo-700' }, '3 cell types')
                   ),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' }, CTYPES.map(function (c) {
                     var compareSel = sel && interiorHas(c.id, sel) ? sel : null;
@@ -25471,7 +25471,7 @@ var d = labToolData.cell || {};
                 ),
                 guide && h('div', { className: 'mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3', 'data-cell-guided-pathway': guideId, role: 'region', 'aria-label': guide.label + ' guided pathway' },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-amber-900' }, guide.label), h('p', { className: 'text-[11px] text-amber-800' }, 'Step ' + (guideStep + 1) + ' of ' + guide.steps.length + ' • ' + guideItem.title)),
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-amber-900' }, guide.label), h('p', { className: 'text-[0.6875rem] text-amber-800' }, 'Step ' + (guideStep + 1) + ' of ' + guide.steps.length + ' • ' + guideItem.title)),
                     h('div', { className: 'flex gap-1.5' },
                       h('button', { onClick: function () { moveGuide(-1); }, disabled: guideStep === 0, className: 'px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-300 bg-white text-amber-900 disabled:opacity-40' }, 'Previous'),
                       h('button', { onClick: function () { moveGuide(1); }, disabled: guideStep >= guide.steps.length - 1, className: 'px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-800 bg-amber-700 text-white disabled:opacity-40' }, 'Next')
@@ -25556,11 +25556,11 @@ var d = labToolData.cell || {};
                     } })),
                 h('details', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2', 'data-cell-structure-transcript': true },
                   h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Text transcript of cell diagram'),
-                  h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, 'A ' + ctype + ' cell diagram with ' + orgKeys.length + ' selectable structures. ' + (depthMode ? 'Optical section depth: ' + Math.round(depthLevel) + '%. ' : 'Optical section is off. ') + (selOrg ? 'Selected structure: ' + selOrg.name + '.' : 'No structure selected.')),
+                  h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-600' }, 'A ' + ctype + ' cell diagram with ' + orgKeys.length + ' selectable structures. ' + (depthMode ? 'Optical section depth: ' + Math.round(depthLevel) + '%. ' : 'Optical section is off. ') + (selOrg ? 'Selected structure: ' + selOrg.name + '.' : 'No structure selected.')),
                   h('ul', { className: 'mt-2 grid gap-2 md:grid-cols-2', 'aria-label': 'Text descriptions of cell structures' }, orgKeys.map(function (key) {
                     var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
-                    return h('li', { key: 'transcript-' + key, className: 'rounded-md border bg-white p-2 text-[11px] leading-relaxed', style: { borderColor: item.color } },
-                      h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[10px] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-600') }, explored ? 'Explored' : 'Not explored')),
+                    return h('li', { key: 'transcript-' + key, className: 'rounded-md border bg-white p-2 text-[0.6875rem] leading-relaxed', style: { borderColor: item.color } },
+                      h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[0.625rem] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-600') }, explored ? 'Explored' : 'Not explored')),
                       h('p', { className: 'mt-1 text-slate-700' }, item.fn),
                       h('p', { className: 'mt-1 text-slate-600' }, 'Mechanism: ' + item.structure),
                       h('p', { className: 'mt-1 text-slate-500' }, 'Connections: ' + item.connections)
@@ -25574,21 +25574,21 @@ var d = labToolData.cell || {};
                     return h('button', { key: k, 'aria-pressed': on ? 'true' : 'false', onClick: function () { pick(k); }, className: 'px-2 py-1 rounded-md text-[11.5px] font-bold border transition-colors active:scale-[0.97] ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: o.color, borderColor: o.color } : { borderColor: o.color } },
                       h('span', { 'aria-hidden': 'true', style: { color: on ? '#fff' : o.color } }, '● '), o.name);
                   })),
-                h('div', { className: 'text-[11px] text-slate-500 mt-1' }, '🔎 ' + __alloT('stem.cell.explored', 'Explored') + ' ' + seen.filter(function (k) { return orgKeys.indexOf(k) >= 0 || ['cellWall', 'cellMembrane'].indexOf(k) >= 0; }).length + ' / ' + orgKeys.length + ' ' + __alloT('stem.cell.organelles', 'organelles in this cell')),
+                h('div', { className: 'text-[0.6875rem] text-slate-500 mt-1' }, '🔎 ' + __alloT('stem.cell.explored', 'Explored') + ' ' + seen.filter(function (k) { return orgKeys.indexOf(k) >= 0 || ['cellWall', 'cellMembrane'].indexOf(k) >= 0; }).length + ' / ' + orgKeys.length + ' ' + __alloT('stem.cell.organelles', 'organelles in this cell')),
                 // selected organelle info
                 selOrg ? h('div', { className: 'mt-3 p-3 rounded-xl border-2 shadow-sm', style: { borderColor: selOrg.color, background: '#fff' }, role: 'status', 'aria-live': 'polite' },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'inline-block w-3 h-3 rounded-full', 'aria-hidden': 'true', style: { background: selOrg.color } }),
                     h('span', { className: 'text-base font-black text-slate-800' }, selOrg.name)),
                   CELL_ULTRASTRUCTURE[sel] ? h('div', { className: 'mb-2 flex flex-wrap gap-1', 'aria-label': 'Ultrastructure features to notice' },
-                    CELL_ULTRASTRUCTURE[sel].split(' | ').map(function(feature) { return h('span', { key: feature, className: 'rounded-full border px-2 py-0.5 text-[10px] font-black tracking-wide', style: { borderColor: selOrg.color, color: '#334155', background: '#f8fafc' } }, feature); })) : null,
-                  h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[13px] text-slate-700 leading-relaxed' },
+                    CELL_ULTRASTRUCTURE[sel].split(' | ').map(function(feature) { return h('span', { key: feature, className: 'rounded-full border px-2 py-0.5 text-[0.625rem] font-black tracking-wide', style: { borderColor: selOrg.color, color: '#334155', background: '#f8fafc' } }, feature); })) : null,
+                  h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[0.8125rem] text-slate-700 leading-relaxed' },
                     h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Core function'),
                     selOrg.fn),
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-2', 'data-cell-mastery-controls': true },
                     h('span', { className: 'mr-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Study status'),
-                    h('button', { 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
-                    h('button', { 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
+                    h('button', { 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
+                    h('button', { 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
                   ),
                   h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
@@ -25603,7 +25603,7 @@ var d = labToolData.cell || {};
                       var has = selOrg.types.indexOf(tp) >= 0;
                       return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600 line-through') }, tp);
                     })),
-                  selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[12px] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
+                  selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[0.75rem] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
                 ) : h('div', { className: 'mt-3 p-3 rounded-xl border border-dashed border-slate-300 text-[12.5px] text-slate-500 text-center' }, __alloT('stem.cell.tap_organelle', 'Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.'))
               );
             })()
@@ -25683,7 +25683,7 @@ var d = labToolData.cell || {};
               var actionLabels = ['Calibrate objective', 'Prepare section', 'Apply label', 'Collect target sample', 'Record evidence', 'Protocol complete'];
               return h('section', { className: 'mt-4 rounded-2xl border border-violet-200 bg-white p-4 shadow-sm', 'data-cell-microdissection-workspace': true, 'aria-labelledby': 'cell-micro-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
-                  h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-violet-700' }, 'Cell-scale investigation'), h('h4', { id: 'cell-micro-title', className: 'text-xl font-black text-slate-900' }, 'Microdissection Studio'), h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, 'Prepare a section, add contrast, isolate a cellular target, and preserve enough metadata for someone else to interpret your evidence.')),
+                  h('div', null, h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wider text-violet-700' }, 'Cell-scale investigation'), h('h4', { id: 'cell-micro-title', className: 'text-xl font-black text-slate-900' }, 'Microdissection Studio'), h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, 'Prepare a section, add contrast, isolate a cellular target, and preserve enough metadata for someone else to interpret your evidence.')),
                   h('span', { className: 'rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-black text-violet-800' }, (microType === 'bacterium' ? '1 µm' : '10 µm') + ' field scale')
                 ),
                 anatomyFtuContext ? h('aside', {
@@ -25695,12 +25695,12 @@ var d = labToolData.cell || {};
                 },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', { className: 'min-w-0 flex-1' },
-                      h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-emerald-700' }, 'HRA context carried from Anatomy · ' + (anatomyFtuContext.packTitle || anatomyFtuContext.packId)),
+                      h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-emerald-700' }, 'HRA context carried from Anatomy · ' + (anatomyFtuContext.packTitle || anatomyFtuContext.packId)),
                       h('h5', { id: 'cell-anatomy-ftu-context-title', className: 'mt-0.5 text-sm font-black text-emerald-950' }, anatomyFtuContext.organLabel + ' → ' + anatomyFtuContext.tissueLabel + ' → ' + anatomyFtuContext.cellLabel),
-                      h('p', { className: 'mt-1 text-[11px] font-bold text-emerald-800' }, (anatomyFtuContext.tissueTitle || anatomyFtuContext.tissueLabel) + ' · ' + anatomyFtuContext.tissueAtlasId),
-                      h('p', { className: 'mt-0.5 text-[10px] font-bold text-emerald-700' }, 'Pack ' + anatomyFtuContext.packId + ' · ' + anatomyFtuContext.tissueOntologyId + ' · ' + anatomyFtuContext.cellId),
+                      h('p', { className: 'mt-1 text-[0.6875rem] font-bold text-emerald-800' }, (anatomyFtuContext.tissueTitle || anatomyFtuContext.tissueLabel) + ' · ' + anatomyFtuContext.tissueAtlasId),
+                      h('p', { className: 'mt-0.5 text-[0.625rem] font-bold text-emerald-700' }, 'Pack ' + anatomyFtuContext.packId + ' · ' + anatomyFtuContext.tissueOntologyId + ' · ' + anatomyFtuContext.cellId),
                       h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, anatomyFtuContext.cellRole),
-                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-600' }, anatomyFtuContext.mappedNodeCount + ' mapped nodes in the HRA illustration crosswalk. This is artwork metadata, not a biological cell count.')
+                      h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-600' }, anatomyFtuContext.mappedNodeCount + ' mapped nodes in the HRA illustration crosswalk. This is artwork metadata, not a biological cell count.')
                     ),
                     h('button', { type: 'button', 'data-cell-return-to-anatomy': 'true',
                       onClick: function() { openCellScaleDestination('anatomy', 'anatomy', {
@@ -25712,9 +25712,9 @@ var d = labToolData.cell || {};
                       className: 'rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-100'
                     }, 'Return to Anatomy tissue view')
                   ),
-                  h('p', { className: 'mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] leading-relaxed text-amber-950' },
+                  h('p', { className: 'mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[0.6875rem] leading-relaxed text-amber-950' },
                     'Model boundary: the generic cell canvas below remains a ' + microType + ' cell teaching schematic selected independently from the HRA concept. It is not a morphology model of ' + anatomyFtuContext.cellLabel + ' and does not show cell-type-specific shape or abundance.'),
-                  h('div', { className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-bold' },
+                  h('div', { className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.625rem] font-bold' },
                     anatomyFtuContext.sourceUrl ? h('a', { href: anatomyFtuContext.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'text-sky-700 underline' }, 'HRA source') : null,
                     anatomyFtuContext.licenseUrl ? h('a', { href: anatomyFtuContext.licenseUrl, target: '_blank', rel: 'noopener noreferrer', className: 'text-sky-700 underline' }, anatomyFtuContext.licenseName || 'License') : null,
                     anatomyFtuContext.attribution ? h('span', { className: 'font-normal text-slate-600' }, anatomyFtuContext.attribution) : null
@@ -25722,17 +25722,17 @@ var d = labToolData.cell || {};
                 ) : null,
                 procedureSpecimen ? h('div', { className: 'mt-3 rounded-xl border-2 border-rose-200 bg-rose-50 p-3', 'data-procedure-specimen-handoff': 'true' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
-                    h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700' }, 'Integrated procedure specimen'), h('div', { className: 'text-sm font-black text-rose-950' }, procedureSpecimen.targetName || 'Synthetic tissue target'), h('p', { className: 'mt-1 text-xs text-rose-900' }, 'Specimen ' + procedureSpecimen.id + ' · preserved integrity ' + Math.round(Number(procedureSpecimen.sampleIntegrity) || 0) + '% · planned at CT slice ' + Math.round(Number(procedureSpecimen.planSlice) || 0))),
-                    microStage >= 5 ? h('button', { type: 'button', onClick: function() { openCellScaleDestination('anatomy', 'anatomy', { _activeTab: 'procedure', procedure: Object.assign({}, linkedAnatomyProcedure, { stage: 6, microscopyStarted: true, microscopyComplete: true, evidenceId: (microEvidence[microEvidence.length - 1] || {}).id || linkedAnatomyProcedure.evidenceId, feedback: 'Evidence chain complete. Review the performance breakdown.' }) }, 'Procedure debrief'); }, className: 'rounded-lg bg-rose-800 px-3 py-2 text-xs font-black text-white hover:bg-rose-900' }, 'Return to procedure debrief \u2192') : h('span', { className: 'rounded-full border border-rose-200 bg-white px-2 py-1 text-[10px] font-bold text-rose-800' }, 'Complete all 5 stages')
+                    h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-rose-700' }, 'Integrated procedure specimen'), h('div', { className: 'text-sm font-black text-rose-950' }, procedureSpecimen.targetName || 'Synthetic tissue target'), h('p', { className: 'mt-1 text-xs text-rose-900' }, 'Specimen ' + procedureSpecimen.id + ' · preserved integrity ' + Math.round(Number(procedureSpecimen.sampleIntegrity) || 0) + '% · planned at CT slice ' + Math.round(Number(procedureSpecimen.planSlice) || 0))),
+                    microStage >= 5 ? h('button', { type: 'button', onClick: function() { openCellScaleDestination('anatomy', 'anatomy', { _activeTab: 'procedure', procedure: Object.assign({}, linkedAnatomyProcedure, { stage: 6, microscopyStarted: true, microscopyComplete: true, evidenceId: (microEvidence[microEvidence.length - 1] || {}).id || linkedAnatomyProcedure.evidenceId, feedback: 'Evidence chain complete. Review the performance breakdown.' }) }, 'Procedure debrief'); }, className: 'rounded-lg bg-rose-800 px-3 py-2 text-xs font-black text-white hover:bg-rose-900' }, 'Return to procedure debrief \u2192') : h('span', { className: 'rounded-full border border-rose-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-rose-800' }, 'Complete all 5 stages')
                   )
                 ) : null,
                 microFromInterior && h('div', { className: 'mt-3 rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3', 'data-cell-optical-handoff': true, role: 'status', 'aria-live': 'polite' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', null,
-                      h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-800' }, 'Carried from Inside the Cell'),
+                      h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-800' }, 'Carried from Inside the Cell'),
                       h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-950' }, (microSourceTarget && CELL_ORGANELLES[microSourceTarget] ? CELL_ORGANELLES[microSourceTarget].name : 'Cell region') + ' at optical depth ' + Math.round(microSourceDepth) + '%. The target, specimen type, and section depth are synchronized with the interior study.' )
                     ),
-                    h('button', { type: 'button', onClick: returnToInterior, className: 'rounded-md border border-cyan-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100' }, 'Return inside the cell')
+                    h('button', { type: 'button', onClick: returnToInterior, className: 'rounded-md border border-cyan-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-cyan-900 hover:bg-cyan-100' }, 'Return inside the cell')
                   )
                 ),
                 h('div', { className: 'mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs leading-relaxed text-sky-950' }, h('strong', null, 'Scientific model: '), 'At cell scale, researchers use microtomes, optical sectioning, micropipettes, probes, and laser-capture systems—not a hand-held scalpel. The drawing is schematic; the scale bar and procedure order carry the measurement meaning.'),
@@ -25744,11 +25744,11 @@ var d = labToolData.cell || {};
                       h('canvas', { key: 'cell-micro-canvas', 'data-cell-microdissection-canvas': true, width: 760, height: 440, role: 'img', 'aria-label': 'Microdissection view of a ' + microType + ' cell at protocol stage ' + Math.min(5, microStage + 1) + '. ' + (targetDef ? 'Target: ' + targetDef.name + '.' : 'No target selected.'), style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }, onClick: function(e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); setMicroTarget(interiorHitTest(microType, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height)); }, ref: microCanvasRefCb })
                     ),
                     h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'micro-section-depth' }, 'Section depth ' + microDepth + '%'), h('input', { id: 'micro-section-depth', type: 'range', min: 0, max: 100, step: 1, value: microDepth, onChange: function(e) { microPatch({ microSectionDepth: Number(e.target.value) }); }, className: 'min-w-[180px] flex-1 accent-violet-600', 'aria-label': 'Optical section depth' })),
-                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Cell structures to target' }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))
+                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Cell structures to target' }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))
                   ),
                   h('aside', { className: 'space-y-3' },
-                    h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-800' }, 'Instrument'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1', role: 'group', 'aria-label': 'Microdissection instrument' }, MICRO_TOOLS.map(function(item) { var on = item.id === microTool; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microTool: item.id, microFeedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-slate-700 hover:bg-violet-50') }, item.label, h('span', { className: 'block text-[10px] font-normal opacity-80' }, item.use)); }))),
-                    h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Microscopy label' }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
+                    h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-800' }, 'Instrument'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1', role: 'group', 'aria-label': 'Microdissection instrument' }, MICRO_TOOLS.map(function(item) { var on = item.id === microTool; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microTool: item.id, microFeedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-slate-700 hover:bg-violet-50') }, item.label, h('span', { className: 'block text-[0.625rem] font-normal opacity-80' }, item.use)); }))),
+                    h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Microscopy label' }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
                     h('button', { type: 'button', onClick: runMicroStep, disabled: microStage >= 5, className: 'w-full rounded-xl bg-violet-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-emerald-700', 'data-micro-action': microStage }, actionLabels[microStage]),
                     h('div', { role: 'status', 'aria-live': 'polite', className: 'min-h-[48px] rounded-lg border border-slate-200 bg-white p-2 text-xs leading-relaxed text-slate-700' }, d.microFeedback || 'Start by selecting the objective and calibrating the field of view.'),
                     h('button', { type: 'button', onClick: function() { microPatch({ microStage: 0, microTool: 'objective', microStain: 'none', microTarget: null, microFromInterior: false, microFeedback: 'Protocol reset. Calibrate the objective.' }); }, className: 'w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50' }, 'Reset protocol')
@@ -25902,7 +25902,7 @@ var d = labToolData.cell || {};
                       h('path', { d: 'M235 172 L183 150', stroke: '#a5f3fc', strokeWidth: 2 }),
                       h('text', { x: 118, y: 112, textAnchor: 'middle', fill: '#fde68a', fontSize: 11, fontWeight: 900 }, 'ATP synthase')
                     ),
-                    h('figcaption', { className: 'pt-2 text-[11px] leading-relaxed text-slate-300' }, 'Cristae increase inner-membrane area for electron transport and ATP synthase. The matrix contains enzymes for pyruvate oxidation and the Krebs cycle.')
+                    h('figcaption', { className: 'pt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Cristae increase inner-membrane area for electron transport and ATP synthase. The matrix contains enzymes for pyruvate oxidation and the Krebs cycle.')
                   );
                 }
                 if (item.title === 'Chloroplast') {
@@ -25925,7 +25925,7 @@ var d = labToolData.cell || {};
                       h('path', { d: 'M222 183 L139 161', stroke: '#a5f3fc', strokeWidth: 2 }),
                       h('text', { x: 160, y: 82, textAnchor: 'middle', fill: '#dcfce7', fontSize: 11, fontWeight: 900 }, 'stroma lamella')
                     ),
-                    h('figcaption', { className: 'pt-2 text-[11px] leading-relaxed text-slate-300' }, 'Thylakoid membranes host the light reactions and enclose the proton-rich lumen. The surrounding stroma contains enzymes of the Calvin cycle.')
+                    h('figcaption', { className: 'pt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Thylakoid membranes host the light reactions and enclose the proton-rich lumen. The surrounding stroma contains enzymes of the Calvin cycle.')
                   );
                 }
                 return h('figure', { className: 'mt-3 overflow-hidden rounded-xl border border-violet-200 bg-slate-950 p-2' },
@@ -25950,7 +25950,7 @@ var d = labToolData.cell || {};
                     h('text', { x: 236, y: 199, fill: '#ddd6fe', fontSize: 11, fontWeight: 900 }, 'lysosome'),
                     h('text', { x: 158, y: 198, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 900 }, 'vesicles carry selected cargo \u2192')
                   ),
-                  h('figcaption', { className: 'pt-2 text-[11px] leading-relaxed text-slate-300' }, 'Membrane continuity and vesicle budding connect the system. Molecular tags help the Golgi sort cargo to the correct destination.')
+                  h('figcaption', { className: 'pt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, 'Membrane continuity and vesicle budding connect the system. Molecular tags help the Golgi sort cargo to the correct destination.')
                 );
               }              return h('section', { className: 'mt-4 rounded-xl border border-amber-200 bg-white p-4 shadow-sm', 'data-cell-processes-workspace': true, 'aria-labelledby': 'cell-processes-heading' },
                 h('div', { className: 'mb-4 overflow-hidden rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-cyan-50' },
@@ -25958,20 +25958,20 @@ var d = labToolData.cell || {};
                   h('div', { className: 'p-4' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
                       h('div', null,
-                        h('div', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-amber-700' }, 'Connected pathway atlas'),
+                        h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.18em] text-amber-700' }, 'Connected pathway atlas'),
                         h('h3', { id: 'cell-processes-heading', className: 'mt-1 text-xl font-black tracking-tight text-slate-950' }, 'Cellular processes'),
-                        h('p', { className: 'mt-1 max-w-3xl text-[13px] leading-relaxed text-slate-700' }, 'Trace matter, energy, electrons, and information across cell compartments. Each arrow names what is moving and where it goes.')
+                        h('p', { className: 'mt-1 max-w-3xl text-[0.8125rem] leading-relaxed text-slate-700' }, 'Trace matter, energy, electrons, and information across cell compartments. Each arrow names what is moving and where it goes.')
                       ),
-                      h('span', { className: 'rounded-full border border-amber-200 bg-white px-3 py-1 text-[11px] font-black text-amber-800 shadow-sm' }, PROCESSES.length + ' linked pathways')
+                      h('span', { className: 'rounded-full border border-amber-200 bg-white px-3 py-1 text-[0.6875rem] font-black text-amber-800 shadow-sm' }, PROCESSES.length + ' linked pathways')
                     )
                   )
                 ),
                 h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2' },
                   h('div', null,
-                    h('div', { className: 'text-[11px] font-black uppercase tracking-[0.16em] text-slate-500' }, 'Choose a pathway'),
-                    h('p', { className: 'mt-0.5 text-[11px] text-slate-500' }, 'Arrow keys move between tabs.')
+                    h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.16em] text-slate-500' }, 'Choose a pathway'),
+                    h('p', { className: 'mt-0.5 text-[0.6875rem] text-slate-500' }, 'Arrow keys move between tabs.')
                   ),
-                  h('span', { className: 'rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide', style: { background: processVisual.soft, color: processVisual.accent } }, processVisual.eyebrow)
+                  h('span', { className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-black uppercase tracking-wide', style: { background: processVisual.soft, color: processVisual.accent } }, processVisual.eyebrow)
                 ),
                 h('div', { role: 'tablist', 'aria-label': 'Cellular process diagrams', className: 'mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' },
                   PROCESSES.map(function(p, index) {
@@ -25988,7 +25988,7 @@ var d = labToolData.cell || {};
                         h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base', style: { background: on ? 'rgba(255,255,255,0.18)' : pv.soft }, 'aria-hidden': 'true' }, p.icon),
                         h('span', { className: 'min-w-0' },
                           h('span', { className: 'block text-[11.5px] font-black leading-tight' }, p.name),
-                          h('span', { className: 'mt-1 block text-[11px] font-bold leading-tight', style: { color: on ? 'rgba(255,255,255,0.82)' : '#64748b' } }, p.location)
+                          h('span', { className: 'mt-1 block text-[0.6875rem] font-bold leading-tight', style: { color: on ? 'rgba(255,255,255,0.82)' : '#64748b' } }, p.location)
                         )
                       )
                     );
@@ -25998,19 +25998,19 @@ var d = labToolData.cell || {};
                   h('div', { className: 'p-4 text-white', style: { background: 'linear-gradient(125deg,#0f172a 0%,#1e293b 58%,' + processVisual.accent + ' 150%)' } },
                     h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                       h('div', null,
-                        h('div', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200' }, processVisual.eyebrow),
+                        h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-[0.18em] text-cyan-200' }, processVisual.eyebrow),
                         h('h4', { className: 'mt-1 text-lg font-black text-white' }, process.icon + ' ' + process.name),
-                        h('div', { className: 'mt-1 text-[11px] font-bold text-slate-200' }, 'Where it happens: ' + process.location)
+                        h('div', { className: 'mt-1 text-[0.6875rem] font-bold text-slate-200' }, 'Where it happens: ' + process.location)
                       ),
-                      h('div', { className: 'max-w-xl rounded-lg border border-white/20 bg-white/10 px-3 py-2 font-mono text-[11px] font-bold leading-relaxed text-cyan-50' }, process.equation)
+                      h('div', { className: 'max-w-xl rounded-lg border border-white/20 bg-white/10 px-3 py-2 font-mono text-[0.6875rem] font-bold leading-relaxed text-cyan-50' }, process.equation)
                     ),
                     h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
-                      h('div', { className: 'rounded-lg border border-white/15 bg-black/15 px-3 py-2' }, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-slate-300' }, 'Key inputs'), h('div', { className: 'mt-0.5 text-[12px] font-black text-white' }, processVisual.input)),
-                      h('div', { className: 'rounded-lg border border-white/15 bg-black/15 px-3 py-2' }, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-slate-300' }, 'Key outputs'), h('div', { className: 'mt-0.5 text-[12px] font-black text-white' }, processVisual.output))
+                      h('div', { className: 'rounded-lg border border-white/15 bg-black/15 px-3 py-2' }, h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wider text-slate-300' }, 'Key inputs'), h('div', { className: 'mt-0.5 text-[0.75rem] font-black text-white' }, processVisual.input)),
+                      h('div', { className: 'rounded-lg border border-white/15 bg-black/15 px-3 py-2' }, h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wider text-slate-300' }, 'Key outputs'), h('div', { className: 'mt-0.5 text-[0.75rem] font-black text-white' }, processVisual.output))
                     )
                   ),
                   h('div', { className: 'p-3 sm:p-4' },
-                    h('p', { className: 'mb-3 border-l-4 pl-3 text-[13px] leading-relaxed text-slate-700', style: { borderColor: processVisual.accent } }, process.summary),
+                    h('p', { className: 'mb-3 border-l-4 pl-3 text-[0.8125rem] leading-relaxed text-slate-700', style: { borderColor: processVisual.accent } }, process.summary),
                     h('aside', {
                       className: 'mb-3 overflow-hidden rounded-xl border',
                       style: { borderColor: processVisual.accent + '66', background: 'linear-gradient(120deg,' + processVisual.soft + ',#fff)' },
@@ -26019,23 +26019,23 @@ var d = labToolData.cell || {};
                     },
                       h('div', { className: 'flex flex-wrap items-stretch' },
                         h('div', { className: 'flex min-w-[92px] shrink-0 flex-col items-center justify-center px-3 py-3 text-center text-white', style: { background: processVisual.accent } },
-                          h('span', { className: 'text-[11px] font-black uppercase tracking-wide' }, 'Focus lens'),
+                          h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wide' }, 'Focus lens'),
                           h('span', { className: 'mt-1 text-xl font-black' }, focusedProcessStep[0]),
-                          h('span', { className: 'text-[11px] font-bold' }, 'of ' + process.steps.length)
+                          h('span', { className: 'text-[0.6875rem] font-bold' }, 'of ' + process.steps.length)
                         ),
                         h('div', { className: 'min-w-[220px] flex-1 p-3' },
                           h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                             h('div', null,
-                              h('div', { className: 'text-[11px] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, 'Look for this in the diagram'),
-                              h('h5', { id: 'cell-stage-focus-title', className: 'mt-0.5 text-[14px] font-black text-slate-950' }, focusedProcessStep[1])
+                              h('div', { className: 'text-[0.6875rem] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, 'Look for this in the diagram'),
+                              h('h5', { id: 'cell-stage-focus-title', className: 'mt-0.5 text-[0.875rem] font-black text-slate-950' }, focusedProcessStep[1])
                             ),
-                            h('span', { className: 'rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-slate-700 shadow-sm' }, focusedProcessStep[2])
+                            h('span', { className: 'rounded-full bg-white px-2.5 py-1 text-[0.6875rem] font-black text-slate-700 shadow-sm' }, focusedProcessStep[2])
                           ),
-                          h('p', { className: 'mt-2 text-[12px] leading-relaxed text-slate-700' }, focusedProcessStep[3])
+                          h('p', { className: 'mt-2 text-[0.75rem] leading-relaxed text-slate-700' }, focusedProcessStep[3])
                         )
                       )
                     ),                  process.id === 'respiration' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-cyan-200 bg-slate-950 p-2' },
-                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[0.6875rem] font-bold text-slate-100' },
                       h('span', null, 'CELLULAR RESPIRATION \u2022 one connected energy pathway'),
                       h('span', { className: 'flex flex-wrap items-center gap-3' },
                         h('span', { className: 'text-cyan-200' }, '\u25CF carbon pathway'),
@@ -26083,10 +26083,10 @@ var d = labToolData.cell || {};
                       h('path', { d: 'M45 280 L705 280', stroke: '#334155', strokeWidth: 2 }),
                       h('text', { x: 375, y: 300, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'Chemical energy in glucose \u2192 electron carriers \u2192 proton gradient \u2192 ATP')
                     ),
-                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Compartment map, not to scale. ATP yield varies by cell and conditions; the diagram emphasizes energy transfer between linked stages.')
+                    h('figcaption', { className: 'pt-2 text-center text-[0.6875rem] text-slate-300' }, 'Compartment map, not to scale. ATP yield varies by cell and conditions; the diagram emphasizes energy transfer between linked stages.')
                   ) : null,
                   process.id === 'photosynthesis' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-emerald-200 bg-slate-950 p-2' },
-                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[0.6875rem] font-bold text-slate-100' },
                       h('span', null, 'PHOTOSYNTHESIS \u2022 two coupled systems'),
                       h('span', { className: 'flex flex-wrap items-center gap-3' },
                         h('span', { className: 'text-amber-200' }, '\u2600 light energy'),
@@ -26129,10 +26129,10 @@ var d = labToolData.cell || {};
                       h('path', { d: 'M612 226 L681 251', stroke: '#fbbf24', strokeWidth: 3, markerEnd: 'url(#cell-photo-arrow)' }),
                       h('text', { x: 380, y: 330, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'Light reactions supply energy carriers; the Calvin cycle uses them to build carbohydrate.')
                     ),
-                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Chloroplast map, not to scale. G3P is the immediate carbon product; cells use it to build glucose and other organic molecules.')
+                    h('figcaption', { className: 'pt-2 text-center text-[0.6875rem] text-slate-300' }, 'Chloroplast map, not to scale. G3P is the immediate carbon product; cells use it to build glucose and other organic molecules.')
                   ) : null,
                   process.id === 'transport' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-sky-200 bg-slate-950 p-2' },
-                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[0.6875rem] font-bold text-slate-100' },
                       h('span', null, 'PLASMA MEMBRANE \u2022 four transport strategies'),
                       h('span', { className: 'flex flex-wrap items-center gap-3' },
                         h('span', { className: 'text-cyan-200' }, '\u2193 down a gradient'),
@@ -26193,9 +26193,9 @@ var d = labToolData.cell || {};
                       h('text', { x: 645, y: 302, textAnchor: 'middle', fill: '#fde68a', fontSize: 11, fontWeight: 900 }, 'Na\u207A: low \u2192 high'),
                       h('text', { x: 380, y: 346, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'Passive transport follows a gradient; active transport spends cellular energy to oppose it.')
                     ),
-                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Conceptual membrane cross-section, not to scale. Real membranes contain many lipids, proteins, carbohydrates, and dynamically moving components.')
+                    h('figcaption', { className: 'pt-2 text-center text-[0.6875rem] text-slate-300' }, 'Conceptual membrane cross-section, not to scale. Real membranes contain many lipids, proteins, carbohydrates, and dynamically moving components.')
                   ) : null,                  process.id === 'protein' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-violet-200 bg-slate-950 p-2' },
-                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[0.6875rem] font-bold text-slate-100' },
                       h('span', null, 'PROTEIN PRODUCTION + SHIPPING \u2022 information to destination'),
                       h('span', { className: 'flex flex-wrap items-center gap-3' },
                         h('span', { className: 'text-cyan-200' }, '\u25CF information'),
@@ -26238,10 +26238,10 @@ var d = labToolData.cell || {};
                       h('path', { d: 'M600 153 C615 153 618 108 630 108 M600 153 L630 151 M600 153 C615 153 618 194 630 194', fill: 'none', stroke: '#6ee7b7', strokeWidth: 3 }),
                       h('text', { x: 380, y: 302, textAnchor: 'middle', fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, 'The amino-acid chain stays the same cargo while compartments fold, modify, label, and route it.')
                     ),
-                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Secreted and membrane proteins typically use this route. Free ribosomes make many proteins that remain in the cytosol or enter other organelles.')
+                    h('figcaption', { className: 'pt-2 text-center text-[0.6875rem] text-slate-300' }, 'Secreted and membrane proteins typically use this route. Free ribosomes make many proteins that remain in the cytosol or enter other organelles.')
                   ) : null,
                   process.id === 'krebs' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-rose-200 bg-slate-950 p-2' },
-                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[0.6875rem] font-bold text-slate-100' },
                       h('span', null, 'MATRIX CYCLE \u2022 follow clockwise'),
                       h('span', { className: 'flex flex-wrap items-center gap-3' },
                         h('span', null, '\u25CF carbon leaves'),
@@ -26265,10 +26265,10 @@ var d = labToolData.cell || {};
                       h('text', { x: 26, y: 350, fill: '#c4b5fd', fontSize: 12, fontWeight: 700 }, '2 FADH₂ → ETC'),
                       h('text', { x: 535, y: 385, fill: '#86efac', fontSize: 12, fontWeight: 700 }, '2 ATP/GTP')
                     ),
-                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Stoichiometry shown per glucose (two cycle turns). Intermediates and enzyme reactions are simplified.')
+                    h('figcaption', { className: 'pt-2 text-center text-[0.6875rem] text-slate-300' }, 'Stoichiometry shown per glucose (two cycle turns). Intermediates and enzyme reactions are simplified.')
                   ) : null,
                   process.id === 'etc' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-cyan-200 bg-slate-950 p-2' },
-                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
+                    h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[0.6875rem] font-bold text-slate-100' },
                       h('span', null, 'MEMBRANE ENERGY COUPLING'),
                       h('span', { className: 'flex flex-wrap items-center gap-3' },
                         h('span', { className: 'text-cyan-200' }, '\u25CF electrons'),
@@ -26305,15 +26305,15 @@ var d = labToolData.cell || {};
                       h('text', { x: 687, y: 70, fill: '#fde68a', fontSize: 13, fontWeight: 900 }, 'H\u207A returns'),
                       h('text', { x: 608, y: 325, fill: '#c4b5fd', fontSize: 13, fontWeight: 900 }, 'ADP + Pi \u2192 ATP')
                     ),
-                    h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Conceptual diagram, not to scale. Electron transfer, proton pumping, oxygen reduction, and ATP production are coupled but simplified here.')
+                    h('figcaption', { className: 'pt-2 text-center text-[0.6875rem] text-slate-300' }, 'Conceptual diagram, not to scale. Electron transfer, proton pumping, oxygen reduction, and ATP production are coupled but simplified here.')
                   ) : null,
                   h('section', { className: 'mt-1', 'aria-labelledby': 'cell-process-stages-heading' },
                     h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
                       h('div', null,
-                        h('h5', { id: 'cell-process-stages-heading', className: 'text-[12px] font-black uppercase tracking-wide text-slate-800' }, 'How the pathway unfolds'),
-                        h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Select a stage to focus your study.')
+                        h('h5', { id: 'cell-process-stages-heading', className: 'text-[0.75rem] font-black uppercase tracking-wide text-slate-800' }, 'How the pathway unfolds'),
+                        h('p', { className: 'mt-0.5 text-[0.6875rem] text-slate-600' }, 'Select a stage to focus your study.')
                       ),
-                      h('span', { className: 'rounded-full px-2.5 py-1 text-[11px] font-black', style: { background: processVisual.soft, color: processVisual.accent }, 'aria-live': 'polite' }, 'Stage ' + (selectedStepIndex + 1) + ' of ' + process.steps.length)
+                      h('span', { className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-black', style: { background: processVisual.soft, color: processVisual.accent }, 'aria-live': 'polite' }, 'Stage ' + (selectedStepIndex + 1) + ' of ' + process.steps.length)
                     ),
                     h('div', { role: 'progressbar', 'aria-label': 'Focused pathway stage', 'aria-valuemin': 1, 'aria-valuemax': process.steps.length, 'aria-valuenow': selectedStepIndex + 1, className: 'mb-3 flex gap-1' },
                       process.steps.map(function(step, index) {
@@ -26338,15 +26338,15 @@ var d = labToolData.cell || {};
                           style: { background: stepSelected ? processVisual.soft : '#fff' }
                         },
                           h('span', { className: 'flex items-start gap-2.5' },
-                            h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-black text-white', style: { background: processVisual.accent } }, step[0]),
+                            h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[0.75rem] font-black text-white', style: { background: processVisual.accent } }, step[0]),
                             h('span', { className: 'min-w-0 flex-1' },
                               h('span', { className: 'flex flex-wrap items-baseline justify-between gap-1' },
-                                h('strong', { className: 'text-[13px] text-slate-900' }, step[1]),
-                                stepSelected ? h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black text-white', style: { background: processVisual.accent } }, 'FOCUS') :
-                                  (stepIndex < process.steps.length - 1 ? h('span', { className: 'text-[11px] font-black', style: { color: processVisual.accent }, 'aria-hidden': 'true' }, 'STEP ' + (stepIndex + 1)) : h('span', { className: 'text-[11px] font-black text-emerald-700' }, 'OUTCOME'))
+                                h('strong', { className: 'text-[0.8125rem] text-slate-900' }, step[1]),
+                                stepSelected ? h('span', { className: 'rounded-full px-2 py-0.5 text-[0.6875rem] font-black text-white', style: { background: processVisual.accent } }, 'FOCUS') :
+                                  (stepIndex < process.steps.length - 1 ? h('span', { className: 'text-[0.6875rem] font-black', style: { color: processVisual.accent }, 'aria-hidden': 'true' }, 'STEP ' + (stepIndex + 1)) : h('span', { className: 'text-[0.6875rem] font-black text-emerald-700' }, 'OUTCOME'))
                               ),
-                              h('span', { className: 'mt-1 block text-[11px] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, step[2]),
-                              h('span', { className: 'mt-1 block text-[12px] leading-relaxed text-slate-600' }, step[3])
+                              h('span', { className: 'mt-1 block text-[0.6875rem] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, step[2]),
+                              h('span', { className: 'mt-1 block text-[0.75rem] leading-relaxed text-slate-600' }, step[3])
                             )
                           )
                         )
@@ -26355,10 +26355,10 @@ var d = labToolData.cell || {};
                   ),                  h('nav', { className: 'mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white', 'aria-label': 'Connected pathways from ' + process.name, 'data-cell-process-connections': process.id },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2' },
                       h('div', null,
-                        h('h5', { className: 'text-[12px] font-black uppercase tracking-wide text-slate-900' }, 'Connected pathways'),
-                        h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Keep following the same matter, energy, or cellular machinery.')
+                        h('h5', { className: 'text-[0.75rem] font-black uppercase tracking-wide text-slate-900' }, 'Connected pathways'),
+                        h('p', { className: 'mt-0.5 text-[0.6875rem] text-slate-600' }, 'Keep following the same matter, energy, or cellular machinery.')
                       ),
-                      h('span', { className: 'rounded-full bg-white px-2 py-1 text-[11px] font-black text-slate-700 shadow-sm' }, relatedProcesses.length + ' next views')
+                      h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.6875rem] font-black text-slate-700 shadow-sm' }, relatedProcesses.length + ' next views')
                     ),
                     h('div', { className: 'grid gap-2 p-2 sm:grid-cols-2' },
                       relatedProcesses.map(function(connection) {
@@ -26379,10 +26379,10 @@ var d = labToolData.cell || {};
                             h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base', style: { background: targetVisual.soft }, 'aria-hidden': 'true' }, target.icon),
                             h('span', { className: 'min-w-0 flex-1' },
                               h('span', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                                h('strong', { className: 'text-[12px] text-slate-900' }, connection.label),
-                                h('span', { className: 'text-[11px] font-black', style: { color: targetVisual.accent }, 'aria-hidden': 'true' }, 'OPEN \u2192')
+                                h('strong', { className: 'text-[0.75rem] text-slate-900' }, connection.label),
+                                h('span', { className: 'text-[0.6875rem] font-black', style: { color: targetVisual.accent }, 'aria-hidden': 'true' }, 'OPEN \u2192')
                               ),
-                              h('span', { className: 'mt-1 block text-[11px] leading-relaxed text-slate-600' }, connection.reason)
+                              h('span', { className: 'mt-1 block text-[0.6875rem] leading-relaxed text-slate-600' }, connection.reason)
                             )
                           )
                         );
@@ -26395,13 +26395,13 @@ var d = labToolData.cell || {};
                 h('div', { className: 'grid gap-3 xl:grid-cols-3' }, deepDives.map(function(item) {
                   return h('article', { key: item.title, className: 'overflow-hidden rounded-xl border bg-white p-3 shadow-sm', style: { borderColor: item.color } },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                      h('h5', { className: 'text-[14px] font-black', style: { color: item.color } }, item.title),
-                      h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black uppercase tracking-wide', style: { background: item.color + '16', color: item.color } }, 'Structure \u2192 function')
+                      h('h5', { className: 'text-[0.875rem] font-black', style: { color: item.color } }, item.title),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[0.6875rem] font-black uppercase tracking-wide', style: { background: item.color + '16', color: item.color } }, 'Structure \u2192 function')
                     ),
                     renderOrganelleCutaway(item),
-                    h('div', { className: 'mt-3 text-[11px] font-black uppercase tracking-wide text-slate-500' }, 'Structures to notice'),
-                    h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-slate-600' }, item.parts),
-                    h('div', { className: 'mt-3 border-l-4 pl-3 text-[12px] leading-relaxed text-slate-700', style: { borderColor: item.color } }, item.why)
+                    h('div', { className: 'mt-3 text-[0.6875rem] font-black uppercase tracking-wide text-slate-500' }, 'Structures to notice'),
+                    h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-relaxed text-slate-600' }, item.parts),
+                    h('div', { className: 'mt-3 border-l-4 pl-3 text-[0.75rem] leading-relaxed text-slate-700', style: { borderColor: item.color } }, item.why)
                   );
                 }))
               );
@@ -26492,21 +26492,21 @@ var d = labToolData.cell || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200', role: 'group', 'aria-label': 'Choose an organism' },
                   filtered.map(function(o, i) {
                     var sel = idx === i;
-                    return React.createElement('button', { type: 'button', key: o.id, 'aria-current': sel ? 'true' : undefined, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-700 border border-slate-500 hover:bg-green-50 hover:border-green-400 active:scale-[0.97]'), title: o.name }, o.name);
+                    return React.createElement('button', { type: 'button', key: o.id, 'aria-current': sel ? 'true' : undefined, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-700 border border-slate-500 hover:bg-green-50 hover:border-green-400 active:scale-[0.97]'), title: o.name }, o.name);
                   })
                 ),
                 item && React.createElement('div', { className: 'border-2 rounded-xl p-4 space-y-3 shadow-inner ' + theme.bg + ' ' + theme.border },
                   React.createElement('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 border-b pb-2 ' + theme.border },
                     React.createElement('h4', { className: 'text-xl font-bold  tracking-tight' + theme.text }, item.name),
                     React.createElement('div', { className: 'flex gap-1.5' },
-                      React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm ' + theme.badge }, item.kingdom),
-                      React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-500 text-slate-700' }, item.cellType)
+                      React.createElement('span', { className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full shadow-sm ' + theme.badge }, item.kingdom),
+                      React.createElement('span', { className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-500 text-slate-700' }, item.cellType)
                     )
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed font-medium bg-white/60 p-2.5 rounded-lg border border-white/80' }, item.description),
                   
                   React.createElement('div', { className: 'p-2.5 bg-white/80 border rounded-lg shadow-sm ' + theme.border },
-                    React.createElement('div', { className: 'flex justify-between items-center gap-3 text-[10px] text-slate-500 font-bold mb-2' },
+                    React.createElement('div', { className: 'flex justify-between items-center gap-3 text-[0.625rem] text-slate-500 font-bold mb-2' },
                       React.createElement('span', null, '🔬 Scale Comparison'),
                       React.createElement('span', { className: theme.text + ' font-mono text-right' }, item.size)
                     ),
@@ -26523,12 +26523,12 @@ var d = labToolData.cell || {};
                         'aria-hidden': 'true'
                       })
                     ),
-                    React.createElement('div', { className: 'flex justify-between gap-2 text-[10px] text-slate-600 font-mono mt-1' },
+                    React.createElement('div', { className: 'flex justify-between gap-2 text-[0.625rem] text-slate-600 font-mono mt-1' },
                       React.createElement('span', null, '0.5 μm'),
                       React.createElement('span', null, '100 μm'),
                       React.createElement('span', null, '30 mm')
                     ),
-                    React.createElement('div', { className: 'mt-1.5 text-[10px] text-slate-600' },
+                    React.createElement('div', { className: 'mt-1.5 text-[0.625rem] text-slate-600' },
                       formattedSize
                         ? 'Approximate midpoint on a logarithmic scale: ' + formattedSize + '.'
                         : 'Size varies; no single marker is shown.'
@@ -26567,13 +26567,13 @@ var d = labToolData.cell || {};
                     var matched = findConcepts(textToScan);
                     if (matched.length === 0) return null;
                     return React.createElement('div', { className: 'flex flex-wrap gap-1.5 mt-2 pt-2 border-t ' + theme.border },
-                      React.createElement('span', { className: 'text-[10px] font-bold text-slate-500 flex items-center gap-1 w-full' }, '📇 Key concepts to study:'),
+                      React.createElement('span', { className: 'text-[0.625rem] font-bold text-slate-500 flex items-center gap-1 w-full' }, '📇 Key concepts to study:'),
                       matched.map(function(key) {
                         return React.createElement('button', {
                           type: 'button',
                           key: key,
                           onClick: function() { upd('_studyConcept', key); },
-                          className: 'px-2.5 py-1 text-[10px] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1 active:scale-[0.97]'
+                          className: 'px-2.5 py-1 text-[0.625rem] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1 active:scale-[0.97]'
                         }, '📖 Study ' + CELL_VOCAB[key].term + ' (+5 RP)');
                       })
                     );
@@ -26617,7 +26617,7 @@ var d = labToolData.cell || {};
                               upd('_encyclopediaIdx', idx !== -1 ? idx : 0);
                               upd('_encyclopediaFilter', 'all');
                             },
-                            className: 'px-2.5 py-1 text-[10px] bg-white border border-slate-200 rounded-lg text-slate-700 transition-all hover:scale-105 font-bold shadow-sm flex items-center gap-1 ' + t.hover
+                            className: 'px-2.5 py-1 text-[0.625rem] bg-white border border-slate-200 rounded-lg text-slate-700 transition-all hover:scale-105 font-bold shadow-sm flex items-center gap-1 ' + t.hover
                           }, '🦠 ' + o.name);
                         })
                       )
@@ -26669,13 +26669,13 @@ var d = labToolData.cell || {};
                 React.createElement('p', { className: 'text-xs text-slate-500 italic mb-3' }, 'Compare structures, habitats, and properties. Fields with differences are automatically highlighted in amber.'),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[10px] font-black text-purple-700 uppercase' }, 'Organism A'),
+                    React.createElement('label', { className: 'text-[0.625rem] font-black text-purple-700 uppercase' }, 'Organism A'),
                     React.createElement('select', { 'aria-label': "Organism A", value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
                   ),
                   React.createElement('div', null,
-                    React.createElement('label', { className: 'text-[10px] font-black text-purple-700 uppercase' }, 'Organism B'),
+                    React.createElement('label', { className: 'text-[0.625rem] font-black text-purple-700 uppercase' }, 'Organism B'),
                     React.createElement('select', { 'aria-label': "Organism B", value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
@@ -26693,8 +26693,8 @@ var d = labToolData.cell || {};
 
                     return React.createElement('div', { key: k, className: 'p-2.5 rounded-xl border transition-all ' + (isDifferent ? 'bg-amber-50/50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200') },
                       React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                        React.createElement('span', { className: 'text-[10px] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
-                        isDifferent && React.createElement('span', { className: 'text-[10px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded' }, 'Difference')
+                        React.createElement('span', { className: 'text-[0.625rem] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
+                        isDifferent && React.createElement('span', { className: 'text-[0.625rem] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded' }, 'Difference')
                       ),
                       React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-xs' },
                         React.createElement('div', { className: 'text-slate-700 leading-normal' },
@@ -26707,7 +26707,7 @@ var d = labToolData.cell || {};
                                 return React.createElement('button', {
                                   key: key,
                                   onClick: function() { upd('_studyConcept', key); },
-                                  className: 'transition-colors px-1.5 py-0.5 text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
+                                  className: 'transition-colors px-1.5 py-0.5 text-[0.625rem] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
                                 }, '📖 Study ' + CELL_VOCAB[key].term);
                               })
                             );
@@ -26723,7 +26723,7 @@ var d = labToolData.cell || {};
                                 return React.createElement('button', {
                                   key: key,
                                   onClick: function() { upd('_studyConcept', key); },
-                                  className: 'transition-colors px-1.5 py-0.5 text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
+                                  className: 'transition-colors px-1.5 py-0.5 text-[0.625rem] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
                                 }, '📖 Study ' + CELL_VOCAB[key].term);
                               })
                             );
@@ -26747,7 +26747,7 @@ var d = labToolData.cell || {};
                     React.createElement('div', { className: 'text-amber-700 font-mono font-bold text-xs w-12 flex-shrink-0' }, e.year),
                     React.createElement('div', { className: 'flex-1' },
                       React.createElement('div', { className: 'text-xs text-slate-800 leading-relaxed' }, e.event),
-                      React.createElement('div', { className: 'text-[10px] italic text-amber-700' }, e.country)
+                      React.createElement('div', { className: 'text-[0.625rem] italic text-amber-700' }, e.country)
                     )
                   );
                 })
@@ -26765,7 +26765,7 @@ var d = labToolData.cell || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
                   FAMOUS_BIOLOGISTS.map(function(bio, i) {
                     var sel = bioIdx === i;
-                    return React.createElement('button', { key: i, onClick: function() { upd('_bioIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (sel ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500') }, bio.name.split(' ').slice(-1)[0]);
+                    return React.createElement('button', { key: i, onClick: function() { upd('_bioIdx', i); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (sel ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500') }, bio.name.split(' ').slice(-1)[0]);
                   })
                 ),
                 b && React.createElement('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-3 space-y-2' },
@@ -26787,7 +26787,7 @@ var d = labToolData.cell || {};
                 return React.createElement('div', { key: t.id, className: 'bg-blue-50 border border-blue-200 rounded p-2 text-xs' },
                   React.createElement('div', { className: 'flex justify-between' },
                     React.createElement('span', { className: 'font-bold text-blue-700' }, t.name),
-                    React.createElement('span', { className: 'text-[10px] font-mono text-amber-700' }, t.skill)
+                    React.createElement('span', { className: 'text-[0.625rem] font-mono text-amber-700' }, t.skill)
                   ),
                   React.createElement('div', { className: 'text-slate-700 mt-1' }, 'Method: ' + t.method),
                   React.createElement('div', { className: 'text-emerald-700 italic mt-1' }, 'Purpose: ' + t.purpose)
@@ -26804,11 +26804,11 @@ var d = labToolData.cell || {};
                 return React.createElement('div', { key: disease.id, className: 'bg-rose-50 border border-rose-200 rounded p-2 text-xs' },
                   React.createElement('div', { className: 'flex justify-between mb-1' },
                     React.createElement('span', { className: 'font-bold text-rose-700' }, disease.disease),
-                    React.createElement('span', { className: 'font-mono text-[10px] text-slate-600' }, disease.pathogen)
+                    React.createElement('span', { className: 'font-mono text-[0.625rem] text-slate-600' }, disease.pathogen)
                   ),
                   React.createElement('div', { className: 'text-slate-700' }, 'Symptoms: ' + disease.symptoms),
                   React.createElement('div', { className: 'text-emerald-700' }, 'Treatment: ' + disease.treatment),
-                  React.createElement('div', { className: 'text-[10px] italic text-amber-700' }, disease.prevalence)
+                  React.createElement('div', { className: 'text-[0.625rem] italic text-amber-700' }, disease.prevalence)
                 );
               })
             ),
@@ -26944,7 +26944,7 @@ var d = labToolData.cell || {};
               return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-indigo-300 p-4', 'data-cell-library': 'true' },
                 React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                   React.createElement('h3', { className: 'text-base font-bold text-indigo-700' }, '📚 Reference Library'),
-                  React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-0.5' },
+                  React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-0.5' },
                     LIBRARY.length + ' tables · ' + totalEntries + ' entries')
                 ),
                 React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
@@ -26960,7 +26960,7 @@ var d = labToolData.cell || {};
                         upd('_libGroup', g);
                         if (first) upd('_libSection', first.id);
                       },
-                      className: 'px-2.5 py-1 rounded-full border text-[11px] font-bold ' +
+                      className: 'px-2.5 py-1 rounded-full border text-[0.6875rem] font-bold ' +
                         (sel ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50')
                     }, g);
                   })
@@ -26972,7 +26972,7 @@ var d = labToolData.cell || {};
                     return React.createElement('button', {
                       key: s.id, type: 'button', 'aria-pressed': sel ? 'true' : 'false',
                       onClick: function () { upd('_libSection', s.id); },
-                      className: 'px-2 py-1 rounded border text-[11px] ' +
+                      className: 'px-2 py-1 rounded border text-[0.6875rem] ' +
                         (sel ? 'bg-indigo-600 text-white border-indigo-700 font-bold' : 'bg-slate-50 text-slate-700 border-slate-300 hover:border-indigo-300')
                     }, s.title + ' (' + s.data.length + ')');
                   })
@@ -27017,11 +27017,11 @@ var d = labToolData.cell || {};
               }
               return h('div', { className: 'mt-4 bg-white rounded-xl border-2 border-cyan-300 p-4 space-y-3' },
                 h('h3', { className: 'text-sm font-black text-cyan-700' }, '💧 Osmosis discovery'),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' },
                   'Adjust solute concentration inside the cell, outside, and membrane permeability. Widget shows one of three discrete states. No score, no reveal — sweep and notice.'),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
                   h('div', { className: 'text-base font-black', style: { color: stateMeta.color } }, stateMeta.label),
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, stateMeta.desc)
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                   [
@@ -27030,7 +27030,7 @@ var d = labToolData.cell || {};
                     { key: 'perm',    label: 'Membrane perm (%)',   val: iq.perm }
                   ].map(function(s) {
                     return h('div', { key: s.key },
-                      h('label', { htmlFor: 'oh-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
+                      h('label', { htmlFor: 'oh-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700' },
                         s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
                       h('input', { id: 'oh-' + s.key, type: 'range', min: 0, max: 200, step: 1, value: s.val,
                         onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
@@ -27038,11 +27038,11 @@ var d = labToolData.cell || {};
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ inside: 50, outside: 50, perm: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-500' }, '↺ Reset'),
-                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ inside: 50, outside: 50, perm: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, '↺ Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
-                (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                (iq.log || []).length > 0 && h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
                   h('thead', null, h('tr', { className: 'bg-slate-100' }, ['inside', 'outside', 'perm', 'state'].map(function(c, i) { return h('th', { scope: 'col', key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     return h('tr', { key: 'lr' + idx },
@@ -27053,20 +27053,20 @@ var d = labToolData.cell || {};
                   }))
                 ),
                 h('textarea', { 'aria-label': 'Osmosis hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, 'Set inside = outside. Change permeability. Anything happen?'),
                     h('li', null, 'Find two settings producing isotonic. What do they share?'),
                     h('li', null, 'Why do plant cells survive lysis but animal cells burst? Investigate.'))),
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                  h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     'I understand — explain in own words'),
                   iq.understood && h('textarea', { 'aria-label': 'Osmosis explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
-                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state osmosis marker; no membrane-integrity score; no reveal — by design.')
+                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Design note: discrete 3-state osmosis marker; no membrane-integrity score; no reveal — by design.')
               );
             })(),
 

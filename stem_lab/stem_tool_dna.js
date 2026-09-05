@@ -3135,11 +3135,11 @@ window.StemLab = window.StemLab || {
         return h("section", { className: "mt-3 overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 p-3 shadow-sm", "data-dna-mutation-trail": true, role: "region", "aria-labelledby": "dna-mutation-trail-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", { className: "max-w-2xl" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Current experiment"),
-              h("h5", { id: "dna-mutation-trail-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Mutation trail"),
-              h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, "Read left to right to follow each edit in order. The final card is the change shown in the detailed comparison below.")
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-slate-500" }, "Current experiment"),
+              h("h5", { id: "dna-mutation-trail-title", className: "mt-1 text-[0.75rem] font-black text-slate-900" }, "Mutation trail"),
+              h("p", { className: "mt-1 mb-0 text-[0.625rem] leading-relaxed text-slate-600" }, "Read left to right to follow each edit in order. The final card is the change shown in the detailed comparison below.")
             ),
-            h("span", { className: "rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[9px] font-black text-slate-700 shadow-sm" }, dnaMutationTrail.length + " edit" + (dnaMutationTrail.length === 1 ? "" : "s") + " \u00b7 " + dnaSeq.length + " bp current")
+            h("span", { className: "rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[0.5625rem] font-black text-slate-700 shadow-sm" }, dnaMutationTrail.length + " edit" + (dnaMutationTrail.length === 1 ? "" : "s") + " \u00b7 " + dnaSeq.length + " bp current")
           ),
           h("div", { className: "mt-3 flex flex-wrap gap-1.5", "data-dna-mutation-trail-legend": true, "aria-label": "Mutation trail color legend" },
             [
@@ -3147,7 +3147,7 @@ window.StemLab = window.StemLab || {
               { label: 'Insertion', tone: 'border-emerald-200 bg-emerald-50 text-emerald-800', dot: 'bg-emerald-600' },
               { label: 'Deletion', tone: 'border-rose-200 bg-rose-50 text-rose-800', dot: 'bg-rose-600' }
             ].map(function(item) {
-              return h("span", { key: item.label, className: "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-bold " + item.tone },
+              return h("span", { key: item.label, className: "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[0.5625rem] font-bold " + item.tone },
                 h("span", { className: "h-2 w-2 rounded-full " + item.dot, "aria-hidden": "true" }),
                 item.label
               );
@@ -3162,37 +3162,37 @@ window.StemLab = window.StemLab || {
               return h("li", { key: entry.index, className: "relative w-56 shrink-0 snap-start pr-3", "data-dna-mutation-step": String(entry.index), "data-mutation-type": entry.type.toLowerCase(), "data-mutation-current": entry.isCurrent ? "true" : "false", "data-mutation-effect": entry.effect.toLowerCase().replace(/\s+/g, '-'), "data-length-before": String(entry.beforeLength), "data-length-after": String(entry.afterLength) },
                 h("div", { className: "relative mb-2 flex h-8 items-center", "aria-hidden": "true" },
                   trailIndex < dnaMutationTrail.length - 1 && h("span", { className: "absolute left-7 right-0 top-1/2 h-0.5 -translate-y-1/2 bg-slate-200" }),
-                  h("span", { className: "relative z-[1] grid h-7 w-7 place-items-center rounded-full text-[10px] font-black text-white shadow-sm ring-4 ring-white " + tone.strong }, String(entry.index)),
-                  h("span", { className: "ml-2 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-slate-500" }, entry.isCurrent ? "Current" : "Earlier")
+                  h("span", { className: "relative z-[1] grid h-7 w-7 place-items-center rounded-full text-[0.625rem] font-black text-white shadow-sm ring-4 ring-white " + tone.strong }, String(entry.index)),
+                  h("span", { className: "ml-2 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[0.5rem] font-black uppercase tracking-wide text-slate-500" }, entry.isCurrent ? "Current" : "Earlier")
                 ),
                 h("article", { className: "h-[10.5rem] rounded-xl border bg-white p-3 shadow-sm " + tone.border + (entry.isCurrent ? " ring-2 ring-slate-200" : ""), "aria-label": cardLabel },
                   h("div", { className: "flex items-start justify-between gap-2" },
                     h("div", null,
-                      h("div", { className: "text-[9px] font-black uppercase tracking-[0.12em] " + tone.text }, entry.type),
-                      h("div", { className: "mt-0.5 text-[10px] font-bold text-slate-500" }, "Base " + (entry.pos + 1))
+                      h("div", { className: "text-[0.5625rem] font-black uppercase tracking-[0.12em] " + tone.text }, entry.type),
+                      h("div", { className: "mt-0.5 text-[0.625rem] font-bold text-slate-500" }, "Base " + (entry.pos + 1))
                     ),
                     h("span", { className: "grid h-7 min-w-7 place-items-center rounded-lg px-1.5 font-mono text-sm font-black text-white " + tone.strong, "aria-hidden": "true" }, tone.symbol)
                   ),
                   h("div", { className: "mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2", "data-dna-mutation-step-change": true },
                     h("div", null,
-                      h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-400" }, "Before"),
-                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (beforeGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-500" : "border-slate-200 bg-slate-100 text-slate-700"), "data-base-state": beforeGap ? "gap" : "base" }, entry.beforeBase)
+                      h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-slate-400" }, "Before"),
+                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[0.8125rem] font-black " + (beforeGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-500" : "border-slate-200 bg-slate-100 text-slate-700"), "data-base-state": beforeGap ? "gap" : "base" }, entry.beforeBase)
                     ),
                     h("span", { className: "pb-2 text-sm font-black text-slate-300", "aria-hidden": "true" }, "\u2192"),
                     h("div", null,
-                      h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "After"),
-                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (afterGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-500" : tone.border + " " + tone.soft + " " + tone.text), "data-base-state": afterGap ? "gap" : "base" }, entry.afterBase)
+                      h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-slate-500" }, "After"),
+                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[0.8125rem] font-black " + (afterGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-500" : tone.border + " " + tone.soft + " " + tone.text), "data-base-state": afterGap ? "gap" : "base" }, entry.afterBase)
                     )
                   ),
                   h("div", { className: "mt-3 flex items-center justify-between gap-2" },
-                    h("span", { className: "text-[9px] font-bold tabular-nums text-slate-500" }, entry.beforeLength + " \u2192 " + entry.afterLength + " bp"),
-                    h("span", { className: "rounded-full border px-2 py-1 text-[8px] font-black " + mutationEffectTone(entry.effect) }, entry.effect)
+                    h("span", { className: "text-[0.5625rem] font-bold tabular-nums text-slate-500" }, entry.beforeLength + " \u2192 " + entry.afterLength + " bp"),
+                    h("span", { className: "rounded-full border px-2 py-1 text-[0.5rem] font-black " + mutationEffectTone(entry.effect) }, entry.effect)
                   )
                 )
               );
             })
           ),
-          h("div", { className: "mt-1 grid gap-2 rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-[9px] leading-relaxed text-slate-600 sm:grid-cols-2", "data-dna-history-distinction": true },
+          h("div", { className: "mt-1 grid gap-2 rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-[0.5625rem] leading-relaxed text-slate-600 sm:grid-cols-2", "data-dna-history-distinction": true },
             h("span", null, h("strong", { className: "text-slate-800" }, "Mutation trail: "), "individual edits in this active experiment."),
             h("span", null, h("strong", { className: "text-slate-800" }, "Experiment history: "), "whole sequence checkpoints you saved for comparison.")
           )
@@ -3214,8 +3214,8 @@ window.StemLab = window.StemLab || {
           var isBefore = side === 'before';
           return h("div", { className: "grid grid-cols-[4.75rem_1fr] items-stretch gap-2", "data-dna-mutation-alignment-row": side },
             h("div", { className: "sticky left-0 z-10 flex flex-col justify-center rounded-lg border border-slate-700 bg-slate-900/95 px-2 py-1 shadow-[8px_0_12px_rgba(2,6,23,0.75)]" },
-              h("span", { className: "text-[9px] font-black uppercase tracking-[0.14em] " + (isBefore ? "text-sky-300" : "text-amber-300") }, label),
-              h("span", { className: "mt-0.5 text-[8px] font-bold text-slate-400" }, sequenceLength + " bp")
+              h("span", { className: "text-[0.5625rem] font-black uppercase tracking-[0.14em] " + (isBefore ? "text-sky-300" : "text-amber-300") }, label),
+              h("span", { className: "mt-0.5 text-[0.5rem] font-bold text-slate-400" }, sequenceLength + " bp")
             ),
             h("div", { className: "flex gap-1" },
               alignment.columns.map(function(column) {
@@ -3232,8 +3232,8 @@ window.StemLab = window.StemLab || {
                 var baseStyle = isGap ? null : { background: BASE_COLORS[base] || '#334155', color: BASE_TEXT_COLORS[base] || '#ffffff' };
                 return h("div", { key: side + '-' + column.index, className: "relative w-9 shrink-0 rounded-lg border px-1 py-1.5 " + cellTone, "data-base-state": isGap ? "gap" : "base", "data-frame-region": column.downstream ? "shifted" : "aligned", "aria-hidden": "true" },
                   codonStart && h("span", { className: "absolute -left-[3px] inset-y-1 w-0.5 rounded-full " + (isBefore ? "bg-sky-400" : "bg-amber-400"), "data-codon-start": "true" }),
-                  h("span", { className: "block text-center text-[7px] font-black tabular-nums text-slate-400" }, baseIndex === null ? "gap" : String(baseIndex)),
-                  h("span", { className: "mt-1 grid h-6 place-items-center rounded-md font-mono text-[12px] font-black shadow-sm " + baseTone, style: baseStyle }, base)
+                  h("span", { className: "block text-center text-[0.4375rem] font-black tabular-nums text-slate-400" }, baseIndex === null ? "gap" : String(baseIndex)),
+                  h("span", { className: "mt-1 grid h-6 place-items-center rounded-md font-mono text-[0.75rem] font-black shadow-sm " + baseTone, style: baseStyle }, base)
                 );
               })
             )
@@ -3243,27 +3243,27 @@ window.StemLab = window.StemLab || {
         return h("section", { className: "mt-3 overflow-hidden rounded-xl border border-rose-200 bg-gradient-to-br from-white via-rose-50/60 to-violet-50 p-3 shadow-sm", "data-dna-mutation-alignment": true, role: "region", "aria-labelledby": "dna-mutation-alignment-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", { className: "max-w-2xl" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-rose-700" }, "Nucleotide alignment"),
-              h("h6", { id: "dna-mutation-alignment-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Locate the exact edit"),
-              h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, alignment.isFrameshift ? "Follow the gap, then compare where each row begins its next three-base codon." : "The two sequences stay aligned, so the highlighted column isolates the changed nucleotide.")
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-rose-700" }, "Nucleotide alignment"),
+              h("h6", { id: "dna-mutation-alignment-title", className: "mt-1 text-[0.75rem] font-black text-slate-900" }, "Locate the exact edit"),
+              h("p", { className: "mt-1 mb-0 text-[0.625rem] leading-relaxed text-slate-600" }, alignment.isFrameshift ? "Follow the gap, then compare where each row begins its next three-base codon." : "The two sequences stay aligned, so the highlighted column isolates the changed nucleotide.")
             ),
-            h("span", { className: "rounded-full border border-rose-200 bg-white px-2.5 py-1 text-[9px] font-black text-rose-800 shadow-sm", "data-dna-mutation-edit-label": true }, alignment.editLabel)
+            h("span", { className: "rounded-full border border-rose-200 bg-white px-2.5 py-1 text-[0.5625rem] font-black text-rose-800 shadow-sm", "data-dna-mutation-edit-label": true }, alignment.editLabel)
           ),
           h("div", { className: "mt-3 flex flex-wrap gap-1.5", "data-dna-mutation-alignment-legend": true, "aria-label": "Nucleotide alignment legend" },
-            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 text-[9px] font-bold text-slate-700" }, h("span", { className: "h-2 w-2 rounded-sm bg-slate-500", "aria-hidden": "true" }), "Aligned base"),
-            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[9px] font-bold text-rose-800" }, h("span", { className: "h-2 w-2 rounded-sm bg-rose-500", "aria-hidden": "true" }), "Edit column"),
-            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2 py-1 text-[9px] font-bold text-sky-800" }, h("span", { className: "h-3 w-0.5 rounded-full bg-sky-500", "aria-hidden": "true" }), "Codon start"),
-            alignment.isFrameshift && h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] font-bold text-violet-800" }, h("span", { className: "h-2 w-2 rounded-sm bg-violet-500", "aria-hidden": "true" }), "Shifted downstream")
+            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 text-[0.5625rem] font-bold text-slate-700" }, h("span", { className: "h-2 w-2 rounded-sm bg-slate-500", "aria-hidden": "true" }), "Aligned base"),
+            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[0.5625rem] font-bold text-rose-800" }, h("span", { className: "h-2 w-2 rounded-sm bg-rose-500", "aria-hidden": "true" }), "Edit column"),
+            h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2 py-1 text-[0.5625rem] font-bold text-sky-800" }, h("span", { className: "h-3 w-0.5 rounded-full bg-sky-500", "aria-hidden": "true" }), "Codon start"),
+            alignment.isFrameshift && h("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[0.5625rem] font-bold text-violet-800" }, h("span", { className: "h-2 w-2 rounded-sm bg-violet-500", "aria-hidden": "true" }), "Shifted downstream")
           ),
           h("div", { className: "mt-3 overflow-x-auto rounded-xl border border-slate-700 bg-slate-950 p-3 pb-4 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2", "data-dna-mutation-alignment-board": true, role: "img", tabIndex: 0, "aria-label": alignmentLabel },
             h("div", { className: "min-w-max space-y-2" },
               h("div", { className: "grid grid-cols-[4.75rem_1fr] items-end gap-2", "aria-hidden": "true" },
-                h("div", { className: "px-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-500" }, "Alignment"),
+                h("div", { className: "px-1 text-[0.5rem] font-black uppercase tracking-[0.14em] text-slate-500" }, "Alignment"),
                 h("div", { className: "flex gap-1" },
                   alignment.columns.map(function(column) {
                     return h("div", { key: 'marker-' + column.index, className: "flex h-5 w-9 shrink-0 items-end justify-center", "data-alignment-state": column.state, "data-edit-site": column.edit ? "true" : "false" },
                       column.edit
-                        ? h("span", { className: "rounded-t bg-rose-600 px-1 py-0.5 text-[7px] font-black uppercase tracking-wide text-white" }, "Edit")
+                        ? h("span", { className: "rounded-t bg-rose-600 px-1 py-0.5 text-[0.4375rem] font-black uppercase tracking-wide text-white" }, "Edit")
                         : column.downstream
                           ? h("span", { className: "h-1 w-full rounded-full bg-violet-500/60" })
                           : null
@@ -3276,15 +3276,15 @@ window.StemLab = window.StemLab || {
               renderAlignmentRow('after', 'After', mutationComparison.afterSeq.length)
             )
           ),
-          h("div", { className: "mt-2 flex items-center justify-between gap-3 text-[9px] text-slate-500" },
+          h("div", { className: "mt-2 flex items-center justify-between gap-3 text-[0.5625rem] text-slate-500" },
             h("span", null, "Scroll horizontally to inspect every nucleotide."),
             h("span", { className: "hidden font-bold sm:inline" }, "Numbers show each row's original base position.")
           ),
           h("div", { id: "dna-mutation-frame-status", className: "mt-3 flex items-start gap-3 rounded-xl border px-3 py-2.5 " + (alignment.isFrameshift ? "border-violet-200 bg-violet-50" : "border-emerald-200 bg-emerald-50"), "data-frame-status": alignment.isFrameshift ? "shifted" : "preserved" },
             h("span", { className: "grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-black " + (alignment.isFrameshift ? "bg-violet-600 text-white" : "bg-emerald-700 text-white"), "aria-hidden": "true" }, alignment.isFrameshift ? "\u21af" : "\u2713"),
             h("div", null,
-              h("div", { className: "text-[11px] font-black " + (alignment.isFrameshift ? "text-violet-900" : "text-emerald-900") }, frameStatusTitle),
-              h("p", { className: "mt-0.5 mb-0 text-[10px] leading-relaxed text-slate-600" }, frameStatusDetail)
+              h("div", { className: "text-[0.6875rem] font-black " + (alignment.isFrameshift ? "text-violet-900" : "text-emerald-900") }, frameStatusTitle),
+              h("p", { className: "mt-0.5 mb-0 text-[0.625rem] leading-relaxed text-slate-600" }, frameStatusDetail)
             )
           )
         );
@@ -3303,39 +3303,39 @@ window.StemLab = window.StemLab || {
         return h("section", { className: "mt-3 overflow-hidden rounded-xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-violet-50 p-3", "data-dna-evidence-chain": true, role: "region", "aria-label": chainLabel },
           h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
             h("div", null,
-              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-sky-700" }, "Evidence chain"),
-              h("h6", { className: "mt-1 text-[12px] font-black text-slate-900" }, "Follow the molecular change"),
-              h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, "The same highlighted change is traced from DNA to mRNA to the amino-acid result.")
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-sky-700" }, "Evidence chain"),
+              h("h6", { className: "mt-1 text-[0.75rem] font-black text-slate-900" }, "Follow the molecular change"),
+              h("p", { className: "mt-1 mb-0 text-[0.625rem] leading-relaxed text-slate-600" }, "The same highlighted change is traced from DNA to mRNA to the amino-acid result.")
             ),
-            h("span", { className: "rounded-full border border-sky-200 bg-white px-2 py-1 text-[10px] font-black text-sky-800" }, dnaEvidenceChain.changedCodonCount + " changed codon" + (dnaEvidenceChain.changedCodonCount === 1 ? "" : "s"))
+            h("span", { className: "rounded-full border border-sky-200 bg-white px-2 py-1 text-[0.625rem] font-black text-sky-800" }, dnaEvidenceChain.changedCodonCount + " changed codon" + (dnaEvidenceChain.changedCodonCount === 1 ? "" : "s"))
           ),
           h("ol", { className: "mt-3 grid gap-3 md:grid-cols-3", "aria-label": "DNA to protein evidence stages" },
             chainStages.map(function(stage, stageIndex) {
               return h("li", { key: stage.id, className: "relative rounded-xl border bg-white p-3 shadow-sm " + stage.tone, "data-dna-evidence-stage": stage.id },
                 h("div", { className: "flex items-center gap-2" },
-                  h("span", { className: "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-black " + stage.badge, "aria-hidden": "true" }, stage.step),
-                  h("span", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, stage.label)
+                  h("span", { className: "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[0.625rem] font-black " + stage.badge, "aria-hidden": "true" }, stage.step),
+                  h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-700" }, stage.label)
                 ),
                 h("div", { className: "mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2", "aria-label": stage.label + ": " + stage.before + " to " + stage.after },
                   h("div", null,
-                    h("div", { className: "text-[9px] font-black uppercase tracking-wide text-slate-400" }, "Before"),
-                    h("div", { className: "mt-1 rounded-md bg-slate-100 px-2 py-2 text-center font-mono text-[12px] font-black text-slate-600 line-through decoration-slate-400" }, stage.before)
+                    h("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-slate-400" }, "Before"),
+                    h("div", { className: "mt-1 rounded-md bg-slate-100 px-2 py-2 text-center font-mono text-[0.75rem] font-black text-slate-600 line-through decoration-slate-400" }, stage.before)
                   ),
                   h("span", { className: "pb-2 text-sm font-black text-slate-400", "aria-hidden": "true" }, "\u2192"),
                   h("div", null,
-                    h("div", { className: "text-[9px] font-black uppercase tracking-wide text-slate-500" }, "After"),
-                    h("div", { className: "mt-1 rounded-md px-2 py-2 text-center font-mono text-[12px] font-black ring-1 " + stage.value }, stage.after)
+                    h("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-slate-500" }, "After"),
+                    h("div", { className: "mt-1 rounded-md px-2 py-2 text-center font-mono text-[0.75rem] font-black ring-1 " + stage.value }, stage.after)
                   )
                 ),
-                h("div", { className: "mt-2 text-[10px] font-bold text-slate-600" }, stage.meta),
+                h("div", { className: "mt-2 text-[0.625rem] font-bold text-slate-600" }, stage.meta),
                 stageIndex < chainStages.length - 1 && h("span", { className: "mt-2 grid h-6 w-6 place-items-center rounded-full border border-sky-200 bg-white text-sm font-black text-sky-700 md:absolute md:-right-[18px] md:top-1/2 rotate-90 md:z-10 md:mt-0 md:-translate-y-1/2 md:rotate-0", "aria-hidden": "true" }, "\u2192")
               );
             })
           ),
           h("div", { className: "mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-white/90 px-3 py-2" },
-            h("span", { className: "text-[9px] font-black uppercase tracking-wide text-violet-700" }, "Predicted coding effect"),
-            h("strong", { className: "rounded-full bg-violet-100 px-2 py-1 text-[10px] text-violet-900" }, dnaEvidenceChain.effect),
-            h("span", { className: "text-[10px] leading-relaxed text-slate-600" }, aminoChanged ? "The first affected amino acid changed; inspect the table for downstream effects." : "The codon changed, but this amino acid stayed the same.")
+            h("span", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-violet-700" }, "Predicted coding effect"),
+            h("strong", { className: "rounded-full bg-violet-100 px-2 py-1 text-[0.625rem] text-violet-900" }, dnaEvidenceChain.effect),
+            h("span", { className: "text-[0.625rem] leading-relaxed text-slate-600" }, aminoChanged ? "The first affected amino acid changed; inspect the table for downstream effects." : "The codon changed, but this amino acid stayed the same.")
           )
         );
       }
@@ -3384,17 +3384,17 @@ window.StemLab = window.StemLab || {
         return h("section", { className: "mt-3 rounded-xl border border-amber-200 bg-white/90 p-3", "data-dna-codon-impact-map": true, role: "region", "aria-labelledby": "dna-codon-impact-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
             h("div", null,
-              h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-700" }, "Mutation impact map"),
-              h("h6", { id: "dna-codon-impact-title", className: "mt-1 text-[12px] font-black text-slate-900" }, patternTitle),
-              h("p", { className: "mt-1 mb-0 max-w-2xl text-[10px] leading-relaxed text-slate-600" }, patternDescription)
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-amber-700" }, "Mutation impact map"),
+              h("h6", { id: "dna-codon-impact-title", className: "mt-1 text-[0.75rem] font-black text-slate-900" }, patternTitle),
+              h("p", { className: "mt-1 mb-0 max-w-2xl text-[0.625rem] leading-relaxed text-slate-600" }, patternDescription)
             ),
             h("div", { className: "flex flex-wrap gap-1.5", "aria-label": "Impact map legend" },
-              h("span", { className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-black text-emerald-800" }, "Same"),
-              h("span", { className: "rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[9px] font-black text-amber-900" }, "Changed")
+              h("span", { className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[0.5625rem] font-black text-emerald-800" }, "Same"),
+              h("span", { className: "rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[0.5625rem] font-black text-amber-900" }, "Changed")
             )
           ),
           h("div", { className: "mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2" },
-            h("div", { className: "flex items-center justify-between gap-2 text-[10px] font-bold text-slate-600" },
+            h("div", { className: "flex items-center justify-between gap-2 text-[0.625rem] font-bold text-slate-600" },
               h("span", null, changedRows.length + " of " + codonRows.length + " codons changed"),
               h("span", null, changedPercent + "% footprint")
             ),
@@ -3412,16 +3412,16 @@ window.StemLab = window.StemLab || {
               return h("li", { key: row.index, className: "w-28 shrink-0", "data-state": row.changed ? "changed" : "same", "data-selected": isSelected ? "true" : "false" },
                 h("button", { type: "button", onClick: function() { upd('dnaImpactCodonIndex', row.index); announceToSR('Codon ' + row.index + ' spotlight selected.'); }, className: "h-full w-full rounded-lg border p-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 " + (isSelected ? "border-sky-500 bg-sky-50 ring-2 ring-sky-200" : row.changed ? "border-amber-300 bg-amber-50" : "border-emerald-200 bg-emerald-50"), "aria-pressed": isSelected, "aria-label": rowLabel },
                   h("div", { className: "flex items-center justify-between gap-1" },
-                    h("span", { className: "grid h-5 w-5 place-items-center rounded-full bg-white text-[9px] font-black text-slate-700", "aria-hidden": "true" }, String(row.index)),
-                    h("span", { className: "rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide " + (row.changed ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900") }, stateLabel)
+                    h("span", { className: "grid h-5 w-5 place-items-center rounded-full bg-white text-[0.5625rem] font-black text-slate-700", "aria-hidden": "true" }, String(row.index)),
+                    h("span", { className: "rounded-full px-1.5 py-0.5 text-[0.5rem] font-black uppercase tracking-wide " + (row.changed ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900") }, stateLabel)
                   ),
-                  isFirstImpact && h("div", { className: "mt-1 text-[8px] font-black uppercase tracking-wide text-rose-700" }, "Impact begins"),
-                  h("div", { className: "mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1 font-mono text-[10px] font-black text-slate-700" },
+                  isFirstImpact && h("div", { className: "mt-1 text-[0.5rem] font-black uppercase tracking-wide text-rose-700" }, "Impact begins"),
+                  h("div", { className: "mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1 font-mono text-[0.625rem] font-black text-slate-700" },
                     h("span", { className: "rounded bg-white px-1 py-1 text-center" }, row.beforeCodon),
                     h("span", { className: "text-slate-400", "aria-hidden": "true" }, "\u2192"),
                     h("span", { className: "rounded px-1 py-1 text-center " + (row.changed ? "bg-amber-200 text-amber-950" : "bg-white text-emerald-900") }, row.afterCodon)
                   ),
-                  h("div", { className: "mt-2 rounded-md bg-white/80 px-1.5 py-1 text-center text-[9px] font-bold " + (aminoChanged ? "text-violet-800" : "text-slate-600") },
+                  h("div", { className: "mt-2 rounded-md bg-white/80 px-1.5 py-1 text-center text-[0.5625rem] font-bold " + (aminoChanged ? "text-violet-800" : "text-slate-600") },
                     aminoChanged ? row.beforeAA + " \u2192 " + row.afterAA : "AA " + row.afterAA
                   )
                 )
@@ -3431,30 +3431,30 @@ window.StemLab = window.StemLab || {
           h("div", { className: "mt-2 rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-indigo-50 p-3", "data-dna-codon-spotlight": true, role: "group", "aria-labelledby": "dna-codon-spotlight-title" },
             h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
               h("div", null,
-                h("div", { className: "text-[9px] font-black uppercase tracking-[0.16em] text-sky-700" }, "Codon spotlight"),
-                h("h6", { id: "dna-codon-spotlight-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Codon " + selectedRow.index + " \u00b7 bases " + selectedBaseStart + "\u2013" + selectedBaseEnd)
+                h("div", { className: "text-[0.5625rem] font-black uppercase tracking-[0.16em] text-sky-700" }, "Codon spotlight"),
+                h("h6", { id: "dna-codon-spotlight-title", className: "mt-1 text-[0.75rem] font-black text-slate-900" }, "Codon " + selectedRow.index + " \u00b7 bases " + selectedBaseStart + "\u2013" + selectedBaseEnd)
               ),
               h("div", { className: "flex flex-wrap items-center justify-end gap-2" },
-                h("span", { className: "rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide " + (selectedRow.changed ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900") }, selectedRow.changed ? "Changed" : "Same"),
-                h("button", { type: "button", onClick: useSelectedDnaCodonAsEvidence, className: "rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-[9px] font-black text-sky-800 hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500", "data-dna-use-codon-evidence": true, "aria-pressed": dnaSelectedCodonEvidenceSaved }, dnaSelectedCodonEvidenceSaved ? "Added to report" : dnaEvidenceCitationStale ? "Refresh report evidence" : dnaEvidenceCitation === "codon" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use as evidence")
+                h("span", { className: "rounded-full px-2 py-1 text-[0.5625rem] font-black uppercase tracking-wide " + (selectedRow.changed ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900") }, selectedRow.changed ? "Changed" : "Same"),
+                h("button", { type: "button", onClick: useSelectedDnaCodonAsEvidence, className: "rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-[0.5625rem] font-black text-sky-800 hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500", "data-dna-use-codon-evidence": true, "aria-pressed": dnaSelectedCodonEvidenceSaved }, dnaSelectedCodonEvidenceSaved ? "Added to report" : dnaEvidenceCitationStale ? "Refresh report evidence" : dnaEvidenceCitation === "codon" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use as evidence")
               )
             ),
             h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
               h("div", { className: "rounded-lg border border-sky-200 bg-white p-2" },
-                h("div", { className: "text-[8px] font-black uppercase tracking-wide text-sky-700" }, "mRNA codon"),
-                h("div", { className: "mt-1 font-mono text-[11px] font-black text-slate-800" }, selectedRow.beforeCodon + " \u2192 " + selectedRow.afterCodon)
+                h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-sky-700" }, "mRNA codon"),
+                h("div", { className: "mt-1 font-mono text-[0.6875rem] font-black text-slate-800" }, selectedRow.beforeCodon + " \u2192 " + selectedRow.afterCodon)
               ),
               h("div", { className: "rounded-lg border border-violet-500 bg-white p-2" },
-                h("div", { className: "text-[8px] font-black uppercase tracking-wide text-violet-700" }, "Amino acid"),
-                h("div", { className: "mt-1 text-[11px] font-black text-slate-800" }, selectedRow.beforeAA + " \u2192 " + selectedRow.afterAA)
+                h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-violet-700" }, "Amino acid"),
+                h("div", { className: "mt-1 text-[0.6875rem] font-black text-slate-800" }, selectedRow.beforeAA + " \u2192 " + selectedRow.afterAA)
               ),
               h("div", { className: "rounded-lg border border-indigo-500 bg-white p-2" },
-                h("div", { className: "text-[8px] font-black uppercase tracking-wide text-indigo-700" }, "Reading frame"),
-                h("div", { className: "mt-1 text-[11px] font-black text-slate-800" }, latestMutationEffect === "Frameshift" && firstChanged && selectedRow.index >= firstChanged.index ? "Shifted" : "Aligned")
+                h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-indigo-700" }, "Reading frame"),
+                h("div", { className: "mt-1 text-[0.6875rem] font-black text-slate-800" }, latestMutationEffect === "Frameshift" && firstChanged && selectedRow.index >= firstChanged.index ? "Shifted" : "Aligned")
               )
             ),
-            h("p", { className: "mt-2 mb-0 text-[10px] leading-relaxed text-slate-700", role: "status" }, selectedInterpretation)
-          ),          h("p", { className: "mt-1 mb-0 text-[9px] leading-relaxed text-slate-500" }, "Scroll horizontally to inspect every codon. The detailed evidence table remains below.")
+            h("p", { className: "mt-2 mb-0 text-[0.625rem] leading-relaxed text-slate-700", role: "status" }, selectedInterpretation)
+          ),          h("p", { className: "mt-1 mb-0 text-[0.5625rem] leading-relaxed text-slate-500" }, "Scroll horizontally to inspect every codon. The detailed evidence table remains below.")
         );
       }
       var dnaEvidenceCitationOptions = [
@@ -3561,31 +3561,31 @@ window.StemLab = window.StemLab || {
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
               h("h4", { id: "dna-inheritance-handoff-title", className: "text-sm font-black text-sky-950" }, "\uD83E\uDDEC DNA \u2192 inheritance handoff"),
-              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "The DNA Lab explains the molecular change. The dedicated Punnett Square Lab is the canonical place to model how allele combinations may be inherited.")
+              h("p", { className: "mt-1 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-700" }, "The DNA Lab explains the molecular change. The dedicated Punnett Square Lab is the canonical place to model how allele combinations may be inherited.")
             ),
-            h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-sky-800" }, "Continue in Punnett Lab")
+            h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-sky-800" }, "Continue in Punnett Lab")
           ),
           h("div", { className: "mt-3 grid gap-3 sm:grid-cols-2" },
             h("div", { className: "rounded-lg border border-sky-200 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-sky-700" }, "Current DNA finding"),
-              h("div", { className: "mt-1 text-[12px] font-black text-slate-800" }, mutationSummary),
-              h("div", { className: "mt-1 text-[11px] font-bold text-indigo-800" }, "Predicted coding effect: " + effectSummary)
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-sky-700" }, "Current DNA finding"),
+              h("div", { className: "mt-1 text-[0.75rem] font-black text-slate-800" }, mutationSummary),
+              h("div", { className: "mt-1 text-[0.6875rem] font-bold text-indigo-800" }, "Predicted coding effect: " + effectSummary)
             ),
             h("div", { className: "rounded-lg border border-indigo-500 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-700" }, "What carries forward"),
-              h("p", { className: "mt-1 mb-0 text-[11px] leading-relaxed text-slate-700" }, "A sequence change can create a variant allele. Inheritance depends on the allele pair received from two parents, plus the inheritance pattern being modeled.")
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-indigo-700" }, "What carries forward"),
+              h("p", { className: "mt-1 mb-0 text-[0.6875rem] leading-relaxed text-slate-700" }, "A sequence change can create a variant allele. Inheritance depends on the allele pair received from two parents, plus the inheritance pattern being modeled.")
             )
           ),
           h("div", { className: "mt-3 rounded-lg border border-sky-200 bg-white/80 p-3" },
-            h("div", { className: "text-[11px] font-black text-slate-800" }, "Use the dedicated lab for the next question"),
-            h("ul", { className: "mt-1 mb-0 list-disc space-y-1 pl-4 text-[11px] leading-relaxed text-slate-700" },
+            h("div", { className: "text-[0.6875rem] font-black text-slate-800" }, "Use the dedicated lab for the next question"),
+            h("ul", { className: "mt-1 mb-0 list-disc space-y-1 pl-4 text-[0.6875rem] leading-relaxed text-slate-700" },
               h("li", null, "Choose complete, incomplete, codominant, or X-linked inheritance."),
               h("li", null, "Set parent genotypes and inspect offspring probabilities, pedigrees, or population models.")
             )
           ),
           h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
-            h("button", { type: "button", onClick: function() { if (typeof setStemLabTool === 'function') { setStemLabTool('punnett'); if (typeof announceToSR === 'function') announceToSR('Opening the Punnett Square Lab.'); } }, className: "rounded-lg bg-sky-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-sky-800" }, "Open Punnett Square Lab"),
-            latestMutation && h("button", { type: "button", onClick: function() { upd('tab', 'mutate'); }, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Review mutation")
+            h("button", { type: "button", onClick: function() { if (typeof setStemLabTool === 'function') { setStemLabTool('punnett'); if (typeof announceToSR === 'function') announceToSR('Opening the Punnett Square Lab.'); } }, className: "rounded-lg bg-sky-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-sky-800" }, "Open Punnett Square Lab"),
+            latestMutation && h("button", { type: "button", onClick: function() { upd('tab', 'mutate'); }, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[0.6875rem] font-bold text-slate-700 hover:bg-slate-50" }, "Review mutation")
           )
         );
       }
@@ -3816,15 +3816,15 @@ window.StemLab = window.StemLab || {
             style: { background: 'linear-gradient(90deg,rgba(15,23,42,0.98),rgba(30,41,59,0.95))' }
           },
             h("div", { className: "min-w-0" },
-              h("div", { className: "text-[11px] font-black uppercase text-white" }, title),
-              subtitle && h("div", { className: "mt-0.5 text-[11px] font-medium text-slate-300" }, subtitle)
+              h("div", { className: "text-[0.6875rem] font-black uppercase text-white" }, title),
+              subtitle && h("div", { className: "mt-0.5 text-[0.6875rem] font-medium text-slate-300" }, subtitle)
             ),
             h("div", { className: "flex flex-wrap gap-1.5" },
               (chips || []).map(function(chip, idx) {
                 var tone = chip.tone || accent;
                 return h("span", {
                   key: chip.label + idx,
-                  className: "rounded-full border px-2.5 py-1 text-[11px] font-black shadow-sm",
+                  className: "rounded-full border px-2.5 py-1 text-[0.6875rem] font-black shadow-sm",
                   style: { borderColor: tone + '66', background: tone + '18', color: '#f8fafc' }
                 }, chip.label + (chip.value != null ? ' ' + chip.value : ''));
               })
@@ -3870,11 +3870,11 @@ window.StemLab = window.StemLab || {
             )
           ),
           h("div", { className: "dna-command-actions" },
-              h("button", { onClick: exportDnaEvidence, className: "min-h-[38px] rounded-lg border border-slate-300 bg-white px-3 text-[11px] font-black text-slate-700 hover:bg-slate-50", 'aria-label': t('stem.dna.export_evidence', 'Export DNA evidence summary') }, '\uD83D\uDCC4 Evidence'),
-              h("button", { onClick: toggleDnaReport, className: "min-h-[38px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[11px] font-black text-amber-900 hover:bg-amber-100", 'aria-label': 'Open student DNA lab report' }, 'Lab report'),
+              h("button", { onClick: exportDnaEvidence, className: "min-h-[38px] rounded-lg border border-slate-300 bg-white px-3 text-[0.6875rem] font-black text-slate-700 hover:bg-slate-50", 'aria-label': t('stem.dna.export_evidence', 'Export DNA evidence summary') }, '\uD83D\uDCC4 Evidence'),
+              h("button", { onClick: toggleDnaReport, className: "min-h-[38px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[0.6875rem] font-black text-amber-900 hover:bg-amber-100", 'aria-label': 'Open student DNA lab report' }, 'Lab report'),
           h("div", { className: "flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1", "data-dna-view-mode": dnaFocusMode ? "focus" : "explore", role: "group", "aria-label": "DNA Lab view mode" },
-            h("button", { type: "button", onClick: function() { setDnaFocusMode(true); }, className: "rounded-md px-2 py-1 text-[10px] font-black " + (dnaFocusMode ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": dnaFocusMode }, "Focus"),
-            h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-md px-2 py-1 text-[10px] font-black " + (!dnaFocusMode ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": !dnaFocusMode }, "Explore")
+            h("button", { type: "button", onClick: function() { setDnaFocusMode(true); }, className: "rounded-md px-2 py-1 text-[0.625rem] font-black " + (dnaFocusMode ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": dnaFocusMode }, "Focus"),
+            h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-md px-2 py-1 text-[0.625rem] font-black " + (!dnaFocusMode ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": !dnaFocusMode }, "Explore")
           ),
           h("span", { className: "dna-live-status" }, h("i", { "aria-hidden": "true" }), "Sequence ready"),
             h("span", { className: "dna-xp-chip", 'aria-label': getStemXP('dnaLab') + ' of 100 experience points' }, "\u2B50 " + getStemXP('dnaLab') + "/100"),
@@ -3903,10 +3903,10 @@ window.StemLab = window.StemLab || {
         dnaFocusMode && h("section", { className: "rounded-xl border-2 border-violet-200 bg-violet-50/70 p-3", "data-dna-focus-banner": true, role: "region", "aria-labelledby": "dna-focus-title" },
           h("div", { className: "flex flex-wrap items-center justify-between gap-2" },
             h("div", null,
-              h("h4", { id: "dna-focus-title", className: "text-[11px] font-black uppercase tracking-wide text-violet-900" }, "Guided essentials"),
-              h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, "Follow five core stations: build, copy, read, translate, and explain a DNA change. Advanced tools remain available in Explore view.")
+              h("h4", { id: "dna-focus-title", className: "text-[0.6875rem] font-black uppercase tracking-wide text-violet-900" }, "Guided essentials"),
+              h("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, "Follow five core stations: build, copy, read, translate, and explain a DNA change. Advanced tools remain available in Explore view.")
             ),
-            h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-lg border border-violet-300 bg-white px-3 py-2 text-[10px] font-black text-violet-900 hover:bg-violet-100" }, "Show all tools")
+            h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-lg border border-violet-300 bg-white px-3 py-2 text-[0.625rem] font-black text-violet-900 hover:bg-violet-100" }, "Show all tools")
           )
         ),
         h("div", { className: "dna-tool-rail", role: "tablist", "aria-label": "DNA Lab tools", "data-dna-tabstrip": true },
@@ -3996,11 +3996,11 @@ window.StemLab = window.StemLab || {
         h("section", { className: "rounded-xl border-2 border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 p-4 shadow-sm", "data-dna-start-here": true, role: "region", "aria-labelledby": "dna-start-here-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
-              h("div", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700" }, "Start here"),
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.18em] text-cyan-700" }, "Start here"),
               h("h4", { id: "dna-start-here-title", className: "mt-1 text-sm font-black text-slate-900" }, dnaStartTitle),
-              h("p", { className: "mt-1 max-w-2xl text-[11px] leading-relaxed text-slate-700" }, dnaStartDescription)
+              h("p", { className: "mt-1 max-w-2xl text-[0.6875rem] leading-relaxed text-slate-700" }, dnaStartDescription)
             ),
-            h("span", { className: "rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-cyan-800" }, dnaStartProgress)
+            h("span", { className: "rounded-full bg-white px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide text-cyan-800" }, dnaStartProgress)
           ),
           h("ol", { className: "mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5", "data-dna-start-sequence": true, "aria-label": "Core DNA workflow" },
             dnaStartSequence.map(function(step, stepIndex) {
@@ -4008,43 +4008,43 @@ window.StemLab = window.StemLab || {
               var stateLabel = state === 'current' ? 'Now' : state === 'visited' ? 'Visited' : state === 'next' ? 'Next' : 'Later';
               return h("li", { key: step.id, className: "rounded-lg border px-2 py-2 " + (state === 'current' ? 'border-cyan-500 bg-cyan-100' : state === 'visited' ? 'border-emerald-200 bg-emerald-50' : state === 'next' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'), "data-state": state, "aria-current": state === 'current' ? 'step' : undefined },
                 h("div", { className: "flex items-center gap-1.5" },
-                  h("span", { className: "grid h-5 w-5 place-items-center rounded-full bg-white text-[10px] font-black text-slate-700", "aria-hidden": "true" }, String(stepIndex + 1)),
-                  h("span", { className: "text-[11px] font-black text-slate-800" }, step.label)
+                  h("span", { className: "grid h-5 w-5 place-items-center rounded-full bg-white text-[0.625rem] font-black text-slate-700", "aria-hidden": "true" }, String(stepIndex + 1)),
+                  h("span", { className: "text-[0.6875rem] font-black text-slate-800" }, step.label)
                 ),
-                h("div", { className: "mt-1 text-[10px] font-black uppercase tracking-wide text-slate-700" }, stateLabel)
+                h("div", { className: "mt-1 text-[0.625rem] font-black uppercase tracking-wide text-slate-700" }, stateLabel)
               );
             })
           ),
           h("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cyan-200 bg-white/80 p-3" },
-            h("span", { className: "text-[11px] font-bold text-slate-700" }, "Next station: " + (dnaStartTool ? dnaStartTool.label : dnaStartTarget)),
-            h("button", { type: "button", onClick: function() { switchDnaTab(dnaStartTarget); }, className: "rounded-lg bg-cyan-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-cyan-800" }, dnaStartAction)
+            h("span", { className: "text-[0.6875rem] font-bold text-slate-700" }, "Next station: " + (dnaStartTool ? dnaStartTool.label : dnaStartTarget)),
+            h("button", { type: "button", onClick: function() { switchDnaTab(dnaStartTarget); }, className: "rounded-lg bg-cyan-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-cyan-800" }, dnaStartAction)
           )
         ),
         h("section", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3", "data-dna-recommendation": true, role: "region", "aria-labelledby": "dna-recommendation-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-700" }, "Suggested next move"),
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-indigo-700" }, "Suggested next move"),
               h("h4", { id: "dna-recommendation-title", className: "mt-1 text-sm font-black text-slate-900" }, dnaRecommendation.title),
-              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, dnaRecommendation.reason)
+              h("p", { className: "mt-1 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-700" }, dnaRecommendation.reason)
             ),
-            h("button", { type: "button", onClick: function() { switchDnaTab(dnaRecommendation.target); }, className: "rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-black text-white hover:bg-indigo-800" }, dnaRecommendation.action)
+            h("button", { type: "button", onClick: function() { switchDnaTab(dnaRecommendation.target); }, className: "rounded-lg bg-indigo-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-indigo-800" }, dnaRecommendation.action)
           )
         ),
         h("section", { className: "rounded-xl border-2 border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 to-violet-50 p-4 shadow-sm", "data-dna-scenario-challenge": true, role: "region", "aria-labelledby": "dna-scenario-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-700" }, "Inquiry cycle"),
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-700" }, "Inquiry cycle"),
               h("h4", { id: "dna-scenario-title", className: "mt-1 text-sm font-black text-slate-900" }, "Predict an outcome before running the model"),
-              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, gradeText(
+              h("p", { className: "mt-1 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-700" }, gradeText(
                 "First see the exact DNA change. Choose what you think will happen, lock your choice, and then compare it with the model.",
                 "Review the exact DNA edit, choose what you expect, then lock the prediction before the model runs.",
                 "Review the controlled edit, commit to one coding effect, then compare the prediction with molecular evidence.",
                 "Review the specified variant, preregister its expected coding consequence, then evaluate it against the translated evidence."
               ))
             ),
-            h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-fuchsia-800", "data-dna-inquiry-credit": "commit-evidence-revision" }, "Inquiry progress: " + dnaScenarioScore + "/3")
+            h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-fuchsia-800", "data-dna-inquiry-credit": "commit-evidence-revision" }, "Inquiry progress: " + dnaScenarioScore + "/3")
           ),
-          h("p", { className: "mt-2 rounded-lg border border-fuchsia-200 bg-white/80 p-2 text-[10px] font-bold leading-relaxed text-fuchsia-950" }, "Your prediction is a hypothesis, not a graded answer. Progress comes from committing before the run, citing evidence, and revising or strengthening your explanation."),
+          h("p", { className: "mt-2 rounded-lg border border-fuchsia-200 bg-white/80 p-2 text-[0.625rem] font-bold leading-relaxed text-fuchsia-950" }, "Your prediction is a hypothesis, not a graded answer. Progress comes from committing before the run, citing evidence, and revising or strengthening your explanation."),
           h("ol", { className: "mt-3 grid gap-2 sm:grid-cols-4", "data-dna-scenario-steps": true, "aria-label": "Scenario inquiry progress" },
             [
               { label: "Predict", complete: !!dnaScenarioCommittedPrediction, current: !dnaScenarioCommittedPrediction && !dnaScenarioRun, hint: "Choose what you expect" },
@@ -4055,72 +4055,72 @@ window.StemLab = window.StemLab || {
               var stepState = step.complete ? "complete" : step.current ? "current" : "upcoming";
               return h("li", { key: step.label, className: "rounded-lg border px-3 py-2 " + (stepState === "complete" ? "border-emerald-200 bg-emerald-50" : stepState === "current" ? "border-fuchsia-400 bg-white ring-2 ring-fuchsia-100" : "border-slate-200 bg-white/70"), "data-state": stepState, "aria-current": stepState === "current" ? "step" : undefined },
                 h("div", { className: "flex items-center gap-2" },
-                  h("span", { className: "grid h-6 w-6 place-items-center rounded-full text-[10px] font-black " + (stepState === "complete" ? "bg-emerald-700 text-white" : stepState === "current" ? "bg-fuchsia-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, stepState === "complete" ? "\u2713" : String(stepIndex + 1)),
+                  h("span", { className: "grid h-6 w-6 place-items-center rounded-full text-[0.625rem] font-black " + (stepState === "complete" ? "bg-emerald-700 text-white" : stepState === "current" ? "bg-fuchsia-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, stepState === "complete" ? "\u2713" : String(stepIndex + 1)),
                   h("div", null,
-                    h("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-800" }, step.label),
-                    h("div", { className: "mt-0.5 text-[9px] font-bold text-slate-500" }, stepState === "complete" ? "Complete" : stepState === "current" ? "Current \u00b7 " + step.hint : step.hint)
+                    h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-800" }, step.label),
+                    h("div", { className: "mt-0.5 text-[0.5625rem] font-bold text-slate-500" }, stepState === "complete" ? "Complete" : stepState === "current" ? "Current \u00b7 " + step.hint : step.hint)
                   )
                 )
               );
             })
           ),
           h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
-            h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-fuchsia-800" },
+            h("label", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-800" },
               "Scenario",
-              h("select", { value: dnaScenarioId, disabled: dnaScenarioRun, onChange: function(e) { selectDnaScenario(e.target.value); }, className: "mt-1 w-full rounded-md border border-fuchsia-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100", "aria-label": "Choose a DNA scenario" },
+              h("select", { value: dnaScenarioId, disabled: dnaScenarioRun, onChange: function(e) { selectDnaScenario(e.target.value); }, className: "mt-1 w-full rounded-md border border-fuchsia-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100", "aria-label": "Choose a DNA scenario" },
                 DNA_SCENARIO_OPTIONS.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
               )
             ),
             h("div", { className: "rounded-lg border border-fuchsia-500 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Planned change"),
-              h("div", { className: "mt-1 inline-flex rounded-md bg-fuchsia-100 px-2 py-1 font-mono text-[11px] font-black text-fuchsia-950", "data-dna-scenario-plan": true }, dnaScenarioPlanSummary),
-              h("p", { id: "dna-scenario-prompt", className: "mt-2 text-[11px] leading-relaxed text-slate-700" }, getDnaScenarioPrompt(dnaScenarioForDisplay, dnaScenarioPreviewPlan))
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-800" }, "Planned change"),
+              h("div", { className: "mt-1 inline-flex rounded-md bg-fuchsia-100 px-2 py-1 font-mono text-[0.6875rem] font-black text-fuchsia-950", "data-dna-scenario-plan": true }, dnaScenarioPlanSummary),
+              h("p", { id: "dna-scenario-prompt", className: "mt-2 text-[0.6875rem] leading-relaxed text-slate-700" }, getDnaScenarioPrompt(dnaScenarioForDisplay, dnaScenarioPreviewPlan))
             )
           ),
           h("fieldset", { disabled: dnaScenarioRun, className: "mt-3 rounded-lg border border-fuchsia-500 bg-white p-3", "aria-describedby": "dna-scenario-prompt" },
-            h("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, dnaScenarioRun ? "Locked prediction" : "Your prediction"),
-            h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, dnaScenarioRun ? "This choice is frozen for the completed trial." : "Choose the description that best matches what you expect. The science term and its meaning are shown together."),
+            h("legend", { className: "px-1 text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-800" }, dnaScenarioRun ? "Locked prediction" : "Your prediction"),
+            h("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-600" }, dnaScenarioRun ? "This choice is frozen for the completed trial." : "Choose the description that best matches what you expect. The science term and its meaning are shown together."),
             h("div", { className: "mt-2 grid gap-2 md:grid-cols-2", role: "radiogroup", "aria-label": "Predict the mutation effect" },
               dnaScenarioForDisplay.choices.map(function(choice) {
                 var selected = dnaScenarioPrediction === choice.value || (dnaScenarioRun && dnaScenarioLockedPrediction === choice.value);
                 return h("label", { key: choice.value, className: "flex cursor-pointer gap-2 rounded-lg border p-3 " + (selected ? "border-fuchsia-600 bg-fuchsia-50 ring-2 ring-fuchsia-100" : "border-slate-200 bg-white hover:border-fuchsia-300") + (dnaScenarioRun ? " cursor-not-allowed" : ""), "data-dna-prediction-choice": choice.value },
                   h("input", { type: "radio", name: "dna-scenario-prediction", value: choice.value, checked: selected, disabled: dnaScenarioRun, onChange: function() { chooseDnaScenarioPrediction(choice.value); }, className: "mt-1 h-4 w-4 accent-fuchsia-700" }),
                   h("span", { className: "min-w-0" },
-                    h("span", { className: "block text-[11px] font-black text-slate-900" }, choice.label),
-                    h("span", { className: "mt-1 block text-[10px] leading-relaxed text-slate-600" }, choice.description),
-                    gradeBand === 'K-2' && h("span", { className: "mt-1 block text-[9px] font-bold text-fuchsia-800" }, "Science word: " + choice.value)
+                    h("span", { className: "block text-[0.6875rem] font-black text-slate-900" }, choice.label),
+                    h("span", { className: "mt-1 block text-[0.625rem] leading-relaxed text-slate-600" }, choice.description),
+                    gradeBand === 'K-2' && h("span", { className: "mt-1 block text-[0.5625rem] font-bold text-fuchsia-800" }, "Science word: " + choice.value)
                   )
                 );
               })
             )
           ),
-          dnaScenarioPredictionStale && h("div", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-bold text-amber-900", role: "alert" }, "The DNA changed after this choice. Select a prediction again for the new planned edit."),
+          dnaScenarioPredictionStale && h("div", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[0.625rem] font-bold text-amber-900", role: "alert" }, "The DNA changed after this choice. Select a prediction again for the new planned edit."),
           h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
-            h("button", { type: "button", onClick: runDnaScenario, disabled: dnaScenarioRun || !dnaScenarioPrediction || dnaScenarioPredictionStale, "aria-disabled": dnaScenarioRun || !dnaScenarioPrediction || dnaScenarioPredictionStale ? "true" : "false", className: "rounded-lg bg-fuchsia-700 px-3 py-2 text-[11px] font-black text-white hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioRun ? "Prediction locked" : dnaScenarioPrediction ? "Lock prediction and run" : "Choose a prediction first"),
-            h("button", { type: "button", onClick: checkDnaScenarioPrediction, disabled: !dnaScenarioRun || !dnaScenarioRevisionReady, "aria-disabled": dnaScenarioRun && dnaScenarioRevisionReady ? "false" : "true", className: "rounded-lg border border-fuchsia-300 bg-white px-3 py-2 text-[11px] font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioComplete ? "Inquiry cycle saved" : "Save comparison and progress"),
-            dnaScenarioRun && h("button", { type: "button", onClick: resetDnaScenarioChallenge, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-100" }, "Start another prediction"),
-            dnaScenarioFeedback && h("span", { className: "text-[11px] leading-relaxed text-slate-700", role: "status" }, dnaScenarioFeedback)
+            h("button", { type: "button", onClick: runDnaScenario, disabled: dnaScenarioRun || !dnaScenarioPrediction || dnaScenarioPredictionStale, "aria-disabled": dnaScenarioRun || !dnaScenarioPrediction || dnaScenarioPredictionStale ? "true" : "false", className: "rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioRun ? "Prediction locked" : dnaScenarioPrediction ? "Lock prediction and run" : "Choose a prediction first"),
+            h("button", { type: "button", onClick: checkDnaScenarioPrediction, disabled: !dnaScenarioRun || !dnaScenarioRevisionReady, "aria-disabled": dnaScenarioRun && dnaScenarioRevisionReady ? "false" : "true", className: "rounded-lg border border-fuchsia-300 bg-white px-3 py-2 text-[0.6875rem] font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioComplete ? "Inquiry cycle saved" : "Save comparison and progress"),
+            dnaScenarioRun && h("button", { type: "button", onClick: resetDnaScenarioChallenge, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[0.6875rem] font-black text-slate-700 hover:bg-slate-100" }, "Start another prediction"),
+            dnaScenarioFeedback && h("span", { className: "text-[0.6875rem] leading-relaxed text-slate-700", role: "status" }, dnaScenarioFeedback)
           ),
           dnaScenarioRun && h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3", "data-dna-scenario-result": true },
             h("div", { className: "rounded-lg border border-fuchsia-500 bg-white p-3", "data-dna-locked-prediction": true },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Your locked prediction"),
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-800" }, "Your locked prediction"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, dnaScenarioCommittedChoice ? dnaScenarioCommittedChoice.label : dnaScenarioCommittedPrediction),
-              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, dnaScenarioCommittedChoice ? dnaScenarioCommittedChoice.description : "Saved before the model ran.")
+              h("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-600" }, dnaScenarioCommittedChoice ? dnaScenarioCommittedChoice.description : "Saved before the model ran.")
             ),
             h("div", { className: "rounded-lg border border-fuchsia-500 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Actual effect"),
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-fuchsia-800" }, "Actual effect"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, latestMutationEffect || "Calculating"),
-              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "Use the mutation comparison below to inspect the changed codons and protein output.")
+              h("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-600" }, "Use the mutation comparison below to inspect the changed codons and protein output.")
             ),
             h("div", { className: "rounded-lg border border-violet-500 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Evidence checkpoint"),
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, "Evidence checkpoint"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, dnaEvidenceScore >= 3 ? "Explanation complete" : "Explanation pending"),
-              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "A full Evidence & Reasoning check records the evidence point.")
+              h("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-600" }, "A full Evidence & Reasoning check records the evidence point.")
             )
           ),
           dnaScenarioRun && h("fieldset", { className: "mt-3 rounded-lg border border-violet-500 bg-white p-3", "data-dna-revision": true },
-            h("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Revise from the evidence"),
-            h("p", { className: "text-[10px] leading-relaxed text-slate-600" }, "Choose the honest reflection. None is graded as the correct option; explain what the codon or protein evidence did to your thinking."),
+            h("legend", { className: "px-1 text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, "Revise from the evidence"),
+            h("p", { className: "text-[0.625rem] leading-relaxed text-slate-600" }, "Choose the honest reflection. None is graded as the correct option; explain what the codon or protein evidence did to your thinking."),
             h("div", { className: "mt-2 grid gap-2 sm:grid-cols-3", role: "radiogroup", "aria-label": "How the DNA evidence affected your thinking" },
               [
                 { id: "supported", label: "It strengthened my original explanation" },
@@ -4128,18 +4128,18 @@ window.StemLab = window.StemLab || {
                 { id: "uncertain", label: "I am still uncertain and would test again" }
               ].map(function(option) {
                 var selected = dnaScenarioRevision === option.id;
-                return h("label", { key: option.id, className: "flex cursor-pointer gap-2 rounded-lg border p-2 text-[10px] font-bold " + (selected ? "border-violet-600 bg-violet-50 text-violet-950" : "border-slate-200 text-slate-700") },
+                return h("label", { key: option.id, className: "flex cursor-pointer gap-2 rounded-lg border p-2 text-[0.625rem] font-bold " + (selected ? "border-violet-600 bg-violet-50 text-violet-950" : "border-slate-200 text-slate-700") },
                   h("input", { type: "radio", name: "dna-scenario-revision", value: option.id, checked: selected, onChange: function() { updMulti({ dnaScenarioRevision: option.id, dnaScenarioComplete: false, dnaScenarioFeedback: '', dnaScenarioScore: Math.min(dnaScenarioScore, 2) }); }, className: "mt-0.5 h-4 w-4 accent-violet-700" }),
                   h("span", null, option.label)
                 );
               })
             ),
-            h("label", { htmlFor: "dna-scenario-revision-reason", className: "mt-3 block text-[10px] font-black text-violet-900" }, "What evidence strengthened or changed your explanation?"),
-            h("textarea", { id: "dna-scenario-revision-reason", value: dnaScenarioRevisionReason, maxLength: 500, rows: 3, onChange: function(e) { updMulti({ dnaScenarioRevisionReason: e.target.value.slice(0, 500), dnaScenarioComplete: false, dnaScenarioFeedback: '', dnaScenarioScore: Math.min(dnaScenarioScore, 2) }); }, placeholder: gradeText("I noticed...", "The evidence shows... so now I think...", "The changed codon or protein evidence shows...", "The molecular evidence supports or changes my explanation because..."), className: "mt-1 w-full rounded-lg border border-violet-500 bg-white p-2 text-[11px] text-slate-800" }),
-            h("p", { className: "mt-1 text-[9px] font-bold " + (dnaScenarioRevisionReady ? "text-emerald-700" : "text-slate-500"), role: "status" }, dnaScenarioRevisionReady ? "Reflection ready to save." : "Choose a reflection and add a little evidence before saving.")
+            h("label", { htmlFor: "dna-scenario-revision-reason", className: "mt-3 block text-[0.625rem] font-black text-violet-900" }, "What evidence strengthened or changed your explanation?"),
+            h("textarea", { id: "dna-scenario-revision-reason", value: dnaScenarioRevisionReason, maxLength: 500, rows: 3, onChange: function(e) { updMulti({ dnaScenarioRevisionReason: e.target.value.slice(0, 500), dnaScenarioComplete: false, dnaScenarioFeedback: '', dnaScenarioScore: Math.min(dnaScenarioScore, 2) }); }, placeholder: gradeText("I noticed...", "The evidence shows... so now I think...", "The changed codon or protein evidence shows...", "The molecular evidence supports or changes my explanation because..."), className: "mt-1 w-full rounded-lg border border-violet-500 bg-white p-2 text-[0.6875rem] text-slate-800" }),
+            h("p", { className: "mt-1 text-[0.5625rem] font-bold " + (dnaScenarioRevisionReady ? "text-emerald-700" : "text-slate-500"), role: "status" }, dnaScenarioRevisionReady ? "Reflection ready to save." : "Choose a reflection and add a little evidence before saving.")
           )
         ),        h("details", { className: "rounded-xl border border-violet-200 bg-violet-50/60", open: guidedStarted && !guidedComplete, 'data-dna-guided': true },
-          h("summary", { className: "flex cursor-pointer items-center gap-2 px-3 py-2 text-[11px] font-black text-violet-900" },
+          h("summary", { className: "flex cursor-pointer items-center gap-2 px-3 py-2 text-[0.6875rem] font-black text-violet-900" },
             h("span", { 'aria-hidden': 'true' }, '\uD83E\uDDED'),
             h("span", null, 'Guided DNA investigation'),
             h("span", { className: "ml-auto rounded-full bg-white px-2 py-0.5 text-violet-700" }, guidedComplete ? 'Complete' : guidedStarted ? (guidedStepIndex + 1) + '/' + DNA_GUIDED_STEPS.length : 'Start')
@@ -4147,32 +4147,32 @@ window.StemLab = window.StemLab || {
           h("div", { className: "border-t border-violet-200 p-3" },
             guidedComplete
               ? h("div", { className: "space-y-2", role: 'status' },
-                  h("p", { className: "m-0 text-[12px] font-bold text-violet-900" }, guidedFeedback || '\uD83C\uDF89 You completed the investigation.'),
-                  h("button", { type: 'button', onClick: beginGuidedInvestigation, className: "rounded-lg bg-violet-600 px-3 py-2 text-[11px] font-bold text-white hover:bg-violet-700" }, 'Run it again')
+                  h("p", { className: "m-0 text-[0.75rem] font-bold text-violet-900" }, guidedFeedback || '\uD83C\uDF89 You completed the investigation.'),
+                  h("button", { type: 'button', onClick: beginGuidedInvestigation, className: "rounded-lg bg-violet-600 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-violet-700" }, 'Run it again')
                 )
               : !guidedStarted
                 ? h("div", { className: "flex flex-wrap items-center justify-between gap-3" },
-                    h("p", { className: "m-0 max-w-2xl text-[11px] leading-relaxed text-slate-700" }, 'Connect four ideas in order: base pairing, strand direction, DNA -> RNA -> protein, and mutation effects. Each checkpoint gives a hint and moves you to the next lab station.'),
-                    h("button", { type: 'button', onClick: beginGuidedInvestigation, className: "rounded-lg bg-violet-600 px-3 py-2 text-[11px] font-bold text-white hover:bg-violet-700" }, '\u25B6 Begin investigation')
+                    h("p", { className: "m-0 max-w-2xl text-[0.6875rem] leading-relaxed text-slate-700" }, 'Connect four ideas in order: base pairing, strand direction, DNA -> RNA -> protein, and mutation effects. Each checkpoint gives a hint and moves you to the next lab station.'),
+                    h("button", { type: 'button', onClick: beginGuidedInvestigation, className: "rounded-lg bg-violet-600 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-violet-700" }, '\u25B6 Begin investigation')
                   )
                 : h("div", { className: "space-y-2" },
-                    h("div", { className: "flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-violet-700" },
+                    h("div", { className: "flex flex-wrap items-center justify-between gap-2 text-[0.625rem] font-black uppercase tracking-wide text-violet-700" },
                       h("span", null, 'Checkpoint ' + (guidedStepIndex + 1) + ' of ' + DNA_GUIDED_STEPS.length),
                       h("span", null, guidedStep.label)
                     ),
-                    h("p", { className: "m-0 text-[12px] font-bold text-slate-800" }, guidedStep.prompt),
+                    h("p", { className: "m-0 text-[0.75rem] font-bold text-slate-800" }, guidedStep.prompt),
                     h("div", { className: "flex flex-wrap gap-2", role: 'radiogroup', 'aria-label': guidedStep.prompt },
                       guidedStep.choices.map(function(choice) {
                         var selected = guidedSelectedAnswer === choice;
-                        return h("button", { type: 'button', key: choice, role: 'radio', 'aria-checked': selected, onClick: function() { upd('guidedSelectedAnswer', choice); }, className: "rounded-lg border px-3 py-2 text-[11px] font-bold " + (selected ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-violet-100') }, choice);
+                        return h("button", { type: 'button', key: choice, role: 'radio', 'aria-checked': selected, onClick: function() { upd('guidedSelectedAnswer', choice); }, className: "rounded-lg border px-3 py-2 text-[0.6875rem] font-bold " + (selected ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-violet-100') }, choice);
                       })
                     ),
                     h("div", { className: "flex flex-wrap items-center gap-2" },
-                      h("button", { type: 'button', onClick: function() { checkGuidedAnswer(guidedSelectedAnswer); }, disabled: !guidedSelectedAnswer, className: "rounded-lg bg-slate-800 px-3 py-2 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" }, '\u2713 Check answer'),
-                      guidedCurrentResult && guidedCurrentResult.correct && !guidedActionReady && guidedStep.action === 'confirmPairing' && h("button", { type: 'button', onClick: markGuidedAction, className: "rounded-lg bg-amber-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-amber-700" }, guidedStep.actionText),
-                      guidedCurrentResult && guidedCurrentResult.correct && !guidedActionReady && guidedStep.action !== 'confirmPairing' && h("span", { className: "text-[11px] font-bold text-amber-800", role: 'status' }, guidedActionInstruction(guidedStep)),
-                      guidedCurrentResult && guidedCurrentResult.correct && guidedActionReady && h("button", { type: 'button', onClick: advanceGuidedInvestigation, className: "rounded-lg bg-emerald-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-emerald-700" }, guidedStepIndex === DNA_GUIDED_STEPS.length - 1 ? 'Finish investigation' : 'Continue'),
-                      guidedFeedback && h("span", { className: "text-[11px] font-bold text-slate-700", role: 'status' }, guidedFeedback)
+                      h("button", { type: 'button', onClick: function() { checkGuidedAnswer(guidedSelectedAnswer); }, disabled: !guidedSelectedAnswer, className: "rounded-lg bg-slate-800 px-3 py-2 text-[0.6875rem] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" }, '\u2713 Check answer'),
+                      guidedCurrentResult && guidedCurrentResult.correct && !guidedActionReady && guidedStep.action === 'confirmPairing' && h("button", { type: 'button', onClick: markGuidedAction, className: "rounded-lg bg-amber-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-amber-700" }, guidedStep.actionText),
+                      guidedCurrentResult && guidedCurrentResult.correct && !guidedActionReady && guidedStep.action !== 'confirmPairing' && h("span", { className: "text-[0.6875rem] font-bold text-amber-800", role: 'status' }, guidedActionInstruction(guidedStep)),
+                      guidedCurrentResult && guidedCurrentResult.correct && guidedActionReady && h("button", { type: 'button', onClick: advanceGuidedInvestigation, className: "rounded-lg bg-emerald-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-emerald-700" }, guidedStepIndex === DNA_GUIDED_STEPS.length - 1 ? 'Finish investigation' : 'Continue'),
+                      guidedFeedback && h("span", { className: "text-[0.6875rem] font-bold text-slate-700", role: 'status' }, guidedFeedback)
                     )
                   )
           )
@@ -4182,49 +4182,49 @@ window.StemLab = window.StemLab || {
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
               h("h4", { id: "dna-lab-report-title", className: "text-sm font-black text-amber-950" }, "Student DNA lab report"),
-              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "Use the evidence below to make a claim, describe what changed, and explain how the sequence supports your conclusion." )
+              h("p", { className: "mt-1 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-700" }, "Use the evidence below to make a claim, describe what changed, and explain how the sequence supports your conclusion." )
             ),
-            h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-800" }, gradeBand + " reading level")
+            h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, gradeBand + " reading level")
           ),
           h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
             h("div", { className: "rounded-lg border border-amber-200 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-amber-700" }, "Evidence to cite"),
-              h("p", { className: "mt-2 break-all text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Coding DNA: "), dnaSeq),
-              h("p", { className: "mt-1 break-all text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "mRNA: "), fullMRNA || "Not transcribed yet"),
-              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(fullProtein) || "Not translated yet"),
-              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Reading frame: "), "+" + dnaSelectedReadingFrame.frame + " · " + dnaSelectedReadingFrame.statusLabel)
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-700" }, "Evidence to cite"),
+              h("p", { className: "mt-2 break-all text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Coding DNA: "), dnaSeq),
+              h("p", { className: "mt-1 break-all text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "mRNA: "), fullMRNA || "Not transcribed yet"),
+              h("p", { className: "mt-1 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(fullProtein) || "Not translated yet"),
+              h("p", { className: "mt-1 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Reading frame: "), "+" + dnaSelectedReadingFrame.frame + " · " + dnaSelectedReadingFrame.statusLabel)
             ),
             h("div", { className: "rounded-lg border border-orange-200 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-orange-700" }, "Interpretation"),
-              h("p", { className: "mt-2 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Mutation: "), latestMutation ? latestMutation.type + " at base " + (latestMutation.pos + 1) : "None recorded"),
-              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Predicted effect: "), latestMutationEffect || "No variant effect calculated yet"),
-              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Guided knowledge checks: "), dnaGuidedKnowledgeCount + "/" + DNA_GUIDED_STEPS.length),
-              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Lab stations visited: "), visitedCount + "/" + SUBTOOLS.length)
+              h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-orange-700" }, "Interpretation"),
+              h("p", { className: "mt-2 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Mutation: "), latestMutation ? latestMutation.type + " at base " + (latestMutation.pos + 1) : "None recorded"),
+              h("p", { className: "mt-1 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Predicted effect: "), latestMutationEffect || "No variant effect calculated yet"),
+              h("p", { className: "mt-1 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Guided knowledge checks: "), dnaGuidedKnowledgeCount + "/" + DNA_GUIDED_STEPS.length),
+              h("p", { className: "mt-1 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Lab stations visited: "), visitedCount + "/" + SUBTOOLS.length)
             )
           ),
           h("label", { className: "mt-3 block rounded-lg border border-amber-200 bg-white p-3" },
-            h("span", { className: "text-[10px] font-black uppercase tracking-wide text-amber-700" }, "Reflection / claim"),
-            h("textarea", { value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-amber-500", 'aria-label': "DNA lab report reflection or claim", placeholder: "What changed? What stayed the same? What evidence supports your claim?" })
+            h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-700" }, "Reflection / claim"),
+            h("textarea", { value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-amber-500", 'aria-label': "DNA lab report reflection or claim", placeholder: "What changed? What stayed the same? What evidence supports your claim?" })
           ),
           h("section", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3", "data-dna-evidence-mode": true, role: "region", "aria-labelledby": "dna-evidence-mode-title" },
             h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
               h("div", null,
-                h("h5", { id: "dna-evidence-mode-title", className: "text-[11px] font-black uppercase tracking-wide text-violet-900" }, "Evidence & Reasoning mode"),
-                h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, dnaEvidenceRubric.prompt)
+                h("h5", { id: "dna-evidence-mode-title", className: "text-[0.6875rem] font-black uppercase tracking-wide text-violet-900" }, "Evidence & Reasoning mode"),
+                h("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, dnaEvidenceRubric.prompt)
               ),
-              h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-800" }, "Check: " + dnaEvidenceScore + "/3")
+              h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800" }, "Check: " + dnaEvidenceScore + "/3")
             ),
             h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
-              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
+              h("label", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-violet-800" },
                 "Claim",
-                h("select", { value: dnaEvidenceClaim, onChange: function(e) { updMulti({ dnaEvidenceClaim: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose an evidence-based claim" },
+                h("select", { value: dnaEvidenceClaim, onChange: function(e) { updMulti({ dnaEvidenceClaim: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700", 'aria-label': "Choose an evidence-based claim" },
                   h("option", { value: "" }, "Choose a claim"),
                   dnaEvidenceRubric.claims.map(function(claim) { return h("option", { key: claim.id, value: claim.id }, claim.label); })
                 )
               ),
-              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
+              h("label", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-violet-800" },
                 "Evidence citation",
-                h("select", { value: dnaEvidenceCitation, onChange: function(e) { var nextCitation = e.target.value; var keepSnapshot = nextCitation === dnaEvidenceCitation && ['codon', 'frame'].indexOf(nextCitation) >= 0; updMulti({ dnaEvidenceCitation: nextCitation, dnaEvidenceCitationDetail: keepSnapshot ? dnaEvidenceCitationDetail : '', dnaEvidenceCitationSequenceKey: keepSnapshot ? dnaEvidenceCitationSequenceKey : '', dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose evidence to cite" },
+                h("select", { value: dnaEvidenceCitation, onChange: function(e) { var nextCitation = e.target.value; var keepSnapshot = nextCitation === dnaEvidenceCitation && ['codon', 'frame'].indexOf(nextCitation) >= 0; updMulti({ dnaEvidenceCitation: nextCitation, dnaEvidenceCitationDetail: keepSnapshot ? dnaEvidenceCitationDetail : '', dnaEvidenceCitationSequenceKey: keepSnapshot ? dnaEvidenceCitationSequenceKey : '', dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700", 'aria-label': "Choose evidence to cite" },
                   h("option", { value: "" }, "Choose evidence"),
                   dnaEvidenceCitationOptions.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
                 )
@@ -4233,26 +4233,26 @@ window.StemLab = window.StemLab || {
             dnaEvidenceHasSnapshot && h("div", { className: "mt-3 rounded-lg border p-3 " + (dnaEvidenceCitationStale ? "border-amber-300 bg-amber-50" : "border-emerald-200 bg-emerald-50"), "data-dna-evidence-citation-detail": true, "data-evidence-source": dnaEvidenceCitation, "data-stale": dnaEvidenceCitationStale ? "true" : "false", role: "status" },
               h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 h("div", null,
-                  h("div", { className: "text-[9px] font-black uppercase tracking-wide " + (dnaEvidenceCitationStale ? "text-amber-800" : "text-emerald-800") }, dnaEvidenceCitationStale ? "Earlier sequence" : "Current sequence"),
-                  h("p", { className: "mt-1 mb-0 text-[10px] font-bold leading-relaxed text-slate-700" }, dnaEvidenceCitationDetail)
+                  h("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (dnaEvidenceCitationStale ? "text-amber-800" : "text-emerald-800") }, dnaEvidenceCitationStale ? "Earlier sequence" : "Current sequence"),
+                  h("p", { className: "mt-1 mb-0 text-[0.625rem] font-bold leading-relaxed text-slate-700" }, dnaEvidenceCitationDetail)
                 ),
-                dnaEvidenceCitationStale && h("button", { type: "button", onClick: refreshSelectedDnaEvidence, className: "rounded-lg border border-amber-400 bg-white px-2.5 py-1.5 text-[9px] font-black text-amber-900 hover:bg-amber-100" }, dnaEvidenceCitation === 'frame' ? "Refresh from frame explorer" : "Refresh from spotlight")
+                dnaEvidenceCitationStale && h("button", { type: "button", onClick: refreshSelectedDnaEvidence, className: "rounded-lg border border-amber-400 bg-white px-2.5 py-1.5 text-[0.5625rem] font-black text-amber-900 hover:bg-amber-100" }, dnaEvidenceCitation === 'frame' ? "Refresh from frame explorer" : "Refresh from spotlight")
               ),
-              dnaEvidenceCitationStale && h("p", { className: "mt-2 mb-0 text-[10px] leading-relaxed text-amber-900" }, "The DNA changed after this " + dnaEvidenceSourceLabel + " was saved. Refresh it before checking your reasoning.")
+              dnaEvidenceCitationStale && h("p", { className: "mt-2 mb-0 text-[0.625rem] leading-relaxed text-amber-900" }, "The DNA changed after this " + dnaEvidenceSourceLabel + " was saved. Refresh it before checking your reasoning.")
             ),
             h("label", { className: "mt-3 block rounded-lg border border-violet-500 bg-white p-3" },
-              h("span", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Reasoning"),
-              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-violet-500", 'aria-label': "Explain how the evidence supports the claim", placeholder: "Use because, shows, so, or therefore to connect the evidence to your claim." })
+              h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, "Reasoning"),
+              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-violet-500", 'aria-label': "Explain how the evidence supports the claim", placeholder: "Use because, shows, so, or therefore to connect the evidence to your claim." })
             ),
             h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
-              h("button", { type: "button", onClick: checkDnaEvidence, className: "rounded-lg bg-violet-700 px-3 py-2 text-[11px] font-black text-white hover:bg-violet-800" }, "Check reasoning"),
-              dnaEvidenceFeedback && h("span", { className: "text-[11px] leading-relaxed text-slate-700", role: "status" }, dnaEvidenceFeedback)
+              h("button", { type: "button", onClick: checkDnaEvidence, className: "rounded-lg bg-violet-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-violet-800" }, "Check reasoning"),
+              dnaEvidenceFeedback && h("span", { className: "text-[0.6875rem] leading-relaxed text-slate-700", role: "status" }, dnaEvidenceFeedback)
             )
           ),          h("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
-            h("p", { className: "m-0 max-w-xl text-[10px] leading-relaxed text-slate-600" }, "Tip: connect the sequence change to the codon and protein evidence, then note any uncertainty."),
+            h("p", { className: "m-0 max-w-xl text-[0.625rem] leading-relaxed text-slate-600" }, "Tip: connect the sequence change to the codon and protein evidence, then note any uncertainty."),
             h("div", { className: "flex flex-wrap gap-2" },
-              h("button", { type: "button", onClick: exportDnaEvidence, className: "rounded-lg bg-amber-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-amber-800" }, "Download report"),
-              h("button", { type: "button", onClick: toggleDnaReport, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Hide report")
+              h("button", { type: "button", onClick: exportDnaEvidence, className: "rounded-lg bg-amber-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-amber-800" }, "Download report"),
+              h("button", { type: "button", onClick: toggleDnaReport, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[0.6875rem] font-bold text-slate-700 hover:bg-slate-50" }, "Hide report")
             )
           )
         ),
@@ -4343,7 +4343,7 @@ window.StemLab = window.StemLab || {
                     ? 'Switched to the flat ladder view.'
                     : 'Switched to the 3D double helix. Turn it to see the major and minor grooves.');
                 },
-                className: "px-3 py-1 text-[11px] font-bold rounded-lg border transition-colors " + (dnaShowGl ? "border-violet-400 bg-violet-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50")
+                className: "px-3 py-1 text-[0.6875rem] font-bold rounded-lg border transition-colors " + (dnaShowGl ? "border-violet-400 bg-violet-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50")
               }, dnaShowGl ? '\u{1F9EC} 3D helix' : '≡ Flat ladder'),
               dnaShowGl && [['Turn left', { rotY: dnaRot.rotY - 25 }], ['Turn right', { rotY: dnaRot.rotY + 25 }],
                             ['Tilt up', { rotX: Math.max(-88, dnaRot.rotX - 12) }], ['Tilt down', { rotX: Math.min(88, dnaRot.rotX + 12) }]]
@@ -4351,7 +4351,7 @@ window.StemLab = window.StemLab || {
                   return h("button", {
                     key: i, type: 'button', 'aria-label': b[0],
                     onClick: function() { upd('helix3dRot', Object.assign({}, dnaRot, b[1])); },
-                    className: "w-7 h-7 text-[11px] rounded border border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                    className: "w-7 h-7 text-[0.6875rem] rounded border border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                   }, ['◀', '▶', '▲', '▼'][i]);
                 })
             ),
@@ -4387,11 +4387,11 @@ window.StemLab = window.StemLab || {
               h("div", { className: "flex flex-wrap items-center gap-2" },
                 h("h4", { className: "text-sm font-bold text-slate-700" }, strandLabel),
                 h("div", { className: "flex gap-1", role: 'group', 'aria-label': 'Choose DNA strand view' },
-                  h("button", { type: 'button', onClick: function() { setDnaStrandView('coding'); }, 'aria-pressed': dnaStrandView === 'coding', className: "rounded-md border px-2 py-1 text-[10px] font-bold " + (dnaStrandView === 'coding' ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-600') }, "Coding 5' -> 3'"),
-                  h("button", { type: 'button', onClick: function() { setDnaStrandView('template'); }, 'aria-pressed': dnaStrandView === 'template', className: "rounded-md border px-2 py-1 text-[10px] font-bold " + (dnaStrandView === 'template' ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-600') }, "Template 3' -> 5'")
+                  h("button", { type: 'button', onClick: function() { setDnaStrandView('coding'); }, 'aria-pressed': dnaStrandView === 'coding', className: "rounded-md border px-2 py-1 text-[0.625rem] font-bold " + (dnaStrandView === 'coding' ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-600') }, "Coding 5' -> 3'"),
+                  h("button", { type: 'button', onClick: function() { setDnaStrandView('template'); }, 'aria-pressed': dnaStrandView === 'template', className: "rounded-md border px-2 py-1 text-[0.625rem] font-bold " + (dnaStrandView === 'template' ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-600') }, "Template 3' -> 5'")
                 )
               ),              h("div", { className: "dna-preset-picker" },
-                h("button", { onClick: function() { updMulti({ dnaSequence: randomDNA(21), mRNA: '', protein: [], animStep: 0 }); announceToSR('Random sequence'); }, className: "transition-colors px-3 py-2 text-[11px] font-bold bg-violet-50 text-violet-700 rounded-lg hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.random', "\uD83C\uDFB2 Random")),
+                h("button", { onClick: function() { updMulti({ dnaSequence: randomDNA(21), mRNA: '', protein: [], animStep: 0 }); announceToSR('Random sequence'); }, className: "transition-colors px-3 py-2 text-[0.6875rem] font-bold bg-violet-50 text-violet-700 rounded-lg hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.random', "\uD83C\uDFB2 Random")),
                 h("label", null,
                   h("span", { className: "sr-only" }, "Example DNA sequence"),
                   h("select", { defaultValue: "", 'aria-label': "Load an example DNA sequence", onChange: function(event) {
@@ -4417,16 +4417,16 @@ window.StemLab = window.StemLab || {
                 }, base);
               })
             ),
-            h("div", { className: "rounded-lg border border-violet-100 bg-violet-50 p-2 text-[11px] text-slate-700" },
+            h("div", { className: "rounded-lg border border-violet-100 bg-violet-50 p-2 text-[0.6875rem] text-slate-700" },
               h("strong", { className: "text-violet-800" }, strandLabel + ': '), h("span", { className: "font-mono" }, strandSequence),
               h("span", { className: "ml-2 text-slate-600" }, strandPairLabel + ' | ' + dnaSeq.length + ' bp')
             ),
             h("div", { className: "text-xs text-slate-600" }, "Complement: ", h("span", { className: "font-mono font-bold text-slate-600" }, complementStrand), " | Coding: ", h("span", { className: "font-mono font-bold text-slate-600" }, dnaSeq)),
-            h("div", { className: "flex gap-2 text-[11px] text-slate-600 pt-2 border-t border-slate-100" },
+            h("div", { className: "flex gap-2 text-[0.6875rem] text-slate-600 pt-2 border-t border-slate-100" },
               h("span", null, "GC: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'G' || b === 'C'; }).length / dnaSeq.length) * 100) + "%"),
               h("span", null, "AT: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'A' || b === 'T'; }).length / dnaSeq.length) * 100) + "%")
             ),
-            h("div", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-600 pt-2 border-t border-slate-100" },
+            h("div", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[0.6875rem] text-slate-600 pt-2 border-t border-slate-100" },
               ['A', 'T', 'G', 'C'].map(function(b) { var names = { A: 'Adenine', T: 'Thymine', G: 'Guanine', C: 'Cytosine' }; return h("span", { key: b, className: "flex items-center gap-1" }, h("span", { className: "w-3 h-3 rounded-full", style: { background: BASE_COLORS[b] } }), b + "=" + names[b] + " \u2194 " + BASE_COMPLEMENT[b]); })
             )
           )
@@ -4456,7 +4456,7 @@ window.StemLab = window.StemLab || {
             h("button", { onClick: function() { updMulti({ replStep: 0, replPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, t('stem.dna.reset', '\u21BA Reset')),
             h("div", { className: "flex items-center gap-2 ml-auto" },
               h("span", { className: "text-xs text-slate-600" }, 'Speed:'),
-              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600') }, s + 'x'); })
+              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[0.6875rem] font-bold rounded-lg " + (speed === s ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600') }, s + 'x'); })
             )
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
@@ -4475,7 +4475,7 @@ window.StemLab = window.StemLab || {
                 '\uD83E\uDDEC Replication initiates at origins (OriC in prokaryotes). Helicase unwinds; SSB proteins stabilize. Primase lays RNA primers. Pol III extends 5\u2032\u21923\u2032 (leading = continuous, lagging = Okazaki fragments). Pol I replaces primers; ligase seals nicks. Proofreading by 3\u2032\u21925\u2032 exonuclease achieves ~10\u207B\u2079 error rate.'
               )
             ),
-            h("div", { className: "flex gap-3 flex-wrap text-[11px] text-slate-600 pt-2 border-t border-slate-100" },
+            h("div", { className: "flex gap-3 flex-wrap text-[0.6875rem] text-slate-600 pt-2 border-t border-slate-100" },
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-violet-500" }), t('stem.dna.helicase', 'Helicase')),
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-emerald-500" }), t('stem.dna.dna_pol_iii', 'DNA Pol III')),
               h("span", { className: "flex items-center gap-1" }, h("span", { className: "w-2.5 h-2.5 rounded-full bg-sky-400" }), t('stem.dna.leading_continuous', 'Leading (continuous)')),
@@ -4488,7 +4488,7 @@ window.StemLab = window.StemLab || {
         // TRANSCRIPTION TAB
         // ═══════════════════════════════════════════
         tab === 'transcribe' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-transcribe", "data-dna-workspace": "transcribe" },
-          h("div", { className: "rounded-xl border border-sky-200 bg-sky-50 p-3 text-[11px] text-slate-700" },
+          h("div", { className: "rounded-xl border border-sky-200 bg-sky-50 p-3 text-[0.6875rem] text-slate-700" },
             h("div", { className: "flex flex-wrap gap-x-4 gap-y-1 font-mono" },
               h("span", null, "Template 3' -> 5': ", h("strong", null, complementStrand)),
               h("span", null, "mRNA 5' -> 3': ", h("strong", null, fullMRNA))
@@ -4511,14 +4511,14 @@ window.StemLab = window.StemLab || {
             h("button", { onClick: function() { if (animPlaying) upd('animPlaying', false); else { if (animStep >= dnaSeq.length) updMulti({ animStep: 0, mRNA: '', animPlaying: true }); else upd('animPlaying', true); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (animPlaying ? "bg-amber-700 text-white" : "transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]") }, animPlaying ? "\u23F8 Pause" : "\u25B6 Transcribe"),
             h("button", { onClick: function() { updMulti({ animStep: 0, mRNA: '', animPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, t('stem.dna.reset_2', "\u21BA Reset")),
             h("div", { className: "flex items-center gap-2 ml-auto" }, h("span", { className: "text-xs text-slate-600" }, "Speed:"),
-              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600") }, s + "x"); })
+              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[0.6875rem] font-bold rounded-lg " + (speed === s ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600") }, s + "x"); })
             )
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("div", { className: "flex justify-between text-xs text-slate-600 mb-2" }, h("span", null, animStep + "/" + dnaSeq.length), h("span", null, Math.round(animStep / dnaSeq.length * 100) + "%")),
             h("div", { className: "w-full bg-slate-100 rounded-full h-2" }, h("div", { className: "bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full h-2 transition-all", style: { width: (animStep / dnaSeq.length * 100) + '%' } })),
             mRNA && h("div", { className: "mt-3" }, h("span", { className: "text-xs font-bold text-violet-600" }, "mRNA: "), h("span", { className: "font-mono text-xs text-slate-700 break-all" }, mRNA)),
-            h("div", { className: "mt-2 text-[11px] text-slate-600 bg-slate-50 rounded-lg p-2" }, t('stem.dna.mrna_is_a_copy_of_the_coding_strand_wi', "\uD83D\uDCA1 mRNA is a copy of the coding strand with U in place of T. (RNA Polymerase actually reads the complementary template strand 3'\u21925', which yields the same sequence as the coding strand.)"))
+            h("div", { className: "mt-2 text-[0.6875rem] text-slate-600 bg-slate-50 rounded-lg p-2" }, t('stem.dna.mrna_is_a_copy_of_the_coding_strand_wi', "\uD83D\uDCA1 mRNA is a copy of the coding strand with U in place of T. (RNA Polymerase actually reads the complementary template strand 3'\u21925', which yields the same sequence as the coding strand.)"))
           )
         ),
 
@@ -4529,11 +4529,11 @@ window.StemLab = window.StemLab || {
           h("section", { className: "overflow-hidden rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-4", "data-dna-reading-frame-explorer": true, role: "region", "aria-labelledby": "dna-reading-frame-title" },
             h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
               h("div", null,
-                h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-indigo-700" }, "Reading Frame Explorer"),
+                h("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-indigo-700" }, "Reading Frame Explorer"),
                 h("h4", { id: "dna-reading-frame-title", className: "mt-1 text-sm font-black text-slate-900" }, "One mRNA, three possible groupings"),
-                h("p", { className: "mt-1 mb-0 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "Shift the starting base to compare forward reading frames. A modeled ORF begins at AUG and continues to the first in-frame stop codon.")
+                h("p", { className: "mt-1 mb-0 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-700" }, "Shift the starting base to compare forward reading frames. A modeled ORF begins at AUG and continues to the first in-frame stop codon.")
               ),
-              h("span", { className: "rounded-full border border-indigo-500 bg-white px-2 py-1 text-[10px] font-black text-indigo-800" }, "Selected: +" + dnaSelectedReadingFrame.frame)
+              h("span", { className: "rounded-full border border-indigo-500 bg-white px-2 py-1 text-[0.625rem] font-black text-indigo-800" }, "Selected: +" + dnaSelectedReadingFrame.frame)
             ),
             h("div", { className: "mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible md:pb-0", role: "radiogroup", "aria-label": "Choose a forward mRNA reading frame" },
               dnaReadingFrames.map(function(frame) {
@@ -4542,97 +4542,97 @@ window.StemLab = window.StemLab || {
                 return h("button", { key: frame.frame, type: "button", role: "radio", "aria-checked": isSelected, onClick: function() { selectDnaReadingFrame(frame.frame); }, className: "relative min-w-[210px] flex-1 snap-start overflow-hidden rounded-xl border p-3 pt-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 md:min-w-0 " + (isSelected ? "border-indigo-500 bg-white ring-2 ring-indigo-100" : "border-slate-200 bg-white/80 hover:border-indigo-300 hover:shadow-md"), "data-dna-reading-frame": frame.frame, "data-frame-status": frame.status, "data-frame-selected": isSelected ? "true" : "false" },
                   h("span", { className: "absolute inset-x-0 top-0 h-1 " + (frame.status === 'complete' ? "bg-emerald-500" : frame.status === 'open' ? "bg-amber-500" : "bg-slate-300"), "aria-hidden": "true" }),
                   h("div", { className: "flex items-center justify-between gap-2" },
-                    h("span", { className: "text-[12px] font-black text-slate-900" }, "Frame +" + frame.frame),
-                    h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black uppercase tracking-wide " + statusTone }, frame.statusLabel)
+                    h("span", { className: "text-[0.75rem] font-black text-slate-900" }, "Frame +" + frame.frame),
+                    h("span", { className: "rounded-full px-2 py-1 text-[0.5rem] font-black uppercase tracking-wide " + statusTone }, frame.statusLabel)
                   ),
-                  h("div", { className: "mt-2 font-mono text-[10px] font-bold text-slate-600" }, "Starts at base " + (frame.offset + 1)),
-                  h("div", { className: "mt-1 text-[10px] text-slate-600" }, frame.startIndex >= 0 ? "AUG at base " + frame.startBase : "No in-frame AUG"),
-                  h("div", { className: "mt-1 text-[10px] text-slate-600" }, frame.stopIndex >= 0 ? frame.stopCodon + " stop at base " + frame.stopBase : "No downstream stop in fragment"),
-                  h("div", { className: "mt-2 text-[10px] font-black text-indigo-800" }, frame.protein.length + " amino acid" + (frame.protein.length === 1 ? "" : "s"))
+                  h("div", { className: "mt-2 font-mono text-[0.625rem] font-bold text-slate-600" }, "Starts at base " + (frame.offset + 1)),
+                  h("div", { className: "mt-1 text-[0.625rem] text-slate-600" }, frame.startIndex >= 0 ? "AUG at base " + frame.startBase : "No in-frame AUG"),
+                  h("div", { className: "mt-1 text-[0.625rem] text-slate-600" }, frame.stopIndex >= 0 ? frame.stopCodon + " stop at base " + frame.stopBase : "No downstream stop in fragment"),
+                  h("div", { className: "mt-2 text-[0.625rem] font-black text-indigo-800" }, frame.protein.length + " amino acid" + (frame.protein.length === 1 ? "" : "s"))
                 );
               })
             ),
             h("section", { className: "mt-3 rounded-xl border border-slate-200 bg-slate-950 p-3 text-white shadow-inner", "data-dna-frame-alignment": true, role: "region", "aria-labelledby": "dna-frame-alignment-title" },
               h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 h("div", null,
-                  h("h5", { id: "dna-frame-alignment-title", className: "m-0 text-[10px] font-black uppercase tracking-[0.14em] text-sky-200" }, "Triplet alignment ruler"),
-                  h("p", { className: "mt-1 mb-0 text-[9px] leading-relaxed text-slate-300" }, "Each row shifts one base to the right, regrouping every codon that follows.")
+                  h("h5", { id: "dna-frame-alignment-title", className: "m-0 text-[0.625rem] font-black uppercase tracking-[0.14em] text-sky-200" }, "Triplet alignment ruler"),
+                  h("p", { className: "mt-1 mb-0 text-[0.5625rem] leading-relaxed text-slate-300" }, "Each row shifts one base to the right, regrouping every codon that follows.")
                 ),
                 h("div", { className: "flex flex-wrap gap-1.5", role: "group", "aria-label": "Reading frame color legend" },
-                  h("span", { className: "rounded-full border border-emerald-500/60 bg-emerald-950 px-2 py-1 text-[8px] font-black text-emerald-200" }, "AUG start"),
-                  h("span", { className: "rounded-full border border-indigo-400/60 bg-indigo-950 px-2 py-1 text-[8px] font-black text-indigo-200" }, "Coding ORF"),
-                  h("span", { className: "rounded-full border border-rose-500/60 bg-rose-950 px-2 py-1 text-[8px] font-black text-rose-200" }, "Stop"),
-                  h("span", { className: "rounded-full border border-slate-600 bg-slate-900 px-2 py-1 text-[8px] font-black text-slate-300" }, "Outside ORF")
+                  h("span", { className: "rounded-full border border-emerald-500/60 bg-emerald-950 px-2 py-1 text-[0.5rem] font-black text-emerald-200" }, "AUG start"),
+                  h("span", { className: "rounded-full border border-indigo-400/60 bg-indigo-950 px-2 py-1 text-[0.5rem] font-black text-indigo-200" }, "Coding ORF"),
+                  h("span", { className: "rounded-full border border-rose-500/60 bg-rose-950 px-2 py-1 text-[0.5rem] font-black text-rose-200" }, "Stop"),
+                  h("span", { className: "rounded-full border border-slate-600 bg-slate-900 px-2 py-1 text-[0.5rem] font-black text-slate-300" }, "Outside ORF")
                 )
               ),
               h("div", { className: "mt-3 overflow-x-auto rounded-lg pb-1 focus:outline-none focus:ring-2 focus:ring-sky-400", tabIndex: 0, role: "img", "aria-label": "Reading-frame alignment. Frame plus " + dnaSelectedReadingFrame.frame + " is selected. The same mRNA bases are grouped into different triplets in frames plus one, plus two, and plus three." },
                 h("div", { className: "space-y-2", style: { minWidth: Math.max(580, 54 + fullMRNA.length * 28) + "px" }, "aria-hidden": "true" },
                   h("div", { className: "grid items-end gap-1", style: { gridTemplateColumns: "46px repeat(" + fullMRNA.length + ", 24px)" } },
-                    h("div", { className: "pb-1 text-right text-[8px] font-black uppercase tracking-wide text-slate-400" }, "Base"),
+                    h("div", { className: "pb-1 text-right text-[0.5rem] font-black uppercase tracking-wide text-slate-400" }, "Base"),
                     fullMRNA.split('').map(function(base, baseIndex) {
                       return h("div", { key: baseIndex, className: "text-center" },
-                        h("div", { className: "text-[7px] font-bold text-slate-400" }, String(baseIndex + 1)),
-                        h("div", { className: "mt-0.5 grid h-6 place-items-center rounded font-mono text-[10px] font-black text-white", style: { background: BASE_DARK_COLORS[base] || '#334155' } }, base)
+                        h("div", { className: "text-[0.4375rem] font-bold text-slate-400" }, String(baseIndex + 1)),
+                        h("div", { className: "mt-0.5 grid h-6 place-items-center rounded font-mono text-[0.625rem] font-black text-white", style: { background: BASE_DARK_COLORS[base] || '#334155' } }, base)
                       );
                     })
                   ),
                   dnaReadingFrames.map(function(frame) {
                     var frameSelected = frame.frame === dnaSelectedReadingFrame.frame;
                     return h("div", { key: frame.frame, className: "grid items-center gap-1 rounded-lg border py-1.5 pr-1 " + (frameSelected ? "border-sky-400 bg-sky-400/10 ring-1 ring-sky-400/40" : "border-slate-800 bg-slate-900/70"), style: { gridTemplateColumns: "46px repeat(" + fullMRNA.length + ", 24px)" }, "data-dna-frame-alignment-row": frame.frame, "data-frame-selected": frameSelected ? "true" : "false" },
-                      h("div", { className: "pl-2 text-[10px] font-black " + (frameSelected ? "text-sky-200" : "text-slate-400") }, "+" + frame.frame),
+                      h("div", { className: "pl-2 text-[0.625rem] font-black " + (frameSelected ? "text-sky-200" : "text-slate-400") }, "+" + frame.frame),
                       frame.codons.map(function(entry, entryIndex) {
                         var alignmentState = frame.startIndex < 0 ? "untranslated" : entryIndex === frame.startIndex ? "start" : entryIndex === frame.stopIndex ? "stop" : entryIndex < frame.startIndex ? "before-start" : "coding";
                         var alignmentTone = alignmentState === "start" ? "border-emerald-400 bg-emerald-500 text-emerald-950" : alignmentState === "stop" ? "border-rose-400 bg-rose-400 text-rose-950" : alignmentState === "coding" ? "border-indigo-400 bg-indigo-600 text-white" : "border-slate-700 bg-slate-800 text-slate-400";
-                        return h("div", { key: entry.pos, className: "grid h-7 place-items-center rounded border font-mono text-[9px] font-black shadow-sm " + alignmentTone, style: { gridColumn: (entry.pos + 2) + " / span 3" }, "data-frame-codon-state": alignmentState }, entry.codon);
+                        return h("div", { key: entry.pos, className: "grid h-7 place-items-center rounded border font-mono text-[0.5625rem] font-black shadow-sm " + alignmentTone, style: { gridColumn: (entry.pos + 2) + " / span 3" }, "data-frame-codon-state": alignmentState }, entry.codon);
                       })
                     );
                   })
                 )
               ),
-              h("p", { className: "mt-2 mb-0 text-[8px] leading-relaxed text-slate-400" }, "Swipe or use Shift + mouse wheel to inspect longer sequences.")
+              h("p", { className: "mt-2 mb-0 text-[0.5rem] leading-relaxed text-slate-400" }, "Swipe or use Shift + mouse wheel to inspect longer sequences.")
             ),
             h("div", { className: "mt-3 rounded-xl border border-indigo-500 bg-white p-3", "data-dna-reading-frame-detail": true, "data-frame": dnaSelectedReadingFrame.frame, "data-frame-status": dnaSelectedReadingFrame.status },
               h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 h("div", null,
-                  h("div", { className: "text-[9px] font-black uppercase tracking-wide text-indigo-700" }, "Frame +" + dnaSelectedReadingFrame.frame + " evidence"),
-                  h("p", { className: "mt-1 mb-0 text-[11px] font-bold leading-relaxed text-slate-800" }, dnaSelectedFrameInterpretation)
+                  h("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-indigo-700" }, "Frame +" + dnaSelectedReadingFrame.frame + " evidence"),
+                  h("p", { className: "mt-1 mb-0 text-[0.6875rem] font-bold leading-relaxed text-slate-800" }, dnaSelectedFrameInterpretation)
                 ),
-                h("button", { type: "button", onClick: useSelectedDnaFrameAsEvidence, className: "rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[10px] font-black text-indigo-900 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", "data-dna-use-frame-evidence": true, "aria-pressed": dnaSelectedFrameEvidenceSaved }, dnaSelectedFrameEvidenceSaved ? "Added to report" : dnaEvidenceCitation === "frame" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use frame as evidence")
+                h("button", { type: "button", onClick: useSelectedDnaFrameAsEvidence, className: "rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[0.625rem] font-black text-indigo-900 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", "data-dna-use-frame-evidence": true, "aria-pressed": dnaSelectedFrameEvidenceSaved }, dnaSelectedFrameEvidenceSaved ? "Added to report" : dnaEvidenceCitation === "frame" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use frame as evidence")
               ),
               h("div", { className: "mt-3 overflow-x-auto rounded-lg bg-slate-50 p-2 pb-2 focus:outline-none focus:ring-2 focus:ring-indigo-400", tabIndex: 0, "aria-label": "Scrollable codon rail for reading frame plus " + dnaSelectedReadingFrame.frame },
                 h("div", { className: "flex min-w-max gap-1.5 font-mono", role: "list", "aria-label": "Codons in reading frame plus " + dnaSelectedReadingFrame.frame },
                   dnaSelectedReadingFrame.codons.map(function(entry, entryIndex) {
                     var codonState = dnaSelectedReadingFrame.startIndex < 0 ? "untranslated" : entryIndex === dnaSelectedReadingFrame.startIndex ? "start" : entryIndex === dnaSelectedReadingFrame.stopIndex ? "stop" : entryIndex < dnaSelectedReadingFrame.startIndex ? "before-start" : "coding";
                     var codonTone = codonState === "start" ? "border-emerald-400 bg-emerald-100 text-emerald-900" : codonState === "stop" ? "border-rose-400 bg-rose-100 text-rose-900" : codonState === "coding" ? "border-indigo-200 bg-indigo-50 text-indigo-900" : "border-slate-200 bg-white text-slate-500";
-                    return h("span", { key: entry.pos, role: "listitem", className: "min-w-[66px] snap-start rounded-md border px-2 py-1.5 text-center text-[10px] font-black shadow-sm " + codonTone, "data-codon-state": codonState, title: "Bases " + (entry.pos + 1) + "-" + (entry.pos + 3) + ": " + entry.codon + " -> " + entry.aa },
+                    return h("span", { key: entry.pos, role: "listitem", className: "min-w-[66px] snap-start rounded-md border px-2 py-1.5 text-center text-[0.625rem] font-black shadow-sm " + codonTone, "data-codon-state": codonState, title: "Bases " + (entry.pos + 1) + "-" + (entry.pos + 3) + ": " + entry.codon + " -> " + entry.aa },
                       h("span", { className: "block" }, entry.codon),
-                      h("span", { className: "mt-0.5 block font-sans text-[8px] opacity-80" }, entry.aa)
+                      h("span", { className: "mt-0.5 block font-sans text-[0.5rem] opacity-80" }, entry.aa)
                     );
                   }),
-                  dnaSelectedReadingFrame.codons.length === 0 && h("span", { className: "text-[10px] italic text-slate-500" }, "Not enough bases for a complete codon in this frame.")
+                  dnaSelectedReadingFrame.codons.length === 0 && h("span", { className: "text-[0.625rem] italic text-slate-500" }, "Not enough bases for a complete codon in this frame.")
                 )
               ),
               h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
-                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Start"), h("div", { className: "mt-1 text-[10px] font-black text-slate-800" }, dnaSelectedReadingFrame.startIndex >= 0 ? "AUG · base " + dnaSelectedReadingFrame.startBase : "Not found")),
-                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Stop"), h("div", { className: "mt-1 text-[10px] font-black text-slate-800" }, dnaSelectedReadingFrame.stopIndex >= 0 ? dnaSelectedReadingFrame.stopCodon + " · bases " + dnaSelectedReadingFrame.stopBase + "-" + (dnaSelectedReadingFrame.stopBase + 2) : "Not in fragment")),
-                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Protein preview"), h("div", { className: "mt-1 text-[10px] font-black text-slate-800" }, dnaSelectedFrameProteinText))
+                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-slate-500" }, "Start"), h("div", { className: "mt-1 text-[0.625rem] font-black text-slate-800" }, dnaSelectedReadingFrame.startIndex >= 0 ? "AUG · base " + dnaSelectedReadingFrame.startBase : "Not found")),
+                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-slate-500" }, "Stop"), h("div", { className: "mt-1 text-[0.625rem] font-black text-slate-800" }, dnaSelectedReadingFrame.stopIndex >= 0 ? dnaSelectedReadingFrame.stopCodon + " · bases " + dnaSelectedReadingFrame.stopBase + "-" + (dnaSelectedReadingFrame.stopBase + 2) : "Not in fragment")),
+                h("div", { className: "rounded-lg bg-slate-50 p-2" }, h("div", { className: "text-[0.5rem] font-black uppercase tracking-wide text-slate-500" }, "Protein preview"), h("div", { className: "mt-1 text-[0.625rem] font-black text-slate-800" }, dnaSelectedFrameProteinText))
               ),
-              dnaSelectedReadingFrame.trailingBases > 0 && h("p", { className: "mt-2 mb-0 text-[9px] leading-relaxed text-slate-500" }, dnaSelectedReadingFrame.trailingBases + " trailing base" + (dnaSelectedReadingFrame.trailingBases === 1 ? "" : "s") + " cannot form a complete codon in this frame.")
+              dnaSelectedReadingFrame.trailingBases > 0 && h("p", { className: "mt-2 mb-0 text-[0.5625rem] leading-relaxed text-slate-500" }, dnaSelectedReadingFrame.trailingBases + " trailing base" + (dnaSelectedReadingFrame.trailingBases === 1 ? "" : "s") + " cannot form a complete codon in this frame.")
             )
           ),
           h("div", { className: "rounded-xl border border-emerald-200 bg-white p-4 shadow-sm", "data-dna-ribosome-stage": true },
             h("div", { className: "mb-3 flex flex-wrap items-start justify-between gap-2" },
               h("div", { className: "flex items-start gap-2" },
-                h("span", { className: "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-[10px] font-black text-emerald-800", "aria-hidden": "true" }, "3"),
+                h("span", { className: "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-[0.625rem] font-black text-emerald-800", "aria-hidden": "true" }, "3"),
                 h("div", null,
                   h("h4", { className: "m-0 text-sm font-black text-slate-800" }, t('stem.dna.ribosome_translation', "\uD83D\uDD2C Ribosome Translation")),
-                  h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, dnaSelectedReadingFrame.startIndex >= 0 ? "Run the selected ORF from its first AUG to its first in-frame stop." : "Choose a frame with an AUG start codon to run translation.")
+                  h("p", { className: "mt-1 mb-0 text-[0.625rem] leading-relaxed text-slate-600" }, dnaSelectedReadingFrame.startIndex >= 0 ? "Run the selected ORF from its first AUG to its first in-frame stop." : "Choose a frame with an AUG start codon to run translation.")
                 )
               ),
-              h("span", { className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-black text-emerald-800" }, "Frame +" + dnaSelectedReadingFrame.frame + " · " + dnaSelectedReadingFrame.statusLabel)
+              h("span", { className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[0.5625rem] font-black text-emerald-800" }, "Frame +" + dnaSelectedReadingFrame.frame + " · " + dnaSelectedReadingFrame.statusLabel)
             ),
             h("div", { className: "font-mono text-xs break-all mb-3 p-3 bg-slate-50 rounded-lg" },
-              h("span", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, "mRNA:"),
+              h("span", { className: "text-[0.6875rem] font-bold text-violet-600 block mb-1" }, "mRNA:"),
               dnaSelectedReadingFrame.codons.map(function(entry, idx) {
                 var codon = entry.codon;
                 var runIndex = dnaSelectedReadingFrame.startIndex >= 0 ? idx - dnaSelectedReadingFrame.startIndex : -1;
@@ -4642,10 +4642,10 @@ window.StemLab = window.StemLab || {
               })
             ),
             h("div", { className: "flex flex-wrap gap-1 items-center mb-3" },
-              h("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "Protein:"),
+              h("span", { className: "text-[0.6875rem] font-bold text-slate-600 mr-1" }, "Protein:"),
               h("div", { className: "flex flex-wrap gap-1 items-center", role: "list", "aria-label": t("stem.dna.protein_chain", "Protein chain") },
-              builtProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa }; return h("span", { key: idx, role: "listitem", className: "px-1.5 py-0.5 rounded-md text-[11px] font-bold text-white", style: { background: pr.color }, title: pr.full }, p.aa); })),
-              builtProtein.length === 0 && h("span", { className: "text-[11px] text-slate-600 italic" }, t('stem.dna.press_start_to_begin', "Press Start to begin..."))
+              builtProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa }; return h("span", { key: idx, role: "listitem", className: "px-1.5 py-0.5 rounded-md text-[0.6875rem] font-bold text-white", style: { background: pr.color }, title: pr.full }, p.aa); })),
+              builtProtein.length === 0 && h("span", { className: "text-[0.6875rem] text-slate-600 italic" }, t('stem.dna.press_start_to_begin', "Press Start to begin..."))
             ),
             dnaInstrumentFrame(
               "Ribosome Runway",
@@ -4674,7 +4674,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\uD83E\uDDA0"),
               h("h4", { className: "text-sm font-bold text-rose-800" }, t('stem.dna.mutation_simulator', "Mutation Simulator")),
-              h("span", { className: "px-2 py-0.5 bg-rose-200 text-rose-800 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
+              h("span", { className: "px-2 py-0.5 bg-rose-200 text-rose-800 text-[0.6875rem] font-bold rounded-full" }, "INTERACTIVE")
             ),
             h("p", { className: "text-xs text-slate-600" },
               gradeText(
@@ -4693,11 +4693,11 @@ window.StemLab = window.StemLab || {
               h("button", { onClick: saveDnaExperiment, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]" }, "Save experiment")
             ),
             h("div", { className: "bg-white rounded-lg p-3 border" },
-              h("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Current Sequence (" + dnaSeq.length + " bp):"),
+              h("p", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, "Current Sequence (" + dnaSeq.length + " bp):"),
               h("div", { className: "font-mono text-xs break-all" },
-                dnaSeq.split('').map(function(base, idx) { return h("span", { key: idx, className: "inline-block w-5 h-5 text-center leading-5 rounded font-bold text-[11px] m-px", style: { background: BASE_COLORS[base], color: BASE_TEXT_COLORS[base] || '#ffffff', outline: latestMutation && idx === latestMutation.pos ? '2px solid #0f172a' : 'none', outlineOffset: latestMutation && idx === latestMutation.pos ? '2px' : 0 } }, base); })
+                dnaSeq.split('').map(function(base, idx) { return h("span", { key: idx, className: "inline-block w-5 h-5 text-center leading-5 rounded font-bold text-[0.6875rem] m-px", style: { background: BASE_COLORS[base], color: BASE_TEXT_COLORS[base] || '#ffffff', outline: latestMutation && idx === latestMutation.pos ? '2px solid #0f172a' : 'none', outlineOffset: latestMutation && idx === latestMutation.pos ? '2px' : 0 } }, base); })
               ),
-              h("p", { className: "text-[11px] text-slate-600 mt-2" }, "Protein: " + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return p.aa; }).join('-') + (translationStop ? ' [STOP ' + translationStop.codon + ']' : ''))
+              h("p", { className: "text-[0.6875rem] text-slate-600 mt-2" }, "Protein: " + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return p.aa; }).join('-') + (translationStop ? ' [STOP ' + translationStop.codon + ']' : ''))
             ),
             latestMutation && h("div", { className: "grid gap-3 rounded-lg border border-rose-200 bg-white p-3 sm:grid-cols-[auto_1fr]", role: "status" },
               h("div", { className: "flex items-center gap-2 font-mono text-xs font-black" },
@@ -4706,9 +4706,9 @@ window.StemLab = window.StemLab || {
                 h("span", { className: "rounded-md bg-rose-100 px-2 py-1 text-rose-800" }, latestMutation.type === 'Deletion' ? '—' : latestMutation.to)
               ),
               h("div", null,
-                h("p", { className: "mb-1 text-[10px] font-black uppercase tracking-wide text-rose-700" }, "Latest change · base " + (latestMutation.pos + 1)),
-                h("p", { className: "mb-1 text-[11px] font-black text-rose-800" }, "Predicted coding effect: " + latestMutationEffect),
-                h("p", { className: "m-0 text-[11px] leading-relaxed text-slate-600" },
+                h("p", { className: "mb-1 text-[0.625rem] font-black uppercase tracking-wide text-rose-700" }, "Latest change · base " + (latestMutation.pos + 1)),
+                h("p", { className: "mb-1 text-[0.6875rem] font-black text-rose-800" }, "Predicted coding effect: " + latestMutationEffect),
+                h("p", { className: "m-0 text-[0.6875rem] leading-relaxed text-slate-600" },
                   latestMutation.type === 'Substitution'
                     ? 'One nucleotide changed. Compare the protein readout to determine whether the codon is silent, missense, or nonsense.'
                     : 'A single-base ' + latestMutation.type.toLowerCase() + ' shifts the downstream reading frame and can change every codon that follows.'
@@ -4720,9 +4720,9 @@ window.StemLab = window.StemLab || {
               h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 h("div", null,
                   h("h5", { id: "dna-mutation-comparison-title", className: "text-sm font-black text-amber-950" }, "Before / after mutation"),
-                  h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, "Compare the sequence change, codons, amino acids, and predicted coding effect in one view." )
+                  h("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, "Compare the sequence change, codons, amino acids, and predicted coding effect in one view." )
                 ),
-                h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-800" }, latestMutationEffect)
+                h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, latestMutationEffect)
               ),
               renderDnaMutationAlignmentRibbon(),
               renderDnaEvidenceChain(),
@@ -4734,8 +4734,8 @@ window.StemLab = window.StemLab || {
                 ].map(function(view) {
                   return h("div", { key: view.side, className: "rounded-lg border p-3 " + view.tone },
                     h("div", { className: "flex items-center justify-between gap-2" },
-                      h("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, view.label),
-                      h("span", { className: "text-[10px] font-bold text-slate-500" }, view.sequence.length + " bp")
+                      h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, view.label),
+                      h("span", { className: "text-[0.625rem] font-bold text-slate-500" }, view.sequence.length + " bp")
                     ),
                     h("div", { className: "mt-2 flex flex-wrap gap-1 font-mono text-xs", "aria-label": view.label + " DNA sequence" },
                       view.sequence.split('').map(function(base, idx) {
@@ -4747,8 +4747,8 @@ window.StemLab = window.StemLab || {
                         return h("span", { key: idx, className: "grid h-6 w-6 place-items-center rounded font-black " + (isChanged ? "bg-amber-700 text-white ring-2 ring-amber-800" : "bg-slate-100 text-slate-700"), title: isChanged ? "Changed position" : undefined }, base);
                       })
                     ),
-                    h("div", { className: "mt-2 break-all font-mono text-[10px] text-slate-600" }, "mRNA: " + view.mrna),
-                    h("div", { className: "mt-2 rounded-md bg-slate-50 p-2 text-[11px] text-slate-700" },
+                    h("div", { className: "mt-2 break-all font-mono text-[0.625rem] text-slate-600" }, "mRNA: " + view.mrna),
+                    h("div", { className: "mt-2 rounded-md bg-slate-50 p-2 text-[0.6875rem] text-slate-700" },
                       h("span", { className: "font-black" }, "Protein: "),
                       proteinSignature(view.protein) || "No amino acids",
                       view.protein.stop ? " · STOP " + view.protein.stop.codon : ""
@@ -4757,7 +4757,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h("div", { className: "mt-3 overflow-x-auto rounded-lg border border-amber-200 bg-white" },
-                h("table", { className: "w-full min-w-[560px] text-left text-[10px]", "aria-label": "Before and after codon comparison" },
+                h("table", { className: "w-full min-w-[560px] text-left text-[0.625rem]", "aria-label": "Before and after codon comparison" },
                   h("thead", null,
                     h("tr", { className: "border-b border-amber-100 bg-amber-50" },
                       h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Codon"),
@@ -4781,7 +4781,7 @@ window.StemLab = window.StemLab || {
                   )
                 )
               ),
-              h("p", { className: "mt-2 mb-0 text-[11px] leading-relaxed text-slate-700", role: "status" },
+              h("p", { className: "mt-2 mb-0 text-[0.6875rem] leading-relaxed text-slate-700", role: "status" },
                 latestMutation.type === 'Insertion'
                   ? "Inserted base: " + latestMutation.to + " at position " + (latestMutation.pos + 1) + "."
                   : latestMutation.type === 'Deletion'
@@ -4793,16 +4793,16 @@ window.StemLab = window.StemLab || {
           dnaExperimentHistory.length > 0 && h("section", { className: "overflow-hidden rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-indigo-50 p-3 shadow-sm", "data-dna-experiment-history": true, role: "region", "aria-labelledby": "dna-experiment-history-title" },
             h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
               h("div", { className: "max-w-2xl" },
-                h("div", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-amber-700" }, "Saved sequence checkpoints"),
-                h("h5", { id: "dna-experiment-history-title", className: "mt-1 text-[12px] font-black text-slate-900" }, "Experiment history"),
-                h("p", { className: "mt-1 mb-0 text-[10px] leading-relaxed text-slate-600" }, "Each card freezes a whole sequence state. Inspect its fingerprint and metrics, restore it, or assign it directly to comparison A or B.")
+                h("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-amber-700" }, "Saved sequence checkpoints"),
+                h("h5", { id: "dna-experiment-history-title", className: "mt-1 text-[0.75rem] font-black text-slate-900" }, "Experiment history"),
+                h("p", { className: "mt-1 mb-0 text-[0.625rem] leading-relaxed text-slate-600" }, "Each card freezes a whole sequence state. Inspect its fingerprint and metrics, restore it, or assign it directly to comparison A or B.")
               ),
-              h("span", { className: "rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[9px] font-black text-amber-800 shadow-sm" }, dnaExperimentHistory.length + "/8 saved")
+              h("span", { className: "rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[0.5625rem] font-black text-amber-800 shadow-sm" }, dnaExperimentHistory.length + "/8 saved")
             ),
             h("div", { className: "mt-3 flex flex-wrap gap-1.5", "data-dna-checkpoint-legend": true, "aria-label": "Experiment checkpoint legend" },
-              h("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[9px] font-bold text-indigo-800" }, "A = first comparison"),
-              h("span", { className: "rounded-full border border-fuchsia-200 bg-fuchsia-50 px-2 py-1 text-[9px] font-bold text-fuchsia-800" }, "B = second comparison"),
-              h("span", { className: "rounded-full border border-slate-200 bg-white px-2 py-1 text-[9px] font-bold text-slate-600" }, "Colors = DNA bases")
+              h("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[0.5625rem] font-bold text-indigo-800" }, "A = first comparison"),
+              h("span", { className: "rounded-full border border-fuchsia-200 bg-fuchsia-50 px-2 py-1 text-[0.5625rem] font-bold text-fuchsia-800" }, "B = second comparison"),
+              h("span", { className: "rounded-full border border-slate-200 bg-white px-2 py-1 text-[0.5625rem] font-bold text-slate-600" }, "Colors = DNA bases")
             ),
             h("ol", { className: "mt-3 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto pb-3 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2", "data-dna-checkpoint-gallery": true, tabIndex: 0, "aria-label": "Saved DNA experiment checkpoints. Swipe horizontally or use arrow keys to inspect each card." },
               dnaExperimentCheckpoints.slice().reverse().map(function(checkpoint) {
@@ -4819,25 +4819,25 @@ window.StemLab = window.StemLab || {
                   h("article", { className: "flex h-full min-h-[18rem] flex-col rounded-xl border bg-white p-3 shadow-sm transition-colors " + (isA ? "border-indigo-400 ring-2 ring-indigo-100" : isB ? "border-fuchsia-400 ring-2 ring-fuchsia-100" : "border-amber-200"), "aria-label": cardLabel },
                     h("div", { className: "flex items-start justify-between gap-2" },
                       h("div", null,
-                        h("div", { className: "text-[9px] font-black uppercase tracking-[0.14em] text-amber-700" }, "Checkpoint"),
-                        h("div", { className: "mt-0.5 text-[12px] font-black text-slate-900" }, entryLabel)
+                        h("div", { className: "text-[0.5625rem] font-black uppercase tracking-[0.14em] text-amber-700" }, "Checkpoint"),
+                        h("div", { className: "mt-0.5 text-[0.75rem] font-black text-slate-900" }, entryLabel)
                       ),
                       h("div", { className: "flex min-h-6 items-center gap-1", "aria-label": slotState === 'none' ? "Not assigned to comparison" : "Comparison selection " + slotState.toUpperCase() },
-                        isA && h("span", { className: "grid h-6 min-w-6 place-items-center rounded-full bg-indigo-600 px-1.5 text-[9px] font-black text-white shadow-sm", "data-checkpoint-selected": "a" }, "A"),
-                        isB && h("span", { className: "grid h-6 min-w-6 place-items-center rounded-full bg-fuchsia-600 px-1.5 text-[9px] font-black text-white shadow-sm", "data-checkpoint-selected": "b" }, "B"),
-                        !isA && !isB && h("span", { className: "rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Unassigned")
+                        isA && h("span", { className: "grid h-6 min-w-6 place-items-center rounded-full bg-indigo-600 px-1.5 text-[0.5625rem] font-black text-white shadow-sm", "data-checkpoint-selected": "a" }, "A"),
+                        isB && h("span", { className: "grid h-6 min-w-6 place-items-center rounded-full bg-fuchsia-600 px-1.5 text-[0.5625rem] font-black text-white shadow-sm", "data-checkpoint-selected": "b" }, "B"),
+                        !isA && !isB && h("span", { className: "rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[0.5rem] font-black uppercase tracking-wide text-slate-500" }, "Unassigned")
                       )
                     ),
                     h("div", { className: "mt-3 rounded-lg border border-slate-200 bg-slate-950 p-2.5", "data-dna-checkpoint-fingerprint": true, role: "img", "aria-label": fingerprintLabel },
                       h("div", { className: "mb-1.5 flex items-center justify-between gap-2", "aria-hidden": "true" },
-                        h("span", { className: "text-[8px] font-black uppercase tracking-[0.14em] text-slate-400" }, "Sequence fingerprint"),
-                        h("span", { className: "font-mono text-[8px] font-bold text-slate-500" }, "5' \u2192 3'")
+                        h("span", { className: "text-[0.5rem] font-black uppercase tracking-[0.14em] text-slate-400" }, "Sequence fingerprint"),
+                        h("span", { className: "font-mono text-[0.5rem] font-bold text-slate-500" }, "5' \u2192 3'")
                       ),
                       h("div", { className: "flex min-h-7 items-center gap-0.5 overflow-hidden", "aria-hidden": "true" },
                         previewBases.map(function(base, baseIndex) {
-                          return h("span", { key: baseIndex, className: "grid h-6 min-w-3 flex-1 place-items-center rounded-[3px] font-mono text-[7px] font-black", style: { background: BASE_COLORS[base] || '#334155', color: BASE_TEXT_COLORS[base] || '#ffffff' } }, base);
+                          return h("span", { key: baseIndex, className: "grid h-6 min-w-3 flex-1 place-items-center rounded-[3px] font-mono text-[0.4375rem] font-black", style: { background: BASE_COLORS[base] || '#334155', color: BASE_TEXT_COLORS[base] || '#ffffff' } }, base);
                         }),
-                        hiddenBaseCount > 0 && h("span", { className: "ml-1 shrink-0 text-[8px] font-black text-slate-400" }, "+" + hiddenBaseCount)
+                        hiddenBaseCount > 0 && h("span", { className: "ml-1 shrink-0 text-[0.5rem] font-black text-slate-400" }, "+" + hiddenBaseCount)
                       )
                     ),
                     h("dl", { className: "mt-3 grid grid-cols-4 gap-1.5", "data-dna-checkpoint-metrics": true },
@@ -4848,21 +4848,21 @@ window.StemLab = window.StemLab || {
                         { label: 'Edits', value: String(checkpoint.mutationCount) }
                       ].map(function(metric) {
                         return h("div", { key: metric.label, className: "rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-2 text-center" },
-                          h("dt", { className: "text-[7px] font-black uppercase tracking-wide text-slate-400" }, metric.label),
-                          h("dd", { className: "mt-1 text-[10px] font-black tabular-nums text-slate-800" }, metric.value)
+                          h("dt", { className: "text-[0.4375rem] font-black uppercase tracking-wide text-slate-400" }, metric.label),
+                          h("dd", { className: "mt-1 text-[0.625rem] font-black tabular-nums text-slate-800" }, metric.value)
                         );
                       })
                     ),
                     h("div", { className: "mt-2 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5" },
-                      h("span", { className: "text-[8px] font-black uppercase tracking-wide text-slate-400" }, "Latest effect"),
-                      h("span", { className: "rounded-full border px-2 py-1 text-[8px] font-black " + dnaCheckpointEffectTone(checkpoint.latestEffect) }, checkpoint.latestEffect)
+                      h("span", { className: "text-[0.5rem] font-black uppercase tracking-wide text-slate-400" }, "Latest effect"),
+                      h("span", { className: "rounded-full border px-2 py-1 text-[0.5rem] font-black " + dnaCheckpointEffectTone(checkpoint.latestEffect) }, checkpoint.latestEffect)
                     ),
                     h("div", { className: "mt-auto pt-3" },
                       h("div", { className: "grid grid-cols-2 gap-1.5" },
-                        h("button", { type: "button", onClick: function() { assignDnaExperimentCompareSlot(entry, 'A'); }, disabled: isA, className: "rounded-lg border px-2 py-2 text-[9px] font-black focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:cursor-default " + (isA ? "border-indigo-600 bg-indigo-600 text-white" : "border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100"), "data-comparison-slot-action": "a", "aria-pressed": isA, "aria-label": (isA ? "Comparison A selected: " : "Use as comparison A: ") + entryLabel }, isA ? "A selected" : "Use as A"),
-                        h("button", { type: "button", onClick: function() { assignDnaExperimentCompareSlot(entry, 'B'); }, disabled: isB, className: "rounded-lg border px-2 py-2 text-[9px] font-black focus:outline-none focus:ring-2 focus:ring-fuchsia-400 disabled:cursor-default " + (isB ? "border-fuchsia-600 bg-fuchsia-600 text-white" : "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800 hover:bg-fuchsia-100"), "data-comparison-slot-action": "b", "aria-pressed": isB, "aria-label": (isB ? "Comparison B selected: " : "Use as comparison B: ") + entryLabel }, isB ? "B selected" : "Use as B")
+                        h("button", { type: "button", onClick: function() { assignDnaExperimentCompareSlot(entry, 'A'); }, disabled: isA, className: "rounded-lg border px-2 py-2 text-[0.5625rem] font-black focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:cursor-default " + (isA ? "border-indigo-600 bg-indigo-600 text-white" : "border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100"), "data-comparison-slot-action": "a", "aria-pressed": isA, "aria-label": (isA ? "Comparison A selected: " : "Use as comparison A: ") + entryLabel }, isA ? "A selected" : "Use as A"),
+                        h("button", { type: "button", onClick: function() { assignDnaExperimentCompareSlot(entry, 'B'); }, disabled: isB, className: "rounded-lg border px-2 py-2 text-[0.5625rem] font-black focus:outline-none focus:ring-2 focus:ring-fuchsia-400 disabled:cursor-default " + (isB ? "border-fuchsia-600 bg-fuchsia-600 text-white" : "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800 hover:bg-fuchsia-100"), "data-comparison-slot-action": "b", "aria-pressed": isB, "aria-label": (isB ? "Comparison B selected: " : "Use as comparison B: ") + entryLabel }, isB ? "B selected" : "Use as B")
                       ),
-                      h("button", { type: "button", onClick: function() { restoreDnaExperiment(entry); }, className: "mt-1.5 w-full rounded-lg border border-amber-300 bg-amber-50 px-2 py-2 text-[9px] font-black text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400", "aria-label": "Restore " + entryLabel + " to the active DNA experiment" }, "Restore checkpoint")
+                      h("button", { type: "button", onClick: function() { restoreDnaExperiment(entry); }, className: "mt-1.5 w-full rounded-lg border border-amber-300 bg-amber-50 px-2 py-2 text-[0.5625rem] font-black text-amber-900 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400", "aria-label": "Restore " + entryLabel + " to the active DNA experiment" }, "Restore checkpoint")
                     )
                   )
                 );
@@ -4870,34 +4870,34 @@ window.StemLab = window.StemLab || {
             ),
             h("div", { className: "mt-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2.5 " + (compareLeft && compareRight ? "border-emerald-200 bg-emerald-50" : "border-indigo-200 bg-indigo-50"), "data-dna-comparison-readiness": true, "data-comparison-state": compareLeft && compareRight ? "ready" : compareLeft || compareRight ? "one-selected" : "empty", role: "status" },
               h("div", null,
-                h("div", { className: "text-[10px] font-black " + (compareLeft && compareRight ? "text-emerald-900" : "text-indigo-900") }, compareLeft && compareRight ? "Ready to compare" : compareLeft || compareRight ? "Choose one more checkpoint" : "Choose comparison A and B"),
-                h("div", { className: "mt-0.5 text-[9px] leading-relaxed text-slate-600" }, compareLeft && compareRight ? (compareLeft.label || "Experiment A") + " \u2194 " + (compareRight.label || "Experiment B") : "Use the card buttons above or the selectors below.")
+                h("div", { className: "text-[0.625rem] font-black " + (compareLeft && compareRight ? "text-emerald-900" : "text-indigo-900") }, compareLeft && compareRight ? "Ready to compare" : compareLeft || compareRight ? "Choose one more checkpoint" : "Choose comparison A and B"),
+                h("div", { className: "mt-0.5 text-[0.5625rem] leading-relaxed text-slate-600" }, compareLeft && compareRight ? (compareLeft.label || "Experiment A") + " \u2194 " + (compareRight.label || "Experiment B") : "Use the card buttons above or the selectors below.")
               ),
               h("div", { className: "flex items-center gap-1.5", "aria-label": "Comparison slots" },
-                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareLeft ? "bg-indigo-600 text-white" : "border border-dashed border-indigo-300 bg-white text-indigo-600") }, compareLeft ? "A \u00b7 " + (compareLeft.label || "Selected") : "A \u00b7 empty"),
-                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareRight ? "bg-fuchsia-600 text-white" : "border border-dashed border-fuchsia-300 bg-white text-fuchsia-600") }, compareRight ? "B \u00b7 " + (compareRight.label || "Selected") : "B \u00b7 empty")
+                h("span", { className: "rounded-full px-2 py-1 text-[0.5rem] font-black " + (compareLeft ? "bg-indigo-600 text-white" : "border border-dashed border-indigo-300 bg-white text-indigo-600") }, compareLeft ? "A \u00b7 " + (compareLeft.label || "Selected") : "A \u00b7 empty"),
+                h("span", { className: "rounded-full px-2 py-1 text-[0.5rem] font-black " + (compareRight ? "bg-fuchsia-600 text-white" : "border border-dashed border-fuchsia-300 bg-white text-fuchsia-600") }, compareRight ? "B \u00b7 " + (compareRight.label || "Selected") : "B \u00b7 empty")
               )
             )
           ),
           dnaExperimentHistory.length > 1 && h("section", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3", "data-dna-experiment-compare": true, role: "region", "aria-labelledby": "dna-experiment-compare-title" },
             h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
               h("div", null,
-                h("h5", { id: "dna-experiment-compare-title", className: "text-[11px] font-black uppercase tracking-wide text-indigo-900" }, "Compare saved experiments"),
-                h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "Choose two checkpoints to compare their DNA, codons, amino acids, and protein evidence.")
+                h("h5", { id: "dna-experiment-compare-title", className: "text-[0.6875rem] font-black uppercase tracking-wide text-indigo-900" }, "Compare saved experiments"),
+                h("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-600" }, "Choose two checkpoints to compare their DNA, codons, amino acids, and protein evidence.")
               ),
-              h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-bold text-indigo-800" }, "A ↔ B")
+              h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-bold text-indigo-800" }, "A ↔ B")
             ),
             h("div", { className: "mt-3 grid gap-2 sm:grid-cols-2" },
-              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-indigo-800" },
+              h("label", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-indigo-800" },
                 "Experiment A",
-                h("select", { value: dnaCompareLeftId, onChange: function(e) { upd('dnaCompareLeft', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose first saved experiment" },
+                h("select", { value: dnaCompareLeftId, onChange: function(e) { upd('dnaCompareLeft', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700", 'aria-label': "Choose first saved experiment" },
                   h("option", { value: "" }, "Choose experiment A"),
                   dnaExperimentHistory.map(function(entry) { return h("option", { key: entry.id, value: entry.id }, entry.label || "Saved experiment"); })
                 )
               ),
-              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-indigo-800" },
+              h("label", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-indigo-800" },
                 "Experiment B",
-                h("select", { value: dnaCompareRightId, onChange: function(e) { upd('dnaCompareRight', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose second saved experiment" },
+                h("select", { value: dnaCompareRightId, onChange: function(e) { upd('dnaCompareRight', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700", 'aria-label': "Choose second saved experiment" },
                   h("option", { value: "" }, "Choose experiment B"),
                   dnaExperimentHistory.map(function(entry) { return h("option", { key: entry.id, value: entry.id }, entry.label || "Saved experiment"); })
                 )
@@ -4905,7 +4905,7 @@ window.StemLab = window.StemLab || {
             ),
             experimentComparison
               ? h("div", { className: "mt-3 space-y-3", "data-dna-experiment-comparison-result": true },
-                  h("div", { className: "rounded-lg border border-indigo-500 bg-white p-3 text-[11px] text-slate-700" },
+                  h("div", { className: "rounded-lg border border-indigo-500 bg-white p-3 text-[0.6875rem] text-slate-700" },
                     h("span", { className: "font-black" }, "Difference summary: "),
                     experimentComparison.baseDifferences + " aligned base difference" + (experimentComparison.baseDifferences === 1 ? "" : "s") + (experimentComparison.firstDifference ? " · first difference at base " + experimentComparison.firstDifference : "")
                   ),
@@ -4915,15 +4915,15 @@ window.StemLab = window.StemLab || {
                       { label: compareRight.label || "Experiment B", analysis: experimentComparison.right, tone: "border-indigo-200" }
                     ].map(function(view) {
                       return h("div", { key: view.label, className: "rounded-lg border bg-white p-3 " + view.tone },
-                        h("div", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-700" }, view.label),
-                        h("div", { className: "mt-2 break-all font-mono text-[10px] text-slate-700" }, "DNA: " + view.analysis.sequence),
-                        h("div", { className: "mt-1 break-all font-mono text-[10px] text-slate-600" }, "mRNA: " + (view.analysis.mrna || "Not transcribed")),
-                        h("div", { className: "mt-2 rounded-md bg-slate-50 p-2 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(view.analysis.protein) || "Not translated")
+                        h("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-indigo-700" }, view.label),
+                        h("div", { className: "mt-2 break-all font-mono text-[0.625rem] text-slate-700" }, "DNA: " + view.analysis.sequence),
+                        h("div", { className: "mt-1 break-all font-mono text-[0.625rem] text-slate-600" }, "mRNA: " + (view.analysis.mrna || "Not transcribed")),
+                        h("div", { className: "mt-2 rounded-md bg-slate-50 p-2 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(view.analysis.protein) || "Not translated")
                       );
                     })
                   ),
                   h("div", { className: "overflow-x-auto rounded-lg border border-indigo-500 bg-white" },
-                    h("table", { className: "w-full min-w-[560px] text-left text-[10px]", "aria-label": "Saved experiment codon comparison" },
+                    h("table", { className: "w-full min-w-[560px] text-left text-[0.625rem]", "aria-label": "Saved experiment codon comparison" },
                       h("thead", null,
                         h("tr", { className: "border-b border-indigo-100 bg-indigo-50" },
                           h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Codon"),
@@ -4947,11 +4947,11 @@ window.StemLab = window.StemLab || {
                     )
                   ),
                   h("label", { className: "block rounded-lg border border-indigo-500 bg-white p-3" },
-                    h("span", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-800" }, "Comparison reflection"),
-                    h("textarea", { value: dnaCompareReflection, onChange: function(e) { upd('dnaCompareReflection', e.target.value); }, rows: 2, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-indigo-500", 'aria-label': "Saved experiment comparison reflection", placeholder: "What changed between A and B, and which codon or protein evidence supports your conclusion?" })
+                    h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-indigo-800" }, "Comparison reflection"),
+                    h("textarea", { value: dnaCompareReflection, onChange: function(e) { upd('dnaCompareReflection', e.target.value); }, rows: 2, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-indigo-500", 'aria-label': "Saved experiment comparison reflection", placeholder: "What changed between A and B, and which codon or protein evidence supports your conclusion?" })
                   )
                 )
-              : h("p", { className: "mt-3 mb-0 rounded-lg border border-dashed border-indigo-200 bg-white/70 p-3 text-[11px] text-slate-600" }, "Choose two different saved experiments to open the side-by-side comparison.")
+              : h("p", { className: "mt-3 mb-0 rounded-lg border border-dashed border-indigo-200 bg-white/70 p-3 text-[0.6875rem] text-slate-600" }, "Choose two different saved experiments to open the side-by-side comparison.")
           ),
           callGemini && h("div", { className: "mt-2" },
             h("button", { onClick: function() {
@@ -4969,7 +4969,7 @@ window.StemLab = window.StemLab || {
               }).catch(function() { upd('aiExplain', 'AI explanation unavailable.'); upd('aiExplainLoading', false); });
             }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-600 hover:to-fuchsia-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain This DNA'),
             d.aiExplain && h("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
-              h("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider block mb-1" }, t('stem.dna.ai_analysis', "\uD83E\uDDE0 AI Analysis")),
+              h("span", { className: "text-[0.6875rem] font-bold text-purple-600 uppercase tracking-wider block mb-1" }, t('stem.dna.ai_analysis', "\uD83E\uDDE0 AI Analysis")),
               d.aiExplain
             )
           )
@@ -4989,8 +4989,8 @@ window.StemLab = window.StemLab || {
                   state === 'current' ? 'border-violet-400 bg-violet-50 text-violet-800 shadow-sm' :
                   'border-slate-200 bg-white text-slate-500'
                 ), 'aria-current': state === 'current' ? 'step' : undefined },
-                  h("span", { className: "block font-mono text-[10px] font-black" }, state === 'complete' ? '\u2713' : '0' + (index + 1)),
-                  h("span", { className: "mt-0.5 block truncate text-[10px] font-bold" }, label)
+                  h("span", { className: "block font-mono text-[0.625rem] font-black" }, state === 'complete' ? '\u2713' : '0' + (index + 1)),
+                  h("span", { className: "mt-0.5 block truncate text-[0.625rem] font-bold" }, label)
                 );
               })
             );
@@ -5012,7 +5012,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\u2702\uFE0F"),
               h("h4", { className: "text-sm font-bold text-violet-800" }, t('stem.dna.crispr_cas9_gene_editor', "CRISPR-Cas9 Gene Editor")),
-              h("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (
+              h("span", { className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full " + (
                 crisprPhase === 'design' ? 'bg-blue-200 text-blue-800' :
                 crisprPhase === 'scanning' ? 'bg-amber-200 text-amber-800' + (reducedMotion ? '' : ' animate-pulse') :
                 crisprPhase === 'cut' ? 'bg-red-200 text-red-800' :
@@ -5030,18 +5030,18 @@ window.StemLab = window.StemLab || {
 
             // Design phase
             crisprPhase === 'design' && h("div", { className: "space-y-2" },
-              h("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t('stem.dna.step_1_select_pam_target_site', 'Step 1: Select PAM Target Site')),
+              h("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, t('stem.dna.step_1_select_pam_target_site', 'Step 1: Select PAM Target Site')),
               pamSites.length === 0 ? h("p", { className: "text-xs text-amber-800 bg-amber-50 p-2 rounded-lg" }, t('stem.dna.no_pam_sites_ngg_found_try_a_different', '\u26A0\uFE0F No forward-strand NGG sites with enough upstream sequence were found. Try a longer preset from Build.')) :
               h("div", { className: "space-y-1" },
-                h("p", { className: "text-[11px] text-slate-600" }, pamSites.length + ' forward-strand PAM site(s) detected. The six-base guide window is schematic; real SpCas9 spacers are typically 20 nt:'),
+                h("p", { className: "text-[0.6875rem] text-slate-600" }, pamSites.length + ' forward-strand PAM site(s) detected. The six-base guide window is schematic; real SpCas9 spacers are typically 20 nt:'),
                 h("div", { className: "flex gap-1 flex-wrap" },
                   pamSites.map(function(site, idx) {
                     return h("button", { type: "button", key: idx, 'aria-pressed': activePAM === idx, onClick: function() { upd('crisprTargetPAM', idx); },
-                      className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all " + (activePAM === idx ? 'bg-violet-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
+                      className: "px-2 py-1 text-[0.6875rem] font-bold rounded-lg transition-all " + (activePAM === idx ? 'bg-violet-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
                     }, 'Pos ' + (site.pamStart + 1) + ' (' + dnaSeq.substring(site.pamStart, site.pamStart + 3) + ')');
                   })
                 ),
-                selectedPAMSite && h("div", { className: "mt-2 p-2 bg-white rounded-lg border text-[11px]" },
+                selectedPAMSite && h("div", { className: "mt-2 p-2 bg-white rounded-lg border text-[0.6875rem]" },
                   h("p", { className: "text-slate-600" }, '\uD83C\uDFAF Schematic guide window: pos ' + (selectedPAMSite.guideStart + 1) + '-' + selectedPAMSite.guideEnd + ' | cut near pos ' + (selectedPAMSite.cutSite + 1) + ' | PAM: ' + dnaSeq.substring(selectedPAMSite.pamStart, selectedPAMSite.pamStart + 3) + ' at pos ' + (selectedPAMSite.pamStart + 1)),
                   h("p", { className: "text-blue-600 font-mono mt-0.5" }, 'gRNA: ' + dnaSeq.substring(selectedPAMSite.guideStart, selectedPAMSite.guideEnd).split('').map(function(b) { return DNA_TO_RNA[b] || b; }).join(''))
                 ),
@@ -5057,7 +5057,7 @@ window.StemLab = window.StemLab || {
               ),
               h("div", { className: "flex items-center gap-2", role: "group", 'aria-label': "CRISPR scan speed" },
                 h("span", { className: "text-xs text-slate-600" }, 'Speed:'),
-                [1, 2, 4].map(function(s) { return h("button", { type: "button", key: s, 'aria-pressed': speed === s, onClick: function() { upd('speed', s); }, className: "px-2 py-0.5 text-[11px] font-bold rounded " + (speed === s ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600') }, s + 'x'); })
+                [1, 2, 4].map(function(s) { return h("button", { type: "button", key: s, 'aria-pressed': speed === s, onClick: function() { upd('speed', s); }, className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded " + (speed === s ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600') }, s + 'x'); })
               )
             ),
 
@@ -5065,7 +5065,7 @@ window.StemLab = window.StemLab || {
             crisprPhase === 'cut' && h("div", { className: "space-y-2" },
               h("p", { className: "text-xs font-bold text-red-600" }, t('stem.dna.double_strand_break_created_choose_rep', '\u2702\uFE0F Double-strand break created! Choose repair pathway:')),
               h("div", { className: "flex flex-wrap items-center gap-1", role: "group", 'aria-label': "Choose the donor-template base for the HDR model" },
-                h("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "HDR donor base:"),
+                h("span", { className: "text-[0.6875rem] font-bold text-slate-600 mr-1" }, "HDR donor base:"),
                 ['A', 'T', 'G', 'C'].map(function(base) {
                   return h("button", {
                     type: "button",
@@ -5079,13 +5079,13 @@ window.StemLab = window.StemLab || {
               h("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" },
                 h("button", { type: "button", onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-600 bg-amber-50 hover:bg-amber-100 transition-all text-left active:scale-[0.97]" },
                   h("p", { className: "text-xs font-bold text-amber-700" }, t('stem.dna.nhej', '\uD83D\uDD27 NHEJ')),
-                  h("p", { className: "text-[11px] text-amber-600 mt-0.5" }, t('stem.dna.non_homologous_end_joining', 'Non-Homologous End Joining')),
-                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Quick fix - might make mistakes!', 'Often rejoins the break with small insertions or deletions; this model applies a deletion.', 'Often produces a distribution of indels and is commonly used in knockout experiments; this model shows one deletion outcome.', 'Often produces a distribution of indels and is commonly used in knockout experiments; this model shows one deletion outcome.'))
+                  h("p", { className: "text-[0.6875rem] text-amber-600 mt-0.5" }, t('stem.dna.non_homologous_end_joining', 'Non-Homologous End Joining')),
+                  h("p", { className: "text-[0.6875rem] text-slate-600 mt-1" }, gradeText('Quick fix - might make mistakes!', 'Often rejoins the break with small insertions or deletions; this model applies a deletion.', 'Often produces a distribution of indels and is commonly used in knockout experiments; this model shows one deletion outcome.', 'Often produces a distribution of indels and is commonly used in knockout experiments; this model shows one deletion outcome.'))
                 ),
                 h("button", { type: "button", onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all text-left active:scale-[0.97]" },
                   h("p", { className: "text-xs font-bold text-emerald-700" }, t('stem.dna.hdr', '\uD83E\uDDEC HDR')),
-                  h("p", { className: "text-[11px] text-emerald-600 mt-0.5" }, t('stem.dna.homology_directed_repair', 'Homology-Directed Repair')),
-                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Careful fix - uses a template!', 'Template-directed editing can copy a supplied donor sequence; this model substitutes the selected base.', 'A donor template can support a desired knock-in, but repair efficiency and byproducts vary.', 'A donor template can support a desired change, but on-target byproducts and efficiency must be measured.'))
+                  h("p", { className: "text-[0.6875rem] text-emerald-600 mt-0.5" }, t('stem.dna.homology_directed_repair', 'Homology-Directed Repair')),
+                  h("p", { className: "text-[0.6875rem] text-slate-600 mt-1" }, gradeText('Careful fix - uses a template!', 'Template-directed editing can copy a supplied donor sequence; this model substitutes the selected base.', 'A donor template can support a desired knock-in, but repair efficiency and byproducts vary.', 'A donor template can support a desired change, but on-target byproducts and efficiency must be measured.'))
                 )
               )
             ),
@@ -5098,10 +5098,10 @@ window.StemLab = window.StemLab || {
 
             // Edit history
             crisprEditLog.length > 0 && h("div", { className: "mt-2 pt-2 border-t border-slate-200" },
-              h("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, t('stem.dna.crispr_edit_history', '\uD83D\uDCCB CRISPR Edit History:')),
+              h("p", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, t('stem.dna.crispr_edit_history', '\uD83D\uDCCB CRISPR Edit History:')),
               h("div", { className: "space-y-1 max-h-24 overflow-y-auto" },
                 crisprEditLog.map(function(e, i) {
-                  return h("div", { key: i, className: "text-[11px] px-2 py-1 rounded bg-slate-50 text-slate-600" }, (e.type === 'NHEJ' ? '\uD83D\uDD27' : '\uD83E\uDDEC') + ' ' + e.desc);
+                  return h("div", { key: i, className: "text-[0.6875rem] px-2 py-1 rounded bg-slate-50 text-slate-600" }, (e.type === 'NHEJ' ? '\uD83D\uDD27' : '\uD83E\uDDEC') + ' ' + e.desc);
                 })
               )
             )
@@ -5109,7 +5109,7 @@ window.StemLab = window.StemLab || {
 
           h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "transition-colors px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50 active:scale-[0.97]" }, t('stem.dna.crispr_quick_reference', '\uD83D\uDCDA CRISPR Quick Reference')),
-            h("div", { className: "p-3 text-[11px] text-slate-600 space-y-2" },
+            h("div", { className: "p-3 text-[0.6875rem] text-slate-600 space-y-2" },
               h("div", null,
                 h("p", { className: "font-bold text-slate-700" }, t('stem.dna.what_is_crispr', 'What is CRISPR?')),
                 h("p", null, t('stem.dna.crispr_clustered_regularly_interspaced', 'CRISPR (Clustered Regularly Interspaced Short Palindromic Repeats) is a gene editing technology adapted from bacteria\'s immune defense.'))
@@ -5137,7 +5137,7 @@ window.StemLab = window.StemLab || {
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("div", { className: "flex items-center justify-between mb-3" },
               h("h4", { className: "text-sm font-bold text-slate-700" }, "\uD83E\uDDEA Protein - " + fullProtein.length + " amino acids"),
-              fullProtein.length > 0 && h("span", { className: "text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full" },
+              fullProtein.length > 0 && h("span", { className: "text-[0.6875rem] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full" },
                 Math.round(fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'nonpolar'; }).length / Math.max(1, fullProtein.length) * 100) + '% hydrophobic'
               )
             ),
@@ -5145,39 +5145,39 @@ window.StemLab = window.StemLab || {
               h("div", { className: "flex flex-wrap gap-1.5 p-3 bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl border border-slate-100" },
                 fullProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa, abbr: '?', type: '?' };
                   return h("div", { key: idx, className: "flex flex-col items-center gap-0.5 p-1.5 rounded-lg min-w-[44px] hover:scale-105 transition-transform cursor-default", title: pr.full + ' (' + p.codon + ') - ' + pr.type },
-                    h("span", { className: "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black text-white shadow-sm", style: { background: pr.color } }, pr.abbr),
-                    h("span", { className: "text-[11px] font-bold text-slate-600" }, p.aa),
-                    h("span", { className: "text-[11px] text-slate-600 font-mono" }, p.codon),
-                    idx < fullProtein.length - 1 && p.aa !== 'Stop' ? h("span", { className: "text-[11px] text-slate-600" }, '\u2500') : null
+                    h("span", { className: "w-7 h-7 rounded-full flex items-center justify-center text-[0.6875rem] font-black text-white shadow-sm", style: { background: pr.color } }, pr.abbr),
+                    h("span", { className: "text-[0.6875rem] font-bold text-slate-600" }, p.aa),
+                    h("span", { className: "text-[0.6875rem] text-slate-600 font-mono" }, p.codon),
+                    idx < fullProtein.length - 1 && p.aa !== 'Stop' ? h("span", { className: "text-[0.6875rem] text-slate-600" }, '\u2500') : null
                   );
                 })
               ),
               h("div", { className: "grid grid-cols-2 gap-2 mt-2" },
                 h("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-100" },
-                  h("p", { className: "text-[11px] font-bold text-amber-700 uppercase" }, t('stem.dna.nonpolar_hydrophobic', 'Nonpolar (Hydrophobic)')),
+                  h("p", { className: "text-[0.6875rem] font-bold text-amber-700 uppercase" }, t('stem.dna.nonpolar_hydrophobic', 'Nonpolar (Hydrophobic)')),
                   h("p", { className: "text-sm font-black text-amber-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'nonpolar'; }).length),
-                  h("p", { className: "text-[11px] text-amber-700" }, t('stem.dna.ala_val_leu_ile_pro_phe_trp_met_gly', 'Ala, Val, Leu, Ile, Pro, Phe, Trp, Met, Gly'))
+                  h("p", { className: "text-[0.6875rem] text-amber-700" }, t('stem.dna.ala_val_leu_ile_pro_phe_trp_met_gly', 'Ala, Val, Leu, Ile, Pro, Phe, Trp, Met, Gly'))
                 ),
                 h("div", { className: "bg-blue-50 rounded-lg p-2 border border-blue-100" },
-                  h("p", { className: "text-[11px] font-bold text-blue-700 uppercase" }, t('stem.dna.polar_hydrophilic', 'Polar (Hydrophilic)')),
+                  h("p", { className: "text-[0.6875rem] font-bold text-blue-700 uppercase" }, t('stem.dna.polar_hydrophilic', 'Polar (Hydrophilic)')),
                   h("p", { className: "text-sm font-black text-blue-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'polar'; }).length),
-                  h("p", { className: "text-[11px] text-blue-700" }, t('stem.dna.ser_thr_cys_tyr_asn_gln', 'Ser, Thr, Cys, Tyr, Asn, Gln'))
+                  h("p", { className: "text-[0.6875rem] text-blue-700" }, t('stem.dna.ser_thr_cys_tyr_asn_gln', 'Ser, Thr, Cys, Tyr, Asn, Gln'))
                 ),
                 h("div", { className: "bg-red-50 rounded-lg p-2 border border-red-100" },
-                  h("p", { className: "text-[11px] font-bold text-red-700 uppercase" }, t('stem.dna.positively_charged', 'Positively Charged')),
+                  h("p", { className: "text-[0.6875rem] font-bold text-red-700 uppercase" }, t('stem.dna.positively_charged', 'Positively Charged')),
                   h("p", { className: "text-sm font-black text-red-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'positive'; }).length),
-                  h("p", { className: "text-[11px] text-red-700" }, t('stem.dna.arg_lys_his', 'Arg, Lys, His'))
+                  h("p", { className: "text-[0.6875rem] text-red-700" }, t('stem.dna.arg_lys_his', 'Arg, Lys, His'))
                 ),
                 h("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-100" },
-                  h("p", { className: "text-[11px] font-bold text-purple-700 uppercase" }, t('stem.dna.negatively_charged', 'Negatively Charged')),
+                  h("p", { className: "text-[0.6875rem] font-bold text-purple-700 uppercase" }, t('stem.dna.negatively_charged', 'Negatively Charged')),
                   h("p", { className: "text-sm font-black text-purple-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'negative'; }).length),
-                  h("p", { className: "text-[11px] text-purple-700" }, t('stem.dna.asp_glu', 'Asp, Glu'))
+                  h("p", { className: "text-[0.6875rem] text-purple-700" }, t('stem.dna.asp_glu', 'Asp, Glu'))
                 )
               ),
               h("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-400 mt-1" },
-                h("p", { className: "text-[11px] font-bold text-slate-600" }, '\u2696\uFE0F Estimated MW: ~' + (fullProtein.length * 110) + ' Da (' + (fullProtein.length * 110 / 1000).toFixed(1) + ' kDa) | Seq: ' + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return (AA_PROPS[p.aa] || {}).abbr || '?'; }).join(''))
+                h("p", { className: "text-[0.6875rem] font-bold text-slate-600" }, '\u2696\uFE0F Estimated MW: ~' + (fullProtein.length * 110) + ' Da (' + (fullProtein.length * 110 / 1000).toFixed(1) + ' kDa) | Seq: ' + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return (AA_PROPS[p.aa] || {}).abbr || '?'; }).join(''))
               ),
-              h("div", { className: "flex gap-3 text-[11px] text-slate-600 pt-2 border-t flex-wrap" },
+              h("div", { className: "flex gap-3 text-[0.6875rem] text-slate-600 pt-2 border-t flex-wrap" },
                 [{ t: 'nonpolar', c: '#f59e0b', l: 'Nonpolar' }, { t: 'polar', c: '#3b82f6', l: 'Polar' }, { t: 'positive', c: '#ef4444', l: 'Positive (+)' }, { t: 'negative', c: '#a855f7', l: 'Negative (\u2212)' }].map(function(lg) { return h("span", { key: lg.t, className: "flex items-center gap-1" }, h("span", { className: "w-3 h-3 rounded-full", style: { background: lg.c } }), lg.l); })
               ),
               callGemini && h("div", { className: "pt-2 border-t border-slate-100" },
@@ -5190,7 +5190,7 @@ window.StemLab = window.StemLab || {
                   callGemini(prompt, true, false, 0.7).then(function(r) { updMulti({ aiProtein: typeof r === 'string' ? r : 'Analysis unavailable.', aiProteinLoading: false }); checkBadge('proteinSci'); }).catch(function() { updMulti({ aiProtein: 'AI unavailable.', aiProteinLoading: false }); });
                 }, disabled: d.aiProteinLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiProteinLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md') }, d.aiProteinLoading ? '\u23F3 Analyzing...' : '\u2728 AI: Analyze Protein'),
                 d.aiProtein && h("div", { className: "mt-2 p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-xs text-indigo-900 leading-relaxed" },
-                  h("span", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, t('stem.dna.protein_analysis', '\uD83E\uDDE0 Protein Analysis')),
+                  h("span", { className: "text-[0.6875rem] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, t('stem.dna.protein_analysis', '\uD83E\uDDE0 Protein Analysis')),
                   d.aiProtein
                 )
               )
@@ -5203,10 +5203,10 @@ window.StemLab = window.StemLab || {
                 return h("div", { key: dis.name, className: "p-2 bg-slate-50 rounded-lg" },
                   h("div", { className: "flex items-center gap-2" },
                     h("span", { className: "text-xs font-bold text-slate-700" }, dis.name),
-                    h("span", { className: "px-1.5 py-0.5 bg-rose-100 text-rose-700 text-[11px] font-bold rounded-full" }, dis.type)
+                    h("span", { className: "px-1.5 py-0.5 bg-rose-100 text-rose-700 text-[0.6875rem] font-bold rounded-full" }, dis.type)
                   ),
-                  h("p", { className: "text-[11px] text-slate-600 mt-0.5" }, 'Gene: ' + dis.gene + ' | Mutation: ' + dis.mutation),
-                  h("p", { className: "text-[11px] text-slate-600 mt-0.5" }, dis.effect)
+                  h("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, 'Gene: ' + dis.gene + ' | Mutation: ' + dis.mutation),
+                  h("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, dis.effect)
                 );
               })
             )
@@ -5300,22 +5300,22 @@ window.StemLab = window.StemLab || {
                   h("span", { style: { fontSize: 22 }, "aria-hidden": "true" }, '\uD83D\uDD75\uFE0F'),
                   h("div", null,
                     h("div", { className: "text-sm font-black text-violet-800" }, t('stem.dna.mutation_effect_sleuth', 'Mutation Effect Sleuth')),
-                    h("div", { className: "text-[11px] text-slate-600 italic" }, t('stem.dna.predict_the_effect_type_from_5_options', 'Predict the effect type from 5 options.'))
+                    h("div", { className: "text-[0.6875rem] text-slate-600 italic" }, t('stem.dna.predict_the_effect_type_from_5_options', 'Predict the effect type from 5 options.'))
                   )
                 ),
                 h("button", {
                   onClick: function() { upd('msOpen', !msOpen); },
-                  className: "transition-colors px-3 py-1 rounded-lg bg-violet-200 text-violet-800 text-[11px] font-bold hover:bg-violet-300 active:scale-[0.97]"
+                  className: "transition-colors px-3 py-1 rounded-lg bg-violet-200 text-violet-800 text-[0.6875rem] font-bold hover:bg-violet-300 active:scale-[0.97]"
                 }, msOpen ? 'Hide \u25B4' : 'Play \u2192')
               ),
               msOpen && (msIdx < 0
                 ? h("div", { className: "text-center py-3" },
-                    h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-3" },
+                    h("p", { className: "text-[0.6875rem] text-slate-700 leading-relaxed mb-3" },
                       t('stem.dna.10_mutation_vignettes_each_shows_a_sho', '10 mutation vignettes. Each shows a short before/after DNA sequence with the change highlighted. Pick the effect type - silent, missense, nonsense, frameshift, or in-frame indel. Coaching after each pick names what makes this effect more likely than the others.')),
                     h("button", {
                       onClick: startMs,
                       'aria-label': t('stem.dna.start_mutation_effect_sleuth', 'Start Mutation Effect Sleuth'),
-                      className: "transition-colors px-4 py-2 rounded-lg bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-700 active:scale-[0.97]"
+                      className: "transition-colors px-4 py-2 rounded-lg bg-violet-600 text-white text-[0.6875rem] font-bold hover:bg-violet-700 active:scale-[0.97]"
                     }, t('stem.dna.start_vignette_1_of_10', '\uD83D\uDD75\uFE0F Start - vignette 1 of 10'))
                   )
                 : (function() {
@@ -5324,7 +5324,7 @@ window.StemLab = window.StemLab || {
                     var pct = msRounds > 0 ? Math.round((msScore / msRounds) * 100) : 0;
                     var allDone = msShown.length >= MS_VIGNETTES.length && msAnswered;
                     return h("div", null,
-                      h("div", { className: "flex items-center flex-wrap gap-3 mb-3 text-[11px] text-slate-600" },
+                      h("div", { className: "flex items-center flex-wrap gap-3 mb-3 text-[0.6875rem] text-slate-600" },
                         h("span", null, t('stem.dna.vignette', 'Vignette '), h('strong', { className: "text-slate-800" }, msShown.length)),
                         h("span", null, t('stem.dna.score', 'Score '), h('strong', { className: "text-emerald-700" }, msScore + ' / ' + msRounds)),
                         msRounds > 0 && h("span", null, t('stem.dna.accuracy', 'Accuracy '), h('strong', { className: "text-cyan-700" }, pct + '%')),
@@ -5332,17 +5332,17 @@ window.StemLab = window.StemLab || {
                         h("span", null, t('stem.dna.best', 'Best '), h('strong', { className: "text-fuchsia-700" }, msBest))
                       ),
                       h("div", { className: "bg-white rounded-lg p-3 border border-violet-500 mb-2" },
-                        h("div", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1" }, 'Vignette ' + msShown.length + ' of ' + MS_VIGNETTES.length),
-                        h("div", { className: "font-mono text-[12px] text-slate-700 mb-1" },
+                        h("div", { className: "text-[0.625rem] font-bold text-violet-700 uppercase tracking-wider mb-1" }, 'Vignette ' + msShown.length + ' of ' + MS_VIGNETTES.length),
+                        h("div", { className: "font-mono text-[0.75rem] text-slate-700 mb-1" },
                           h('span', { className: "text-slate-500" }, 'Before:  '),
                           h('span', { className: "text-emerald-700 font-bold" }, v.before)
                         ),
-                        h("div", { className: "font-mono text-[12px] text-slate-700 mb-1" },
+                        h("div", { className: "font-mono text-[0.75rem] text-slate-700 mb-1" },
                           h('span', { className: "text-slate-500" }, 'After:   '),
                           h('span', { className: "text-rose-700 font-bold" }, v.after)
                         ),
-                        h("div", { className: "text-[11px] text-slate-700 italic mt-1" }, 'Change: ' + v.change),
-                        msAnswered && h("div", { className: "mt-2 pt-2 border-t border-violet-100 text-[11px] text-slate-700 font-mono" },
+                        h("div", { className: "text-[0.6875rem] text-slate-700 italic mt-1" }, 'Change: ' + v.change),
+                        msAnswered && h("div", { className: "mt-2 pt-2 border-t border-violet-100 text-[0.6875rem] text-slate-700 font-mono" },
                           h('div', null, h('span', { className: 'text-slate-500' }, t('stem.dna.aa_before', 'AA before: ')), v.aaBefore),
                           h('div', null, h('span', { className: 'text-slate-500' }, t('stem.dna.aa_after', 'AA after:  ')), v.aaAfter)
                         )
@@ -5382,16 +5382,16 @@ window.StemLab = window.StemLab || {
                           border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
                         }
                       },
-                        h("div", { className: "text-[12px] font-bold mb-1", style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+                        h("div", { className: "text-[0.75rem] font-bold mb-1", style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
                           pickedCorrect
                             ? '\u2705 Correct - ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label
                             : '\u274C The effect is ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label + (msPick ? ' (you picked ' + (MS_TYPES.filter(function(x) { return x.id === msPick; })[0]).label + ')' : '')
                         ),
-                        h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-2" }, v.why),
+                        h("p", { className: "text-[0.6875rem] text-slate-700 leading-relaxed mb-2" }, v.why),
                         allDone
                           ? h("div", { className: "p-2 rounded bg-violet-100 border border-violet-300" },
-                              h("div", { className: "text-[12px] font-bold text-violet-800 mb-1" }, t('stem.dna.all_10_vignettes_complete', '\uD83C\uDFC6 All 10 vignettes complete')),
-                              h("div", { className: "text-[11px] text-slate-700 leading-relaxed" },
+                              h("div", { className: "text-[0.75rem] font-bold text-violet-800 mb-1" }, t('stem.dna.all_10_vignettes_complete', '\uD83C\uDFC6 All 10 vignettes complete')),
+                              h("div", { className: "text-[0.6875rem] text-slate-700 leading-relaxed" },
                                 'Final: ', h('strong', null, msScore + ' / ' + MS_VIGNETTES.length + ' (' + Math.round((msScore / MS_VIGNETTES.length) * 100) + '%)'),
                                 msScore === MS_VIGNETTES.length ? ' - every effect type correctly identified. Ready for AP Bio FRQ work.' :
                                 msScore >= 8 ? ' - strong codon-effect reasoning. The most-confused pair is usually missense vs silent (3rd-position changes can go either way) and frameshift vs in-frame indel (count the bases mod 3).' :
@@ -5400,12 +5400,12 @@ window.StemLab = window.StemLab || {
                               ),
                               h("button", {
                                 onClick: function() { upd('msIdx', -1); upd('msShown', []); upd('msScore', 0); upd('msRounds', 0); upd('msStreak', 0); },
-                                className: "transition-colors mt-2 px-3 py-1.5 rounded bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-700 active:scale-[0.97]"
+                                className: "transition-colors mt-2 px-3 py-1.5 rounded bg-violet-600 text-white text-[0.6875rem] font-bold hover:bg-violet-700 active:scale-[0.97]"
                               }, t('stem.dna.restart', '\uD83D\uDD04 Restart'))
                             )
                           : h("button", {
                               onClick: startMs,
-                              className: "transition-colors px-3 py-1.5 rounded bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-700 active:scale-[0.97]"
+                              className: "transition-colors px-3 py-1.5 rounded bg-violet-600 text-white text-[0.6875rem] font-bold hover:bg-violet-700 active:scale-[0.97]"
                             }, t('stem.dna.next_vignette', '\u27A1\uFE0F Next vignette'))
                       )
                     );
@@ -5423,7 +5423,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\uD83D\uDD0D"),
               h("h4", { className: "text-sm font-bold text-cyan-800" }, t('stem.dna.dna_forensics_gel_electrophoresis', "DNA Forensics - Gel Electrophoresis")),
-              h("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "CASE " + (forensicCase + 1) + "/" + FORENSIC_CASES.length)
+              h("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[0.6875rem] font-bold rounded-full" }, "CASE " + (forensicCase + 1) + "/" + FORENSIC_CASES.length)
             ),
             h("p", { className: "text-xs text-slate-600" },
               gradeText(
@@ -5434,7 +5434,7 @@ window.StemLab = window.StemLab || {
               )
             ),
 
-            h("p", { className: "text-[11px] text-cyan-900 bg-cyan-100 border border-cyan-300 rounded-lg p-2" },
+            h("p", { className: "text-[0.6875rem] text-cyan-900 bg-cyan-100 border border-cyan-300 rounded-lg p-2" },
               "Model limit: these are clean, single-source teaching patterns. Real evidence may be partial, degraded, contaminated, or mixed, and analysts quantify the strength of support rather than declaring identity from bands alone."
             ),
 
@@ -5442,15 +5442,15 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex gap-1 flex-wrap" },
               FORENSIC_CASES.map(function(c, idx) {
                 return h("button", { type: "button", key: idx, 'aria-pressed': forensicCase === idx, onClick: function() { updMulti({ forensicCase: idx, forensicGelRun: false, forensicGuess: null, forensicResult: null }); },
-                  className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (forensicCase === idx ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400 active:scale-[0.97]')
+                  className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all " + (forensicCase === idx ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400 active:scale-[0.97]')
                 }, (idx + 1) + '. ' + c.name);
               })
             ),
 
             h("div", { className: "bg-white rounded-lg p-3 border" },
               h("p", { className: "text-xs font-bold text-slate-700" }, currentCase.name),
-              h("p", { className: "text-[11px] text-slate-600 mt-1" }, currentCase.desc),
-              h("p", { className: "text-[11px] text-cyan-700 mt-1" }, '\uD83E\uDDEC Restriction enzyme: ' + currentCase.enzyme)
+              h("p", { className: "text-[0.6875rem] text-slate-600 mt-1" }, currentCase.desc),
+              h("p", { className: "text-[0.6875rem] text-cyan-700 mt-1" }, '\uD83E\uDDEC Restriction enzyme: ' + currentCase.enzyme)
             ),
 
             // Run gel button
@@ -5459,7 +5459,7 @@ window.StemLab = window.StemLab || {
             forensicGelRun && h("div", { className: "space-y-3" },
               h("canvas", { ref: _forensicCanvasRef, style: { width: '100%', height: 240 }, tabIndex: 0, role: "img", 'aria-label': t('stem.dna.gel_electrophoresis_results', 'Gel electrophoresis results') }),
               h("div", { className: "overflow-x-auto rounded-lg border border-cyan-100 bg-white" },
-                h("table", { className: "w-full min-w-[420px] text-left text-[10px]" },
+                h("table", { className: "w-full min-w-[420px] text-left text-[0.625rem]" },
                   h("caption", { className: "sr-only" }, "DNA sample fragment sizes shown in the gel"),
                   h("thead", { className: "bg-cyan-50 text-cyan-900" },
                     h("tr", null,
@@ -5482,7 +5482,7 @@ window.StemLab = window.StemLab || {
 
               // Answer selection
               !forensicResult && h("div", { className: "space-y-2" },
-                h("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, 'Which sample matches the ' + currentCase.samples[0].label + '?'),
+                h("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, 'Which sample matches the ' + currentCase.samples[0].label + '?'),
                 h("div", { className: "flex gap-2 flex-wrap", role: "group", 'aria-label': "Choose the comparison sample" },
                   currentCase.samples.map(function(s, idx) {
                     if (s.isRef) return null;
@@ -5515,7 +5515,7 @@ window.StemLab = window.StemLab || {
                     callGemini(prompt, true, false, 0.7).then(function(r) { updMulti({ forensicAI: typeof r === 'string' ? r : 'Analysis unavailable.', forensicAILoading: false }); }).catch(function() { updMulti({ forensicAI: 'AI unavailable.', forensicAILoading: false }); });
                   }, disabled: d.forensicAILoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.forensicAILoading ? 'bg-cyan-700 text-white cursor-wait' : 'bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-md') }, d.forensicAILoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain the Evidence'),
                   d.forensicAI && h("div", { className: "mt-2 p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-xs text-cyan-900 leading-relaxed" },
-                    h("span", { className: "text-[11px] font-bold text-cyan-600 uppercase tracking-wider block mb-1" }, t('stem.dna.forensic_analysis', '\uD83E\uDDE0 Forensic Analysis')),
+                    h("span", { className: "text-[0.6875rem] font-bold text-cyan-600 uppercase tracking-wider block mb-1" }, t('stem.dna.forensic_analysis', '\uD83E\uDDE0 Forensic Analysis')),
                     d.forensicAI
                   )
                 )
@@ -5533,7 +5533,7 @@ window.StemLab = window.StemLab || {
               h("h4", { className: "text-sm font-bold text-slate-700" }, t('stem.dna.dna_challenge', "\uD83C\uDFAF DNA Challenge")),
               h("div", { className: "flex items-center gap-2" },
                 h("span", { className: "text-xs font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-full" }, "\u2B50 " + score + " pts"),
-                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm" + (reducedMotion ? '' : ' animate-pulse') }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
+                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[0.6875rem] font-bold rounded-full shadow-sm" + (reducedMotion ? '' : ' animate-pulse') }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
               )
             ),
 
@@ -5541,7 +5541,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex gap-1" },
               [{ l: '\uD83C\uDF3F Easy', t: 0 }, { l: '\u26A1 Medium', t: 1 }, { l: '\uD83D\uDD25 Hard', t: 2 }].map(function(tier) {
                 return h("button", { key: tier.t, onClick: function() { upd('challengeTier', tier.t); },
-                  className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (challengeTier === tier.t ? 'bg-violet-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
+                  className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all " + (challengeTier === tier.t ? 'bg-violet-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
                 }, tier.l);
               })
             ),
@@ -5572,7 +5572,7 @@ window.StemLab = window.StemLab || {
                 }, disabled: d.aiChallengeLoading, className: "px-5 py-2.5 text-sm font-bold transition-all rounded-xl shadow-lg " + (d.aiChallengeLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl') }, d.aiChallengeLoading ? '\u23F3 Generating...' : '\u2728 AI Challenge')
               )
             ) : h("div", { className: "space-y-3" },
-              challengeQ.isAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, t('stem.dna.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
+              challengeQ.isAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full" }, t('stem.dna.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
               h("p", { className: "text-sm font-medium text-slate-700" }, challengeQ.question),
               h("input", { type: "text", value: challengeAnswer, onChange: function(e) { upd('challengeAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkChallenge(); }, placeholder: t('stem.dna.type_your_answer', "Type your answer..."), className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-violet-400", 'aria-label': t('stem.dna.answer', 'Answer') }),
               h("div", { className: "flex gap-2 flex-wrap" },
@@ -5594,7 +5594,7 @@ window.StemLab = window.StemLab || {
           ),
           h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "transition-colors px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50 active:scale-[0.97]" }, t('stem.dna.codon_reference_table', "\uD83D\uDCD6 Codon Reference Table")),
-            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[11px] font-mono max-h-60 overflow-y-auto" },
+            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[0.6875rem] font-mono max-h-60 overflow-y-auto" },
               Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-700" }, "\u2192 " + aa2)); })
             )
           )
@@ -5608,7 +5608,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\u2694\uFE0F"),
               h("h4", { className: "text-sm font-bold text-red-800" }, t('stem.dna.gene_defense_battle', "Gene Defense Battle")),
-              !battleDone && battleOrder.length > 0 && h("span", { className: "px-2 py-0.5 bg-red-200 text-red-800 text-[11px] font-bold rounded-full" + (reducedMotion ? '' : ' animate-pulse') }, "Round " + (battleRound + 1) + "/" + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
+              !battleDone && battleOrder.length > 0 && h("span", { className: "px-2 py-0.5 bg-red-200 text-red-800 text-[0.6875rem] font-bold rounded-full" + (reducedMotion ? '' : ' animate-pulse') }, "Round " + (battleRound + 1) + "/" + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
             ),
             h("p", { className: "text-xs text-slate-600" }, gradeText(
               'A virus is attacking the cell! Answer genetics questions to fight it off!',
@@ -5623,14 +5623,14 @@ window.StemLab = window.StemLab || {
                 h("span", { className: "text-xs font-bold text-emerald-600 w-20" }, t('stem.dna.you', "\uD83D\uDEE1\uFE0F You")),
                 h("div", { className: "flex-1 bg-slate-100 rounded-full h-4 relative overflow-hidden" },
                   h("div", { className: "bg-gradient-to-r from-emerald-500 to-green-400 h-4 rounded-full transition-all duration-500", style: { width: battlePlayerHP + '%' } }),
-                  h("span", { className: "absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white drop-shadow" }, battlePlayerHP + ' HP')
+                  h("span", { className: "absolute inset-0 flex items-center justify-center text-[0.6875rem] font-bold text-white drop-shadow" }, battlePlayerHP + ' HP')
                 )
               ),
               h("div", { className: "flex items-center gap-2" },
                 h("span", { className: "text-xs font-bold text-red-600 w-20" }, t('stem.dna.virus', "\uD83E\uDDA0 Virus")),
                 h("div", { className: "flex-1 bg-slate-100 rounded-full h-4 relative overflow-hidden" },
                   h("div", { className: "bg-gradient-to-r from-red-500 to-orange-400 h-4 rounded-full transition-all duration-500", style: { width: battleEnemyHP + '%' } }),
-                  h("span", { className: "absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white drop-shadow" }, battleEnemyHP + ' HP')
+                  h("span", { className: "absolute inset-0 flex items-center justify-center text-[0.6875rem] font-bold text-white drop-shadow" }, battleEnemyHP + ' HP')
                 )
               )
             ),
@@ -5663,7 +5663,7 @@ window.StemLab = window.StemLab || {
                 var q = getCurrentBattleQ();
                 if (!q) return null;
                 return h("div", { className: "space-y-3" },
-                  battleUseAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, t('stem.dna.ai_generated_2', "\uD83E\uDDE0 AI-GENERATED")),
+                  battleUseAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full" }, t('stem.dna.ai_generated_2', "\uD83E\uDDE0 AI-GENERATED")),
                   h("p", { className: "text-sm font-medium text-slate-700" }, q.q),
                   h("input", { type: "text", value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: t('stem.dna.type_your_answer_2', "Type your answer..."), className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400", 'aria-label': t('stem.dna.battle_answer', 'Battle answer') }),
                   h("div", { className: "flex gap-2" },
@@ -5692,13 +5692,13 @@ window.StemLab = window.StemLab || {
               h("summary", { className: "flex cursor-pointer items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700" },
                 h("span", { className: "text-lg", "aria-hidden": "true" }, topic.icon),
                 h("span", { className: "flex-1" }, topic.title),
-                h("span", { className: "text-[10px] font-black uppercase tracking-wide text-violet-700" }, topicIndex === 0 ? "Start here" : "Open")
+                h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-700" }, topicIndex === 0 ? "Start here" : "Open")
               ),
               h("div", { className: "space-y-3 border-t border-slate-200 p-4" },
                 h("p", { className: "text-xs leading-relaxed text-slate-600" }, content),
                 h("div", { className: "flex flex-wrap gap-2 border-t border-slate-100 pt-2" },
-                  h("button", { onClick: function() { updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: "rounded-lg bg-violet-50 px-3 py-1.5 text-[11px] font-bold text-violet-600 transition-all hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.try_it', '\uD83D\uDD2C Try It')),
-                  callTTS && h("button", { onClick: function() { callTTS(content); }, className: "rounded-lg bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-blue-700 transition-all hover:bg-blue-100 active:scale-[0.97]" }, t('stem.dna.read_aloud', '\uD83D\uDD0A Read Aloud'))
+                  h("button", { onClick: function() { updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: "rounded-lg bg-violet-50 px-3 py-1.5 text-[0.6875rem] font-bold text-violet-600 transition-all hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.try_it', '\uD83D\uDD2C Try It')),
+                  callTTS && h("button", { onClick: function() { callTTS(content); }, className: "rounded-lg bg-blue-50 px-3 py-1.5 text-[0.6875rem] font-bold text-blue-700 transition-all hover:bg-blue-100 active:scale-[0.97]" }, t('stem.dna.read_aloud', '\uD83D\uDD0A Read Aloud'))
                 )
               )
             );
@@ -5892,7 +5892,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200' },
           h('div', null,
             h('h3', { className: 'text-base font-black text-emerald-900' }, t('stem.dna.genetics_reference_library', '🧬 Genetics Reference Library')),
-            h('div', { className: 'text-[11px] text-emerald-700 mt-0.5' }, t('stem.dna.interactive_references_pick_a_topic_be', 'Interactive references — pick a topic below to explore.'))
+            h('div', { className: 'text-[0.6875rem] text-emerald-700 mt-0.5' }, t('stem.dna.interactive_references_pick_a_topic_be', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
@@ -5973,13 +5973,13 @@ window.StemLab = window.StemLab || {
           return h('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
           TAB_GROUPS.map(function(g) {
             return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              h('span', { 'aria-hidden': 'true', className: 'text-[10px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              h('span', { 'aria-hidden': 'true', className: 'text-[0.625rem] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
             );
           })
@@ -5989,7 +5989,7 @@ window.StemLab = window.StemLab || {
       function renderBasesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_rna_bases', '🅰🅣 DNA + RNA bases')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.five_nitrogenous_bases_make_up_dna_rna', 'Five nitrogenous bases make up DNA + RNA: A, T, G, C (DNA); A, U, G, C (RNA). Purines (A, G) are 2-ringed; pyrimidines (T, U, C) are 1-ringed. Pairing follows specific H-bond patterns.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.five_nitrogenous_bases_make_up_dna_rna', 'Five nitrogenous bases make up DNA + RNA: A, T, G, C (DNA); A, U, G, C (RNA). Purines (A, G) are 2-ringed; pyrimidines (T, U, C) are 1-ringed. Pairing follows specific H-bond patterns.')),
           h('div', { className: 'space-y-2' },
             BASE_PAIRS.map(function(b, i) {
               return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -5997,11 +5997,11 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-lg tracking-tight', style: { background: b.color } }, b.icon),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'text-sm font-black text-slate-800' }, b.base),
-                    h('div', { className: 'text-[11px] text-slate-600' }, b.cat + ' · ' + b.bonds)
+                    h('div', { className: 'text-[0.6875rem] text-slate-600' }, b.cat + ' · ' + b.bonds)
                   )
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, t('stem.dna.pairs_with', 'Pairs with: ')), b.pairs),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, t('stem.dna.pairs_with', 'Pairs with: ')), b.pairs),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, b.notes)
               );
             })
           )
@@ -6011,9 +6011,9 @@ window.StemLab = window.StemLab || {
       function renderCodeSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genetic_code_codon_table', '🔡 Genetic code — codon table')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.64_codons_4_encode_20_amino_acids_3_st', '64 codons (4³) encode 20 amino acids + 3 stop signals. Code is redundant (degenerate) — most amino acids have multiple codons, usually differing in the 3rd position ("wobble"). Universal across nearly all life.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.64_codons_4_encode_20_amino_acids_3_st', '64 codons (4³) encode 20 amino acids + 3 stop signals. Code is redundant (degenerate) — most amino acids have multiple codons, usually differing in the 3rd position ("wobble"). Universal across nearly all life.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Codon(s)', 'AA', 'Name', 'Note'].map(function(hh, i) {
@@ -6029,13 +6029,13 @@ window.StemLab = window.StemLab || {
                     h('td', { className: 'px-2 py-1 text-slate-800 font-mono font-bold' }, g.codon),
                     h('td', { className: 'px-2 py-1 text-slate-800 font-mono font-bold' }, g.aa),
                     h('td', { className: 'px-2 py-1 text-slate-700' }, g.name),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.note)
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, g.note)
                   );
                 })
               )
             )
           ),
-          h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+          h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900' },
             h('strong', null, t('stem.dna.wobble', '💡 Wobble: ')), t('stem.dna.third_codon_position_pairs_less_strict', 'Third codon position pairs less strictly — a single tRNA can recognize multiple codons. Reduces the number of tRNAs needed (cells have ~30-40, not 64).')
           )
         );
@@ -6044,15 +6044,15 @@ window.StemLab = window.StemLab || {
       function renderReplicationSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_replication_3', '🔄 DNA replication')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.semi_conservative_each_new_helix_has_o', 'Semi-conservative — each new helix has one parent + one newly-synthesized strand. Proven by Meselson-Stahl 1958. ~50 bp/sec in bacteria, ~50 bp/sec per fork in eukaryotes (but thousands of forks in parallel).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.semi_conservative_each_new_helix_has_o', 'Semi-conservative — each new helix has one parent + one newly-synthesized strand. Proven by Meselson-Stahl 1958. ~50 bp/sec in bacteria, ~50 bp/sec per fork in eukaryotes (but thousands of forks in parallel).')),
           h('div', { className: 'space-y-2' },
             DNA_REPLICATION_STEPS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'text-base font-black text-emerald-700 min-w-[28px] mt-0.5' }, s.step),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-0.5' }, s.name),
-                  h('div', { className: 'text-[10px] font-bold text-emerald-700 mb-1' }, 'Enzymes: ', s.enzymes),
-                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                  h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-0.5' }, s.name),
+                  h('div', { className: 'text-[0.625rem] font-bold text-emerald-700 mb-1' }, 'Enzymes: ', s.enzymes),
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
                 )
               );
             })
@@ -6063,14 +6063,14 @@ window.StemLab = window.StemLab || {
       function renderTranscriptionSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.transcription_dna_rna', '✍ Transcription (DNA → RNA)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.rna_polymerase_reads_dna_template_3_5_', 'RNA polymerase reads DNA template (3\'→5\') and synthesizes mRNA (5\'→3\'). In eukaryotes, the primary transcript is heavily processed before export.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.rna_polymerase_reads_dna_template_3_5_', 'RNA polymerase reads DNA template (3\'→5\') and synthesizes mRNA (5\'→3\'). In eukaryotes, the primary transcript is heavily processed before export.')),
           h('div', { className: 'space-y-2' },
             TRANSCRIPTION_STEPS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'text-base font-black text-emerald-700 min-w-[28px] mt-0.5' }, s.step),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-0.5' }, s.name),
-                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                  h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-0.5' }, s.name),
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
                 )
               );
             })
@@ -6081,14 +6081,14 @@ window.StemLab = window.StemLab || {
       function renderTranslationSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.translation_mrna_protein_2', '🏭 Translation (mRNA → protein)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.ribosome_reads_mrna_in_3_base_codons_a', 'Ribosome reads mRNA in 3-base codons and builds protein. ~10-20 amino acids per second in bacteria; ~3-5 in eukaryotes. Multiple ribosomes can translate the same mRNA (polyribosome).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.ribosome_reads_mrna_in_3_base_codons_a', 'Ribosome reads mRNA in 3-base codons and builds protein. ~10-20 amino acids per second in bacteria; ~3-5 in eukaryotes. Multiple ribosomes can translate the same mRNA (polyribosome).')),
           h('div', { className: 'space-y-2' },
             TRANSLATION_STEPS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'text-base font-black text-emerald-700 min-w-[28px] mt-0.5' }, s.step),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-0.5' }, s.name),
-                  h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                  h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-0.5' }, s.name),
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
                 )
               );
             })
@@ -6099,15 +6099,15 @@ window.StemLab = window.StemLab || {
       function renderMutationsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.mutation_types', '⚠ Mutation types')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.mutations_range_from_invisible_silent_', 'Mutations range from invisible (silent) to lethal. Their effect depends on what changes, where, and in which cell type (germline vs somatic).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.mutations_range_from_invisible_silent_', 'Mutations range from invisible (silent) to lethal. Their effect depends on what changes, where, and in which cell type (germline vs somatic).')),
           h('div', { className: 'space-y-2' },
             MUTATION_TYPES.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, m.type),
-                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800' }, m.subtype)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, m.type),
+                  h('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800' }, m.subtype)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.desc)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.desc)
               );
             })
           )
@@ -6121,10 +6121,10 @@ window.StemLab = window.StemLab || {
             CHROMOSOMES.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'flex items-baseline gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'min-w-[180px]' },
-                  h('div', { className: 'text-[12px] font-black text-slate-800' }, c.name),
-                  h('div', { className: 'text-[10px] font-bold text-emerald-700 font-mono' }, c.count)
+                  h('div', { className: 'text-[0.75rem] font-black text-slate-800' }, c.name),
+                  h('div', { className: 'text-[0.625rem] font-bold text-emerald-700 font-mono' }, c.count)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed flex-1' }, c.detail)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed flex-1' }, c.detail)
               );
             })
           )
@@ -6135,7 +6135,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_vs_rna_2', '⇌ DNA vs RNA')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Feature', 'DNA', 'RNA'].map(function(hh, i) {
@@ -6164,10 +6164,10 @@ window.StemLab = window.StemLab || {
             BIOTECH_TOOLS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, t.name),
-                  h('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 italic' }, t.invented)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, t.name),
+                  h('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 italic' }, t.invented)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.desc)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.desc)
               );
             })
           )
@@ -6177,17 +6177,17 @@ window.StemLab = window.StemLab || {
       function renderDiseasesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.disease_causing_genes_examples', '🏥 Disease-causing genes (examples)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.a_sampling_of_well_characterized_genet', 'A sampling of well-characterized genetic disorders. Genetic counseling resources and current treatments evolve — verify with current literature for clinical decisions.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.a_sampling_of_well_characterized_genet', 'A sampling of well-characterized genetic disorders. Genetic counseling resources and current treatments evolve — verify with current literature for clinical decisions.')),
           h('div', { className: 'space-y-2' },
             DISEASES_AND_GENES.map(function(d, i) {
               return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, d.disease),
-                  h('span', { className: 'text-[10px] font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800' }, d.gene)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, d.disease),
+                  h('span', { className: 'text-[0.625rem] font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100 text-emerald-800' }, d.gene)
                 ),
-                h('div', { className: 'text-[11px] text-slate-600 mb-1' }, h('strong', null, 'Inheritance: '), d.inheritance),
-                h('div', { className: 'text-[11px] text-slate-600 mb-1' }, h('strong', null, 'Mutation: '), d.mutation),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed italic' }, d.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' }, h('strong', null, 'Inheritance: '), d.inheritance),
+                h('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' }, h('strong', null, 'Mutation: '), d.mutation),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed italic' }, d.notes)
               );
             })
           )
@@ -6200,8 +6200,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1.5' },
             EVOLUTION_CONCEPTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.concept),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, c.concept),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
           )
@@ -6279,7 +6279,7 @@ window.StemLab = window.StemLab || {
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.dna.trace_the_trait', '🧬 Trace the trait')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             t('stem.dna.inheritance_pattern_reasoning_ranking_', 'Inheritance pattern + reasoning ranking — both must be committed before reveal. The reveal grades your ranking position-by-position, not just your final answer. Real inquiry requires you to know WHY, not just WHAT.')),
           PEDIGREE_PUZZLES.map(function(puzzle, pIdx) {
             var defaultRanking = puzzle.explanations.map(function(e) { return e.id; });
@@ -6297,11 +6297,11 @@ window.StemLab = window.StemLab || {
             var rankingScore = positionMatches.filter(Boolean).length;
             return h('div', { key: puzzle.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                h('span', { className: 'text-[10px] font-mono text-emerald-700 font-bold' }, '#' + (pIdx + 1)),
-                h('span', { className: 'text-[12px] font-black text-slate-800' }, puzzle.title)
+                h('span', { className: 'text-[0.625rem] font-mono text-emerald-700 font-bold' }, '#' + (pIdx + 1)),
+                h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, puzzle.title)
               ),
-              h('p', { className: 'text-[11px] text-slate-700 mb-2 italic' }, puzzle.description),
-              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, t('stem.dna.1_inheritance_pattern', '1. Inheritance pattern:')),
+              h('p', { className: 'text-[0.6875rem] text-slate-700 mb-2 italic' }, puzzle.description),
+              h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.dna.1_inheritance_pattern', '1. Inheritance pattern:')),
               h('div', { className: 'flex flex-wrap gap-1 mb-2' },
                 PATTERN_OPTIONS.map(function(opt) {
                   var picked = st.pick === opt.id;
@@ -6319,11 +6319,11 @@ window.StemLab = window.StemLab || {
                       setTT({ puzzles: newP });
                     },
                     'aria-pressed': picked ? 'true' : 'false',
-                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-emerald-400 focus:outline-none ' + bg
+                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus:ring-2 focus:ring-emerald-400 focus:outline-none ' + bg
                   }, opt.label);
                 })
               ),
-              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, t('stem.dna.2_rank_these_explanations_most_least_s', '2. Rank these explanations (most → least supporting):')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.dna.2_rank_these_explanations_most_least_s', '2. Rank these explanations (most → least supporting):')),
               h('ol', { className: 'space-y-1 mb-2', style: { listStyle: 'none', padding: 0 } },
                 (st.ranking || defaultRanking).map(function(eId, rIdx) {
                   var expl = puzzle.explanations.find(function(e) { return e.id === eId; });
@@ -6335,19 +6335,19 @@ window.StemLab = window.StemLab || {
                       ? (positionMatch ? 'bg-green-100 border-green-300' : 'bg-amber-50 border-amber-300')
                       : 'bg-white border-slate-300')
                   },
-                    h('span', { className: 'font-mono font-bold text-[11px] text-slate-500', style: { minWidth: 24 } }, '#' + (rIdx + 1)),
-                    h('span', { className: 'flex-1 text-[11px] text-slate-700' }, expl.text),
+                    h('span', { className: 'font-mono font-bold text-[0.6875rem] text-slate-500', style: { minWidth: 24 } }, '#' + (rIdx + 1)),
+                    h('span', { className: 'flex-1 text-[0.6875rem] text-slate-700' }, expl.text),
                     !st.revealed && rIdx > 0 && h('button', {
                       'aria-label': t('stem.dna.move_up', 'Move up'),
                       onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx - 1); },
-                      className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
+                      className: 'transition-colors px-2 py-0.5 rounded text-[0.6875rem] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
                     }, '▲'),
                     !st.revealed && rIdx < (st.ranking || []).length - 1 && h('button', {
                       'aria-label': t('stem.dna.move_down', 'Move down'),
                       onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx + 1); },
-                      className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
+                      className: 'transition-colors px-2 py-0.5 rounded text-[0.6875rem] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
                     }, '▼'),
-                    st.revealed && h('span', { className: 'text-[10px] font-bold ' + (positionMatch ? 'text-green-700' : 'text-amber-700') },
+                    st.revealed && h('span', { className: 'text-[0.625rem] font-bold ' + (positionMatch ? 'text-green-700' : 'text-amber-700') },
                       positionMatch ? '✓ exact' : 'expert pos #' + (expertPos + 1))
                   );
                 })
@@ -6361,18 +6361,18 @@ window.StemLab = window.StemLab || {
                     var bonus = st.pick === puzzle.correctPattern ? 1 : 0;
                     setTT({ puzzles: newP, score: (state.score || 0) + bonus });
                   },
-                  className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-300 focus:outline-none active:scale-[0.97]'
+                  className: 'transition-colors px-3 py-1 rounded text-[0.6875rem] font-bold bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-300 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Revealed' : 'Reveal verdict'),
-                !canReveal && !st.revealed && h('span', { className: 'text-[10px] text-slate-500 italic' },
+                !canReveal && !st.revealed && h('span', { className: 'text-[0.625rem] text-slate-500 italic' },
                   st.pick == null ? 'Pick a pattern first' : 'Order all 4 explanations'),
-                st.revealed && h('span', { className: 'text-[11px] font-bold ' + (diagnosisCorrect ? 'text-green-700' : 'text-rose-700') },
+                st.revealed && h('span', { className: 'text-[0.6875rem] font-bold ' + (diagnosisCorrect ? 'text-green-700' : 'text-rose-700') },
                   diagnosisCorrect ? '✓ Pattern correct' : '✗ Pattern off'),
-                st.revealed && h('span', { className: 'text-[11px] text-slate-600' },
+                st.revealed && h('span', { className: 'text-[0.6875rem] text-slate-600' },
                   'Ranking match: ' + rankingScore + '/4 positions')
               )
             );
           }),
-          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap' },
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex items-center gap-2 flex-wrap' },
             h('span', null, '🎯'),
             h('strong', null, 'Pattern score: ' + (state.score || 0) + ' / ' + PEDIGREE_PUZZLES.length),
             h('span', { className: 'text-slate-500 ml-2 italic' }, t('stem.dna.notice_the_ranking_grade_is_independen', 'Notice: the ranking grade is independent of the pattern grade — you can identify the WHAT correctly but rank the WHY out of order.'))
@@ -6386,8 +6386,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             DNA_GLOSSARY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900' }, g.term),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900' }, g.term),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.def)
               );
             })
           )
@@ -6545,9 +6545,9 @@ window.StemLab = window.StemLab || {
       function renderGenomesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genome_sizes_across_life', '📏 Genome sizes across life')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.genome_size_does_not_correlate_with_or', 'Genome size does not correlate with organism complexity (C-value paradox). Humans have similar gene counts to roundworms — much of "extra" DNA in larger genomes is non-coding.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.genome_size_does_not_correlate_with_or', 'Genome size does not correlate with organism complexity (C-value paradox). Humans have similar gene counts to roundworms — much of "extra" DNA in larger genomes is non-coding.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Organism', 'Genome size', 'Genes', 'Notes'].map(function(hh, i) {
@@ -6561,7 +6561,7 @@ window.StemLab = window.StemLab || {
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, g.organism),
                     h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold' }, g.size),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, g.genes),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, g.notes)
                   );
                 })
               )
@@ -6574,7 +6574,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.meiosis_vs_mitosis_2', '⊞ Meiosis vs Mitosis')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Feature', 'Mitosis', 'Meiosis'].map(function(hh, i) {
@@ -6600,20 +6600,20 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.mendelian_genetics_2', '🫛 Mendelian genetics')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.mendel_s_laws_1865', 'Mendel\'s Laws (1865)')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.mendel_s_laws_1865', 'Mendel\'s Laws (1865)')),
             h('div', { className: 'space-y-2' },
               MENDEL_LAWS.map(function(L, i) {
                 return h('div', { key: 'L'+i, className: 'p-3 rounded bg-slate-50 border border-slate-200' },
-                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, L.name),
-                  h('div', { className: 'text-[11px] text-slate-700 mb-1' }, L.description),
-                  h('div', { className: 'text-[10px] text-emerald-700 italic font-mono' }, '→ ' + L.example)
+                  h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, L.name),
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, L.description),
+                  h('div', { className: 'text-[0.625rem] text-emerald-700 italic font-mono' }, '→ ' + L.example)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.common_cross_outcomes', 'Common cross outcomes')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.common_cross_outcomes', 'Common cross outcomes')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Cross', 'Phenotype ratio', 'Genotype', 'Notes'].map(function(hh, i) {
@@ -6627,7 +6627,7 @@ window.StemLab = window.StemLab || {
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.cross),
                     h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold' }, m.phenotype),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, m.genotype),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, m.notes)
                   );
                 })
               )
@@ -6639,13 +6639,13 @@ window.StemLab = window.StemLab || {
       function renderEpigeneticsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.epigenetics_beyond_the_sequence', '✎ Epigenetics — beyond the sequence')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.heritable_changes_in_gene_expression_t', 'Heritable changes in gene expression that don\'t involve changes to DNA sequence. Influenced by environment, diet, stress.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.heritable_changes_in_gene_expression_t', 'Heritable changes in gene expression that don\'t involve changes to DNA sequence. Influenced by environment, diet, stress.')),
           h('div', { className: 'space-y-2' },
             EPIGENETIC_MECHANISMS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.mechanism),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, m.description),
-                h('div', { className: 'text-[10px] text-emerald-700 italic' }, '→ ' + m.example)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, m.mechanism),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, m.description),
+                h('div', { className: 'text-[0.625rem] text-emerald-700 italic' }, '→ ' + m.example)
               );
             })
           )
@@ -6655,9 +6655,9 @@ window.StemLab = window.StemLab || {
       function renderAminoSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.the_20_standard_amino_acids', '⚕ The 20 standard amino acids')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.building_blocks_of_proteins_9_are_esse', 'Building blocks of proteins. 9 are "essential" (can\'t be synthesized — must come from diet): His, Ile, Leu, Lys, Met, Phe, Thr, Trp, Val.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.building_blocks_of_proteins_9_are_esse', 'Building blocks of proteins. 9 are "essential" (can\'t be synthesized — must come from diet): His, Ile, Leu, Lys, Met, Phe, Thr, Trp, Val.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['1-letter', '3-letter', 'Name', 'Side chain', 'Notes'].map(function(hh, i) {
@@ -6671,8 +6671,8 @@ window.StemLab = window.StemLab || {
                     h('td', { className: 'px-2 py-1 font-mono font-black text-emerald-700' }, a.letter),
                     h('td', { className: 'px-2 py-1 font-mono text-slate-700' }, a.three),
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.name),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, a.side),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, a.side),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, a.notes)
                   );
                 })
               )
@@ -6687,9 +6687,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             ORGANELLES.map(function(o, i) {
               return h('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.name),
-                h('div', { className: 'text-[11px] text-emerald-700 font-bold mb-1' }, 'Function: ' + o.function),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, o.name),
+                h('div', { className: 'text-[0.6875rem] text-emerald-700 font-bold mb-1' }, 'Function: ' + o.function),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, o.notes)
               );
             })
           )
@@ -6703,11 +6703,11 @@ window.StemLab = window.StemLab || {
             CELL_TYPES.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, c.type),
-                  h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100' }, c.size)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.type),
+                  h('span', { className: 'text-[0.625rem] text-emerald-700 font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100' }, c.size)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, c.features),
-                h('div', { className: 'text-[10px] text-slate-600 italic' }, 'Example: ' + c.example)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, c.features),
+                h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, 'Example: ' + c.example)
               );
             })
           )
@@ -6721,14 +6721,14 @@ window.StemLab = window.StemLab || {
             SEQUENCING_METHODS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, s.name),
-                  h('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, s.year)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.name),
+                  h('span', { className: 'text-[0.625rem] text-slate-500 ml-auto font-mono' }, s.year)
                 ),
-                h('div', { className: 'flex gap-3 text-[10px] mb-1' },
+                h('div', { className: 'flex gap-3 text-[0.625rem] mb-1' },
                   h('span', { className: 'font-mono text-emerald-700' }, 'Read length: ' + s.readLength),
                   h('span', { className: 'font-mono text-slate-600' }, 'Cost: ' + s.cost)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.notes)
               );
             })
           )
@@ -6741,8 +6741,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             BIOETHICS.map(function(b, i) {
               return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, b.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, b.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, b.detail)
               );
             })
           )
@@ -6756,10 +6756,10 @@ window.StemLab = window.StemLab || {
             DNA_HISTORY.map(function(d, i) {
               return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-0.5' },
-                  h('span', { className: 'text-[10px] font-mono text-emerald-700 font-bold' }, d.year),
-                  h('span', { className: 'text-[12px] font-black text-emerald-900' }, d.who)
+                  h('span', { className: 'text-[0.625rem] font-mono text-emerald-700 font-bold' }, d.year),
+                  h('span', { className: 'text-[0.75rem] font-black text-emerald-900' }, d.who)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, d.what)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, d.what)
               );
             })
           )
@@ -6977,26 +6977,26 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dog_breed_genetics_wild_dna_facts', '🐕 Dog breed genetics + wild DNA facts')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.dog_breed_genetics', 'Dog breed genetics')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.dog_breed_genetics', 'Dog breed genetics')),
             h('div', { className: 'space-y-2' },
               DOG_GENETICS.map(function(d, i) {
                 return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                    h('span', { className: 'text-[12px] font-black text-slate-800' }, d.breed),
-                    h('span', { className: 'text-[10px] text-emerald-700 italic ml-auto' }, d.trait)
+                    h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, d.breed),
+                    h('span', { className: 'text-[0.625rem] text-emerald-700 italic ml-auto' }, d.trait)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Genetics: '), d.genetics),
-                  h('div', { className: 'text-[10px] text-slate-600 italic' }, d.notes)
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, 'Genetics: '), d.genetics),
+                  h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, d.notes)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.wild_dna_biology_trivia', 'Wild DNA + biology trivia')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.wild_dna_biology_trivia', 'Wild DNA + biology trivia')),
           h('div', { className: 'space-y-1' },
             WILD_DNA_FACTS.map(function(w, i) {
               return h('div', { key: 'w'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, w.fact),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, w.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, w.fact),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, w.detail)
               );
             })
           )
@@ -7029,29 +7029,29 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.animal_classification', '🦁 Animal classification')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.major_animal_phyla', 'Major animal phyla')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.major_animal_phyla', 'Major animal phyla')),
             h('div', { className: 'space-y-2' },
               ANIMAL_GROUPS.map(function(a, i) {
                 return h('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                    h('span', { className: 'text-[12px] font-black text-slate-800' }, a.phylum),
-                    h('span', { className: 'text-[10px] text-emerald-700 ml-auto' }, a.common)
+                    h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, a.phylum),
+                    h('span', { className: 'text-[0.625rem] text-emerald-700 ml-auto' }, a.common)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Features: '), a.features),
-                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Examples: '), a.examples),
-                  h('div', { className: 'text-[10px] text-slate-600 italic' }, a.notes)
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, 'Features: '), a.features),
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, 'Examples: '), a.examples),
+                  h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, a.notes)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.vertebrate_classes_subset_of_chordata', 'Vertebrate classes (subset of Chordata)')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.vertebrate_classes_subset_of_chordata', 'Vertebrate classes (subset of Chordata)')),
           h('div', { className: 'space-y-1' },
             VERTEBRATE_CLASSES.map(function(v, i) {
               return h('div', { key: 'v'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, v.class_),
-                h('div', { className: 'text-[10px] text-slate-700 mb-0.5' }, h('strong', null, 'Features: '), v.features),
-                h('div', { className: 'text-[10px] text-slate-700 mb-0.5' }, h('strong', null, 'Examples: '), v.examples),
-                h('div', { className: 'text-[10px] text-slate-600 italic' }, v.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, v.class_),
+                h('div', { className: 'text-[0.625rem] text-slate-700 mb-0.5' }, h('strong', null, 'Features: '), v.features),
+                h('div', { className: 'text-[0.625rem] text-slate-700 mb-0.5' }, h('strong', null, 'Examples: '), v.examples),
+                h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, v.notes)
               );
             })
           )
@@ -7101,24 +7101,24 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.vitamins_minerals', '💊 Vitamins + minerals')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.the_13_essential_vitamins', 'The 13 essential vitamins')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.the_13_essential_vitamins', 'The 13 essential vitamins')),
             h('div', { className: 'space-y-2' },
               VITAMINS.map(function(v, i) {
                 return h('div', { key: 'v'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                    h('span', { className: 'text-[12px] font-black text-slate-800' }, v.vitamin),
-                    h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100' }, v.solubility)
+                    h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, v.vitamin),
+                    h('span', { className: 'text-[0.625rem] text-emerald-700 font-mono ml-auto px-2 py-0.5 rounded bg-emerald-100' }, v.solubility)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Sources: '), v.sources),
-                  h('div', { className: 'text-[10px] text-slate-700 mb-1' }, h('strong', null, 'Role: '), v.role),
-                  h('div', { className: 'text-[10px] text-slate-600 italic' }, h('strong', null, 'Deficit: '), v.deficit)
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, 'Sources: '), v.sources),
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, 'Role: '), v.role),
+                  h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, h('strong', null, 'Deficit: '), v.deficit)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.essential_dietary_minerals', 'Essential dietary minerals')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.essential_dietary_minerals', 'Essential dietary minerals')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Mineral', 'Daily intake', 'Role', 'Sources'].map(function(hh, i) {
@@ -7130,9 +7130,9 @@ window.StemLab = window.StemLab || {
                 MINERAL_NUTRIENTS.map(function(m, i) {
                   return h('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.mineral),
-                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold text-[10px]' }, m.daily),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, m.role),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.sources)
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold text-[0.625rem]' }, m.daily),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, m.role),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, m.sources)
                   );
                 })
               )
@@ -7197,10 +7197,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             ORGAN_SYSTEMS.map(function(o, i) {
               return h('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.system),
-                h('div', { className: 'text-[11px] text-emerald-700 mb-1' }, h('strong', null, 'Parts: '), o.parts),
-                h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, 'Function: '), o.function),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed italic' }, o.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, o.system),
+                h('div', { className: 'text-[0.6875rem] text-emerald-700 mb-1' }, h('strong', null, 'Parts: '), o.parts),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Function: '), o.function),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed italic' }, o.notes)
               );
             })
           )
@@ -7210,9 +7210,9 @@ window.StemLab = window.StemLab || {
       function renderHormonesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.major_hormones', '⚛ Major hormones')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.hormones_travel_through_the_bloodstrea', 'Hormones travel through the bloodstream to act on distant target tissues. They orchestrate metabolism, growth, reproduction, stress response, and homeostasis.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.hormones_travel_through_the_bloodstrea', 'Hormones travel through the bloodstream to act on distant target tissues. They orchestrate metabolism, growth, reproduction, stress response, and homeostasis.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Hormone', 'Source', 'Target', 'Effect'].map(function(hh, i) {
@@ -7223,10 +7223,10 @@ window.StemLab = window.StemLab || {
               h('tbody', null,
                 HORMONES.map(function(H, i) {
                   return h('tr', { key: 'H'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[10px]' }, H.hormone),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, H.source),
-                    h('td', { className: 'px-2 py-1 text-emerald-700 text-[10px]' }, H.target),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, H.effect)
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[0.625rem]' }, H.hormone),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, H.source),
+                    h('td', { className: 'px-2 py-1 text-emerald-700 text-[0.625rem]' }, H.target),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, H.effect)
                   );
                 })
               )
@@ -7318,9 +7318,9 @@ window.StemLab = window.StemLab || {
       function renderPeriodTableBioSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.elements_of_life', '⌬ Elements of life')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.approximate_elemental_composition_of_t', 'Approximate elemental composition of the human body by mass. Just 11 elements account for >99%. CHNOPS (C, H, N, O, P, S) make up almost all organic molecules.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.approximate_elemental_composition_of_t', 'Approximate elemental composition of the human body by mass. Just 11 elements account for >99%. CHNOPS (C, H, N, O, P, S) make up almost all organic molecules.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Element', '% by mass', 'Role'].map(function(hh, i) {
@@ -7333,7 +7333,7 @@ window.StemLab = window.StemLab || {
                   return h('tr', { key: 'e'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, e.element),
                     h('td', { className: 'px-2 py-1 font-mono text-emerald-700 font-bold' }, e.pct),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, e.role)
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, e.role)
                   );
                 })
               )
@@ -7346,7 +7346,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.major_cell_pathways', '⇄ Major cell pathways')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Pathway', 'Input', 'Output', 'Location', 'Notes'].map(function(hh, i) {
@@ -7357,11 +7357,11 @@ window.StemLab = window.StemLab || {
               h('tbody', null,
                 CELL_PATHWAYS.map(function(p, i) {
                   return h('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[10px]' }, p.pathway),
-                    h('td', { className: 'px-2 py-1 text-emerald-700 text-[10px]' }, p.input),
-                    h('td', { className: 'px-2 py-1 text-emerald-700 font-medium text-[10px]' }, p.output),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.location),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                    h('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[0.625rem]' }, p.pathway),
+                    h('td', { className: 'px-2 py-1 text-emerald-700 text-[0.625rem]' }, p.input),
+                    h('td', { className: 'px-2 py-1 text-emerald-700 font-medium text-[0.625rem]' }, p.output),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, p.location),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, p.notes)
                   );
                 })
               )
@@ -7373,9 +7373,9 @@ window.StemLab = window.StemLab || {
       function renderExtinctSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.extinct_species_2', '🦕 Extinct species')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.recent_extinctions_mostly_human_caused', 'Recent extinctions (mostly human-caused) + notable prehistoric extinctions. Earth has had 5 mass extinctions — many argue we\'re in a 6th now.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.recent_extinctions_mostly_human_caused', 'Recent extinctions (mostly human-caused) + notable prehistoric extinctions. Earth has had 5 mass extinctions — many argue we\'re in a 6th now.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Species', 'When extinct', 'Notes'].map(function(hh, i) {
@@ -7387,8 +7387,8 @@ window.StemLab = window.StemLab || {
                 EXTINCT_SPECIES.map(function(s, i) {
                   return h('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.species),
-                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[10px]' }, s.when),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[0.625rem]' }, s.when),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, s.notes)
                   );
                 })
               )
@@ -7513,7 +7513,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.notable_animals', '🐾 Notable animals')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Animal', 'Lifespan', 'Genome', 'Notes'].map(function(hh, i) {
@@ -7525,9 +7525,9 @@ window.StemLab = window.StemLab || {
                 ANIMAL_FACTS.map(function(a, i) {
                   return h('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.animal),
-                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[10px]' }, a.lifespan),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, a.genome),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[0.625rem]' }, a.lifespan),
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, a.genome),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, a.notes)
                   );
                 })
               )
@@ -7542,8 +7542,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             PLANT_FACTS.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, p.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, p.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.detail)
               );
             })
           )
@@ -7554,7 +7554,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.famous_human_genes', '⌬ Famous human genes')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Gene', 'Location', 'Function', 'Notes'].map(function(hh, i) {
@@ -7566,9 +7566,9 @@ window.StemLab = window.StemLab || {
                 FAMOUS_GENES.map(function(g, i) {
                   return h('tr', { key: 'g'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-mono font-black text-emerald-700' }, g.gene),
-                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, g.chr),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, g.function),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, g.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, g.chr),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, g.function),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, g.notes)
                   );
                 })
               )
@@ -7580,15 +7580,15 @@ window.StemLab = window.StemLab || {
       function renderModelorgSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.model_organisms_in_research', '🧫 Model organisms in research')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.each_chosen_for_properties_that_make_b', 'Each chosen for properties that make biology tractable: small size, fast life cycle, ease of culture, genetic tools.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.each_chosen_for_properties_that_make_b', 'Each chosen for properties that make biology tractable: small size, fast life cycle, ease of culture, genetic tools.')),
           h('div', { className: 'space-y-2' },
             MODEL_ORGANISMS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  h('span', { className: 'text-[12px] font-black text-slate-800' }, m.org),
-                  h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto' }, m.size + ' · ' + m.life + ' · ' + m.genome)
+                  h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, m.org),
+                  h('span', { className: 'text-[0.625rem] text-emerald-700 font-mono ml-auto' }, m.size + ' · ' + m.life + ' · ' + m.genome)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.why)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.why)
               );
             })
           )
@@ -7601,8 +7601,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             ECOLOGY_CONCEPTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.concept),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, c.concept),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
           )
@@ -7774,27 +7774,27 @@ window.StemLab = window.StemLab || {
       function renderPcrSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.pcr_polymerase_chain_reaction_2', '🧪 PCR (polymerase chain reaction)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.amplifies_specific_dna_sequences_a_bil', 'Amplifies specific DNA sequences a billion-fold. Workhorse of molecular biology, diagnostics, and forensics.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.amplifies_specific_dna_sequences_a_bil', 'Amplifies specific DNA sequences a billion-fold. Workhorse of molecular biology, diagnostics, and forensics.')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.the_3_steps_repeated_30', 'The 3 steps (repeated ~30×)')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.the_3_steps_repeated_30', 'The 3 steps (repeated ~30×)')),
             h('div', { className: 'space-y-1' },
               PCR_STEPS.map(function(s, i) {
                 return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    h('span', { className: 'text-[11px] font-black text-slate-800' }, s.step),
-                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.temp + ' · ' + s.duration)
+                    h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, s.step),
+                    h('span', { className: 'text-[0.625rem] font-mono text-emerald-700 ml-auto' }, s.temp + ' · ' + s.duration)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700' }, s.detail)
+                  h('div', { className: 'text-[0.625rem] text-slate-700' }, s.detail)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.key_facts', 'Key facts')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.key_facts', 'Key facts')),
           h('div', { className: 'space-y-1' },
             PCR_FACTS.map(function(f, i) {
               return h('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[11px] font-black text-emerald-900 mb-0.5' }, f.fact),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                h('div', { className: 'text-[0.6875rem] font-black text-emerald-900 mb-0.5' }, f.fact),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -7804,25 +7804,25 @@ window.StemLab = window.StemLab || {
       function renderCrisprSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.crispr_cas9', '✂ CRISPR-Cas9')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.originally_a_bacterial_immune_system_n', 'Originally a bacterial immune system; now a programmable gene-editing tool. Doudna + Charpentier shared 2020 Nobel Prize.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.originally_a_bacterial_immune_system_n', 'Originally a bacterial immune system; now a programmable gene-editing tool. Doudna + Charpentier shared 2020 Nobel Prize.')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.components_concepts', 'Components + concepts')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.components_concepts', 'Components + concepts')),
             h('div', { className: 'space-y-1' },
               CRISPR_PARTS.map(function(c, i) {
                 return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
-                  h('div', { className: 'text-[11px] font-black text-slate-800 mb-0.5' }, c.component),
-                  h('div', { className: 'text-[10px] text-emerald-700 italic mb-0.5' }, c.role),
-                  h('div', { className: 'text-[10px] text-slate-700' }, c.notes)
+                  h('div', { className: 'text-[0.6875rem] font-black text-slate-800 mb-0.5' }, c.component),
+                  h('div', { className: 'text-[0.625rem] text-emerald-700 italic mb-0.5' }, c.role),
+                  h('div', { className: 'text-[0.625rem] text-slate-700' }, c.notes)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.real_applications', 'Real applications')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.real_applications', 'Real applications')),
           h('div', { className: 'space-y-1' },
             CRISPR_APPS.map(function(a, i) {
               return h('div', { key: 'a'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[11px] font-black text-emerald-900 mb-0.5' }, a.use),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.detail)
+                h('div', { className: 'text-[0.6875rem] font-black text-emerald-900 mb-0.5' }, a.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, a.detail)
               );
             })
           )
@@ -7832,9 +7832,9 @@ window.StemLab = window.StemLab || {
       function renderVirusesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.virus_families_2', '🦠 Virus families')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.viruses_are_non_living_infectious_agen', 'Viruses are non-living infectious agents — they need a host cell to replicate. Classified by genome type (Baltimore classification), envelope, shape.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.viruses_are_non_living_infectious_agen', 'Viruses are non-living infectious agents — they need a host cell to replicate. Classified by genome type (Baltimore classification), envelope, shape.')),
           h('div', { className: 'overflow-x-auto' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Family', 'Genome', 'Envelope', 'Examples', 'Notes'].map(function(hh, i) {
@@ -7846,10 +7846,10 @@ window.StemLab = window.StemLab || {
                 VIRUS_FAMILIES.map(function(v, i) {
                   return h('tr', { key: 'v'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     h('td', { className: 'px-2 py-1 font-bold text-slate-800' }, v.family),
-                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[10px]' }, v.genome),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, v.envelope),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, v.examples),
-                    h('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, v.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-emerald-700 text-[0.625rem]' }, v.genome),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, v.envelope),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, v.examples),
+                    h('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, v.notes)
                   );
                 })
               )
@@ -7861,14 +7861,14 @@ window.StemLab = window.StemLab || {
       function renderMicrobiomeSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.human_microbiome', '🦠 Human microbiome')),
-          h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3' },
+          h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900 mb-3' },
             h('strong', null, t('stem.dna.note', '⚠ Note: ')), t('stem.dna.microbiome_science_is_advancing_fast_m', 'Microbiome science is advancing fast. Many popular claims (specific probiotic strains "curing" specific conditions) outrun the evidence. Stick to robustly replicated findings.')
           ),
           h('div', { className: 'space-y-1' },
             MICROBIOME_FACTS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, m.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, m.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.detail)
               );
             })
           )
@@ -7879,25 +7879,25 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.embryonic_development', '🥚 Embryonic development')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.stages_human_approximate', 'Stages (human, approximate)')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.stages_human_approximate', 'Stages (human, approximate)')),
             h('div', { className: 'space-y-1' },
               EMBRYO_STAGES.map(function(s, i) {
                 return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    h('span', { className: 'text-[11px] font-black text-slate-800' }, s.stage),
-                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.time)
+                    h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, s.stage),
+                    h('span', { className: 'text-[0.625rem] font-mono text-emerald-700 ml-auto' }, s.time)
                   ),
-                  h('div', { className: 'text-[10px] text-slate-700' }, s.detail)
+                  h('div', { className: 'text-[0.625rem] text-slate-700' }, s.detail)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.germ_layers_what_each_forms', 'Germ layers — what each forms')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.germ_layers_what_each_forms', 'Germ layers — what each forms')),
           h('div', { className: 'space-y-1' },
             GERM_LAYERS.map(function(L, i) {
               return h('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, L.layer),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, L.forms)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, L.layer),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, L.forms)
               );
             })
           )
@@ -7907,12 +7907,12 @@ window.StemLab = window.StemLab || {
       function renderCancerSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.hallmarks_of_cancer', '⚕ Hallmarks of cancer')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.defined_by_hanahan_weinberg_2000_updat', 'Defined by Hanahan + Weinberg (2000, updated 2011). Most cancers acquire most of these hallmarks. Therapy increasingly targets specific hallmarks.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.defined_by_hanahan_weinberg_2000_updat', 'Defined by Hanahan + Weinberg (2000, updated 2011). Most cancers acquire most of these hallmarks. Therapy increasingly targets specific hallmarks.')),
           h('div', { className: 'space-y-1' },
             CANCER_HALLMARKS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.hallmark),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, c.hallmark),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
           )
@@ -7925,8 +7925,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             IMMUNE_COMPONENTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, c.component),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, c.component),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
           )
@@ -7939,8 +7939,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             NEURO_BASICS.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, n.topic),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, n.topic),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.detail)
               );
             })
           )
@@ -7951,24 +7951,24 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.tree_of_life_2', '🌳 Tree of life')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.three_domains_woese_1990', 'Three domains (Woese, 1990)')),
+            h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.three_domains_woese_1990', 'Three domains (Woese, 1990)')),
             h('div', { className: 'space-y-2' },
               TREE_OF_LIFE.map(function(d, i) {
                 return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                  h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, d.domain),
-                  h('div', { className: 'text-[11px] text-emerald-700 font-bold mb-1' }, d.features),
-                  h('div', { className: 'text-[10px] text-slate-600 italic' }, 'Examples: ' + d.examples)
+                  h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, d.domain),
+                  h('div', { className: 'text-[0.6875rem] text-emerald-700 font-bold mb-1' }, d.features),
+                  h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, 'Examples: ' + d.examples)
                 );
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.traditional_eukaryote_kingdoms', 'Traditional eukaryote kingdoms')),
+          h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.dna.traditional_eukaryote_kingdoms', 'Traditional eukaryote kingdoms')),
           h('div', { className: 'space-y-1' },
             KINGDOMS.map(function(K, i) {
               return h('div', { key: 'K'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-emerald-900 mb-0.5' }, K.kingdom),
-                h('div', { className: 'text-[11px] text-slate-700 mb-0.5' }, K.features),
-                h('div', { className: 'text-[10px] text-slate-600 italic' }, K.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-emerald-900 mb-0.5' }, K.kingdom),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mb-0.5' }, K.features),
+                h('div', { className: 'text-[0.625rem] text-slate-600 italic' }, K.notes)
               );
             })
           )
@@ -7981,8 +7981,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             BIOTECH_APPS.map(function(b, i) {
               return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, b.app),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, b.app),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, b.detail)
               );
             })
           )
@@ -7993,7 +7993,7 @@ window.StemLab = window.StemLab || {
         h('summary', null,
           h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDA'),
           h('span', null, 'Biology reference library'),
-          h('span', { className: 'text-[10px] font-medium text-slate-500' }, expSection ? 'Selection saved' : '45 topics · optional')
+          h('span', { className: 'text-[0.625rem] font-medium text-slate-500' }, expSection ? 'Selection saved' : '45 topics · optional')
         ),
         h('div', { className: 'px-3 pb-3' },
           expHeader(),

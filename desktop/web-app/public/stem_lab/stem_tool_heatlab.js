@@ -1536,11 +1536,11 @@
             ? { background: flowPart.color, color: '#0b1020', border: '1px solid ' + flowPart.color }
             : { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(255,255,255,0.78)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.25)' : 'rgba(100,116,139,0.2)') }
         },
-          h('span', { className: 'block text-[10px] font-black' }, step.label),
-          h('span', { className: 'block text-[10px]', style: { color: flowOn ? '#0b1020' : (isDark ? '#94a3b8' : '#64748b') } }, step.hint)
+          h('span', { className: 'block text-[0.625rem] font-black' }, step.label),
+          h('span', { className: 'block text-[0.625rem]', style: { color: flowOn ? '#0b1020' : (isDark ? '#94a3b8' : '#64748b') } }, step.hint)
         ));
         if (i < HEAT_3D_FLOW.length - 1) {
-          heatFlowNodes.push(h('span', { key: 'heat-flow-arrow-' + i, 'aria-hidden': 'true', className: 'text-[13px] font-black', style: { color: isDark ? '#94a3b8' : '#64748b' } }, '→'));
+          heatFlowNodes.push(h('span', { key: 'heat-flow-arrow-' + i, 'aria-hidden': 'true', className: 'text-[0.8125rem] font-black', style: { color: isDark ? '#94a3b8' : '#64748b' } }, '→'));
         }
       });
       React.useEffect(function () {
@@ -1711,7 +1711,7 @@
           'aria-pressed': on ? 'true' : 'false',
           'aria-label': ariaLabel || label,
           onClick: onClick,
-          className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+          className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
           style: on
             ? { background: accent, color: pillTextColor(accent), border: '1px solid ' + accent }
             : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
@@ -1722,7 +1722,7 @@
         // control a full row. At the small breakpoint the familiar one-line
         // layout returns.
         return h('div', { className: 'grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[7rem_minmax(0,1fr)_5rem] items-center gap-x-2 gap-y-1 mt-1.5' },
-          h('label', { htmlFor: id, className: 'col-start-1 row-start-1 text-[11px] font-bold min-w-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
+          h('label', { htmlFor: id, className: 'col-start-1 row-start-1 text-[0.6875rem] font-bold min-w-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
           h('input', {
             id: id, type: 'range', min: min, max: max, step: step, value: value,
             'aria-valuetext': String(suffix),
@@ -1730,7 +1730,7 @@
             onChange: onChange,
             className: 'col-span-2 row-start-2 sm:col-span-1 sm:col-start-2 sm:row-start-1 w-full min-w-0 h-11 accent-orange-500'
           }),
-          h('output', { htmlFor: id, id: id + '-value', className: 'col-start-2 row-start-1 sm:col-start-3 text-[11px] font-bold text-right whitespace-nowrap', style: { color: isDark ? '#fdba74' : '#c2410c' } }, suffix)
+          h('output', { htmlFor: id, id: id + '-value', className: 'col-start-2 row-start-1 sm:col-start-3 text-[0.6875rem] font-bold text-right whitespace-nowrap', style: { color: isDark ? '#fdba74' : '#c2410c' } }, suffix)
         );
       };
 
@@ -1752,12 +1752,12 @@
                 return next;
               });
             },
-            className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+            className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
             style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
           }, expanded ? '▾ Hide the numbers' : '▸ Show the numbers'),
           expanded ? h('div', { id: panelId, role: 'region', 'aria-label': caption, className: 'mt-2 overflow-x-auto' },
-            h('table', { className: 'w-full text-[11px]', style: { borderCollapse: 'collapse' } },
-              h('caption', { className: 'text-left text-[11px] mb-1', style: { color: isDark ? '#94a3b8' : '#64748b' } }, caption),
+            h('table', { className: 'w-full text-[0.6875rem]', style: { borderCollapse: 'collapse' } },
+              h('caption', { className: 'text-left text-[0.6875rem] mb-1', style: { color: isDark ? '#94a3b8' : '#64748b' } }, caption),
               h('thead', null, h('tr', null, cols.map(function (c) {
                 return h('th', { key: c, scope: 'col', className: 'text-left py-1 pr-3 font-bold', style: { color: isDark ? '#cbd5e1' : '#475569', borderBottom: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.25)') } }, c);
               }))),
@@ -1833,7 +1833,7 @@
         }
       },
         h('div', { className: 'flex flex-wrap items-center gap-2' },
-          h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#fdba74' : '#c2410c' } },
+          h('span', { className: 'text-[0.6875rem] font-black', style: { color: isDark ? '#fdba74' : '#c2410c' } },
             '🧭 ' + HT_SECTIONS.length + ' topics'),
           h('label', { htmlFor: 'ht-topic-search', className: 'sr-only' }, 'Search topics'),
           h('input', {
@@ -1841,14 +1841,14 @@
             placeholder: 'Search topics…',
             'aria-label': 'Search the ' + HT_SECTIONS.length + ' topics by name or keyword',
             onChange: function (e) { upd({ htQuery: e.target.value }); },
-            className: 'flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[11px]',
+            className: 'flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[0.6875rem]',
             style: {
               background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
               color: isDark ? '#e2e8f0' : '#1e293b',
               border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
             }
           }),
-          h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('span', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             htVisible.length === HT_SECTIONS.length ? 'showing all' : 'showing ' + htVisible.length)
         ),
         h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
@@ -1863,14 +1863,14 @@
         // sticky bar would sit on a third of a phone screen permanently.
         h('div', { className: 'flex flex-wrap gap-1 mt-1.5', style: { maxHeight: '92px', overflowY: 'auto' } },
           htVisible.length === 0
-            ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+            ? h('span', { className: 'text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                 'No topic matches “' + (d.htQuery || '') + '”.')
             : htVisible.map(function (s) {
                 return h('button', {
                   key: s.id, type: 'button',
                   onClick: function () { htGoTo(s); },
                   'aria-label': 'Jump to ' + s.label,
-                  className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors',
+                  className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-colors',
                   style: {
                     background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(251,146,60,0.09)',
                     color: isDark ? '#e2e8f0' : '#334155',
@@ -1923,7 +1923,7 @@
               }, 'Show ' + m.label);
             })
           ),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } }, activeMode.why),
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } }, activeMode.why),
 
           // 220px left the single bar floating in a third of a black field. The
           // extra height goes to the colour key, the end labels and the two-cell
@@ -1952,7 +1952,7 @@
           ),
           mode === 'conduction' ? h('p', {
             id: 'heat-race-status', role: 'status', 'aria-live': 'polite',
-            className: 'text-[11px] mt-1.5', style: { color: isDark ? '#cbd5e1' : '#475569' }
+            className: 'text-[0.6875rem] mt-1.5', style: { color: isDark ? '#cbd5e1' : '#475569' }
           }, raceStatus) : null,
 
           mode === 'conduction' ? h('div', { className: 'mt-2' },
@@ -1970,7 +1970,7 @@
                     announceToSR(raceOn ? 'Single bar.' : 'Racing ' + material.name + ' against ' + materialB.name + '. Both start at 20 degrees; the clock stops when the middle of each bar passes ' + HEAT_FINISH_C + ' degrees.');
                   }
                 },
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-black transition-colors',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black transition-colors',
                 style: raceOn
                   ? { background: '#fb923c', color: '#0b1020', border: '1px solid #fb923c' }
                   : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
@@ -1984,7 +1984,7 @@
                   if (typeof beep === 'function') beep();
                   if (typeof announceToSR === 'function') announceToSR('Bars reset to 20 degrees.');
                 },
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
               }, '↺ Restart'),
               prefersReducedMotion ? h('button', {
@@ -1994,15 +1994,15 @@
                   var el = canvasRef.current;
                   if (el && el._heatStep) el._heatStep();
                 },
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
               }, 'Advance 10 s') : null,
-              raceOn ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+              raceOn ? h('span', { className: 'text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                 material.id === materialB.id
                   ? 'Prediction: identical materials should tie.'
                   : 'Prediction: ' + racePrediction.fasterName + ' should reach the midpoint about ' + raceRatioText + '× sooner than ' + racePrediction.slowerName + '. Does the clock agree?') : null
             ),
-            h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, raceOn ? 'Top bar' : 'Bar material'),
+            h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, raceOn ? 'Top bar' : 'Bar material'),
             h('div', { className: 'flex flex-wrap gap-1' },
               MATERIALS.map(function (m) {
                 return pill(matId === m.id, m.colour, m.name, function () {
@@ -2015,7 +2015,7 @@
               })
             ),
             raceOn ? h('div', { className: 'mt-2' },
-              h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Bottom bar'),
+              h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Bottom bar'),
               h('div', { className: 'flex flex-wrap gap-1' },
                 MATERIALS.map(function (m) {
                   return pill(matBId === m.id, m.colour, m.name, function () {
@@ -2028,9 +2028,9 @@
                 })
               )
             ) : null,
-            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               h('b', null, material.name + ': '), material.note),
-            h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#fdba74' : '#c2410c' } },
+            h('p', { className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#fdba74' : '#c2410c' } },
               'k = ' + material.k + ' W/m·K   c = ' + material.c + ' J/kg·K   diffusivity = ' +
               (material.k / (material.rho * material.c) * 1e6).toFixed(2) + ' mm²/s'),
             slider('heat-hot-end', 'Hot end', 30, 300, 5, hotEnd,
@@ -2041,7 +2041,7 @@
         // ── 2. insulation ──
         sec('insulation', '#fbbf24',
           heading('#fbbf24', '🧣 2. Insulation: keep the mug hot'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A 350 ml mug of tea at 90 °C in a 20 °C room. Wrap it and see how much you can slow the loss. Getting it above 65 °C after a full hour earns the badge — only a genuine insulator manages that, and thickness alone will not rescue a metal.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             MATERIALS.map(function (m) {
@@ -2062,7 +2062,7 @@
              ['After 60 min', fmt(after60, 1) + ' °C'], ['R-value', ((thickness / 1000) / insMat.k).toFixed(3) + ' m²·K/W']
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' } },
-                h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
+                h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
                 h('p', { className: 'text-sm font-black', style: { color: isDark ? '#fbbf24' : '#b45309' } }, p[1]));
             })
           ),
@@ -2075,7 +2075,7 @@
                 ' the tea falls from 90 degrees to ' + after60.toFixed(0) + ' degrees. The dashed lines show copper, the worst choice, and aerogel, the best, at the same thickness.',
               style: { width: '100%', height: '100%', display: 'block' }
             })),
-          h('p', { id: 'ht-cooling-curve-description', className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('p', { id: 'ht-cooling-curve-description', className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Solid line: your choice. Dashed: copper (worst) and aerogel (best) at the same thickness. The curve is steepest at the start, because heat flow is proportional to the temperature gap.'),
           dataTable('cooling', 'Tea temperature every ten minutes, ' + thickness + ' mm of ' + insMat.name,
             ['Minutes', 'Your wrap', 'Copper', 'Aerogel'],
@@ -2085,7 +2085,7 @@
                 coolingCurve(MATERIALS[0], thickness)[min].toFixed(1) + ' °C',
                 coolingCurve(MATERIALS[MATERIALS.length - 1], thickness)[min].toFixed(1) + ' °C'];
             })),
-          h('p', { className: 'text-[11px] mt-2', style: { color: after60 >= 65 ? ink('#16a34a') : (isDark ? '#cbd5e1' : '#475569') } },
+          h('p', { className: 'text-[0.6875rem] mt-2', style: { color: after60 >= 65 ? ink('#16a34a') : (isDark ? '#cbd5e1' : '#475569') } },
             after60 >= 65
               ? '✅ Still ' + fmt(after60, 1) + ' °C after an hour. In this series-resistance model, doubling the wrap from ' + thickness + ' to ' + (thickness * 2) + ' mm cuts wall heat flow by about ' + Math.round(doubledFlowReductionPct) + '%. It approaches a one-half reduction only when the wrap dominates the surface-film resistance. The model omits the lid, evaporation and thermal bridges.'
               : 'Down to ' + fmt(after60, 1) + ' °C. Try a material with a lower k, or more of it.')
@@ -2094,7 +2094,7 @@
         // ── 2b. composite wall ──
         sec('wall', '#84cc16',
           heading('#84cc16', '🧱 3. Build a wall: resistances add up'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A real wall is layers in series, and their R-values simply add. Tap to add or remove a layer and watch the U-value. New-build regulations here want 0.18 W/m²K or lower.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             WALL_LAYERS.map(function (L) {
@@ -2107,7 +2107,7 @@
                   pushOnce('wallTried', L.id);
                   if (typeof beep === 'function') beep();
                 },
-                className: 'min-h-11 px-2.5 py-2 rounded-lg text-[11px] font-bold transition-colors',
+                className: 'min-h-11 px-2.5 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: { background: count ? 'rgba(132,204,22,0.18)' : (isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)'), color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (count ? '#84cc16' : (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')) }
               }, '+ ' + L.name + (count > 1 ? ' ×' + count : ''));
             })
@@ -2126,8 +2126,8 @@
             var biggest = bands.reduce(function (a, b) { return b.r > a.r ? b : a; }, bands[0]);
             return h('div', { className: 'mt-1 mb-2' },
               h('div', { className: 'flex items-center justify-between mb-1' },
-                h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } }, '← warm inside'),
-                h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'cold outside →')),
+                h('span', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } }, '← warm inside'),
+                h('span', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'cold outside →')),
               h('div', {
                 className: 'flex rounded-lg overflow-hidden',
                 style: { height: '54px', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') },
@@ -2160,25 +2160,25 @@
                       borderTop: b.film ? 'none' : '3px solid ' + b.colour
                     }
                   },
-                    roomy ? h('span', { className: 'text-[10px] font-bold text-center px-1', style: { color: isDark ? '#e2e8f0' : '#1e293b' } }, b.name) : null,
-                    roomy || narrow ? h('span', { className: 'text-[10px] font-mono', style: { color: isDark ? '#a3e635' : '#365314' } }, 'R ' + b.r.toFixed(2)) : null
+                    roomy ? h('span', { className: 'text-[0.625rem] font-bold text-center px-1', style: { color: isDark ? '#e2e8f0' : '#1e293b' } }, b.name) : null,
+                    roomy || narrow ? h('span', { className: 'text-[0.625rem] font-mono', style: { color: isDark ? '#a3e635' : '#365314' } }, 'R ' + b.r.toFixed(2)) : null
                   );
                 })
               ),
-              h('p', { className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+              h('p', { className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
                 'Band width = share of the total resistance. Layers too thin to letter are contributing almost nothing.')
             );
           })(),
 
           h('div', { role: 'list', 'aria-label': 'Wall layers from inside to outside', className: 'space-y-1' },
             wallStack.length === 0
-              ? h('p', { className: 'text-[11px] italic', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'No layers yet. Even an empty opening has some resistance from the still air on each face.')
+              ? h('p', { className: 'text-[0.6875rem] italic', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'No layers yet. Even an empty opening has some resistance from the still air on each face.')
               : wallStack.map(function (id, i) {
                 var L = WALL_LAYERS.filter(function (x) { return x.id === id; })[0];
                 if (!L) return null;
                 return h('div', { key: i + '-' + id, role: 'listitem', className: 'flex items-center gap-2 rounded-lg px-2.5 py-1.5', style: { background: isDark ? 'rgba(148,163,184,0.09)' : 'rgba(132,204,22,0.08)', border: '1px solid rgba(132,204,22,0.3)' } },
-                  h('span', { className: 'flex-1 text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, L.name),
-                  h('span', { className: 'text-[11px] font-mono', style: { color: ink('#84cc16') } }, 'R ' + L.r.toFixed(2)),
+                  h('span', { className: 'flex-1 text-[0.6875rem] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, L.name),
+                  h('span', { className: 'text-[0.6875rem] font-mono', style: { color: ink('#84cc16') } }, 'R ' + L.r.toFixed(2)),
                   h('button', {
                     type: 'button',
                     'aria-label': 'Remove this layer of ' + L.name,
@@ -2188,7 +2188,7 @@
                       upd({ wallStack: next });
                       if (typeof beep === 'function') beep();
                     },
-                    className: 'min-h-11 px-2 rounded text-[11px] font-black',
+                    className: 'min-h-11 px-2 rounded text-[0.6875rem] font-black',
                     style: { color: ink('#f43f5e'), background: 'transparent', border: 'none' }
                   }, '✕')
                 );
@@ -2198,22 +2198,22 @@
             [['Total R', wallTotalR.toFixed(2) + ' m²K/W'], ['U-value', wallU.toFixed(3) + ' W/m²K'], ['Loss, 100 m² wall', fmt(wallLoss, 0) + ' W']
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(132,204,22,0.1)', border: '1px solid rgba(132,204,22,0.32)' } },
-                h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
+                h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
                 h('p', { className: 'text-sm font-black', style: { color: isDark ? '#a3e635' : '#4d7c0f' } }, p[1]));
             })
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: wallU <= wallTarget ? ink('#16a34a') : (isDark ? '#e2e8f0' : '#334155') } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: wallU <= wallTarget ? ink('#16a34a') : (isDark ? '#e2e8f0' : '#334155') } },
             wallU <= wallTarget
               ? '✅ ' + wallU.toFixed(3) + ' W/m²K meets the 0.18 target. Notice how much of that came from one insulating layer — the brick and plaster contribute almost nothing.'
               : 'At ' + wallU.toFixed(3) + ' W/m²K this wall is above the 0.18 target. Adding more brick will barely move it. Which layer would you reach for — and how much of it? One 100 mm batt is not enough on its own.'),
-          h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('p', { className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'R_total = R_surfaces + ΣR_layers = ' + wallTotalR.toFixed(2) + '   U = 1 / R_total')
         ),
 
         // ── 2c. how far apart are these materials? ──
         sec('range', '#f97316',
           heading('#fb923c', '📊 4. The range is bigger than it looks'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Conductivity is plotted on a logarithmic scale, because a linear one would squash everything below copper into a single line at the bottom.'),
           // One definition of the scale, shared by the bars and the decade ticks,
           // so a change to the span can never leave the axis lying about the bars.
@@ -2238,12 +2238,12 @@
                     'aria-label': m.name + ', ' + m.k + ' watts per metre kelvin',
                     className: 'flex items-center gap-2'
                   },
-                    h('span', { className: 'text-[11px] font-bold w-20 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, m.name),
+                    h('span', { className: 'text-[0.6875rem] font-bold w-20 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, m.name),
                     h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: grid + ', ' + trackBase } },
                       h('div', { style: { height: '100%', width: Math.max(2, frac * 100).toFixed(1) + '%', background: m.colour, borderRadius: '999px' } })),
                     // The pale swatch colours (aerogel's lavender, fibreglass's
                     // amber) are legible as a BAR on white but not as 11px text.
-                    h('span', { className: 'text-[11px] font-mono w-16 text-right', style: { color: isDark ? ink(m.colour) : '#334155' } }, m.k >= 1 ? m.k : m.k.toFixed(3))
+                    h('span', { className: 'text-[0.6875rem] font-mono w-16 text-right', style: { color: isDark ? ink(m.colour) : '#334155' } }, m.k >= 1 ? m.k : m.k.toFixed(3))
                   );
                 })
               ),
@@ -2253,7 +2253,7 @@
                   DECADES.map(function (v) {
                     return h('span', {
                       key: v,
-                      className: 'absolute text-[10px] font-bold',
+                      className: 'absolute text-[0.625rem] font-bold',
                       style: {
                         left: (fracOf(v) * 100).toFixed(4) + '%',
                         transform: 'translateX(-50%)',
@@ -2263,11 +2263,11 @@
                     }, v >= 1 ? String(v) : String(v));
                   })
                 ),
-                h('span', { className: 'w-16 flex-shrink-0 text-[10px] font-bold text-right', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'W/m·K')
+                h('span', { className: 'w-16 flex-shrink-0 text-[0.625rem] font-bold text-right', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'W/m·K')
               )
             );
           })(),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'Copper conducts about ' + Math.round(MATERIALS[0].k / MATERIALS[MATERIALS.length - 1].k).toLocaleString() +
             // "Every bar is one step of ten" was never quite true — the bars are
             // not a decade apart, the GRIDLINES are. Now that they are drawn, the
@@ -2278,13 +2278,13 @@
         // ── 3. calorimetry ──
         sec('mixing', '#38bdf8',
           heading('#38bdf8', '⚖️ 5. Calorimetry estimation challenge'),
-          h('p', { className: 'text-[11px] mb-2', 'data-heat-estimation-challenge': 'true', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', 'data-heat-estimation-challenge': 'true', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Estimate the final temperature, compare it with the energy model, then revise your thinking. Closeness can earn estimation XP; reflection credit never depends on matching the model.'),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             [[1, sub1, m1, t1, 'sub1', 'm1', 't1'], [2, sub2, m2, t2, 'sub2', 'm2', 't2']].map(function (row) {
               var n = row[0], sub = row[1];
               return h('div', { key: n, className: 'rounded-lg p-2', style: { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.28)' } },
-                h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(sub.colour) } }, 'Sample ' + n + ': ' + sub.name),
+                h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink(sub.colour) } }, 'Sample ' + n + ': ' + sub.name),
                 h('div', { className: 'flex flex-wrap gap-1 mb-1' },
                   SUBSTANCES.map(function (s) {
                     return pill(sub.id === s.id, s.colour, s.name, function () {
@@ -2297,12 +2297,12 @@
                   function (e) { var p = {}; p[row[5]] = parseFloat(e.target.value); resetMixEstimate(p); }, row[2].toFixed(1) + ' kg'),
                 slider('heat-temp-' + n, 'Start temp', 0, 100, 1, row[3],
                   function (e) { var p = {}; p[row[6]] = parseFloat(e.target.value); resetMixEstimate(p); }, row[3] + ' °C'),
-                h('p', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'c = ' + sub.c + ' J/kg·K'));
+                h('p', { className: 'text-[0.625rem] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'c = ' + sub.c + ' J/kg·K'));
             })
           ),
           h('div', { className: 'flex flex-wrap items-end gap-2 mt-2' },
             h('div', { className: 'flex-1 min-w-[160px]' },
-              h('label', { htmlFor: 'heat-predict', className: 'block text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your temperature estimate (°C)'),
+              h('label', { htmlFor: 'heat-predict', className: 'block text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your temperature estimate (°C)'),
               h('input', {
                 id: 'heat-predict', type: 'number', min: 0, max: 100, value: predictText,
                 placeholder: 'e.g. 45',
@@ -2312,10 +2312,10 @@
                   setRevealed(false);
                   upd({ mixEstimateResult: null, mixEstimateRevision: '', mixEstimateReflection: '', mixEstimateReflectionComplete: false });
                 },
-                className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[11px]',
+                className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[0.6875rem]',
                 style: { border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.32)' : 'rgba(100,116,139,0.3)'), background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' }
               }),
-              h('p', { id: 'heat-estimate-help', className: 'mt-1 text-[10px]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'Enter a number before comparing. A reasonable estimate can be above or below the model result.')),
+              h('p', { id: 'heat-estimate-help', className: 'mt-1 text-[0.625rem]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'Enter a number before comparing. A reasonable estimate can be above or below the model result.')),
             h('button', {
               type: 'button',
               disabled: !mixEstimateReady || revealed,
@@ -2343,46 +2343,46 @@
                   announceToSR('The model gives ' + finalT.toFixed(1) + ' degrees Celsius. Your estimate differs by ' + absoluteError.toFixed(1) + ' degrees.');
                 }
               },
-              className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45',
+              className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45',
               style: { background: '#0369a1', border: '1px solid #0369a1' }
             }, revealed ? 'Estimate compared' : 'Compare estimate with model')
           ),
           revealed && mixEstimateResult ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(240,249,255,0.9)' } },
             h('p', { className: 'text-sm font-black', style: { color: ink('#0284c7') } }, 'Estimate: ' + mixEstimateResult.estimated.toFixed(1) + ' °C · Model: ' + mixEstimateResult.actual.toFixed(1) + ' °C'),
-            h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: mixEstimateResult.withinTwo ? ink('#15803d') : (isDark ? '#fcd34d' : '#92400e') } },
+            h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: mixEstimateResult.withinTwo ? ink('#15803d') : (isDark ? '#fcd34d' : '#92400e') } },
               mixEstimateResult.withinTwo ? 'Within 2 °C — estimation XP earned.' : 'Difference: ' + mixEstimateResult.absoluteError.toFixed(1) + ' °C (' + mixEstimateResult.percentError.toFixed(0) + '% error). Reflection credit is still fully available.'),
-            h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+            h('p', { className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } },
               'Tf = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂)'),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               mixExplanation)
           ) : null,
           revealed && mixEstimateResult ? h('section', { className: 'mt-2 rounded-lg border p-2.5', 'data-heat-estimation-reflection': 'true', 'aria-label': 'Calorimetry estimation reflection', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(8,47,73,0.45)' : 'rgba(240,249,255,0.9)' } },
-            h('h4', { className: 'text-[11px] font-black uppercase tracking-wide', style: { color: ink('#0284c7') } }, 'Revise from evidence'),
-            h('p', { className: 'mt-1 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Choose how the comparison changed your thinking, then cite the measured difference or the energy model. This completion credit is independent of accuracy.'),
+            h('h4', { className: 'text-[0.6875rem] font-black uppercase tracking-wide', style: { color: ink('#0284c7') } }, 'Revise from evidence'),
+            h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Choose how the comparison changed your thinking, then cite the measured difference or the energy model. This completion credit is independent of accuracy.'),
             h('fieldset', { className: 'mt-2' },
-              h('legend', { className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'What does the evidence suggest?'),
+              h('legend', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'What does the evidence suggest?'),
               h('div', { className: 'mt-1 grid gap-1 sm:grid-cols-3' },
                 [
                   { id: 'supported', label: 'My reasoning was supported' },
                   { id: 'revised', label: 'I would revise my reasoning' },
                   { id: 'uncertain', label: 'I need another trial' }
                 ].map(function (option) {
-                  return h('label', { key: option.id, className: 'flex cursor-pointer items-start gap-2 rounded-lg border p-2 text-[10px]', style: { borderColor: mixEstimateRevision === option.id ? '#0284c7' : 'rgba(56,189,248,0.3)', background: mixEstimateRevision === option.id ? (isDark ? 'rgba(14,116,144,0.3)' : '#e0f2fe') : 'transparent', color: isDark ? '#e2e8f0' : '#334155' } },
+                  return h('label', { key: option.id, className: 'flex cursor-pointer items-start gap-2 rounded-lg border p-2 text-[0.625rem]', style: { borderColor: mixEstimateRevision === option.id ? '#0284c7' : 'rgba(56,189,248,0.3)', background: mixEstimateRevision === option.id ? (isDark ? 'rgba(14,116,144,0.3)' : '#e0f2fe') : 'transparent', color: isDark ? '#e2e8f0' : '#334155' } },
                     h('input', { type: 'radio', name: 'heat-estimation-revision', value: option.id, checked: mixEstimateRevision === option.id, onChange: function () { upd({ mixEstimateRevision: option.id, mixEstimateReflectionComplete: false }); }, className: 'mt-0.5 h-4 w-4 accent-sky-700' }),
                     h('span', null, option.label));
                 })
               )
             ),
-            h('label', { htmlFor: 'heat-estimation-reflection', className: 'mt-2 block text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Evidence note'),
-            h('textarea', { id: 'heat-estimation-reflection', rows: 2, maxLength: 400, value: mixEstimateReflection, onChange: function (e) { upd({ mixEstimateReflection: e.target.value.slice(0, 400), mixEstimateReflectionComplete: false }); }, placeholder: 'The model result and temperature difference show... Next time I would...', className: 'mt-1 w-full rounded-lg border p-2 text-[11px]', style: { borderColor: 'rgba(56,189,248,0.4)', background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } }),
+            h('label', { htmlFor: 'heat-estimation-reflection', className: 'mt-2 block text-[0.6875rem] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Evidence note'),
+            h('textarea', { id: 'heat-estimation-reflection', rows: 2, maxLength: 400, value: mixEstimateReflection, onChange: function (e) { upd({ mixEstimateReflection: e.target.value.slice(0, 400), mixEstimateReflectionComplete: false }); }, placeholder: 'The model result and temperature difference show... Next time I would...', className: 'mt-1 w-full rounded-lg border p-2 text-[0.6875rem]', style: { borderColor: 'rgba(56,189,248,0.4)', background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } }),
             h('div', { className: 'mt-2 flex flex-wrap gap-2' },
               h('button', { type: 'button', disabled: !mixEstimateRevision || mixEstimateReflection.trim().length < 12 || !!d.mixEstimateReflectionComplete, 'aria-disabled': mixEstimateRevision && mixEstimateReflection.trim().length >= 12 && !d.mixEstimateReflectionComplete ? 'false' : 'true', onClick: function () {
                 if (!mixEstimateRevision || mixEstimateReflection.trim().length < 12 || d.mixEstimateReflectionComplete) return;
                 upd({ mixEstimateReflectionComplete: true });
                 if (typeof awardXP === 'function') awardXP('heatlab_mix_reflection', 5, 'Completed a calorimetry evidence reflection');
                 if (typeof announceToSR === 'function') announceToSR('Calorimetry estimation reflection saved.');
-              }, className: 'min-h-10 rounded-lg bg-sky-700 px-3 py-2 text-[10px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, d.mixEstimateReflectionComplete ? 'Reflection saved' : 'Save evidence reflection'),
-              h('button', { type: 'button', onClick: function () { resetMixEstimate({}); }, className: 'min-h-10 rounded-lg border px-3 py-2 text-[10px] font-black', style: { borderColor: 'rgba(56,189,248,0.5)', color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Try another estimate')
+              }, className: 'min-h-10 rounded-lg bg-sky-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, d.mixEstimateReflectionComplete ? 'Reflection saved' : 'Save evidence reflection'),
+              h('button', { type: 'button', onClick: function () { resetMixEstimate({}); }, className: 'min-h-10 rounded-lg border px-3 py-2 text-[0.625rem] font-black', style: { borderColor: 'rgba(56,189,248,0.5)', color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Try another estimate')
             )
           ) : null
         ),
@@ -2390,7 +2390,7 @@
         // ── 4. heating curve ──
         sec('heatingcurve', '#a78bfa',
           heading('#a78bfa', '♨️ 6. The heating curve: where the energy hides'),
-          h('p', { id: 'ht-heating-curve-description', className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { id: 'ht-heating-curve-description', className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Pour energy into 1 kg of ice at −20 °C and watch the temperature. It does not rise steadily, and the reason is the most useful idea in this whole tool.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(167,139,250,0.35)', height: '190px' } },
             h('canvas', {
@@ -2406,26 +2406,26 @@
           h('div', { className: 'mt-2 rounded-xl border p-3', 'data-heat-3d-snapshot': 'true', role: 'group', 'aria-label': '3D convection model snapshot', style: { borderColor: 'rgba(251,146,60,0.32)', background: isDark ? 'linear-gradient(135deg, rgba(15,23,42,0.92), rgba(124,45,18,0.28))' : 'linear-gradient(135deg, rgba(255,247,237,0.96), rgba(224,242,254,0.72))' } },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
               h('div', null,
-                h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em]', style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'Model snapshot'),
-                h('div', { className: 'mt-0.5 text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, part3d ? 'Inspecting ' + part3d.label : 'Full convection loop')
+                h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.18em]', style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'Model snapshot'),
+                h('div', { className: 'mt-0.5 text-[0.6875rem] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, part3d ? 'Inspecting ' + part3d.label : 'Full convection loop')
               ),
-              h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide', style: view3dStatus === 'ready' ? { borderColor: 'rgba(52,211,153,0.45)', background: 'rgba(52,211,153,0.12)', color: isDark ? '#bbf7d0' : '#166534' } : { borderColor: 'rgba(251,146,60,0.42)', background: 'rgba(251,146,60,0.12)', color: isDark ? '#fed7aa' : '#9a3412' } }, view3dStatus === 'ready' ? 'Interactive 3D ready' : (HEAT_3D_MISSING === 'host' ? '2D fallback guide available' : (view3dStatus === 'loading' ? 'Loading 3D model' : '2D fallback guide available')))
+              h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide', style: view3dStatus === 'ready' ? { borderColor: 'rgba(52,211,153,0.45)', background: 'rgba(52,211,153,0.12)', color: isDark ? '#bbf7d0' : '#166534' } : { borderColor: 'rgba(251,146,60,0.42)', background: 'rgba(251,146,60,0.12)', color: isDark ? '#fed7aa' : '#9a3412' } }, view3dStatus === 'ready' ? 'Interactive 3D ready' : (HEAT_3D_MISSING === 'host' ? '2D fallback guide available' : (view3dStatus === 'loading' ? 'Loading 3D model' : '2D fallback guide available')))
             ),
             h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' },
               h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(251,146,60,0.08)' : 'rgba(255,255,255,0.62)' } },
-                h('div', { className: 'text-[10px] font-black uppercase tracking-wide', style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'Focus'),
-                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, part3d ? part3d.label : 'Full loop'),
-                h('div', { className: 'mt-0.5 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, part3d ? 'Selected hotspot in the tank.' : 'Choose a stage to inspect its evidence.')
+                h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide', style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'Focus'),
+                h('div', { className: 'mt-0.5 text-[0.6875rem] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, part3d ? part3d.label : 'Full loop'),
+                h('div', { className: 'mt-0.5 text-[0.625rem] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, part3d ? 'Selected hotspot in the tank.' : 'Choose a stage to inspect its evidence.')
               ),
               h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(14,165,233,0.08)' : 'rgba(255,255,255,0.62)' } },
-                h('div', { className: 'text-[10px] font-black uppercase tracking-wide', style: { color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Causal direction'),
-                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Heat in → rise → cool → sink'),
-                h('div', { className: 'mt-0.5 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Buoyancy closes the loop.')
+                h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide', style: { color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Causal direction'),
+                h('div', { className: 'mt-0.5 text-[0.6875rem] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Heat in → rise → cool → sink'),
+                h('div', { className: 'mt-0.5 text-[0.625rem] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Buoyancy closes the loop.')
               ),
               h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.62)' } },
-                h('div', { className: 'text-[10px] font-black uppercase tracking-wide', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, 'Boundary cue'),
-                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Tank walls shape the roll'),
-                h('div', { className: 'mt-0.5 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'The return flow brings dense fluid back to the heater.')
+                h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, 'Boundary cue'),
+                h('div', { className: 'mt-0.5 text-[0.6875rem] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Tank walls shape the roll'),
+                h('div', { className: 'mt-0.5 text-[0.625rem] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'The return flow brings dense fluid back to the heater.')
               )
             )
           ),
@@ -2441,8 +2441,8 @@
             }
           },
             h('div', { className: 'flex flex-wrap items-baseline justify-between gap-1' },
-              h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Live thermal state'),
-              h('span', { className: 'text-[11px] font-black', style: { color: ink(heatRampColour(curveTempFraction)) } },
+              h('span', { className: 'text-[0.6875rem] font-black', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Live thermal state'),
+              h('span', { className: 'text-[0.6875rem] font-black', style: { color: ink(heatRampColour(curveTempFraction)) } },
                 wstate.phase + ' · ' + wstate.temp.toFixed(1) + ' degrees C')
             ),
             h('div', { className: 'relative mt-2', 'aria-hidden': 'true' },
@@ -2475,12 +2475,12 @@
                    className: 'absolute text-center',
                    style: { left: left.toFixed(2) + '%', transform: edge, minWidth: '3rem' }
                  },
-                   h('span', { className: 'block text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, mark.label),
-                   h('span', { className: 'block text-[10px]', style: { color: isDark ? '#94a3b8' : '#475569' } }, mark.value)
+                   h('span', { className: 'block text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, mark.label),
+                   h('span', { className: 'block text-[0.625rem]', style: { color: isDark ? '#94a3b8' : '#475569' } }, mark.value)
                  );
                })
             ),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, curveStateNote)
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, curveStateNote)
           ),
           slider('heat-energy', 'Energy added', 0, 3100, 10, energyIn,
             function (e) { upd({ energyIn: parseFloat(e.target.value) }); }, fmt(energyIn, 0) + ' kJ', 'ht-heating-status'),
@@ -2490,23 +2490,23 @@
             ' kilojoules.' + (wstate.frac > 0 ? ' ' + (wstate.frac * 100).toFixed(0) + ' percent through the phase change.' : '')),
           h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.35)' } },
-              h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'State'),
+              h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'State'),
               h('p', { className: 'text-sm font-black', style: { color: ink('#a78bfa') } }, wstate.phase)),
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.35)' } },
-              h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Temperature'),
+              h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Temperature'),
               h('p', { className: 'text-sm font-black', style: { color: ink('#a78bfa') } }, wstate.temp.toFixed(1) + ' °C'))
           ),
           wstate.frac > 0 ? h('div', { className: 'mt-2' },
             h('div', { className: 'h-2 rounded-full overflow-hidden', style: { background: 'rgba(148,163,184,0.25)' } },
               h('div', { style: { height: '100%', width: (wstate.frac * 100).toFixed(0) + '%', background: '#a78bfa', borderRadius: '999px' } })),
-            h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#a78bfa') } },
+            h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink('#a78bfa') } },
               (wstate.frac * 100).toFixed(0) + '% of the way through the change of state — and the temperature is not moving at all.')
           ) : null,
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             wstate.phase.indexOf('melting') !== -1 || wstate.phase.indexOf('boiling') !== -1
               ? 'The energy is going into breaking bonds between molecules, not speeding them up. Temperature measures average molecular motion, so it stalls until every last bond has gone.'
               : 'Here the energy raises the temperature directly. Notice the slope differs by state: ice warms about twice as fast per kilojoule as liquid water, because its specific heat is roughly half.'),
-          h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('p', { className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Melting 1 kg of ice: 334 kJ. Boiling 1 kg of water: 2,260 kJ — nearly seven times more.'),
           dataTable('heating', 'Every stage of the curve, for 1 kg of water',
             ['Stage', 'Energy needed', 'Running total', 'Temperature'],
@@ -2522,7 +2522,7 @@
         // ── 5. engines ──
         sec('engines', '#34d399',
           heading('#34d399', '⚙️ 7. Why no engine reaches 100 percent'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Carnot showed the ceiling depends only on the two temperatures: η = 1 − Tc/Th, in kelvin. No amount of engineering beats it — this is the second law, not a design flaw.'),
           h('div', { className: 'space-y-1' },
             ENGINES.map(function (en, i) {
@@ -2543,9 +2543,9 @@
                   : { background: isDark ? 'rgba(148,163,184,0.07)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.2)' }
               },
                 h('span', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'flex-1 text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, en.name),
-                  h('span', { className: 'text-[11px] font-mono', style: { color: ink('#34d399') } }, 'limit ' + carnot.toFixed(0) + '%'),
-                  h('span', { className: 'text-[11px] font-mono', style: { color: isDark ? '#fbbf24' : '#b45309' } }, 'real ' + en.real + '%')
+                  h('span', { className: 'flex-1 text-[0.6875rem] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, en.name),
+                  h('span', { className: 'text-[0.6875rem] font-mono', style: { color: ink('#34d399') } }, 'limit ' + carnot.toFixed(0) + '%'),
+                  h('span', { className: 'text-[0.6875rem] font-mono', style: { color: isDark ? '#fbbf24' : '#b45309' } }, 'real ' + en.real + '%')
                 ),
                 // The quest here is "compare three engines against the Carnot
                 // limit", which two numbers at the end of a row do not support.
@@ -2555,7 +2555,7 @@
                   h('span', { className: 'block h-full rounded-full', style: { width: Math.max(1, en.real) + '%', background: '#fbbf24' } }),
                   h('span', { className: 'block absolute top-0', style: { left: 'calc(' + clamp(carnot, 0, 100) + '% - 1px)', width: '2px', height: '100%', background: '#34d399' } })
                 ),
-                on ? h('span', { className: 'block text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+                on ? h('span', { className: 'block text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
                   'Hot side ' + en.hot + ' K, cold side ' + en.cold + ' K. ' + en.note) : null
               );
             })
@@ -2572,10 +2572,10 @@
             // instead of drawing a broken chart.
             if (useful > carnot) {
               return h('div', { className: 'mt-3 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.45)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
-                h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'No energy-flow chart for this one — and that is the point'),
-                h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+                h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#f59e0b') } }, 'No energy-flow chart for this one — and that is the point'),
+                h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
                   en.name + ' converts ' + useful + '% of its chemical energy to work while the Carnot limit for its temperatures is only ' + carnot.toFixed(1) + '%. Nothing is broken: Carnot applies to engines that take in heat and dump some to a cold sink. Muscle skips that step and converts chemical energy directly, so the limit simply does not apply to it.'),
-                h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#f59e0b') } },
+                h('p', { className: 'text-[0.6875rem] mt-2 font-bold', style: { color: ink('#f59e0b') } },
                   '🤔 If the second law does not cap muscle at 4.8%, what does cap it at around 25%?')
               );
             }
@@ -2592,7 +2592,7 @@
               { label: 'Lost to the second law', pct: lostToLaw, colour: '#f87171', note: 'Waste heat that must be dumped to the cold sink. No design can recover this; it is the price of running between two temperatures.' }
             ];
             return h('div', { className: 'mt-3 rounded-lg border p-2.5', style: { borderColor: 'rgba(52,211,153,0.4)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,253,244,0.85)' } },
-              h('p', { className: 'text-[11px] font-black mb-2', style: { color: ink('#34d399') } }, 'Where 100 units of fuel energy go in a ' + en.name.toLowerCase()),
+              h('p', { className: 'text-[0.6875rem] font-black mb-2', style: { color: ink('#34d399') } }, 'Where 100 units of fuel energy go in a ' + en.name.toLowerCase()),
               h('div', {
                 className: 'flex rounded-lg overflow-hidden',
                 style: { height: '30px', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.24)') },
@@ -2605,7 +2605,7 @@
                     key: s.label,
                     className: 'flex items-center justify-center',
                     style: { width: s.pct + '%', minWidth: s.pct > 0 ? '2px' : '0', background: s.colour }
-                  }, s.pct >= 9 ? h('span', { className: 'text-[10px] font-black', style: { color: '#0b1020' } }, s.pct.toFixed(0) + '%') : null);
+                  }, s.pct >= 9 ? h('span', { className: 'text-[0.625rem] font-black', style: { color: '#0b1020' } }, s.pct.toFixed(0) + '%') : null);
                 })
               ),
               h('div', { className: 'mt-2 space-y-1' },
@@ -2613,11 +2613,11 @@
                   return h('div', { key: s.label, className: 'flex items-baseline gap-2' },
                     h('span', { 'aria-hidden': 'true', className: 'flex-shrink-0 rounded-full', style: { width: '10px', height: '10px', background: s.colour, display: 'inline-block' } }),
                     h('span', { className: 'flex-1' },
-                      h('span', { className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, s.label + ' — ' + s.pct.toFixed(0) + '%'),
-                      h('span', { className: 'block text-[10px]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, s.note)));
+                      h('span', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, s.label + ' — ' + s.pct.toFixed(0) + '%'),
+                      h('span', { className: 'block text-[0.625rem]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, s.note)));
                 })
               ),
-              h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#34d399') } },
+              h('p', { className: 'text-[0.6875rem] mt-2 font-bold', style: { color: ink('#34d399') } },
                 '🤔 The only ways to raise the ceiling are a hotter source or a colder sink. Which is easier to change on Earth, and why?')
             );
           })() : null
@@ -2626,7 +2626,7 @@
         // ── 3D convection tank ──
         sec('convection3d', '#fb923c',
           heading('#fb923c', '🧊 8. Turn it over: convection in 3D'),
-          h('p', { id: 'ht-convection3d-description', className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { id: 'ht-convection3d-description', className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A flat arrow diagram makes convection look like a circle. It is not — it is a closed roll wrapping all the way round the tank. Drag to rotate, or use the buttons and arrow keys.'),
 
           h('div', { role: 'group', 'aria-label': 'Interactive 3D convection tank', 'aria-describedby': 'ht-convection3d-description', className: 'relative rounded-xl overflow-hidden border', style: { borderColor: 'rgba(251,146,60,0.4)', height: '300px', background: isDark ? '#0b1220' : '#dfe6ef' } },
@@ -2636,7 +2636,7 @@
               className: 'absolute inset-0 flex items-center justify-center text-center p-4',
               style: { background: isDark ? 'rgba(11,18,32,0.92)' : 'rgba(223,230,239,0.92)' }
             },
-              h('p', { className: 'text-[11px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+              h('p', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                 view3dStatus === 'loading' ? 'Loading the 3D tank…'
                   : (HEAT_3D_MISSING === 'host'
                     ? 'The 3D tank needs a newer host module than this build has. Everything else on this page still works — the 2D convection mode above shows the same loop in cross-section.'
@@ -2651,7 +2651,7 @@
             style: { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(251,146,60,0.07)', border: '1px solid rgba(251,146,60,0.28)' }
           },
             h('div', { role: 'list', className: 'flex flex-wrap items-center gap-1.5' }, heatFlowNodes),
-            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Read the loop left to right: heat in → rise → cool → sink → the boundary turns the flow back around.')
           ),
 
@@ -2668,7 +2668,7 @@
                 key: b[1], type: 'button', 'aria-label': b[1], title: b[1],
                 disabled: view3dStatus !== 'ready',
                 onClick: b[2],
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: {
                   background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)',
                   color: isDark ? '#e2e8f0' : '#334155',
@@ -2679,7 +2679,7 @@
             })
           ),
 
-          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Pick a part of the loop'),
+          h('p', { className: 'text-[0.6875rem] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Pick a part of the loop'),
           h('div', { className: 'flex flex-wrap gap-1' },
             HEAT_3D_PARTS.map(function (p) {
               var on = pick3d === p.id;
@@ -2695,7 +2695,7 @@
                   }
                   if (typeof beep === 'function') beep();
                 },
-                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: on
                   ? { background: p.color, color: '#0b1020', border: '1px solid ' + p.color }
                   : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
@@ -2703,18 +2703,18 @@
             })
           ),
           part3d ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: part3d.color + '80', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.92)' } },
-            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(part3d.color) } }, part3d.label),
-            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, part3d.desc)
-          ) : h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink(part3d.color) } }, part3d.label),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, part3d.desc)
+          ) : h('p', { className: 'text-[0.6875rem] mt-2', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Pick a part above, or click it directly in the 3D view.'),
-          h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#fb923c') } },
+          h('p', { className: 'text-[0.6875rem] mt-2 font-bold', style: { color: ink('#fb923c') } },
             '🤔 Rotate until you are looking straight down. What shape is the flow from above, and why can this never happen in a solid?')
         ),
 
         // ── 6. Stefan-Boltzmann ──
         sec('radiation', '#f472b6',
           heading('#f472b6', '📡 9. Radiation has a fourth-power law'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everything above absolute zero radiates. The power goes as T⁴ in kelvin, so a modest temperature rise makes a startling difference — and that single exponent explains thermal cameras, why embers glow, and why a small planet-wide warming matters.'),
           slider('heat-radt', 'Surface temp', -20, 900, 5, radT,
             function (e) { upd({ radT: parseFloat(e.target.value) }); }, radT + ' °C', 'ht-radiation-status'),
@@ -2732,13 +2732,13 @@
              ['Peak wavelength', wienUm.toFixed(1) + ' µm']
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(244,114,182,0.09)', border: '1px solid rgba(244,114,182,0.3)' } },
-                h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
+                h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
                 h('p', { className: 'text-sm font-black', style: { color: ink('#f472b6') } }, p[1]));
             })
           ),
-          h('p', { className: 'text-[11px] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Pemitted = εσATs⁴   Pnet = εσA(Ts⁴ − Troom⁴)   σ = 5.67 × 10⁻⁸ W/m²K⁴   A = 1.8 m²   ε = 0.98   λmax = 2898/Ts'),
-          h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             radT < 20
               ? 'This surface is colder than the room, so the direction reverses: it still emits ' + fmt(radGross, 0) + ' W, but it absorbs ' + fmt(radNetMagnitude, 0) + ' W more than it emits. Net radiation warms the surface.'
               : radT === 20
@@ -2753,7 +2753,7 @@
         // ── 7. thermal expansion ──
         sec('expansion', '#22d3ee',
           heading('#22d3ee', '📏 10. Thermal expansion: why bridges have gaps'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Heat something and it grows. The effect is tiny per metre and per degree, which is exactly why it catches engineers out over long spans and wide temperature swings.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             EXPANSION.map(function (e) {
@@ -2769,22 +2769,22 @@
           slider('heat-expdt', 'Temp swing', 1, 120, 1, expDT,
             function (e) { upd({ expDT: parseFloat(e.target.value) }); }, expDT + ' K'),
           h('div', { className: 'mt-2 rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(34,211,238,0.09)', border: '1px solid rgba(34,211,238,0.35)' } },
-            h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'It grows by'),
+            h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'It grows by'),
             h('p', { className: 'text-lg font-black', style: { color: ink('#22d3ee') } },
               expDelta >= 1 ? expDelta.toFixed(2) + ' m' : (expDelta * 1000).toFixed(1) + ' mm'),
-            h('p', { className: 'text-[10px] font-mono mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { className: 'text-[0.625rem] font-mono mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'ΔL = αLΔT = ' + expMat.alpha.toExponential(1) + ' × ' + fmt(expLen, 0) + ' × ' + expDT)
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             h('b', null, expMat.name + ': '), expMat.note),
-          expDelta > 0.05 ? h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#22d3ee') } },
+          expDelta > 0.05 ? h('p', { className: 'text-[0.6875rem] mt-1.5 font-bold', style: { color: ink('#22d3ee') } },
             '🤔 That is ' + (expDelta * 1000).toFixed(0) + ' mm of movement. Where does it go if the ends are bolted down — and what happens to the material instead?') : null
         ),
 
         // ── 8. everyday cases ──
         sec('spot', '#60a5fa',
           heading('#60a5fa', '🌍 11. Spot the mechanism'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Each of these beats heat transfer in a different way. Pick one and name the mechanism before you read the answer.'),
           h('div', { className: 'space-y-1 max-h-56 overflow-y-auto pr-1' },
             EVERYDAY.map(function (ev, i) {
@@ -2806,11 +2806,11 @@
                 h('span', { className: 'flex items-center gap-2' },
                   h('span', { className: 'text-sm', 'aria-hidden': 'true' }, ev.icon),
                   h('span', { className: 'flex-1' },
-                    h('span', { className: 'block text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, ev.name),
-                    h('span', { className: 'block text-[11px]', style: { color: isDark ? '#cbd5e1' : '#64748b' } }, ev.mech)),
-                  h('span', { className: 'text-[11px] font-bold', style: { color: ink('#60a5fa') } }, on ? '▾' : '›')
+                    h('span', { className: 'block text-[0.6875rem] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, ev.name),
+                    h('span', { className: 'block text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#64748b' } }, ev.mech)),
+                  h('span', { className: 'text-[0.6875rem] font-bold', style: { color: ink('#60a5fa') } }, on ? '▾' : '›')
                 ),
-                on ? h('span', { className: 'block text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ev.desc) : null
+                on ? h('span', { className: 'block text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ev.desc) : null
               );
             })
           )
@@ -2819,7 +2819,7 @@
         // ── entropy ──
         sec('entropy', '#f472b6',
           heading('#f472b6', '🎲 12. Entropy: why heat only goes one way'),
-          h('p', { id: 'ht-entropy-description', className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { id: 'ht-entropy-description', className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Nothing forbids a cold cup warming itself by cooling the room — energy would still be conserved. It does not happen because of counting. Two blocks share 80 units of energy; the graph plots how many ways each split can be arranged.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(244,114,182,0.35)', height: '190px' } },
             h('canvas', {
@@ -2835,28 +2835,28 @@
             function (e) { upd({ entSplit: parseFloat(e.target.value) }); }, entSplit + ' / ' + ENT_Q),
           h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(244,114,182,0.09)', border: '1px solid rgba(244,114,182,0.32)' } },
-              h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Arrangements at this split'),
+              h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Arrangements at this split'),
               h('p', { className: 'text-sm font-black', style: { color: ink('#f472b6') } }, '10^' + (entHere / Math.LN10).toFixed(1))),
             h('div', { className: 'rounded-lg p-2.5 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(244,114,182,0.09)', border: '1px solid rgba(244,114,182,0.32)' } },
-              h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Times rarer than even'),
+              h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Times rarer than even'),
               h('p', { className: 'text-sm font-black', style: { color: ink(entOddsLog10 < 0.5 ? '#34d399' : '#fbbf24') } }, entOddsLog10 < 0.05 ? 'at the peak' : '10^' + entOddsLog10.toFixed(1)))
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             entAtPeak
               ? 'You are exactly at the peak: the two equal blocks hold the same number of energy units. In this deliberately tiny model, ordinary fluctuations away from the peak are still visible.'
               : entNearPeak
                 ? 'This is near equilibrium, not exactly at it. A 120-oscillator teaching model visibly fluctuates among nearby splits; only when the particle count becomes macroscopic do large reverse flows become effectively impossible.'
               : 'This lopsided split is about 10^' + entOddsLog10.toFixed(0) + ' times rarer than the even one. That is the whole of the second law: heat flows toward the split with more arrangements, not because it is forced to, but because the alternatives are outnumbered beyond counting.'),
-          h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('p', { className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'S = k ln Ω    Ω = C(q+N−1, q) for q units among N oscillators'),
-          h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Entropy is not mess. It is how many ways the energy can be arranged — and spreading it out simply wins by an overwhelming margin.')
         ),
 
         // ── heat pumps ──
         sec('heatpumps', '#22d3ee',
           heading('#22d3ee', '🔄 13. Heat pumps: the engine in reverse'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Run a heat engine backwards and you spend work to move heat up the temperature gradient. Because you are moving heat rather than making it, you get out more than you put in — and no law is broken.'),
           slider('heat-hp-out', 'Outdoor temp', -20, 20, 1, hpOut,
             function (e) { upd({ hpOut: parseFloat(e.target.value) }); }, hpOut + ' °C'),
@@ -2868,7 +2868,7 @@
              ['Heat per 1 kW in', hpModel.heating ? hpRealCOP.toFixed(1) + ' kW' : '—', '#f59e0b']
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(34,211,238,0.09)', border: '1px solid rgba(34,211,238,0.32)' } },
-                h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
+                h('p', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
                 h('p', { className: 'text-sm font-black', style: { color: ink(p[2]) } }, p[1]));
             })
           ),
@@ -2884,20 +2884,20 @@
                 (hpModel.heating ? 'You are at ' + hpOut + ' degrees outdoors, COP ' + hpRealCOP.toFixed(1) + '.' : ''),
               style: { width: '100%', height: '100%', display: 'block' }
             })),
-          h('p', { id: 'ht-hp-curve-description', className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('p', { id: 'ht-hp-curve-description', className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'The curve is the teaching estimate, not a product rating. It never touches 1.0 — a heat pump still beats a bar heater in the cold, just by far less.'),
-          hpModel.heating ? h('p', { className: 'text-[11px] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          hpModel.heating ? h('p', { className: 'text-[0.6875rem] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'COP_ideal = T_hot / (T_hot − T_cold) = ' + hpTh.toFixed(0) + ' / ' + hpModel.liftK.toFixed(0) + ' K')
             : h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.4)', background: isDark ? 'rgba(15,23,42,0.65)' : 'rgba(236,254,255,0.9)' } },
-              h('p', { className: 'text-[11px] font-bold', style: { color: isDark ? '#67e8f9' : '#0e7490' } },
+              h('p', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#67e8f9' : '#0e7490' } },
                 'No heating lift is required. Outdoor air is already as warm as or warmer than the indoor target, so heating-mode COP is undefined. Lower the outdoor temperature or raise the indoor target to model heating.')),
-          hpModel.heating ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          hpModel.heating ? h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'An electric bar heater is exactly 1.0: every joule of electricity becomes one joule of heat. The teaching estimate is ' + hpRealCOP.toFixed(1) + ', using a refrigerant 5 K colder than outdoors and 8 K hotter than the room, 45% of the resulting cycle limit, auxiliary power and a cold-weather defrost penalty. It is capped at ' + hpModel.practicalCap + ' and is not a product rating.') : null,
-          hpModel.heating ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: hpOut <= -10 ? ink('#fbbf24') : (isDark ? '#cbd5e1' : '#475569') } },
+          hpModel.heating ? h('p', { className: 'text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: hpOut <= -10 ? ink('#fbbf24') : (isDark ? '#cbd5e1' : '#475569') } },
             hpOut <= -10
               ? '⚠️ Notice what the cold does. As the outdoor temperature falls the gap widens, the COP collapses, and the pump has to work far harder for the same warmth. This is the real engineering problem with heat pumps in cold climates, and it falls straight out of the Carnot expression.'
               : 'Drag the outdoor temperature down towards −20 °C and watch what happens to the COP. The reason is the same denominator that caps every heat engine.') : null,
-          h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#22d3ee') } },
+          h('p', { className: 'text-[0.6875rem] mt-1.5 font-bold', style: { color: ink('#22d3ee') } },
             '🤔 A fridge is the same machine pointed the other way. Where does the heat it removes actually go, and why does leaving the door open warm the kitchen?')
         ),
 
@@ -2905,7 +2905,7 @@
         // Four tools in this lab lean hard on heat and had nowhere to point back to.
         sec('next', '#94a3b8',
           heading(isDark ? '#cbd5e1' : '#475569', '🔗 Take this somewhere'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every one of these runs on the ideas above. Open one and look for them.'),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
             [{ id: 'renewablesLab', icon: '⚡', name: 'Renewables Lab', why: 'Every thermal power source is a heat engine. Carnot sets the ceiling on all of them.' },
@@ -2925,15 +2925,15 @@
               },
                 h('span', { className: 'flex items-center gap-2' },
                   h('span', { className: 'text-sm', 'aria-hidden': 'true' }, b.icon),
-                  h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#fff' : '#1e293b' } }, b.name),
-                  h('span', { className: 'ml-auto text-[11px] font-bold', style: { color: ink('#94a3b8') } }, '→')),
-                h('span', { className: 'block text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, b.why)
+                  h('span', { className: 'text-[0.6875rem] font-black', style: { color: isDark ? '#fff' : '#1e293b' } }, b.name),
+                  h('span', { className: 'ml-auto text-[0.6875rem] font-bold', style: { color: ink('#94a3b8') } }, '→')),
+                h('span', { className: 'block text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, b.why)
               );
             })
           )
         ),
 
-        h('p', { className: 'text-[10px] mt-3 text-center', style: { color: isDark ? '#94a3b8' : '#475569' } },
+        h('p', { className: 'text-[0.625rem] mt-3 text-center', style: { color: isDark ? '#94a3b8' : '#475569' } },
           'Models are real: 1-D heat equation, R-values, Q = mcΔT, latent heats of water, and the Carnot limit. Figures are order-of-magnitude accurate for teaching, not for engineering design.')
       );
     }

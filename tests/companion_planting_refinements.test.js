@@ -173,8 +173,8 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('[data-community-reduced-motion="true"]');
     expect(source).toContain('outline:2px solid #0f172a');
     expect(source).toContain('transform:none!important');
-    expect(source).toContain('[class~="text-[8px]"]');
-    expect(source).toContain('[class~="text-[11px]"]');
+    expect(source).toContain('[class~="text-[0.5rem]"]');
+    expect(source).toContain('[class~="text-[0.6875rem]"]');
     expect(source).toContain('font-size:.875rem!important');
     expect(source).toContain('data-community-focus-guide-body');
     expect(source).toContain('data-focus-tool');
@@ -1545,7 +1545,7 @@ describe('Companion Planting refinements', () => {
     const huddleStart = html.indexOf('id="community-crew-huddle"');
     const huddleEnd = html.indexOf('id="community-learning-compass"');
     const huddleHtml = html.slice(huddleStart, huddleEnd);
-    expect(huddleHtml).not.toContain('text-[7px]');
+    expect(huddleHtml).not.toContain('text-[0.4375rem]');
     expect(huddleHtml).not.toContain('min-h-[38px]');
   });
 
@@ -1890,7 +1890,7 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('data-community-readable-toggle="true"');
     expect(html).toMatch(/aria-pressed="true" aria-label="Turn readable text scale off"[^>]*data-community-readable-toggle="true"/);
     expect(html).toContain('Readable text: On');
-    expect(html).toContain('class~=&quot;text-[8px]&quot;');
+    expect(html).toContain('class~=&quot;text-[0.5rem]&quot;');
     expect(html).toContain('font-size:.75rem!important');
     expect(html).toContain('font-size:.8125rem!important');
     expect(html).toContain('font-size:.875rem!important');

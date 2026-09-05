@@ -905,9 +905,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div', { className: 'min-w-0' },
                   h('div', { className: 'flex flex-wrap items-center gap-2' },
                     h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': t('stem.unitconvert.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                    h('span', { className: 'rounded-full bg-teal-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-teal-100 ring-1 ring-teal-200/30' }, 'Measurement workbench'),
-                    earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[10px] font-bold text-amber-100', title: t('stem.unitconvert.view_badges_b', 'View badges (B)') }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-                    h('button', { onClick: askTutor, 'aria-label': tutorLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': !!tutorLoading, className: 'rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[10px] font-bold text-violet-100' }, t('stem.unitconvert.ai', '\uD83E\uDDE0 AI'))
+                    h('span', { className: 'rounded-full bg-teal-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-teal-100 ring-1 ring-teal-200/30' }, 'Measurement workbench'),
+                    earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-amber-100', title: t('stem.unitconvert.view_badges_b', 'View badges (B)') }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
+                    h('button', { onClick: askTutor, 'aria-label': tutorLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': !!tutorLoading, className: 'rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-violet-100' }, t('stem.unitconvert.ai', '\uD83E\uDDE0 AI'))
                   ),
                   h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.unitconvert.unit_converter', '\uD83D\uDCCF Unit Converter')),
                   h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-teal-100' }, 'Preserve the quantity while changing its unit, and verify every step through dimensional reasoning.'),
@@ -921,7 +921,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   ].map(function(metric) {
                     return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
                       h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                      h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wider text-teal-200' }, metric.label)
+                      h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-teal-200' }, metric.label)
                     );
                   })
                 )
@@ -957,7 +957,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   title: t('stem.unitconvert.badgedesc_' + badge.id, badge.desc)
                 },
                   h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, t('stem.unitconvert.badge_' + badge.id, badge.label))
+                  h('div', { className: 'text-[0.6875rem] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, t('stem.unitconvert.badge_' + badge.id, badge.label))
                 );
               })
             )
@@ -977,7 +977,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
             !tutorLoading && h('button', { 'aria-label': t('stem.unitconvert.ask_again', 'Ask Again'),
               onClick: askTutor,
-              className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all active:scale-[0.97]'
+              className: 'mt-2 text-[0.6875rem] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all active:scale-[0.97]'
             }, t('stem.unitconvert.ask_again_2', '\uD83D\uDD04 Ask Again'))
           ),
 
@@ -1145,14 +1145,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               // Formula + display precision
               h('div', { className: 'mt-3 flex flex-wrap items-center justify-center gap-3 rounded-lg bg-slate-50 p-2' },
-                h('span', { className: 'text-[11px] font-mono text-slate-600' }, hideConversionResult ? t('stem.unitconvert.formula_after_prediction', 'The equation will appear after you compare your prediction.') : '📊 ' + getFormula()),
-                h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-slate-600' },
+                h('span', { className: 'text-[0.6875rem] font-mono text-slate-600' }, hideConversionResult ? t('stem.unitconvert.formula_after_prediction', 'The equation will appear after you compare your prediction.') : '📊 ' + getFormula()),
+                h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-slate-600' },
                   t('stem.unitconvert.display_precision', 'Display:'),
                   h('select', {
                     value: significantFigures,
                     onChange: function(event) { upd('significantFigures', event.target.value); },
                     'aria-label': t('stem.unitconvert.significant_figures', 'Significant figures'),
-                    className: 'rounded border border-slate-500 bg-white px-2 py-1 text-[11px] font-bold text-slate-700'
+                    className: 'rounded border border-slate-500 bg-white px-2 py-1 text-[0.6875rem] font-bold text-slate-700'
                   },
                     h('option', { value: 'auto' }, t('stem.unitconvert.precision_auto', 'Auto')),
                     [2, 3, 4, 5, 6].map(function(figureCount) {
@@ -1185,7 +1185,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   botUnit = d.fromUnit;
                 }
                 return h('div', { className: 'mt-2 bg-cyan-50 rounded-lg p-2.5 border border-cyan-200' },
-                  h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider text-center mb-1.5' }, t('stem.unitconvert.dimensional_analysis', '\uD83D\uDD2C Dimensional Analysis')),
+                  h('p', { className: 'text-[0.625rem] font-bold text-cyan-700 uppercase tracking-wider text-center mb-1.5' }, t('stem.unitconvert.dimensional_analysis', '\uD83D\uDD2C Dimensional Analysis')),
                   h('div', { className: 'flex items-center justify-center gap-2 font-mono text-sm' },
                     h('span', { className: 'font-bold text-cyan-900' }, d.value),
                     h('span', { className: 'text-cyan-800 line-through decoration-2 decoration-amber-500' }, d.fromUnit),
@@ -1205,7 +1205,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('span', { className: 'font-bold text-emerald-700' }, fmtResult),
                     h('span', { className: 'text-emerald-700' }, d.toUnit)
                   ),
-                  h('p', { className: 'text-[10px] text-cyan-800 italic text-center mt-1.5' },
+                  h('p', { className: 'text-[0.625rem] text-cyan-800 italic text-center mt-1.5' },
                     'The "' + d.fromUnit + '" cancels on the diagonal \u2014 only "' + d.toUnit + '" remains.')
                 );
               })(),
@@ -1217,7 +1217,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               },
                 h('p', {
                   id: 'unitconvert-temperature-reasoning-title',
-                  className: 'text-[10px] font-bold uppercase tracking-wider text-amber-800 text-center'
+                  className: 'text-[0.625rem] font-bold uppercase tracking-wider text-amber-800 text-center'
                 }, '🌡️ Why temperature is different'),
                 h('p', { className: 'mt-1 text-xs text-amber-900 text-center' }, temperatureReasoning.message),
                 h('ol', {
@@ -1311,14 +1311,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Real-world reference
             !hideConversionResult && refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1' }, t('stem.unitconvert.real_world_reference', '\uD83C\uDF0D Real-World Reference')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider mb-1' }, t('stem.unitconvert.real_world_reference', '\uD83C\uDF0D Real-World Reference')),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             ),
 
             // Fun fact
             facts.length > 0 && h('div', { className: 'mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3 flex items-start gap-2' },
               h('div', { className: 'flex-1' },
-                h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.fun_fact', '\uD83D\uDCA1 Fun Fact')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-violet-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.fun_fact', '\uD83D\uDCA1 Fun Fact')),
                 h('p', { key: factIdx, className: 'text-sm text-violet-800', style: { animation: 'ucFactSlide 0.4s ease-out' } }, currentFact)
               ),
               h('button', { type: 'button', 'aria-label': 'Show next unit fact', title: 'Next fact', onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
@@ -1328,7 +1328,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Pinned conversions
             d.pinnedConversions && d.pinnedConversions.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
-              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.unitconvert.pinned_conversions', '\uD83D\uDCCC Pinned Conversions')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.unitconvert.pinned_conversions', '\uD83D\uDCCC Pinned Conversions')),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 d.pinnedConversions.map(function(p, i) {
                   return h('button', { key: p.key,
@@ -1366,8 +1366,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // Conversion history
             !hideConversionResult && d.history && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.unitconvert.history', '\uD83D\uDCDD History')),
-                h('button', { 'aria-label': t('stem.unitconvert.clear', 'Clear'), onClick: function() { upd('history', []); }, className: 'transition-colors text-[11px] text-red-400 hover:text-red-600 font-bold' }, t('stem.unitconvert.clear_2', 'Clear'))
+                h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.unitconvert.history', '\uD83D\uDCDD History')),
+                h('button', { 'aria-label': t('stem.unitconvert.clear', 'Clear'), onClick: function() { upd('history', []); }, className: 'transition-colors text-[0.6875rem] text-red-400 hover:text-red-600 font-bold' }, t('stem.unitconvert.clear_2', 'Clear'))
               ),
               h('div', { className: 'space-y-1' },
                 d.history.map(function(item, i) {
@@ -1448,7 +1448,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('td', { className: 'px-4 py-2 text-right' },
                         !isFrom && h('button', { 'aria-label': 'Use',
                           onClick: function() { upd('toUnit', u); upd('tab', 'convert'); },
-                          className: 'text-[11px] font-bold text-cyan-800 hover:underline'
+                          className: 'text-[0.6875rem] font-bold text-cyan-800 hover:underline'
                         }, t('stem.unitconvert.use', 'Use \u2192'))
                       )
                     );
@@ -1457,7 +1457,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               )
             ),
             refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[11px] font-bold text-amber-800 uppercase mb-1' }, t('stem.unitconvert.reference', '\uD83C\uDF0D Reference')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase mb-1' }, t('stem.unitconvert.reference', '\uD83C\uDF0D Reference')),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             )
           ),
@@ -1485,7 +1485,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             d.quiz && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm' },
-              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.question', '\uD83E\uDDE0 Question')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.question', '\uD83E\uDDE0 Question')),
               h('p', { className: 'text-lg font-bold text-slate-800 mb-4 tracking-tight' }, d.quiz.q),
 
               !d.quiz.answered
@@ -1593,12 +1593,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 }, t('stem.unitconvert.practice_problem', '📝 Practice Problem')),
                 h('div', { className: 'flex flex-wrap justify-end gap-1.5' },
                   h('span', {
-                    className: 'rounded-full px-2 py-1 text-[10px] font-bold ' + (wordProblem.source === 'offline' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-700')
+                    className: 'rounded-full px-2 py-1 text-[0.625rem] font-bold ' + (wordProblem.source === 'offline' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-700')
                   }, wordProblem.source === 'offline'
                     ? t('stem.unitconvert.offline_practice', 'Offline practice')
                     : t('stem.unitconvert.ai_practice', 'AI practice')),
                   wordProblem.verified && h('span', {
-                    className: 'rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-800',
+                    className: 'rounded-full bg-emerald-100 px-2 py-1 text-[0.625rem] font-bold text-emerald-800',
                     'aria-label': t('stem.unitconvert.math_verified_detail', 'Math verified locally. The app independently calculated the answer, hints, and explanation.')
                   }, t('stem.unitconvert.math_verified', '✓ Math verified locally'))
                 )
@@ -1728,46 +1728,46 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             return h('div', { key: 'mh', className: 'p-3' },
               h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
                 h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.unitconvert.magnitude_discovery', '⚙️ Magnitude discovery')),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.unitconvert.adjust_source_and_target_exponents_10_', 'Adjust source and target exponents (10^N). Widget classifies magnitude change into 5 discrete bands. No score, no reveal.')),
+                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.unitconvert.adjust_source_and_target_exponents_10_', 'Adjust source and target exponents (10^N). Widget classifies magnitude change into 5 discrete bands. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: mm.bg, border: '2px solid ' + mm.border } },
                   h('div', { className: 'text-base font-black', style: { color: mm.color } }, mm.label),
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, mm.desc),
-                  h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, '10^' + iq.sourceExp + ' → 10^' + iq.targetExp + ' (Δ ' + diff + ' OOM)')
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, mm.desc),
+                  h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, '10^' + iq.sourceExp + ' → 10^' + iq.targetExp + ' (Δ ' + diff + ' OOM)')
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   [{ k: 'sourceExp', l: 'source 10^' }, { k: 'targetExp', l: 'target 10^' }].map(function(s) {
                     return h('div', { key: s.k },
-                      h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                      h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
                       h('input', { id: 'mh-' + s.k, type: 'range', min: -18, max: 24, step: 1, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ s: iq.sourceExp, t: iq.targetExp, m: mag }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.unitconvert.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.unitconvert.reset', '↺ Reset'))
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ s: iq.sourceExp, t: iq.targetExp, m: mag }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.unitconvert.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.unitconvert.reset', '↺ Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.unitconvert.hypothesis_what_real_world_examples_sp', 'Hypothesis: What real-world examples span each magnitude band?'),
                   'aria-label': t('stem.unitconvert.magnitude_hypothesis', 'Magnitude relationship hypothesis'),
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.unitconvert.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.unitconvert.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, t('stem.unitconvert.compare_cm_km_mm_light_year_how_many_o', 'Compare cm→km, mm→light-year. How many OOM each?')),
                     h('li', null, t('stem.unitconvert.why_are_scientists_trained_in_orders_o', 'Why are scientists trained in orders of magnitude?')))),
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.unitconvert.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.unitconvert.explain_why_dimensional_reasoning_acro', 'Explain why dimensional reasoning across many OOM is hard.'),
                   'aria-label': t('stem.unitconvert.magnitude_explanation', 'Explain dimensional reasoning across orders of magnitude'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.unitconvert.design_note_discrete_5_state_magnitude', 'Design note: discrete 5-state magnitude marker; no error score; no reveal — by design.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.unitconvert.design_note_discrete_5_state_magnitude', 'Design note: discrete 5-state magnitude marker; no error score; no reveal — by design.'))
               )
             );
           })(),
 
           // ── Keyboard shortcuts legend ──
-          h('div', { className: 'text-[11px] text-center mt-3 space-x-3 rounded-lg p-2', style: { color: 'var(--allo-stem-text-soft, #475569)', background: 'var(--allo-stem-panel, #f8fafc)' } },
+          h('div', { className: 'text-[0.6875rem] text-center mt-3 space-x-3 rounded-lg p-2', style: { color: 'var(--allo-stem-text-soft, #475569)', background: 'var(--allo-stem-panel, #f8fafc)' } },
             h('span', null, t('stem.unitconvert.1_4_tabs', '1-4 Tabs')),
             h('span', null, t('stem.unitconvert.n_next_quiz', 'N Next Quiz')),
             h('span', null, t('stem.unitconvert.b_badges', 'B Badges')),

@@ -4576,7 +4576,7 @@ const d = labToolData.rocks || {};
 
               React.createElement("h3", { className: "min-w-0 flex-1 text-lg font-bold text-slate-800 tracking-tight leading-tight" + onHostInk }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rocks_minerals_explorer', "Rocks & Minerals Explorer")),
 
-              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] min-h-[44px] text-[11px] font-bold px-2.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100", "data-rocks-header-action": "geology-3d" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] min-h-[44px] text-[0.6875rem] font-bold px-2.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100", "data-rocks-header-action": "geology-3d" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
 
               // flex-wrap: six mode tabs on one non-wrapping row measured 441px,
               // so on a 390px phone the whole tool scrolled sideways and the last
@@ -4621,7 +4621,7 @@ const d = labToolData.rocks || {};
                   React.createElement("span", { className: "text-sm font-bold text-amber-800" }, (d.researchPoints || 0) + " RP")
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
+                  className: "text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
                 }, (d.completedChallenges || []).length + "/" + ROCKS_CHALLENGES.length + " " + __alloT('stem.rocks.challenges', "challenges"))
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
@@ -4690,13 +4690,13 @@ const d = labToolData.rocks || {};
             mode === 'landscape' && React.createElement("div", null,
 
               React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.tour_controls_aria', 'Rock cycle tour controls') },
-                React.createElement("button", { type: "button", "data-rocks-tour": d.tourOn ? 'stop' : 'play', "aria-pressed": !!d.tourOn, className: "rounded-xl px-3 py-2 min-h-[44px] text-[11px] font-black " + (d.tourOn ? "bg-amber-800 text-white hover:bg-amber-900" : "bg-amber-700 text-white hover:bg-amber-800"),
+                React.createElement("button", { type: "button", "data-rocks-tour": d.tourOn ? 'stop' : 'play', "aria-pressed": !!d.tourOn, className: "rounded-xl px-3 py-2 min-h-[44px] text-[0.6875rem] font-black " + (d.tourOn ? "bg-amber-800 text-white hover:bg-amber-900" : "bg-amber-700 text-white hover:bg-amber-800"),
                   onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd(d.tourOn ? 'stop' : 'play'); upd('tourOn', !d.tourOn); } },
                   d.tourOn ? '■ ' + __alloT('stem.rocks.tour_stop', 'Stop the tour') : '▶ ' + __alloT('stem.rocks.tour_play', 'Follow one rock around the cycle')),
-                d.tourOn ? React.createElement("button", { type: "button", "data-rocks-tour": "prev", className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[11px] font-black text-amber-900 hover:bg-amber-50", "aria-label": __alloT('stem.rocks.tour_prev', 'Previous stage'), onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd('prev'); } }, '◀') : null,
-                d.tourOn ? React.createElement("button", { type: "button", "data-rocks-tour": "next", className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[11px] font-black text-amber-900 hover:bg-amber-50", "aria-label": __alloT('stem.rocks.tour_next', 'Next stage'), onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd('next'); } }, '▶') : null,
+                d.tourOn ? React.createElement("button", { type: "button", "data-rocks-tour": "prev", className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[0.6875rem] font-black text-amber-900 hover:bg-amber-50", "aria-label": __alloT('stem.rocks.tour_prev', 'Previous stage'), onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd('prev'); } }, '◀') : null,
+                d.tourOn ? React.createElement("button", { type: "button", "data-rocks-tour": "next", className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[0.6875rem] font-black text-amber-900 hover:bg-amber-50", "aria-label": __alloT('stem.rocks.tour_next', 'Next stage'), onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd('next'); } }, '▶') : null,
                 React.createElement("button", { type: "button", "data-rocks-motion": d.motionOff ? 'off' : 'on', "aria-pressed": !!d.motionOff,
-                  className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[11px] font-black text-amber-900 hover:bg-amber-50",
+                  className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[0.6875rem] font-black text-amber-900 hover:bg-amber-50",
                   onClick: function () {
                     var nextOff = !d.motionOff;
                     upd('motionOff', nextOff);
@@ -4794,7 +4794,7 @@ const d = labToolData.rocks || {};
                     // specimen's actual texture and grain colours instead.
                     "aria-label": rock.label + ', ' + rt.label + ' rock — ' + rkGloss(rock.texture),
 
-                    className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+                    className: "p-2 rounded-lg text-[0.6875rem] font-bold border-2 transition-all hover:scale-105 text-center " +
 
                       (d.selectedRock === rock.id ? 'bg-white shadow-lg' : 'bg-slate-50 border-slate-200'),
 
@@ -4894,12 +4894,12 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                     React.createElement("span", { className: "text-base", "aria-hidden": true }, "🔎"),
                     React.createElement("h4", { className: "font-bold text-sm text-sky-900" }, __alloT('stem.rocks.visual_id_title', "Visual ID drill")),
-                    vid && vid.asked > 0 && React.createElement("span", { className: "ml-auto text-[11px] font-bold text-sky-900" },
+                    vid && vid.asked > 0 && React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold text-sky-900" },
                       (vid.score || 0) + " / " + (vid.answered ? vid.asked : Math.max(0, vid.asked - 1)) + " " + __alloT('stem.rocks.visual_id_correct', "correct"))
                   ),
 
                   !vid && React.createElement("div", null,
-                    React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" },
                       __alloT('stem.rocks.visual_id_intro', "No clues, no AI needed — just the specimen. Name it from what you can see. Wrong options are usually the same rock type, so look at texture and grain size, not colour alone.")),
                     React.createElement("button", {
                       type: "button",
@@ -4934,7 +4934,7 @@ const d = labToolData.rocks || {};
                               disabled: vid.answered,
                               onClick: function () { answerVisualId(oid); },
                               "aria-label": opt.label,
-                              className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-colors text-left " + cls
+                              className: "px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold border-2 transition-colors text-left " + cls
                             }, opt.label);
                           })
                         )
@@ -4946,13 +4946,13 @@ const d = labToolData.rocks || {};
                         vid.chosen === vid.rockId
                           ? "✅ " + __alloT('stem.rocks.visual_id_right', "Correct — ") + vidAnswer.label
                           : "❌ " + __alloT('stem.rocks.visual_id_wrong', "It was ") + vidAnswer.label),
-                      React.createElement("p", { className: "text-[11px] text-slate-800 leading-snug mt-1" },
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-800 leading-snug mt-1" },
                         React.createElement("span", { className: "font-bold" }, ROCK_TYPES[vidAnswer.type].label + " · " + vidAnswer.texture + " — "),
                         rkGloss(vidAnswer.texture)),
                       React.createElement("button", {
                         type: "button",
                         onClick: startVisualId,
-                        className: "mt-2 px-3 py-1 bg-sky-800 hover:bg-sky-900 text-white font-bold text-[11px] rounded-lg transition-colors active:scale-[0.97]"
+                        className: "mt-2 px-3 py-1 bg-sky-800 hover:bg-sky-900 text-white font-bold text-[0.6875rem] rounded-lg transition-colors active:scale-[0.97]"
                       }, "↻ " + __alloT('stem.rocks.visual_id_next', "Next specimen"))
                     )
                   )
@@ -4982,7 +4982,7 @@ const d = labToolData.rocks || {};
 
                     React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
 
-                    React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].label + " Rock"),
+                    React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[0.6875rem] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].label + " Rock"),
 
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc),
 
@@ -5009,11 +5009,11 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { key: prop.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
 
-                      React.createElement("p", { className: "text-[11px] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
 
                       React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-0.5" }, prop.value),
 
-                      prop.hint && React.createElement("p", { className: "text-[10px] text-slate-600 leading-snug mt-0.5" }, prop.hint));
+                      prop.hint && React.createElement("p", { className: "text-[0.625rem] text-slate-600 leading-snug mt-0.5" }, prop.hint));
 
                   })
 
@@ -5023,7 +5023,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-3" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.rock_hardness_scale', "Roughly where that sits on the Mohs scale")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.rock_hardness_scale', "Roughly where that sits on the Mohs scale")),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -5047,7 +5047,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-slate-600 mt-0.5" },
 
                     React.createElement("span", null, __alloT('stem.rocks.mohs_min_talc', "1 (Talc)")),
 
@@ -5069,9 +5069,9 @@ const d = labToolData.rocks || {};
                     React.createElement("p", { className: "text-xs font-black text-slate-800 mb-1 flex items-center gap-1.5" },
                       React.createElement("span", { "aria-hidden": true }, "🔬"),
                       React.createElement("span", null, __alloT('stem.rocks.thin_title', "Thin section — polarizing microscope")),
-                      React.createElement("span", { className: "ml-auto text-[10px] font-bold text-slate-600" }, "≈" + sec.mag + "×")
+                      React.createElement("span", { className: "ml-auto text-[0.625rem] font-bold text-slate-600" }, "≈" + sec.mag + "×")
                     ),
-                    React.createElement("p", { className: "text-[11px] text-slate-700 mb-2 leading-snug" },
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2 leading-snug" },
                       __alloT('stem.rocks.thin_intro', "A slice of the rock ground to 30 micrometres — thin enough for light to pass through. This is how the minerals in a rock are actually identified.")
                     ),
 
@@ -5089,7 +5089,7 @@ const d = labToolData.rocks || {};
                               key: opt[2], type: "button",
                               "aria-pressed": on,
                               onClick: function () { setTS({ xpl: opt[0] }); sfxRockClick(); },
-                              className: "px-2.5 py-1 rounded-lg text-[11px] font-black border transition-colors " +
+                              className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-black border transition-colors " +
                                 (on ? "bg-slate-800 border-slate-900 text-white" : "bg-white border-slate-300 text-slate-800 hover:bg-slate-100")
                             }, opt[1]);
                           })
@@ -5100,7 +5100,7 @@ const d = labToolData.rocks || {};
                         // no-op slider in plane light made the control look
                         // broken, so it now pauses and says exactly how to use it.
                         React.createElement("div", { className: "rounded-lg border p-2 " + (xpl ? "border-indigo-200 bg-indigo-50/60" : "border-slate-200 bg-slate-50") },
-                          React.createElement("label", { htmlFor: "rk-stage", className: "block text-[11px] font-bold text-slate-700" },
+                          React.createElement("label", { htmlFor: "rk-stage", className: "block text-[0.6875rem] font-bold text-slate-700" },
                             __alloT('stem.rocks.thin_stage', "Stage angle: "),
                             React.createElement("span", { className: "font-mono text-slate-900" }, stage + "°")),
                           React.createElement("input", {
@@ -5111,15 +5111,15 @@ const d = labToolData.rocks || {};
                             "aria-describedby": "rk-stage-help",
                             "aria-label": __alloT('stem.rocks.thin_stage_aria', "Microscope stage angle in degrees; use crossed polars to observe extinction")
                           }),
-                          xpl && React.createElement("p", { id: "rk-stage-help", className: "text-[11px] text-slate-700 leading-snug mt-1" },
+                          xpl && React.createElement("p", { id: "rk-stage-help", className: "text-[0.6875rem] text-slate-700 leading-snug mt-1" },
                             __alloT('stem.rocks.thin_extinction', "Why rotate? Under crossed polars, turn the stage and watch individual grains darken and brighten. A crystal reaches extinction when it turns black. Anything that stays black at every angle is isotropic or opaque.")
                           ),
-                          !xpl && React.createElement("p", { id: "rk-stage-help", className: "text-[11px] text-slate-700 leading-snug mt-1" },
+                          !xpl && React.createElement("p", { id: "rk-stage-help", className: "text-[0.6875rem] text-slate-700 leading-snug mt-1" },
                             __alloT('stem.rocks.thin_ppl_hint', "Plane light shows natural colour, relief and cleavage. In this model, stage rotation is used to investigate extinction: choose Crossed polars, then drag from 0° to 90° and watch different grains turn black.")
                           )
                         ),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-800 leading-snug mt-2 bg-slate-50 border border-slate-200 rounded-lg p-2" },
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-800 leading-snug mt-2 bg-slate-50 border border-slate-200 rounded-lg p-2" },
                           React.createElement("span", { className: "font-black" }, __alloT('stem.rocks.thin_what_you_see', "What you're looking at: ")),
                           __alloT('stem.rocks.thin_look_' + selRock.id, sec.look))
                       )
@@ -5128,14 +5128,14 @@ const d = labToolData.rocks || {};
                     // Mineral key — the payoff. This is the rock's composition, and
                     // each entry is a mineral the Minerals tab covers in its own right.
                     React.createElement("div", { className: "mt-2" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600 mb-1" },
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600 mb-1" },
                         __alloT('stem.rocks.thin_assemblage', "Minerals in this section")),
                       React.createElement("div", { className: "flex flex-wrap gap-1.5" },
                         sec.parts.map(function (p) {
                           var opt = RK_OPTICS[p[0]] || RK_OPTICS.clay;
                           return React.createElement("span", {
                             key: p[0],
-                            className: "inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-1",
+                            className: "inline-flex items-center gap-1.5 text-[0.6875rem] font-bold text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-1",
                             title: __alloT('stem.rocks.opt_note_' + p[0], opt.note)
                           },
                             React.createElement("span", {
@@ -5152,7 +5152,7 @@ const d = labToolData.rocks || {};
                       React.createElement("ul", { className: "mt-1.5 space-y-0.5" },
                         sec.parts.map(function (p) {
                           var opt = RK_OPTICS[p[0]] || RK_OPTICS.clay;
-                          return React.createElement("li", { key: p[0], className: "text-[10px] text-slate-700 leading-snug" },
+                          return React.createElement("li", { key: p[0], className: "text-[0.625rem] text-slate-700 leading-snug" },
                             React.createElement("span", { className: "font-bold text-slate-900" }, __alloT('stem.rocks.tsmin_' + p[0], p[0]) + ': '), __alloT('stem.rocks.opt_note_' + p[0], opt.note));
                         })
                       )
@@ -5485,7 +5485,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, "🧪"),
                     React.createElement("span", null, __alloT('stem.rocks.acid_fizz_test_lab', "Acid Fizz Test Lab"))
                   ),
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mb-3" },
                     __alloT('stem.rocks.acid_fizz_intro', "Use the virtual dilute-HCl dropper. A fizz means a carbonate, not a particular mineral: calcite, malachite and azurite all react at once. Some other carbonates, such as dolomite, react only weakly or when powdered, so no fizz is weaker evidence than a fizz.")
                   ),
                   React.createElement("div", { className: "flex items-center gap-3" },
@@ -5525,7 +5525,7 @@ const d = labToolData.rocks || {};
                     }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse motion-reduce:animate-none" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
-                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
+                      React.createElement("span", { className: "text-[0.625rem] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                     )
                   ),
                   d.fizzResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed animate-in fade-in" },
@@ -5539,7 +5539,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, "🧠"),
                     React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
                   ),
-                  React.createElement("p", { className: "text-[10px] text-slate-600 mb-2" },
+                  React.createElement("p", { className: "text-[0.625rem] text-slate-600 mb-2" },
                     __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selRock.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
                   React.createElement("div", { className: "flex gap-2" },
@@ -6146,7 +6146,7 @@ const d = labToolData.rocks || {};
                           className: "rounded-lg border px-1.5 py-1 min-h-[44px] flex items-center gap-1.5 " + (stepOn ? "border-violet-500 bg-white ring-2 ring-violet-300" : "border-violet-200 bg-white hover:border-violet-400"),
                           onClick: function () { upd("selectedMineral", stepOn ? null : stepM.id); upd("selectedRock", null); }
                         },
-                          React.createElement("span", { className: "w-5 h-5 rounded-full bg-violet-700 text-white text-[10px] font-black flex items-center justify-center shrink-0", "aria-hidden": "true" }, String(step[1])),
+                          React.createElement("span", { className: "w-5 h-5 rounded-full bg-violet-700 text-white text-[0.625rem] font-black flex items-center justify-center shrink-0", "aria-hidden": "true" }, String(step[1])),
                           React.createElement("span", { "aria-hidden": "true", className: "shrink-0 leading-none" }, rkMineralSwatch(React.createElement, stepM, 18)),
                           React.createElement("span", { className: "text-[10.5px] font-black text-violet-900" }, stepM.label)
                         )
@@ -6164,7 +6164,7 @@ const d = labToolData.rocks || {};
                       // draws the crystal habit as the outline and the lustre as
                       // the shading, and the label says so for screen readers.
                       "aria-label": mineral.label + ' — ' + (mineral.crystal || '') + ' crystal, ' + (mineral.luster || '') + ' lustre, hardness ' + mineral.hardness,
-                      className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+                      className: "p-2 rounded-lg text-[0.6875rem] font-bold border-2 transition-all hover:scale-105 text-center " +
                         (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'transition-colors bg-slate-50 border-slate-200 hover:border-violet-200'),
                       style: d.selectedMineral === mineral.id ? { borderColor: '#8b5cf6', color: '#6d28d9' } : {}
                     },
@@ -6218,7 +6218,7 @@ const d = labToolData.rocks || {};
                     // was cream instead of brass. A swatch below carries the colour.
                     return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center bg-slate-50 border border-slate-200" },
 
-                      React.createElement("p", { className: "text-[11px] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
 
                       React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, prop.value));
 
@@ -6228,7 +6228,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.uses && React.createElement("div", { className: "bg-blue-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-blue-800 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F " + __alloT('stem.rocks.uses_heading', "Uses")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-blue-800 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F " + __alloT('stem.rocks.uses_heading', "Uses")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.uses)
 
@@ -6236,7 +6236,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.funFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2.5 border border-amber-200" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-amber-800 uppercase mb-0.5" }, "\uD83D\uDCA1 " + __alloT('stem.rocks.fun_fact_heading', "Fun Fact")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-800 uppercase mb-0.5" }, "\uD83D\uDCA1 " + __alloT('stem.rocks.fun_fact_heading', "Fun Fact")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed italic" }, selMineral.funFact)
 
@@ -6244,7 +6244,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.occurrence && React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-emerald-800 uppercase mb-0.5" }, "\uD83C\uDF0D " + __alloT('stem.rocks.where_found_heading', "Where Found")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-emerald-800 uppercase mb-0.5" }, "\uD83C\uDF0D " + __alloT('stem.rocks.where_found_heading', "Where Found")),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.occurrence)
 
@@ -6254,7 +6254,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-1" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.mohs_position', "Mohs Position")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, __alloT('stem.rocks.mohs_position', "Mohs Position")),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -6278,7 +6278,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-slate-600 mt-0.5" },
 
                     React.createElement("span", null, __alloT('stem.rocks.mohs_min_talc', "1 (Talc)")),
 
@@ -6292,7 +6292,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, "💅"),
                     React.createElement("span", null, __alloT('stem.rocks.mohs_scratch_test_lab', "Mohs Hardness Scratch Test Lab"))
                   ),
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mb-3" },
                     __alloT('stem.rocks.mohs_scratch_intro', 'Select a scratch tool and run the test. A harder tool leaves a scratch, a softer tool does not, and equal modeled hardness is a borderline result that should be retested.')
                   ),
                   React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-3" },
@@ -6311,15 +6311,15 @@ const d = labToolData.rocks || {};
                           updMulti({ scratchTool: tool.id, scratchResult: null, scratchAnimProgress: 0 });
                           sfxRockClick();
                         },
-                        className: "p-1.5 rounded-lg border-2 text-[10px] font-bold text-center transition-all " +
+                        className: "p-1.5 rounded-lg border-2 text-[0.625rem] font-bold text-center transition-all " +
                           (isSelected ? "bg-violet-100 border-violet-500 text-violet-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-200")
                       },
                         React.createElement("div", null, tool.label),
-                        React.createElement("div", { className: "text-[10px] text-slate-600 font-mono mt-0.5" }, "H: " + tool.h)
+                        React.createElement("div", { className: "text-[0.625rem] text-slate-600 font-mono mt-0.5" }, "H: " + tool.h)
                       );
                     })
                   ),
-                  React.createElement("p", { className: "text-[10px] text-slate-600 -mt-1 mb-3" }, __alloT('stem.rocks.reference_variability_note', 'Reference values are modeled; real objects vary.')),
+                  React.createElement("p", { className: "text-[0.625rem] text-slate-600 -mt-1 mb-3" }, __alloT('stem.rocks.reference_variability_note', 'Reference values are modeled; real objects vary.')),
                   d.scratchTool && (function() {
                     var toolData = [
                       { id: 'fingernail', label: __alloT('stem.rocks.tool_fingernail', 'Fingernail'), h: 2.5 },
@@ -6359,13 +6359,13 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { className: "bg-slate-50 rounded-lg p-3 border border-slate-200" },
                       React.createElement("div", { className: "flex justify-between items-center gap-2 mb-2" },
-                        React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, __alloT('stem.rocks.active_tool_label', "Active Tool: ") + toolData.label + " (" + __alloT('stem.rocks.hardness_word', "Hardness") + " " + toolData.h + ")"),
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-700" }, __alloT('stem.rocks.active_tool_label', "Active Tool: ") + toolData.label + " (" + __alloT('stem.rocks.hardness_word', "Hardness") + " " + toolData.h + ")"),
                         // The old condition was `animProgress === 0`, so once a run
                         // finished at 100 the button disappeared and the only way to
                         // retest was to re-pick a tool. Show it whenever idle.
                         (animProgress === 0 || animProgress >= 100) && React.createElement("button", {
                           onClick: runTest,
-                          className: "px-3 py-1 bg-violet-700 hover:bg-violet-800 text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm active:scale-[0.97] shrink-0"
+                          className: "px-3 py-1 bg-violet-700 hover:bg-violet-800 text-white rounded-lg text-[0.625rem] font-bold transition-colors shadow-sm active:scale-[0.97] shrink-0"
                         }, (animProgress >= 100 ? "↻ " + __alloT('stem.rocks.run_scratch_again', "Test again") : "⚡ " + __alloT('stem.rocks.run_scratch_test', "Run Scratch Test")))
                       ),
                       // Watch the tool travel, see whether it cuts a groove or just
@@ -6391,7 +6391,7 @@ const d = labToolData.rocks || {};
                       // Only shown for minerals whose real structure is drawn;
                       // pointing at a generic unit cell would promise an
                       // explanation the panel does not actually contain.
-                      d.scratchResult && RK_LATTICE[selMineral.id] && React.createElement("p", { className: "text-[11px] text-slate-700 leading-snug mt-1.5" },
+                      d.scratchResult && RK_LATTICE[selMineral.id] && React.createElement("p", { className: "text-[0.6875rem] text-slate-700 leading-snug mt-1.5" },
                         __alloT('stem.rocks.scratch_see_structure', "Why is it this hard? Scroll to 3D crystal structure below — ") +
                         (selMineral.hardness >= 7
                           ? __alloT('stem.rocks.scratch_hard_hint', "strongly bonded in every direction leaves nothing to break along.")
@@ -6438,7 +6438,7 @@ const d = labToolData.rocks || {};
                     // reached a student. Every mineral with a structure was
                     // introduced as "how the atoms are actually stacked",
                     // including the ones drawn as a simplified layer model.
-                    React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" },
                       !spec
                         ? __alloT('stem.rocks.crystal3d_intro_cell', "Drag to rotate the unit cell — the smallest repeating box of this mineral's crystal system.")
                         : spec.exact
@@ -6485,7 +6485,7 @@ const d = labToolData.rocks || {};
                       species.map(function (sp) {
                         var def = RK_ATOM[sp] || RK_ATOM.X;
                         var atomLabel = __alloT('stem.rocks.atom_' + sp, def.label);
-                        return React.createElement("span", { key: sp, className: "inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-800" },
+                        return React.createElement("span", { key: sp, className: "inline-flex items-center gap-1.5 text-[0.6875rem] font-bold text-slate-800" },
                           React.createElement("span", {
                             "aria-hidden": true,
                             style: {
@@ -6499,7 +6499,7 @@ const d = labToolData.rocks || {};
                     ),
 
                     // Why the structure explains the property — the actual payoff.
-                    React.createElement("p", { className: "text-[11px] text-slate-800 leading-relaxed mt-2 bg-violet-50 border border-violet-200 rounded-lg p-2" },
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-800 leading-relaxed mt-2 bg-violet-50 border border-violet-200 rounded-lg p-2" },
                       React.createElement("span", { className: "font-black text-violet-900" }, __alloT('stem.rocks.crystal3d_why', "Why it matters: ")),
                       spec ? __alloT('stem.rocks.lat_why_' + selMineral.id, spec.why) : (selMineral.label + __alloT('stem.rocks.lat_cell_a', ' crystallises in the ') + __alloT('stem.rocks.sys_' + cellInfo.key, cellInfo.key) + __alloT('stem.rocks.lat_cell_b', ' system — ') + __alloT('stem.rocks.geo_note_' + cellInfo.key, cellInfo.geo.note) + __alloT('stem.rocks.lat_cell_c', '. That symmetry can influence its observed form and cleavage.'))
                     ),
@@ -6507,7 +6507,7 @@ const d = labToolData.rocks || {};
                     // Say plainly when the drawing is the SYSTEM's cell rather than
                     // this mineral's real atomic arrangement. Inventing an
                     // authoritative-looking structure would be worse than saying so.
-                    !spec && React.createElement("p", { className: "text-[10px] text-slate-700 leading-snug mt-1.5 italic" },
+                    !spec && React.createElement("p", { className: "text-[0.625rem] text-slate-700 leading-snug mt-1.5 italic" },
                       __alloT('stem.rocks.crystal3d_model_limit', "Model limit: this shows the unit-cell geometry of the ") + cellInfo.key +
                       __alloT('stem.rocks.crystal3d_model_limit_b', " system, not this mineral's full atomic arrangement — that structure is more complex than this view is built to show.")
                     ),
@@ -6518,11 +6518,11 @@ const d = labToolData.rocks || {};
                     // amount of network access will help. Offering only the first
                     // explanation sends anyone hitting the second down the wrong path.
                     RK_CRYSTAL_UNAVAILABLE === 'host'
-                      ? React.createElement("p", { className: "text-[11px] text-slate-800 mt-1.5 bg-amber-50 border border-amber-300 rounded-lg p-2" },
+                      ? React.createElement("p", { className: "text-[0.6875rem] text-slate-800 mt-1.5 bg-amber-50 border border-amber-300 rounded-lg p-2" },
                           React.createElement("span", { className: "font-black" }, __alloT('stem.rocks.crystal3d_host_stale_label', "3D unavailable: ")),
                           __alloT('stem.rocks.crystal3d_host_stale', "this build's STEAM Lab host is older than this tool and does not provide the 3D viewer. Everything else on this page works normally; the structure is described in full above.")
                         )
-                      : React.createElement("p", { className: "text-[11px] text-slate-700 mt-1.5" },
+                      : React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-1.5" },
                           __alloT('stem.rocks.crystal3d_offline_note', "If the 3D view stays blank, the engine is served from a CDN your network may block — every other panel on this page still works offline.")
                         )
                   );
@@ -6533,7 +6533,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, "🍽️"),
                     React.createElement("span", null, __alloT('stem.rocks.streak_plate_test_lab', "Streak Plate Test Lab"))
                   ),
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mb-3" },
                     __alloT('stem.rocks.streak_test_intro', 'Scratch the mineral across an unglazed porcelain streak plate (modeled Mohs 6.5). Softer minerals leave powder whose color can aid identification; harder minerals scratch the plate, so no reliable powder streak is produced.')
                   ),
                   // The plate itself is now drawn, with the specimen's outward
@@ -6560,7 +6560,7 @@ const d = labToolData.rocks || {};
                     }, d.streakAnimActive ? "✏️ " + __alloT('stem.rocks.scratching_plate', "Scratching plate...") : "🍽️ " + __alloT('stem.rocks.perform_streak_test', "Perform Streak Test")),
                     d.streakResult && React.createElement("span", { className: "text-xs font-bold text-slate-800 animate-in fade-in" }, d.streakResult),
                     d.streakResult && selMineral.streak && !rkStreakPlateTooHard(selMineral) && !selMineral.streak.includes('None') &&
-                      React.createElement("p", { className: "text-[11px] text-slate-700 basis-full leading-snug" },
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700 basis-full leading-snug" },
                         __alloT('stem.rocks.streak_vs_colour', "Compare the two chips: the powder colour is the reliable identifier, because a mineral's outward colour can vary with impurities while its streak does not."))
                   )
                 ),
@@ -6571,7 +6571,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, "🧪"),
                     React.createElement("span", null, __alloT('stem.rocks.acid_fizz_test_lab', "Acid Fizz Test Lab"))
                   ),
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mb-3" },
                     __alloT('stem.rocks.acid_fizz_intro', "Use the virtual dilute-HCl dropper. A fizz means a carbonate, not a particular mineral: calcite, malachite and azurite all react at once. Some other carbonates, such as dolomite, react only weakly or when powdered, so no fizz is weaker evidence than a fizz.")
                   ),
                   // Carbonate status drives the drawing too, so it is derived once
@@ -6613,7 +6613,7 @@ const d = labToolData.rocks || {};
                         }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
                         d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse motion-reduce:animate-none" },
                           React.createElement("span", { className: "text-lg", "aria-hidden": true }, "🫧"),
-                          React.createElement("span", { className: "text-[10px] text-violet-800 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
+                          React.createElement("span", { className: "text-[0.625rem] text-violet-800 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                         )
                       )
                     );
@@ -6629,7 +6629,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, "🧠"),
                     React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
                   ),
-                  React.createElement("p", { className: "text-[10px] text-slate-600 mb-2" },
+                  React.createElement("p", { className: "text-[0.625rem] text-slate-600 mb-2" },
                     __alloT('stem.rocks.query_ai_about_prefix', "Query the AI about ") + selMineral.label + __alloT('stem.rocks.query_ai_suffix', "'s geologic origin, chemical properties, or tectonic significance.")
                   ),
                   React.createElement("div", { className: "flex gap-2" },
@@ -6793,7 +6793,7 @@ const d = labToolData.rocks || {};
 
                     React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, __alloT('stem.rocks.mystery_rock_challenge_title', "Mystery Rock Challenge")),
 
-                    React.createElement("span", { className: "ml-auto text-[11px] text-amber-800 font-bold" }, __alloT('stem.rocks.reading_level_label', "Reading level: ") + (gradeLevel || '5th Grade'))
+                    React.createElement("span", { className: "ml-auto text-[0.6875rem] text-amber-800 font-bold" }, __alloT('stem.rocks.reading_level_label', "Reading level: ") + (gradeLevel || '5th Grade'))
 
                   ),
 
@@ -6817,7 +6817,7 @@ const d = labToolData.rocks || {};
 
                   }, "🎲 " + __alloT('stem.rocks.start_challenge', "Start Challenge")),
 
-                  myst.error && React.createElement("p", { className: "text-[11px] text-red-700 mt-1", role: "alert" }, myst.error)
+                  myst.error && React.createElement("p", { className: "text-[0.6875rem] text-red-700 mt-1", role: "alert" }, myst.error)
 
                 ),
 
@@ -6829,7 +6829,7 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-800 mb-2" }, __alloT('stem.rocks.clues_label', "Clues") + " (" + cluesShown + "/" + clues.length + ")"),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-800 mb-2" }, __alloT('stem.rocks.clues_label', "Clues") + " (" + cluesShown + "/" + clues.length + ")"),
 
                     clues.slice(0, cluesShown).map(function (c, i) {
 
@@ -6847,7 +6847,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": __alloT('stem.rocks.reveal_next_clue', "Reveal next clue"),
 
-                      className: "transition-colors mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 active:scale-[0.97]"
+                      className: "transition-colors mt-1 px-3 py-1 text-[0.6875rem] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 active:scale-[0.97]"
 
                     }, "+ " + __alloT('stem.rocks.reveal_next_clue', "Reveal next clue"))
 
@@ -6874,9 +6874,9 @@ const d = labToolData.rocks || {};
 
                           (myst.solved ? "✅ " + __alloT('stem.rocks.correct_it_was', "Correct! It was ") : "📖 " + __alloT('stem.rocks.the_answer_was', "The answer was ")) + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-700 mt-0.5" }, mysteryRock.texture + " — " + rkGloss(mysteryRock.texture)),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-700 mt-0.5" }, mysteryRock.texture + " — " + rkGloss(mysteryRock.texture)),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc)
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc)
 
                       )
 
@@ -6888,7 +6888,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": __alloT('stem.rocks.start_new_mystery_aria', "Start a new Mystery Rock challenge"),
 
-                      className: "transition-colors mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 active:scale-[0.97]"
+                      className: "transition-colors mt-2 px-3 py-1 text-[0.6875rem] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 active:scale-[0.97]"
 
                     }, "🎲 " + __alloT('stem.rocks.new_mystery', "New Mystery"))
 
@@ -6896,7 +6896,7 @@ const d = labToolData.rocks || {};
 
                   !myst.solved && !myst.revealed && React.createElement("div", null,
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1.5" }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
 
                     React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") },
 
@@ -6919,7 +6919,7 @@ const d = labToolData.rocks || {};
                           // clue text doing all the work.
                           "aria-label": __alloT('stem.rocks.guess_label', "Guess ") + rock.label + ' — ' + rkGloss(rock.texture),
 
-                          className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+                          className: "p-2 rounded-lg text-[0.6875rem] font-bold border-2 transition-all hover:scale-105 text-center " +
 
                             (wasWrong ? "bg-red-50 border-red-600 text-red-700" : "transition-colors bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
 
@@ -6939,7 +6939,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": __alloT('stem.rocks.give_up_aria', "Give up and reveal the answer"),
 
-                      className: "transition-colors px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 active:scale-[0.97]"
+                      className: "transition-colors px-3 py-1 text-[0.6875rem] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 active:scale-[0.97]"
 
                     }, "🤷 " + __alloT('stem.rocks.give_up_show_answer', "Give up · show answer"))
 
@@ -7545,23 +7545,23 @@ const d = labToolData.rocks || {};
                 var allRowsMatch = matchedRows === rows.length;
                 var hasProvisionalMatch = rows.some(function (row) { return row.provisional && row.matches; });
                 var matchCount = (allRowsMatch ? rows.length : matchedRows + ' / ' + rows.length) + ' ' + (rows.length === 1 ? __alloT('stem.rocks.wb_match_count_singular', 'match') : __alloT('stem.rocks.wb_matches_count', 'matches')) + (hasProvisionalMatch ? ' · ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : '');
-                var matchCountClass = "rounded-full border px-2 py-1 text-[10px] font-black " + (hasProvisionalMatch ? "bg-amber-100 border-amber-300 text-amber-900" : allRowsMatch ? "bg-emerald-100 border-emerald-200 text-emerald-800" : "bg-rose-100 border-rose-200 text-rose-800");
+                var matchCountClass = "rounded-full border px-2 py-1 text-[0.625rem] font-black " + (hasProvisionalMatch ? "bg-amber-100 border-amber-300 text-amber-900" : allRowsMatch ? "bg-emerald-100 border-emerald-200 text-emerald-800" : "bg-rose-100 border-rose-200 text-rose-800");
                 var matchRows = React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2", role: "list" },
                     rows.map(function (row) {
                       var provisionalMatch = row.provisional && row.matches;
                       return React.createElement("div", { key: row.id, role: "listitem", className: "rounded-lg border p-2.5 min-w-0 " + (provisionalMatch ? "border-amber-300 bg-amber-50" : row.matches ? "border-slate-200 bg-slate-50" : "border-rose-300 bg-rose-50"), "data-wb-match-property": row.id, "data-wb-match-state": provisionalMatch ? 'provisional' : row.matches ? 'match' : 'conflict' },
                         React.createElement("div", { className: "flex items-center justify-between gap-2" },
                           React.createElement("p", { className: "text-[11.5px] font-black text-slate-900" }, row.label),
-                          React.createElement("span", { className: "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black " + (provisionalMatch ? "bg-amber-100 text-amber-900" : row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, provisionalMatch ? '\u2248 ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_matches_evidence', 'Matches evidence') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict'))
+                          React.createElement("span", { className: "shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (provisionalMatch ? "bg-amber-100 text-amber-900" : row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, provisionalMatch ? '\u2248 ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_matches_evidence', 'Matches evidence') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict'))
                         ),
                         React.createElement("dl", { className: "grid grid-cols-2 gap-2 mt-2" },
                           React.createElement("div", { className: "min-w-0 border-r border-slate-200 pr-2" },
-                            React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
-                            React.createElement("dd", { className: "text-[11px] font-bold text-slate-800 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
+                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
+                            React.createElement("dd", { className: "text-[0.6875rem] font-bold text-slate-800 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
                           ),
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
-                            React.createElement("dd", { className: "text-[11px] font-bold text-violet-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.candidate)
+                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
+                            React.createElement("dd", { className: "text-[0.6875rem] font-bold text-violet-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.candidate)
                           )
                         )
                       );
@@ -7575,7 +7575,7 @@ const d = labToolData.rocks || {};
                     React.createElement("summary", {
                       className: "list-none cursor-pointer min-h-[44px] flex flex-wrap items-center justify-between gap-2 rounded-lg px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
                     },
-                      React.createElement("span", { className: "inline-flex items-center gap-2 text-[11px] font-black text-violet-900" },
+                      React.createElement("span", { className: "inline-flex items-center gap-2 text-[0.6875rem] font-black text-violet-900" },
                         React.createElement("span", { "aria-hidden": true, className: "group-open:rotate-90 transition-transform" }, '▶'),
                         __alloT('stem.rocks.wb_review_all_matches', 'Review all measured matches')
                       ),
@@ -7590,7 +7590,7 @@ const d = labToolData.rocks || {};
                   "data-wb-match-map": context
                 },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" },
-                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_match_map_title', 'Evidence match map')),
+                    React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_match_map_title', 'Evidence match map')),
                     React.createElement("span", { className: matchCountClass }, matchCount)
                   ),
                   matchRows
@@ -7676,22 +7676,22 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start justify-between gap-2" },
                     React.createElement("div", { className: "min-w-0" },
                       React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-sky-800" }, __alloT('stem.rocks.wb_faceoff_eyebrow', 'Closest look-alike still supported')),
-                      React.createElement("h5", { id: "wb-lookalike-title", className: "text-[14px] sm:text-[15px] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected.label + ' ' + __alloT('stem.rocks.wb_faceoff_vs', 'versus') + ' ' + wbFaceoffRival.label),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[11px] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_faceoff_body_start', 'Both still fit ') + measuredMatches + (measuredMatches === 1 ? __alloT('stem.rocks.wb_faceoff_match_one', ' measured property. Use a reference difference below before treating the claim as settled.') : __alloT('stem.rocks.wb_faceoff_match_many', ' measured properties. Use a reference difference below before treating the claim as settled.')))
+                      React.createElement("h5", { id: "wb-lookalike-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected.label + ' ' + __alloT('stem.rocks.wb_faceoff_vs', 'versus') + ' ' + wbFaceoffRival.label),
+                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_faceoff_body_start', 'Both still fit ') + measuredMatches + (measuredMatches === 1 ? __alloT('stem.rocks.wb_faceoff_match_one', ' measured property. Use a reference difference below before treating the claim as settled.') : __alloT('stem.rocks.wb_faceoff_match_many', ' measured properties. Use a reference difference below before treating the claim as settled.')))
                     ),
-                    React.createElement("span", { className: "rounded-full border border-sky-300 bg-white px-2.5 py-1 text-[10px] font-black text-sky-900 shrink-0" }, wbFaceoffSeparators.length + (wbFaceoffSeparators.length === 1 ? __alloT('stem.rocks.wb_faceoff_way_one', ' separating property') : __alloT('stem.rocks.wb_faceoff_way_many', ' separating properties')))
+                    React.createElement("span", { className: "rounded-full border border-sky-300 bg-white px-2.5 py-1 text-[0.625rem] font-black text-sky-900 shrink-0" }, wbFaceoffSeparators.length + (wbFaceoffSeparators.length === 1 ? __alloT('stem.rocks.wb_faceoff_way_one', ' separating property') : __alloT('stem.rocks.wb_faceoff_way_many', ' separating properties')))
                   ),
                   React.createElement("div", { className: "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 mt-3", role: "group", "aria-label": __alloT('stem.rocks.wb_faceoff_pair_aria', 'Selected candidate compared with its closest remaining look-alike') },
                     React.createElement("div", { className: "rounded-xl border-2 border-violet-300 bg-white p-2.5 text-center min-w-0", "data-wb-faceoff-side": "selected" },
                       React.createElement("div", { className: "mx-auto w-fit rounded-xl ring-2 ring-violet-200" }, rkMineralSwatch(React.createElement, wbSelected, 68)),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[12px] font-black text-violet-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-violet-700 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_your_claim', 'Your claim'))
+                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.75rem] font-black text-violet-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-700 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_your_claim', 'Your claim'))
                     ),
-                    React.createElement("span", { className: "w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px] font-black shadow-sm", "aria-hidden": "true" }, __alloT('stem.rocks.wb_faceoff_vs_short', 'VS')),
+                    React.createElement("span", { className: "w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-[0.625rem] font-black shadow-sm", "aria-hidden": "true" }, __alloT('stem.rocks.wb_faceoff_vs_short', 'VS')),
                     React.createElement("div", { className: "rounded-xl border-2 border-sky-300 bg-white p-2.5 text-center min-w-0", "data-wb-faceoff-side": "rival" },
                       React.createElement("div", { className: "mx-auto w-fit rounded-xl ring-2 ring-sky-200" }, rkMineralSwatch(React.createElement, wbFaceoffRival, 68)),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[12px] font-black text-sky-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-sky-800 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_alternative', 'Closest alternative'))
+                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.75rem] font-black text-sky-900 mt-2", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-sky-800 mt-0.5" }, __alloT('stem.rocks.wb_faceoff_alternative', 'Closest alternative'))
                     )
                   ),
                   wbFaceoffSeparators.length ? React.createElement("div", { className: "mt-3" },
@@ -7699,16 +7699,16 @@ const d = labToolData.rocks || {};
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2", role: "list" }, wbFaceoffSeparators.map(function (item) {
                       return React.createElement("div", { key: item.id, role: "listitem", "data-wb-faceoff-separator": item.id, "data-wb-faceoff-test-state": item.measured ? 'refine' : 'unmeasured', className: "rounded-xl border border-slate-200 bg-white p-2.5 min-w-0" },
                         React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                          React.createElement("p", { className: "text-[11px] font-black text-slate-900" }, item.icon + ' ' + item.label),
-                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[10px] font-black " + (item.measured ? "bg-amber-100 text-amber-900" : "bg-sky-100 text-sky-900") }, item.measured ? __alloT('stem.rocks.wb_faceoff_refine', 'Refine this test') : __alloT('stem.rocks.wb_faceoff_not_tested', 'Not tested yet'))
+                          React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900" }, item.icon + ' ' + item.label),
+                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (item.measured ? "bg-amber-100 text-amber-900" : "bg-sky-100 text-sky-900") }, item.measured ? __alloT('stem.rocks.wb_faceoff_refine', 'Refine this test') : __alloT('stem.rocks.wb_faceoff_not_tested', 'Not tested yet'))
                         ),
                         React.createElement("dl", { className: "grid grid-cols-2 gap-2 mt-2" },
                           React.createElement("div", { className: "min-w-0 border-r border-slate-200 pr-2" },
-                            React.createElement("dt", { className: "text-[10px] font-black text-violet-700", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
+                            React.createElement("dt", { className: "text-[0.625rem] font-black text-violet-700", style: { overflowWrap: 'anywhere' } }, wbSelected.label),
                             React.createElement("dd", { className: "text-[10.5px] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, item.a)
                           ),
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("dt", { className: "text-[10px] font-black text-sky-800", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
+                            React.createElement("dt", { className: "text-[0.625rem] font-black text-sky-800", style: { overflowWrap: 'anywhere' } }, wbFaceoffRival.label),
                             React.createElement("dd", { className: "text-[10.5px] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, item.b)
                           )
                         ),
@@ -7737,8 +7737,8 @@ const d = labToolData.rocks || {};
                       React.createElement("span", { className: "shrink-0 rounded-xl border bg-white p-1 " + (unresolved ? "border-amber-200" : "border-rose-200"), "aria-hidden": "true" }, rkMineralSwatch(React.createElement, wbReviewCandidate, 54)),
                       React.createElement("div", { className: "min-w-0" },
                         React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] " + (unresolved ? "text-amber-800" : "text-rose-800") }, __alloT('stem.rocks.wb_review_label', 'Set-aside evidence inspector')),
-                        React.createElement("h5", { id: "wb-setaside-review-title", className: "text-[14px] sm:text-[15px] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, __alloT('stem.rocks.wb_review_why', 'Why review ') + wbReviewCandidate.label + '?'),
-                        React.createElement("p", { className: "text-[10.5px] sm:text-[11px] mt-1 leading-relaxed " + (unresolved ? "text-amber-900" : "text-rose-900") }, unresolved
+                        React.createElement("h5", { id: "wb-setaside-review-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, __alloT('stem.rocks.wb_review_why', 'Why review ') + wbReviewCandidate.label + '?'),
+                        React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] mt-1 leading-relaxed " + (unresolved ? "text-amber-900" : "text-rose-900") }, unresolved
                           ? __alloT('stem.rocks.wb_review_unresolved', 'Every current observation still matches. The earlier claim was rejected, so another diagnostic test is needed.')
                           : conflicts.length + ' ' + (conflicts.length === 1 ? __alloT('stem.rocks.wb_review_conflict_one', 'measured property conflicts with this candidate.') : __alloT('stem.rocks.wb_review_conflict_many', 'measured properties conflict with this candidate.')))
                       )
@@ -7758,16 +7758,16 @@ const d = labToolData.rocks || {};
                       },
                         React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
                           React.createElement("p", { className: "text-[11.5px] font-black text-slate-900" }, row.label),
-                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[10px] font-black " + (row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, (row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_review_match', 'Match') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict')))
+                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (row.matches ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800") }, (row.matches ? '\u2713 ' + __alloT('stem.rocks.wb_review_match', 'Match') : '\u00d7 ' + __alloT('stem.rocks.wb_review_conflict', 'Conflict')))
                         ),
                         React.createElement("dl", { className: "grid grid-cols-2 gap-2 mt-2" },
                           React.createElement("div", { className: "min-w-0 border-r border-slate-200 pr-2" },
-                            React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
-                            React.createElement("dd", { className: "text-[11px] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
+                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_unknown_observation', 'Unknown observation')),
+                            React.createElement("dd", { className: "text-[0.6875rem] font-bold text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, row.unknown)
                           ),
                           React.createElement("div", { className: "min-w-0" },
-                            React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
-                            React.createElement("dd", { className: "text-[11px] font-bold mt-0.5 " + (row.matches ? "text-emerald-900" : "text-rose-900"), style: { overflowWrap: 'anywhere' } }, row.candidate)
+                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_candidate_reference', 'Candidate reference')),
+                            React.createElement("dd", { className: "text-[0.6875rem] font-bold mt-0.5 " + (row.matches ? "text-emerald-900" : "text-rose-900"), style: { overflowWrap: 'anywhere' } }, row.candidate)
                           )
                         )
                       );
@@ -7777,7 +7777,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", { className: "text-lg leading-none", "aria-hidden": "true" }, unresolved ? wbNext.icon : '\u21b3'),
                     React.createElement("div", { className: "min-w-0" },
                       React.createElement("p", { className: "text-[10.5px] font-black text-slate-900" }, unresolved ? __alloT('stem.rocks.wb_review_next_title', 'Best next distinction: ') + wbNext.title : __alloT('stem.rocks.wb_review_rule_title', 'Evidence rule: one diagnostic conflict is enough.')),
-                      React.createElement("p", { className: "text-[10px] text-slate-700 mt-0.5 leading-relaxed" }, unresolved ? wbNext.detail : __alloT('stem.rocks.wb_review_rule_body', 'A supported identification must agree with every measured diagnostic property, even when several other properties match.'))
+                      React.createElement("p", { className: "text-[0.625rem] text-slate-700 mt-0.5 leading-relaxed" }, unresolved ? wbNext.detail : __alloT('stem.rocks.wb_review_rule_body', 'A supported identification must agree with every measured diagnostic property, even when several other properties match.'))
                     )
                   )
                 );
@@ -7824,10 +7824,10 @@ const d = labToolData.rocks || {};
                 },
                   embedded ? React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-white/80 border border-amber-200 px-3 py-2.5 min-h-[44px] flex items-center justify-between gap-3 text-left hover:bg-white" },
                     React.createElement("span", { className: "min-w-0" },
-                      React.createElement("span", { className: "block text-[10px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_forecast_eyebrow', 'Plan before you test')),
-                      React.createElement("span", { className: "block text-[11px] sm:text-[12px] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_preview_start', 'Preview ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_preview_end', ' possible outcomes and make a prediction'))
+                      React.createElement("span", { className: "block text-[0.625rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_forecast_eyebrow', 'Plan before you test')),
+                      React.createElement("span", { className: "block text-[0.6875rem] sm:text-[0.75rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_preview_start', 'Preview ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_preview_end', ' possible outcomes and make a prediction'))
                     ),
-                    React.createElement("span", { className: "text-[10px] font-black text-violet-900 shrink-0" },
+                    React.createElement("span", { className: "text-[0.625rem] font-black text-violet-900 shrink-0" },
                       React.createElement("span", { className: "group-open:hidden" }, __alloT('stem.rocks.wb_open_forecast', 'Open') + ' ▾'),
                       React.createElement("span", { className: "hidden group-open:inline" }, __alloT('stem.rocks.wb_close_forecast', 'Close') + ' ▴')
                     )
@@ -7836,10 +7836,10 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start justify-between gap-2" },
                     React.createElement("div", { className: "min-w-0" },
                       React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_forecast_eyebrow', 'Plan before you test')),
-                      React.createElement("h4", { id: "wb-test-forecast-title", className: "text-[13px] sm:text-[14px] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_question_start', 'How could ') + wbForecastTitleFor(wbNext.tool) + __alloT('stem.rocks.wb_forecast_question_end', ' split the shortlist?')),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[11px] text-slate-700 mt-1 leading-relaxed" }, wbViableCandidates.length + __alloT('stem.rocks.wb_forecast_summary_mid', ' candidates could produce ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_summary_end', ' distinct outcomes. More than one possible outcome makes this a useful diagnostic test.'))
+                      React.createElement("h4", { id: "wb-test-forecast-title", className: "text-[0.8125rem] sm:text-[0.875rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_forecast_question_start', 'How could ') + wbForecastTitleFor(wbNext.tool) + __alloT('stem.rocks.wb_forecast_question_end', ' split the shortlist?')),
+                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] text-slate-700 mt-1 leading-relaxed" }, wbViableCandidates.length + __alloT('stem.rocks.wb_forecast_summary_mid', ' candidates could produce ') + wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_summary_end', ' distinct outcomes. More than one possible outcome makes this a useful diagnostic test.'))
                     ),
-                    React.createElement("span", { className: "rounded-full border border-violet-300 bg-white px-2.5 py-1 text-[10px] font-black text-violet-900 shrink-0" }, wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_outcomes_badge', ' outcomes'))
+                    React.createElement("span", { className: "rounded-full border border-violet-300 bg-white px-2.5 py-1 text-[0.625rem] font-black text-violet-900 shrink-0" }, wbForecastGroups.length + __alloT('stem.rocks.wb_forecast_outcomes_badge', ' outcomes'))
                   ),
                   React.createElement("div", { className: "mt-3 h-3 rounded-full overflow-hidden flex bg-slate-200 ring-1 ring-slate-300", role: "img", "aria-label": forecastLabel },
                     wbForecastGroups.map(function (group, i) {
@@ -7857,7 +7857,7 @@ const d = labToolData.rocks || {};
                       React.createElement("div", { className: "flex items-center gap-2 min-w-0" },
                         React.createElement("span", { className: "w-2.5 h-2.5 rounded-full shrink-0", style: { background: wbForecastPalette[i % wbForecastPalette.length] }, "aria-hidden": "true" }),
                         React.createElement("span", { className: "text-[10.5px] font-bold text-slate-800 min-w-0 flex-1", style: { overflowWrap: 'anywhere' } }, group.label),
-                        React.createElement("span", { className: "rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-700 shrink-0" }, group.count + __alloT('stem.rocks.wb_forecast_can_produce', ' can produce this'))
+                        React.createElement("span", { className: "rounded-full bg-slate-100 px-2 py-0.5 text-[0.625rem] font-black text-slate-700 shrink-0" }, group.count + __alloT('stem.rocks.wb_forecast_can_produce', ' can produce this'))
                       ),
                       React.createElement("p", { className: "mt-1.5 pl-[18px] text-[10.5px] text-slate-600 leading-relaxed", style: { overflowWrap: 'anywhere' } },
                         React.createElement("span", { className: "font-black text-violet-800" }, __alloT('stem.rocks.wb_branch_keeps', 'Would keep: ')),
@@ -7870,7 +7870,7 @@ const d = labToolData.rocks || {};
                     "data-wb-forecast-tolerance-note": "visible"
                   }, __alloT('stem.rocks.wb_forecast_tolerance_note', 'Bar widths show exact modeled outcomes. “Would keep” also includes near-match candidates retained by the ±0.5 Mohs tolerance, so those counts can differ.')) : null,
                   React.createElement("fieldset", { className: "mt-3 pt-3 border-t border-violet-200" },
-                    React.createElement("legend", { className: "px-1 text-[11px] font-black text-violet-900" }, __alloT('stem.rocks.wb_forecast_predict', 'Optional prediction: what do you think you will observe?')),
+                    React.createElement("legend", { className: "px-1 text-[0.6875rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_forecast_predict', 'Optional prediction: what do you think you will observe?')),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1" }, wbForecastGroups.map(function (group) {
                       var chosen = wbPredictionTool === wbNext.tool && wbPredictionValue === group.id;
                       return React.createElement("button", {
@@ -7880,7 +7880,7 @@ const d = labToolData.rocks || {};
                         className: "rounded-xl border px-3 py-2.5 min-h-[48px] text-left text-[10.5px] font-black transition-all " + (chosen ? "bg-violet-100 border-violet-500 text-violet-900 ring-2 ring-violet-200" : "bg-white border-slate-300 text-slate-800 hover:border-violet-400 hover:bg-violet-50")
                       },
                         React.createElement("span", { className: "block" }, (chosen ? '✓ ' : '') + group.label),
-                        React.createElement("span", { className: "block mt-1 text-[10px] font-semibold text-slate-600" }, __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')))
+                        React.createElement("span", { className: "block mt-1 text-[0.625rem] font-semibold text-slate-600" }, __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')))
                       );
                     })),
                     activePredictionBranch ? React.createElement("aside", {
@@ -7910,27 +7910,27 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex gap-3 items-start min-w-0" },
                     React.createElement("span", { className: "w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm shrink-0", "aria-hidden": "true" }, wbBusy ? '⏳' : wbNext.icon),
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.14em] " + (wbBusy ? "text-sky-800" : "text-amber-800") }, wbBusy ? __alloT('stem.rocks.wb_observing_now', 'Observation in progress') : __alloT('stem.rocks.wb_current_focus', 'Next scientific move') + ' · ' + focusTitle),
-                      React.createElement("h4", { id: "wb-action-hub-title", className: "text-[14px] sm:text-[15px] font-black text-slate-900 mt-0.5" }, wbBusy ? wbAnimLabel : wbNext.title),
-                      React.createElement("p", { className: "text-[11px] sm:text-[11.5px] text-slate-700 mt-1 leading-relaxed" }, wbBusy ? __alloT('stem.rocks.wb_watch_change', 'Watch the specimen station, then find the observation in your notebook.') : wbNext.detail),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] " + (wbBusy ? "text-sky-800" : "text-amber-800") }, wbBusy ? __alloT('stem.rocks.wb_observing_now', 'Observation in progress') : __alloT('stem.rocks.wb_current_focus', 'Next scientific move') + ' · ' + focusTitle),
+                      React.createElement("h4", { id: "wb-action-hub-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5" }, wbBusy ? wbAnimLabel : wbNext.title),
+                      React.createElement("p", { className: "text-[0.6875rem] sm:text-[11.5px] text-slate-700 mt-1 leading-relaxed" }, wbBusy ? __alloT('stem.rocks.wb_watch_change', 'Watch the specimen station, then find the observation in your notebook.') : wbNext.detail),
                       !wbBusy && typeof wbNext.expectedRemaining === 'number' ? React.createElement("p", { className: "text-[10.5px] font-bold text-violet-900 mt-2 leading-relaxed", "data-wb-information-gain": wbNext.expectedRemaining.toFixed(1), "data-wb-ranked-tests": wbTestRankings.length },
                         __alloT('stem.rocks.wb_info_gain_start', 'Best expected split: about ') + wbNext.expectedRemaining.toFixed(1) + __alloT('stem.rocks.wb_info_gain_mid', ' candidates would remain after a typical result. Compared across ') + wbTestRankings.length + __alloT('stem.rocks.wb_info_gain_end', ' useful available tests.') + ' ' + __alloT('stem.rocks.wb_info_gain_assumption', 'Estimate assumes each remaining candidate is equally likely.')
                       ) : null
                     )
                   ),
-                  !wbBusy && wbNext.tool === 'record' ? React.createElement("button", { type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-sky-800 hover:bg-sky-900 text-white px-3.5 py-2.5 min-h-[44px] text-[11px] font-black", "data-wb-open-observation": wbPendingTool, onClick: function () { wbFocusAfterUpdate('[data-wb-observe-choice]'); } }, __alloT('stem.rocks.wb_go_observe', 'Go to the observation card')) : null,
+                  !wbBusy && wbNext.tool === 'record' ? React.createElement("button", { type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-sky-800 hover:bg-sky-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black", "data-wb-open-observation": wbPendingTool, onClick: function () { wbFocusAfterUpdate('[data-wb-observe-choice]'); } }, __alloT('stem.rocks.wb_go_observe', 'Go to the observation card')) : null,
                   !wbBusy && wbNext.tool !== 'claim' && wbNext.tool !== 'record' && wbNext.tool.indexOf('reconcile-') !== 0 && !wbToolsOpen ? React.createElement("button", {
-                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[11px] font-black",
+                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black",
                     "aria-controls": "wb-tools-panel", "aria-expanded": false, "data-wb-open-recommended": wbNext.tool,
                     onClick: function () { wbUpdateAndFocus({ toolsExpanded: true }, '[data-wb-tool="' + wbNext.tool + '"]'); wbSay(__alloT('stem.rocks.wb_tools_opened_sr', 'Instrument tray opened. The recommended test is ') + wbNext.title + '.'); }
                   }, __alloT('stem.rocks.wb_open_recommended', 'Open recommended instrument')) : null,
                   !wbBusy && wbNext.tool === 'reconcile-hardness' ? React.createElement("button", {
-                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[11px] font-black",
+                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black",
                     "data-wb-recovery-action": "hardness",
                     onClick: wbClearHardness
                   }, __alloT('stem.rocks.wb_clear_hardness', 'Clear hardness trials and retest')) : null,
                   !wbBusy && wbNext.tool === 'reconcile-evidence' ? React.createElement("button", {
-                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[11px] font-black",
+                    type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[0.6875rem] font-black",
                     "data-wb-recovery-action": "evidence",
                     onClick: wbClearEvidence
                   }, __alloT('stem.rocks.wb_clear_recheck', 'Clear observations and recheck')) : null,
@@ -7946,19 +7946,19 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex items-start gap-2.5" },
                     React.createElement("span", { className: "w-9 h-9 rounded-xl bg-white border flex items-center justify-center text-lg shrink-0 " + (wbPredictionMatched ? "border-emerald-200" : "border-sky-200"), "aria-hidden": "true" }, wbPredictionMatched ? '✓' : '↻'),
                     React.createElement("div", { className: "min-w-0 flex-1" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.12em] " + (wbPredictionMatched ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_prediction_check', 'Prediction check')),
-                      React.createElement("p", { className: "text-[11px] font-black text-slate-900 mt-0.5" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched', 'Your prediction matched the observation.') : __alloT('stem.rocks.wb_prediction_updated', 'The observation differed from your prediction—update your model.')),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.12em] " + (wbPredictionMatched ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_prediction_check', 'Prediction check')),
+                      React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900 mt-0.5" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched', 'Your prediction matched the observation.') : __alloT('stem.rocks.wb_prediction_updated', 'The observation differed from your prediction—update your model.')),
                       React.createElement("dl", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" },
                         React.createElement("div", { className: "rounded-lg border border-white bg-white/80 p-2" },
-                          React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_yours', 'You predicted')),
+                          React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_yours', 'You predicted')),
                           React.createElement("dd", { className: "text-[10.5px] font-bold text-violet-900 mt-0.5" }, wbPredictionExpected.label)
                         ),
                         React.createElement("div", { className: "rounded-lg border border-white bg-white/80 p-2" },
-                          React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_observed', 'You observed')),
+                          React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_prediction_observed', 'You observed')),
                           React.createElement("dd", { className: "text-[10.5px] font-bold text-slate-900 mt-0.5" }, wbPredictionActual.label)
                         )
                       ),
-                      React.createElement("p", { className: "text-[10px] text-slate-700 mt-2 leading-relaxed" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched_body', 'Agreement supports your working model; keep checking it against other properties.') : __alloT('stem.rocks.wb_prediction_updated_body', 'Scientists do not erase surprising evidence. They use it to revise explanations and choose the next test.'))
+                      React.createElement("p", { className: "text-[0.625rem] text-slate-700 mt-2 leading-relaxed" }, wbPredictionMatched ? __alloT('stem.rocks.wb_prediction_matched_body', 'Agreement supports your working model; keep checking it against other properties.') : __alloT('stem.rocks.wb_prediction_updated_body', 'Scientists do not erase surprising evidence. They use it to revise explanations and choose the next test.'))
                     )
                   )
                 );
@@ -7967,9 +7967,9 @@ const d = labToolData.rocks || {};
                 return React.createElement("section", { className: "rounded-2xl border border-slate-300 bg-white p-3", "aria-labelledby": "wb-evidence-rail-title", "data-wb-evidence-rail": "persistent" },
                   React.createElement("div", { className: "flex flex-wrap items-end justify-between gap-2 mb-2.5" },
                     React.createElement("div", null,
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.14em] text-violet-800" }, __alloT('stem.rocks.wb_rail_eyebrow', 'Persistent results')),
-                      React.createElement("h4", { id: "wb-evidence-rail-title", className: "text-[13px] font-black text-slate-900" }, __alloT('stem.rocks.wb_rail_title', 'Specimen evidence rail')),
-                      React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_rail_help', 'Each result stays visible while you compare candidates.'))
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] text-violet-800" }, __alloT('stem.rocks.wb_rail_eyebrow', 'Persistent results')),
+                      React.createElement("h4", { id: "wb-evidence-rail-title", className: "text-[0.8125rem] font-black text-slate-900" }, __alloT('stem.rocks.wb_rail_title', 'Specimen evidence rail')),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_rail_help', 'Each result stays visible while you compare candidates.'))
                     ),
                     React.createElement("span", { className: "rounded-full bg-violet-50 border border-violet-200 px-2.5 py-1 text-[10.5px] font-black text-violet-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_rail_captured', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
                   ),
@@ -7978,9 +7978,9 @@ const d = labToolData.rocks || {};
                       React.createElement("div", { className: "flex items-center gap-2" },
                         wbRailGraphic(item),
                         React.createElement("span", { className: "min-w-0" },
-                          React.createElement("span", { className: "block text-[11px] font-black " + (item.caution || item.provisional ? "text-amber-900" : item.done ? "text-emerald-900" : "text-slate-700") }, (item.provisional ? '≈ ' : item.caution ? '↗ ' : item.done ? '✓ ' : '') + item.label),
+                          React.createElement("span", { className: "block text-[0.6875rem] font-black " + (item.caution || item.provisional ? "text-amber-900" : item.done ? "text-emerald-900" : "text-slate-700") }, (item.provisional ? '≈ ' : item.caution ? '↗ ' : item.done ? '✓ ' : '') + item.label),
                           React.createElement("span", { className: "block text-[10.5px] font-semibold mt-0.5 " + (item.done || item.provisional ? "text-slate-800" : "text-slate-600"), style: { overflowWrap: 'anywhere' } }, item.value),
-                          item.provisional ? React.createElement("span", { className: "block text-[10px] font-black text-amber-800 mt-0.5" }, __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm')) : null
+                          item.provisional ? React.createElement("span", { className: "block text-[0.625rem] font-black text-amber-800 mt-0.5" }, __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm')) : null
                         )
                       )
                     );
@@ -8038,7 +8038,7 @@ const d = labToolData.rocks || {};
                   "aria-hidden": "true", "data-wb-guide-graphic": item.id
                 },
                   React.createElement("span", { className: "text-xl leading-none" }, item.icon),
-                  React.createElement("span", { className: "text-[7px] font-black tracking-wide text-slate-800 mt-1" }, item.cue),
+                  React.createElement("span", { className: "text-[0.4375rem] font-black tracking-wide text-slate-800 mt-1" }, item.cue),
                   item.id === 'luster' ? React.createElement("span", { className: "absolute w-5 h-1.5 rounded-full bg-white/80 top-1.5 right-1.5 -rotate-12" }) : null,
                   item.id === 'acid' ? React.createElement(React.Fragment, null,
                     React.createElement("span", { className: "absolute w-1.5 h-1.5 rounded-full bg-sky-500 top-1.5 left-2" }),
@@ -8051,19 +8051,19 @@ const d = labToolData.rocks || {};
                   React.createElement("summary", { className: "cursor-pointer list-none min-h-[52px] px-3 sm:px-4 py-2.5 flex items-center gap-3 select-none" },
                     React.createElement("span", { className: "w-9 h-9 rounded-xl border border-violet-200 bg-white flex items-center justify-center text-lg shrink-0", "aria-hidden": "true" }, '🧭'),
                     React.createElement("span", { className: "min-w-0 flex-1" },
-                      React.createElement("span", { className: "block text-[11.5px] sm:text-[12px] font-black text-violet-900" }, __alloT('stem.rocks.wb_guide_title', 'Need a property refresher? Open the visual guide.')),
-                      React.createElement("span", { className: "block text-[10px] sm:text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_guide_summary', 'Six quick definitions, diagnostic uses, and common mix-ups.'))
+                      React.createElement("span", { className: "block text-[11.5px] sm:text-[0.75rem] font-black text-violet-900" }, __alloT('stem.rocks.wb_guide_title', 'Need a property refresher? Open the visual guide.')),
+                      React.createElement("span", { className: "block text-[0.625rem] sm:text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_guide_summary', 'Six quick definitions, diagnostic uses, and common mix-ups.'))
                     ),
-                    React.createElement("span", { className: "hidden sm:inline rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[10px] font-black text-violet-900 shrink-0" }, __alloT('stem.rocks.wb_guide_optional', 'Optional help')),
+                    React.createElement("span", { className: "hidden sm:inline rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[0.625rem] font-black text-violet-900 shrink-0" }, __alloT('stem.rocks.wb_guide_optional', 'Optional help')),
                     React.createElement("span", { className: "text-violet-800 text-lg font-black transition-transform group-open:rotate-180 shrink-0", "aria-hidden": "true" }, '⌄')
                   ),
                   React.createElement("div", { className: "border-t border-violet-200 bg-white p-3 sm:p-4" },
                     React.createElement("div", { className: "flex flex-wrap items-end justify-between gap-2 mb-3" },
                       React.createElement("div", null,
                         React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_guide_eyebrow', 'Read the evidence like a mineralogist')),
-                        React.createElement("p", { className: "text-[11px] text-slate-700 mt-0.5" }, __alloT('stem.rocks.wb_guide_intro', 'Each property answers a different question. Combining them is more reliable than color alone.'))
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-0.5" }, __alloT('stem.rocks.wb_guide_intro', 'Each property answers a different question. Combining them is more reliable than color alone.'))
                       ),
-                      React.createElement("span", { className: "rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-900" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_guide_measured_count', ' of 6 confirmed'))
+                      React.createElement("span", { className: "rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[0.625rem] font-black text-emerald-900" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_guide_measured_count', ' of 6 confirmed'))
                     ),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5", role: "list", "aria-label": __alloT('stem.rocks.wb_guide_list_aria', 'Mineral property definitions and misconception guards') }, wbPropertyGuideItems.map(function (item) {
                       return React.createElement("article", {
@@ -8074,13 +8074,13 @@ const d = labToolData.rocks || {};
                           wbRenderPropertyGuideGraphic(item),
                           React.createElement("div", { className: "min-w-0 flex-1" },
                             React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                              React.createElement("h5", { className: "text-[12px] font-black text-slate-900" }, item.label),
-                              React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[10px] font-black " + (item.provisional ? "bg-amber-100 text-amber-900" : item.done ? "bg-emerald-100 text-emerald-900" : "bg-white text-slate-700 border border-slate-200") }, item.provisional ? __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : item.done ? __alloT('stem.rocks.wb_guide_measured', 'Measured') : __alloT('stem.rocks.wb_guide_available', 'Available'))
+                              React.createElement("h5", { className: "text-[0.75rem] font-black text-slate-900" }, item.label),
+                              React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (item.provisional ? "bg-amber-100 text-amber-900" : item.done ? "bg-emerald-100 text-emerald-900" : "bg-white text-slate-700 border border-slate-200") }, item.provisional ? __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : item.done ? __alloT('stem.rocks.wb_guide_measured', 'Measured') : __alloT('stem.rocks.wb_guide_available', 'Available'))
                             ),
                             React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-1 leading-relaxed" }, item.meaning)
                           )
                         ),
-                        React.createElement("p", { className: "text-[10px] font-semibold text-violet-900 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_guide_use_prefix', 'Diagnostic use: ') + item.use),
+                        React.createElement("p", { className: "text-[0.625rem] font-semibold text-violet-900 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_guide_use_prefix', 'Diagnostic use: ') + item.use),
                         React.createElement("p", { className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10.5px] text-amber-900 leading-relaxed" }, '⚠ ' + __alloT('stem.rocks.wb_guide_guard_prefix', 'Do not mix it up: ') + item.guard)
                       );
                     }))
@@ -8175,28 +8175,28 @@ const d = labToolData.rocks || {};
                     React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl ring-2 ring-amber-200" }, rkHandSpecimenSvg(React.createElement, sp, 54, { aria: __alloT('stem.rocks.wb_specimen_aria', 'Unknown hand specimen: an irregular broken fragment.') })),
                       wb.lens ? React.createElement("div", { className: "mt-1 rounded-md bg-slate-900 p-0.5 inline-block", "data-wb-dock-porthole": "unknown" }, rkLensViewSvg(React.createElement, sp, 34, { aria: __alloT('stem.rocks.wb_lens_aria', 'Magnified patch of the specimen surface under the lamp. ') + wbSpecimenSr })) : null,
-                      React.createElement("p", { className: "text-[10px] sm:text-[10.5px] font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_compare_unknown', 'Unknown'))
+                      React.createElement("p", { className: "text-[0.625rem] sm:text-[10.5px] font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_compare_unknown', 'Unknown'))
                     ),
                     React.createElement("div", { className: "min-w-0 flex-1" },
                       React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" },
-                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_live_compare', 'Pinned live comparison')),
-                        React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[10px] font-black " + wbSupportClass }, wbClaimSupport.label)
+                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_live_compare', 'Pinned live comparison')),
+                        React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[0.625rem] font-black " + wbSupportClass }, wbClaimSupport.label)
                       ),
-                      React.createElement("h5", { id: "wb-live-compare-title", className: "text-[12px] sm:text-[14px] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_compare_title_selected', 'Unknown compared with ') + wbSelected.label : __alloT('stem.rocks.wb_compare_title_empty', 'Keep the unknown visible while choosing a candidate')),
-                      React.createElement("p", { className: "text-[10.5px] sm:text-[11px] text-slate-700 mt-0.5 leading-snug" }, wbClaimSupport.detail),
+                      React.createElement("h5", { id: "wb-live-compare-title", className: "text-[0.75rem] sm:text-[0.875rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_compare_title_selected', 'Unknown compared with ') + wbSelected.label : __alloT('stem.rocks.wb_compare_title_empty', 'Keep the unknown visible while choosing a candidate')),
+                      React.createElement("p", { className: "text-[10.5px] sm:text-[0.6875rem] text-slate-700 mt-0.5 leading-snug" }, wbClaimSupport.detail),
                       rows.length ? React.createElement("div", { className: "hidden sm:flex flex-wrap gap-1.5 mt-2", role: "group", "aria-label": __alloT('stem.rocks.wb_compare_matches_aria', 'Measured properties that match the selected candidate') },
-                        rows.slice(0, 4).map(function (row) { return React.createElement("span", { key: row.id, className: "rounded-full bg-emerald-50 border border-emerald-200 px-2 py-1 text-[10px] font-black text-emerald-900" }, '✓ ' + row.label); }),
-                        rows.length > 4 ? React.createElement("span", { className: "rounded-full bg-slate-100 border border-slate-200 px-2 py-1 text-[10px] font-black text-slate-700" }, '+' + (rows.length - 4) + __alloT('stem.rocks.wb_compare_more', ' more')) : null
+                        rows.slice(0, 4).map(function (row) { return React.createElement("span", { key: row.id, className: "rounded-full bg-emerald-50 border border-emerald-200 px-2 py-1 text-[0.625rem] font-black text-emerald-900" }, '✓ ' + row.label); }),
+                        rows.length > 4 ? React.createElement("span", { className: "rounded-full bg-slate-100 border border-slate-200 px-2 py-1 text-[0.625rem] font-black text-slate-700" }, '+' + (rows.length - 4) + __alloT('stem.rocks.wb_compare_more', ' more')) : null
                       ) : null
                     ),
                     React.createElement("span", { className: "text-violet-700 text-lg font-black shrink-0", "aria-hidden": "true" }, '↔'),
                     wbSelected ? React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl ring-2 ring-violet-200" }, rkMineralSwatch(React.createElement, wbSelected, 54)),
                       wb.lens ? React.createElement("div", { className: "mt-1 rounded-md bg-slate-900 p-0.5 inline-block", "data-wb-dock-porthole": wbSelected.id }, rkLensViewSvg(React.createElement, wbSelected, 34, { aria: wbSelected.label + __alloT('stem.rocks.wb_candidate_porthole_aria', ' under the lens: ') + rkLusterClassInfo(rkLusterClass(wbSelected)).sr })) : null,
-                      React.createElement("p", { className: "text-[10px] sm:text-[10.5px] font-black text-violet-900 mt-1 leading-tight", style: { maxWidth: 74, overflowWrap: 'anywhere' } }, wbSelected.label)
+                      React.createElement("p", { className: "text-[0.625rem] sm:text-[10.5px] font-black text-violet-900 mt-1 leading-tight", style: { maxWidth: 74, overflowWrap: 'anywhere' } }, wbSelected.label)
                     ) : React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-xl font-black text-slate-600", style: { width: 54, height: 54 }, "aria-hidden": "true" }, '?'),
-                      React.createElement("p", { className: "text-[10px] sm:text-[10.5px] font-black text-slate-600 mt-1" }, __alloT('stem.rocks.wb_compare_candidate', 'Candidate'))
+                      React.createElement("p", { className: "text-[0.625rem] sm:text-[10.5px] font-black text-slate-600 mt-1" }, __alloT('stem.rocks.wb_compare_candidate', 'Candidate'))
                     )
                   )
                 );
@@ -8216,8 +8216,8 @@ const d = labToolData.rocks || {};
                   React.createElement("fieldset", { className: "rounded-xl border border-violet-200 bg-white p-3", "data-wb-cer-evidence-count": wbClaimEvidence.length },
                     React.createElement("legend", { className: "px-1 text-[11.5px] font-black text-violet-900" }, __alloT('stem.rocks.wb_cer_step1', '1 · Choose your strongest evidence')),
                     React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" },
-                      React.createElement("p", { className: "text-[11px] text-slate-700" }, __alloT('stem.rocks.wb_cer_evidence_help', 'Select at least two measured properties that best support this claim.')),
-                      React.createElement("span", { className: "rounded-full border px-2 py-1 text-[10px] font-black " + (wbClaimEvidence.length >= 2 ? "bg-emerald-100 border-emerald-300 text-emerald-900" : "bg-amber-100 border-amber-300 text-amber-900") }, wbClaimEvidence.length + ' / 2 ' + __alloT('stem.rocks.wb_cer_chosen', 'chosen'))
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700" }, __alloT('stem.rocks.wb_cer_evidence_help', 'Select at least two measured properties that best support this claim.')),
+                      React.createElement("span", { className: "rounded-full border px-2 py-1 text-[0.625rem] font-black " + (wbClaimEvidence.length >= 2 ? "bg-emerald-100 border-emerald-300 text-emerald-900" : "bg-amber-100 border-amber-300 text-amber-900") }, wbClaimEvidence.length + ' / 2 ' + __alloT('stem.rocks.wb_cer_chosen', 'chosen'))
                     ),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, wbCerRows.map(function (row) {
                       var chosen = wbClaimEvidence.indexOf(row.id) !== -1;
@@ -8236,7 +8236,7 @@ const d = labToolData.rocks || {};
                       },
                         React.createElement("span", { className: "flex items-center justify-between gap-2" },
                           React.createElement("span", { className: "text-[11.5px] font-black" }, (chosen ? '✓ ' : '') + row.label),
-                          React.createElement("span", { className: "rounded-full bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-700" }, evidenceContextLabel)
+                          React.createElement("span", { className: "rounded-full bg-white border border-slate-200 px-2 py-0.5 text-[0.625rem] font-black text-slate-700" }, evidenceContextLabel)
                         ),
                         React.createElement("span", { className: "block text-[10.5px] font-semibold mt-1 text-slate-700", style: { overflowWrap: 'anywhere' } }, row.unknown + ' → ' + row.candidate)
                       );
@@ -8244,7 +8244,7 @@ const d = labToolData.rocks || {};
                   ),
                   React.createElement("fieldset", { className: "rounded-xl border border-violet-200 bg-white p-3" },
                     React.createElement("legend", { className: "px-1 text-[11.5px] font-black text-violet-900" }, __alloT('stem.rocks.wb_cer_step2', '2 · Explain why the evidence matters')),
-                    React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" }, __alloT('stem.rocks.wb_cer_reason_help', 'Choose the reasoning that connects your observations to the mineral identity.')),
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" }, __alloT('stem.rocks.wb_cer_reason_help', 'Choose the reasoning that connects your observations to the mineral identity.')),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" }, wbReasoningOptions.map(function (option) {
                       var chosen = wbClaimReasoning === option.id;
                       return React.createElement("button", {
@@ -8252,7 +8252,7 @@ const d = labToolData.rocks || {};
                         onClick: function () { updWb({ claimReasoning: option.id }); wbSay(__alloT('stem.rocks.wb_reason_selected_sr', 'Reasoning selected: ') + option.label + '.'); },
                         className: "rounded-xl border p-2.5 min-h-[72px] text-left transition-all " + (chosen ? "bg-violet-100 border-violet-500 ring-2 ring-violet-200 text-violet-900" : "bg-slate-50 border-slate-300 text-slate-800 hover:border-violet-400")
                       },
-                        React.createElement("span", { className: "block text-[11px] font-black" }, (chosen ? '✓ ' : '') + option.label),
+                        React.createElement("span", { className: "block text-[0.6875rem] font-black" }, (chosen ? '✓ ' : '') + option.label),
                         React.createElement("span", { className: "block text-[10.5px] mt-1 leading-snug text-slate-700" }, option.detail)
                       );
                     }))
@@ -8271,8 +8271,8 @@ const d = labToolData.rocks || {};
                       }))
                     ),
                     React.createElement("div", { className: "rounded-xl border border-emerald-300 bg-emerald-50 p-3", "data-wb-reasoning-frame": wbCerReady ? 'complete' : 'building' },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_reasoning_preview', 'Your reasoning preview')),
-                      React.createElement("p", { className: "text-[11px] font-semibold text-emerald-900 mt-1 leading-relaxed" }, wbReasoningSentence)
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_reasoning_preview', 'Your reasoning preview')),
+                      React.createElement("p", { className: "text-[0.6875rem] font-semibold text-emerald-900 mt-1 leading-relaxed" }, wbReasoningSentence)
                     )
                   )
                 );
@@ -8556,17 +8556,17 @@ const d = labToolData.rocks || {};
                 var revised = rows.filter(function (r) { return r.verdict === 'revised'; }).length;
                 var mismatched = rows.filter(function (r) { return r.verdict === 'mismatch'; }).length;
                 return React.createElement("section", { className: "mt-3 rounded-xl border border-emerald-200 bg-white/80 p-2.5 text-left", "aria-labelledby": "wb-trail-title", "data-wb-debrief-history": hist.length, "data-wb-debrief-revised": revised, "data-wb-debrief-mismatched": mismatched },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_trail_eyebrow', 'Reasoning trail')),
-                  React.createElement("h6", { id: "wb-trail-title", className: "text-[12px] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_trail_title', 'How you got there')),
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_trail_eyebrow', 'Reasoning trail')),
+                  React.createElement("h6", { id: "wb-trail-title", className: "text-[0.75rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_trail_title', 'How you got there')),
                   React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-0.5 leading-relaxed" }, revised
                     ? __alloT('stem.rocks.wb_trail_revised_help', 'Looking again and revising a reading is exactly what a careful observer does. Revised readings are kept here so you can see how your thinking changed.')
                     : __alloT('stem.rocks.wb_trail_help', 'Every observation you recorded, in order, compared with the reference values for the mineral you identified.')),
                   React.createElement("ol", { className: "mt-2 space-y-1.5" }, rows.map(function (r, i) {
                     return React.createElement("li", { key: i, "data-wb-history-verdict": r.verdict, className: "rounded-lg border px-2.5 py-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] " + (r.verdict === 'match' ? "border-emerald-200 bg-emerald-50" : r.verdict === 'revised' ? "border-slate-200 bg-slate-50" : "border-amber-300 bg-amber-50") },
-                      React.createElement("span", { className: "w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 " + (r.verdict === 'match' ? "bg-emerald-700 text-white" : r.verdict === 'revised' ? "bg-slate-500 text-white" : "bg-amber-700 text-white"), "aria-hidden": "true" }, i + 1),
+                      React.createElement("span", { className: "w-5 h-5 rounded-full text-[0.625rem] font-black flex items-center justify-center shrink-0 " + (r.verdict === 'match' ? "bg-emerald-700 text-white" : r.verdict === 'revised' ? "bg-slate-500 text-white" : "bg-amber-700 text-white"), "aria-hidden": "true" }, i + 1),
                       React.createElement("span", { className: "font-black text-slate-900" }, wbHistoryToolLabel(r.e) + ':'),
                       React.createElement("span", { className: "font-semibold " + (r.verdict === 'revised' ? "text-slate-600 line-through" : "text-slate-800") }, r.e.label),
-                      React.createElement("span", { className: "ml-auto rounded-full border px-2 py-0.5 text-[10px] font-black " + (r.verdict === 'match' ? "border-emerald-300 bg-white text-emerald-900" : r.verdict === 'revised' ? "border-slate-300 bg-white text-slate-700" : "border-amber-400 bg-white text-amber-900") },
+                      React.createElement("span", { className: "ml-auto rounded-full border px-2 py-0.5 text-[0.625rem] font-black " + (r.verdict === 'match' ? "border-emerald-300 bg-white text-emerald-900" : r.verdict === 'revised' ? "border-slate-300 bg-white text-slate-700" : "border-amber-400 bg-white text-amber-900") },
                         r.verdict === 'match' ? '\u2713 ' + __alloT('stem.rocks.wb_trail_match', 'Matches reference') : r.verdict === 'revised' ? '\u21bb ' + __alloT('stem.rocks.wb_trail_revised', 'Revised later') : '\u26a0 ' + __alloT('stem.rocks.wb_trail_mismatch', 'Worth a second look: reference says ') + (r.ref ? r.ref.label : '?'))
                     );
                   }))
@@ -8627,10 +8627,10 @@ const d = labToolData.rocks || {};
                   className: "mt-2.5 rounded-xl border p-2.5 text-left " + (lean ? "border-emerald-300 bg-white" : "border-sky-300 bg-sky-50"),
                   "data-wb-efficiency": lean ? 'lean' : 'longer', "data-wb-efficiency-minimum": String(minimal.length), "data-wb-efficiency-used": String(used.length)
                 },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide " + (lean ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_eff_title', 'Experimental design review')),
+                  React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (lean ? "text-emerald-800" : "text-sky-800") }, __alloT('stem.rocks.wb_eff_title', 'Experimental design review')),
                   React.createElement("p", { className: "text-[10.5px] font-bold mt-0.5 " + (lean ? "text-emerald-900" : "text-sky-900"), style: { overflowWrap: 'anywhere' } },
                     __alloT('stem.rocks.wb_eff_used', 'Tests you ran: ') + used.length + '. ' + __alloT('stem.rocks.wb_eff_min', 'Shortest sufficient path, visible only in hindsight: ') + minimal.length + '. ' + __alloT('stem.rocks.wb_eff_which', 'That path: ') + minimal.map(wbForecastTitleFor).join(__alloT('stem.rocks.wb_eff_join', ', ')) + '.'),
-                  React.createElement("p", { className: "text-[10px] mt-1 leading-relaxed " + (lean ? "text-emerald-800" : "text-sky-800") },
+                  React.createElement("p", { className: "text-[0.625rem] mt-1 leading-relaxed " + (lean ? "text-emerald-800" : "text-sky-800") },
                     lean ? __alloT('stem.rocks.wb_eff_lean', 'You matched it while the answer was still open, which is what efficient experimental design looks like.')
                       : __alloT('stem.rocks.wb_eff_longer', 'Nobody could have known it in advance, so the extra tests were not wasted. Independent properties that agree make an identification much harder to overturn.'))
                 );
@@ -8689,9 +8689,9 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex items-start gap-3" },
                     React.createElement("span", { className: "w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm shrink-0", "aria-hidden": "true" }, '📝'),
                     React.createElement("div", { className: "min-w-0 flex-1" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.14em] text-sky-800" }, __alloT('stem.rocks.wb_obs_eyebrow', 'Your observation')),
-                      React.createElement("h4", { id: "wb-observation-title", className: "text-[14px] sm:text-[15px] font-black text-slate-900 mt-0.5" }, title),
-                      React.createElement("p", { className: "text-[11px] sm:text-[11.5px] text-slate-700 mt-1 leading-relaxed" }, help)
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] text-sky-800" }, __alloT('stem.rocks.wb_obs_eyebrow', 'Your observation')),
+                      React.createElement("h4", { id: "wb-observation-title", className: "text-[0.875rem] sm:text-[0.9375rem] font-black text-slate-900 mt-0.5" }, title),
+                      React.createElement("p", { className: "text-[0.6875rem] sm:text-[11.5px] text-slate-700 mt-1 leading-relaxed" }, help)
                     )
                   ),
                   isLens ? React.createElement("div", { className: "mt-3 flex flex-col sm:flex-row gap-3 items-start" },
@@ -8714,12 +8714,12 @@ const d = labToolData.rocks || {};
                   ) : null,
                   isDensity ? React.createElement("dl", { className: "mt-3 grid grid-cols-2 gap-2", "data-wb-density-readings": "shown" },
                     React.createElement("div", { className: "rounded-xl border border-sky-200 bg-white p-2.5" },
-                      React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_mass', 'Balance reading (mass)')),
-                      React.createElement("dd", { className: "text-[15px] font-black text-slate-900 mt-0.5" }, 'm = ' + wbModeledMass.toFixed(1) + ' g')
+                      React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_mass', 'Balance reading (mass)')),
+                      React.createElement("dd", { className: "text-[0.9375rem] font-black text-slate-900 mt-0.5" }, 'm = ' + wbModeledMass.toFixed(1) + ' g')
                     ),
                     React.createElement("div", { className: "rounded-xl border border-sky-200 bg-white p-2.5" },
-                      React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_volume', 'Water displaced (volume)')),
-                      React.createElement("dd", { className: "text-[15px] font-black text-slate-900 mt-0.5" }, 'V = ' + wbModeledVolume.toFixed(1) + ' cm³')
+                      React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_volume', 'Water displaced (volume)')),
+                      React.createElement("dd", { className: "text-[0.9375rem] font-black text-slate-900 mt-0.5" }, 'V = ' + wbModeledVolume.toFixed(1) + ' cm³')
                     )
                   ) : null,
                   React.createElement("div", { className: "mt-3 grid gap-2 " + (isDensity ? "grid-cols-2 sm:grid-cols-5" : isStreak ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-1 sm:grid-cols-2"), role: "group", "aria-label": __alloT('stem.rocks.wb_obs_choices_aria', 'Choose the description that matches what you see') },
@@ -8733,14 +8733,14 @@ const d = labToolData.rocks || {};
                         c.hex !== undefined ? React.createElement("span", { className: "shrink-0 w-7 h-7 rounded-md border border-slate-400", style: { background: c.hex || 'repeating-linear-gradient(135deg,#e8e5de,#e8e5de 3px,#94a3b8 3px,#94a3b8 4px)' }, "aria-hidden": "true" }) : null,
                         React.createElement("span", { className: "min-w-0" },
                           React.createElement("span", { className: "block text-[11.5px] font-black text-slate-900 leading-tight" }, c.label),
-                          c.hint ? React.createElement("span", { className: "block text-[10px] text-slate-700 mt-0.5 leading-snug" }, c.hint) : null
+                          c.hint ? React.createElement("span", { className: "block text-[0.625rem] text-slate-700 mt-0.5 leading-snug" }, c.hint) : null
                         )
                       );
                     })
                   ),
                   React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
-                    React.createElement("p", { className: "text-[10px] text-slate-700 italic" }, __alloT('stem.rocks.wb_obs_honesty', 'Record what you see, not what you expect. A misread will empty the shortlist, and you can look again.')),
-                    React.createElement("button", { type: "button", className: "rounded-lg border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[10px] font-black text-slate-800 hover:bg-slate-50", "data-wb-observe-discard": wbPendingTool, disabled: wbBusy, onClick: wbDiscardTrial }, __alloT('stem.rocks.wb_obs_discard', 'Discard this trial'))
+                    React.createElement("p", { className: "text-[0.625rem] text-slate-700 italic" }, __alloT('stem.rocks.wb_obs_honesty', 'Record what you see, not what you expect. A misread will empty the shortlist, and you can look again.')),
+                    React.createElement("button", { type: "button", className: "rounded-lg border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[0.625rem] font-black text-slate-800 hover:bg-slate-50", "data-wb-observe-discard": wbPendingTool, disabled: wbBusy, onClick: wbDiscardTrial }, __alloT('stem.rocks.wb_obs_discard', 'Discard this trial'))
                   )
                 );
               };
@@ -8751,7 +8751,7 @@ const d = labToolData.rocks || {};
                 if (!RK_SPECIMEN_VIEWER) return React.createElement("p", { className: "rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-[10.5px] text-slate-700", "data-wb-specimen-3d": "unavailable" }, __alloT('stem.rocks.wb_3d_unavailable', 'The 3D specimen is unavailable on this host. The lens porthole above carries the same luster evidence.'));
                 return React.createElement("section", { className: "rounded-2xl border border-slate-700 bg-slate-900 p-2", "aria-labelledby": "wb-3d-title", "data-wb-specimen-3d": "open" },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 px-1 pb-1.5" },
-                    React.createElement("h4", { id: "wb-3d-title", className: "text-[11px] font-black", style: { color: '#f1f5f9', background: '#0f172a' } }, '🧊 ' + __alloT('stem.rocks.wb_3d_title', 'Hand specimen under the lamp')),
+                    React.createElement("h4", { id: "wb-3d-title", className: "text-[0.6875rem] font-black", style: { color: '#f1f5f9', background: '#0f172a' } }, '🧊 ' + __alloT('stem.rocks.wb_3d_title', 'Hand specimen under the lamp')),
                     React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": __alloT('stem.rocks.wb_3d_controls_aria', '3D specimen view controls') },
                       [
                         ['◀', __alloT('stem.rocks.crystal3d_left', 'Rotate left'), function () { RK_SPECIMEN_VIEWER.nudge(-0.3, 0); }],
@@ -8761,7 +8761,7 @@ const d = labToolData.rocks || {};
                         ['＋', __alloT('stem.rocks.crystal3d_in', 'Zoom in'), function () { RK_SPECIMEN_VIEWER.zoom(-0.6); }],
                         ['－', __alloT('stem.rocks.crystal3d_out', 'Zoom out'), function () { RK_SPECIMEN_VIEWER.zoom(0.6); }],
                         ['↺', __alloT('stem.rocks.crystal3d_reset', 'Reset view'), function () { RK_SPECIMEN_VIEWER.reset(); }]
-                      ].map(function (b) { return React.createElement("button", { key: b[1], type: "button", "aria-label": b[1], title: b[1], className: "w-9 h-9 min-h-[36px] rounded-lg bg-slate-800 border border-slate-600 text-[12px] font-black hover:bg-slate-700", style: { color: '#f1f5f9', background: '#1e293b' }, onClick: b[2] }, b[0]); })
+                      ].map(function (b) { return React.createElement("button", { key: b[1], type: "button", "aria-label": b[1], title: b[1], className: "w-9 h-9 min-h-[36px] rounded-lg bg-slate-800 border border-slate-600 text-[0.75rem] font-black hover:bg-slate-700", style: { color: '#f1f5f9', background: '#1e293b' }, onClick: b[2] }, b[0]); })
                     )
                   ),
                   React.createElement("div", {
@@ -8770,7 +8770,7 @@ const d = labToolData.rocks || {};
                     style: { height: '260px' }, role: "img",
                     "aria-label": __alloT('stem.rocks.wb_3d_aria', 'Rotating 3D model of the unknown hand specimen under a lamp. ') + wbSpecimenSr
                   }),
-                  React.createElement("p", { className: "text-[10px] px-1 pt-1.5 leading-relaxed", style: { color: '#cbd5e1', background: '#0f172a' } }, __alloT('stem.rocks.wb_3d_help', 'Drag to turn it. Watch the highlight: does it slide like a mirror, stay as one sharp point, spread as a soft glow, or never appear?'))
+                  React.createElement("p", { className: "text-[0.625rem] px-1 pt-1.5 leading-relaxed", style: { color: '#cbd5e1', background: '#0f172a' } }, __alloT('stem.rocks.wb_3d_help', 'Drag to turn it. Watch the highlight: does it slide like a mirror, stay as one sharp point, spread as a soft glow, or never appear?'))
                 );
               };
               var wbToolBtn = function (opts) {
@@ -8783,9 +8783,9 @@ const d = labToolData.rocks || {};
                   "data-wb-tool": opts.key,
                   className: "px-2.5 py-2.5 rounded-xl text-left border transition-all min-h-[52px] flex flex-col justify-center " + (opts.done ? doneTone + " cursor-default" : wbBusy ? "bg-white border-slate-300 text-slate-700 cursor-wait opacity-65" : (wbNext.tool === opts.key ? "bg-amber-50 border-amber-400 text-slate-800 ring-2 ring-amber-200 hover:bg-amber-100 rk-wb-nudge" : "bg-white border-slate-300 text-slate-800 hover:border-amber-400 hover:-translate-y-0.5 hover:shadow-md"))
                 },
-                  React.createElement("span", { className: "text-[12px] font-black leading-tight" }, (opts.done ? '✓ ' : '') + opts.label),
-                  opts.meta ? React.createElement("span", { className: "text-[10px] font-semibold text-slate-600 mt-1 leading-tight" }, opts.meta) : null,
-                  opts.result ? React.createElement("span", { className: "text-[10px] font-black mt-1 leading-tight " + (opts.caution ? "text-amber-800" : "text-emerald-800") }, opts.result) : null
+                  React.createElement("span", { className: "text-[0.75rem] font-black leading-tight" }, (opts.done ? '✓ ' : '') + opts.label),
+                  opts.meta ? React.createElement("span", { className: "text-[0.625rem] font-semibold text-slate-600 mt-1 leading-tight" }, opts.meta) : null,
+                  opts.result ? React.createElement("span", { className: "text-[0.625rem] font-black mt-1 leading-tight " + (opts.caution ? "text-amber-800" : "text-emerald-800") }, opts.result) : null
                 );
               };
               var wbRenderMohsInterval = function () {
@@ -8819,8 +8819,8 @@ const d = labToolData.rocks || {};
                   "data-wb-mohs-recommended": recommendedRef ? recommendedRef.id : 'none'
                 },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
-                    React.createElement("p", { className: "text-[11px] font-black text-slate-900" }, __alloT('stem.rocks.wb_mohs_constraint_title', 'Modeled hardness constraint: ') + wbHardnessLabel),
-                    React.createElement("span", { className: "text-[10px] font-black " + (quality === 'narrow' ? "text-emerald-800" : quality === 'useful' ? "text-violet-800" : "text-amber-800") }, qualityLabel)
+                    React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900" }, __alloT('stem.rocks.wb_mohs_constraint_title', 'Modeled hardness constraint: ') + wbHardnessLabel),
+                    React.createElement("span", { className: "text-[0.625rem] font-black " + (quality === 'narrow' ? "text-emerald-800" : quality === 'useful' ? "text-violet-800" : "text-amber-800") }, qualityLabel)
                   ),
                   React.createElement("div", { className: "mt-2 px-3" },
                     React.createElement("div", { className: "relative h-16", role: "img", "aria-label": intervalAria },
@@ -8830,7 +8830,7 @@ const d = labToolData.rocks || {};
                       React.createElement("span", { className: "absolute top-[18px] w-1 h-5 rounded bg-violet-900", style: { left: position(high) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true" }),
                       candidateGroups.map(function (group) { return React.createElement("span", { key: 'candidate-' + group.hardness, className: "absolute top-[21px] w-3 h-3 rounded-full bg-white border-[3px] border-violet-900", style: { left: position(group.hardness) + '%', transform: 'translateX(-50%)' }, "data-wb-mohs-candidate-marker": group.hardness, "data-wb-mohs-candidate-count": group.count, "aria-hidden": "true" }); }),
                       recommendedRef ? React.createElement("span", { className: "absolute top-0 text-amber-800 text-base font-black", style: { left: position(recommendedRef.h) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true", "data-wb-mohs-next-marker": recommendedRef.id }, '◆') : null,
-                      [1, 3, 5, 7, 10].map(function (tick) { return React.createElement("span", { key: tick, className: "absolute top-10 text-[11px] font-bold text-slate-700", style: { left: position(tick) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true" }, tick); })
+                      [1, 3, 5, 7, 10].map(function (tick) { return React.createElement("span", { key: tick, className: "absolute top-10 text-[0.6875rem] font-bold text-slate-700", style: { left: position(tick) + '%', transform: 'translateX(-50%)' }, "aria-hidden": "true" }, tick); })
                     )
                   ),
                   React.createElement("figcaption", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[10.5px] text-slate-700" },
@@ -8866,7 +8866,7 @@ const d = labToolData.rocks || {};
                       );
                     }),
                     remaining > 0 ? React.createElement("li", { key: "wb-case-rest", "data-wb-case-slot": "empty", className: "rounded-lg border border-dashed border-slate-400 bg-slate-50 px-2 py-1 flex items-center gap-1.5" },
-                      React.createElement("span", { "aria-hidden": "true", className: "w-5 h-5 rounded border border-dashed border-slate-400 flex items-center justify-center text-[10px] font-black text-slate-600" }, '?'),
+                      React.createElement("span", { "aria-hidden": "true", className: "w-5 h-5 rounded border border-dashed border-slate-400 flex items-center justify-center text-[0.625rem] font-black text-slate-600" }, '?'),
                       React.createElement("span", { className: "text-[10.5px] font-black text-slate-600" }, remaining + ' ' + __alloT('stem.rocks.wb_case_remaining', 'still unnamed'))
                     ) : null
                   )
@@ -8892,14 +8892,14 @@ const d = labToolData.rocks || {};
               return React.createElement("div", { className: "space-y-4", "data-rocks-workbench": "mineral-identification", "data-wb-guided-focus": wbGuided ? 'active' : 'full', "aria-busy": wbBusy },
                 !sp ? React.createElement("section", { className: "rounded-2xl border-2 border-amber-300 p-5 sm:p-7 text-center overflow-hidden", style: { background: 'radial-gradient(circle at 50% 0%,#ffffff 0%,#fffbeb 38%,#fef3c7 100%)' }, "aria-labelledby": "wb-intro-title" },
                   React.createElement("div", { className: "mx-auto w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg", style: { fontSize: 36 }, "aria-hidden": "true" }, '🔬'),
-                  React.createElement("p", { className: "text-[10px] font-black tracking-[0.18em] uppercase text-amber-800 mt-4" }, __alloT('stem.rocks.wb_intro_eyebrow', 'Evidence-first mineral identification')),
+                  React.createElement("p", { className: "text-[0.625rem] font-black tracking-[0.18em] uppercase text-amber-800 mt-4" }, __alloT('stem.rocks.wb_intro_eyebrow', 'Evidence-first mineral identification')),
                   React.createElement("h3", { id: "wb-intro-title", className: "text-xl font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_intro_title', 'The Mineral Workbench')),
-                  React.createElement("p", { className: "text-[13px] sm:text-sm text-amber-900 max-w-xl mx-auto mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_intro_body', 'An unknown specimen, real instruments, and a field notebook. Run the tests a geologist would, watch your evidence eliminate suspects, then name the mineral.')),
+                  React.createElement("p", { className: "text-[0.8125rem] sm:text-sm text-amber-900 max-w-xl mx-auto mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_intro_body', 'An unknown specimen, real instruments, and a field notebook. Run the tests a geologist would, watch your evidence eliminate suspects, then name the mineral.')),
                   React.createElement("ol", { className: "grid sm:grid-cols-3 gap-2.5 max-w-2xl mx-auto mt-5 text-left", "aria-label": __alloT('stem.rocks.wb_sequence_aria', 'Mineral identification sequence') },
                     wbSteps.map(function (step) { return React.createElement("li", { key: step.id, className: "rounded-xl border border-amber-200 bg-white/80 p-3 flex gap-2.5" },
                       React.createElement("span", { className: "w-7 h-7 rounded-full bg-amber-700 text-white text-xs font-black flex items-center justify-center shrink-0", "aria-hidden": "true" }, step.icon),
                       React.createElement("span", null,
-                        React.createElement("span", { className: "block text-[12px] font-black text-amber-900" }, step.title),
+                        React.createElement("span", { className: "block text-[0.75rem] font-black text-amber-900" }, step.title),
                         React.createElement("span", { className: "block text-[10.5px] text-amber-800 mt-0.5 leading-snug" }, step.detail)
                       )
                     ); })
@@ -8907,7 +8907,7 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "mt-5 inline-flex rounded-xl border border-amber-300 bg-white/80 p-1", role: "group", "aria-label": __alloT('stem.rocks.wb_pool_aria', 'Choose the candidate set') },
                     [['standard', __alloT('stem.rocks.wb_pool_standard', 'Standard set') + ' · ' + WB_POOL.length], ['challenge', __alloT('stem.rocks.wb_pool_challenge', 'Challenge set') + ' · ' + WB_POOL_CHALLENGE.length]].map(function (opt) {
                       var on = (wb.pool || 'standard') === opt[0];
-                      return React.createElement("button", { key: opt[0], type: "button", "aria-pressed": on, "data-wb-pool": opt[0], className: "rounded-lg px-3 py-2 min-h-[40px] text-[11px] font-black " + (on ? "bg-amber-700 text-white" : "text-amber-900 hover:bg-amber-100"), onClick: function () { updWb({ pool: opt[0] }); } }, opt[1]);
+                      return React.createElement("button", { key: opt[0], type: "button", "aria-pressed": on, "data-wb-pool": opt[0], className: "rounded-lg px-3 py-2 min-h-[40px] text-[0.6875rem] font-black " + (on ? "bg-amber-700 text-white" : "text-amber-900 hover:bg-amber-100"), onClick: function () { updWb({ pool: opt[0] }); } }, opt[1]);
                     })
                   ),
                   React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-1.5" }, (wb.pool || 'standard') === 'challenge' ? __alloT('stem.rocks.wb_pool_challenge_help', 'Adds diamond, garnet, olivine, sulfur, corundum, topaz, graphite and the two copper carbonates. Several are harder than the streak plate, and three of them fizz, so neither test finishes the job alone.') : __alloT('stem.rocks.wb_pool_standard_help', 'Twelve common minerals with clearly different signatures.')),
@@ -8920,7 +8920,7 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2" },
                     React.createElement("div", { className: "min-w-0" },
                       React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_investigation_path', 'Investigation path')),
-                      React.createElement("p", { className: "text-[11px] text-slate-700 mt-0.5" }, wbGuided ? __alloT('stem.rocks.wb_guided_help', 'Guided focus keeps the current scientific task open and quiets later steps.') : __alloT('stem.rocks.wb_full_help', 'Full workbench keeps every investigation area available.'))
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-0.5" }, wbGuided ? __alloT('stem.rocks.wb_guided_help', 'Guided focus keeps the current scientific task open and quiets later steps.') : __alloT('stem.rocks.wb_full_help', 'Full workbench keeps every investigation area available.'))
                     ),
                   React.createElement("button", { type: "button", "aria-label": __alloT('stem.rocks.wb_guided_toggle_aria', 'Guided focus'), "aria-pressed": wbGuided, "data-wb-guided-toggle": wbGuided ? 'active' : 'full', className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ guided: !wbGuided, toolsExpanded: false, candidatesExpanded: false }); } }, wbGuided ? __alloT('stem.rocks.wb_show_full', 'Show full workbench') : __alloT('stem.rocks.wb_use_guided', 'Use guided focus'))
                   ),
@@ -8938,18 +8938,18 @@ const d = labToolData.rocks || {};
                         "aria-current": current ? 'step' : undefined,
                         className: "rounded-xl border px-2.5 py-2.5 flex items-center gap-2 min-w-0 " + (complete ? "bg-emerald-50 border-emerald-300 text-emerald-900" : current ? "bg-amber-50 border-amber-400 text-amber-900 ring-2 ring-amber-100" : inProgress ? "bg-sky-50 border-sky-300 text-sky-900" : "bg-slate-50 border-slate-200 text-slate-600")
                       },
-                        React.createElement("span", { className: "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 " + (complete ? "bg-emerald-700 text-white" : current ? "bg-amber-700 text-white" : inProgress ? "bg-sky-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, complete ? '✓' : step.icon),
-                        React.createElement("span", { className: "text-[10.5px] sm:text-[12px] font-black leading-tight min-w-0" },
+                        React.createElement("span", { className: "w-6 h-6 rounded-full flex items-center justify-center text-[0.6875rem] font-black shrink-0 " + (complete ? "bg-emerald-700 text-white" : current ? "bg-amber-700 text-white" : inProgress ? "bg-sky-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, complete ? '✓' : step.icon),
+                        React.createElement("span", { className: "text-[10.5px] sm:text-[0.75rem] font-black leading-tight min-w-0" },
                           React.createElement("span", { className: "sm:hidden" }, step.short),
                           React.createElement("span", { className: "hidden sm:inline" }, step.title),
-                          inProgress ? React.createElement("span", { className: "block text-[10px] font-bold mt-0.5" }, __alloT('stem.rocks.wb_stage_in_progress', 'In progress')) : null
+                          inProgress ? React.createElement("span", { className: "block text-[0.625rem] font-bold mt-0.5" }, __alloT('stem.rocks.wb_stage_in_progress', 'In progress')) : null
                         )
                       );
                     })
                   ),
                   wbRenderFieldCase(),
                   wbBench,
-                  React.createElement("p", { className: "sm:hidden rounded-lg bg-slate-800 px-3 py-2 text-[11px] font-semibold text-white leading-relaxed", "data-wb-mobile-bench-caption": "readable" },
+                  React.createElement("p", { className: "sm:hidden rounded-lg bg-slate-800 px-3 py-2 text-[0.6875rem] font-semibold text-white leading-relaxed", "data-wb-mobile-bench-caption": "readable" },
                     __alloT('stem.rocks.wb_unknown_mobile', 'Unknown specimen') + ' · ' + wbObservedFormFor(sp) + (wbPlateScratched ? ' · ' + __alloT('stem.rocks.wb_plate_mobile', 'No powder streak; plate groove gives H > 6.5') : '')
                   ),
                   wbRenderSpecimen3d(),
@@ -8966,10 +8966,10 @@ const d = labToolData.rocks || {};
                     React.createElement("section", { id: "wb-tools-panel", className: "rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 lg:col-span-3", "aria-labelledby": "wb-tools-title", "data-wb-tools-state": wbToolsOpen ? 'open' : 'focused' },
                       React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" },
                         React.createElement("div", null,
-                          React.createElement("h4", { id: "wb-tools-title", className: "text-[12px] font-black text-slate-800 uppercase tracking-wide" }, '🧰 ' + __alloT('stem.rocks.wb_tray', 'Instrument tray')),
-                          React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_tray_help', 'Choose a property to measure. The highlighted tool is a useful next test, not a required path.'))
+                          React.createElement("h4", { id: "wb-tools-title", className: "text-[0.75rem] font-black text-slate-800 uppercase tracking-wide" }, '🧰 ' + __alloT('stem.rocks.wb_tray', 'Instrument tray')),
+                          React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_tray_help', 'Choose a property to measure. The highlighted tool is a useful next test, not a required path.'))
                         ),
-                        wbGuided && wbStage > 0 ? React.createElement("button", { type: "button", "aria-expanded": wbToolsOpen, "aria-controls": "wb-tools-content", className: "rounded-lg border border-slate-300 bg-slate-50 px-2.5 py-2 min-h-[44px] text-[10px] font-black text-slate-800 shrink-0 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ toolsExpanded: !wbToolsOpen }); } }, wbToolsOpen ? __alloT('stem.rocks.wb_quiet_tools', 'Hide instruments') : __alloT('stem.rocks.wb_show_tools', 'Show all instruments')) : React.createElement("span", { className: "rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-700 shrink-0" }, wbEvidence.length + ' ' + __alloT('stem.rocks.wb_observations', 'observations'))
+                        wbGuided && wbStage > 0 ? React.createElement("button", { type: "button", "aria-expanded": wbToolsOpen, "aria-controls": "wb-tools-content", className: "rounded-lg border border-slate-300 bg-slate-50 px-2.5 py-2 min-h-[44px] text-[0.625rem] font-black text-slate-800 shrink-0 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ toolsExpanded: !wbToolsOpen }); } }, wbToolsOpen ? __alloT('stem.rocks.wb_quiet_tools', 'Hide instruments') : __alloT('stem.rocks.wb_show_tools', 'Show all instruments')) : React.createElement("span", { className: "rounded-full bg-slate-100 px-2.5 py-1 text-[0.625rem] font-black text-slate-700 shrink-0" }, wbEvidence.length + ' ' + __alloT('stem.rocks.wb_observations', 'observations'))
                       ),
                       wbToolsOpen ? React.createElement(React.Fragment, null,
                       React.createElement("div", { id: "wb-tools-content", className: "grid sm:grid-cols-2 xl:grid-cols-3 gap-2" },
@@ -8983,10 +8983,10 @@ const d = labToolData.rocks || {};
                       React.createElement("div", { className: "mt-4 pt-3 border-t border-slate-200" },
                         React.createElement("div", { className: "flex items-start justify-between gap-3 mb-2" },
                           React.createElement("div", null,
-                            React.createElement("h5", { className: "text-[11px] font-black text-slate-800 uppercase tracking-wide" }, '🪛 ' + __alloT('stem.rocks.wb_scratch_set', 'Mohs scratch reference set')),
+                            React.createElement("h5", { className: "text-[0.6875rem] font-black text-slate-800 uppercase tracking-wide" }, '🪛 ' + __alloT('stem.rocks.wb_scratch_set', 'Mohs scratch reference set')),
                             React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_scratch_help', 'Find one reference that leaves no mark and the next harder reference that scratches. A modeled near-match narrows to H ≈ the reference but should be confirmed. The porcelain reference is the same plate: a groove without powder means H > about 6.5.'))
                           ),
-                          wbHasHardnessEvidence ? React.createElement("span", { className: "rounded-lg bg-violet-50 border border-violet-200 px-2 py-1 text-[10px] font-black text-violet-900 shrink-0" }, wbHardnessLabel) : null
+                          wbHasHardnessEvidence ? React.createElement("span", { className: "rounded-lg bg-violet-50 border border-violet-200 px-2 py-1 text-[0.625rem] font-black text-violet-900 shrink-0" }, wbHardnessLabel) : null
                         ),
                         wbRenderMohsInterval(),
                         React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
@@ -8999,7 +8999,7 @@ const d = labToolData.rocks || {};
                       ),
                       React.createElement("p", { className: "mt-3 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-[10.5px] text-rose-900" }, '⚠️ ' + __alloT('stem.rocks.wb_safety', 'This is a virtual lab. In a physical lab, use only teacher-approved specimens, wear eye protection, avoid making dust—especially from lead-bearing minerals such as galena—wash hands, and never taste an unknown. Acid tests require teacher supervision and a tiny test area.'))
                       ) : React.createElement("div", { id: "wb-tools-content", className: "rounded-xl bg-slate-50 border border-slate-200 p-3", "data-wb-tools-summary": "quiet" },
-                        React.createElement("p", { className: "text-[11px] font-black text-slate-900" }, wbNext.tool === 'claim' ? __alloT('stem.rocks.wb_tools_quiet_claim', 'Instruments are quiet while you build the claim.') : __alloT('stem.rocks.wb_tools_quiet_compare', 'Instrument choices are tucked away while you compare evidence.')),
+                        React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-900" }, wbNext.tool === 'claim' ? __alloT('stem.rocks.wb_tools_quiet_claim', 'Instruments are quiet while you build the claim.') : __alloT('stem.rocks.wb_tools_quiet_compare', 'Instrument choices are tucked away while you compare evidence.')),
                         React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_tools_quiet_help', 'Open the tray whenever another measurement would strengthen or challenge your idea.'))
                       )
                     ),
@@ -9007,20 +9007,20 @@ const d = labToolData.rocks || {};
                     // of evidence, with enough context to explain the reasoning.
                     React.createElement("aside", { className: "rounded-2xl border border-amber-300 p-3 sm:p-4 lg:col-span-2", style: { background: 'repeating-linear-gradient(180deg,#fffbeb,#fffbeb 29px,#fde68a55 30px)' }, "aria-labelledby": "wb-notebook-title" },
                       React.createElement("div", { className: "flex items-center justify-between gap-3" },
-                        React.createElement("h4", { id: "wb-notebook-title", tabIndex: -1, className: "text-[12px] font-black text-amber-900 uppercase tracking-wide" }, '📓 ' + __alloT('stem.rocks.wb_notebook', 'Field notebook')),
-                        React.createElement("span", { className: "rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[10px] font-black text-amber-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
+                        React.createElement("h4", { id: "wb-notebook-title", tabIndex: -1, className: "text-[0.75rem] font-black text-amber-900 uppercase tracking-wide" }, '📓 ' + __alloT('stem.rocks.wb_notebook', 'Field notebook')),
+                        React.createElement("span", { className: "rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[0.625rem] font-black text-amber-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
                       ),
                       React.createElement("div", { className: "mt-3", role: "group", "aria-label": __alloT('stem.rocks.wb_coverage_aria', 'Evidence coverage by property type') },
                         React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1.5" },
-                          React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_coverage_title', 'Evidence coverage')),
-                          React.createElement("p", { className: "text-[10px] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_seven_types', ' of 7 confirmed property types'))
+                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_coverage_title', 'Evidence coverage')),
+                          React.createElement("p", { className: "text-[0.625rem] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_seven_types', ' of 7 confirmed property types'))
                         ),
                         React.createElement("div", { className: "grid grid-cols-2 gap-1.5", role: "list" }, wbCoverage.map(function (item) {
                           return React.createElement("div", {
                             key: item.id, "data-wb-evidence-type": item.id, "data-wb-evidence-state": item.provisional ? 'provisional' : item.done ? 'measured' : 'not-measured',
                             role: "listitem",
                             "aria-label": item.label + '. ' + (item.provisional ? __alloT('stem.rocks.wb_provisional_short', 'provisional') : item.done ? __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') : __alloT('stem.rocks.wb_rail_pending', 'Not measured')) + '.',
-                            className: "rounded-lg border px-2 py-1.5 flex items-center gap-1.5 text-[10px] font-black " + (item.provisional ? "bg-amber-100 border-amber-400 text-amber-900" : item.done ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-white/70 border-amber-200 text-amber-800")
+                            className: "rounded-lg border px-2 py-1.5 flex items-center gap-1.5 text-[0.625rem] font-black " + (item.provisional ? "bg-amber-100 border-amber-400 text-amber-900" : item.done ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-white/70 border-amber-200 text-amber-800")
                           },
                             React.createElement("span", { "aria-hidden": "true" }, item.provisional ? '≈' : item.done ? '✓' : item.icon),
                             React.createElement("span", null, item.label + (item.provisional ? ' · ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
@@ -9028,39 +9028,39 @@ const d = labToolData.rocks || {};
                         }))
                       ),
                       wbEvidence.length === 0 ? React.createElement("div", { className: "rounded-xl border border-dashed border-amber-400 bg-white/70 p-4 mt-3 text-center" },
-                        React.createElement("p", { className: "text-[12px] font-black text-amber-900" }, __alloT('stem.rocks.wb_notebook_empty_title', 'Your first observation goes here.')),
-                        React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, __alloT('stem.rocks.wb_notebook_empty', 'No observations yet. Every test you run is recorded here as evidence.'))
+                        React.createElement("p", { className: "text-[0.75rem] font-black text-amber-900" }, __alloT('stem.rocks.wb_notebook_empty_title', 'Your first observation goes here.')),
+                        React.createElement("p", { className: "text-[0.6875rem] text-amber-800 mt-1" }, __alloT('stem.rocks.wb_notebook_empty', 'No observations yet. Every test you run is recorded here as evidence.'))
                       ) : React.createElement("ul", { className: "space-y-2 mt-3", "aria-label": __alloT('stem.rocks.wb_notebook_list_aria', 'Recorded evidence grouped by property') }, wbEvidence.map(function (ev) {
                         var impact = wbEvidenceImpact(ev);
                         return React.createElement("li", { key: ev.k, "data-wb-evidence-impact": impact, "data-wb-evidence-certainty": ev.provisional ? 'provisional' : 'confirmed', className: "rounded-lg border p-2.5 rk-wb-pop flex gap-2 " + (ev.provisional ? "border-amber-400 bg-amber-50" : "border-amber-200 bg-white/85") },
-                          React.createElement("span", { className: "w-7 h-7 rounded-lg text-[14px] flex items-center justify-center shrink-0 " + (ev.provisional ? "bg-amber-100 border border-amber-400" : "bg-emerald-50 border border-emerald-300"), "aria-hidden": "true" }, ev.provisional ? '≈' : wbEvidenceIcon(ev.k)),
+                          React.createElement("span", { className: "w-7 h-7 rounded-lg text-[0.875rem] flex items-center justify-center shrink-0 " + (ev.provisional ? "bg-amber-100 border border-amber-400" : "bg-emerald-50 border border-emerald-300"), "aria-hidden": "true" }, ev.provisional ? '≈' : wbEvidenceIcon(ev.k)),
                           React.createElement("span", { className: "min-w-0 flex-1" },
-                            React.createElement("span", { className: "block text-[10px] font-black uppercase tracking-wide text-amber-800" }, wbEvidenceKind(ev.k)),
+                            React.createElement("span", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, wbEvidenceKind(ev.k)),
                             React.createElement("span", { className: "block text-[11.5px] text-amber-900 font-semibold leading-snug" }, ev.text),
-                            React.createElement("button", { type: "button", className: "mt-1 mr-1.5 inline-flex items-center rounded-full border border-amber-400 bg-white/90 px-3 py-1 min-h-[44px] text-[10px] font-black text-amber-900 hover:bg-amber-100 disabled:opacity-50", "data-wb-reexamine": ev.k, disabled: wbBusy || !!wbPendingTool, "aria-label": __alloT('stem.rocks.wb_reexamine_aria', 'Look again and re-record: ') + wbEvidenceKind(ev.k), onClick: function () { wbReexamine(ev.k); } }, '👁 ' + __alloT('stem.rocks.wb_reexamine', 'Look again')),
-                            React.createElement("span", { className: "inline-block mt-1 rounded-full border px-2 py-0.5 text-[10px] font-black " + (ev.provisional ? "bg-amber-100 border-amber-300 text-amber-900" : impact > 0 ? "bg-violet-50 border-violet-200 text-violet-900" : "bg-slate-50 border-slate-200 text-slate-600") }, ev.provisional ? __alloT('stem.rocks.wb_provisional_not_claim', 'Provisional model clue—confirm before using hardness in a claim') : impact > 0 ? __alloT('stem.rocks.wb_rules_out', 'Rules out ') + impact + __alloT('stem.rocks.wb_on_own', ' on its own') : __alloT('stem.rocks.wb_confirms_only', 'Confirms, but does not narrow alone'))
+                            React.createElement("button", { type: "button", className: "mt-1 mr-1.5 inline-flex items-center rounded-full border border-amber-400 bg-white/90 px-3 py-1 min-h-[44px] text-[0.625rem] font-black text-amber-900 hover:bg-amber-100 disabled:opacity-50", "data-wb-reexamine": ev.k, disabled: wbBusy || !!wbPendingTool, "aria-label": __alloT('stem.rocks.wb_reexamine_aria', 'Look again and re-record: ') + wbEvidenceKind(ev.k), onClick: function () { wbReexamine(ev.k); } }, '👁 ' + __alloT('stem.rocks.wb_reexamine', 'Look again')),
+                            React.createElement("span", { className: "inline-block mt-1 rounded-full border px-2 py-0.5 text-[0.625rem] font-black " + (ev.provisional ? "bg-amber-100 border-amber-300 text-amber-900" : impact > 0 ? "bg-violet-50 border-violet-200 text-violet-900" : "bg-slate-50 border-slate-200 text-slate-600") }, ev.provisional ? __alloT('stem.rocks.wb_provisional_not_claim', 'Provisional model clue—confirm before using hardness in a claim') : impact > 0 ? __alloT('stem.rocks.wb_rules_out', 'Rules out ') + impact + __alloT('stem.rocks.wb_on_own', ' on its own') : __alloT('stem.rocks.wb_confirms_only', 'Confirms, but does not narrow alone'))
                           )
                         );
                       })),
                       wbHasHardnessEvidence ? React.createElement("p", { className: "text-[11.5px] font-black mt-3 rounded-lg border p-2.5 " + (wbHardnessProvisional ? "text-amber-900 border-amber-300 bg-amber-50" : "text-violet-900 border-violet-200 bg-violet-50"), "data-wb-hardness-certainty": wbHardnessProvisional ? 'provisional' : 'confirmed' }, '⛏️ ' + __alloT('stem.rocks.wb_bracket', 'Hardness constraint: ') + wbHardnessLabel + (wbHardnessProvisional ? ' · ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : '')) : null,
                       wbTopEvidence && wbTopEvidence.impact > 0 ? React.createElement("div", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50 p-2.5", "data-wb-diagnostic-leader": wbEvidenceKind(wbTopEvidence.ev.k) },
-                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, __alloT('stem.rocks.wb_diagnostic_title', 'Most diagnostic so far')),
+                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, __alloT('stem.rocks.wb_diagnostic_title', 'Most diagnostic so far')),
                         React.createElement("p", { className: "text-[10.5px] font-semibold text-violet-900 mt-0.5" }, wbEvidenceKind(wbTopEvidence.ev.k) + __alloT('stem.rocks.wb_diagnostic_mid', ' rules out ') + wbTopEvidence.impact + __alloT('stem.rocks.wb_diagnostic_end', ' candidates by itself. A useful test creates a strong split among possibilities.'))
                       ) : null,
                       React.createElement("div", { className: "mt-4 pt-3 border-t border-amber-300" },
-                        React.createElement("div", { className: "flex justify-between gap-3 text-[11px]" },
+                        React.createElement("div", { className: "flex justify-between gap-3 text-[0.6875rem]" },
                           React.createElement("span", { className: "font-black text-amber-900" }, wbRemaining + ' ' + __alloT('stem.rocks.wb_still_fit', 'still fit')),
                           React.createElement("span", { className: "font-semibold text-amber-800" }, ((wb.order || []).length - wbRemaining) + ' ' + __alloT('stem.rocks.wb_eliminated', 'eliminated'))
                         ),
                         React.createElement("div", { className: "h-2 rounded-full bg-amber-200 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": __alloT('stem.rocks.wb_elimination_progress', 'Candidate elimination progress'), "aria-valuemin": 0, "aria-valuemax": (wb.order || []).length, "aria-valuenow": (wb.order || []).length - wbRemaining, "aria-valuetext": ((wb.order || []).length - wbRemaining) + ' ' + __alloT('stem.rocks.wb_eliminated', 'eliminated') + '; ' + wbRemaining + ' ' + __alloT('stem.rocks.wb_still_fit', 'still fit') + '.' },
                           React.createElement("div", { className: "h-full rounded-full transition-all " + (wbRemaining === 0 && !wb.solvedId ? "bg-rose-500" : "bg-emerald-600"), style: { width: (((wb.order || []).length ? (((wb.order || []).length - wbRemaining) / wb.order.length) : 0) * 100) + '%' } })
                         ),
-                        React.createElement("button", { type: "button", className: "mt-3 rounded-lg border border-amber-300 bg-white/80 px-2.5 py-1.5 min-h-[40px] text-[10px] font-black text-amber-900 hover:bg-white", "data-wb-pool-toggle": (wb.pool || 'standard'), "aria-pressed": (wb.pool || 'standard') === 'challenge', onClick: function () { var next = (wb.pool || 'standard') === 'challenge' ? 'standard' : 'challenge'; updWb({ pool: next }); wbSay((next === 'challenge' ? __alloT('stem.rocks.wb_pool_next_challenge_sr', 'Challenge set selected for the next unknown: ') : __alloT('stem.rocks.wb_pool_next_standard_sr', 'Standard set selected for the next unknown: ')) + (next === 'challenge' ? WB_POOL_CHALLENGE.length : WB_POOL.length) + ' ' + __alloT('stem.rocks.wb_pool_candidates_sr', 'candidates.')); } }, ((wb.pool || 'standard') === 'challenge' ? '★ ' + __alloT('stem.rocks.wb_pool_on', 'Challenge set on') : '☆ ' + __alloT('stem.rocks.wb_pool_off', 'Challenge set off')) + ' · ' + __alloT('stem.rocks.wb_pool_next', 'applies to the next unknown')),
+                        React.createElement("button", { type: "button", className: "mt-3 rounded-lg border border-amber-300 bg-white/80 px-2.5 py-1.5 min-h-[40px] text-[0.625rem] font-black text-amber-900 hover:bg-white", "data-wb-pool-toggle": (wb.pool || 'standard'), "aria-pressed": (wb.pool || 'standard') === 'challenge', onClick: function () { var next = (wb.pool || 'standard') === 'challenge' ? 'standard' : 'challenge'; updWb({ pool: next }); wbSay((next === 'challenge' ? __alloT('stem.rocks.wb_pool_next_challenge_sr', 'Challenge set selected for the next unknown: ') : __alloT('stem.rocks.wb_pool_next_standard_sr', 'Standard set selected for the next unknown: ')) + (next === 'challenge' ? WB_POOL_CHALLENGE.length : WB_POOL.length) + ' ' + __alloT('stem.rocks.wb_pool_candidates_sr', 'candidates.')); } }, ((wb.pool || 'standard') === 'challenge' ? '★ ' + __alloT('stem.rocks.wb_pool_on', 'Challenge set on') : '☆ ' + __alloT('stem.rocks.wb_pool_off', 'Challenge set off')) + ' · ' + __alloT('stem.rocks.wb_pool_next', 'applies to the next unknown')),
                         React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-3 italic" }, __alloT('stem.rocks.wb_reasoning_prompt', 'Reasoning check: why did the most diagnostic observation separate more candidates than surface color would?')),
                         React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3" },
-                          React.createElement("button", { type: "button", disabled: wbBusy || wbEvidence.length === 0, className: "rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[10px] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbClearEvidence, "aria-label": __alloT('stem.rocks.wb_clear_aria', 'Clear observations and retest the same specimen') }, __alloT('stem.rocks.wb_clear', '↺ Clear evidence')),
-                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[10px] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: function () { wbDraw(); }, "aria-label": __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown from the ' + ((wb.pool || 'standard') === 'challenge' ? 'challenge' : 'standard') + ' set') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown')),
-                          React.createElement("button", { type: "button", disabled: wbBusy, className: "col-span-2 rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[10px] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", "data-wb-copy-notebook": "true", onClick: wbCopyNotebook, "aria-label": __alloT('stem.rocks.wb_nb_copy_aria', 'Copy the field notebook as plain text for a lab report') }, '📋 ' + __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report'))
+                          React.createElement("button", { type: "button", disabled: wbBusy || wbEvidence.length === 0, className: "rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbClearEvidence, "aria-label": __alloT('stem.rocks.wb_clear_aria', 'Clear observations and retest the same specimen') }, __alloT('stem.rocks.wb_clear', '↺ Clear evidence')),
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: function () { wbDraw(); }, "aria-label": __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown from the ' + ((wb.pool || 'standard') === 'challenge' ? 'challenge' : 'standard') + ' set') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown')),
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "col-span-2 rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", "data-wb-copy-notebook": "true", onClick: wbCopyNotebook, "aria-label": __alloT('stem.rocks.wb_nb_copy_aria', 'Copy the field notebook as plain text for a lab report') }, '📋 ' + __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report'))
                         )
                       )
                     )
@@ -9071,11 +9071,11 @@ const d = labToolData.rocks || {};
                   wbCandidatesOpen ? React.createElement("section", { id: "wb-candidates-panel", className: "rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4", "aria-labelledby": "wb-candidates-title", "data-wb-candidate-view": wbCandidateView, "data-wb-candidates-state": "open" },
                     React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-3" },
                       React.createElement("div", null,
-                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.14em] text-violet-700" }, __alloT('stem.rocks.wb_compare_board', 'Evidence comparison board')),
+                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.14em] text-violet-700" }, __alloT('stem.rocks.wb_compare_board', 'Evidence comparison board')),
                         React.createElement("h4", { id: "wb-candidates-title", className: "text-base font-black text-slate-900" }, '🕵️ ' + __alloT('stem.rocks.wb_suspects', 'Candidate minerals')),
-                        React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidate_help', 'Compare the unknown with the candidates still supported by every observation in your notebook.'))
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidate_help', 'Compare the unknown with the candidates still supported by every observation in your notebook.'))
                       ),
-                      !wb.solvedId ? React.createElement("span", { className: "rounded-full bg-white border border-slate-300 px-3 py-1.5 text-[11px] font-black text-slate-800 self-start sm:self-auto", "data-wb-count": "measurement-matches" }, wbRemaining + ' / ' + (wb.order || []).length + ' ' + __alloT('stem.rocks.wb_measurement_matches', 'measurement matches')) : null
+                      !wb.solvedId ? React.createElement("span", { className: "rounded-full bg-white border border-slate-300 px-3 py-1.5 text-[0.6875rem] font-black text-slate-800 self-start sm:self-auto", "data-wb-count": "measurement-matches" }, wbRemaining + ' / ' + (wb.order || []).length + ' ' + __alloT('stem.rocks.wb_measurement_matches', 'measurement matches')) : null
                     ),
                     !wb.solvedId ? React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-2.5 mb-3" },
                       React.createElement("div", { className: "grid grid-cols-3 gap-1.5", role: "group", "aria-label": __alloT('stem.rocks.wb_filter_aria', 'Choose which candidate cards to show') },
@@ -9089,12 +9089,12 @@ const d = labToolData.rocks || {};
                             key: view.id, type: "button", "aria-pressed": active, "data-wb-candidate-filter": view.id,
                             disabled: wbBusy || (view.id === 'setaside' && view.count === 0),
                             onClick: function () { updWb({ candidateView: view.id, reviewId: null }); wbSay(view.label + ': ' + view.count + __alloT('stem.rocks.wb_cards_shown_sr', ' candidate cards shown.')); },
-                            className: "rounded-lg border px-2 py-2 min-h-[44px] text-[10px] sm:text-[11px] font-black transition-colors disabled:opacity-50 " + (active ? "bg-violet-700 border-violet-700 text-white" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-violet-300 hover:bg-violet-50")
+                            className: "rounded-lg border px-2 py-2 min-h-[44px] text-[0.625rem] sm:text-[0.6875rem] font-black transition-colors disabled:opacity-50 " + (active ? "bg-violet-700 border-violet-700 text-white" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-violet-300 hover:bg-violet-50")
                           }, view.label + ' · ' + view.count);
                         })
                       ),
                       React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_filter_help', 'Active shortlist cards match the current observations and have not been submitted already. Set aside preserves measurement conflicts and rejected claims for review; rejection feedback is not a physical property.')),
-                      wbCompatibleRejectedCount ? React.createElement("p", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[10px] font-bold text-amber-900 leading-relaxed", role: "status", "data-wb-compatible-rejected": wbCompatibleRejectedCount }, wbCompatibleRejectedCount + ' ' + (wbCompatibleRejectedCount === 1 ? __alloT('stem.rocks.wb_compatible_rejected_one', 'rejected claim still matches the measurements.') : __alloT('stem.rocks.wb_compatible_rejected_many', 'rejected claims still match the measurements.')) + ' ' + __alloT('stem.rocks.wb_rejection_not_evidence', 'Rejection feedback is not physical evidence—run another diagnostic test.')) : null
+                      wbCompatibleRejectedCount ? React.createElement("p", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[0.625rem] font-bold text-amber-900 leading-relaxed", role: "status", "data-wb-compatible-rejected": wbCompatibleRejectedCount }, wbCompatibleRejectedCount + ' ' + (wbCompatibleRejectedCount === 1 ? __alloT('stem.rocks.wb_compatible_rejected_one', 'rejected claim still matches the measurements.') : __alloT('stem.rocks.wb_compatible_rejected_many', 'rejected claims still match the measurements.')) + ' ' + __alloT('stem.rocks.wb_rejection_not_evidence', 'Rejection feedback is not physical evidence—run another diagnostic test.')) : null
                     ) : null,
                     wbRemaining === 0 && !wb.solvedId ? React.createElement("aside", {
                       className: "rounded-xl border-2 border-rose-300 bg-rose-50 p-3 mb-3", role: "status", "aria-live": "polite",
@@ -9108,13 +9108,13 @@ const d = labToolData.rocks || {};
                       React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" },
                         wbHardnessConflict ? React.createElement("button", {
                           type: "button", "data-wb-impasse-action": "clear-hardness", disabled: wbBusy || !!wbPendingTool,
-                          className: "rounded-full border border-rose-500 bg-white px-3 py-1 min-h-[44px] text-[10px] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
+                          className: "rounded-full border border-rose-500 bg-white px-3 py-1 min-h-[44px] text-[0.625rem] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
                           onClick: wbClearHardness
                         }, __alloT('stem.rocks.wb_impasse_clear_hardness', 'Clear hardness trials and retest')) : null,
                         wbEvidence.map(function (ev) {
                           return React.createElement("button", {
                             key: ev.k, type: "button", "data-wb-impasse-reexamine": ev.k, disabled: wbBusy || !!wbPendingTool,
-                            className: "rounded-full border border-rose-300 bg-white px-3 py-1 min-h-[44px] text-[10px] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
+                            className: "rounded-full border border-rose-300 bg-white px-3 py-1 min-h-[44px] text-[0.625rem] font-black text-rose-900 hover:bg-rose-100 disabled:opacity-50",
                             onClick: function () { wbReexamine(ev.k); }
                           }, __alloT('stem.rocks.wb_impasse_look', 'Look again: ') + wbImpasseLabel(ev.k));
                         })
@@ -9129,7 +9129,7 @@ const d = labToolData.rocks || {};
                           React.createElement("div", { className: "min-w-0 text-left" },
                             React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_label', 'Investigation debrief')),
                             React.createElement("h5", { id: "wb-debrief-title", className: "text-lg font-black text-emerald-900", style: { overflowWrap: 'anywhere' } }, __alloT('stem.rocks.wb_solved', 'Identified: ') + (wbMineral(wb.solvedId) || {}).label),
-                            React.createElement("p", { className: "text-[11px] text-emerald-800 mt-0.5" }, __alloT('stem.rocks.wb_solved_body', 'Named from ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_solved_body2', ' measured property types. Solved so far: ') + (wb.solved || 0) + '.')
+                            React.createElement("p", { className: "text-[0.6875rem] text-emerald-800 mt-0.5" }, __alloT('stem.rocks.wb_solved_body', 'Named from ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_solved_body2', ' measured property types. Solved so far: ') + (wb.solved || 0) + '.')
                           )
                         ),
                         React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 shrink-0" },
@@ -9139,15 +9139,15 @@ const d = labToolData.rocks || {};
                       ),
                       React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-left" },
                         React.createElement("div", { className: "rounded-xl border border-emerald-200 bg-white/80 p-2.5" },
-                          React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_strongest', 'Strongest discriminator')),
+                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_strongest', 'Strongest discriminator')),
                           React.createElement("p", { className: "text-[10.5px] font-bold text-emerald-900 mt-0.5" }, wbTopEvidence ? wbEvidenceKind(wbTopEvidence.ev.k) + (wbTopEvidence.impact > 0 ? __alloT('stem.rocks.wb_debrief_ruled_out', ' ruled out ') + wbTopEvidence.impact + __alloT('stem.rocks.wb_debrief_candidates', ' starting candidates.') : __alloT('stem.rocks.wb_debrief_converged', ' supported the converging evidence.')) : __alloT('stem.rocks.wb_debrief_reviewed', 'The observations were reviewed together.'))
                         ),
                         React.createElement("div", { className: "rounded-xl border border-emerald-200 bg-white/80 p-2.5" },
-                          React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_notebook', 'Notebook summary')),
+                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_debrief_notebook', 'Notebook summary')),
                           React.createElement("p", { className: "text-[10.5px] font-bold text-emerald-900 mt-0.5" }, wbEvidence.length + __alloT('stem.rocks.wb_debrief_observations', ' observations across ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_debrief_types', ' property types.') + __alloT('stem.rocks.wb_debrief_chosen_prefix', ' Chosen for the claim: ') + wbClaimEvidence.length + '; ' + wbClaimReasoningLabel + '.')
                         ),
                         React.createElement("div", { className: "rounded-xl border border-amber-300 bg-amber-50 p-2.5", "data-wb-confidence-calibration": wbClaimConfidence || 'not-recorded' },
-                          React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_debrief_confidence', 'Confidence calibration')),
+                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_debrief_confidence', 'Confidence calibration')),
                           React.createElement("p", { className: "text-[10.5px] font-bold text-amber-900 mt-0.5" }, wbConfidenceLabel + '. ' + __alloT('stem.rocks.wb_debrief_evidence_level', 'Evidence level: ') + wbClaimSupport.label + '.')
                         )
                       ),
@@ -9156,7 +9156,7 @@ const d = labToolData.rocks || {};
                       wbRenderMatchMap(wbMineral(wb.solvedId), 'debrief'),
                       React.createElement("aside", { className: "mt-2.5 rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-left" },
                         React.createElement("p", { className: "text-[10.5px] font-black text-amber-900" }, __alloT('stem.rocks.wb_debrief_guard_title', 'Field scientist reminder')),
-                        React.createElement("p", { className: "text-[10px] text-amber-900 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_debrief_guard', 'Surface color alone is not enough. A reliable mineral identification combines several matching physical properties.'))
+                        React.createElement("p", { className: "text-[0.625rem] text-amber-900 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_debrief_guard', 'Surface color alone is not enough. A reliable mineral identification combines several matching physical properties.'))
                       )
                     ) : React.createElement(React.Fragment, null,
                       wbInvalidatedSelected ? React.createElement("aside", { className: "rounded-xl border border-amber-400 bg-amber-50 p-3 mb-3 flex flex-col sm:flex-row sm:items-center gap-3", role: "status", "aria-live": "polite", "data-wb-revision": "measurement-conflict", "data-wb-invalidated-candidate": wbInvalidatedSelected.id },
@@ -9169,7 +9169,7 @@ const d = labToolData.rocks || {};
                       ) : wbLastRejected ? React.createElement("aside", { className: "rounded-xl border border-rose-300 bg-rose-50 p-3 mb-3 flex gap-3 items-start", role: "status", "aria-live": "polite", "data-wb-revision": "needed" },
                         React.createElement("span", { className: "w-9 h-9 rounded-xl bg-white border border-rose-200 flex items-center justify-center shrink-0", "aria-hidden": "true" }, '↺'),
                         React.createElement("div", { className: "min-w-0" },
-                          React.createElement("p", { className: "text-[11px] font-black text-rose-900" }, __alloT('stem.rocks.wb_revise_title', 'Revise the claim—do not restart.')),
+                          React.createElement("p", { className: "text-[0.6875rem] font-black text-rose-900" }, __alloT('stem.rocks.wb_revise_title', 'Revise the claim—do not restart.')),
                           React.createElement("p", { className: "text-[10.5px] text-rose-800 mt-0.5 leading-relaxed" }, wbLastRejected.label + __alloT('stem.rocks.wb_revise_body', ' shared the evidence you had, but it was not this specimen. Use ') + wbNext.title.toLowerCase() + __alloT('stem.rocks.wb_revise_body2', ' to distinguish the remaining possibilities.'))
                         )
                       ) : null,
@@ -9214,12 +9214,12 @@ const d = labToolData.rocks || {};
                             // under the same lens so the unknown's porthole can be compared
                             // card by card rather than against a word.
                             wb.lens ? React.createElement("span", { className: "rounded-md bg-slate-900 p-0.5", "data-wb-candidate-porthole": m.id }, rkLensViewSvg(React.createElement, m, 34, { aria: m.label + __alloT('stem.rocks.wb_candidate_porthole_aria', ' under the lens: ') + rkLusterClassInfo(rkLusterClass(m)).sr })) : null,
-                            (out || wrong || selected) ? React.createElement("span", { className: "absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black " + (wrong ? "bg-rose-600" : selected ? "bg-violet-700" : "bg-slate-600"), "aria-hidden": "true" }, selected ? '✓' : '×') : null
+                            (out || wrong || selected) ? React.createElement("span", { className: "absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.625rem] font-black " + (wrong ? "bg-rose-600" : selected ? "bg-violet-700" : "bg-slate-600"), "aria-hidden": "true" }, selected ? '✓' : '×') : null
                           ),
                           React.createElement("span", { className: "min-w-0 flex-1" },
-                            React.createElement("span", { className: "block text-[12px] font-black leading-tight", style: { overflowWrap: 'anywhere' } }, m.label),
+                            React.createElement("span", { className: "block text-[0.75rem] font-black leading-tight", style: { overflowWrap: 'anywhere' } }, m.label),
                             out ? React.createElement("span", { className: "block text-[10.5px] font-black text-slate-700 mt-1" }, reviewing ? __alloT('stem.rocks.wb_reviewing_card', 'Reviewing all measured evidence') : __alloT('stem.rocks.wb_eliminated_by', 'Review why set aside · ') + mismatch) : wrong ? React.createElement("span", { className: "block text-[10.5px] font-black text-rose-800 mt-1" }, reviewing ? __alloT('stem.rocks.wb_reviewing_unresolved_card', 'Reviewing unresolved evidence') : __alloT('stem.rocks.wb_claim_rejected', 'Review rejected claim evidence')) : selected ? React.createElement("span", { className: "block text-[10.5px] font-black text-violet-800 mt-1" }, __alloT('stem.rocks.wb_selected', 'Selected for claim')) : React.createElement("span", { className: "block text-[10.5px] font-black text-emerald-800 mt-1" }, __alloT('stem.rocks.wb_still_possible', 'Still supported')),
-                            facts.length ? React.createElement("span", { className: "flex flex-wrap gap-1 mt-1.5" }, facts.slice(0, 3).map(function (fact) { return React.createElement("span", { key: fact.k, className: "rounded bg-white/80 border border-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 leading-tight" }, fact.text); })) : React.createElement("span", { className: "block text-[10.5px] text-slate-600 mt-1" }, __alloT('stem.rocks.wb_no_measured_facts', 'Run a test to compare properties'))
+                            facts.length ? React.createElement("span", { className: "flex flex-wrap gap-1 mt-1.5" }, facts.slice(0, 3).map(function (fact) { return React.createElement("span", { key: fact.k, className: "rounded bg-white/80 border border-slate-200 px-1.5 py-0.5 text-[0.625rem] font-semibold text-slate-700 leading-tight" }, fact.text); })) : React.createElement("span", { className: "block text-[10.5px] text-slate-600 mt-1" }, __alloT('stem.rocks.wb_no_measured_facts', 'Run a test to compare properties'))
                           )
                         );
                       })
@@ -9229,8 +9229,8 @@ const d = labToolData.rocks || {};
                         React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3" },
                           React.createElement("div", { className: "min-w-0" },
                             React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-700" }, __alloT('stem.rocks.wb_cer_label', 'Claim · Evidence · Reasoning')),
-                            React.createElement("h5", { id: "wb-claim-builder-title", className: "text-[13px] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_my_claim', 'My claim: the unknown is ') + wbSelected.label : __alloT('stem.rocks.wb_choose_claim', 'Choose one supported candidate to build your claim.')),
-                            wbSelected ? React.createElement("p", { className: "text-[11px] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_cer_active_help', 'Build the claim yourself: choose evidence, connect it with scientific reasoning, then record how confident you feel.')) : React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-1" }, wbCandidateView === 'setaside' ? __alloT('stem.rocks.wb_setaside_help', 'These cards are here for review. Switch to Active shortlist to select a supported claim.') : __alloT('stem.rocks.wb_choose_help', 'Selecting a card does not submit it. You will review the evidence here first.'))
+                            React.createElement("h5", { id: "wb-claim-builder-title", className: "text-[0.8125rem] font-black text-slate-900 mt-0.5", style: { overflowWrap: 'anywhere' } }, wbSelected ? __alloT('stem.rocks.wb_my_claim', 'My claim: the unknown is ') + wbSelected.label : __alloT('stem.rocks.wb_choose_claim', 'Choose one supported candidate to build your claim.')),
+                            wbSelected ? React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-1 leading-relaxed" }, __alloT('stem.rocks.wb_cer_active_help', 'Build the claim yourself: choose evidence, connect it with scientific reasoning, then record how confident you feel.')) : React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-1" }, wbCandidateView === 'setaside' ? __alloT('stem.rocks.wb_setaside_help', 'These cards are here for review. Switch to Active shortlist to select a supported claim.') : __alloT('stem.rocks.wb_choose_help', 'Selecting a card does not submit it. You will review the evidence here first.'))
                           ),
                           React.createElement("div", { className: "sm:text-right shrink-0" },
                             React.createElement("p", { className: "text-[10.5px] font-black mb-1.5 " + (wbCerReady && wbClaimSupport.id === 'strong' ? "text-emerald-800" : wbCerReady && wbClaimSupport.id === 'good' ? "text-violet-800" : "text-amber-800") }, wbCerStatusText),
@@ -9246,7 +9246,7 @@ const d = labToolData.rocks || {};
                   ) : React.createElement("section", { className: "rounded-xl border border-slate-200 bg-slate-50 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3", "aria-labelledby": "wb-candidates-preview-title", "data-wb-candidates-state": "quiet" },
                     React.createElement("div", { className: "min-w-0" },
                       React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_compare_later', 'Compare comes next')),
-                      React.createElement("h4", { id: "wb-candidates-preview-title", className: "text-[12px] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting', 'Candidate references are waiting for your first observation.')),
+                      React.createElement("h4", { id: "wb-candidates-preview-title", className: "text-[0.75rem] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting', 'Candidate references are waiting for your first observation.')),
                       React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting_help', 'Collect one property first, or preview the full reference set whenever you need it.'))
                     ),
                     React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-violet-400 hover:bg-violet-50", onClick: function () { wbUpdateAndFocus({ candidatesExpanded: true }, '[data-wb-candidate-filter="' + wbCandidateView + '"]'); }, "aria-expanded": false, "aria-controls": "wb-candidates-panel", "data-wb-preview-candidates": "true" }, __alloT('stem.rocks.wb_preview_candidates', 'Preview candidates'))
@@ -9326,7 +9326,7 @@ const d = labToolData.rocks || {};
                     }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] flex items-center gap-2 " +
                       (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : isChosen ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-600") : "transition-colors border-amber-200 bg-white text-slate-700 hover:border-amber-400")
                   },
-                    React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
+                    React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[0.625rem] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
                     React.createElement("span", null, opt));
                 })
               ),
@@ -9342,7 +9342,7 @@ const d = labToolData.rocks || {};
                   return React.createElement("div", { className: "p-3 rounded-lg bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in" },
                     React.createElement("div", { className: "flex-1" },
                       React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + rkVocabTerm(__alloT, concept)),
-                      React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5 leading-relaxed" }, definition)
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5 leading-relaxed" }, definition)
                     ),
                     !studied && React.createElement("button", {
                       onClick: function() {
@@ -9355,7 +9355,7 @@ const d = labToolData.rocks || {};
                         var nextState = Object.assign({}, d, { vocabLookedUp: newList });
                         setTimeout(function() { checkRocksChallenges(nextState); }, 50);
                       },
-                      className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
+                      className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                     }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                   );
                 })(),
@@ -9394,7 +9394,7 @@ const d = labToolData.rocks || {};
               var sm = SM_ALL[state];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 space-y-3' },
                 h('h3', { className: 'text-sm font-black text-amber-800' }, '\u26cf\ufe0f ' + __alloT('stem.rocks.rock_weathering_discovery', 'Rock weathering discovery')),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.rocks.weathering_intro', 'Adjust temperature swings, rainfall, and rain pH. Widget classifies dominant weathering mode into 4 discrete categories. No score, no reveal.')),
+                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.rocks.weathering_intro', 'Adjust temperature swings, rainfall, and rain pH. Widget classifies dominant weathering mode into 4 discrete categories. No score, no reveal.')),
                 // Draw the outcrop. A weathering simulator that never showed
                 // weathering was asking students to picture the whole thing.
                 // The frame belongs around the artwork, not around a 420px
@@ -9404,22 +9404,22 @@ const d = labToolData.rocks || {};
                 ),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                   [{ k: 'tempSwing', l: __alloT('stem.rocks.weath_temp_swing', 'Temp swing (\u00b0C)'), mn: 0, mx: 50, st: 1 },
                    { k: 'rainfall', l: __alloT('stem.rocks.weath_rainfall', 'Rainfall (mm/yr)'), mn: 0, mx: 500, st: 10 },
                    { k: 'pH', l: __alloT('stem.rocks.weath_rain_ph', 'Rain pH'), mn: 0, mx: 14, st: 0.1 }].map(function(s) {
                     return h('div', { key: s.k },
-                      h('label', { htmlFor: 'wh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-800' }, iq[s.k])),
+                      h('label', { htmlFor: 'wh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-800' }, iq[s.k])),
                       h('input', { id: 'wh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
-                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
+                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
                 ),
                 // The Log button has always written iq.log — and nothing has ever
                 // rendered it. Clicking it stored a trial and showed the student
@@ -9433,18 +9433,18 @@ const d = labToolData.rocks || {};
                     // The log keeps the last 8 (see the Log button's slice). Say so
                     // when it is full, rather than silently dropping the oldest
                     // trial out from under a student who is comparing runs.
-                    h('span', { className: 'text-[11px] font-black text-slate-700' },
+                    h('span', { className: 'text-[0.6875rem] font-black text-slate-700' },
                       '📋 ' + __alloT('stem.rocks.weath_log_title', 'Logged trials') + ' (' + iq.log.length + ')' +
                       (iq.log.length >= 8 ? ' · ' + __alloT('stem.rocks.weath_log_capped', 'showing the last 8') : '')),
                     h('button', {
                       type: 'button',
                       onClick: function() { setIQ({ log: [] }); },
-                      className: 'text-[10px] font-bold text-slate-700 underline hover:text-slate-900'
+                      className: 'text-[0.625rem] font-bold text-slate-700 underline hover:text-slate-900'
                     }, __alloT('stem.rocks.weath_log_clear', 'Clear'))
                   ),
                   h('ul', { className: 'space-y-1' }, iq.log.map(function(entry, li) {
                     var em = SM_ALL[entry.st] || SM_ALL.minimal;
-                    return h('li', { key: li, className: 'flex items-center gap-2 text-[11px]' },
+                    return h('li', { key: li, className: 'flex items-center gap-2 text-[0.6875rem]' },
                       h('span', { className: 'font-mono text-slate-700 shrink-0' },
                         (__alloT('stem.rocks.weath_log_temp', 'ΔT') + ' ' + entry.t + '°  ' +
                          __alloT('stem.rocks.weath_log_rain', 'rain') + ' ' + entry.r + '  ' +
@@ -9457,19 +9457,19 @@ const d = labToolData.rocks || {};
                   }))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': __alloT('stem.rocks.hypothesis_input', 'Weathering climate hypothesis'), placeholder: __alloT('stem.rocks.weath_hypothesis_placeholder', 'Hypothesis: What climate produces chemical vs physical dominance?'),
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\ud83e\udd14 ' + __alloT('stem.rocks.weath_stuck_btn', 'Stuck \u2014 show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '\ud83e\udd14 ' + __alloT('stem.rocks.weath_stuck_btn', 'Stuck \u2014 show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, __alloT('stem.rocks.weath_prompt_ph', 'Try pH=4 (acid rain). Does that change the mode?')),
                     h('li', null, __alloT('stem.rocks.weath_prompt_temp', 'Why does temperature swing matter more in arid climates?')))),
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                  h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     __alloT('stem.rocks.weath_understand_label', 'I understand \u2014 explain in own words')),
                   iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': __alloT('stem.rocks.explanation_input', 'Weathering climate explanation'), placeholder: __alloT('stem.rocks.weath_explanation_placeholder', 'Explain how climate selects which weathering mode dominates.'),
-                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                h('div', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.rocks.weath_design_note', 'Design note: discrete 4-state weathering marker; no rate score; no reveal \u2014 by design.'))
+                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                h('div', { className: 'text-[0.625rem] italic text-slate-600' }, __alloT('stem.rocks.weath_design_note', 'Design note: discrete 4-state weathering marker; no rate score; no reveal \u2014 by design.'))
               );
             })(),
 
@@ -10921,7 +10921,7 @@ const d = labToolData.rockCycle || {};
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rock_cycle_title', "Rock Cycle")),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-800 text-[11px] font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
+              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-800 text-[0.6875rem] font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
 
             ),
 
@@ -10929,7 +10929,7 @@ const d = labToolData.rockCycle || {};
               React.createElement("div", { className: "absolute -right-6 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🪨"),
               React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]" },
                 React.createElement("div", null,
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-orange-700" }, __alloT('stem.rocks.earth_systems_mission', "Earth systems mission")),
+                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.15em] text-orange-700" }, __alloT('stem.rocks.earth_systems_mission', "Earth systems mission")),
                   React.createElement("h2", { id: "rockcycle-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-slate-900" }, nextMission.icon + " " + nextMission.title),
                   React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
                   // role=group is load-bearing, not decoration: a plain div maps
@@ -10938,12 +10938,12 @@ const d = labToolData.rockCycle || {};
                   // Same shape as a role=button with no key handler — present in
                   // the markup, dead in use.
                   React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", role: "group", "aria-label": __alloT('stem.rocks.mission_progress_aria', "Rock cycle mission progress") },
-                    [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, metric[1])); })
+                    [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[0.625rem] font-bold text-slate-600" }, metric[1])); })
                   )
                 ),
                 React.createElement("aside", { className: "rounded-xl border border-sky-200 bg-sky-50 p-4", "aria-label": __alloT('stem.rocks.evidence_route_aria', "Rock cycle evidence route") },
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-sky-800" }, __alloT('stem.rocks.evidence_route', "Evidence route")),
-                  React.createElement("ol", { className: "mt-2 space-y-2 text-[11px] text-slate-700" }, [__alloT('stem.rocks.evidence_step_observe', 'Observe texture and composition'), __alloT('stem.rocks.evidence_step_connect', 'Connect process to energy and time'), __alloT('stem.rocks.evidence_step_explain', 'Explain more than one valid pathway')].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-800" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
+                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-sky-800" }, __alloT('stem.rocks.evidence_route', "Evidence route")),
+                  React.createElement("ol", { className: "mt-2 space-y-2 text-[0.6875rem] text-slate-700" }, [__alloT('stem.rocks.evidence_step_observe', 'Observe texture and composition'), __alloT('stem.rocks.evidence_step_connect', 'Connect process to energy and time'), __alloT('stem.rocks.evidence_step_explain', 'Explain more than one valid pathway')].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-800" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
                 )
               )
             ),
@@ -11002,7 +11002,7 @@ const d = labToolData.rockCycle || {};
                   React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.ink } },
                     __alloT('stem.rocks.family_rocks_heading', '{family} Rocks').replace('{family}', sel.label)),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-600" }, sel.examples)
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, sel.examples)
 
                 )
 
@@ -11014,7 +11014,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.hardness_word', "Hardness")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.hardness_word', "Hardness")),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.hardness)
 
@@ -11022,7 +11022,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.crystals_label', "Crystals")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.crystals_label', "Crystals")),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.crystals)
 
@@ -11030,7 +11030,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.real_uses_label', "Real Uses")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.real_uses_label', "Real Uses")),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.uses)
 
@@ -11048,7 +11048,7 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "mb-3" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" + onHostInk }, "\u2194\uFE0F " + __alloT('stem.rocks.transformation_processes', "Transformation Processes")),
+              React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1" + onHostInk }, "\u2194\uFE0F " + __alloT('stem.rocks.transformation_processes', "Transformation Processes")),
 
               // This panel used to render only the first three PROCESSES \u2014 the
               // steps of the simple loop. The three DIRECT branches (igneous \u2192
@@ -11065,7 +11065,7 @@ const d = labToolData.rockCycle || {};
               // left/right is wrong at every size. Ordering is the only claim
               // that survives a reflow, and each branch already carries a
               // visible "direct branch" tag to point at instead.
-              React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" + onHostInk },
+              React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" + onHostInk },
                 __alloT('stem.rocks.processes_intro', "Every pathway is real. The first three are the familiar loop; the last three are marked direct branch and skip a step entirely.")),
 
               React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
@@ -11100,13 +11100,13 @@ const d = labToolData.rockCycle || {};
                     // transformation machine uses.
                     React.createElement("div", { className: "flex items-center gap-1 my-1" },
                       rcFamilyChip(h, 'pf' + i, proc.from, 22),
-                      React.createElement("span", { className: "text-[11px] font-black text-slate-600" }, "→"),
+                      React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-600" }, "→"),
                       rcFamilyChip(h, 'pt' + i, proc.to, 22)
                     ),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-700 break-words" }, processFromTo),
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-700 break-words" }, processFromTo),
 
-                    isBranch && React.createElement("p", { className: "text-[10px] font-bold text-violet-800 mt-0.5" }, __alloT('stem.rocks.process_direct_branch', "direct branch"))
+                    isBranch && React.createElement("p", { className: "text-[0.625rem] font-bold text-violet-800 mt-0.5" }, __alloT('stem.rocks.process_direct_branch', "direct branch"))
 
                   );
 
@@ -11122,7 +11122,7 @@ const d = labToolData.rockCycle || {};
                   React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip(h, 'selFrom', d.selectedProcess.from, 40)),
                   React.createElement("div", { className: "text-center" },
                     React.createElement("div", { className: "text-lg leading-none", "aria-hidden": true }, d.selectedProcess.emoji),
-                    React.createElement("div", { className: "text-[11px] font-black text-orange-800" }, "→")
+                    React.createElement("div", { className: "text-[0.6875rem] font-black text-orange-800" }, "→")
                   ),
                   React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip(h, 'selTo', d.selectedProcess.to, 40)),
                   React.createElement("p", { className: "text-xs font-black text-orange-900 ml-1" }, d.selectedProcess.label)
@@ -11135,7 +11135,7 @@ const d = labToolData.rockCycle || {};
             ),
 
             // ── Branching-network + common-myths note ──
-            React.createElement("div", { className: "mt-3 p-3 rounded-lg border border-violet-200 bg-violet-50 text-[12px] text-violet-900 leading-relaxed" },
+            React.createElement("div", { className: "mt-3 p-3 rounded-lg border border-violet-200 bg-violet-50 text-[0.75rem] text-violet-900 leading-relaxed" },
               React.createElement("p", { className: "font-bold mb-1" }, "🔀 " + __alloT('stem.rocks.branching_network_title', "A branching network, not a one-way circle")),
               React.createElement("p", { className: "mb-2" }, __alloT('stem.rocks.branching_network_body', "ANY rock can become ANY other rock — the diagram's 6 arrows show every path. Which one happens depends on the process (the geological agent), not on a fixed order.")),
               React.createElement("p", { className: "font-bold mb-1" }, "⚠ " + __alloT('stem.rocks.common_myths', "Common myths")),
@@ -11393,8 +11393,8 @@ const d = labToolData.rockCycle || {};
 
               var chip = function (key, label, value) {
                 return h('div', { key: key, className: 'rounded-lg bg-white border border-orange-200 px-2.5 py-1.5' },
-                  h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-orange-800' }, label),
-                  h('div', { className: 'text-[11px] font-semibold text-slate-800 leading-snug' }, value)
+                  h('div', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-orange-800' }, label),
+                  h('div', { className: 'text-[0.6875rem] font-semibold text-slate-800 leading-snug' }, value)
                 );
               };
 
@@ -11403,14 +11403,14 @@ const d = labToolData.rockCycle || {};
                   React.createElement("span", { "aria-hidden": true }, "🔄"),
                   React.createElement("span", null, __alloT('stem.rocks.transformation_machine_title', "Rock Transformation Machine"))
                 ),
-                React.createElement("p", { className: "text-[11px] text-slate-700 mb-3" + onHostInk },
+                React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-3" + onHostInk },
                   __alloT('stem.rocks.transformation_machine_intro2', "Load a named rock specimen, choose an agent of change, and run the machine. Each pairing produces a specific named product with its real conditions, timescale and field evidence.")
                 ),
 
                 // ── Controls ──
                 React.createElement("div", { className: "grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] mb-3" },
                   React.createElement("div", null,
-                    React.createElement("label", { htmlFor: "rc-machine-specimen", className: "block text-[10px] font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.starting_specimen', "Starting specimen")),
+                    React.createElement("label", { htmlFor: "rc-machine-specimen", className: "block text-[0.625rem] font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.starting_specimen', "Starting specimen")),
                     React.createElement("select", {
                       id: "rc-machine-specimen",
                       value: mSpecId,
@@ -11424,7 +11424,7 @@ const d = labToolData.rockCycle || {};
                     )
                   ),
                   React.createElement("div", null,
-                    React.createElement("span", { id: "rc-agent-label", className: "block text-[10px] font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.geological_agent', "Geological Agent")),
+                    React.createElement("span", { id: "rc-agent-label", className: "block text-[0.625rem] font-bold text-slate-700 uppercase mb-1" + onHostInk }, __alloT('stem.rocks.geological_agent', "Geological Agent")),
                     React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "group", "aria-labelledby": "rc-agent-label" },
                       RC_AGENTS.map(function (agent) {
                         var isSel = d.geologicalAgent === agent.id;
@@ -11434,7 +11434,7 @@ const d = labToolData.rockCycle || {};
                           disabled: running,
                           "aria-pressed": isSel,
                           onClick: function () { upd("geologicalAgent", agent.id); sfxRockClick(); },
-                          className: "px-1 py-1.5 rounded text-[10px] font-black text-center border transition-colors disabled:opacity-60 " +
+                          className: "px-1 py-1.5 rounded text-[0.625rem] font-black text-center border transition-colors disabled:opacity-60 " +
                             (isSel ? "bg-orange-700 border-orange-800 text-white" : "bg-white border-slate-300 text-slate-700 hover:border-orange-500 hover:bg-orange-50")
                         }, agent.icon + ' ' + agent.short);
                       })
@@ -11462,7 +11462,7 @@ const d = labToolData.rockCycle || {};
                 ),
 
                 // ── Pairing preview (before the run, so the choice is legible) ──
-                mPreview && !result && !running && React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" + onHostInk },
+                mPreview && !result && !running && React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mb-2" + onHostInk },
                   React.createElement("span", { className: "font-bold text-slate-900" + onHostInk }, mSpec.label),
                   " + " + (mAgent ? mAgent.short : '') + " → ",
                   React.createElement("span", { className: "font-bold text-orange-800" + onHostInk }, mPreview.product)
@@ -11483,7 +11483,7 @@ const d = labToolData.rockCycle || {};
                   },
                     React.createElement("div", { className: "bg-orange-700 h-full transition-all duration-100", style: { width: prog + '%' } })
                   ),
-                  stageText && React.createElement("p", { className: "mt-1 text-[11px] font-semibold text-slate-700" },
+                  stageText && React.createElement("p", { className: "mt-1 text-[0.6875rem] font-semibold text-slate-700" },
                     React.createElement("span", { className: "text-orange-800 font-black" }, (stageIdx + 1) + '/4 '), stageText)
                 ),
 
@@ -11493,7 +11493,7 @@ const d = labToolData.rockCycle || {};
                     React.createElement("span", { className: "text-2xl leading-none", "aria-hidden": true }, result.family === 'igneous' ? '🌋' : result.family === 'sedimentary' ? '🏖' : '💎'),
                     React.createElement("div", null,
                       React.createElement("p", { className: "text-sm font-black text-orange-900" }, (result.fromLabel || mSpec.label) + " → " + result.product),
-                      React.createElement("p", { className: "text-[11px] font-bold text-slate-700" }, result.process)
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-700" }, result.process)
                     )
                   ),
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" },
@@ -11504,12 +11504,12 @@ const d = labToolData.rockCycle || {};
                     React.createElement("span", { className: "font-black text-orange-900" }, __alloT('stem.rocks.machine_what_changes', "What changes: ")), result.change),
                   React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" },
                     React.createElement("span", { className: "font-black text-orange-900" }, __alloT('stem.rocks.machine_how_you_know', "How you'd know: ")), result.evidence),
-                  result.caveat && React.createElement("p", { className: "mt-2 text-[11px] text-slate-800 leading-relaxed bg-white border border-slate-300 rounded-lg p-2" },
+                  result.caveat && React.createElement("p", { className: "mt-2 text-[0.6875rem] text-slate-800 leading-relaxed bg-white border border-slate-300 rounded-lg p-2" },
                     React.createElement("span", { className: "font-black text-slate-900" }, __alloT('stem.rocks.machine_model_limit', "Model limit: ")), result.caveat)
                 ),
 
                 // Specimen note keeps the dropdown meaningful even before a run.
-                !result && React.createElement("p", { className: "text-[11px] text-slate-700" + onHostInk },
+                !result && React.createElement("p", { className: "text-[0.6875rem] text-slate-700" + onHostInk },
                   React.createElement("span", { className: "font-bold text-slate-900" + onHostInk }, mSpec.label + ': '), mSpec.note)
               );
             })(),
@@ -11680,7 +11680,7 @@ const d = labToolData.rockCycle || {};
                     return React.createElement("div", { className: "p-2.5 rounded-lg bg-orange-100 border border-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3" },
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("p", { className: "text-xs font-bold text-orange-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + rkVocabTerm(__alloT, d.rcQuiz.concept)),
-                        React.createElement("p", { className: "text-[10px] text-slate-600 mt-0.5 leading-relaxed" }, rkVocabDef(__alloT, d.rcQuiz.concept))
+                        React.createElement("p", { className: "text-[0.625rem] text-slate-600 mt-0.5 leading-relaxed" }, rkVocabDef(__alloT, d.rcQuiz.concept))
                       ),
                       !studied && React.createElement("button", {
                         onClick: function() {
@@ -11731,7 +11731,7 @@ const d = labToolData.rockCycle || {};
                           if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + d.rcQuiz.concept);
                           if (typeof addToast === 'function') addToast('📖 Concept studied: ' + d.rcQuiz.concept + ' (+5 RP)', 'success');
                         },
-                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
+                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                       }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                     );
                   })()

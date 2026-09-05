@@ -2549,35 +2549,35 @@ const d = labToolData.solarSystem || {};
             };
             var comparisonRow = function(label, left, right) {
               return React.createElement("tr", { key: label, className: isDark ? 'border-t border-slate-700' : 'border-t border-slate-200' },
-                React.createElement("th", { scope: "row", className: "px-2 py-1.5 text-left text-[11px] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, label),
-                React.createElement("td", { className: "px-2 py-1.5 text-right text-[11px] font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, left),
-                React.createElement("td", { className: "px-2 py-1.5 text-right text-[11px] font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, right)
+                React.createElement("th", { scope: "row", className: "px-2 py-1.5 text-left text-[0.6875rem] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, label),
+                React.createElement("td", { className: "px-2 py-1.5 text-right text-[0.6875rem] font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, left),
+                React.createElement("td", { className: "px-2 py-1.5 text-right text-[0.6875rem] font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, right)
               );
             };
 
             return React.createElement("div", { "data-solar-planet-comparison": "true", role: "region", "aria-label": "Scientific comparison of " + p1.name + " and " + p2.name, className: "space-y-2" },
-              React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[.12em] " + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, __alloT('stem.solarsystem.compare_step_measurements', "Step 2 \u00b7 Compare measurements")),
+              React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-[.12em] " + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, __alloT('stem.solarsystem.compare_step_measurements', "Step 2 \u00b7 Compare measurements")),
               React.createElement("div", { className: "solar-compare-stage", role: "img", "aria-label": p1.name + " and " + p2.name + " shown on one shared diameter scale. " + largerWorld.name + " is " + diameterRatio.toFixed(2) + " times wider." },
                 comparisonWorld(p1, r1, compareDiameter1),
                 comparisonWorld(p2, r2, compareDiameter2)
               ),
-              React.createElement("p", { role: "note", className: "m-0 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+              React.createElement("p", { role: "note", className: "m-0 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                 "Diameter circles use one shared linear scale for this pair. Bodies below 3 px use a visibility floor; rings are illustrative and not to scale. ",
                 React.createElement("a", { href: SOLAR_SCIENCE_SOURCES[0].href, target: "_blank", rel: "noreferrer", className: "font-bold underline decoration-dotted underline-offset-2", "aria-label": "JPL planetary parameters source (opens in a new tab)" }, "JPL reference values"),
                 "; moon counts reviewed " + SOLAR_SCIENCE_REVIEWED + "."
               ),
               React.createElement("div", { className: "rounded-lg border p-2 " + (isDark ? 'border-indigo-400/25 bg-indigo-500/10 text-indigo-100' : 'border-indigo-200 bg-indigo-50 text-indigo-900') },
-                React.createElement("div", { className: "text-[11px] font-black" }, sameWorld ? "Choose two different worlds for a meaningful comparison." : largerWorld.name + " is " + diameterRatio.toFixed(2) + "\u00d7 wider."),
-                !sameWorld && React.createElement("div", { className: "mt-0.5 text-[11px] leading-relaxed opacity-80" }, (g1 === g2 ? __alloT('stem.solarsystem.compare_equal_gravity', "Both worlds have the same listed gravity at the displayed precision.") : strongerWorld.name + " has " + gravityRatio.toFixed(2) + "\u00d7 the surface gravity of the other world.") + " Mass stays constant; weight force depends on gravity.")
+                React.createElement("div", { className: "text-[0.6875rem] font-black" }, sameWorld ? "Choose two different worlds for a meaningful comparison." : largerWorld.name + " is " + diameterRatio.toFixed(2) + "\u00d7 wider."),
+                !sameWorld && React.createElement("div", { className: "mt-0.5 text-[0.6875rem] leading-relaxed opacity-80" }, (g1 === g2 ? __alloT('stem.solarsystem.compare_equal_gravity', "Both worlds have the same listed gravity at the displayed precision.") : strongerWorld.name + " has " + gravityRatio.toFixed(2) + "\u00d7 the surface gravity of the other world.") + " Mass stays constant; weight force depends on gravity.")
               ),
               React.createElement("div", { className: "overflow-x-auto rounded-lg border " + (isDark ? 'border-slate-700' : 'border-slate-200') },
                             React.createElement("table", { className: "w-full border-collapse", style: { tableLayout: 'fixed' }, "aria-label": "Measured properties for " + p1.name + " and " + p2.name },
                   React.createElement("caption", { className: "sr-only" }, "Planet comparison using diameter, temperature, rotation, orbit period, moons, surface gravity, and weight force."),
                   React.createElement("thead", { className: isDark ? 'bg-slate-900' : 'bg-slate-100' },
                     React.createElement("tr", null,
-                                  React.createElement("th", { scope: "col", className: "px-2 py-1.5 text-left text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500'), style: { width: '40%' } }, "Measure"),
-                                  React.createElement("th", { scope: "col", className: "break-words px-2 py-1.5 text-right text-[11px] font-black leading-tight", style: { width: '30%', color: p1.color } }, p1.name),
-                                  React.createElement("th", { scope: "col", className: "break-words px-2 py-1.5 text-right text-[11px] font-black leading-tight", style: { width: '30%', color: p2.color } }, p2.name)
+                                  React.createElement("th", { scope: "col", className: "px-2 py-1.5 text-left text-[0.6875rem] " + (isDark ? 'text-slate-400' : 'text-slate-500'), style: { width: '40%' } }, "Measure"),
+                                  React.createElement("th", { scope: "col", className: "break-words px-2 py-1.5 text-right text-[0.6875rem] font-black leading-tight", style: { width: '30%', color: p1.color } }, p1.name),
+                                  React.createElement("th", { scope: "col", className: "break-words px-2 py-1.5 text-right text-[0.6875rem] font-black leading-tight", style: { width: '30%', color: p2.color } }, p2.name)
                     )
                   ),
                   React.createElement("tbody", null,
@@ -2598,7 +2598,7 @@ const d = labToolData.solarSystem || {};
               React.createElement("p", { style: { fontSize: '11px', lineHeight: 1.5, color: isDark ? '#cbd5e1' : '#475569' } }, __alloT('stem.solarsystem.compare_bar_scale_note', 'Compare the two bars within each chart. The charts have different units and scales; their lengths cannot be compared across charts. Here, 1 g is standard Earth gravity. Giant-planet gravity is listed at a reference atmospheric level, not solid ground.')),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 [p1, p2].map(function(p) {
-                  return React.createElement("button", { key: 'explore-compare-' + p.key, type: "button", onClick: function() { updMulti({ selectedPlanet: p.name, viewTab: 'overview' }); }, className: "rounded-lg border px-2 py-1.5 text-[11px] font-black transition-all " + (isDark ? 'border-slate-600 bg-slate-800 text-slate-100 hover:border-indigo-400' : 'border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:shadow-sm') }, "Explore " + p.name);
+                  return React.createElement("button", { key: 'explore-compare-' + p.key, type: "button", onClick: function() { updMulti({ selectedPlanet: p.name, viewTab: 'overview' }); }, className: "rounded-lg border px-2 py-1.5 text-[0.6875rem] font-black transition-all " + (isDark ? 'border-slate-600 bg-slate-800 text-slate-100 hover:border-indigo-400' : 'border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:shadow-sm') }, "Explore " + p.name);
                 })
               )
             );
@@ -2633,7 +2633,7 @@ const d = labToolData.solarSystem || {};
             return React.createElement('section', { id: 'solar-scale-walk', 'data-solar-scale-walk': true, 'data-scale-walk-length': length, 'aria-labelledby': 'solar-scale-walk-title', className: 'mb-4 rounded-2xl border p-4 md:p-5 ' + (isDark ? 'border-orange-300/25 bg-slate-950 text-slate-100' : 'border-orange-200 bg-white text-slate-900') },
               React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                 React.createElement('div', null,
-                  React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-orange-200' : 'text-orange-800') }, 'Scale lab · from screen to real space'),
+                  React.createElement('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (isDark ? 'text-orange-200' : 'text-orange-800') }, 'Scale lab · from screen to real space'),
                   React.createElement('h4', { id: 'solar-scale-walk-title', tabIndex: -1, className: 'mt-1 text-xl font-black' }, 'Build a solar system walk')
                 ),
                 React.createElement('button', { type: 'button', onClick: function() { upd('showScaleWalk', false); }, className: secondary, style: { minHeight: 44 } }, 'Close scale walk')
@@ -2649,7 +2649,7 @@ const d = labToolData.solarSystem || {};
                 { label: 'Earth diameter', value: diameterText(earth.diameterMm), unit: 'mm', id: 'earth' },
                 { label: '1 AU in model', value: earth.meters.toFixed(2), unit: 'm', id: 'au' }
               ].map(function(item) { return React.createElement('div', { key: item.id, 'data-scale-walk-reading': item.id, className: 'min-w-0 rounded-xl border p-2 ' + (isDark ? 'border-orange-300/20 bg-orange-400/5' : 'border-orange-200 bg-orange-50') },
-                React.createElement('div', { className: 'text-[11px] font-bold ' + quiet }, item.label), React.createElement('div', { className: 'mt-1 text-lg font-black' }, item.value), React.createElement('div', { className: 'text-xs ' + quiet }, item.unit)
+                React.createElement('div', { className: 'text-[0.6875rem] font-bold ' + quiet }, item.label), React.createElement('div', { className: 'mt-1 text-lg font-black' }, item.value), React.createElement('div', { className: 'text-xs ' + quiet }, item.unit)
               ); })),
               React.createElement('p', { className: 'mt-3 text-xs leading-relaxed ' + quiet }, 'For this ' + length + ' m model, Earth is only ' + diameterText(earth.diameterMm) + ' mm wide and sits ' + earth.meters.toFixed(2) + ' m from the Sun. A large planet symbol on a map helps you find it; it does not show its physical size.'),
               React.createElement('div', { className: 'mt-4 grid gap-4 lg:grid-cols-2' },
@@ -2815,7 +2815,7 @@ const d = labToolData.solarSystem || {};
               return React.createElement('section', { 'data-season-guide': true, 'data-guide-step': guideStep, 'aria-labelledby': 'solar-season-guide-title', className: 'm-4 rounded-xl border p-4 md:m-5 ' + (isDark ? 'border-cyan-300/30 bg-cyan-400/5' : 'border-cyan-300 bg-cyan-50') },
                 React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Guided investigation · Earth'),
+                    React.createElement('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Guided investigation · Earth'),
                     React.createElement('h4', { id: 'solar-season-guide-title', className: 'mt-1 text-base font-black', tabIndex: -1 }, 'Why do the hemispheres have opposite seasons?')
                   ),
                   React.createElement('button', { type: 'button', onClick: function() { upd('seasonsGuideActive', false); }, className: secondaryClass, style: { minHeight: 44 } }, 'Pause guidance')
@@ -2854,14 +2854,14 @@ const d = labToolData.solarSystem || {};
                 guideCount > 0 ? React.createElement('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2', 'aria-label': 'Captured seasons observations' }, guideRecords.filter(Boolean).map(function(record) {
                   return React.createElement('div', { key: record.phase, 'data-guide-observation': record.phase, className: 'min-w-0 rounded-lg border p-3 text-xs leading-relaxed ' + (isDark ? 'border-slate-700 bg-slate-950' : 'border-slate-200 bg-white') },
                     React.createElement('h5', { className: 'text-sm font-black' }, record.phase === 25 ? 'June solstice' : 'December solstice'),
-                    React.createElement('p', { className: 'mt-1 text-[11px] ' + quietClass }, 'Daylight · shared 0–24 h scale'),
+                    React.createElement('p', { className: 'mt-1 text-[0.6875rem] ' + quietClass }, 'Daylight · shared 0–24 h scale'),
                     [{ id: 'north', label: '45° N', hours: record.northHours, noon: record.northNoon, color: isDark ? '#67e8f9' : '#0e7490' }, { id: 'south', label: '45° S', hours: record.southHours, noon: record.southNoon, color: isDark ? '#fcd34d' : '#92400e' }].map(function(reading) {
                       return React.createElement('div', { key: reading.id, className: 'mt-3' },
                         React.createElement('div', { className: 'font-bold', style: { color: reading.color } }, reading.label + ' daylight ' + reading.hours.toFixed(1) + ' h'),
                         React.createElement('div', { role: 'meter', 'aria-label': (record.phase === 25 ? 'June' : 'December') + ' daylight at ' + reading.label, 'aria-valuemin': 0, 'aria-valuemax': 24, 'aria-valuenow': reading.hours, 'aria-valuetext': reading.hours.toFixed(1) + ' hours out of 24', className: 'mt-1 h-3 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-800' : 'bg-slate-200') },
                           React.createElement('div', { 'data-guide-daylight-bar': reading.id, className: 'h-full rounded-full', style: { width: (reading.hours / 24 * 100) + '%', background: reading.color } })
                         ),
-                        React.createElement('div', { className: 'mt-1 text-[11px] ' + quietClass }, 'Noon Sun ' + reading.noon.toFixed(1) + '°')
+                        React.createElement('div', { className: 'mt-1 text-[0.6875rem] ' + quietClass }, 'Noon Sun ' + reading.noon.toFixed(1) + '°')
                       );
                     })
                   );
@@ -2890,7 +2890,7 @@ const d = labToolData.solarSystem || {};
                   })),
                   React.createElement('p', { id: 'solar-guide-evidence-help', className: 'mt-1 text-xs ' + quietClass }, 'Optional: append a captured measurement to your writing, then explain what it means. Buttons pause when that sentence is already included or there is not enough space.'),
                   React.createElement('textarea', { id: 'solar-guide-explanation', value: guideDraft, maxLength: 2000, rows: 4, 'aria-describedby': 'solar-guide-writing-help', onChange: function(e) { updateSeasonGuide({ explanation: e.target.value, step: 3 }); }, className: 'mt-2 w-full rounded-lg border p-2 text-sm ' + (isDark ? 'border-slate-600 bg-slate-950 text-slate-100' : 'border-slate-300 bg-white text-slate-900') }),
-                  React.createElement('div', { className: 'mt-1 text-right text-[11px] ' + quietClass, 'data-guide-character-count': true }, guideDraft.length + '/2000 characters'),
+                  React.createElement('div', { className: 'mt-1 text-right text-[0.6875rem] ' + quietClass, 'data-guide-character-count': true }, guideDraft.length + '/2000 characters'),
                   React.createElement('p', { className: 'mt-1 text-xs ' + quietClass }, 'Self-check: two measurements • a link to tilt • reflection on your prediction. Your writing is saved as your reasoning, not automatically graded.'),
                   React.createElement('button', { type: 'button', disabled: !guideDraft.trim() || guideSaved, onClick: function() {
                     if (!guideDraft.trim() || guideSaved || guideCount !== 2 || seasonGuide.claim !== 'tilt') return;
@@ -2914,18 +2914,18 @@ const d = labToolData.solarSystem || {};
               return React.createElement("div", { "data-season-hemisphere": hemisphere.indexOf('Northern') === 0 ? 'north' : 'south', className: "rounded-xl border p-3 " + (isDark ? 'border-slate-700 bg-slate-950/70' : 'border-slate-200 bg-white') },
                 React.createElement("div", { className: "flex items-center justify-between gap-2" },
                   React.createElement("span", { className: "text-xs font-black " + colorClass }, hemisphere),
-                  React.createElement("span", { className: "text-[10px] font-bold " + (isDark ? 'text-slate-400' : 'text-slate-500') }, latitudeLabel)
+                  React.createElement("span", { className: "text-[0.625rem] font-bold " + (isDark ? 'text-slate-400' : 'text-slate-500') }, latitudeLabel)
                 ),
                 React.createElement("div", { className: "mt-2 h-2 overflow-hidden rounded-full " + (isDark ? 'bg-slate-800' : 'bg-slate-100'), role: "meter", "aria-label": hemisphere + " relative daily sunlight at " + latitudeLabel, "aria-valuenow": barWidth, "aria-valuemin": 0, "aria-valuemax": 100 },
                   React.createElement("div", { className: "solar-season-bar h-full rounded-full", style: { width: barWidth + '%', background: barColor } })
                 ),
                 React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[9px] font-black uppercase tracking-wide " + (isDark ? 'text-slate-500' : 'text-slate-500') }, "Daylight"),
+                    React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'text-slate-500' : 'text-slate-500') }, "Daylight"),
                     React.createElement("div", { className: "mt-0.5 text-sm font-black " + (isDark ? 'text-white' : 'text-slate-900') }, metrics.dayHours.toFixed(1) + " h")
                   ),
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[9px] font-black uppercase tracking-wide " + (isDark ? 'text-slate-500' : 'text-slate-500') }, "Noon Sun"),
+                    React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'text-slate-500' : 'text-slate-500') }, "Noon Sun"),
                     React.createElement("div", { className: "mt-0.5 text-sm font-black " + (isDark ? 'text-white' : 'text-slate-900') }, metrics.noonElevation.toFixed(1) + "°")
                   )
                 )
@@ -2960,14 +2960,14 @@ const d = labToolData.solarSystem || {};
               }
               var chartDescription = 'Daylight across one Earth orbit at ' + latitude + ' degrees north and south. Fixed scale: 0 to 24 hours. Each location ranges from ' + minHours.toFixed(1) + ' to ' + maxHours.toFixed(1) + ' hours. North is solid; south is dashed. At the selected position, north has ' + northHours.toFixed(1) + ' hours and south has ' + southHours.toFixed(1) + ' hours. Exact checkpoint values are in the table below.';
               return React.createElement('section', { 'data-season-latitude-explorer': true, 'aria-labelledby': 'solar-latitude-title', className: 'rounded-xl border p-3 ' + (isDark ? 'border-cyan-300/25 bg-slate-900/70' : 'border-cyan-200 bg-cyan-50/50') },
-                React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Extend the investigation · Earth'),
+                React.createElement('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Extend the investigation · Earth'),
                 React.createElement('h5', { id: 'solar-latitude-title', className: 'mt-1 text-base font-black' }, 'Does latitude change the daylight pattern?'),
                 React.createElement('p', { className: 'mt-1 text-xs leading-relaxed ' + quietClass }, 'Keep Earth’s tilt fixed. Move two locations equally far from the equator, then use the year slider above to compare their daylight.'),
                 React.createElement('label', { htmlFor: 'solar-season-latitude', className: 'mt-3 block text-xs font-bold' }, 'Distance from the equator: ' + latitude + '° latitude'),
                 React.createElement('input', { id: 'solar-season-latitude', type: 'range', min: 0, max: 80, step: 1, value: latitude, 'aria-valuetext': latitude === 0 ? 'Equator, 0 degrees' : latitude + ' degrees north and south', onChange: function(e) { upd('seasonsLatitude', Number(e.target.value)); }, className: 'mt-1 w-full accent-cyan-500', style: { minHeight: 44 } }),
                 React.createElement('div', { role: 'group', 'aria-label': 'Latitude presets', className: 'grid grid-cols-3 gap-2' },
                   [{ latitude: 0, label: 'Equator', detail: '0°' }, { latitude: 45, label: 'Midlatitudes', detail: '45°' }, { latitude: 70, label: 'Polar regions', detail: '70°' }].map(function(item) {
-                    return React.createElement('button', { key: item.latitude, type: 'button', 'aria-pressed': latitude === item.latitude, onClick: function() { upd('seasonsLatitude', item.latitude); }, className: 'min-w-0 rounded-lg border px-1 py-2 text-xs font-bold ' + (latitude === item.latitude ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-500 bg-white text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-slate-200 bg-white text-slate-700')), style: { minHeight: 44, overflowWrap: 'anywhere' } }, item.label, React.createElement('span', { className: 'block text-[10px]' }, item.detail));
+                    return React.createElement('button', { key: item.latitude, type: 'button', 'aria-pressed': latitude === item.latitude, onClick: function() { upd('seasonsLatitude', item.latitude); }, className: 'min-w-0 rounded-lg border px-1 py-2 text-xs font-bold ' + (latitude === item.latitude ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-500 bg-white text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-slate-200 bg-white text-slate-700')), style: { minHeight: 44, overflowWrap: 'anywhere' } }, item.label, React.createElement('span', { className: 'block text-[0.625rem]' }, item.detail));
                   })
                 ),
                 React.createElement('div', { className: 'mt-3 grid grid-cols-2 gap-2', 'aria-live': 'polite' },
@@ -2975,12 +2975,12 @@ const d = labToolData.solarSystem || {};
                     return React.createElement('div', { key: item.key, 'data-latitude-reading': item.key, 'data-daylight-hours': item.hours, className: 'min-w-0 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-950' : 'border-slate-200 bg-white') },
                       React.createElement('div', { className: 'text-xs font-bold', style: { color: item.color } }, item.label),
                       React.createElement('div', { className: 'mt-1 text-lg font-black' }, item.hours.toFixed(1) + ' h'),
-                      React.createElement('div', { className: 'text-[10px] ' + quietClass }, item.hours >= 23.999 ? 'Polar day · no sunset' : item.hours <= .001 ? 'Polar night · no sunrise' : 'Daylight at selected position')
+                      React.createElement('div', { className: 'text-[0.625rem] ' + quietClass }, item.hours >= 23.999 ? 'Polar day · no sunset' : item.hours <= .001 ? 'Polar night · no sunrise' : 'Daylight at selected position')
                     );
                   })
                 ),
                 React.createElement('div', { className: 'mt-3 text-xs font-bold' }, 'One orbit · daylight hours'),
-                React.createElement('p', { className: 'mt-1 text-[11px] ' + quietClass }, 'Solid line: north. Dashed line: south. ' + (latitude === 0 ? 'At the equator, the two lines overlap all year.' : 'The two locations have opposite seasonal patterns.') + ' On narrow screens, swipe or scroll the chart to see the full orbit.'),
+                React.createElement('p', { className: 'mt-1 text-[0.6875rem] ' + quietClass }, 'Solid line: north. Dashed line: south. ' + (latitude === 0 ? 'At the equator, the two lines overlap all year.' : 'The two locations have opposite seasonal patterns.') + ' On narrow screens, swipe or scroll the chart to see the full orbit.'),
                 React.createElement('div', { role: 'region', tabIndex: 0, 'aria-label': 'Scrollable annual daylight chart', className: 'mt-2 rounded-lg border ' + (isDark ? 'border-slate-700 bg-slate-950' : 'border-slate-200 bg-white'), style: { overflowX: 'auto' } },
                   React.createElement('svg', { viewBox: '0 0 480 224', role: 'img', 'aria-label': chartDescription, style: { display: 'block', width: '100%', minWidth: 480, height: 'auto' } },
                     [0, 6, 12, 18, 24].map(function(hours) { return React.createElement('g', { key: hours },
@@ -2997,7 +2997,7 @@ const d = labToolData.solarSystem || {};
                   )
                 ),
                 React.createElement('p', { className: 'mt-2 text-xs ' + quietClass, 'data-latitude-range': true }, 'Each location spans ' + minHours.toFixed(1) + '–' + maxHours.toFixed(1) + ' daylight hours across this orbit: a ' + (maxHours - minHours).toFixed(1) + ' h seasonal range.'),
-                React.createElement('table', { className: 'mt-3 w-full text-left text-[11px]', style: { tableLayout: 'fixed' } },
+                React.createElement('table', { className: 'mt-3 w-full text-left text-[0.6875rem]', style: { tableLayout: 'fixed' } },
                   React.createElement('caption', { className: 'mb-1 text-left text-xs font-bold' }, 'Checkpoint evidence · hours of daylight'),
                   React.createElement('thead', null, React.createElement('tr', null,
                     React.createElement('th', { scope: 'col', className: 'py-2', style: { width: '50%' } }, 'Earth position'),
@@ -3011,7 +3011,7 @@ const d = labToolData.solarSystem || {};
                   ); }))
                 ),
                 React.createElement('label', { htmlFor: 'solar-latitude-explanation', className: 'mt-3 block text-xs font-bold' }, 'Explain the pattern (optional)'),
-                React.createElement('p', { id: 'solar-latitude-prompt', className: 'mt-1 text-[11px] ' + quietClass }, 'Compare 0° and 70°. How does moving away from the equator change the seasonal range? Use two values as evidence.'),
+                React.createElement('p', { id: 'solar-latitude-prompt', className: 'mt-1 text-[0.6875rem] ' + quietClass }, 'Compare 0° and 70°. How does moving away from the equator change the seasonal range? Use two values as evidence.'),
                 React.createElement('textarea', { id: 'solar-latitude-explanation', value: draft, maxLength: 1000, rows: 3, 'aria-describedby': 'solar-latitude-prompt', onChange: function(e) { upd('seasonsLatitudeExplanation', e.target.value); }, className: 'mt-2 w-full rounded-lg border p-2 text-xs ' + (isDark ? 'border-slate-600 bg-slate-950 text-slate-100' : 'border-slate-300 bg-white text-slate-900') }),
                 React.createElement('button', { type: 'button', disabled: saved, onClick: function() {
                   addJournalEntry(planet.name, 'How does latitude change the seasonal range of daylight?',
@@ -3020,7 +3020,7 @@ const d = labToolData.solarSystem || {};
                     'What changes if I compare a latitude closer to the equator?', { id: 'seasons', explanation: draft });
                   upd('seasonsLatitudeSaved', evidenceKey);
                 }, className: 'mt-2 w-full rounded-lg px-3 py-2 text-xs font-black disabled:opacity-60 ' + (isDark ? 'bg-cyan-300 text-slate-950' : 'bg-cyan-800 text-white'), style: { minHeight: 44 } }, saved ? 'Latitude evidence saved ✓' : 'Save latitude investigation to journal'),
-                React.createElement('p', { role: 'note', className: 'mt-2 text-[10px] leading-relaxed ' + quietClass }, 'Ideal horizon, Sun’s center: no atmosphere, refraction, terrain, or twilight. Orbital position advances uniformly; percentages are not exact calendar dates. Earth hours only. Polar night means no sunrise; twilight may still occur. The main lab’s 45° comparison stays fixed.')
+                React.createElement('p', { role: 'note', className: 'mt-2 text-[0.625rem] leading-relaxed ' + quietClass }, 'Ideal horizon, Sun’s center: no atmosphere, refraction, terrain, or twilight. Orbital position advances uniformly; percentages are not exact calendar dates. Earth hours only. Polar night means no sunrise; twilight may still occur. The main lab’s 45° comparison stays fixed.')
               );
             }
             return React.createElement("section", {
@@ -3035,7 +3035,7 @@ const d = labToolData.solarSystem || {};
               React.createElement("div", { className: "border-b p-4 md:p-5 " + (isDark ? 'border-slate-800 bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-amber-400/10' : 'border-cyan-100 bg-gradient-to-r from-cyan-50 via-indigo-50 to-amber-50') },
                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[.16em] " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, __alloT('stem.solarsystem.axial_tilt_seasons_lab', "Axial tilt + seasons lab")),
+                    React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[.16em] " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, __alloT('stem.solarsystem.axial_tilt_seasons_lab', "Axial tilt + seasons lab")),
                     React.createElement("h4", { id: "solar-seasons-lab-title", className: "mt-1 text-xl font-black" }, __alloT('stem.solarsystem.follow_sunlight_not_temperature', "Follow the sunlight, not the temperature")),
                     React.createElement("p", { className: "mt-1 max-w-3xl text-xs leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.seasons_lab_instructions', "Scrub through a year, keep the rotation axis pointed in one direction, and compare the sunlight geometry at 45° north and south."))
                   ),
@@ -3052,7 +3052,7 @@ const d = labToolData.solarSystem || {};
                       var active = key === worldKey;
                       return React.createElement("button", { key: 'season-world-' + key, type: "button", "aria-pressed": active, onClick: function() { setSeasonWorld(key); }, className: "min-w-0 rounded-xl border p-2.5 text-left transition-all " + (active ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-400 bg-cyan-50 text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-900 text-slate-300 hover:border-cyan-400' : 'border-slate-200 bg-white text-slate-700 hover:border-cyan-300')) },
                         React.createElement("span", { className: "block truncate text-xs font-black" }, optionPlanet.name),
-                        React.createElement("span", { className: "mt-0.5 block text-[10px] opacity-75" }, option.tiltDeg.toFixed(2) + "° tilt")
+                        React.createElement("span", { className: "mt-0.5 block text-[0.625rem] opacity-75" }, option.tiltDeg.toFixed(2) + "° tilt")
                       );
                     })
                   ),
@@ -3099,13 +3099,13 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') },
                     React.createElement("div", { className: "flex items-center justify-between gap-3" },
                       React.createElement("label", { htmlFor: "solar-season-phase", className: "text-xs font-black" }, "Move through one " + planet.name + " year"),
-                      React.createElement("output", { htmlFor: "solar-season-phase", className: "rounded-full px-2 py-1 text-[10px] font-black " + (isDark ? 'bg-cyan-400/10 text-cyan-200' : 'bg-cyan-100 text-cyan-900') }, Math.round(phase) + "%")
+                      React.createElement("output", { htmlFor: "solar-season-phase", className: "rounded-full px-2 py-1 text-[0.625rem] font-black " + (isDark ? 'bg-cyan-400/10 text-cyan-200' : 'bg-cyan-100 text-cyan-900') }, Math.round(phase) + "%")
                     ),
                     React.createElement("input", { id: "solar-season-phase", type: "range", min: 0, max: 100, step: 1, value: phase, onChange: function(e) { setSeasonPhase(e.target.value); }, "aria-valuetext": phaseLabel, className: "mt-3 w-full accent-cyan-500" }),
                     React.createElement("div", { role: "group", "aria-label": "Season checkpoints", className: "mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4" },
                       SEASON_CHECKPOINTS.map(function(item) {
                         var active = Math.abs(phase - item.phase) < 0.5 || (item.phase === 0 && phase === 100);
-                        return React.createElement("button", { key: 'season-phase-' + item.phase, type: "button", "aria-pressed": active, onClick: function() { setSeasonPhase(item.phase); }, className: "rounded-lg border px-2 py-1.5 text-[10px] font-black " + (active ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-400 bg-cyan-50 text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-slate-200 bg-white text-slate-600')) }, item.short);
+                        return React.createElement("button", { key: 'season-phase-' + item.phase, type: "button", "aria-pressed": active, onClick: function() { setSeasonPhase(item.phase); }, className: "rounded-lg border px-2 py-1.5 text-[0.625rem] font-black " + (active ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-400 bg-cyan-50 text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-slate-200 bg-white text-slate-600')) }, item.short);
                       })
                     )
                   ),
@@ -3115,9 +3115,9 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-indigo-400/25 bg-indigo-500/10' : 'border-indigo-200 bg-indigo-50') },
                     React.createElement("div", { className: "flex items-center justify-between gap-2" },
                       React.createElement("span", { className: "text-sm font-black" }, planet.name + " sunlight readout"),
-                      React.createElement("span", { className: "rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide " + (isDark ? 'bg-slate-950 text-cyan-200' : 'bg-white text-cyan-800') }, "Modeled")
+                      React.createElement("span", { className: "rounded-full px-2 py-1 text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'bg-slate-950 text-cyan-200' : 'bg-white text-cyan-800') }, "Modeled")
                     ),
-                    React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-1 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, seasonAnswer)
+                    React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-1 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, seasonAnswer)
                   ),
                   React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2" },
                     sunlightCard("Northern hemisphere", "45° N", northMetrics, northBar, isDark ? 'text-cyan-200' : 'text-cyan-800', 'linear-gradient(90deg,#0891b2,#67e8f9)'),
@@ -3132,18 +3132,18 @@ const d = labToolData.solarSystem || {};
                         { label: 'Perihelion → aphelion', value: perihelionAU.toFixed(3) + '–' + aphelionAU.toFixed(3) + ' AU' }
                       ].map(function(item) {
                         return React.createElement("div", { key: item.label, className: "rounded-lg p-2 " + (isDark ? 'bg-slate-950/70' : 'bg-slate-50') },
-                          React.createElement("div", { className: "text-[9px] font-black uppercase tracking-wide " + (isDark ? 'text-slate-500' : 'text-slate-500') }, item.label),
+                          React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'text-slate-500' : 'text-slate-500') }, item.label),
                           React.createElement("div", { className: "mt-0.5 text-xs font-black" }, item.value)
                         );
                       })
                     ),
-                    React.createElement("p", { className: "mt-2 text-[10px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, world.context),
-                    React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed " + (isDark ? 'text-amber-200' : 'text-amber-900') }, "Distance still matters: sunlight at perihelion is about " + fluxSwing.toFixed(1) + "% stronger than at aphelion. Tilt controls which hemisphere leans toward the Sun; distance modifies the incoming intensity."),
-                    React.createElement("a", { href: SOLAR_SEASONS_SOURCES[worldKey], target: "_blank", rel: "noreferrer", className: "mt-2 inline-flex text-[10px] font-black underline decoration-dotted underline-offset-2", "aria-label": "NASA seasons source for " + planet.name + " (opens in a new tab)" }, "Check the NASA source ↗")
+                    React.createElement("p", { className: "mt-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, world.context),
+                    React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed " + (isDark ? 'text-amber-200' : 'text-amber-900') }, "Distance still matters: sunlight at perihelion is about " + fluxSwing.toFixed(1) + "% stronger than at aphelion. Tilt controls which hemisphere leans toward the Sun; distance modifies the incoming intensity."),
+                    React.createElement("a", { href: SOLAR_SEASONS_SOURCES[worldKey], target: "_blank", rel: "noreferrer", className: "mt-2 inline-flex text-[0.625rem] font-black underline decoration-dotted underline-offset-2", "aria-label": "NASA seasons source for " + planet.name + " (opens in a new tab)" }, "Check the NASA source ↗")
                   ),
                   React.createElement("div", { "data-solar-season-evidence-check": "true", "data-inquiry-stage": predictionChoice ? "evidence" : "interpret", className: "rounded-xl border border-l-[3px] p-3 " + (isDark ? 'border-fuchsia-300/25 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50') },
                     React.createElement("div", { className: "text-xs font-black" }, __alloT('stem.solarsystem.seasons_step_read_evidence', "Step 1 \u00b7 Read the model evidence")),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.seasons_evidence_check_prompt', "This is an evidence-reading check, not a prediction. Using the readout above, where is relative daily sunlight greater at 45° latitude?")),
+                    React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.seasons_evidence_check_prompt', "This is an evidence-reading check, not a prediction. Using the readout above, where is relative daily sunlight greater at 45° latitude?")),
                     React.createElement("div", { role: "group", "aria-label": __alloT('stem.solarsystem.season_sunlight_evidence_check', "Season sunlight evidence check"), className: "mt-2 grid grid-cols-3 gap-1.5" },
                       [
                         { id: 'north', label: '45° N' },
@@ -3151,10 +3151,10 @@ const d = labToolData.solarSystem || {};
                         { id: 'south', label: '45° S' }
                       ].map(function(option) {
                         var active = predictionChoice === option.id;
-                        return React.createElement("button", { key: 'season-predict-' + option.id, type: "button", "aria-pressed": active, onClick: function() { updMulti({ seasonsPrediction: { world: worldKey, phase: phase, choice: option.id }, seasonsEvidenceSaved: false }); }, className: "rounded-lg border px-1.5 py-2 text-[11px] font-black " + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
+                        return React.createElement("button", { key: 'season-predict-' + option.id, type: "button", "aria-pressed": active, onClick: function() { updMulti({ seasonsPrediction: { world: worldKey, phase: phase, choice: option.id }, seasonsEvidenceSaved: false }); }, className: "rounded-lg border px-1.5 py-2 text-[0.6875rem] font-black " + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
                       })
                     ),
-                    predictionChoice ? React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 rounded-lg p-2 text-[11px] leading-relaxed " + (predictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) },
+                    predictionChoice ? React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 rounded-lg p-2 text-[0.6875rem] leading-relaxed " + (predictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) },
                       React.createElement("strong", null, __alloT('stem.solarsystem.interpretation_step', 'Step 2 \u00b7 Interpret: ') + (predictionCorrect ? __alloT('stem.solarsystem.interpretation_matches_model', 'Your interpretation matches the model. ') : __alloT('stem.solarsystem.compare_readouts_again', 'Compare the two readouts again. '))),
                       __alloT('stem.solarsystem.model_shows_sunlight_is', "The model shows sunlight is ") + expectedLabel + "."
                     ) : null,
@@ -3167,7 +3167,7 @@ const d = labToolData.solarSystem || {};
                       upd('seasonsEvidenceSaved', true);
                     }, className: "mt-2 w-full rounded-lg px-3 py-2 text-xs font-black transition-all disabled:cursor-not-allowed disabled:opacity-60 " + (isDark ? 'bg-fuchsia-400 text-slate-950 hover:bg-fuchsia-300' : 'bg-fuchsia-800 text-white hover:bg-fuchsia-900') }, d.seasonsEvidenceSaved ? __alloT('stem.solarsystem.evidence_saved_to_journal', 'Evidence saved to journal ✓') : __alloT('stem.solarsystem.seasons_step_save_evidence', 'Step 3 \u00b7 Save interpretation + evidence to journal')) : null
                   ),
-                  React.createElement("p", { role: "note", className: "rounded-xl border border-dashed p-3 text-[10px] leading-relaxed " + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') },
+                  React.createElement("p", { role: "note", className: "rounded-xl border border-dashed p-3 text-[0.625rem] leading-relaxed " + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') },
                     React.createElement("strong", { className: isDark ? 'text-slate-200' : 'text-slate-800' }, __alloT('stem.solarsystem.model_boundary_label', "Model boundary: ")),
                     __alloT('stem.solarsystem.seasons_model_boundary', "daylight and noon-Sun angle use ideal horizon geometry at ±45° latitude. This is not a temperature or climate forecast; it omits atmosphere, refraction, terrain, weather, oceans, ice, and thermal inertia.")
                   )
@@ -3279,7 +3279,7 @@ const d = labToolData.solarSystem || {};
               React.createElement("div", { className: "border-b p-4 md:p-5 " + (isDark ? 'border-slate-800 bg-gradient-to-r from-cyan-500/10 via-violet-500/10 to-amber-400/10' : 'border-violet-100 bg-gradient-to-r from-cyan-50 via-violet-50 to-amber-50') },
                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[.16em] " + (isDark ? 'text-violet-300' : 'text-violet-800') }, __alloT('stem.solarsystem.deep_space_signal_lab', "Deep-space signal lab")),
+                    React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[.16em] " + (isDark ? 'text-violet-300' : 'text-violet-800') }, __alloT('stem.solarsystem.deep_space_signal_lab', "Deep-space signal lab")),
                     React.createElement("h4", { id: "solar-signal-lab-title", className: "mt-1 text-xl font-black" }, __alloT('stem.solarsystem.mission_control_reply_time', "How long until mission control hears back?")),
                     React.createElement("p", { className: "mt-1 max-w-3xl text-xs leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.signal_lab_instructions', "Move a target around its modeled orbit. Distance—not just its average distance from the Sun—sets the communication delay."))
                   ),
@@ -3295,7 +3295,7 @@ const d = labToolData.solarSystem || {};
                       var active = key === targetKey;
                       return React.createElement("button", { key: 'signal-target-' + key, type: "button", "data-signal-target-option": key, "aria-pressed": active, onClick: function() { setSignalTarget(key); }, className: "min-w-0 rounded-xl border p-2 text-left transition-all " + (active ? (isDark ? 'border-violet-300 bg-violet-400/10 text-violet-100' : 'border-violet-400 bg-violet-50 text-violet-950') : (isDark ? 'border-slate-700 bg-slate-900 text-slate-300 hover:border-violet-400' : 'border-slate-200 bg-white text-slate-700 hover:border-violet-300')) },
                         React.createElement("span", { className: "block truncate text-xs font-black" }, optionPlanet.name),
-                        React.createElement("span", { className: "mt-0.5 block text-[9px] opacity-75" }, option.semiMajorAU.toFixed(option.semiMajorAU < 1 ? 3 : 2) + " AU from Sun")
+                        React.createElement("span", { className: "mt-0.5 block text-[0.5625rem] opacity-75" }, option.semiMajorAU.toFixed(option.semiMajorAU < 1 ? 3 : 2) + " AU from Sun")
                       );
                     })
                   ),
@@ -3323,51 +3323,51 @@ const d = labToolData.solarSystem || {};
                     )
                   ),
                   React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') },
-                    React.createElement("div", { className: "flex items-center justify-between gap-3" }, React.createElement("label", { htmlFor: "solar-signal-angle", className: "text-xs font-black" }, "Earth–target orbital angle"), React.createElement("output", { htmlFor: "solar-signal-angle", className: "rounded-full px-2 py-1 text-[10px] font-black " + (isDark ? 'bg-violet-400/10 text-violet-200' : 'bg-violet-100 text-violet-900') }, Math.round(angleDeg) + "°")),
+                    React.createElement("div", { className: "flex items-center justify-between gap-3" }, React.createElement("label", { htmlFor: "solar-signal-angle", className: "text-xs font-black" }, "Earth–target orbital angle"), React.createElement("output", { htmlFor: "solar-signal-angle", className: "rounded-full px-2 py-1 text-[0.625rem] font-black " + (isDark ? 'bg-violet-400/10 text-violet-200' : 'bg-violet-100 text-violet-900') }, Math.round(angleDeg) + "°")),
                     React.createElement("input", { id: "solar-signal-angle", type: "range", min: 0, max: 180, step: 1, value: angleDeg, onChange: function(e) { setSignalAngle(e.target.value); }, "aria-valuetext": geometryLabel + "; distance " + distanceAU.toFixed(3) + " AU", className: "mt-3 w-full accent-violet-500" }),
                     React.createElement("div", { role: "group", "aria-label": "Orbital geometry presets", className: "mt-3 grid grid-cols-3 gap-2" }, [{ angle: 0, label: 'Near alignment' }, { angle: 90, label: 'Right angle' }, { angle: 180, label: 'Far alignment' }].map(function(preset) {
                       var active = Math.abs(angleDeg - preset.angle) < .5;
-                      return React.createElement("button", { key: 'signal-angle-' + preset.angle, type: "button", "aria-pressed": active, onClick: function() { setSignalAngle(preset.angle); }, className: "rounded-lg border px-2 py-1.5 text-[10px] font-black " + (active ? (isDark ? 'border-violet-300 bg-violet-400/10 text-violet-100' : 'border-violet-400 bg-white text-violet-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-slate-200 bg-white text-slate-600')) }, preset.label);
+                      return React.createElement("button", { key: 'signal-angle-' + preset.angle, type: "button", "aria-pressed": active, onClick: function() { setSignalAngle(preset.angle); }, className: "rounded-lg border px-2 py-1.5 text-[0.625rem] font-black " + (active ? (isDark ? 'border-violet-300 bg-violet-400/10 text-violet-100' : 'border-violet-400 bg-white text-violet-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-slate-200 bg-white text-slate-600')) }, preset.label);
                     }))
                   )
                 ),
                 React.createElement("div", { className: "min-w-0 space-y-3" },
                   React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                    React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-cyan-300/25 bg-cyan-400/5' : 'border-cyan-200 bg-cyan-50') }, React.createElement("div", { className: "text-[9px] font-black uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, "One way"), React.createElement("div", { "data-signal-one-way": "true", className: "mt-1 text-xl font-black" }, formatSignalDuration(oneWaySeconds)), React.createElement("div", { className: "text-[9px] opacity-70" }, "command arrives")),
-                    React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-amber-300/25 bg-amber-400/5' : 'border-amber-200 bg-amber-50') }, React.createElement("div", { className: "text-[9px] font-black uppercase tracking-wide " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "Earliest reply"), React.createElement("div", { "data-signal-round-trip": "true", className: "mt-1 text-xl font-black" }, formatSignalDuration(roundTripSeconds)), React.createElement("div", { className: "text-[9px] opacity-70" }, "zero processing time"))
+                    React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-cyan-300/25 bg-cyan-400/5' : 'border-cyan-200 bg-cyan-50') }, React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, "One way"), React.createElement("div", { "data-signal-one-way": "true", className: "mt-1 text-xl font-black" }, formatSignalDuration(oneWaySeconds)), React.createElement("div", { className: "text-[0.5625rem] opacity-70" }, "command arrives")),
+                    React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-amber-300/25 bg-amber-400/5' : 'border-amber-200 bg-amber-50') }, React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "Earliest reply"), React.createElement("div", { "data-signal-round-trip": "true", className: "mt-1 text-xl font-black" }, formatSignalDuration(roundTripSeconds)), React.createElement("div", { className: "text-[0.5625rem] opacity-70" }, "zero processing time"))
                   ),
                   React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white') },
-                    React.createElement("div", { className: "flex items-center justify-between gap-2" }, React.createElement("span", { className: "text-xs font-black" }, "Signal journey"), React.createElement("span", { className: "text-[9px] font-black uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, distanceAU.toFixed(3) + " AU")),
+                    React.createElement("div", { className: "flex items-center justify-between gap-2" }, React.createElement("span", { className: "text-xs font-black" }, "Signal journey"), React.createElement("span", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, distanceAU.toFixed(3) + " AU")),
                     React.createElement("div", { className: "solar-signal-track mt-2", "aria-hidden": "true" }, React.createElement("span", { className: "solar-signal-endpoint", style: { left: '3%', background: '#1d4ed8' } }, "🌍"), Number(d.signalPulseNonce || 0) > 0 ? React.createElement("span", { key: 'signal-pulse-' + d.signalPulseNonce, className: "solar-signal-pulse" }) : null, React.createElement("span", { className: "solar-signal-endpoint", style: { right: '3%', background: targetPlanet.color } }, targetPlanet.emoji)),
                     React.createElement("button", { type: "button", onClick: sendSignalPing, className: "mt-2 w-full rounded-lg bg-gradient-to-r from-cyan-700 to-violet-600 px-3 py-2 text-xs font-black text-white shadow-md transition-all hover:from-cyan-700 hover:to-violet-600" }, __alloT('stem.solarsystem.send_light_speed_ping', "Send a light-speed ping")),
-                    React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 text-[10px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, lastSignalPing ? "Ping sent. At " + lastSignalPing.angle + "° to " + targetPlanet.name + ", it arrives in " + formatSignalDuration(lastSignalPing.oneWaySeconds) + "; the earliest immediate reply returns after " + formatSignalDuration(lastSignalPing.oneWaySeconds * 2) + "." : "The pulse animation is time-lapsed. Numeric delay is calculated at light speed."),
+                    React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, lastSignalPing ? "Ping sent. At " + lastSignalPing.angle + "° to " + targetPlanet.name + ", it arrives in " + formatSignalDuration(lastSignalPing.oneWaySeconds) + "; the earliest immediate reply returns after " + formatSignalDuration(lastSignalPing.oneWaySeconds * 2) + "." : "The pulse animation is time-lapsed. Numeric delay is calculated at light speed."),
                     React.createElement("div", { className: "mt-2 h-1.5 overflow-hidden rounded-full " + (isDark ? 'bg-slate-800' : 'bg-slate-100'), role: "meter", "aria-label": "Current signal path within the circular-model distance range", "aria-valuenow": Math.round(rangeProgress * 100), "aria-valuemin": 0, "aria-valuemax": 100 }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-400 via-violet-400 to-amber-400", style: { width: Math.round(rangeProgress * 100) + '%' } }))
                   ),
-                  conjunctionRisk ? React.createElement("div", { role: "note", className: "rounded-xl border p-3 text-[10px] leading-relaxed " + (isDark ? 'border-amber-300/30 bg-amber-400/10 text-amber-100' : 'border-amber-300 bg-amber-50 text-amber-950') }, React.createElement("strong", null, "Solar-conjunction caution: "), "the path passes close to the Sun. Real missions may pause commands because solar plasma can corrupt radio signals; relays cannot remove light-travel delay.") : null,
+                  conjunctionRisk ? React.createElement("div", { role: "note", className: "rounded-xl border p-3 text-[0.625rem] leading-relaxed " + (isDark ? 'border-amber-300/30 bg-amber-400/10 text-amber-100' : 'border-amber-300 bg-amber-50 text-amber-950') }, React.createElement("strong", null, "Solar-conjunction caution: "), "the path passes close to the Sun. Real missions may pause commands because solar plasma can corrupt radio signals; relays cannot remove light-travel delay.") : null,
                   React.createElement("div", { className: "rounded-xl border p-3 " + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white') },
                     React.createElement("div", { className: "grid grid-cols-2 gap-2" }, [
                       { label: 'Earth–target distance', value: distanceKm < 1e9 ? Math.round(distanceKm / 1e6).toLocaleString() + ' million km' : (distanceKm / 1e9).toFixed(2) + ' billion km' },
                       { label: 'Circular-model range', value: formatSignalDuration(minLightSeconds) + '–' + formatSignalDuration(maxLightSeconds) },
                       { label: 'Target orbit size', value: target.semiMajorAU.toFixed(3) + ' AU' }, { label: 'Signal speed', value: '299,792.458 km/s' }
-                    ].map(function(item) { return React.createElement("div", { key: item.label, className: "rounded-lg p-2 " + (isDark ? 'bg-slate-950/70' : 'bg-slate-50') }, React.createElement("div", { className: "text-[9px] font-black uppercase tracking-wide text-slate-500" }, item.label), React.createElement("div", { className: "mt-0.5 text-xs font-black" }, item.value)); })),
-                    targetKey === 'Mars' ? React.createElement("p", { className: "mt-2 text-[10px] leading-relaxed " + (isDark ? 'text-emerald-200' : 'text-emerald-900') }, "Reality check: NASA reports about 3 to 22.4 minutes one way for Earth–Mars. This circular mean-orbit model gives " + formatSignalDuration(minLightSeconds) + " to " + formatSignalDuration(maxLightSeconds) + "; actual positions and eccentricity explain the difference.") : null,
-                    React.createElement("div", { className: "mt-2 flex flex-wrap gap-x-3 gap-y-1" }, SOLAR_SIGNAL_SOURCES.map(function(source) { return React.createElement("a", { key: source.href, href: source.href, target: "_blank", rel: "noreferrer", className: "text-[10px] font-black underline decoration-dotted underline-offset-2", "aria-label": source.label + " source (opens in a new tab)" }, source.label + " ↗"); }))
+                    ].map(function(item) { return React.createElement("div", { key: item.label, className: "rounded-lg p-2 " + (isDark ? 'bg-slate-950/70' : 'bg-slate-50') }, React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-slate-500" }, item.label), React.createElement("div", { className: "mt-0.5 text-xs font-black" }, item.value)); })),
+                    targetKey === 'Mars' ? React.createElement("p", { className: "mt-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-emerald-200' : 'text-emerald-900') }, "Reality check: NASA reports about 3 to 22.4 minutes one way for Earth–Mars. This circular mean-orbit model gives " + formatSignalDuration(minLightSeconds) + " to " + formatSignalDuration(maxLightSeconds) + "; actual positions and eccentricity explain the difference.") : null,
+                    React.createElement("div", { className: "mt-2 flex flex-wrap gap-x-3 gap-y-1" }, SOLAR_SIGNAL_SOURCES.map(function(source) { return React.createElement("a", { key: source.href, href: source.href, target: "_blank", rel: "noreferrer", className: "text-[0.625rem] font-black underline decoration-dotted underline-offset-2", "aria-label": source.label + " source (opens in a new tab)" }, source.label + " ↗"); }))
                   ),
                   buildSignalNotebook(),
                   React.createElement("div", { "data-inquiry-stage": signalPrediction ? "evidence" : "predict", className: "rounded-xl border border-l-[3px] p-3 " + (isDark ? 'border-fuchsia-300/25 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50') },
                     React.createElement("div", { className: "text-xs font-black" }, __alloT('stem.solarsystem.signal_step_commit_hypothesis', "Step 1 \u00b7 Commit an ungraded hypothesis")),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.signal_prediction_prompt', "From near alignment (0°) to far alignment (180°), what happens to one-way delay?")),
+                    React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.signal_prediction_prompt', "From near alignment (0°) to far alignment (180°), what happens to one-way delay?")),
                     React.createElement("div", { role: "group", "aria-label": __alloT('stem.solarsystem.signal_delay_prediction', "Signal delay prediction"), className: "mt-2 grid grid-cols-3 gap-1.5" }, [{ id: 'decrease', label: __alloT('stem.solarsystem.decreases', 'Decreases') }, { id: 'same', label: __alloT('stem.solarsystem.stays_same', 'Stays same') }, { id: 'increase', label: __alloT('stem.solarsystem.increases', 'Increases') }].map(function(option) {
                       var active = signalPrediction === option.id;
-                      return React.createElement("button", { key: option.id, type: "button", "aria-pressed": active, onClick: function() { updMulti({ signalPrediction: option.id, signalEvidenceSaved: false }); }, className: "rounded-lg border px-1.5 py-2 text-[11px] font-black " + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
+                      return React.createElement("button", { key: option.id, type: "button", "aria-pressed": active, onClick: function() { updMulti({ signalPrediction: option.id, signalEvidenceSaved: false }); }, className: "rounded-lg border px-1.5 py-2 text-[0.6875rem] font-black " + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
                     })),
-                    signalPrediction ? React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 rounded-lg p-2 text-[11px] leading-relaxed " + (signalPredictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) }, React.createElement("strong", null, __alloT('stem.solarsystem.compare_evidence_step', 'Step 2 \u00b7 Compare: ') + (signalPredictionCorrect ? __alloT('stem.solarsystem.evidence_supports_hypothesis', 'Evidence supports your hypothesis. ') : __alloT('stem.solarsystem.evidence_differs_hypothesis', 'Evidence differs from your hypothesis. '))), __alloT('stem.solarsystem.signal_path_grows', "The path grows from ") + minDistanceAU.toFixed(3) + " to " + maxDistanceAU.toFixed(3) + __alloT('stem.solarsystem.au_delay_increases', " AU, so delay increases.")) : null,
+                    signalPrediction ? React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 rounded-lg p-2 text-[0.6875rem] leading-relaxed " + (signalPredictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) }, React.createElement("strong", null, __alloT('stem.solarsystem.compare_evidence_step', 'Step 2 \u00b7 Compare: ') + (signalPredictionCorrect ? __alloT('stem.solarsystem.evidence_supports_hypothesis', 'Evidence supports your hypothesis. ') : __alloT('stem.solarsystem.evidence_differs_hypothesis', 'Evidence differs from your hypothesis. '))), __alloT('stem.solarsystem.signal_path_grows', "The path grows from ") + minDistanceAU.toFixed(3) + " to " + maxDistanceAU.toFixed(3) + __alloT('stem.solarsystem.au_delay_increases', " AU, so delay increases.")) : null,
                     signalPrediction ? React.createElement("button", { type: "button", disabled: !!d.signalEvidenceSaved, onClick: function() {
                       addJournalEntry(targetPlanet.name, 'I predicted one-way signal delay would ' + signalPrediction + ' from 0° to 180°.', 'At ' + Math.round(angleDeg) + '°, Earth and ' + targetPlanet.name + ' are ' + distanceAU.toFixed(3) + ' AU apart: ' + formatSignalDuration(oneWaySeconds) + ' one way and ' + formatSignalDuration(roundTripSeconds) + ' round trip.' + (signalObservations.length ? ' Recorded observations: ' + signalObservations.map(signalObservationText).join(' ') : ''), signalExplanation.trim() || 'Average distance from the Sun does not determine current distance from Earth.', 'How do mission teams work safely when commands and replies cannot happen in real time?', { id: 'signal', explanation: signalExplanation });
                       upd('signalEvidenceSaved', true);
                     }, className: "mt-2 w-full rounded-lg px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-60 " + (isDark ? 'bg-fuchsia-400 text-slate-950' : 'bg-fuchsia-800 text-white') }, d.signalEvidenceSaved ? __alloT('stem.solarsystem.signal_evidence_saved', 'Signal evidence saved ✓') : __alloT('stem.solarsystem.signal_step_save_evidence', 'Step 3 \u00b7 Save signal evidence to journal')) : null
                   ),
-                  React.createElement("p", { role: "note", className: "rounded-xl border border-dashed p-3 text-[10px] leading-relaxed " + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') }, React.createElement("strong", { className: isDark ? 'text-slate-200' : 'text-slate-800' }, __alloT('stem.solarsystem.model_boundary_label', "Model boundary: ")), __alloT('stem.solarsystem.signal_model_boundary', "orbits are circular, coplanar, and fixed at their semi-major axes; map radii are logarithmically compressed. This is not today’s ephemeris. Real latency includes routing and processing, while spacecraft travel time depends on trajectory and propulsion—not distance divided by a constant rocket speed."))
+                  React.createElement("p", { role: "note", className: "rounded-xl border border-dashed p-3 text-[0.625rem] leading-relaxed " + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') }, React.createElement("strong", { className: isDark ? 'text-slate-200' : 'text-slate-800' }, __alloT('stem.solarsystem.model_boundary_label', "Model boundary: ")), __alloT('stem.solarsystem.signal_model_boundary', "orbits are circular, coplanar, and fixed at their semi-major axes; map radii are logarithmically compressed. This is not today’s ephemeris. Real latency includes routing and processing, while spacecraft travel time depends on trajectory and propulsion—not distance divided by a constant rocket speed."))
                 )
               )
             );
@@ -3470,7 +3470,7 @@ const d = labToolData.solarSystem || {};
               React.createElement('div', { className: 'border-b p-4 md:p-5 ' + (isDark ? 'border-slate-800 bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-cyan-400/10' : 'border-indigo-100 bg-gradient-to-r from-amber-50 via-indigo-50 to-cyan-50') },
                 React.createElement('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-[.16em] ' + (isDark ? 'text-indigo-300' : 'text-indigo-800') }, __alloT('stem.solarsystem.moon_orbits_lab', 'Moon-orbit evidence lab')),
+                    React.createElement('div', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] ' + (isDark ? 'text-indigo-300' : 'text-indigo-800') }, __alloT('stem.solarsystem.moon_orbits_lab', 'Moon-orbit evidence lab')),
                     React.createElement('h4', { id: 'solar-moon-lab-title', className: 'mt-1 text-xl font-black' }, __alloT('stem.solarsystem.phases_eclipses_title', 'Why do phases repeat—but eclipses do not happen every month?')),
                     React.createElement('p', { className: 'mt-1 max-w-3xl text-xs leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.moon_lab_instructions', 'Change phase and node geometry. Outside lunar eclipses, half the Moon is sunlit; your viewpoint sets the visible phase, while orbital tilt controls whether the shadows line up.'))
                   ),
@@ -3521,7 +3521,7 @@ const d = labToolData.solarSystem || {};
                     )
                   ),
                   React.createElement('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') },
-                    React.createElement('div', { className: 'flex items-center justify-between gap-3' }, React.createElement('label', { htmlFor: 'solar-moon-phase-angle', className: 'text-xs font-black' }, __alloT('stem.solarsystem.phase_angle', 'Moon phase angle')), React.createElement('output', { htmlFor: 'solar-moon-phase-angle', className: 'rounded-full px-2 py-1 text-[10px] font-black ' + (isDark ? 'bg-indigo-400/10 text-indigo-200' : 'bg-indigo-100 text-indigo-900') }, roundedPhase + '° · ' + phaseName)),
+                    React.createElement('div', { className: 'flex items-center justify-between gap-3' }, React.createElement('label', { htmlFor: 'solar-moon-phase-angle', className: 'text-xs font-black' }, __alloT('stem.solarsystem.phase_angle', 'Moon phase angle')), React.createElement('output', { htmlFor: 'solar-moon-phase-angle', className: 'rounded-full px-2 py-1 text-[0.625rem] font-black ' + (isDark ? 'bg-indigo-400/10 text-indigo-200' : 'bg-indigo-100 text-indigo-900') }, roundedPhase + '° · ' + phaseName)),
                     React.createElement('input', { id: 'solar-moon-phase-angle', type: 'range', min: 0, max: 359, step: 1, value: phaseDeg, onChange: function(e) { updateMoonGeometry(e.target.value, null); }, 'aria-valuetext': phaseName + ', ' + Math.round(illuminatedFraction * 100) + ' percent illuminated', className: 'mt-3 w-full accent-indigo-500' }),
                     React.createElement('div', { role: 'group', 'aria-label': __alloT('stem.solarsystem.moon_phase_presets', 'Moon phase presets'), 'data-moon-phase-cycle': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(105px,1fr))', gap: '8px', marginTop: '12px' } }, [0, 45, 90, 135, 180, 225, 270, 315].map(function(angle) {
                       var active = angleGap(phaseDeg, angle) < .5;
@@ -3554,39 +3554,39 @@ const d = labToolData.solarSystem || {};
                     React.createElement('p', { style: { marginTop: '8px', fontSize: '11px', lineHeight: 1.5 } }, __alloT('stem.solarsystem.moon_orientation_note', 'These schematic views rotate the disk, not the phase or illuminated fraction. Its actual angle in the sky depends on your location and the time. The disk shows ordinary phase illumination, not eclipse darkening.'))
                   ),
                   React.createElement('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'border-cyan-300/20 bg-cyan-400/5' : 'border-cyan-200 bg-cyan-50') },
-                    React.createElement('div', { className: 'flex items-center justify-between gap-3' }, React.createElement('label', { htmlFor: 'solar-moon-node-offset', className: 'text-xs font-black' }, __alloT('stem.solarsystem.orbital_node_offset', 'Node offset from new-Moon direction')), React.createElement('output', { htmlFor: 'solar-moon-node-offset', className: 'rounded-full px-2 py-1 text-[10px] font-black ' + (isDark ? 'bg-cyan-400/10 text-cyan-200' : 'bg-white text-cyan-900') }, roundedNode + '°')),
+                    React.createElement('div', { className: 'flex items-center justify-between gap-3' }, React.createElement('label', { htmlFor: 'solar-moon-node-offset', className: 'text-xs font-black' }, __alloT('stem.solarsystem.orbital_node_offset', 'Node offset from new-Moon direction')), React.createElement('output', { htmlFor: 'solar-moon-node-offset', className: 'rounded-full px-2 py-1 text-[0.625rem] font-black ' + (isDark ? 'bg-cyan-400/10 text-cyan-200' : 'bg-white text-cyan-900') }, roundedNode + '°')),
                     React.createElement('input', { id: 'solar-moon-node-offset', type: 'range', min: 0, max: 90, step: 1, value: nodeOffsetDeg, onChange: function(e) { updateMoonGeometry(null, e.target.value); }, 'aria-valuetext': roundedNode + ' degrees; model lunar latitude ' + modelLatitudeDeg.toFixed(2) + ' degrees', className: 'mt-3 w-full accent-cyan-500' }),
                     React.createElement('div', { role: 'group', 'aria-label': __alloT('stem.solarsystem.node_geometry_presets', 'Node geometry presets'), className: 'mt-3 grid grid-cols-2 gap-2' },
-                      React.createElement('button', { type: 'button', 'data-moon-node-preset': 'aligned', 'aria-pressed': roundedNode === 0, onClick: function() { updateMoonGeometry(null, 0); }, className: 'rounded-lg border px-2 py-1.5 text-[10px] font-black ' + (roundedNode === 0 ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-400 bg-white text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-cyan-100 bg-white text-slate-600')) }, __alloT('stem.solarsystem.node_aligned', 'Node aligned')),
-                      React.createElement('button', { type: 'button', 'data-moon-node-preset': 'far', 'aria-pressed': roundedNode === 90, onClick: function() { updateMoonGeometry(null, 90); }, className: 'rounded-lg border px-2 py-1.5 text-[10px] font-black ' + (roundedNode === 90 ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-400 bg-white text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-cyan-100 bg-white text-slate-600')) }, __alloT('stem.solarsystem.far_from_node', 'Far from node'))
+                      React.createElement('button', { type: 'button', 'data-moon-node-preset': 'aligned', 'aria-pressed': roundedNode === 0, onClick: function() { updateMoonGeometry(null, 0); }, className: 'rounded-lg border px-2 py-1.5 text-[0.625rem] font-black ' + (roundedNode === 0 ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-400 bg-white text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-cyan-100 bg-white text-slate-600')) }, __alloT('stem.solarsystem.node_aligned', 'Node aligned')),
+                      React.createElement('button', { type: 'button', 'data-moon-node-preset': 'far', 'aria-pressed': roundedNode === 90, onClick: function() { updateMoonGeometry(null, 90); }, className: 'rounded-lg border px-2 py-1.5 text-[0.625rem] font-black ' + (roundedNode === 90 ? (isDark ? 'border-cyan-300 bg-cyan-400/10 text-cyan-100' : 'border-cyan-400 bg-white text-cyan-950') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-cyan-100 bg-white text-slate-600')) }, __alloT('stem.solarsystem.far_from_node', 'Far from node'))
                     )
                   )
                 ),
                 React.createElement('div', { className: 'min-w-0 space-y-3' },
                   React.createElement('div', { 'data-moon-alignment-result': moonOutcomeVisible ? eclipseAlignment : 'hidden', role: 'status', 'aria-live': 'polite', className: 'rounded-xl border p-3 ' + (!moonOutcomeVisible || eclipseAlignment === 'none' ? (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') : (isDark ? 'border-amber-300/30 bg-amber-400/10' : 'border-amber-300 bg-amber-50')) },
-                    React.createElement('div', { className: 'text-[9px] font-black uppercase tracking-[.12em] ' + (!moonOutcomeVisible || eclipseAlignment === 'none' ? (isDark ? 'text-slate-400' : 'text-slate-600') : (isDark ? 'text-amber-200' : 'text-amber-900')) }, __alloT('stem.solarsystem.model_outcome', 'Model outcome')),
+                    React.createElement('div', { className: 'text-[0.5625rem] font-black uppercase tracking-[.12em] ' + (!moonOutcomeVisible || eclipseAlignment === 'none' ? (isDark ? 'text-slate-400' : 'text-slate-600') : (isDark ? 'text-amber-200' : 'text-amber-900')) }, __alloT('stem.solarsystem.model_outcome', 'Model outcome')),
                     React.createElement('div', { className: 'mt-1 text-lg font-black' }, moonOutcomeVisible ? alignmentLabel : __alloT('stem.solarsystem.outcome_hidden_until_commit', 'Outcome hidden until you commit')),
-                    React.createElement('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, moonOutcomeVisible ? alignmentExplanation : __alloT('stem.solarsystem.use_moon_geometry_first', 'Use the illuminated fraction, phase, and node geometry below. The classification appears only after you choose.'))
+                    React.createElement('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, moonOutcomeVisible ? alignmentExplanation : __alloT('stem.solarsystem.use_moon_geometry_first', 'Use the illuminated fraction, phase, and node geometry below. The classification appears only after you choose.'))
                   ),
                   React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
-                    React.createElement('div', { className: 'min-w-0 rounded-xl border p-2.5 ' + (isDark ? 'border-indigo-300/20 bg-indigo-400/5' : 'border-indigo-200 bg-indigo-50') }, React.createElement('div', { className: 'text-[8px] font-black uppercase tracking-wide opacity-70' }, __alloT('stem.solarsystem.illuminated', 'Illuminated')), React.createElement('div', { 'data-moon-illuminated-value': 'true', className: 'mt-1 text-lg font-black tabular-nums' }, Math.round(illuminatedFraction * 100) + '%')),
-                    React.createElement('div', { className: 'min-w-0 rounded-xl border p-2.5 ' + (isDark ? 'border-indigo-300/20 bg-indigo-400/5' : 'border-indigo-200 bg-indigo-50') }, React.createElement('div', { className: 'text-[8px] font-black uppercase tracking-wide opacity-70' }, __alloT('stem.solarsystem.lunar_age', 'Lunar age')), React.createElement('div', { 'data-moon-age-value': 'true', className: 'mt-1 text-lg font-black tabular-nums' }, lunarAgeDays.toFixed(1) + ' d')),
-                    React.createElement('div', { className: 'min-w-0 rounded-xl border p-2.5 ' + (isDark ? 'border-cyan-300/20 bg-cyan-400/5' : 'border-cyan-200 bg-cyan-50') }, React.createElement('div', { className: 'text-[8px] font-black uppercase tracking-wide opacity-70' }, __alloT('stem.solarsystem.model_latitude', 'Model latitude')), React.createElement('div', { 'data-moon-latitude-value': 'true', className: 'mt-1 text-lg font-black tabular-nums' }, modelLatitudeDeg.toFixed(2) + '°'))
+                    React.createElement('div', { className: 'min-w-0 rounded-xl border p-2.5 ' + (isDark ? 'border-indigo-300/20 bg-indigo-400/5' : 'border-indigo-200 bg-indigo-50') }, React.createElement('div', { className: 'text-[0.5rem] font-black uppercase tracking-wide opacity-70' }, __alloT('stem.solarsystem.illuminated', 'Illuminated')), React.createElement('div', { 'data-moon-illuminated-value': 'true', className: 'mt-1 text-lg font-black tabular-nums' }, Math.round(illuminatedFraction * 100) + '%')),
+                    React.createElement('div', { className: 'min-w-0 rounded-xl border p-2.5 ' + (isDark ? 'border-indigo-300/20 bg-indigo-400/5' : 'border-indigo-200 bg-indigo-50') }, React.createElement('div', { className: 'text-[0.5rem] font-black uppercase tracking-wide opacity-70' }, __alloT('stem.solarsystem.lunar_age', 'Lunar age')), React.createElement('div', { 'data-moon-age-value': 'true', className: 'mt-1 text-lg font-black tabular-nums' }, lunarAgeDays.toFixed(1) + ' d')),
+                    React.createElement('div', { className: 'min-w-0 rounded-xl border p-2.5 ' + (isDark ? 'border-cyan-300/20 bg-cyan-400/5' : 'border-cyan-200 bg-cyan-50') }, React.createElement('div', { className: 'text-[0.5rem] font-black uppercase tracking-wide opacity-70' }, __alloT('stem.solarsystem.model_latitude', 'Model latitude')), React.createElement('div', { 'data-moon-latitude-value': 'true', className: 'mt-1 text-lg font-black tabular-nums' }, modelLatitudeDeg.toFixed(2) + '°'))
                   ),
                   React.createElement('div', { 'data-inquiry-stage': predictionChoice ? 'evidence' : 'predict', className: 'rounded-xl border border-l-[3px] p-3 ' + (isDark ? 'border-fuchsia-300/25 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50') },
                     React.createElement('div', { className: 'text-xs font-black' }, __alloT('stem.solarsystem.moon_step_commit_hypothesis', 'Step 1 \u00b7 Commit an ungraded eclipse hypothesis')),
-                    React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.moon_prediction_prompt_clear', 'For these phase and node settings, what alignment do you expect? Choose once; changing the geometry starts a new trial. Accuracy is not scored.')),
+                    React.createElement('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.moon_prediction_prompt_clear', 'For these phase and node settings, what alignment do you expect? Choose once; changing the geometry starts a new trial. Accuracy is not scored.')),
                     React.createElement('div', { role: 'group', 'aria-label': __alloT('stem.solarsystem.moon_eclipse_prediction', 'Moon eclipse alignment prediction'), className: 'mt-2 grid grid-cols-3 gap-1.5' }, [{ id: 'solar', label: 'Solar' }, { id: 'lunar', label: 'Lunar' }, { id: 'none', label: 'None' }].map(function(option) {
                       var active = predictionChoice === option.id;
-                      return React.createElement('button', { key: option.id, type: 'button', 'data-moon-prediction': option.id, 'aria-pressed': active, disabled: moonOutcomeVisible, 'aria-disabled': moonOutcomeVisible ? 'true' : 'false', onClick: function() { if (!moonOutcomeVisible) makeMoonPrediction(option.id); }, className: 'min-w-0 rounded-lg border px-1 py-2 text-[11px] font-black disabled:cursor-not-allowed disabled:opacity-70 ' + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
+                      return React.createElement('button', { key: option.id, type: 'button', 'data-moon-prediction': option.id, 'aria-pressed': active, disabled: moonOutcomeVisible, 'aria-disabled': moonOutcomeVisible ? 'true' : 'false', onClick: function() { if (!moonOutcomeVisible) makeMoonPrediction(option.id); }, className: 'min-w-0 rounded-lg border px-1 py-2 text-[0.6875rem] font-black disabled:cursor-not-allowed disabled:opacity-70 ' + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
                     })),
-                    predictionChoice ? React.createElement('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 rounded-lg p-2 text-[11px] leading-relaxed ' + (predictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) }, React.createElement('strong', null, __alloT('stem.solarsystem.compare_evidence_step', 'Step 2 \u00b7 Compare: ') + (predictionCorrect ? __alloT('stem.solarsystem.evidence_supports_hypothesis', 'Evidence supports your hypothesis. ') : __alloT('stem.solarsystem.evidence_differs_hypothesis', 'Evidence differs from your hypothesis. '))), alignmentExplanation + ' ' + __alloT('stem.solarsystem.prediction_accuracy_not_scored', 'Prediction accuracy is not scored.')) : null,
+                    predictionChoice ? React.createElement('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 rounded-lg p-2 text-[0.6875rem] leading-relaxed ' + (predictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) }, React.createElement('strong', null, __alloT('stem.solarsystem.compare_evidence_step', 'Step 2 \u00b7 Compare: ') + (predictionCorrect ? __alloT('stem.solarsystem.evidence_supports_hypothesis', 'Evidence supports your hypothesis. ') : __alloT('stem.solarsystem.evidence_differs_hypothesis', 'Evidence differs from your hypothesis. '))), alignmentExplanation + ' ' + __alloT('stem.solarsystem.prediction_accuracy_not_scored', 'Prediction accuracy is not scored.')) : null,
                     predictionChoice ? React.createElement('button', { type: 'button', disabled: evidenceSaved, onClick: function() {
                       addJournalEntry('Moon', 'I predicted ' + (predictionChoice === 'none' ? 'no eclipse alignment.' : 'a ' + predictionChoice + '-eclipse alignment.'), 'At phase angle ' + roundedPhase + '° (' + phaseName + '), the visible disk is ' + Math.round(illuminatedFraction * 100) + '% illuminated. With node offset ' + roundedNode + '°, model lunar latitude is ' + modelLatitudeDeg.toFixed(2) + '°: ' + alignmentLabel + '.', 'Phase depends on Sun–Moon–Earth viewing geometry; an eclipse also requires syzygy near an orbital node.', 'Why does the Moon\'s tilted orbit prevent eclipses during most new and full Moons?', { id: 'moon' });
                       upd('moonEvidenceSaved', true);
                     }, className: 'mt-2 w-full rounded-lg px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-60 ' + (isDark ? 'bg-fuchsia-400 text-slate-950' : 'bg-fuchsia-800 text-white') }, evidenceSaved ? __alloT('stem.solarsystem.moon_evidence_saved', 'Moon evidence saved ✓') : __alloT('stem.solarsystem.moon_step_save_evidence', 'Step 3 \u00b7 Save Moon evidence to journal')) : null
                   ),
-                  React.createElement('p', { role: 'note', className: 'rounded-xl border border-dashed p-3 text-[10px] leading-relaxed ' + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') },
+                  React.createElement('p', { role: 'note', className: 'rounded-xl border border-dashed p-3 text-[0.625rem] leading-relaxed ' + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') },
                     React.createElement('strong', { className: isDark ? 'text-slate-200' : 'text-slate-800' }, __alloT('stem.solarsystem.model_boundary_label', 'Model boundary: ')),
                     __alloT('stem.solarsystem.moon_model_boundary', 'The 12° phase and 1.5° latitude windows are illustrative teaching thresholds—not eclipse predictions. The model uses a 29.53059-day mean synodic month and 5.145° inclination, but omits changing distance and apparent size, orbital eccentricity, shadow-cone dimensions, node precession, observer location, and atmosphere. It cannot predict an eclipse date, type, path, or visibility.'),
                     ' ', SOLAR_MOON_SOURCES.map(function(source, index) { return React.createElement(React.Fragment, { key: source.href }, index ? ' · ' : '', React.createElement('a', { href: source.href, target: '_blank', rel: 'noreferrer', className: 'font-black underline decoration-dotted underline-offset-2' }, source.label + ' ↗')); })
@@ -3810,7 +3810,7 @@ const d = labToolData.solarSystem || {};
                 pairCurrent ? React.createElement(React.Fragment, null,
                   React.createElement('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' }, records.map(function(source, index) { return React.createElement('div', { key: index, 'data-synthesis-source': index === 0 ? 'A' : 'B', className: 'min-w-0 rounded-lg border p-3 ' + (isDark ? 'border-slate-600 bg-slate-950' : 'border-indigo-200 bg-white') },
                     React.createElement('h5', { className: 'text-xs font-black' }, (index === 0 ? 'A · ' : 'B · ') + source.labTitle),
-                    React.createElement('p', { className: 'mt-1 break-words text-[11px] ' + quiet }, source.planet + ' · journal entry #' + (Number(source.sourceIndex) + 1)),
+                    React.createElement('p', { className: 'mt-1 break-words text-[0.6875rem] ' + quiet }, source.planet + ' · journal entry #' + (Number(source.sourceIndex) + 1)),
                     React.createElement('p', { className: 'mt-2 break-words text-xs leading-relaxed' }, source.observation)
                   ); })),
                   React.createElement('p', { 'data-synthesis-prompt': true, className: 'mt-3 text-xs leading-relaxed ' + quiet }, prompt)
@@ -3828,7 +3828,7 @@ const d = labToolData.solarSystem || {};
                   addJournalEntry('Cross-lab synthesis', claim.trim(), records.map(function(source, index) { return (index === 0 ? 'Evidence A' : 'Evidence B') + ' · ' + source.labTitle + ' · ' + source.planet + ' (entry #' + (Number(source.sourceIndex) + 1) + '): ' + source.observation; }).join('\n\n'), reasoning.trim(), limitation.trim(), null, { sources: records, claim: claim.trim(), reasoning: reasoning.trim(), limitation: limitation.trim() });
                   updMulti({ journalSynthesis: Object.assign({}, synthesis, { savedSignature: signature }), journalInvestigationFilter: 'synthesis', journalVisibleCount: 5 });
                 }, className: 'mt-2 w-full rounded-lg px-3 py-2 text-xs font-black disabled:opacity-50 ' + (isDark ? 'bg-indigo-300 text-slate-950' : 'bg-indigo-800 text-white'), style: { minHeight: 44 } }, saved ? 'Cross-lab explanation saved ✓' : 'Save cross-lab explanation'),
-                React.createElement('p', { className: 'mt-2 text-[11px] ' + quiet }, 'Syntheses keep their own source copies and do not count as new individual-lab evidence.')
+                React.createElement('p', { className: 'mt-2 text-[0.6875rem] ' + quiet }, 'Syntheses keep their own source copies and do not count as new individual-lab evidence.')
               ) : null
             );
           }
@@ -5965,7 +5965,7 @@ const d = labToolData.solarSystem || {};
 
               React.createElement("h3", { className: "text-lg font-bold " + (isDark ? "text-slate-100" : "text-slate-800") }, __alloT('stem.solarsystem.solar_system_explorer', "\uD83C\uDF0D Solar System Explorer")),
 
-              React.createElement("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full ml-1 " + (isDark ? 'bg-indigo-900 text-indigo-200' : 'bg-indigo-100 text-indigo-700') }, d.orreryMode ? "Orrery" : "3D")
+              React.createElement("span", { className: "px-2 py-0.5 text-[0.6875rem] font-bold rounded-full ml-1 " + (isDark ? 'bg-indigo-900 text-indigo-200' : 'bg-indigo-100 text-indigo-700') }, d.orreryMode ? "Orrery" : "3D")
             ),
 
             React.createElement("details", {
@@ -5984,20 +5984,20 @@ const d = labToolData.solarSystem || {};
                       { label: 'Hypothesis', text: 'A plausible explanation or counterfactual with uncertainty.' }
                     ].map(function(item) {
                       return React.createElement("div", { key: item.label, className: "rounded-lg px-2.5 py-2 " + (isDark ? 'bg-slate-900' : 'bg-white') },
-                        React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, item.label),
-                        React.createElement("p", { className: "mt-0.5 text-[11px] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item.text)
+                        React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, item.label),
+                        React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item.text)
                       );
                     })
                   ),
-                  React.createElement("p", { role: "note", className: "mt-2 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                  React.createElement("p", { role: "note", className: "mt-2 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-700') },
                     React.createElement("strong", null, activeModelLens.eyebrow + ': '),
                     activeModelLens.disclosure
                   )
                 ),
                 React.createElement("div", { className: "rounded-lg border p-2.5 " + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-cyan-100 bg-white') },
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Primary references"),
+                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Primary references"),
                   SOLAR_SCIENCE_SOURCES.map(function(source) {
-                    return React.createElement("a", { key: source.href, href: source.href, target: "_blank", rel: "noreferrer", className: "mt-1.5 block rounded-md px-2 py-1.5 text-[11px] font-bold underline decoration-dotted underline-offset-2 " + (isDark ? 'text-cyan-200 hover:bg-slate-800' : 'text-cyan-900 hover:bg-cyan-50'), "aria-label": source.label + ": " + source.note + " (opens in a new tab)" },
+                    return React.createElement("a", { key: source.href, href: source.href, target: "_blank", rel: "noreferrer", className: "mt-1.5 block rounded-md px-2 py-1.5 text-[0.6875rem] font-bold underline decoration-dotted underline-offset-2 " + (isDark ? 'text-cyan-200 hover:bg-slate-800' : 'text-cyan-900 hover:bg-cyan-50'), "aria-label": source.label + ": " + source.note + " (opens in a new tab)" },
                       source.label,
                       React.createElement("span", { className: "block font-normal no-underline " + (isDark ? 'text-slate-400' : 'text-slate-600') }, source.note)
                     );
@@ -6026,7 +6026,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "solar-command-primary" },
                     React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[11px] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-600') }, "Start here"),
+                        React.createElement("div", { className: "text-[0.6875rem] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-600') }, "Start here"),
                         React.createElement("h4", { className: "mt-1 text-xl font-black " + (isDark ? 'text-white' : 'text-slate-900') }, selectedName + " Explorer"),
                         React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                           sel ? sel.fact : "Choose a world, choose a view, and collect evidence at your own pace."
@@ -6040,7 +6040,7 @@ const d = labToolData.solarSystem || {};
                     React.createElement("div", { role: "group", "aria-label": "Scientific model lens", "data-solarsystem-model-lenses": true, className: "rounded-lg border p-3 " + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-white bg-white/75 shadow-sm') },
                       React.createElement("div", { className: "mb-2 flex flex-wrap items-center justify-between gap-2" },
                         React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "Choose a scientific lens"),
-                        React.createElement("span", { className: "text-[10px] font-bold uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, activeModelLens.eyebrow)
+                        React.createElement("span", { className: "text-[0.625rem] font-bold uppercase tracking-wide " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, activeModelLens.eyebrow)
                       ),
                       React.createElement("div", { className: "grid gap-2 sm:grid-cols-3" },
                         Object.keys(SOLAR_MODEL_LENSES).map(function(lensKey) {
@@ -6057,11 +6057,11 @@ const d = labToolData.solarSystem || {};
                               : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300 hover:border-cyan-400' : 'border-slate-200 bg-white text-slate-700 hover:border-cyan-300'))
                           },
                             React.createElement("span", { className: "block text-xs font-black" }, lens.label),
-                            React.createElement("span", { className: "mt-1 block text-[10px] leading-snug " + (active ? '' : 'opacity-75') }, lens.description)
+                            React.createElement("span", { className: "mt-1 block text-[0.625rem] leading-snug " + (active ? '' : 'opacity-75') }, lens.description)
                           );
                         })
                       ),
-                      React.createElement("p", { role: "note", className: "mt-2 text-[10px] leading-relaxed " + (isDark ? 'text-slate-400' : 'text-slate-600') }, activeModelLens.disclosure),
+                      React.createElement("p", { role: "note", className: "mt-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-400' : 'text-slate-600') }, activeModelLens.disclosure),
                       React.createElement('button', { type: 'button', onClick: openSolarScaleWalk, className: 'mt-2 w-full rounded-lg border px-3 py-2 text-xs font-bold ' + (isDark ? 'border-orange-300/40 text-orange-200' : 'border-orange-300 text-orange-900'), style: { minHeight: 44 } }, 'Build a scale walk')
                     ),
                     React.createElement("details", { className: "rounded-lg border px-3 py-2 " + (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white/75 border-white shadow-sm'), open: false },
@@ -6074,9 +6074,9 @@ const d = labToolData.solarSystem || {};
                         { label: 'Samples + notes', value: sampleCount + ' / ' + journalCount, sub: 'samples / journal' }
                       ].map(function(stat) {
                         return React.createElement("div", { key: stat.label, className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white/80 border-white shadow-sm') },
-                          React.createElement("div", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.label),
+                          React.createElement("div", { className: "text-[0.6875rem] font-bold uppercase " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.label),
                           React.createElement("div", { className: "mt-1 text-lg font-black " + (isDark ? 'text-white' : 'text-slate-900') }, stat.value),
-                          React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.sub)
+                          React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.sub)
                         );
                       })
                       )
@@ -6084,7 +6084,7 @@ const d = labToolData.solarSystem || {};
                     React.createElement("div", { className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white/75 border-white shadow-sm') },
                       React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
                         React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "1. Choose a world"),
-                        React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-slate-400' : 'text-slate-500') }, nextAction)
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-slate-400' : 'text-slate-500') }, nextAction)
                       ),
                       React.createElement("div", { className: "h-2 overflow-hidden rounded-full " + (isDark ? 'bg-slate-800' : 'bg-slate-200') },
                         React.createElement("div", { className: "h-full rounded-full", style: { width: visitProgress + '%', background: 'linear-gradient(90deg,#22c55e,#38bdf8,#6366f1)' } })
@@ -6125,12 +6125,12 @@ const d = labToolData.solarSystem || {};
                               ),
                               React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: visited ? '#22c55e' : (isDark ? '#475569' : '#cbd5e1') } })
                             ),
-                            React.createElement("div", { className: "solar-world-card-name mt-1 text-[11px] font-black" }, p.name),
+                            React.createElement("div", { className: "solar-world-card-name mt-1 text-[0.6875rem] font-black" }, p.name),
                             React.createElement("span", { className: "solar-world-kind" }, PLANET_KINDS[p.key])
                           );
                         })
                       ),
-                      React.createElement("div", { role: "note", className: "mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] " + (isDark ? 'text-slate-400' : 'text-slate-500') },
+                      React.createElement("div", { role: "note", className: "mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.625rem] " + (isDark ? 'text-slate-400' : 'text-slate-500') },
                         React.createElement("span", null, "Illustrative portraits · not to scale"),
                         React.createElement("span", null, "Rings shown on all four giant planets"),
                         React.createElement("span", null, "Green dot = visited")
@@ -6147,7 +6147,7 @@ const d = labToolData.solarSystem || {};
                         React.createElement("div", { className: "min-w-0" },
                           React.createElement("div", { className: "solar-world-spotlight-eyebrow" }, spotlightIsReference ? __alloT('stem.solarsystem.reference_world', "Reference world") : __alloT('stem.solarsystem.selected_world', "Selected world")),
                           React.createElement("h5", { className: "solar-world-spotlight-name" }, spotlightPlanet.name),
-                          React.createElement("p", { className: "mt-1 max-w-xl text-[11px] leading-relaxed text-slate-300" }, spotlightIsReference ? __alloT('stem.solarsystem.earth_reference_hint', "Earth is shown as a familiar reference. Select any destination above to focus this display.") : spotlightPlanet.fact)
+                          React.createElement("p", { className: "mt-1 max-w-xl text-[0.6875rem] leading-relaxed text-slate-300" }, spotlightIsReference ? __alloT('stem.solarsystem.earth_reference_hint', "Earth is shown as a familiar reference. Select any destination above to focus this display.") : spotlightPlanet.fact)
                         ),
                         React.createElement("span", { className: "solar-world-spotlight-kind" }, PLANET_KINDS[spotlightPlanet.key])
                       ),
@@ -6219,9 +6219,9 @@ const d = labToolData.solarSystem || {};
                           },
                             React.createElement("div", { className: "flex items-center justify-between gap-2" },
                               React.createElement("span", { className: "text-sm font-black" }, route.label),
-                              React.createElement("span", { className: "text-[11px] font-bold" }, active ? 'Active' : 'Open')
+                              React.createElement("span", { className: "text-[0.6875rem] font-bold" }, active ? 'Active' : 'Open')
                             ),
-                            React.createElement("p", { className: "mt-1 text-[11px] leading-snug " + (isDark ? 'text-slate-400' : 'text-slate-600') }, route.desc)
+                            React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-snug " + (isDark ? 'text-slate-400' : 'text-slate-600') }, route.desc)
                           );
                         })
                       )
@@ -6234,7 +6234,7 @@ const d = labToolData.solarSystem || {};
                           { label: 'Vocab', value: vocabProgress },
                           { label: 'Next', value: nextWorld ? nextWorld.name : 'Grand tour' }
                         ].map(function(item) {
-                          return React.createElement("span", { key: item.label, className: "rounded-lg px-2.5 py-1.5 text-[11px] font-bold " + (isDark ? 'bg-slate-950 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-600 border border-slate-200') },
+                          return React.createElement("span", { key: item.label, className: "rounded-lg px-2.5 py-1.5 text-[0.6875rem] font-bold " + (isDark ? 'bg-slate-950 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-600 border border-slate-200') },
                             item.label + ': ' + item.value
                           );
                         })
@@ -6254,9 +6254,9 @@ const d = labToolData.solarSystem || {};
                         React.createElement("div", { className: "flex items-start justify-between gap-2 border-b px-3 py-2.5 " + (isDark ? 'border-slate-800' : 'border-indigo-100') },
                           React.createElement("div", null,
                             React.createElement("div", { id: "solar-investigation-hub-title", className: "text-xs font-black " + (isDark ? 'text-white' : 'text-slate-900') }, __alloT('stem.solarsystem.investigation_hub', "Investigation Hub")),
-                            React.createElement("p", { className: "mt-0.5 text-[11px] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.investigation_hub_instruction', "Complete each existing lab at your own pace. Predictions and saved evidence remain available."))
+                            React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.investigation_hub_instruction', "Complete each existing lab at your own pace. Predictions and saved evidence remain available."))
                           ),
-                          React.createElement("span", { "data-investigation-total": investigationEvidenceCount, className: "whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-black " + (isDark ? 'bg-indigo-400/10 text-indigo-200' : 'bg-indigo-100 text-indigo-800') }, investigationEvidenceCount + "/" + investigationCards.length + " " + __alloT('stem.solarsystem.evidence_complete', "complete"))
+                          React.createElement("span", { "data-investigation-total": investigationEvidenceCount, className: "whitespace-nowrap rounded-full px-2 py-1 text-[0.625rem] font-black " + (isDark ? 'bg-indigo-400/10 text-indigo-200' : 'bg-indigo-100 text-indigo-800') }, investigationEvidenceCount + "/" + investigationCards.length + " " + __alloT('stem.solarsystem.evidence_complete', "complete"))
                         ),
                         React.createElement('div', { 'data-seasons-guide-launcher': true, className: 'm-2 rounded-xl border p-3 ' + (isDark ? 'border-cyan-300/25 bg-cyan-400/5 text-slate-100' : 'border-cyan-200 bg-cyan-50 text-slate-900') },
                           React.createElement('div', { className: 'text-xs font-black' }, 'Learn step by step · Opposite seasons'),
@@ -6266,10 +6266,10 @@ const d = labToolData.solarSystem || {};
                         React.createElement("div", { "data-solarsystem-evidence-constellation": "true", className: "solar-evidence-sky m-2 rounded-xl border border-indigo-300/20 p-3" },
                           React.createElement("div", { className: "flex items-start justify-between gap-3" },
                             React.createElement("div", null,
-                              React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[.14em] text-cyan-200" }, __alloT('stem.solarsystem.evidence_constellation', "Evidence Constellation")),
-                              React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-0.5 text-[10px] leading-snug text-slate-200" }, investigationJourneyComplete ? __alloT('stem.solarsystem.constellation_complete_message', "All five investigations now connect to your evidence journal.") : __alloT('stem.solarsystem.constellation_progress_message', "Each bright point marks an investigation with gathered evidence."))
+                              React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-[.14em] text-cyan-200" }, __alloT('stem.solarsystem.evidence_constellation', "Evidence Constellation")),
+                              React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-0.5 text-[0.625rem] leading-snug text-slate-200" }, investigationJourneyComplete ? __alloT('stem.solarsystem.constellation_complete_message', "All five investigations now connect to your evidence journal.") : __alloT('stem.solarsystem.constellation_progress_message', "Each bright point marks an investigation with gathered evidence."))
                             ),
-                            React.createElement("span", { className: "whitespace-nowrap text-[11px] font-black tabular-nums text-emerald-300" }, investigationEvidencePercent + "%")
+                            React.createElement("span", { className: "whitespace-nowrap text-[0.6875rem] font-black tabular-nums text-emerald-300" }, investigationEvidencePercent + "%")
                           ),
                           React.createElement("div", { role: "progressbar", "aria-label": __alloT('stem.solarsystem.investigation_evidence_progress', "Investigation evidence progress"), "aria-valuenow": investigationEvidenceCount, "aria-valuemin": 0, "aria-valuemax": investigationCards.length, "aria-valuetext": investigationEvidenceCount + " of " + investigationCards.length + " investigations with evidence", className: "relative mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800" },
                             React.createElement("div", { className: "solar-evidence-fill h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-emerald-400", style: { width: investigationEvidencePercent + '%' } })
@@ -6279,11 +6279,11 @@ const d = labToolData.solarSystem || {};
                             var recommended = !!nextInvestigation && item.card.id === nextInvestigation.card.id;
                             return React.createElement("li", { key: 'journey-' + item.card.id, "aria-current": recommended ? 'step' : undefined, "aria-label": item.card.title + ': ' + item.progress.label + (recommended ? '. Recommended next.' : ''), className: "min-w-0 text-center" },
                               React.createElement("span", { "data-investigation-constellation-id": item.card.id, "data-complete": item.complete, "data-current": current, "data-recommended": recommended, "aria-hidden": "true", className: "solar-evidence-node mx-auto grid h-8 w-8 place-items-center rounded-full border text-sm " + (item.complete ? 'border-emerald-300/60 bg-emerald-400/20 text-emerald-100' : ((current || recommended) ? 'border-cyan-300/60 bg-cyan-400/15 text-cyan-100' : 'border-slate-600 bg-slate-900/80 text-slate-400')) }, item.card.icon, item.complete ? React.createElement("span", { className: "solar-evidence-check" }, '\u2713') : null),
-                              React.createElement("span", { className: "mt-1 block truncate text-[10px] font-black " + (item.complete ? 'text-emerald-200' : ((current || recommended) ? 'text-cyan-200' : 'text-slate-400')) }, item.card.id === 'compare' ? __alloT('stem.solarsystem.compare_short', 'Compare') : item.card.id === 'seasons' ? __alloT('stem.solarsystem.seasons_short', 'Seasons') : item.card.id === 'signal' ? __alloT('stem.solarsystem.signal_short', 'Signal') : item.card.id === 'gravity' ? __alloT('stem.solarsystem.gravity_short', 'Gravity') : __alloT('stem.solarsystem.moon_short', 'Moon')),
+                              React.createElement("span", { className: "mt-1 block truncate text-[0.625rem] font-black " + (item.complete ? 'text-emerald-200' : ((current || recommended) ? 'text-cyan-200' : 'text-slate-400')) }, item.card.id === 'compare' ? __alloT('stem.solarsystem.compare_short', 'Compare') : item.card.id === 'seasons' ? __alloT('stem.solarsystem.seasons_short', 'Seasons') : item.card.id === 'signal' ? __alloT('stem.solarsystem.signal_short', 'Signal') : item.card.id === 'gravity' ? __alloT('stem.solarsystem.gravity_short', 'Gravity') : __alloT('stem.solarsystem.moon_short', 'Moon')),
                               React.createElement("span", { className: "sr-only" }, item.progress.label)
                             );
                           })),
-                          React.createElement("button", { type: "button", "data-investigation-next": nextInvestigation ? nextInvestigation.card.id : 'journal', onClick: function() { if (nextInvestigation) toggleSolarInvestigation(nextInvestigation.card.id, true); else openLearningJournal('all'); }, className: "mt-3 w-full rounded-lg px-3 py-2 text-[11px] font-black transition-all " + (investigationJourneyComplete ? 'bg-emerald-400 text-slate-950 hover:bg-emerald-300' : 'bg-gradient-to-r from-cyan-700 to-indigo-600 text-white hover:from-cyan-700 hover:to-indigo-600') }, investigationJourneyComplete ? __alloT('stem.solarsystem.review_evidence_journal', "Review evidence journal") : ((activeInvestigationId === nextInvestigation.card.id ? __alloT('stem.solarsystem.continue_investigation', "Continue: ") : __alloT('stem.solarsystem.next_investigation', "Next: ")) + nextInvestigation.card.title))
+                          React.createElement("button", { type: "button", "data-investigation-next": nextInvestigation ? nextInvestigation.card.id : 'journal', onClick: function() { if (nextInvestigation) toggleSolarInvestigation(nextInvestigation.card.id, true); else openLearningJournal('all'); }, className: "mt-3 w-full rounded-lg px-3 py-2 text-[0.6875rem] font-black transition-all " + (investigationJourneyComplete ? 'bg-emerald-400 text-slate-950 hover:bg-emerald-300' : 'bg-gradient-to-r from-cyan-700 to-indigo-600 text-white hover:from-cyan-700 hover:to-indigo-600') }, investigationJourneyComplete ? __alloT('stem.solarsystem.review_evidence_journal', "Review evidence journal") : ((activeInvestigationId === nextInvestigation.card.id ? __alloT('stem.solarsystem.continue_investigation', "Continue: ") : __alloT('stem.solarsystem.next_investigation', "Next: ")) + nextInvestigation.card.title))
                         ),
                         React.createElement('section', { 'data-solar-learning-progress': true, 'aria-labelledby': 'solar-learning-progress-title', className: 'm-2 rounded-xl border p-3 ' + (isDark ? 'border-emerald-300/25 bg-emerald-400/5' : 'border-emerald-200 bg-emerald-50') },
                           React.createElement('h4', { id: 'solar-learning-progress-title', className: 'text-sm font-black' }, 'Evidence → explanation'),
@@ -6318,23 +6318,23 @@ const d = labToolData.solarSystem || {};
                           },
                             React.createElement("div", { className: "flex items-start justify-between gap-2" },
                               React.createElement("span", { className: "grid h-7 w-7 flex-none place-items-center rounded-lg text-base", style: { background: card.accent + '20', color: card.accent } }, card.icon),
-                              React.createElement("span", { className: "min-w-0 rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide " + (progress.id === 'saved' || progress.id === 'evidence' ? (isDark ? 'bg-emerald-400/10 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : (recommended ? (isDark ? 'bg-cyan-400/15 text-cyan-200' : 'bg-cyan-100 text-cyan-800') : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'))) }, recommended && progress.id === 'not-started' ? __alloT('stem.solarsystem.next_up', 'Next up') : progress.label)
+                              React.createElement("span", { className: "min-w-0 rounded-full px-1.5 py-0.5 text-[0.625rem] font-black uppercase tracking-wide " + (progress.id === 'saved' || progress.id === 'evidence' ? (isDark ? 'bg-emerald-400/10 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : (recommended ? (isDark ? 'bg-cyan-400/15 text-cyan-200' : 'bg-cyan-100 text-cyan-800') : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'))) }, recommended && progress.id === 'not-started' ? __alloT('stem.solarsystem.next_up', 'Next up') : progress.label)
                             ),
                             React.createElement("span", { className: "mt-2 block text-xs font-black leading-snug" }, card.title),
-                            React.createElement("span", { className: "mt-0.5 block text-[10px] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, card.description),
-                            React.createElement('span', { 'data-learning-lab': card.id, 'data-learning-state': !linkedEntries.length ? 'unlinked' : explainedEntries ? 'explained' : 'needs-explanation', className: 'mt-2 block border-t pt-2 text-[11px] leading-relaxed ' + (isDark ? 'border-slate-700 text-slate-200' : 'border-slate-200 text-slate-700') }, linkedEntries.length ? linkedEntries.length + ' saved · ' + explainedEntries + ' explained' + (linkedEntries.length > explainedEntries ? ' · ' + (linkedEntries.length - explainedEntries) + ' need explanation' : '') : 'No linked journal evidence yet')
+                            React.createElement("span", { className: "mt-0.5 block text-[0.625rem] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, card.description),
+                            React.createElement('span', { 'data-learning-lab': card.id, 'data-learning-state': !linkedEntries.length ? 'unlinked' : explainedEntries ? 'explained' : 'needs-explanation', className: 'mt-2 block border-t pt-2 text-[0.6875rem] leading-relaxed ' + (isDark ? 'border-slate-700 text-slate-200' : 'border-slate-200 text-slate-700') }, linkedEntries.length ? linkedEntries.length + ' saved · ' + explainedEntries + ' explained' + (linkedEntries.length > explainedEntries ? ' · ' + (linkedEntries.length - explainedEntries) + ' need explanation' : '') : 'No linked journal evidence yet')
                           );
                         }))
                       ),
                       React.createElement("div", { "data-solarsystem-evidence-mission": true, role: "region", "aria-label": "Earth and Jupiter guided evidence mission", className: "mt-3 rounded-xl border p-3 " + (isDark ? 'border-amber-300/25 bg-amber-400/5' : 'border-amber-200 bg-amber-50') },
                         React.createElement("div", { className: "flex items-start justify-between gap-2" },
                           React.createElement("div", null,
-                            React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[.12em] " + (isDark ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.solarsystem.optional_guided_path', "Optional guided path")),
+                            React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-[.12em] " + (isDark ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.solarsystem.optional_guided_path', "Optional guided path")),
                             React.createElement("div", { className: "mt-0.5 text-xs font-black " + (isDark ? 'text-slate-100' : 'text-slate-900') }, "Earth \u2192 Jupiter evidence trail")
                           ),
-                          React.createElement("span", { className: "text-[11px] font-black " + (isDark ? 'text-amber-200' : 'text-amber-800') }, evidenceMissionCompleted + "/" + evidenceMissionSteps.length)
+                          React.createElement("span", { className: "text-[0.6875rem] font-black " + (isDark ? 'text-amber-200' : 'text-amber-800') }, evidenceMissionCompleted + "/" + evidenceMissionSteps.length)
                         ),
-                        React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.guided_path_description', "Prefer step-by-step guidance? Observe, compare, test an orbit, then support a claim with evidence.")),
+                        React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.guided_path_description', "Prefer step-by-step guidance? Observe, compare, test an orbit, then support a claim with evidence.")),
                         evidenceMissionActive ? React.createElement(React.Fragment, null,
                           React.createElement("div", { className: "mt-2 h-1.5 overflow-hidden rounded-full " + (isDark ? 'bg-slate-800' : 'bg-amber-100'), role: "progressbar", "aria-label": "Guided evidence mission progress", "aria-valuenow": evidenceMissionCompleted, "aria-valuemin": 0, "aria-valuemax": evidenceMissionSteps.length },
                             React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-indigo-500 transition-all", style: { width: (evidenceMissionCompleted / evidenceMissionSteps.length * 100) + '%' } })
@@ -6342,15 +6342,15 @@ const d = labToolData.solarSystem || {};
                           React.createElement("ol", { className: "mt-2 grid gap-1" },
                             evidenceMissionSteps.map(function(step, stepIndex) {
                               var current = evidenceMissionCurrent && evidenceMissionCurrent.id === step.id;
-                              return React.createElement("li", { key: step.id, className: "flex items-center gap-2 rounded-md px-2 py-1 text-[11px] " + (current ? (isDark ? 'bg-cyan-400/10 text-cyan-100' : 'bg-white text-cyan-950') : (isDark ? 'text-slate-300' : 'text-slate-600')) },
-                                React.createElement("span", { "aria-hidden": "true", className: "grid h-4 w-4 flex-none place-items-center rounded-full text-[10px] font-black " + (step.done ? 'bg-emerald-700 text-white' : (current ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-800' : 'bg-amber-100'))) }, step.done ? '\u2713' : String(stepIndex + 1)),
+                              return React.createElement("li", { key: step.id, className: "flex items-center gap-2 rounded-md px-2 py-1 text-[0.6875rem] " + (current ? (isDark ? 'bg-cyan-400/10 text-cyan-100' : 'bg-white text-cyan-950') : (isDark ? 'text-slate-300' : 'text-slate-600')) },
+                                React.createElement("span", { "aria-hidden": "true", className: "grid h-4 w-4 flex-none place-items-center rounded-full text-[0.625rem] font-black " + (step.done ? 'bg-emerald-700 text-white' : (current ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-800' : 'bg-amber-100'))) }, step.done ? '\u2713' : String(stepIndex + 1)),
                                 React.createElement("span", { className: step.done || current ? 'font-black' : 'font-bold' }, step.label)
                               );
                             })
                           ),
                           React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 rounded-lg p-2 " + (isDark ? 'bg-slate-950/60' : 'bg-white') },
-                            React.createElement("div", { className: "text-[11px] font-black " + (isDark ? 'text-slate-100' : 'text-slate-800') }, evidenceMissionCurrent ? "Next: " + evidenceMissionCurrent.label : "Mission complete"),
-                            React.createElement("p", { className: "mt-0.5 text-[11px] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, evidenceMissionCurrent ? evidenceMissionCurrent.detail : "Your journal now completes the evidence trail. Revisit the comparison to refine your explanation.")
+                            React.createElement("div", { className: "text-[0.6875rem] font-black " + (isDark ? 'text-slate-100' : 'text-slate-800') }, evidenceMissionCurrent ? "Next: " + evidenceMissionCurrent.label : "Mission complete"),
+                            React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-snug " + (isDark ? 'text-slate-300' : 'text-slate-600') }, evidenceMissionCurrent ? evidenceMissionCurrent.detail : "Your journal now completes the evidence trail. Revisit the comparison to refine your explanation.")
                           ),
                           React.createElement("button", { type: "button", onClick: function() { openEvidenceMissionStep(evidenceMissionCurrent ? evidenceMissionCurrent.id : 'compare'); }, className: "mt-2 w-full rounded-lg px-3 py-2 text-xs font-black transition-all " + (isDark ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : 'bg-amber-800 text-white hover:bg-amber-900') }, evidenceMissionCurrent ? (evidenceMissionCurrent.id === 'observe' ? 'Open Earth evidence' : evidenceMissionCurrent.id === 'compare' ? 'Compare Earth + Jupiter' : evidenceMissionCurrent.id === 'orbit' ? 'Open paused Jupiter orbit' : 'Open evidence journal') : 'Review Earth + Jupiter')
                         ) : React.createElement("button", { type: "button", onClick: function() { updMulti({ evidenceMissionActive: true, modelLens: 'story', orreryMode: false, selectedPlanet: missionEarth.name, viewTab: 'overview' }); }, className: "mt-2 w-full rounded-lg bg-amber-800 px-3 py-2 text-xs font-black text-white transition-all hover:bg-amber-900" }, "Start four-step mission")
@@ -6382,11 +6382,11 @@ const d = labToolData.solarSystem || {};
               },
                 React.createElement("div", { className: "mb-3 flex flex-wrap items-start justify-between gap-3" },
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[.16em] " + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, "Scientific visual compare"),
+                    React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-[.16em] " + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, "Scientific visual compare"),
                     React.createElement("h4", { id: "solar-visual-comparison-title", className: "mt-1 text-lg font-black" }, "How different are two worlds?"),
                     React.createElement("p", { className: "mt-1 text-xs leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Compare true diameter ratios, surface gravity, time cycles, temperature, and moons without confusing mass with weight.")
                   ),
-                  React.createElement("span", { className: "rounded-full border px-2.5 py-1 text-[11px] font-black " + (isDark ? 'border-cyan-300/30 bg-cyan-400/10 text-cyan-200' : 'border-cyan-200 bg-cyan-50 text-cyan-800') }, "Shared diameter scale")
+                  React.createElement("span", { className: "rounded-full border px-2.5 py-1 text-[0.6875rem] font-black " + (isDark ? 'border-cyan-300/30 bg-cyan-400/10 text-cyan-200' : 'border-cyan-200 bg-cyan-50 text-cyan-800') }, "Shared diameter scale")
                 ),
                 React.createElement("div", { style: { marginBottom: '12px' } },
                   React.createElement("p", { style: { fontSize: '12px', fontWeight: 800, marginBottom: '8px' } }, __alloT('stem.solarsystem.compare_try_question', 'Try a question, then look for evidence')),
@@ -6399,7 +6399,7 @@ const d = labToolData.solarSystem || {};
                     );
                   }))
                 ),
-                React.createElement("div", { className: "mb-1 text-[11px] font-black uppercase tracking-[.12em] " + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, __alloT('stem.solarsystem.compare_step_choose_worlds', "Step 1 \u00b7 Choose two worlds")),
+                React.createElement("div", { className: "mb-1 text-[0.6875rem] font-black uppercase tracking-[.12em] " + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, __alloT('stem.solarsystem.compare_step_choose_worlds', "Step 1 \u00b7 Choose two worlds")),
                 React.createElement("div", { className: "mb-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2" },
                   React.createElement("select", { "aria-label": "First world for visual comparison", value: d.compare1 || '', onChange: function(e) { updMulti({ compare1: e.target.value, compareEvidenceSavedFor: null }); }, className: "min-w-0 rounded-lg border px-2 py-2 text-sm " + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') },
                     React.createElement("option", { value: "" }, "Choose first world"),
@@ -6415,7 +6415,7 @@ const d = labToolData.solarSystem || {};
                   buildSolarPlanetComparison(compareP1, compareP2),
                   React.createElement("div", { "data-inquiry-stage": "save", className: "mt-3 rounded-xl border border-l-[3px] p-3 " + (isDark ? 'border-emerald-300/20 bg-emerald-400/5' : 'border-emerald-200 bg-emerald-50') },
                     React.createElement("div", { className: "text-xs font-black" }, __alloT('stem.solarsystem.compare_step_save', "Step 3 \u00b7 Save comparison evidence")),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.compare_evidence_prompt', "Capture the relationship you can defend from the shared scale and measured values.")),
+                    React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.compare_evidence_prompt', "Capture the relationship you can defend from the shared scale and measured values.")),
                     React.createElement("label", { htmlFor: "solar-compare-reasoning", style: { display: 'block', marginTop: '10px', fontSize: '12px', fontWeight: 800 } }, __alloT('stem.solarsystem.compare_reasoning_label', 'My explanation (optional)')),
                     React.createElement("p", { id: "solar-compare-reasoning-help", style: { fontSize: '11px', lineHeight: 1.5, margin: '4px 0 8px' } }, __alloT('stem.solarsystem.compare_reasoning_help', 'Use two measurements: I notice ___. My evidence is ___ and ___. This supports my claim because ___. You can also discuss your explanation with a partner.')),
                     React.createElement("textarea", { id: "solar-compare-reasoning", "aria-describedby": "solar-compare-reasoning-help", rows: 3, maxLength: 1200, value: compareReasoning, onChange: function(e) { var drafts = Object.assign({}, compareDrafts); drafts[compareEvidenceKey] = e.target.value; updMulti({ compareReasoningDrafts: drafts, compareEvidenceSavedFor: null }); }, style: { display: 'block', width: '100%', boxSizing: 'border-box', resize: 'vertical', minHeight: '80px', borderRadius: '8px', padding: '10px', border: '1px solid ' + (isDark ? '#64748b' : '#94a3b8'), background: isDark ? '#0f172a' : '#ffffff', color: isDark ? '#f1f5f9' : '#0f172a', fontSize: '14px', lineHeight: 1.5 } }),
@@ -12262,11 +12262,11 @@ const d = labToolData.solarSystem || {};
 
                 React.createElement("div", { "data-solarsystem-speed-control": true, className: "solar-canvas-speed-control flex min-w-0 items-center gap-2 flex-1 max-w-[200px] bg-white/10 rounded-lg px-3 py-1.5", style: { border: '1px solid rgba(255,255,255,0.08)' } },
 
-                  React.createElement("span", { className: "text-[11px] text-white/50 font-bold whitespace-nowrap" }, "\u23F1"),
+                  React.createElement("span", { className: "text-[0.6875rem] text-white/50 font-bold whitespace-nowrap" }, "\u23F1"),
 
                   React.createElement("input", { "data-solarsystem-speed-slider": true, type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': __alloT('stem.solarsystem.simulation_speed', 'Simulation speed'), onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "solar-canvas-speed-input min-w-0 flex-1 accent-indigo-400" }),
 
-                  React.createElement("span", { className: "text-[11px] text-indigo-300 font-bold min-w-[32px] flex-shrink-0 text-right", style: { fontFamily: 'monospace' } }, simSpeed.toFixed(1) + "x")
+                  React.createElement("span", { className: "text-[0.6875rem] text-indigo-300 font-bold min-w-[32px] flex-shrink-0 text-right", style: { fontFamily: 'monospace' } }, simSpeed.toFixed(1) + "x")
 
                 ),
 
@@ -12276,13 +12276,13 @@ const d = labToolData.solarSystem || {};
 
                   onClick: () => { upd('selectedPlanet', null); stopPlanetAmbience(); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
 
-                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white/10 text-white/70 hover:bg-white/20 transition-all",
+                  className: "px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-white/10 text-white/70 hover:bg-white/20 transition-all",
                   style: { border: '1px solid rgba(255,255,255,0.1)' }
 
                 }, __alloT('stem.solarsystem.reset', "\uD83C\uDFE0 Reset")),
 
-                React.createElement("span", { className: "text-[11px] text-white/60 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, __alloT('stem.solarsystem.drag_scroll_click', "Drag \u2022 Scroll \u2022 Click")),
-                React.createElement("span", { className: "text-[11px] text-white/60 hidden sm:inline", style: { fontStyle: 'italic' } },
+                React.createElement("span", { className: "text-[0.6875rem] text-white/60 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, __alloT('stem.solarsystem.drag_scroll_click', "Drag \u2022 Scroll \u2022 Click")),
+                React.createElement("span", { className: "text-[0.6875rem] text-white/60 hidden sm:inline", style: { fontStyle: 'italic' } },
                   ' \u2022 \u2190\u2192\u2191\u2193 ' + __alloT('stem.solarsystem.keys_orbit_zoom', 'orbit \u2022 +/- zoom \u2022 R reset'))
 
               )
@@ -12305,7 +12305,7 @@ const d = labToolData.solarSystem || {};
 
                 onClick: () => { upd('selectedPlanet', p.name); playPlanetSelect(p.dist || 1); startPlanetAmbience(p.name); const _c3 = document.querySelector('.solar3d-canvas'); if (_c3) { _c3.dataset.flyTo = p.name; } if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
 
-                className: "solar-canvas-world-button px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-lg ring-2 ring-white/30' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm')),
+                className: "solar-canvas-world-button px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-lg ring-2 ring-white/30' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm')),
 
                 style: d.selectedPlanet === p.name ? { background: 'linear-gradient(135deg, ' + getSolarPlanetAccent(p) + ', ' + getSolarPlanetAccent(p) + 'cc)', textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}
 
@@ -12320,9 +12320,9 @@ const d = labToolData.solarSystem || {};
 
             !d.orreryMode && React.createElement("details", { className: "mt-2 rounded-xl border overflow-hidden " + (isDark ? 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-700/40' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200') },
 
-              React.createElement("summary", { className: "px-3 py-1.5 text-[11px] font-bold cursor-pointer select-none transition-colors " + (isDark ? 'text-amber-300 hover:bg-amber-900/30' : 'text-amber-700 hover:bg-amber-100/50') }, __alloT('stem.solarsystem.why_aren_t_the_sizes_truly_to_scale', "\uD83D\uDD2D Why aren't the sizes truly to scale?")),
+              React.createElement("summary", { className: "px-3 py-1.5 text-[0.6875rem] font-bold cursor-pointer select-none transition-colors " + (isDark ? 'text-amber-300 hover:bg-amber-900/30' : 'text-amber-700 hover:bg-amber-100/50') }, __alloT('stem.solarsystem.why_aren_t_the_sizes_truly_to_scale', "\uD83D\uDD2D Why aren't the sizes truly to scale?")),
 
-              React.createElement("div", { className: "px-3 pb-3 text-[11px] leading-relaxed " + (isDark ? 'text-amber-300/80' : 'text-amber-800') },
+              React.createElement("div", { className: "px-3 pb-3 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-amber-300/80' : 'text-amber-800') },
 
                 React.createElement("p", { className: "mb-2" }, __alloT('stem.solarsystem.scale_walk_twenty_cm_sun', "With a 20 cm Sun and one physical scale, Earth is about 1.8 mm wide and 21.5 m away; Neptune is about 646 m away. Sizes and distances can share a scale, but tiny worlds are hard to see across such a large space. Try the scale-walk planner to choose your own model size.")),
 
@@ -12458,7 +12458,7 @@ const d = labToolData.solarSystem || {};
                         }
                       },
 
-                      className: "solar-world-view-tab min-w-0 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all hover:-translate-y-0.5 sm:px-3 " +
+                      className: "solar-world-view-tab min-w-0 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold capitalize transition-all hover:-translate-y-0.5 sm:px-3 " +
 
                         ((d.viewTab || 'overview') === tab
                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400/40'
@@ -12503,7 +12503,7 @@ const d = labToolData.solarSystem || {};
                       }
                     },
 
-                      React.createElement("dt", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item[0] + ' ' + item[1]),
+                      React.createElement("dt", { className: "text-[0.6875rem] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item[0] + ' ' + item[1]),
 
                       React.createElement("dd", { className: "text-xs font-bold mt-0.5 break-words " + (isDark ? 'text-white' : 'text-slate-800'), title: item[2] }, item[2])
 
@@ -12532,14 +12532,14 @@ const d = labToolData.solarSystem || {};
                     }
                   },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_vs_earth', "\u2696\uFE0F Gravity vs Earth")),
-                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: selectedAccent } }, (GRAVITY_MAP[sel.key] || 1).toFixed(2) + 'g')
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_vs_earth', "\u2696\uFE0F Gravity vs Earth")),
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { fontFamily: 'monospace', color: selectedAccent } }, (GRAVITY_MAP[sel.key] || 1).toFixed(2) + 'g')
                     ),
                     React.createElement("div", { "data-solar-comparison-meter": "gravity", role: "meter", "aria-label": sel.name + " gravity relative to Earth on a zero to three g scale", "aria-valuemin": 0, "aria-valuemax": 3, "aria-valuenow": Number((GRAVITY_MAP[sel.key] || 1).toFixed(2)), "aria-valuetext": (GRAVITY_MAP[sel.key] || 1).toFixed(2) + " times standard Earth gravity", className: "solar-comparison-track w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
                       React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((GRAVITY_MAP[sel.key] || 1) / 3) * 100) + '%', background: 'linear-gradient(90deg,' + selectedAccent + 'cc,' + selectedAccent + ')', boxShadow: '0 0 10px ' + selectedAccent + '88' } }),
                       React.createElement("span", { className: "solar-earth-reference-marker", "aria-hidden": "true", style: { left: '33.333%' } })
                     ),
-                    React.createElement("p", { className: "mt-1.5 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_gravity_marker', "Scale 0\u20133g \u00b7 marker = Earth (1g)"))
+                    React.createElement("p", { className: "mt-1.5 text-[0.6875rem] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_gravity_marker', "Scale 0\u20133g \u00b7 marker = Earth (1g)"))
                   ),
                   // Size bar
                   React.createElement("div", {
@@ -12557,14 +12557,14 @@ const d = labToolData.solarSystem || {};
                     }
                   },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.radius_vs_earth', "\uD83D\uDCCF Radius vs Earth")),
-                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: selectedAccent } }, ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + '\u00d7')
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.radius_vs_earth', "\uD83D\uDCCF Radius vs Earth")),
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { fontFamily: 'monospace', color: selectedAccent } }, ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
                     React.createElement("div", { "data-solar-comparison-meter": "radius", role: "meter", "aria-label": sel.name + " radius relative to Earth on a zero to twelve Earth-radius scale", "aria-valuemin": 0, "aria-valuemax": 12, "aria-valuenow": Number(((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2)), "aria-valuetext": ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + " Earth radii", className: "solar-comparison-track w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
                       React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (((PLANET_RADII[sel.key] || 6371) / 6371) / 12) * 100) + '%', background: 'linear-gradient(90deg,' + selectedAccent + 'cc,' + selectedAccent + ')', boxShadow: '0 0 10px ' + selectedAccent + '88' } }),
                       React.createElement("span", { className: "solar-earth-reference-marker", "aria-hidden": "true", style: { left: '8.333%' } })
                     ),
-                    React.createElement("p", { className: "mt-1.5 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_radius_marker', "Scale 0\u201312\u00d7 \u00b7 marker = Earth radius (1\u00d7)"))
+                    React.createElement("p", { className: "mt-1.5 text-[0.6875rem] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_radius_marker', "Scale 0\u201312\u00d7 \u00b7 marker = Earth radius (1\u00d7)"))
                   )
                 ),
 
@@ -12572,21 +12572,21 @@ const d = labToolData.solarSystem || {};
 
                 sel.surfaceDesc && React.createElement("div", { className: "rounded-lg p-2 border mb-2 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-sky-50 to-blue-50 border-sky-200') },
 
-                  React.createElement("p", { className: "text-[11px] font-bold mb-0.5 " + (isDark ? 'text-sky-300' : 'text-sky-700') }, __alloT('stem.solarsystem.surface_description', "\uD83C\uDF0D Surface Description")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold mb-0.5 " + (isDark ? 'text-sky-300' : 'text-sky-700') }, __alloT('stem.solarsystem.surface_description', "\uD83C\uDF0D Surface Description")),
 
-                  React.createElement("p", { className: "text-[11px] leading-relaxed " + (isDark ? 'text-sky-100' : 'text-sky-700') }, sel.surfaceDesc),
+                  React.createElement("p", { className: "text-[0.6875rem] leading-relaxed " + (isDark ? 'text-sky-100' : 'text-sky-700') }, sel.surfaceDesc),
 
                 ),
 
                 sel.notableFeatures && sel.notableFeatures.length > 0 && React.createElement("div", { "data-solarsystem-notable-features": sel.key, className: "rounded-lg p-2 border mb-2 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200') },
 
-                  React.createElement("p", { className: "text-[11px] font-bold mb-1 " + (isDark ? 'text-violet-300' : 'text-violet-700') }, __alloT('stem.solarsystem.notable_features', "\uD83C\uDFAF Notable Features")),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold mb-1 " + (isDark ? 'text-violet-300' : 'text-violet-700') }, __alloT('stem.solarsystem.notable_features', "\uD83C\uDFAF Notable Features")),
 
                   React.createElement("div", { role: "list", className: "grid grid-cols-1 gap-1" },
 
                     sel.notableFeatures.map(function (feat, fi) {
 
-                      return React.createElement("div", { key: fi, role: "listitem", className: "flex items-start gap-1.5 text-[11px] " + (isDark ? 'text-violet-100' : 'text-violet-700') },
+                      return React.createElement("div", { key: fi, role: "listitem", className: "flex items-start gap-1.5 text-[0.6875rem] " + (isDark ? 'text-violet-100' : 'text-violet-700') },
 
                         React.createElement("span", { "aria-hidden": "true", className: "mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 " + (isDark ? 'bg-violet-300' : 'bg-violet-500') }),
 
@@ -12655,9 +12655,9 @@ const d = labToolData.solarSystem || {};
 
                       return React.createElement("div", { key: item[0], role: "listitem", className: "min-w-0 bg-white/10 rounded-lg px-1.5 py-2 text-center backdrop-blur-sm" },
 
-                        React.createElement("p", { className: "text-[9px] sm:text-[11px] text-slate-200 leading-tight" }, item[0]),
+                        React.createElement("p", { className: "text-[0.5625rem] sm:text-[0.6875rem] text-slate-200 leading-tight" }, item[0]),
 
-                        React.createElement("p", { className: "mt-1 text-[10px] sm:text-xs font-bold leading-tight break-words" }, item[1])
+                        React.createElement("p", { className: "mt-1 text-[0.625rem] sm:text-xs font-bold leading-tight break-words" }, item[1])
 
                       );
 
@@ -12674,7 +12674,7 @@ const d = labToolData.solarSystem || {};
                     return React.createElement("div", { className: "bg-white/5 rounded-lg p-2 flex items-center gap-2 border border-white/10", style: { position: "relative", zIndex: 1 } },
                       React.createElement("span", { className: "text-sm" }, "\uD83C\uDFCB\uFE0F"),
                       React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-[11px] text-slate-200" }, "A 70 kg mass stays 70 kg everywhere."),
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-200" }, "A 70 kg mass stays 70 kg everywhere."),
                         React.createElement("p", { className: "text-xs font-bold " + (gVal > 1 ? 'text-red-400' : 'text-green-400') },
                           "Its weight force would be about " + planetWeightForce.toLocaleString() + " N on " + sel.name + referenceLevel + ".")
                       )
@@ -14351,10 +14351,10 @@ const d = labToolData.solarSystem || {};
                   },
                     React.createElement("div", { className: "flex items-start justify-between gap-3" },
                       React.createElement("div", null,
-                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300" }, "Observation Console"),
-                        React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-300" }, "Open an evidence channel, then inspect a landmark signal.")
+                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.18em] text-cyan-300" }, "Observation Console"),
+                        React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-relaxed text-slate-300" }, "Open an evidence channel, then inspect a landmark signal.")
                       ),
-                      React.createElement("span", { "aria-hidden": "true", className: "rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2 py-1 text-[9px] font-black text-cyan-200" }, "LIVE MODEL")
+                      React.createElement("span", { "aria-hidden": "true", className: "rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2 py-1 text-[0.5625rem] font-black text-cyan-200" }, "LIVE MODEL")
                     ),
                     React.createElement("div", {
                       "data-solarsystem-surface-evidence": true,
@@ -14374,7 +14374,7 @@ const d = labToolData.solarSystem || {};
                           "aria-controls": panelId,
                           "aria-label": "Explore " + btn.label + " of " + sel.name,
                           onClick: function() { upd('surfaceExplore', isActive ? null : btn.key); },
-                          className: "min-h-[44px] min-w-0 rounded-lg border px-2 py-2 text-[10px] font-bold leading-tight transition-all sm:px-3 " +
+                          className: "min-h-[44px] min-w-0 rounded-lg border px-2 py-2 text-[0.625rem] font-bold leading-tight transition-all sm:px-3 " +
                             (isActive
                               ? 'border-cyan-300/60 bg-gradient-to-r from-indigo-600 to-cyan-700 text-white shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-300/30'
                               : 'border-slate-600 bg-slate-800 text-slate-200 hover:border-cyan-400/60 hover:bg-slate-700 hover:text-cyan-200')
@@ -14388,10 +14388,10 @@ const d = labToolData.solarSystem || {};
                       "data-solar-surface-status": activeSurfaceButton ? activeSurfaceButton.key : "idle",
                       role: "status",
                       "aria-live": "polite",
-                      className: "mt-2 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-[11px] leading-relaxed text-slate-300"
+                      className: "mt-2 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-[0.6875rem] leading-relaxed text-slate-300"
                     }, activeSurfaceButton ? "Showing " + activeSurfaceButton.label + " evidence for " + sel.name + "." : "Choose an evidence channel to reveal the supporting readout."),
                     sel.notableFeatures && sel.notableFeatures.length ? React.createElement("div", { className: "mt-3 border-t border-white/10 pt-3" },
-                      React.createElement("p", { className: "text-[9px] font-black uppercase tracking-[0.16em] text-indigo-300" }, "Landmark Signals"),
+                      React.createElement("p", { className: "text-[0.5625rem] font-black uppercase tracking-[0.16em] text-indigo-300" }, "Landmark Signals"),
                       React.createElement("div", { role: "group", "aria-label": sel.name + " landmark signals", className: "mt-2 grid grid-cols-3 gap-2" },
                         sel.notableFeatures.slice(0, 3).map(function(feature, featureIndex) {
                           var featureActive = hasActiveFeature && activeFeatureIndex === featureIndex;
@@ -14402,7 +14402,7 @@ const d = labToolData.solarSystem || {};
                             "aria-pressed": featureActive,
                             "aria-controls": landmarkReadoutId,
                             onClick: function() { upd('surfaceFeature', featureActive ? null : featureIndex); },
-                            className: "min-h-[44px] min-w-0 rounded-lg border px-2 py-2 text-[10px] font-bold leading-tight transition-colors " + (featureActive ? 'border-indigo-300 bg-indigo-500/25 text-white ring-1 ring-indigo-300/30' : 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60 hover:text-indigo-200')
+                            className: "min-h-[44px] min-w-0 rounded-lg border px-2 py-2 text-[0.625rem] font-bold leading-tight transition-colors " + (featureActive ? 'border-indigo-300 bg-indigo-500/25 text-white ring-1 ring-indigo-300/30' : 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60 hover:text-indigo-200')
                           }, "0" + (featureIndex + 1));
                         })
                       ),
@@ -14411,7 +14411,7 @@ const d = labToolData.solarSystem || {};
                         "data-solar-surface-landmark-readout": hasActiveFeature ? activeFeatureIndex : "idle",
                         role: "status",
                         "aria-live": "polite",
-                        className: "mt-2 min-h-[44px] rounded-lg border border-indigo-400/20 bg-indigo-950/50 px-3 py-2 text-[11px] leading-relaxed text-indigo-100"
+                        className: "mt-2 min-h-[44px] rounded-lg border border-indigo-400/20 bg-indigo-950/50 px-3 py-2 text-[0.6875rem] leading-relaxed text-indigo-100"
                       }, hasActiveFeature ? React.createElement(React.Fragment, null,
                         React.createElement("strong", { className: "text-cyan-200" }, "Landmark " + (activeFeatureIndex + 1) + ": "),
                         sel.notableFeatures[activeFeatureIndex]
@@ -14424,24 +14424,24 @@ const d = labToolData.solarSystem || {};
                 d.surfaceExplore === 'moons' && React.createElement("div", { id: "solar-surface-panel-moons-" + sel.key.toLowerCase(), className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h6", { className: "text-sm font-bold text-white" }, "\uD83C\uDF19 " + sel.name + "'s Moons"),
-                    React.createElement("span", { className: "text-[11px] text-slate-200" }, sel.moons + " known moon" + (sel.moons !== 1 ? 's' : ''))
+                    React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, sel.moons + " known moon" + (sel.moons !== 1 ? 's' : ''))
                   ),
                   NOTABLE_MOONS[sel.key] && NOTABLE_MOONS[sel.key].length > 0 ?
                     React.createElement("div", { className: "space-y-2" },
                       NOTABLE_MOONS[sel.key].map(function(moon, mi) {
                         return React.createElement("div", { key: mi, className: "bg-white/5 rounded-lg p-3 border border-white/10 hover:border-indigo-400/40 hover:bg-white/10 hover:shadow-lg hover:shadow-indigo-500/10 transition-all cursor-default group" },
                           React.createElement("div", { className: "flex items-start gap-2" },
-                            React.createElement("div", { className: "w-8 h-8 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-[11px] font-bold text-slate-800 shrink-0 group-hover:from-indigo-300 group-hover:to-indigo-400 transition-all" }, moon.name.charAt(0)),
+                            React.createElement("div", { className: "w-8 h-8 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-[0.6875rem] font-bold text-slate-800 shrink-0 group-hover:from-indigo-300 group-hover:to-indigo-400 transition-all" }, moon.name.charAt(0)),
                             React.createElement("div", { className: "flex-1 min-w-0" },
                               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                                 React.createElement("span", { className: "text-xs font-bold text-white" }, moon.name),
-                                React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium" }, moon.type)
+                                React.createElement("span", { className: "text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium" }, moon.type)
                               ),
-                              React.createElement("div", { className: "flex gap-3 mt-1 text-[11px] text-slate-200" },
+                              React.createElement("div", { className: "flex gap-3 mt-1 text-[0.6875rem] text-slate-200" },
                                 React.createElement("span", null, "\u2300 " + moon.diameter),
                                 React.createElement("span", null, "\u21C4 " + moon.dist + " from " + sel.name)
                               ),
-                              React.createElement("p", { className: "text-[11px] text-sky-300 mt-1 leading-relaxed" }, "\uD83D\uDCA1 " + moon.fact)
+                              React.createElement("p", { className: "text-[0.6875rem] text-sky-300 mt-1 leading-relaxed" }, "\uD83D\uDCA1 " + moon.fact)
                             )
                           )
                         );
@@ -14455,7 +14455,7 @@ const d = labToolData.solarSystem || {};
                 // ── ATMOSPHERE DEPTH PANEL ──
                 d.surfaceExplore === 'atmosphere' && React.createElement("div", { id: "solar-surface-panel-atmosphere-" + sel.key.toLowerCase(), className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
                   React.createElement("h6", { className: "text-sm font-bold text-white mb-2" }, "\uD83C\uDF2B\uFE0F Atmospheric Descent: " + sel.name),
-                  React.createElement("p", { className: "text-[11px] text-slate-200 mb-2" }, "What you\u2019d experience descending through " + sel.name + "'s atmosphere:"),
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-200 mb-2" }, "What you\u2019d experience descending through " + sel.name + "'s atmosphere:"),
                   DESCENT_LAYERS[sel.key] ?
                     React.createElement("div", { className: "space-y-0" },
                       DESCENT_LAYERS[sel.key].map(function(layer, li) {
@@ -14470,10 +14470,10 @@ const d = labToolData.solarSystem || {};
                             React.createElement("div", { className: "bg-white/5 rounded-lg p-2 border border-white/10 hover:border-white/20 transition-all", style: { borderLeftColor: layer.color, borderLeftWidth: '3px' } },
                               React.createElement("div", { className: "flex items-center justify-between mb-1" },
                                 React.createElement("span", { className: "text-xs font-bold", style: { color: layer.color } }, layer.name),
-                                React.createElement("span", { className: "text-[11px] text-slate-300 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
+                                React.createElement("span", { className: "text-[0.6875rem] text-slate-300 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
                               ),
-                              React.createElement("p", { className: "text-[11px] text-slate-300 mb-1" }, layer.desc),
-                              React.createElement("div", { className: "flex gap-3 text-[11px] text-slate-200" },
+                              React.createElement("p", { className: "text-[0.6875rem] text-slate-300 mb-1" }, layer.desc),
+                              React.createElement("div", { className: "flex gap-3 text-[0.6875rem] text-slate-200" },
                                 React.createElement("span", null, "\uD83C\uDF21 " + layer.temp),
                                 React.createElement("span", null, "\uD83D\uDCA8 " + layer.pressure)
                               )
@@ -14484,7 +14484,7 @@ const d = labToolData.solarSystem || {};
                     ) :
                     React.createElement("div", { className: "text-center py-3" },
                       React.createElement("p", { className: "text-xs text-slate-300" }, sel.atmosphere || "No atmosphere data"),
-                      React.createElement("p", { className: "text-[11px] text-slate-300 mt-1" }, "Detailed descent layers not available for " + sel.name)
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-300 mt-1" }, "Detailed descent layers not available for " + sel.name)
                     )
                 ),
 
@@ -14501,23 +14501,23 @@ const d = labToolData.solarSystem || {};
                         React.createElement("p", { className: "text-xs font-bold " + (MAGNETOSPHERE[sel.key].shield ? 'text-green-400' : 'text-red-400') },
                           MAGNETOSPHERE[sel.key].shield ? 'ACTIVE SHIELD' : 'NO SHIELD'
                         ),
-                        React.createElement("p", { className: "text-[11px] text-slate-300" }, "Strength: " + MAGNETOSPHERE[sel.key].strength)
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-300" }, "Strength: " + MAGNETOSPHERE[sel.key].strength)
                       )
                     ),
-                    React.createElement("p", { className: "text-[11px] text-sky-300 leading-relaxed" }, "\uD83D\uDCA1 " + MAGNETOSPHERE[sel.key].note),
+                    React.createElement("p", { className: "text-[0.6875rem] text-sky-300 leading-relaxed" }, "\uD83D\uDCA1 " + MAGNETOSPHERE[sel.key].note),
                     // Instrument cards avoid implying that mixed magnetic measures share a linear scale.
                     React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
                       React.createElement("div", { className: "rounded-lg border border-white/10 bg-black/20 p-2" },
-                        React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wide text-slate-300" }, "Field report"),
-                        React.createElement("p", { className: "mt-1 text-[11px] font-bold text-cyan-200" }, MAGNETOSPHERE[sel.key].strength)
+                        React.createElement("p", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-slate-300" }, "Field report"),
+                        React.createElement("p", { className: "mt-1 text-[0.6875rem] font-bold text-cyan-200" }, MAGNETOSPHERE[sel.key].strength)
                       ),
                       React.createElement("div", { className: "rounded-lg border border-white/10 bg-black/20 p-2" },
-                        React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wide text-slate-300" }, "Surface shield"),
-                        React.createElement("p", { className: "mt-1 text-[11px] font-bold " + (MAGNETOSPHERE[sel.key].shield ? 'text-green-300' : 'text-amber-300') }, MAGNETOSPHERE[sel.key].shield ? "Protective global field" : "Limited or absent")
+                        React.createElement("p", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-slate-300" }, "Surface shield"),
+                        React.createElement("p", { className: "mt-1 text-[0.6875rem] font-bold " + (MAGNETOSPHERE[sel.key].shield ? 'text-green-300' : 'text-amber-300') }, MAGNETOSPHERE[sel.key].shield ? "Protective global field" : "Limited or absent")
                       )
                     ),
-                    React.createElement("p", { role: "note", className: "mt-2 text-[10px] leading-relaxed text-slate-300" }, "Comparison descriptions may refer to different field measures; they are not plotted on one linear scale."),
-                    ESCAPE_VEL[sel.key] && React.createElement("p", { className: "text-[11px] text-slate-300 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.key] + " km/s" + (sel.key !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
+                    React.createElement("p", { role: "note", className: "mt-2 text-[0.625rem] leading-relaxed text-slate-300" }, "Comparison descriptions may refer to different field measures; they are not plotted on one linear scale."),
+                    ESCAPE_VEL[sel.key] && React.createElement("p", { className: "text-[0.6875rem] text-slate-300 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.key] + " km/s" + (sel.key !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
                   )
                 ),
 
@@ -14527,24 +14527,24 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "bg-white/5 rounded-lg p-3 border border-white/10" },
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                       React.createElement("div", { className: "bg-yellow-500/10 rounded-lg p-2 text-center border border-yellow-500/20" },
-                        React.createElement("p", { className: "text-[11px] text-yellow-400/70" }, __alloT('stem.solarsystem.sun_size', "\u2600\uFE0F Sun Size")),
+                        React.createElement("p", { className: "text-[0.6875rem] text-yellow-400/70" }, __alloT('stem.solarsystem.sun_size', "\u2600\uFE0F Sun Size")),
                         React.createElement("p", { className: "text-xs font-bold text-yellow-300" }, SKY_VIEWS[sel.key].sunSize)
                       ),
                       React.createElement("div", { className: "bg-blue-500/10 rounded-lg p-2 text-center border border-blue-500/20" },
-                        React.createElement("p", { className: "text-[11px] text-blue-400/70" }, __alloT('stem.solarsystem.visible', "\uD83D\uDC41 Visible")),
-                        React.createElement("p", { className: "text-[11px] font-bold text-blue-300" }, SKY_VIEWS[sel.key].visible.length + " object" + (SKY_VIEWS[sel.key].visible.length !== 1 ? 's' : ''))
+                        React.createElement("p", { className: "text-[0.6875rem] text-blue-400/70" }, __alloT('stem.solarsystem.visible', "\uD83D\uDC41 Visible")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-blue-300" }, SKY_VIEWS[sel.key].visible.length + " object" + (SKY_VIEWS[sel.key].visible.length !== 1 ? 's' : ''))
                       )
                     ),
                     React.createElement("div", { className: "mb-2" },
-                      React.createElement("p", { className: "text-[11px] text-slate-200 font-bold mb-1" }, __alloT('stem.solarsystem.visible_objects', "VISIBLE OBJECTS:")),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-200 font-bold mb-1" }, __alloT('stem.solarsystem.visible_objects', "VISIBLE OBJECTS:")),
                       SKY_VIEWS[sel.key].visible.map(function(obj, oi) {
                         return React.createElement("div", { key: oi, className: "flex items-center gap-1.5 py-0.5" },
-                          React.createElement("span", { className: "text-[11px]" }, "\u2B50"),
-                          React.createElement("span", { className: "text-[11px] text-slate-300" }, obj)
+                          React.createElement("span", { className: "text-[0.6875rem]" }, "\u2B50"),
+                          React.createElement("span", { className: "text-[0.6875rem] text-slate-300" }, obj)
                         );
                       })
                     ),
-                    React.createElement("p", { className: "text-[11px] text-sky-300 leading-relaxed border-t border-white/10 pt-2" }, "\uD83D\uDCA1 " + SKY_VIEWS[sel.key].note)
+                    React.createElement("p", { className: "text-[0.6875rem] text-sky-300 leading-relaxed border-t border-white/10 pt-2" }, "\uD83D\uDCA1 " + SKY_VIEWS[sel.key].note)
                   )
                 ),
 
@@ -14554,8 +14554,8 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "space-y-2" },
                     // Atmosphere composition
                     React.createElement("div", { className: "bg-white/5 rounded-lg p-2.5 border border-white/10" },
-                      React.createElement("p", { className: "text-[11px] text-slate-200 font-bold mb-1.5" }, __alloT('stem.solarsystem.atmosphere_2', "\uD83C\uDF2C\uFE0F ATMOSPHERE")),
-                      React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, sel.atmosphere || 'No significant atmosphere'),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-200 font-bold mb-1.5" }, __alloT('stem.solarsystem.atmosphere_2', "\uD83C\uDF2C\uFE0F ATMOSPHERE")),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, sel.atmosphere || 'No significant atmosphere'),
                       // Visual gas bars
                       (function() {
                         var isGas2 = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
@@ -14571,11 +14571,11 @@ const d = labToolData.solarSystem || {};
                         return React.createElement("div", { className: "mt-2 space-y-1" },
                           gases.map(function(g) {
                             return React.createElement("div", { key: g[0], className: "flex items-center gap-2" },
-                              React.createElement("span", { className: "text-[11px] text-slate-300 w-8 text-right font-mono" }, g[0]),
+                              React.createElement("span", { className: "text-[0.6875rem] text-slate-300 w-8 text-right font-mono" }, g[0]),
                               React.createElement("div", { className: "flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden" },
                                 React.createElement("div", { className: "h-full rounded-full", style: { width: Math.max(2, g[1]) + '%', backgroundColor: g[2] } })
                               ),
-                              React.createElement("span", { className: "text-[11px] font-mono", style: { color: g[2] } }, g[1] + '%')
+                              React.createElement("span", { className: "text-[0.6875rem] font-mono", style: { color: g[2] } }, g[1] + '%')
                             );
                           })
                         );
@@ -14583,15 +14583,15 @@ const d = labToolData.solarSystem || {};
                     ),
                     // Surface composition
                     React.createElement("div", { className: "bg-white/5 rounded-lg p-2.5 border border-white/10" },
-                      React.createElement("p", { className: "text-[11px] text-slate-200 font-bold mb-1.5" }, __alloT('stem.solarsystem.surface_4', "\uD83E\uDEA8 SURFACE")),
-                      React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, sel.surface || 'Surface data unavailable'),
-                      sel.surfaceDesc && React.createElement("p", { className: "text-[11px] text-sky-300 mt-1" }, "\uD83D\uDCA1 " + sel.surfaceDesc)
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-200 font-bold mb-1.5" }, __alloT('stem.solarsystem.surface_4', "\uD83E\uDEA8 SURFACE")),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, sel.surface || 'Surface data unavailable'),
+                      sel.surfaceDesc && React.createElement("p", { className: "text-[0.6875rem] text-sky-300 mt-1" }, "\uD83D\uDCA1 " + sel.surfaceDesc)
                     ),
                     // Key facts
                     EXTRA_FACTS[sel.key] && React.createElement("div", { className: "bg-white/5 rounded-lg p-2.5 border border-white/10" },
-                      React.createElement("p", { className: "text-[11px] text-slate-200 font-bold mb-1.5" }, __alloT('stem.solarsystem.key_facts', "\u2728 KEY FACTS")),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-200 font-bold mb-1.5" }, __alloT('stem.solarsystem.key_facts', "\u2728 KEY FACTS")),
                       EXTRA_FACTS[sel.key].slice(0, 4).map(function(fact, fi) {
-                        return React.createElement("p", { key: fi, className: "text-[11px] text-slate-300 py-0.5" }, "\u2022 " + fact);
+                        return React.createElement("p", { key: fi, className: "text-[0.6875rem] text-slate-300 py-0.5" }, "\u2022 " + fact);
                       })
                     )
                   )
@@ -14640,7 +14640,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("h5", { className: "font-bold text-sm", style: { color: '#ffffff', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, __alloT('stem.solarsystem.interior_structure_title', sel.name + " Interior Structure"))
                     ),
                     React.createElement("p", { className: "text-xs leading-relaxed", style: { position: "relative", zIndex: 1, color: palette.textTint } }, copy),
-                    React.createElement("p", { className: "text-[10px] mt-2 font-bold tracking-wide", style: { position: "relative", zIndex: 1, color: '#f8fafc' } }, modelDisclosure)
+                    React.createElement("p", { className: "text-[0.625rem] mt-2 font-bold tracking-wide", style: { position: "relative", zIndex: 1, color: '#f8fafc' } }, modelDisclosure)
                   );
                 })(),
                 React.createElement("div", {
@@ -14905,10 +14905,10 @@ const d = labToolData.solarSystem || {};
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("div", { className: "flex items-center gap-2 mb-1 flex-wrap" },
                             React.createElement("span", { className: "text-xs font-bold", style: { color: '#f8fafc', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
-                            React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded font-mono", style: { color: '#f8fafc', background: layer.color + '22', border: '1px solid ' + layer.color + '55' } }, layer.thick),
-                            layer.modelTag && React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded font-black tracking-wide", style: { color: '#fef3c7', background: 'rgba(120,53,15,0.72)', border: '1px solid rgba(251,191,36,0.48)' } }, layer.modelTag)
+                            React.createElement("span", { className: "text-[0.625rem] px-1.5 py-0.5 rounded font-mono", style: { color: '#f8fafc', background: layer.color + '22', border: '1px solid ' + layer.color + '55' } }, layer.thick),
+                            layer.modelTag && React.createElement("span", { className: "text-[0.5625rem] px-1.5 py-0.5 rounded font-black tracking-wide", style: { color: '#fef3c7', background: 'rgba(120,53,15,0.72)', border: '1px solid rgba(251,191,36,0.48)' } }, layer.modelTag)
                           ),
-                          React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#cbd5e1' } }, layer.desc)
+                          React.createElement("p", { className: "text-[0.6875rem] leading-relaxed", style: { color: '#cbd5e1' } }, layer.desc)
                         )
                       )
                     );
@@ -15093,12 +15093,12 @@ const d = labToolData.solarSystem || {};
                       "aria-live": "polite",
                       className: "flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
                     },
-                      React.createElement("span", { className: "min-w-0 break-words text-[10px] font-bold leading-snug text-cyan-100" }, controlLayer ? "PROBE " + String.fromCharCode(0x00b7) + " " + controlLayer.name + " " + String.fromCharCode(0x00b7) + " " + controlAltitude : "Probe ready"),
-                      React.createElement("span", { className: "text-[10px] font-mono leading-snug text-slate-300 sm:flex-shrink-0" }, controlLayer ? controlLayer.temp + " " + String.fromCharCode(0x00b7) + " " + controlLayer.pressure : "")
+                      React.createElement("span", { className: "min-w-0 break-words text-[0.625rem] font-bold leading-snug text-cyan-100" }, controlLayer ? "PROBE " + String.fromCharCode(0x00b7) + " " + controlLayer.name + " " + String.fromCharCode(0x00b7) + " " + controlAltitude : "Probe ready"),
+                      React.createElement("span", { className: "text-[0.625rem] font-mono leading-snug text-slate-300 sm:flex-shrink-0" }, controlLayer ? controlLayer.temp + " " + String.fromCharCode(0x00b7) + " " + controlLayer.pressure : "")
                     );
                   })(),
                   React.createElement("div", { className: "mt-2 flex items-center gap-2" },
-                    React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.high', "High")),
+                    React.createElement("span", { className: "text-[0.6875rem] text-white/70 font-bold" }, __alloT('stem.solarsystem.high', "High")),
                     React.createElement("input", {
                       type: "range", min: "0", max: "100", step: "1",
                       value: clampSolarDescentProbeValue(d._descentProbeY != null ? d._descentProbeY : 0) * 100,
@@ -15114,7 +15114,7 @@ const d = labToolData.solarSystem || {};
                       className: "flex-1 accent-indigo-400",
                       style: { height: '44px' }
                     }),
-                    React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.deep', "Deep"))
+                    React.createElement("span", { className: "text-[0.6875rem] text-white/70 font-bold" }, __alloT('stem.solarsystem.deep', "Deep"))
                   )
                 ),
                 // Layer detail cards. Cosmic-chrome pass: each card now has
@@ -15175,18 +15175,18 @@ const d = labToolData.solarSystem || {};
                           React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                             React.createElement("span", { className: "text-xs font-bold", style: { color: isActive ? '#ffffff' : '#e2e8f0', textShadow: isActive ? "0 1px 2px rgba(0,0,0,0.4)" : "none" } }, layer.name),
                             React.createElement("span", {
-                              className: "text-[10px] font-mono px-1.5 py-0.5 rounded",
+                              className: "text-[0.625rem] font-mono px-1.5 py-0.5 rounded",
                               style: {
                                 color: layer.color, background: layer.color + '22', border: '1px solid ' + layer.color + '55'
                               }
                             }, (layer.alt >= 0 ? '+' : '') + layer.alt + ' km')
                           ),
-                          React.createElement("p", { className: "text-[11px] mt-1 leading-relaxed", style: { color: isActive ? '#f1f5f9' : '#94a3b8' } }, layer.desc)
+                          React.createElement("p", { className: "text-[0.6875rem] mt-1 leading-relaxed", style: { color: isActive ? '#f1f5f9' : '#94a3b8' } }, layer.desc)
                         ),
                         // Right side: temp + pressure chips with subtle glow
                         React.createElement("div", { className: "flex flex-col gap-1 flex-shrink-0 items-end" },
                           React.createElement("div", {
-                            className: "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                            className: "text-[0.625rem] font-bold px-2 py-0.5 rounded-md",
                             style: {
                               color: '#fbbf24',
                               background: 'rgba(251,191,36,0.12)',
@@ -15195,7 +15195,7 @@ const d = labToolData.solarSystem || {};
                             }
                           }, '🌡 ' + layer.temp),
                           React.createElement("div", {
-                            className: "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                            className: "text-[0.625rem] font-bold px-2 py-0.5 rounded-md",
                             style: {
                               color: '#60a5fa',
                               background: 'rgba(96,165,250,0.12)',
@@ -23525,9 +23525,9 @@ const d = labToolData.solarSystem || {};
                     React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                       React.createElement("span", { className: "text-lg" }, "\uD83E\uDD14"),
                       React.createElement("span", { className: "text-xs font-black text-amber-800 tracking-wide" }, __alloT('stem.solarsystem.claim_before_explanation', "MAKE A CLAIM BEFORE THE EXPLANATION"))),
-                    React.createElement("p", { className: "mb-2 rounded-lg bg-white/70 px-2 py-1.5 text-[10px] font-bold leading-relaxed text-amber-900" }, __alloT('stem.solarsystem.ungraded_claim_help', "Use what you observed to make an ungraded claim. The model explanation stays hidden until you commit; afterward, compare and revise.")),
+                    React.createElement("p", { className: "mb-2 rounded-lg bg-white/70 px-2 py-1.5 text-[0.625rem] font-bold leading-relaxed text-amber-900" }, __alloT('stem.solarsystem.ungraded_claim_help', "Use what you observed to make an ungraded claim. The model explanation stays hidden until you commit; afterward, compare and revise.")),
                     React.createElement("p", { className: "text-sm text-amber-900 font-medium mb-3" }, POE_PROMPTS[sel.key].predict),
-                    React.createElement("label", { htmlFor: "solar-poe-prediction-" + sel.key, className: "block text-[11px] font-black text-amber-900" }, __alloT('stem.solarsystem.your_claim_reasoning', "Your claim and reasoning")),
+                    React.createElement("label", { htmlFor: "solar-poe-prediction-" + sel.key, className: "block text-[0.6875rem] font-black text-amber-900" }, __alloT('stem.solarsystem.your_claim_reasoning', "Your claim and reasoning")),
                     React.createElement("textarea", {
                       id: "solar-poe-prediction-" + sel.key,
                       rows: 3,
@@ -23538,7 +23538,7 @@ const d = labToolData.solarSystem || {};
                       "aria-describedby": "solar-poe-help-" + sel.key,
                       className: "mb-1 mt-1 w-full resize-y rounded-lg border border-amber-600 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-500 focus:border-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-200"
                     }),
-                    React.createElement("p", { id: "solar-poe-help-" + sel.key, className: "mb-3 text-[10px] leading-relaxed text-amber-800" }, __alloT('stem.solarsystem.claim_locked_help', "Step 1 of 3: this claim will be locked before the model explanation is shown.")),
+                    React.createElement("p", { id: "solar-poe-help-" + sel.key, className: "mb-3 text-[0.625rem] leading-relaxed text-amber-800" }, __alloT('stem.solarsystem.claim_locked_help', "Step 1 of 3: this claim will be locked before the model explanation is shown.")),
                     React.createElement("div", { className: "flex gap-2" },
                       React.createElement("button", {
                         type: "button",
@@ -23592,21 +23592,21 @@ const d = labToolData.solarSystem || {};
                       ),
                       React.createElement("p", { className: "text-xs leading-relaxed " + (isDark ? 'text-emerald-400/80' : 'text-emerald-700') }, POE_PROMPTS[sel.key].reveal),
                       VOCAB[POE_PROMPTS[sel.key].concept] && React.createElement("div", { className: "mt-2 rounded-lg p-2 border " + (isDark ? 'bg-slate-800 border-emerald-700/30' : 'bg-white border-emerald-100') },
-                        React.createElement("span", { className: "text-[11px] font-black " + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, __alloT('stem.solarsystem.vocabulary', "\uD83D\uDCD6 VOCABULARY: ")),
-                        React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-slate-200' : 'text-slate-700') }, POE_PROMPTS[sel.key].concept),
-                        React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.key].concept].def)
+                        React.createElement("span", { className: "text-[0.6875rem] font-black " + (isDark ? 'text-emerald-400' : 'text-emerald-600') }, __alloT('stem.solarsystem.vocabulary', "\uD83D\uDCD6 VOCABULARY: ")),
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-slate-200' : 'text-slate-700') }, POE_PROMPTS[sel.key].concept),
+                        React.createElement("span", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, ' \u2014 ' + VOCAB[POE_PROMPTS[sel.key].concept].def)
                       ),
                       React.createElement("fieldset", { disabled: poeComplete, className: "mt-3 rounded-lg border p-2 " + (isDark ? 'border-emerald-700/40 bg-slate-950/35' : 'border-emerald-200 bg-white') },
-                        React.createElement("legend", { className: "px-1 text-[11px] font-black " + (isDark ? 'text-emerald-200' : 'text-emerald-900') }, __alloT('stem.solarsystem.revise_after_explanation', 'Step 3 of 3: revise after the explanation')),
-                        React.createElement("p", { className: "mb-2 text-[10px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.revision_not_graded', 'Choose what happened to your thinking. No option is graded as correct.')),
+                        React.createElement("legend", { className: "px-1 text-[0.6875rem] font-black " + (isDark ? 'text-emerald-200' : 'text-emerald-900') }, __alloT('stem.solarsystem.revise_after_explanation', 'Step 3 of 3: revise after the explanation')),
+                        React.createElement("p", { className: "mb-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.revision_not_graded', 'Choose what happened to your thinking. No option is graded as correct.')),
                         React.createElement("div", { className: "grid gap-1.5 sm:grid-cols-3" }, revisionOptions.map(function(option) {
                           var checked = poeRevision === option.id;
-                          return React.createElement("label", { key: option.id, className: "cursor-pointer rounded-lg border px-2 py-2 text-[10px] leading-snug " + (checked ? (isDark ? 'border-emerald-300 bg-emerald-400/10 text-emerald-100' : 'border-emerald-500 bg-emerald-50 text-emerald-950') : (isDark ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-700')) },
+                          return React.createElement("label", { key: option.id, className: "cursor-pointer rounded-lg border px-2 py-2 text-[0.625rem] leading-snug " + (checked ? (isDark ? 'border-emerald-300 bg-emerald-400/10 text-emerald-100' : 'border-emerald-500 bg-emerald-50 text-emerald-950') : (isDark ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-700')) },
                             React.createElement("span", { className: "flex items-center gap-1.5 font-black" }, React.createElement("input", { type: "radio", name: "solar-poe-revision-" + sel.key, value: option.id, checked: checked, onChange: function() { upd('poe_revision_' + sel.name, option.id); upd('poe_complete_' + sel.name, false); }, className: "accent-emerald-600" }), option.label),
                             React.createElement("span", { className: "mt-1 block opacity-75" }, option.help)
                           );
                         })),
-                        React.createElement("label", { htmlFor: "solar-poe-revision-reason-" + sel.key, className: "mt-2 block text-[10px] font-black " + (isDark ? 'text-emerald-200' : 'text-emerald-900') }, __alloT('stem.solarsystem.what_observation_explanation_changed_thinking', 'What observation or part of the explanation kept or changed your thinking?')),
+                        React.createElement("label", { htmlFor: "solar-poe-revision-reason-" + sel.key, className: "mt-2 block text-[0.625rem] font-black " + (isDark ? 'text-emerald-200' : 'text-emerald-900') }, __alloT('stem.solarsystem.what_observation_explanation_changed_thinking', 'What observation or part of the explanation kept or changed your thinking?')),
                         React.createElement("textarea", { id: "solar-poe-revision-reason-" + sel.key, rows: 2, minLength: 12, maxLength: 500, value: poeReason, onChange: function(event) { upd('poe_revision_reason_' + sel.name, event.target.value); upd('poe_complete_' + sel.name, false); }, placeholder: __alloT('stem.solarsystem.cite_observation_explanation', 'Cite one observation or detail from the explanation...'), className: "mt-1 w-full resize-y rounded-lg border px-2 py-2 text-xs " + (isDark ? 'border-emerald-700/50 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-emerald-300 bg-white text-slate-900 placeholder:text-slate-500') })
                       ),
                       poeComplete ? React.createElement("p", { role: "status", className: "mt-2 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black text-white" }, __alloT('stem.solarsystem.inquiry_cycle_complete', 'Inquiry cycle complete — your original claim and revision are both preserved.')) : React.createElement("button", { type: "button", disabled: !poeReady, "aria-disabled": poeReady ? "false" : "true", onClick: function() { if (!poeReady) return; upd('poe_revision_reason_' + sel.name, poeReason.trim()); upd('poe_complete_' + sel.name, true); }, className: "mt-2 w-full rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black text-white transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40" }, __alloT('stem.solarsystem.save_inquiry_cycle', 'Save inquiry cycle'))
@@ -23623,7 +23623,7 @@ const d = labToolData.solarSystem || {};
                     return React.createElement("div", { className: "mt-3 rounded-xl p-3 border " + (isDark ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
                       React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                         React.createElement("span", { className: "text-sm" }, "\u2753"),
-                        React.createElement("span", { className: "text-[11px] font-black tracking-wide " + (isDark ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.solarsystem.true_or_false', "TRUE OR FALSE?"))),
+                        React.createElement("span", { className: "text-[0.6875rem] font-black tracking-wide " + (isDark ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.solarsystem.true_or_false', "TRUE OR FALSE?"))),
                       React.createElement("p", { className: "text-xs font-bold mb-2 " + (isDark ? 'text-purple-200' : 'text-purple-900') }, '"' + mc.statement + '"'),
                       !d['mc_choice_' + mcTrigger] ? React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200') }, __alloT('stem.solarsystem.true_2', "\u2705 True")),
@@ -23631,7 +23631,7 @@ const d = labToolData.solarSystem || {};
                       ) : React.createElement("div", null,
                         React.createElement("p", { className: "text-xs font-bold " + (d['mc_choice_' + mcTrigger] === mc.answer ? 'text-emerald-600' : 'text-red-600') }, d['mc_choice_' + mcTrigger] === mc.answer ? '\u2705 Correct!' : '\u274C Not quite!'),
                         React.createElement("p", { className: "text-xs text-purple-700 mt-1 leading-relaxed" }, mc.explanation),
-                        React.createElement("button", { onClick: function() { upd('mc_answered_' + mcTrigger, true); upd('misconceptionsSeen', (d.misconceptionsSeen || []).concat([mc.statement])); }, className: "transition-colors mt-2 px-3 py-1 text-[11px] font-bold rounded bg-purple-200 text-purple-800 hover:bg-purple-300" }, __alloT('stem.solarsystem.got_it', "Got it \u2192")))
+                        React.createElement("button", { onClick: function() { upd('mc_answered_' + mcTrigger, true); upd('misconceptionsSeen', (d.misconceptionsSeen || []).concat([mc.statement])); }, className: "transition-colors mt-2 px-3 py-1 text-[0.6875rem] font-bold rounded bg-purple-200 text-purple-800 hover:bg-purple-300" }, __alloT('stem.solarsystem.got_it', "Got it \u2192")))
                     );
                   })(),
 
@@ -23644,7 +23644,7 @@ const d = labToolData.solarSystem || {};
                           onClick: function() { upd('showConcept_' + k, !d['showConcept_' + k]); },
                           className: "w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border transition-all hover:shadow-sm",
                           style: { borderColor: card.color + '60', color: card.color, backgroundColor: card.color + '10' }
-                        }, React.createElement("span", null, card.icon), card.title, React.createElement("span", { className: "ml-auto text-[11px]" }, d['showConcept_' + k] ? '\u25B2' : '\u25BC')),
+                        }, React.createElement("span", null, card.icon), card.title, React.createElement("span", { className: "ml-auto text-[0.6875rem]" }, d['showConcept_' + k] ? '\u25B2' : '\u25BC')),
                         d['showConcept_' + k] && React.createElement("div", {
                           className: "mt-1 p-3 rounded-lg border text-xs leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-700'),
                           style: { borderColor: card.color + '30', backgroundColor: isDark ? card.color + '12' : card.color + '08' }
@@ -23673,13 +23673,13 @@ const d = labToolData.solarSystem || {};
 
                       d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak"),
 
-                      React.createElement("span", { className: "ml-auto text-[11px] text-slate-200" }, (d.quizAsked || []).length + '/' + QUIZ_BANK.length + ' asked')
+                      React.createElement("span", { className: "ml-auto text-[0.6875rem] text-slate-200" }, (d.quizAsked || []).length + '/' + QUIZ_BANK.length + ' asked')
 
                     ),
 
                     d.quiz && React.createElement("div", { className: "rounded-xl p-4 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') },
 
-                      d.quiz.concept && React.createElement("div", { className: "text-[11px] font-bold mb-1 tracking-wider " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDFAF CONCEPT: ' + d.quiz.concept.toUpperCase()),
+                      d.quiz.concept && React.createElement("div", { className: "text-[0.6875rem] font-bold mb-1 tracking-wider " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDFAF CONCEPT: ' + d.quiz.concept.toUpperCase()),
 
                       React.createElement("p", { className: "text-sm font-bold mb-3 " + (isDark ? 'text-indigo-100' : 'text-indigo-800') }, d.quiz.q),
 
@@ -23724,9 +23724,9 @@ const d = labToolData.solarSystem || {};
                         React.createElement("p", { className: "text-xs leading-relaxed " + (isDark ? 'text-red-400/80' : 'text-red-600') }, d.quiz.wrongFeedback[d.quiz.chosen]),
                         React.createElement("p", { className: "text-xs font-bold mt-2 " + (isDark ? 'text-emerald-300' : 'text-emerald-600') }, "\u2705 The answer is " + d.quiz.a + ": " + d.quiz.tip),
                         d.quiz.concept && VOCAB[d.quiz.concept] && React.createElement("div", { className: "mt-2 rounded p-2 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100') },
-                          React.createElement("span", { className: "text-[11px] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
-                          React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-slate-200' : 'text-slate-700') }, d.quiz.concept + ': '),
-                          React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, VOCAB[d.quiz.concept].def))
+                          React.createElement("span", { className: "text-[0.6875rem] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
+                          React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-slate-200' : 'text-slate-700') }, d.quiz.concept + ': '),
+                          React.createElement("span", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, VOCAB[d.quiz.concept].def))
                       ),
 
                       d.quiz.answered && d.quiz.correct && React.createElement("p", { className: "mt-2 text-xs text-emerald-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
@@ -23754,7 +23754,7 @@ const d = labToolData.solarSystem || {};
                           disabled: !d.compare1 && !d.compare2,
                           onClick: function() { updMulti({ compare1: d.compare2 || '', compare2: d.compare1 || '' }); },
                           'aria-label': 'Swap compared worlds',
-                          className: "rounded-full border px-2 py-1 text-[10px] font-black transition-all " + (isDark ? 'border-indigo-400/40 bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100')
+                          className: "rounded-full border px-2 py-1 text-[0.625rem] font-black transition-all " + (isDark ? 'border-indigo-400/40 bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100')
                         }, "\u21C4"),
 
                         React.createElement("select", { 'aria-label': __alloT('stem.solarsystem.second_planet_to_compare', 'Second planet to compare'), value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "min-w-0 px-2 py-1.5 border rounded-lg text-sm " + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-800') },
@@ -23793,7 +23793,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83C\uDF19 Moons of " + sel.name + " (" + sel.moons + " total)"),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_moon_explorer_panel', "Toggle moon explorer panel"),
                     onClick: function() { upd('showMoons', !d.showMoons); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
                   }, d.showMoons ? 'Hide' : 'Explore \u2192')
                 ),
                 d.showMoons && React.createElement("div", { className: "space-y-2" },
@@ -23801,16 +23801,16 @@ const d = labToolData.solarSystem || {};
                     return React.createElement("div", { key: mi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-indigo-100') + " rounded-lg p-2.5 border" },
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
                         React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, "\uD83C\uDF11 " + moon.name),
-                        React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full " + (isDark ? 'bg-indigo-900 text-indigo-300' : 'bg-indigo-100 text-indigo-600') }, moon.type)
+                        React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full " + (isDark ? 'bg-indigo-900 text-indigo-300' : 'bg-indigo-100 text-indigo-600') }, moon.type)
                       ),
-                      React.createElement("div", { className: "grid grid-cols-2 gap-1 text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " mb-1" },
+                      React.createElement("div", { className: "grid grid-cols-2 gap-1 text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " mb-1" },
                         React.createElement("span", null, "\uD83D\uDCCF " + moon.diameter),
                         React.createElement("span", null, "\uD83D\uDCCD " + moon.dist + " from " + sel.name)
                       ),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " italic" }, moon.fact),
+                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " italic" }, moon.fact),
                       React.createElement("button", { "aria-label": __alloT('stem.solarsystem.listen', "Listen"),
                         onClick: function() { solTouch('moons'); speakText(moon.name + '. ' + moon.fact); },
-                        className: "transition-colors mt-1 text-[11px] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
+                        className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
                       }, __alloT('stem.solarsystem.listen_2', "\uD83D\uDD0A Listen"))
                     );
                   })
@@ -23823,11 +23823,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold text-sky-300" }, "\uD83C\uDF03 Night Sky from " + sel.name),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_night_sky_view', "Toggle night sky view"),
                     onClick: function() { upd('showSky', !d.showSky); },
-                    className: "transition-colors text-[11px] text-sky-400 hover:text-sky-200"
+                    className: "transition-colors text-[0.6875rem] text-sky-400 hover:text-sky-200"
                   }, d.showSky ? 'Hide' : 'View \u2192')
                 ),
                 d.showSky && React.createElement("div", { className: "space-y-2" },
-                  React.createElement("div", { className: "text-[11px] text-sky-200" },
+                  React.createElement("div", { className: "text-[0.6875rem] text-sky-200" },
                     React.createElement("div", { className: "mb-1" }, "\u2600\uFE0F Sun appears: " + SKY_VIEWS[sel.key].sunSize),
                     React.createElement("div", { className: "mb-1 font-bold text-sky-300" }, __alloT('stem.solarsystem.visible_objects_2', "Visible objects:")),
                     React.createElement("div", { className: "pl-2 space-y-0.5" },
@@ -23896,7 +23896,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-blue-300' : 'text-blue-700') }, "\uD83E\uDE82 Atmosphere Descent \u2014 " + sel.name),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_atmosphere_descent_simulator', "Toggle atmosphere descent simulator"),
                     onClick: function() { upd('showDescent', !d.showDescent); if (!d.descentAlt && d.descentAlt !== 0) upd('descentAlt', 100); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-900')
                   }, d.showDescent ? 'Hide' : 'Descend \u2192')
                 ),
                 d.showDescent && React.createElement("div", null,
@@ -23910,7 +23910,7 @@ const d = labToolData.solarSystem || {};
                       className: "w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer",
                       style: { direction: 'rtl' } // 100 = top, 0 = bottom
                     }),
-                    React.createElement("div", { className: "flex justify-between text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') },
+                    React.createElement("div", { className: "flex justify-between text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') },
                       React.createElement("span", null, __alloT('stem.solarsystem.surface_5', "Surface")),
                       React.createElement("span", null, __alloT('stem.solarsystem.high_atmosphere', "High Atmosphere"))
                     )
@@ -23926,8 +23926,8 @@ const d = labToolData.solarSystem || {};
                       style: { background: layer.color + '30', borderLeft: '4px solid ' + layer.color }
                     },
                       React.createElement("div", { className: "text-sm font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, layer.name),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " mt-1" }, layer.desc),
-                      React.createElement("div", { className: "flex justify-center gap-4 mt-2 text-[11px]" },
+                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " mt-1" }, layer.desc),
+                      React.createElement("div", { className: "flex justify-center gap-4 mt-2 text-[0.6875rem]" },
                         React.createElement("span", { className: "text-red-500 font-bold" }, "\uD83C\uDF21 " + layer.temp),
                         React.createElement("span", { className: "text-blue-500 font-bold" }, "\u2696 " + layer.pressure),
                         React.createElement("span", { className: "text-slate-200" }, "\u2195 " + (layer.alt >= 0 ? layer.alt + ' km' : Math.abs(layer.alt) + ' km deep'))
@@ -23960,25 +23960,25 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, __alloT('stem.solarsystem.planet_size_comparison', "\uD83D\uDCCF Planet Size Comparison")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_planet_size_comparison', "Toggle planet size comparison"),
                     onClick: function() { upd('showScale', !d.showScale); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-emerald-300 hover:text-emerald-200' : 'text-emerald-700 hover:text-emerald-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-emerald-300 hover:text-emerald-200' : 'text-emerald-700 hover:text-emerald-900')
                   }, d.showScale ? 'Hide' : 'Show \u2192')
                 ),
                 d.showScale && React.createElement("div", { className: "space-y-1", role: "region", "aria-label": "All worlds on one linear diameter scale" },
-                  React.createElement("p", { role: "note", className: "mb-2 text-[10px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Bar lengths share one linear diameter scale. The smallest mark has a 2% visibility floor; values report full diameter."),
+                  React.createElement("p", { role: "note", className: "mb-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Bar lengths share one linear diameter scale. The smallest mark has a 2% visibility floor; values report full diameter."),
                   PLANETS.map(function(p) {
                     var maxR = PLANET_RADII.Jupiter;
                     var planetRadius = PLANET_RADII[p.key] || 1000;
                     var pctWidth = Math.max(2, planetRadius / maxR * 100);
                     var isSel = sel && sel.name === p.name;
                     return React.createElement("div", { key: p.name, role: "img", "aria-label": p.name + ": " + p.diameter + " diameter, " + pctWidth.toFixed(1) + " percent of Jupiter's diameter", className: "grid items-center gap-2", style: { gridTemplateColumns: 'minmax(72px,.75fr) minmax(74px,2fr) minmax(82px,auto)' } },
-                      React.createElement("span", { className: "truncate text-[11px] text-right " + (isSel ? 'font-black ' : 'font-bold ') + (isDark ? 'text-slate-200' : 'text-slate-700') }, p.name),
+                      React.createElement("span", { className: "truncate text-[0.6875rem] text-right " + (isSel ? 'font-black ' : 'font-bold ') + (isDark ? 'text-slate-200' : 'text-slate-700') }, p.name),
                       React.createElement("div", { className: "h-3 rounded-full overflow-hidden", style: { minWidth: 0, background: isDark ? '#334155' : '#e2e8f0' } },
                         React.createElement("div", {
                           className: "h-full rounded-full transition-all",
                           style: { width: pctWidth + '%', background: 'linear-gradient(90deg,' + getSolarPlanetAccent(p) + '99,' + getSolarPlanetAccent(p) + ')', opacity: isSel ? 1 : 0.78, boxShadow: isSel ? '0 0 9px ' + p.color : 'none' }
                         })
                       ),
-                      React.createElement("span", { className: "text-[10px] font-mono text-right " + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.diameter)
+                      React.createElement("span", { className: "text-[0.625rem] font-mono text-right " + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.diameter)
                     );
                   })
                 )
@@ -23990,14 +23990,14 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.solarsystem.orbital_mechanics', "\uD83C\uDF0C Orbital Mechanics")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.keplers_three_laws_of_planetary_motion', "Keplers Three Laws of Planetary Motion"),
                     onClick: function() { upd('showOrbital', !d.showOrbital); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-purple-300 hover:text-purple-200' : 'text-purple-700 hover:text-purple-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-purple-300 hover:text-purple-200' : 'text-purple-700 hover:text-purple-900')
                   }, d.showOrbital ? 'Hide' : 'Learn \u2192')
                 ),
                 d.showOrbital && React.createElement("div", { className: "space-y-3" },
                   // Kepler's Laws
                   React.createElement("div", { className: (isDark ? 'bg-slate-700' : 'bg-white') + " rounded-lg p-2.5 border " + (isDark ? 'border-slate-600' : 'border-purple-100') },
-                    React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') + " mb-1" }, __alloT('stem.solarsystem.kepler_s_three_laws_of_planetary_motio', "Kepler\u2019s Three Laws of Planetary Motion")),
-                    React.createElement("div", { className: "space-y-1.5 text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') + " mb-1" }, __alloT('stem.solarsystem.kepler_s_three_laws_of_planetary_motio', "Kepler\u2019s Three Laws of Planetary Motion")),
+                    React.createElement("div", { className: "space-y-1.5 text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                       React.createElement("div", null, __alloT('stem.solarsystem.orbits_are_ellipses_with_the_sun_at_on', "\u2460 Orbits are ellipses with the Sun at one focus (not circles!)")),
                       React.createElement("div", null, __alloT('stem.solarsystem.a_planet_sweeps_equal_areas_in_equal_t', "\u2461 A planet sweeps equal areas in equal times (faster when closer to Sun)")),
                       React.createElement("div", null, __alloT('stem.solarsystem.t_a_orbital_period_squared_is_proporti', "\u2462 T\u00B2 \u221D a\u00B3 \u2014 orbital period squared is proportional to distance cubed"))
@@ -24007,7 +24007,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: (isDark ? 'bg-slate-800' : 'bg-indigo-50') + " rounded-xl overflow-hidden border " + (isDark ? 'border-slate-600' : 'border-indigo-200') },
                     // Planet selector buttons
                     React.createElement("div", { className: "flex flex-wrap gap-1 p-2 " + (isDark ? 'bg-slate-900' : 'bg-indigo-100') },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-700') }, "Body:"),
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-700') }, "Body:"),
                       [{ id: 'custom', emoji: '\u2699', name: __alloT('stem.solarsystem.custom', 'Custom') }].concat(PLANETS.map(function(p) { return { id: p.name, emoji: p.emoji, name: p.name }; })).concat([{ id: 'halley', emoji: '\u2604', name: __alloT('stem.solarsystem.halley_s_comet_3', "Halley's Comet") }]).map(function(body) {
                         var isActive = (d._keplerBody || 'custom') === body.id;
                         return React.createElement("button", {
@@ -24017,19 +24017,19 @@ const d = labToolData.solarSystem || {};
                             var cv2 = document.querySelector('[data-kepler-canvas]');
                             if (cv2) { cv2._keplerBody = body.id; cv2._keplerTrail = []; }
                           },
-                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-indigo-50 border border-slate-400'))
+                          className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-indigo-50 border border-slate-400'))
                         }, body.emoji + ' ' + body.name);
                       })
                     ),
                     // Math toggle buttons
                     React.createElement("div", { className: "flex gap-1 px-2 py-1 " + (isDark ? 'bg-slate-900/50' : 'bg-indigo-50') },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-700') }, "Show:"),
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-700') }, "Show:"),
                       [{ id: 'equations', label: __alloT('stem.solarsystem.equations', '\uD83D\uDCDD Equations') }, { id: 'energy', label: __alloT('stem.solarsystem.energy', '\u26A1 Energy') }, { id: 'calculus', label: __alloT('stem.solarsystem.calculus', '\u222B Calculus') }, { id: 'vectors', label: __alloT('stem.solarsystem.vectors', '\u2192 Vectors') }].map(function(tog) {
                         var on = d['_keplerShow_' + tog.id] !== false; // default ON
                         return React.createElement("button", {
                           key: tog.id,
                           onClick: function() { solTouch('orbital'); upd('_keplerShow_' + tog.id, !on); },
-                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-700 border border-slate-400'))
+                          className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-700 border border-slate-400'))
                         }, tog.label);
                       })
                     ),
@@ -24399,7 +24399,7 @@ const d = labToolData.solarSystem || {};
                     // ── Interactive Controls (eccentricity + semi-major axis sliders) ──
                     React.createElement("div", { className: "p-3 space-y-2 " + (isDark ? 'bg-slate-900' : 'bg-indigo-100/50') },
                       React.createElement("div", { className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-[11px] font-bold w-20 " + (isDark ? 'text-slate-200' : 'text-indigo-600') }, __alloT('stem.solarsystem.eccentricity_e_2', "Eccentricity (e):")),
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold w-20 " + (isDark ? 'text-slate-200' : 'text-indigo-600') }, __alloT('stem.solarsystem.eccentricity_e_2', "Eccentricity (e):")),
                         React.createElement("input", {
                           type: "range", min: 0.01, max: 0.95, step: 0.01, value: d._keplerEcc || 0.5,
                           'aria-label': __alloT('stem.solarsystem.orbital_eccentricity', 'Orbital eccentricity'),
@@ -24411,10 +24411,10 @@ const d = labToolData.solarSystem || {};
                           },
                           className: "flex-1 h-1.5 accent-purple-500"
                         }),
-                        React.createElement("span", { className: "text-[11px] font-mono w-8 " + (isDark ? 'text-purple-300' : 'text-purple-700') }, (d._keplerEcc || 0.5).toFixed(2))
+                        React.createElement("span", { className: "text-[0.6875rem] font-mono w-8 " + (isDark ? 'text-purple-300' : 'text-purple-700') }, (d._keplerEcc || 0.5).toFixed(2))
                       ),
                       React.createElement("div", { className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-[11px] font-bold w-20 " + (isDark ? 'text-slate-200' : 'text-indigo-600') }, __alloT('stem.solarsystem.semi_major_a_2', "Semi-major (a):")),
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold w-20 " + (isDark ? 'text-slate-200' : 'text-indigo-600') }, __alloT('stem.solarsystem.semi_major_a_2', "Semi-major (a):")),
                         React.createElement("input", {
                           type: "range", min: 40, max: 140, step: 5, value: d._keplerSemiA || 100,
                           'aria-label': __alloT('stem.solarsystem.semi_major_axis_length', 'Semi-major axis length'),
@@ -24426,26 +24426,26 @@ const d = labToolData.solarSystem || {};
                           },
                           className: "flex-1 h-1.5 accent-amber-500"
                         }),
-                        React.createElement("span", { className: "text-[11px] font-mono w-8 " + (isDark ? 'text-amber-300' : 'text-amber-800') }, (d._keplerSemiA || 100) + ' AU')
+                        React.createElement("span", { className: "text-[0.6875rem] font-mono w-8 " + (isDark ? 'text-amber-300' : 'text-amber-800') }, (d._keplerSemiA || 100) + ' AU')
                       ),
-                      React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-indigo-700') + " italic" }, __alloT('stem.solarsystem.adjust_eccentricity_to_see_how_orbits_', "Adjust eccentricity to see how orbits change from circular (e\u22480) to highly elliptical (e\u22481). Watch how the velocity vector and swept areas respond in real-time."))
+                      React.createElement("p", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-indigo-700') + " italic" }, __alloT('stem.solarsystem.adjust_eccentricity_to_see_how_orbits_', "Adjust eccentricity to see how orbits change from circular (e\u22480) to highly elliptical (e\u22481). Watch how the velocity vector and swept areas respond in real-time."))
                     )
                   ),
                   // Orbital speed visualization
-                  React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " font-bold mb-1" }, __alloT('stem.solarsystem.orbital_speed_relative_to_earth', "Orbital Speed (relative to Earth):")),
+                  React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " font-bold mb-1" }, __alloT('stem.solarsystem.orbital_speed_relative_to_earth', "Orbital Speed (relative to Earth):")),
                   React.createElement("div", { className: "space-y-1" },
                     PLANETS.map(function(p) {
                       var speedPct = Math.min(100, p.speed / 4.15 * 100); // Mercury is fastest
                       var isSel2 = sel && sel.name === p.name;
                       return React.createElement("div", { key: p.name, className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-[11px] w-14 text-right " + (isSel2 ? 'font-bold ' : '') + (isDark ? 'text-slate-200' : 'text-slate-700') }, p.emoji + ' ' + p.name),
+                        React.createElement("span", { className: "text-[0.6875rem] w-14 text-right " + (isSel2 ? 'font-bold ' : '') + (isDark ? 'text-slate-200' : 'text-slate-700') }, p.emoji + ' ' + p.name),
                         React.createElement("div", { className: "flex-1 h-2 " + (isDark ? 'bg-slate-700' : 'bg-purple-100') + " rounded-full overflow-hidden" },
                           React.createElement("div", {
                             className: "h-full rounded-full",
                             style: { width: speedPct + '%', background: 'linear-gradient(to right, #8b5cf6, #a78bfa)', opacity: isSel2 ? 1 : 0.5 }
                           })
                         ),
-                        React.createElement("span", { className: "text-[11px] w-12 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, (p.speed * 29.78).toFixed(1) + ' km/s')
+                        React.createElement("span", { className: "text-[0.6875rem] w-12 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, (p.speed * 29.78).toFixed(1) + ' km/s')
                       );
                     })
                   )
@@ -24458,32 +24458,32 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-pink-300' : 'text-pink-700') }, __alloT('stem.solarsystem.planet_builder', "\uD83C\uDFD7 Planet Builder")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.design_your_own_hypothetical_planet', "Design your own hypothetical planet!"),
                     onClick: function() { upd('showBuilder', !d.showBuilder); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-pink-300 hover:text-pink-200' : 'text-pink-700 hover:text-pink-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-pink-300 hover:text-pink-200' : 'text-pink-700 hover:text-pink-900')
                   }, d.showBuilder ? 'Hide' : 'Build \u2192')
                 ),
                 d.showBuilder && React.createElement("div", { className: "space-y-2" },
-                  React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-1" }, __alloT('stem.solarsystem.design_your_own_hypothetical_planet_2', "Design your own hypothetical planet!")),
+                  React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-1" }, __alloT('stem.solarsystem.design_your_own_hypothetical_planet_2', "Design your own hypothetical planet!")),
                   // Mass slider
                   React.createElement("div", null,
-                    React.createElement("label", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\u2696 Mass (Earth masses): " + (d.buildMass || 1)),
+                    React.createElement("label", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\u2696 Mass (Earth masses): " + (d.buildMass || 1)),
                     React.createElement("input", { type: "range", min: "0.1", max: "300", step: "0.1", value: d.buildMass || 1, 'aria-label': __alloT('stem.solarsystem.planet_mass_in_earth_masses', 'Planet mass in Earth masses'), onChange: function(e) { upd('buildMass', parseFloat(e.target.value)); }, className: "w-full h-1.5 bg-pink-200 rounded-lg appearance-none" })
                   ),
                   // Distance slider
                   React.createElement("div", null,
-                    React.createElement("label", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\uD83D\uDCCF Distance from star (AU): " + (d.buildDist || 1)),
+                    React.createElement("label", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\uD83D\uDCCF Distance from star (AU): " + (d.buildDist || 1)),
                     React.createElement("input", { type: "range", min: "0.1", max: "50", step: "0.1", value: d.buildDist || 1, 'aria-label': __alloT('stem.solarsystem.distance_from_star_in_au', 'Distance from star in AU'), onChange: function(e) { upd('buildDist', parseFloat(e.target.value)); }, className: "w-full h-1.5 bg-pink-200 rounded-lg appearance-none" })
                   ),
                   // Atmosphere toggle
                   React.createElement("div", { className: "flex items-center gap-3" },
-                    React.createElement("label", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex items-center gap-1" },
+                    React.createElement("label", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex items-center gap-1" },
                       React.createElement("input", { type: "checkbox", checked: d.buildAtmo || false, onChange: function() { upd('buildAtmo', !d.buildAtmo); }, className: "rounded" }),
                       __alloT('stem.solarsystem.has_atmosphere', "Has atmosphere")
                     ),
-                    React.createElement("label", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex items-center gap-1" },
+                    React.createElement("label", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex items-center gap-1" },
                       React.createElement("input", { type: "checkbox", checked: d.buildWater || false, onChange: function() { upd('buildWater', !d.buildWater); }, className: "rounded" }),
                       __alloT('stem.solarsystem.has_liquid_water', "Has liquid water")
                     ),
-                    React.createElement("label", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex items-center gap-1" },
+                    React.createElement("label", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex items-center gap-1" },
                       React.createElement("input", { type: "checkbox", checked: d.buildMag || false, onChange: function() { upd('buildMag', !d.buildMag); }, className: "rounded" }),
                       __alloT('stem.solarsystem.magnetic_field_2', "Magnetic field")
                     )
@@ -24504,14 +24504,14 @@ const d = labToolData.solarSystem || {};
                     var planetType = mass > 50 ? 'Gas Giant' : mass > 10 ? 'Ice Giant' : mass > 2 ? 'Super-Earth' : mass > 0.5 ? 'Terrestrial' : 'Dwarf Planet';
                     return React.createElement("div", { className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-pink-100') + " rounded-lg p-2.5 border mt-1" },
                       React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') + " mb-1" }, "\uD83C\uDF0D Your Planet: " + planetType),
-                      React.createElement("div", { className: "grid grid-cols-2 gap-1 text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                      React.createElement("div", { className: "grid grid-cols-2 gap-1 text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                         React.createElement("span", null, "\u2696 Surface gravity: " + surfaceGrav + "g"),
                         React.createElement("span", null, "\uD83C\uDF0C Orbital period: " + orbitalPeriod + " years"),
                         React.createElement("span", null, "\uD83C\uDF21 Surface temp: ~" + surfaceTemp + "\u00B0C"),
                         React.createElement("span", null, "\uD83D\uDE80 Escape velocity: " + escapeVel + " km/s")
                       ),
                       React.createElement("div", {
-                        className: "mt-1.5 text-[11px] font-bold text-center py-1.5 rounded-lg " + (habitable ? (isDark ? 'bg-green-900/30 text-green-300 border border-green-700/40' : 'bg-green-100 text-green-700') : (isDark ? 'bg-red-900/30 text-red-300 border border-red-700/40' : 'bg-red-100 text-red-700'))
+                        className: "mt-1.5 text-[0.6875rem] font-bold text-center py-1.5 rounded-lg " + (habitable ? (isDark ? 'bg-green-900/30 text-green-300 border border-green-700/40' : 'bg-green-100 text-green-700') : (isDark ? 'bg-red-900/30 text-red-300 border border-red-700/40' : 'bg-red-100 text-red-700'))
                       }, habitable ? '\u2705 HABITABLE ZONE! Life could exist here!' : '\u274C Not in habitable zone' + (dist < 0.8 ? ' (too hot)' : dist > 1.5 ? ' (too cold)' : !hasAtmo ? ' (no atmosphere)' : !hasWater ? ' (no water)' : mass < 0.5 ? ' (too small to hold atmosphere)' : ' (too massive \u2014 gas giant)'))
                     );
                   })()
@@ -24524,23 +24524,23 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-teal-300' : 'text-teal-700') }, __alloT('stem.solarsystem.exoplanet_comparison', "\uD83C\uDF0C Exoplanet Comparison")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_exoplanet_comparison_panel', "Toggle exoplanet comparison panel"),
                     onClick: function() { upd('showExo', !d.showExo); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-teal-300 hover:text-teal-200' : 'text-teal-700 hover:text-teal-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-teal-300 hover:text-teal-200' : 'text-teal-700 hover:text-teal-900')
                   }, d.showExo ? 'Hide' : 'Explore \u2192')
                 ),
                 d.showExo && React.createElement("div", { className: "space-y-1.5" },
-                  React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-1" }, __alloT('stem.solarsystem.compare_our_planets_to_worlds_around_o', "Compare our planets to worlds around other stars (6,300+ confirmed!)")),
+                  React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-1" }, __alloT('stem.solarsystem.compare_our_planets_to_worlds_around_o', "Compare our planets to worlds around other stars (6,300+ confirmed!)")),
                   EXOPLANETS.map(function(exo, ei) {
                     return React.createElement("div", { key: ei, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-teal-100') + " rounded-lg p-2 border" },
                       React.createElement("div", { className: "flex items-center justify-between" },
-                        React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, exo.name),
-                        React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full " + (exo.habitable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }, exo.habitable ? 'Habitable zone' : 'Not habitable')
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, exo.name),
+                        React.createElement("span", { className: "text-[0.6875rem] px-1.5 py-0.5 rounded-full " + (exo.habitable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }, exo.habitable ? 'Habitable zone' : 'Not habitable')
                       ),
-                      React.createElement("div", { className: "grid grid-cols-3 gap-1 text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " mt-1" },
+                      React.createElement("div", { className: "grid grid-cols-3 gap-1 text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " mt-1" },
                         React.createElement("span", null, "\uD83D\uDCCD " + exo.dist),
                         React.createElement("span", null, "\u2696 " + exo.mass),
                         React.createElement("span", null, "\uD83C\uDF21 " + exo.temp)
                       ),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-teal-400' : 'text-teal-600') + " mt-1 italic" }, exo.note)
+                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-teal-400' : 'text-teal-600') + " mt-1 italic" }, exo.note)
                     );
                   })
                 )
@@ -24552,17 +24552,17 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, "\uD83E\uDD14 What If? \u2014 " + sel.name),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_what_if_scenarios_panel', "Toggle What If scenarios panel"),
                     onClick: function() { upd('showWhatIf', !d.showWhatIf); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-yellow-300 hover:text-yellow-200' : 'text-yellow-700 hover:text-yellow-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-yellow-300 hover:text-yellow-200' : 'text-yellow-700 hover:text-yellow-900')
                   }, d.showWhatIf ? 'Hide' : 'Think \u2192')
                 ),
                 d.showWhatIf && React.createElement("div", { className: "space-y-2" },
                   (WHAT_IF[sel.key] || []).map(function(wi, wii) {
                     return React.createElement("div", { key: wii, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-yellow-100') + " rounded-lg p-2.5 border" },
-                      React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-yellow-200' : 'text-yellow-800') + " mb-1" }, "\u2753 " + wi.q),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
+                      React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-yellow-200' : 'text-yellow-800') + " mb-1" }, "\u2753 " + wi.q),
+                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
                       React.createElement("button", { "aria-label": __alloT('stem.solarsystem.listen_3', "Listen"),
                         onClick: function() { solTouch('whatif'); speakText(wi.q + ' ' + wi.a); },
-                        className: "transition-colors mt-1 text-[11px] " + (isDark ? 'text-yellow-300 hover:text-yellow-200' : 'text-yellow-700 hover:text-yellow-900')
+                        className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-yellow-300 hover:text-yellow-200' : 'text-yellow-700 hover:text-yellow-900')
                       }, __alloT('stem.solarsystem.listen_4', "\uD83D\uDD0A Listen"))
                     );
                   })
@@ -24583,11 +24583,11 @@ const d = labToolData.solarSystem || {};
                     style: { color: '#ffffff', background: MAGNETOSPHERE[sel.key].shield ? 'linear-gradient(135deg, #6366f1, #4338ca)' : 'linear-gradient(135deg, #475569, #334155)' }
                   }, MAGNETOSPHERE[sel.key].shield ? '\uD83D\uDEE1' : '\u2716'),
                   React.createElement("div", null,
-                    React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, "Field strength: " + MAGNETOSPHERE[sel.key].strength),
-                    React.createElement("div", { className: "text-[11px] " + (MAGNETOSPHERE[sel.key].shield ? (isDark ? 'text-green-300' : 'text-green-700') : (isDark ? 'text-red-300' : 'text-red-700')) }, MAGNETOSPHERE[sel.key].shield ? '\u2705 Protected from solar wind' : '\u274C No magnetic shielding')
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, "Field strength: " + MAGNETOSPHERE[sel.key].strength),
+                    React.createElement("div", { className: "text-[0.6875rem] " + (MAGNETOSPHERE[sel.key].shield ? (isDark ? 'text-green-300' : 'text-green-700') : (isDark ? 'text-red-300' : 'text-red-700')) }, MAGNETOSPHERE[sel.key].shield ? '\u2705 Protected from solar wind' : '\u274C No magnetic shielding')
                   )
                 ),
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic" }, MAGNETOSPHERE[sel.key].note)
+                React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic" }, MAGNETOSPHERE[sel.key].note)
               ),
 
               // === SPACE EXPLORATION TIMELINE ===
@@ -24596,14 +24596,14 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.space_exploration_timeline', "\uD83D\uDCC5 Space Exploration Timeline")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_space_exploration_timeline', "Toggle space exploration timeline"),
                     onClick: function() { upd('showTimeline', !d.showTimeline); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-slate-300 hover:text-slate-200' : 'text-slate-700 hover:text-slate-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-slate-300 hover:text-slate-200' : 'text-slate-700 hover:text-slate-900')
                   }, d.showTimeline ? 'Hide' : 'View \u2192')
                 ),
                 d.showTimeline && React.createElement("div", { className: "relative pl-4 border-l-2 " + (isDark ? 'border-slate-600' : 'border-indigo-200') + " space-y-1.5 max-h-64 overflow-y-auto" },
                   TIMELINE.map(function(ev, evi) {
                     return React.createElement("div", { key: evi, className: "relative" },
                       React.createElement("div", { className: "absolute -left-[21px] top-1 w-3 h-3 rounded-full " + (isDark ? 'bg-indigo-400' : 'bg-indigo-500') }),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                         React.createElement("span", { className: "font-bold mr-1 " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, ev.year),
                         React.createElement("span", { className: "mr-1" }, ev.icon),
                         ev.event
@@ -24615,7 +24615,7 @@ const d = labToolData.solarSystem || {};
 
                             // === DID YOU KNOW? TICKER ===
               React.createElement("div", { className: "mt-4 " + (isDark ? 'bg-indigo-900/50 border-indigo-700' : 'bg-gradient-to-r from-indigo-500 to-purple-500') + " rounded-xl p-2.5 border" },
-                React.createElement("div", { className: "text-center text-[11px] text-white font-medium" },
+                React.createElement("div", { className: "text-center text-[0.6875rem] text-white font-medium" },
                   "\uD83D\uDCA1 Did You Know? " + DYK_FACTS[Math.floor((Date.now() / 8000)) % DYK_FACTS.length]
                 )
               ),
@@ -24626,13 +24626,13 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-rose-300' : 'text-rose-700') }, "\uD83D\uDE80 Mission to " + sel.name + " (Hohmann Transfer)"),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_hohmann_transfer_calculator', "Toggle Hohmann transfer calculator"),
                     onClick: function() { upd('showHohmann', !d.showHohmann); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-rose-300 hover:text-rose-200' : 'text-rose-700 hover:text-rose-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-rose-300 hover:text-rose-200' : 'text-rose-700 hover:text-rose-900')
                   }, d.showHohmann ? 'Hide' : 'Plan \u2192')
                 ),
                 d.showHohmann && React.createElement("div", null,
-                  React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-2" }, __alloT('stem.solarsystem.a_hohmann_transfer_is_the_most_fuel_ef', "A Hohmann transfer is the most fuel-efficient way to travel between planets.")),
+                  React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-2" }, __alloT('stem.solarsystem.a_hohmann_transfer_is_the_most_fuel_ef', "A Hohmann transfer is the most fuel-efficient way to travel between planets.")),
                   React.createElement("div", { className: (isDark ? 'bg-slate-700' : 'bg-white') + " rounded-lg p-2.5 border " + (isDark ? 'border-slate-600' : 'border-rose-100') },
-                    React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[11px]" },
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[0.6875rem]" },
                       React.createElement("div", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, __alloT('stem.solarsystem.earth_departure_v', "\uD83D\uDE80 Earth departure \u0394v:")),
                       React.createElement("div", { className: "font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, HOHMANN[sel.key].dv1 + " km/s"),
                       React.createElement("div", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, "\uD83C\uDFAF " + sel.name + " arrival \u0394v:"),
@@ -24646,7 +24646,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("div", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, __alloT('stem.solarsystem.total_v_needed', "\u2696 Total \u0394v needed:")),
                       React.createElement("div", { className: "font-bold text-rose-600" }, (HOHMANN[sel.key].dv1 + HOHMANN[sel.key].dv2).toFixed(1) + " km/s")
                     ),
-                    React.createElement("div", { className: "mt-2 text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic" },
+                    React.createElement("div", { className: "mt-2 text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic" },
                       __alloT('stem.solarsystem.v_change_in_velocity_earth_s_escape_ve', "\u0394v = change in velocity. Earth\'s escape velocity is 11.2 km/s. The Saturn V rocket reached about 10.8 km/s, just under escape speed, to send Apollo toward the Moon.")
                     )
                   ),
@@ -24741,25 +24741,25 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-red-300' : 'text-red-700') }, __alloT('stem.solarsystem.escape_velocity', "\uD83D\uDE80 Escape Velocity")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_escape_velocity_comparison', "Toggle escape velocity comparison"),
                     onClick: function() { upd('showEscape', !d.showEscape); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-red-300 hover:text-red-200' : 'text-red-700 hover:text-red-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-red-300 hover:text-red-200' : 'text-red-700 hover:text-red-900')
                   }, d.showEscape ? 'Hide' : 'Show \u2192')
                 ),
                 d.showEscape && React.createElement("div", { className: "space-y-1" },
-                  React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-1" }, __alloT('stem.solarsystem.speed_needed_to_escape_each_planet_s_g', "Speed needed to escape each planet\'s gravity (without further propulsion)")),
+                  React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic mb-1" }, __alloT('stem.solarsystem.speed_needed_to_escape_each_planet_s_g', "Speed needed to escape each planet\'s gravity (without further propulsion)")),
                   PLANETS.map(function(p) {
                     var ev = ESCAPE_VEL[p.name] || 1;
                     var maxEv = ESCAPE_VEL.Jupiter;
                     var pctW = Math.max(3, ev / maxEv * 100);
                     var isSel3 = sel && sel.name === p.name;
                     return React.createElement("div", { key: p.name, className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "text-[11px] w-16 text-right " + (isSel3 ? 'font-bold ' : '') + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.emoji + ' ' + p.name),
+                      React.createElement("span", { className: "text-[0.6875rem] w-16 text-right " + (isSel3 ? 'font-bold ' : '') + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.emoji + ' ' + p.name),
                       React.createElement("div", { className: "flex-1 h-2.5 " + (isDark ? 'bg-slate-700' : 'bg-red-100') + " rounded-full overflow-hidden" },
                         React.createElement("div", {
                           className: "h-full rounded-full",
                           style: { width: pctW + '%', background: isSel3 ? 'linear-gradient(to right, #ef4444, #f97316)' : '#fca5a5', opacity: isSel3 ? 1 : 0.6 }
                         })
                       ),
-                      React.createElement("span", { className: "text-[11px] w-14 font-mono " + (isDark ? 'text-slate-200' : 'text-slate-700') }, ev + ' km/s')
+                      React.createElement("span", { className: "text-[0.6875rem] w-14 font-mono " + (isDark ? 'text-slate-200' : 'text-slate-700') }, ev + ' km/s')
                     );
                   })
                 )
@@ -24776,7 +24776,7 @@ const d = labToolData.solarSystem || {};
                     React.createElement("span", { className: "text-sm font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, researchPoints + " RP")
                   ),
                   React.createElement("span", {
-                    className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? 'bg-indigo-800/60 text-indigo-300' : 'bg-indigo-100 text-indigo-600')
+                    className: "text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? 'bg-indigo-800/60 text-indigo-300' : 'bg-indigo-100 text-indigo-600')
                   }, completedChallenges.length + "/" + CHALLENGES.length + " challenges")
                 ),
                 React.createElement("div", { className: "w-full rounded-full h-2.5 " + (isDark ? 'bg-indigo-900/50' : 'bg-indigo-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
@@ -24846,14 +24846,14 @@ const d = labToolData.solarSystem || {};
                   var distance = targetName === 'Earth' ? inspectedEarthDistance : inspectedTargetDistance;
                   return React.createElement("div", { className: "min-w-0", "data-gravity-shaft": targetName === 'Earth' ? 'earth' : 'target', "data-gravity-inspected-distance": inspecting ? distance : undefined },
                     React.createElement("div", { className: "mb-1 flex items-center justify-between gap-2", style: { minHeight: '32px' } },
-                      React.createElement("span", { className: "truncate text-[11px] font-black" }, label),
-                      React.createElement("span", { style: { whiteSpace: 'nowrap', flexShrink: 0 }, className: "text-[10px] font-black tabular-nums " + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, dropHasRun ? fallTime.toFixed(2) + " s" : __alloT('stem.solarsystem.result_hidden', 'Result hidden'))
+                      React.createElement("span", { className: "truncate text-[0.6875rem] font-black" }, label),
+                      React.createElement("span", { style: { whiteSpace: 'nowrap', flexShrink: 0 }, className: "text-[0.625rem] font-black tabular-nums " + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, dropHasRun ? fallTime.toFixed(2) + " s" : __alloT('stem.solarsystem.result_hidden', 'Result hidden'))
                     ),
                     React.createElement("div", { className: "solar-drop-shaft", role: "img", "aria-label": dropHasRun ? "Ideal vacuum drop from " + dropHeight + " meters on " + targetName + " takes " + fallTime.toFixed(2) + " seconds." + (inspecting ? " At " + inspectionTime.toFixed(2) + " seconds, distance fallen is " + distance.toFixed(2) + " meters." : "") : "Ideal vacuum drop setup from " + dropHeight + " meters on " + targetName + ". Result hidden until the model runs." },
                       React.createElement("span", { className: "solar-drop-ruler", "aria-hidden": "true" }),
-                      React.createElement("span", { className: "absolute left-7 top-2 text-[9px] font-bold text-slate-300", "aria-hidden": "true" }, dropHeight + " m"),
+                      React.createElement("span", { className: "absolute left-7 top-2 text-[0.5625rem] font-bold text-slate-300", "aria-hidden": "true" }, dropHeight + " m"),
                       React.createElement("span", { key: targetName + '-drop-' + dropNonce, className: "solar-drop-ball", "aria-hidden": "true", style: { '--drop-color': color, '--drop-time': animationTime.toFixed(2) + 's', animationName: dropHasRun && !inspecting ? 'solarGravityDrop' : 'none', top: inspecting ? (12 + 134 * distance / dropHeight) + 'px' : undefined } }),
-                      React.createElement("span", { className: "absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] font-bold uppercase tracking-wide text-slate-300", "aria-hidden": "true" }, targetName === 'Earth' ? 'ground' : targetLevel)
+                      React.createElement("span", { className: "absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[0.5rem] font-bold uppercase tracking-wide text-slate-300", "aria-hidden": "true" }, targetName === 'Earth' ? 'ground' : targetLevel)
                     )
                   );
                 }
@@ -24862,32 +24862,32 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                     React.createElement("div", null,
                       React.createElement("div", { id: "solar-gravity-lab-title", className: "text-xs font-black " + (isDark ? 'text-orange-300' : 'text-orange-800') }, __alloT('stem.solarsystem.gravity_drop_earth_vs', "\u2696 Gravity Drop \u2014 Earth vs ") + gravityTarget.name),
-                      React.createElement("p", { className: "mt-0.5 text-[10px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_lab_instruction', "Separate mass, weight force, and free-fall acceleration."))
+                      React.createElement("p", { className: "mt-0.5 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_lab_instruction', "Separate mass, weight force, and free-fall acceleration."))
                     ),
                     React.createElement("div", { className: "flex items-center gap-1.5" },
-                      React.createElement("span", { className: "rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide " + (isDark ? 'bg-orange-400/10 text-orange-200' : 'bg-white text-orange-800') }, __alloT('stem.solarsystem.vacuum_model', "Vacuum model")),
-                      React.createElement("button", { type: "button", "data-solarsystem-gravity-close": "true", onClick: function() { upd('showGravityLab', false); }, "aria-label": __alloT('stem.solarsystem.close_gravity_lab', "Close gravity drop lab"), className: "rounded-full border px-2 py-1 text-[9px] font-black " + (isDark ? 'border-slate-600 bg-slate-900 text-slate-200' : 'border-orange-200 bg-white text-orange-800') }, __alloT('stem.solarsystem.close', "Close"))
+                      React.createElement("span", { className: "rounded-full px-2 py-1 text-[0.5625rem] font-black uppercase tracking-wide " + (isDark ? 'bg-orange-400/10 text-orange-200' : 'bg-white text-orange-800') }, __alloT('stem.solarsystem.vacuum_model', "Vacuum model")),
+                      React.createElement("button", { type: "button", "data-solarsystem-gravity-close": "true", onClick: function() { upd('showGravityLab', false); }, "aria-label": __alloT('stem.solarsystem.close_gravity_lab', "Close gravity drop lab"), className: "rounded-full border px-2 py-1 text-[0.5625rem] font-black " + (isDark ? 'border-slate-600 bg-slate-900 text-slate-200' : 'border-orange-200 bg-white text-orange-800') }, __alloT('stem.solarsystem.close', "Close"))
                     )
                   ),
                   React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-2" },
-                    React.createElement("label", { className: "text-[10px] font-black " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.object_mass_kg', "Object mass (kg)"),
+                    React.createElement("label", { className: "text-[0.625rem] font-black " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.object_mass_kg', "Object mass (kg)"),
                       React.createElement("input", { type: "number", min: 0, max: 500, step: 1, value: massRaw, onChange: function(e) { updMulti({ gravMass: e.target.value, gravCalcUsed: true, gravityEvidenceSavedFor: null }); setTimeout(checkChallenges, 50); }, "aria-describedby": "solar-gravity-mass-note", className: "orr-input mt-1 w-full rounded-lg border px-2 py-1.5 text-sm " + (isDark ? 'border-orange-700/50 bg-slate-900 text-slate-100' : 'border-orange-300 bg-white text-slate-900') })
                     ),
-                    React.createElement("label", { className: "text-[10px] font-black " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.drop_height', "Drop height: ") + dropHeight + " m",
+                    React.createElement("label", { className: "text-[0.625rem] font-black " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.drop_height', "Drop height: ") + dropHeight + " m",
                       React.createElement("input", { type: "range", min: 1, max: 100, step: 1, value: dropHeight, onChange: function(e) { updMulti({ gravHeight: Number(e.target.value), gravityDropNonce: 0, gravityEvidenceSavedFor: null }); }, "aria-label": __alloT('stem.solarsystem.vacuum_drop_height_meters', "Vacuum drop height in meters"), className: "mt-2 w-full accent-orange-500" })
                     )
                   ),
-                  React.createElement("p", { id: "solar-gravity-mass-note", className: "mt-2 rounded-lg border px-2 py-1.5 text-[10px] font-bold " + (isDark ? 'border-emerald-400/20 bg-emerald-400/5 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-900') }, __alloT('stem.solarsystem.mass_stays', "Mass stays ") + massKg.toFixed(1) + __alloT('stem.solarsystem.mass_weight_force_suffix', " kg in both places; gravity changes weight force.")),
+                  React.createElement("p", { id: "solar-gravity-mass-note", className: "mt-2 rounded-lg border px-2 py-1.5 text-[0.625rem] font-bold " + (isDark ? 'border-emerald-400/20 bg-emerald-400/5 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-900') }, __alloT('stem.solarsystem.mass_stays', "Mass stays ") + massKg.toFixed(1) + __alloT('stem.solarsystem.mass_weight_force_suffix', " kg in both places; gravity changes weight force.")),
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
-                    React.createElement("div", { className: "rounded-lg border p-2 " + (isDark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') }, React.createElement("div", { className: "text-[9px] font-black uppercase tracking-wide text-slate-500" }, "Earth weight force"), React.createElement("div", { "data-gravity-earth-force": "true", className: "mt-0.5 text-sm font-black" }, forceLabel(massKg * 9.80665)), React.createElement("div", { className: "text-[9px] opacity-65" }, "g = 9.81 m/s\u00b2")),
-                    React.createElement("div", { className: "rounded-lg border p-2 " + (isDark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') }, React.createElement("div", { className: "truncate text-[9px] font-black uppercase tracking-wide text-slate-500" }, gravityTarget.name + " weight force"), React.createElement("div", { "data-gravity-target-force": "true", className: "mt-0.5 text-sm font-black" }, forceLabel(massKg * targetAcceleration)), React.createElement("div", { className: "text-[9px] opacity-65" }, "g \u2248 " + targetAcceleration.toFixed(2) + " m/s\u00b2"))
+                    React.createElement("div", { className: "rounded-lg border p-2 " + (isDark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') }, React.createElement("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-slate-500" }, "Earth weight force"), React.createElement("div", { "data-gravity-earth-force": "true", className: "mt-0.5 text-sm font-black" }, forceLabel(massKg * 9.80665)), React.createElement("div", { className: "text-[0.5625rem] opacity-65" }, "g = 9.81 m/s\u00b2")),
+                    React.createElement("div", { className: "rounded-lg border p-2 " + (isDark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') }, React.createElement("div", { className: "truncate text-[0.5625rem] font-black uppercase tracking-wide text-slate-500" }, gravityTarget.name + " weight force"), React.createElement("div", { "data-gravity-target-force": "true", className: "mt-0.5 text-sm font-black" }, forceLabel(massKg * targetAcceleration)), React.createElement("div", { className: "text-[0.5625rem] opacity-65" }, "g \u2248 " + targetAcceleration.toFixed(2) + " m/s\u00b2"))
                   ),
                   React.createElement("div", { "data-gravity-inquiry-step": "predict", "data-inquiry-stage": "predict", className: "mt-3 rounded-lg border border-l-[3px] p-2 " + (isDark ? 'border-fuchsia-300/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50') },
-                    React.createElement("div", { className: "text-[10px] font-black" }, __alloT('stem.solarsystem.gravity_hypothesis_prompt', "Step 1 · Choose an ungraded hypothesis")),
-                    React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_hypothesis_help', "Which object do you expect to reach the bottom first? Use the listed g values to reason. Timing results stay hidden until you run the model, and accuracy is not scored.")),
+                    React.createElement("div", { className: "text-[0.625rem] font-black" }, __alloT('stem.solarsystem.gravity_hypothesis_prompt', "Step 1 · Choose an ungraded hypothesis")),
+                    React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_hypothesis_help', "Which object do you expect to reach the bottom first? Use the listed g values to reason. Timing results stay hidden until you run the model, and accuracy is not scored.")),
                     React.createElement("div", { role: "group", "aria-label": __alloT('stem.solarsystem.gravity_drop_prediction', "Gravity drop prediction"), className: "mt-2 grid grid-cols-3 gap-1.5" }, [{ id: 'earth', label: __alloT('stem.solarsystem.earth', 'Earth') }, { id: 'same', label: __alloT('stem.solarsystem.same_time', 'Same time') }, { id: 'target', label: gravityTarget.name }].map(function(option) {
                       var active = predictionChoice === option.id;
-                      return React.createElement("button", { key: option.id, type: "button", "aria-pressed": active, disabled: dropHasRun, "aria-disabled": dropHasRun ? "true" : "false", onClick: function() { if (dropHasRun) return; updMulti({ gravityPrediction: { target: gravityTarget.key, choice: option.id }, gravityDropNonce: 0, gravityEvidenceSavedFor: null }); }, className: "min-w-0 truncate rounded-lg border px-1 py-2 text-[10px] font-black disabled:cursor-not-allowed disabled:opacity-70 " + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
+                      return React.createElement("button", { key: option.id, type: "button", "aria-pressed": active, disabled: dropHasRun, "aria-disabled": dropHasRun ? "true" : "false", onClick: function() { if (dropHasRun) return; updMulti({ gravityPrediction: { target: gravityTarget.key, choice: option.id }, gravityDropNonce: 0, gravityEvidenceSavedFor: null }); }, className: "min-w-0 truncate rounded-lg border px-1 py-2 text-[0.625rem] font-black disabled:cursor-not-allowed disabled:opacity-70 " + (active ? (isDark ? 'border-fuchsia-300 bg-fuchsia-400/10 text-fuchsia-100' : 'border-fuchsia-400 bg-white text-fuchsia-900') : (isDark ? 'border-slate-700 bg-slate-950 text-slate-300' : 'border-fuchsia-100 bg-white text-slate-700')) }, option.label);
                     }))
                   ),
                   React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-2" },
@@ -24895,7 +24895,7 @@ const d = labToolData.solarSystem || {};
                     dropShaft(gravityTarget.name, gravityTarget.color, targetFallTime, targetAnimationTime, gravityTarget.name)
                   ),
                   React.createElement("button", { type: "button", disabled: !predictionChoice, "aria-disabled": predictionChoice ? "false" : "true", onClick: runGravityDrop, className: "mt-2 w-full rounded-lg bg-gradient-to-r from-orange-700 to-indigo-600 px-3 py-2 text-xs font-black text-white shadow-md disabled:cursor-not-allowed disabled:opacity-45" }, __alloT('stem.solarsystem.run_synchronized_vacuum_drop_step', "Step 2 · Run synchronized vacuum drop")),
-                  React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 text-[10px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, dropHasRun ? outcome + " Earth: " + earthFallTime.toFixed(2) + " s; " + gravityTarget.name + ": " + targetFallTime.toFixed(2) + " s. Object mass does not change either fall time." : (predictionChoice ? "Hypothesis ready. Run the model to reveal and compare the timing evidence." : "Choose a hypothesis before running the model.")),
+                  React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, dropHasRun ? outcome + " Earth: " + earthFallTime.toFixed(2) + " s; " + gravityTarget.name + ": " + targetFallTime.toFixed(2) + " s. Object mass does not change either fall time." : (predictionChoice ? "Hypothesis ready. Run the model to reveal and compare the timing evidence." : "Choose a hypothesis before running the model.")),
                   dropHasRun ? React.createElement('section', { 'data-gravity-time-inspector': 'true', 'aria-labelledby': 'solar-gravity-inspector-title', style: { marginTop: '12px', padding: '12px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#475569' : '#cbd5e1'), background: isDark ? '#0f172a' : '#ffffff' } },
                     React.createElement('h5', { id: 'solar-gravity-inspector-title', style: { fontSize: '14px', fontWeight: 900 } }, __alloT('stem.solarsystem.gravity_inspect_title', 'Freeze and inspect the fall')),
                     React.createElement('p', { id: 'solar-gravity-inspector-help', style: { marginTop: '6px', fontSize: '12px', lineHeight: 1.5 } }, __alloT('stem.solarsystem.gravity_inspect_help', 'Choose a time to freeze both objects in the shafts above. Both share the same elapsed time. Run the drop again to replay the animation.')),
@@ -24921,12 +24921,12 @@ const d = labToolData.solarSystem || {};
                     ); })) : null,
                     React.createElement('p', { style: { marginTop: '10px', fontSize: '12px', lineHeight: 1.5 } }, __alloT('stem.solarsystem.gravity_acceleration_explanation', 'Distance fallen = ½ × g × time², starting from rest. At half of its own fall time, an object has fallen one-quarter of the height. It covers more distance in each equal time interval as it speeds up. Positions stop at the drop endpoint; no bounce is modeled.'))
                   ) : null,
-                  noSolidSurface ? React.createElement("p", { role: "note", className: "mt-2 rounded-lg border px-2 py-1.5 text-[10px] leading-relaxed " + (isDark ? 'border-amber-300/25 bg-amber-400/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-950') }, gravityTarget.name + " has no solid surface. Its listed gravity is a reference-level value, so the drop is a thought experiment rather than a landable scene.") : null,
+                  noSolidSurface ? React.createElement("p", { role: "note", className: "mt-2 rounded-lg border px-2 py-1.5 text-[0.625rem] leading-relaxed " + (isDark ? 'border-amber-300/25 bg-amber-400/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-950') }, gravityTarget.name + " has no solid surface. Its listed gravity is a reference-level value, so the drop is a thought experiment rather than a landable scene.") : null,
                   dropHasRun && predictionChoice ? React.createElement("div", { "data-gravity-inquiry-step": "compare", "data-inquiry-stage": "evidence", className: "mt-3 rounded-lg border border-l-[3px] p-2 " + (isDark ? 'border-fuchsia-300/20 bg-fuchsia-500/5' : 'border-fuchsia-200 bg-fuchsia-50') },
-                    React.createElement("div", { role: "status", "aria-live": "polite", className: "rounded-lg p-2 text-[10px] leading-relaxed " + (predictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) }, React.createElement("strong", null, predictionCorrect ? __alloT('stem.solarsystem.evidence_supports_hypothesis', 'Evidence supports your hypothesis. ') : __alloT('stem.solarsystem.evidence_differs_hypothesis', 'Evidence differs from your hypothesis. ')), outcome + __alloT('stem.solarsystem.fall_time_formula', " Fall time follows t = \u221a(2h/g). ") + __alloT('stem.solarsystem.prediction_accuracy_not_scored', 'Prediction accuracy is not scored.')),
+                    React.createElement("div", { role: "status", "aria-live": "polite", className: "rounded-lg p-2 text-[0.625rem] leading-relaxed " + (predictionCorrect ? (isDark ? 'bg-emerald-500/10 text-emerald-200' : 'bg-emerald-100 text-emerald-950') : (isDark ? 'bg-amber-500/10 text-amber-200' : 'bg-amber-100 text-amber-950')) }, React.createElement("strong", null, predictionCorrect ? __alloT('stem.solarsystem.evidence_supports_hypothesis', 'Evidence supports your hypothesis. ') : __alloT('stem.solarsystem.evidence_differs_hypothesis', 'Evidence differs from your hypothesis. ')), outcome + __alloT('stem.solarsystem.fall_time_formula', " Fall time follows t = \u221a(2h/g). ") + __alloT('stem.solarsystem.prediction_accuracy_not_scored', 'Prediction accuracy is not scored.')),
                     React.createElement("button", { type: "button", disabled: evidenceSaved, onClick: function() { addJournalEntry(gravityTarget.name, 'I predicted ' + (predictionChoice === 'same' ? 'both drops would arrive together.' : (predictionChoice === 'earth' ? 'the Earth drop would arrive first.' : 'the ' + gravityTarget.name + ' drop would arrive first.')), 'From ' + dropHeight + ' m in the vacuum model: Earth takes ' + earthFallTime.toFixed(2) + ' s and ' + gravityTarget.name + ' takes ' + targetFallTime.toFixed(2) + ' s. A ' + massKg.toFixed(1) + ' kg mass weighs ' + forceLabel(massKg * 9.80665) + ' on Earth and ' + forceLabel(massKg * targetAcceleration) + ' at the comparison level.' + (inspecting ? ' At elapsed time ' + inspectionTime.toFixed(2) + ' s, Earth has fallen ' + inspectedEarthDistance.toFixed(2) + ' m and ' + gravityTarget.name + ' has fallen ' + inspectedTargetDistance.toFixed(2) + ' m.' : ''), 'Mass stayed constant while weight force and fall acceleration changed.', 'How would atmosphere and drag change this drop?', { id: 'gravity' }); upd('gravityEvidenceSavedFor', gravityTarget.key); }, className: "mt-2 w-full rounded-lg px-3 py-2 text-xs font-black disabled:opacity-60 " + (isDark ? 'bg-fuchsia-400 text-slate-950' : 'bg-fuchsia-800 text-white') }, evidenceSaved ? __alloT('stem.solarsystem.gravity_evidence_saved', 'Gravity evidence saved \u2713') : __alloT('stem.solarsystem.save_gravity_comparison', 'Step 3 · Save comparison to journal'))
                   ) : null,
-                  React.createElement("p", { role: "note", className: "mt-2 text-[10px] leading-relaxed " + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_model_boundary', "Model boundary: W = mg and t = \u221a(2h/g). The drop ignores air drag, buoyancy, winds, terrain, altitude change, and rotation. Animation time is scaled for viewing; numeric times are the model results. "), React.createElement("a", { href: "https://spaceplace.nasa.gov/planets-weight/en/", target: "_blank", rel: "noreferrer", className: "font-black underline decoration-dotted underline-offset-2" }, __alloT('stem.solarsystem.nasa_mass_vs_weight', "NASA mass vs weight \u2197")), " \u00b7 ", React.createElement("a", { href: SOLAR_SCIENCE_SOURCES[0].href, target: "_blank", rel: "noreferrer", className: "font-black underline decoration-dotted underline-offset-2" }, __alloT('stem.solarsystem.jpl_gravity_values', "JPL gravity values \u2197")))
+                  React.createElement("p", { role: "note", className: "mt-2 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_model_boundary', "Model boundary: W = mg and t = \u221a(2h/g). The drop ignores air drag, buoyancy, winds, terrain, altitude change, and rotation. Animation time is scaled for viewing; numeric times are the model results. "), React.createElement("a", { href: "https://spaceplace.nasa.gov/planets-weight/en/", target: "_blank", rel: "noreferrer", className: "font-black underline decoration-dotted underline-offset-2" }, __alloT('stem.solarsystem.nasa_mass_vs_weight', "NASA mass vs weight \u2197")), " \u00b7 ", React.createElement("a", { href: SOLAR_SCIENCE_SOURCES[0].href, target: "_blank", rel: "noreferrer", className: "font-black underline decoration-dotted underline-offset-2" }, __alloT('stem.solarsystem.jpl_gravity_values', "JPL gravity values \u2197")))
                 );
               })(),
 
@@ -24940,9 +24940,9 @@ const d = labToolData.solarSystem || {};
                 var previewTime = function(seconds) { return seconds < 7200 ? (seconds / 60).toFixed(1) + ' min' : (seconds / 3600).toFixed(1) + ' h'; };
                 return React.createElement("div", { className: "mt-3 rounded-xl border p-3 " + (isDark ? 'border-cyan-700/40 bg-cyan-900/20' : 'border-cyan-200 bg-gradient-to-br from-cyan-50 to-violet-50') },
                   React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, "\uD83D\uDCE1 Signal delay: geometry matters"),
-                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Earth \u2194 " + previewPlanet.name + " one-way light time spans about ", React.createElement("strong", null, previewTime(previewMin) + " to " + previewTime(previewMax)), " in a circular mean-orbit model."),
-                  React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Actual positions change the distance. Spacecraft travel time requires a trajectory and propulsion model, not a constant-speed shortcut."),
-                  React.createElement("button", { type: "button", onClick: function() { updMulti({ modelLens: 'story', orreryMode: false, showVisualCompare: false, showSeasonsLab: false, showSignalLab: true, showGravityLab: false, showMoonLab: false, signalTarget: previewKey }); }, className: "mt-2 w-full rounded-lg bg-gradient-to-r from-cyan-700 to-violet-600 px-3 py-2 text-[11px] font-black text-white" }, "Open signal-delay investigation")
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Earth \u2194 " + previewPlanet.name + " one-way light time spans about ", React.createElement("strong", null, previewTime(previewMin) + " to " + previewTime(previewMax)), " in a circular mean-orbit model."),
+                  React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "Actual positions change the distance. Spacecraft travel time requires a trajectory and propulsion model, not a constant-speed shortcut."),
+                  React.createElement("button", { type: "button", onClick: function() { updMulti({ modelLens: 'story', orreryMode: false, showVisualCompare: false, showSeasonsLab: false, showSignalLab: true, showGravityLab: false, showMoonLab: false, signalTarget: previewKey }); }, className: "mt-2 w-full rounded-lg bg-gradient-to-r from-cyan-700 to-violet-600 px-3 py-2 text-[0.6875rem] font-black text-white" }, "Open signal-delay investigation")
                 );
               })(),
 
@@ -24972,7 +24972,7 @@ const d = labToolData.solarSystem || {};
                     sel ? 'What would I see on ' + sel.name + '?' : 'What is a black hole?',
                     'How do planets form?'
                   ].map(function(q, qi) {
-                    return React.createElement("button", { "aria-label": __alloT('stem.solarsystem.read_aloud', "Read aloud"), key: qi, onClick: function() { askSpaceTutor(q); }, className: "text-[11px] px-2.5 py-1 rounded-full transition-colors " + (isDark ? 'bg-violet-800/40 text-violet-300 hover:bg-violet-700/50' : 'bg-violet-100 text-violet-700 hover:bg-violet-200') }, q);
+                    return React.createElement("button", { "aria-label": __alloT('stem.solarsystem.read_aloud', "Read aloud"), key: qi, onClick: function() { askSpaceTutor(q); }, className: "text-[0.6875rem] px-2.5 py-1 rounded-full transition-colors " + (isDark ? 'bg-violet-800/40 text-violet-300 hover:bg-violet-700/50' : 'bg-violet-100 text-violet-700 hover:bg-violet-200') }, q);
                   })
                 ),
                 d.aiAnswer && React.createElement("div", { className: "rounded-lg p-3 text-xs border relative " + (isDark ? 'bg-slate-800 border-violet-700/30 text-slate-300' : 'bg-white border-violet-100 text-slate-700') },
@@ -25002,11 +25002,11 @@ const d = labToolData.solarSystem || {};
                       } }),
                       // Year badge
                       React.createElement("span", {
-                        className: "text-[11px] font-bold px-1.5 py-0.5 rounded " + (isDark ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-700'),
+                        className: "text-[0.6875rem] font-bold px-1.5 py-0.5 rounded " + (isDark ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-700'),
                         style: { fontFamily: 'monospace' }
                       }, m.year),
                       // Mission details
-                      React.createElement("div", { className: "mt-0.5 text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                      React.createElement("div", { className: "mt-0.5 text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
                         React.createElement("span", { className: "font-bold" }, m.name),
                         " \u2014 " + m.desc
                       )
@@ -25020,7 +25020,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement("div", { className: "text-xs font-bold " + (isDark ? 'text-amber-300' : 'text-amber-700') + " mb-2" }, "\uD83D\uDCA1 More " + sel.name + " Facts"),
                 React.createElement("div", { className: "space-y-1.5" },
                   (EXTRA_FACTS[sel.key] || []).map(function(fact, fi) {
-                    return React.createElement("div", { key: fi, className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " flex items-start gap-2" },
+                    return React.createElement("div", { key: fi, className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " flex items-start gap-2" },
                       React.createElement("span", { style: { fontWeight: 700, color: isDark ? '#fbbf24' : '#b45309', minWidth: '16px', fontSize: '10px' } }, (fi + 1) + "."),
                       fact
                     );
@@ -25038,11 +25038,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.stellar_evolution_timeline', "⭐ Stellar Evolution Timeline")),
                   React.createElement('button', {
                     onClick: function() { upd("showStellarEvo", !d.showStellarEvo); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showStellarEvo ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showStellarEvo ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_time_slider_to_watch_a_star_e', "Drag the time slider to watch a star evolve from birth to death. Choose a mass — different stars live very different lives.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_time_slider_to_watch_a_star_e', "Drag the time slider to watch a star evolve from birth to death. Choose a mass — different stars live very different lives.")),
                 d.showStellarEvo && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var phase = (d.stellarPhase != null ? d.stellarPhase : 50);
@@ -25089,7 +25089,7 @@ const d = labToolData.solarSystem || {};
                                           Object.keys(MASS_PROFILES).map(function(k) {
                                             var p = MASS_PROFILES[k];
                                             var active = massChoice === k;
-                                            return React.createElement('button', { key: k, onClick: function() { upd('stellarMass', k); upd('stellarPhase', 0); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p.name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('stellarMass', k); upd('stellarPhase', 0); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (active ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p.name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
@@ -25119,11 +25119,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time', 'Time')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time', 'Time')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.time', 'Time'), type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('stellarPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-8 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-8 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-2 gap-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-2 gap-1 text-[0.625rem]' },
                                           React.createElement('div', { className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                             React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.total_lifespan', 'Total lifespan: ')),
                                             profile.lifespan
@@ -25135,7 +25135,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-' + Math.min(stages.length, 5) + ' gap-1' },
                                           stages.map(function(st, si) {
-                                            return React.createElement('button', { key: si, onClick: function() { upd('stellarPhase', st.at); }, className: 'p-1.5 rounded text-[10px] font-bold ' + (Math.abs(phase - st.at) < 5 ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')), style: { borderLeft: '3px solid ' + st.color } }, st.label);
+                                            return React.createElement('button', { key: si, onClick: function() { upd('stellarPhase', st.at); }, className: 'p-1.5 rounded text-[0.625rem] font-bold ' + (Math.abs(phase - st.at) < 5 ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')), style: { borderLeft: '3px solid ' + st.color } }, st.label);
                                           })
                                         )
                                       );
@@ -25149,11 +25149,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.moon_phase_dial', "🌙 Moon Phase Dial")),
                   React.createElement('button', {
                     onClick: function() { upd("showMoonPhase", !d.showMoonPhase); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMoonPhase ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showMoonPhase ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_slider_to_orbit_the_moon_arou', "Drag the slider to orbit the Moon around Earth. Watch the phase update in real time based on the Sun-Earth-Moon angle.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_slider_to_orbit_the_moon_arou', "Drag the slider to orbit the Moon around Earth. Watch the phase update in real time based on the Sun-Earth-Moon angle.")),
                 d.showMoonPhase && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var pos = d.moonPhasePos != null ? d.moonPhasePos : 90;
@@ -25193,9 +25193,9 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit', 'Orbit')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit', 'Orbit')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.orbit', 'Orbit'), type: 'range', min: 0, max: 360, value: pos, onChange: function(e) { upd('moonPhasePos', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, pos + '°')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, pos + '°')
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-4 gap-1' },
                                           [{a:0,n:'🌑'},{a:90,n:'🌓'},{a:180,n:'🌕'},{a:270,n:'🌗'}].map(function(p) {
@@ -25214,11 +25214,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.eclipse_theater', "☀ Eclipse Theater")),
                   React.createElement('button', {
                     onClick: function() { upd("showEclipse", !d.showEclipse); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showEclipse ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showEclipse ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_alignment_slider_to_line_up_s', "Drag the alignment slider to line up Sun, Moon, and Earth. Switch between solar and lunar eclipses.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_alignment_slider_to_line_up_s', "Drag the alignment slider to line up Sun, Moon, and Earth. Switch between solar and lunar eclipses.")),
                 d.showEclipse && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var type = d.eclipseType || 'solar';
@@ -25230,7 +25230,7 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'flex gap-1 mb-2' },
                                           ['solar', 'lunar'].map(function(t) {
                                             var active = type === t;
-                                            return React.createElement('button', { key: t, onClick: function() { upd('eclipseType', t); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (active ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, t + ' Eclipse');
+                                            return React.createElement('button', { key: t, onClick: function() { upd('eclipseType', t); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold capitalize ' + (active ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, t + ' Eclipse');
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
@@ -25269,11 +25269,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-14 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.alignment', 'Alignment')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-14 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.alignment', 'Alignment')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.alignment', 'Alignment'), type: 'range', min: 0, max: 100, value: alignment, onChange: function(e) { upd('eclipseAlign', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('button', { onClick: function() { upd('eclipseAlign', 50); }, className: 'text-[10px] font-bold px-2 py-0.5 rounded ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, __alloT('stem.solarsystem.center', 'Center'))
+                                          React.createElement('button', { onClick: function() { upd('eclipseAlign', 50); }, className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, __alloT('stem.solarsystem.center', 'Center'))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           React.createElement('span', { className: 'font-bold' }, type === 'solar' ? 'Solar eclipse: ' : 'Lunar eclipse: '),
                                           type === 'solar' ? 'Moon passes between Sun and Earth. Casts a small shadow; total eclipse is visible from only a narrow path.' : 'Earth passes between Sun and Moon. Earth\'s shadow covers the Moon. Visible from the entire night side of Earth.'
                                         )
@@ -25288,11 +25288,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.aurora_tuner', "✨ Aurora Tuner")),
                   React.createElement('button', {
                     onClick: function() { upd("showAurora", !d.showAurora); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAurora ? 'bg-green-700 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200')
                   }, d.showAurora ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.adjust_solar_wind_latitude_and_altitud', "Adjust solar wind, latitude, and altitude to tune the aurora. Color depends on what particles excite which atmospheric atoms.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.adjust_solar_wind_latitude_and_altitud', "Adjust solar wind, latitude, and altitude to tune the aurora. Color depends on what particles excite which atmospheric atoms.")),
                 d.showAurora && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var wind = d.auroraWind != null ? d.auroraWind : 50;
@@ -25331,7 +25331,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 195, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, visibility)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.solar_wind', 'Solar wind'), val: wind, key: 'auroraWind', max: 100, unit: '%' },
                                             { label: __alloT('stem.solarsystem.latitude', 'Latitude'), val: lat, key: 'auroraLat', max: 90, unit: '°' },
@@ -25355,11 +25355,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.comet_tail_builder', "☄ Comet Tail Builder")),
                   React.createElement('button', {
                     onClick: function() { upd("showComet", !d.showComet); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showComet ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
                   }, d.showComet ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_comet_gets_two_tails_when_it_nears_t', "A comet gets two tails when it nears the Sun. Adjust distance + wind angle to see how they form.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_comet_gets_two_tails_when_it_nears_t', "A comet gets two tails when it nears the Sun. Adjust distance + wind angle to see how they form.")),
                 d.showComet && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var distToSun = d.cometDist != null ? d.cometDist : 50;
@@ -25399,7 +25399,7 @@ const d = labToolData.solarSystem || {};
                                             activity > 0.05 && React.createElement('text', { x: ionEnd.x, y: ionEnd.y - 8, textAnchor: 'middle', fill: '#93c5fd', fontSize: 9 }, __alloT('stem.solarsystem.ion_tail', 'Ion tail'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.distance_to_sun_au', 'Distance to Sun (AU)'), val: distToSun, key: 'cometDist', max: 100, scale: 0.05 },
                                             { label: __alloT('stem.solarsystem.wind_angle', 'Wind angle (°)'), val: angle, key: 'cometAngle', max: 180, scale: 1 }
@@ -25411,7 +25411,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           React.createElement('div', null, '🟡 ', React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.dust_tail_2', 'Dust tail ')), __alloT('stem.solarsystem.curved_pushed_by_photon_radiation_pres', '— curved, pushed by photon radiation pressure (slower)')),
                                           React.createElement('div', null, '🔵 ', React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.ion_tail_2', 'Ion tail ')), __alloT('stem.solarsystem.straight_pushed_by_solar_wind_charged_', '— straight, pushed by solar wind charged particles (faster)'))
                                         )
@@ -25426,11 +25426,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.black_hole_visualizer', "⚫ Black Hole Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showBlackHole", !d.showBlackHole); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBlackHole ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showBlackHole ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.adjust_mass_and_spin_watch_the_event_h', "Adjust mass and spin. Watch the event horizon grow and the accretion disk respond. Heavy spin launches polar jets.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.adjust_mass_and_spin_watch_the_event_h', "Adjust mass and spin. Watch the event horizon grow and the accretion disk respond. Heavy spin launches polar jets.")),
                 d.showBlackHole && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var mass = d.bhMass != null ? d.bhMass : 50;
@@ -25467,7 +25467,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, '~ 10^' + (6 + mass / 16).toFixed(1) + ' Earth masses')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [{ label: __alloT('stem.solarsystem.mass', 'Mass'), val: mass, key: 'bhMass', unit: '' }, { label: __alloT('stem.solarsystem.spin', 'Spin'), val: spin, key: 'bhSpin', unit: '%' }].map(function(s) {
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
@@ -25476,7 +25476,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.black_hole_has_3_properties_mass_spin_', 'Black hole has 3 properties: mass, spin, charge. The event horizon is the point of no return — once light crosses it, nothing escapes. The accretion disk is matter spiraling in, heated to millions of degrees by friction. Fast-spinning holes can launch relativistic jets along the spin axis.')
                                         )
                                       );
@@ -25490,11 +25490,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.orbital_speed_race', "🏁 Orbital Speed Race")),
                   React.createElement('button', {
                     onClick: function() { upd("showRace", !d.showRace); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showRace ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showRace ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.scrub_earth_years_and_watch_all_five_i', "Scrub Earth years and watch all five inner planets orbit at their real relative speeds. Kepler's third law in motion.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.scrub_earth_years_and_watch_all_five_i', "Scrub Earth years and watch all five inner planets orbit at their real relative speeds. Kepler's third law in motion.")),
                 d.showRace && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var t = d.raceTime != null ? d.raceTime : 0;
@@ -25535,16 +25535,16 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.earth_years', 'Earth years')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.earth_years', 'Earth years')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.earth_years', 'Earth years'), type: 'range', min: 0, max: 24, step: 0.05, value: t, onChange: function(e) { upd('raceTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.toFixed(2))
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.toFixed(2))
                                         ),
                                         React.createElement('div', { className: 'flex gap-1 mt-1' },
                                           [0, 1, 5, 12, 24].map(function(yr) {
-                                            return React.createElement('button', { key: yr, onClick: function() { upd('raceTime', yr); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (Math.abs(t - yr) < 0.1 ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, yr + 'y');
+                                            return React.createElement('button', { key: yr, onClick: function() { upd('raceTime', yr); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (Math.abs(t - yr) < 0.1 ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, yr + 'y');
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.kepler_s_third_law_orbital_period_squa', 'Kepler\'s third law: orbital period squared ∝ distance cubed. Inner planets sprint; outer planets crawl. Jupiter takes 12 Earth years for one orbit; Mercury laps every 88 days.')
                                         )
                                       );
@@ -25558,11 +25558,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.spacecraft_designer', "🚀 Spacecraft Designer")),
                   React.createElement('button', {
                     onClick: function() { upd("showDesigner", !d.showDesigner); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDesigner ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showDesigner ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.build_a_spacecraft_from_real_component', "Build a spacecraft from real components. Choose core, power, propulsion + payload — watch mass + cost update.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.build_a_spacecraft_from_real_component', "Build a spacecraft from real components. Choose core, power, propulsion + payload — watch mass + cost update.")),
                 d.showDesigner && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var sc = d.spacecraft || { core: 'cubesat', power: 'solar', prop: 'chem', payload: ['camera'] };
@@ -25600,26 +25600,26 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border p-3 ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-50') },
                                           React.createElement('div', { className: 'text-center text-3xl mb-1' }, (CORES[sc.core] && CORES[sc.core].label) + ' + ' + (POWER[sc.power] && POWER[sc.power].label) + ' + ' + (PROP[sc.prop] && PROP[sc.prop].label)),
-                                          React.createElement('div', { className: 'text-center text-[10px] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Mass: ' + totalMass.toLocaleString() + ' kg • Cost: $' + totalCost.toLocaleString() + 'k')
+                                          React.createElement('div', { className: 'text-center text-[0.625rem] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Mass: ' + totalMass.toLocaleString() + ' kg • Cost: $' + totalCost.toLocaleString() + 'k')
                                         ),
                                         ['core', 'power', 'prop'].map(function(cat) {
                                           var opts = cat === 'core' ? CORES : cat === 'power' ? POWER : PROP;
                                           return React.createElement('div', { key: cat, className: 'mt-2' },
-                                            React.createElement('div', { className: 'text-[10px] font-bold mb-1 capitalize ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cat),
+                                            React.createElement('div', { className: 'text-[0.625rem] font-bold mb-1 capitalize ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cat),
                                             React.createElement('div', { className: 'flex flex-wrap gap-1' },
                                               Object.keys(opts).map(function(k) {
                                                 var active = sc[cat] === k;
-                                                return React.createElement('button', { key: k, onClick: function() { upd('spacecraft', Object.assign({}, sc, { [cat]: k })); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, opts[k].label + ' ' + opts[k].name);
+                                                return React.createElement('button', { key: k, onClick: function() { upd('spacecraft', Object.assign({}, sc, { [cat]: k })); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (active ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, opts[k].label + ' ' + opts[k].name);
                                               })
                                             )
                                           );
                                         }),
                                         React.createElement('div', { className: 'mt-2' },
-                                          React.createElement('div', { className: 'text-[10px] font-bold mb-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.payload_multi', 'Payload (multi)')),
+                                          React.createElement('div', { className: 'text-[0.625rem] font-bold mb-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.payload_multi', 'Payload (multi)')),
                                           React.createElement('div', { className: 'flex flex-wrap gap-1' },
                                             Object.keys(PAYLOADS).map(function(k) {
                                               var active = (sc.payload || []).indexOf(k) >= 0;
-                                              return React.createElement('button', { key: k, onClick: function() { togglePayload(k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-emerald-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, PAYLOADS[k].label + ' ' + PAYLOADS[k].name);
+                                              return React.createElement('button', { key: k, onClick: function() { togglePayload(k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (active ? 'bg-emerald-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, PAYLOADS[k].label + ' ' + PAYLOADS[k].name);
                                             })
                                           )
                                         )
@@ -25634,11 +25634,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_cycle_visualizer', "☀ Solar Cycle Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showSunCycle", !d.showSunCycle); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSunCycle ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showSunCycle ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_sun_has_an_11_year_cycle_of_sunspo', "The Sun has an 11-year cycle of sunspot activity. Scrub through to see sunspots come and go + CME launches.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_sun_has_an_11_year_cycle_of_sunspo', "The Sun has an 11-year cycle of sunspot activity. Scrub through to see sunspots come and go + CME launches.")),
                 d.showSunCycle && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var year = d.sunCycleYear != null ? d.sunCycleYear : 5.5;
@@ -25688,11 +25688,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.cycle_year', 'Cycle year')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.cycle_year', 'Cycle year')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.cycle_year', 'Cycle year'), type: 'range', min: 0, max: 11, step: 0.1, value: year, onChange: function(e) { upd('sunCycleYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year.toFixed(1))
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year.toFixed(1))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.the_sun_cycles_every_11_years_between_', 'The Sun cycles every ~11 years between minimum (few sunspots, calm) and maximum (many sunspots, frequent solar flares + CMEs). Cycle 25 reached its maximum around 2024-2025 and is now declining.')
                                         )
                                       );
@@ -25706,11 +25706,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.habitable_zone_calculator', "🌱 Habitable Zone Calculator")),
                   React.createElement('button', {
                     onClick: function() { upd("showHZ", !d.showHZ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHZ ? 'bg-green-700 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200')
                   }, d.showHZ ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.where_could_life_as_we_know_it_survive', "Where could life-as-we-know-it survive around any star? Adjust star luminosity + planet distance to see.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.where_could_life_as_we_know_it_survive', "Where could life-as-we-know-it survive around any star? Adjust star luminosity + planet distance to see.")),
                 d.showHZ && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var Lstar = d.hzLum != null ? d.hzLum : 1.0;
@@ -25767,7 +25767,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, verdict)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.star_luminosity_l', 'Star luminosity (L☉)'), val: Lstar, key: 'hzLum', min: 0.0004, max: 10, unit: 'L☉' },
                                             { label: __alloT('stem.solarsystem.planet_distance_au', 'Planet distance (AU)'), val: planetDist, key: 'hzDist', min: 0.005, max: 5, unit: 'AU' }
@@ -25788,10 +25788,10 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1' },
                                           [['Sun + Earth', 1.0, 1.0], ['Sun + Mars', 1.0, 1.52], ['Proxima + b', 0.0017, 0.05], ['Kepler-186 + f', 0.05, 0.43], ['HD 40307 + g', 0.23, 0.6], ['TRAPPIST-1 + e', 0.0005, 0.029]].map(function(preset) {
-                                            return React.createElement('button', { key: preset[0], onClick: function() { upd('hzLum', preset[1]); upd('hzDist', preset[2]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200') }, preset[0]);
+                                            return React.createElement('button', { key: preset[0], onClick: function() { upd('hzLum', preset[1]); upd('hzDist', preset[2]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200') }, preset[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.the_habitable_zone_is_where_surface_wa', 'The habitable zone is where surface water can stay liquid. Inner edge: greenhouse effect dries off. Outer edge: ice traps CO2, runaway freeze. Edges scale as √L.')
                                         )
                                       );
@@ -25805,11 +25805,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.tidal_forces_visualizer', "🌊 Tidal Forces Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showTides", !d.showTides); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTides ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showTides ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_moon_closer_to_make_earth_s_t', "Drag the Moon closer to make Earth's tides bigger. Note the bulge is on both the near + far sides.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_moon_closer_to_make_earth_s_t', "Drag the Moon closer to make Earth's tides bigger. Note the bulge is on both the near + far sides.")),
                 d.showTides && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var moonDist = d.tideDist != null ? d.tideDist : 60;
@@ -25847,7 +25847,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, bulge < 5 ? 'Distant Moon — tiny tides' : bulge < 15 ? 'Real-Earth Moon — normal tides' : 'Closer Moon — extreme tides + lengthened day')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.moon_distance', 'Moon distance'), val: moonDist, key: 'tideDist', min: 30, max: 200, step: 1 },
                                             { label: __alloT('stem.solarsystem.moon_angle', 'Moon angle (°)'), val: moonAng, key: 'tideAng', min: 0, max: 360, step: 5 }
@@ -25859,7 +25859,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.tides_happen_because_gravity_pulls_mor', 'Tides happen because gravity pulls more strongly on the near side than the far side of Earth. Both sides bulge outward. Sun and Moon together create spring (aligned) + neap (perpendicular) tides.')
                                         )
                                       );
@@ -25873,11 +25873,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.day_night_globe', "🌍 Day/Night Globe")),
                   React.createElement('button', {
                     onClick: function() { upd("showGlobe", !d.showGlobe); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGlobe ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showGlobe ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.rotate_earth_and_adjust_season_watch_t', "Rotate Earth and adjust season. Watch the day/night terminator move + the axis tilt shift the sunlit hemisphere.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.rotate_earth_and_adjust_season_watch_t', "Rotate Earth and adjust season. Watch the day/night terminator move + the axis tilt shift the sunlit hemisphere.")),
                 d.showGlobe && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var rot = d.dayNightRot != null ? d.dayNightRot : 0;
@@ -25919,7 +25919,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Axis tilt: ' + tilt.toFixed(1) + '° • Hour: ' + Math.floor((rot / 360) * 24) + ':00')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.daily_rotation', 'Daily rotation'), val: rot, key: 'dayNightRot', min: 0, max: 360, step: 5 },
                                             { label: __alloT('stem.solarsystem.time_of_year', 'Time of year'), val: season, key: 'dayNightSeason', min: 0, max: 360, step: 5 }
@@ -25933,7 +25933,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mt-1' },
                                           [['Vernal Equinox', 0], ['Summer Solstice', 90], ['Autumnal Equinox', 180], ['Winter Solstice', 270]].map(function(sp) {
-                                            return React.createElement('button', { key: sp[0], onClick: function() { upd('dayNightSeason', sp[1]); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (Math.abs(season - sp[1]) < 5 ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, sp[0]);
+                                            return React.createElement('button', { key: sp[0], onClick: function() { upd('dayNightSeason', sp[1]); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (Math.abs(season - sp[1]) < 5 ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, sp[0]);
                                           })
                                         )
                                       );
@@ -25947,11 +25947,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.lagrange_points_lab', "⚖ Lagrange Points Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showLagrange", !d.showLagrange); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLagrange ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200')
                   }, d.showLagrange ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.five_gravitational_sweet_spots_between', "Five gravitational sweet spots between two bodies where spacecraft can hover. James Webb sits at L2.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.five_gravitational_sweet_spots_between', "Five gravitational sweet spots between two bodies where spacecraft can hover. James Webb sits at L2.")),
                 d.showLagrange && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var massRatio = d.lagrangeMass != null ? d.lagrangeMass : 0.01;
@@ -25995,7 +25995,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 250, y: 260, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.green_stable_equilibria_l4_l5_yellow_u', 'Green: stable equilibria (L4, L5) • Yellow: unstable but useful (L1, L2, L3)'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-5 gap-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-5 gap-1 text-[0.625rem]' },
                                           [
                                             ['L1', 'Sun + Earth observation (SOHO)', '#fbbf24'],
                                             ['L2', 'James Webb Space Telescope', '#fbbf24'],
@@ -26003,13 +26003,13 @@ const d = labToolData.solarSystem || {};
                                             ['L4', 'Trojan asteroids — stable', '#22c55e'],
                                             ['L5', 'Trojan asteroids — stable', '#22c55e']
                                           ].map(function(L) {
-                                            return React.createElement('div', { key: L[0], className: 'p-1 rounded text-[10px] ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), style: { borderLeft: '3px solid ' + L[2] } },
+                                            return React.createElement('div', { key: L[0], className: 'p-1 rounded text-[0.625rem] ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), style: { borderLeft: '3px solid ' + L[2] } },
                                               React.createElement('div', { className: 'font-bold' }, L[0]),
                                               React.createElement('div', null, L[1])
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.five_points_in_any_two_body_orbit_wher', 'Five points in any two-body orbit where gravity and centrifugal effects balance. Spacecraft can park here with minimal fuel. JWST sits at L2 — always behind Earth, away from Sun.')
                                         )
                                       );
@@ -26023,11 +26023,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.spectroscopy_lab', "🌈 Spectroscopy Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showSpectro", !d.showSpectro); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpectro ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showSpectro ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.each_element_fingerprints_light_in_spe', "Each element fingerprints light in specific wavelengths. Cycle through elements to see how astronomers identify them in distant stars.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.each_element_fingerprints_light_in_spe', "Each element fingerprints light in specific wavelengths. Cycle through elements to see how astronomers identify them in distant stars.")),
                 d.showSpectro && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var element = d.spectroElem || 'hydrogen';
@@ -26055,7 +26055,7 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                                           Object.keys(ELEMENTS).map(function(k) {
                                             var active = element === k;
-                                            return React.createElement('button', { key: k, onClick: function() { upd('spectroElem', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (active ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ELEMENTS[k].name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('spectroElem', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold capitalize ' + (active ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ELEMENTS[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -26091,7 +26091,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 175, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.element_emission_lines_fingerprint', 'Element emission lines (fingerprint)'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.every_element_emits_its_own_unique_pat', 'Every element emits its own unique pattern of light wavelengths — its spectral fingerprint. By looking at light from distant stars, we can determine what they\'re made of. This is how we know the Sun is 75% hydrogen!')
                                         )
                                       );
@@ -26105,11 +26105,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.constellation_hunter', "✨ Constellation Hunter")),
                   React.createElement('button', {
                     onClick: function() { upd("showConst", !d.showConst); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showConst ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showConst ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_constellations_to_see_their_star', "Click constellations to see their stars + connecting lines. Each star has its own color + true name.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_constellations_to_see_their_star', "Click constellations to see their stars + connecting lines. Each star has its own color + true name.")),
                 d.showConst && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var picked = d.constPicked || 'orion';
@@ -26146,7 +26146,7 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                                           Object.keys(CONSTS).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('constPicked', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (picked === k ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, CONSTS[k].name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('constPicked', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (picked === k ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, CONSTS[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -26171,7 +26171,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 245, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, con.name)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.constellations_are_patterns_of_stars_t', 'Constellations are patterns of stars that cultures recognized over millennia. The IAU codified 88 official constellations in 1922. The stars within a constellation usually aren\'t physically near each other — they just appear close from Earth.')
                                         )
                                       );
@@ -26185,11 +26185,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.trajectory_designer', "🛰 Trajectory Designer")),
                   React.createElement('button', {
                     onClick: function() { upd("showTraj", !d.showTraj); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTraj ? 'bg-orange-700 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200')
                   }, d.showTraj ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_much_delta_v_travel_time_to_reach_', "How much delta-v + travel time to reach different destinations? Hohmann transfer orbits visualized.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_much_delta_v_travel_time_to_reach_', "How much delta-v + travel time to reach different destinations? Hohmann transfer orbits visualized.")),
                 d.showTraj && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var dest = d.trajDest || 'mars';
@@ -26204,7 +26204,7 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                                           Object.keys(DESTS).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('trajDest', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (dest === k ? 'bg-orange-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, DESTS[k].name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('trajDest', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (dest === k ? 'bg-orange-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, DESTS[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -26223,19 +26223,19 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Δv: ' + d2.dv + ' km/s • Travel: ' + d2.time)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[0.625rem]' },
                                           [
                                             { l: 'Delta-v', v: d2.dv + ' km/s', c: 'blue' },
                                             { l: 'Travel time', v: d2.time, c: 'amber' },
                                             { l: 'Window', v: dest === 'mars' ? 'Every 26 months' : dest === 'jupiter' ? 'Every 13 months' : 'Frequent', c: 'emerald' }
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.l, className: 'p-1.5 rounded text-center ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                              React.createElement('div', { className: 'font-bold text-[10px]' }, s.l),
-                                              React.createElement('div', { className: 'text-[10px]' }, s.v)
+                                              React.createElement('div', { className: 'font-bold text-[0.625rem]' }, s.l),
+                                              React.createElement('div', { className: 'text-[0.625rem]' }, s.v)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.a_hohmann_transfer_is_the_most_fuel_ef_2', 'A Hohmann transfer is the most fuel-efficient way to move between two circular orbits. It uses two burns: one to enter the transfer ellipse, one to circularize at the destination. Δv is the total change in velocity required.')
                                         )
                                       );
@@ -26249,11 +26249,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mars_rover_pathfinder', "🚗 Mars Rover Pathfinder")),
                   React.createElement('button', {
                     onClick: function() { upd("showRover", !d.showRover); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showRover ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showRover ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pilot_a_rover_from_start_to_goal_plan_', "Pilot a rover from start to goal. Plan around rocks and mountains; watch your fuel!")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pilot_a_rover_from_start_to_goal_plan_', "Pilot a rover from start to goal. Plan around rocks and mountains; watch your fuel!")),
                 d.showRover && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var path = d.roverPath || [{ x: 0, y: 5 }];
@@ -26314,7 +26314,7 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'flex justify-center gap-1' },
                                           React.createElement('button', { onClick: function() { move(0, 1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '↓')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           React.createElement('div', null, __alloT('stem.solarsystem.drive_the_rover_from_start_to_goal_cos', 'Drive the rover from start to goal. Costs: flat ground 1, '), React.createElement('span', { style: { color: '#fcd34d' } }, '·'), __alloT('stem.solarsystem.rocks_2', ' rocks 2, '), React.createElement('span', { style: { color: '#fcd34d' } }, '◇'), __alloT('stem.solarsystem.boulders_3', ' boulders 3, '), React.createElement('span', { style: { color: '#fcd34d' } }, '▲'), __alloT('stem.solarsystem.mountains_5', ' mountains 5')),
                                           React.createElement('div', null, __alloT('stem.solarsystem.plan_the_path_to_conserve_fuel_like_re', 'Plan the path to conserve fuel. Like real Mars rovers, every meter requires fuel budgeting.'))
                                         )
@@ -26329,11 +26329,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_distance_ladder', "📏 Cosmic Distance Ladder")),
                   React.createElement('button', {
                     onClick: function() { upd("showDistLadder", !d.showDistLadder); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDistLadder ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showDistLadder ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_astronomers_measure_distance_each_', "How astronomers measure distance: each method bootstraps the next. Climb from Earth size to the observable universe.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_astronomers_measure_distance_each_', "How astronomers measure distance: each method bootstraps the next. Climb from Earth size to the observable universe.")),
                 d.showDistLadder && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var step = d.distStep || 0;
@@ -26371,16 +26371,16 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex gap-1' },
                                           React.createElement('button', { onClick: function() { upd('distStep', Math.max(0, step - 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.closer', '← Closer')),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Step ' + (step + 1) + ' / ' + STEPS.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Step ' + (step + 1) + ' / ' + STEPS.length),
                                           React.createElement('button', { onClick: function() { upd('distStep', Math.min(STEPS.length - 1, step + 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.farther', 'Farther →'))
                                         ),
                                         React.createElement('div', { className: 'mt-2 p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                           React.createElement('div', { className: 'flex justify-between mb-1' },
                                             React.createElement('span', { className: 'font-bold text-xs ' + (isDark ? 'text-emerald-400' : 'text-emerald-700') }, cur.name),
-                                            React.createElement('span', { className: 'text-[10px] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.dist.toExponential(2) + ' ' + cur.unit)
+                                            React.createElement('span', { className: 'text-[0.625rem] font-mono ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.dist.toExponential(2) + ' ' + cur.unit)
                                           ),
-                                          React.createElement('div', { className: 'text-[10px] mb-1 italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'Method: ' + cur.via),
-                                          React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.desc)
+                                          React.createElement('div', { className: 'text-[0.625rem] mb-1 italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'Method: ' + cur.via),
+                                          React.createElement('div', { className: 'text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.desc)
                                         )
                                       );
                                     })()
@@ -26393,11 +26393,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.doppler_shift_demo', "🚦 Doppler Shift Demo")),
                   React.createElement('button', {
                     onClick: function() { upd("showDoppler", !d.showDoppler); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDoppler ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showDoppler ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.light_from_receding_objects_redshifts_', "Light from receding objects redshifts; from approaching, blueshifts. This is how we measure cosmic distances + know universe is expanding.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.light_from_receding_objects_redshifts_', "Light from receding objects redshifts; from approaching, blueshifts. This is how we measure cosmic distances + know universe is expanding.")),
                 d.showDoppler && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var vel = d.dopplerVel != null ? d.dopplerVel : 0;
@@ -26440,16 +26440,16 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.velocity_km_s', 'Velocity (km/s)')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.velocity_km_s', 'Velocity (km/s)')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.velocity_km_s', 'Velocity (km/s)'), type: 'range', min: -50000, max: 50000, step: 100, value: vel, onChange: function(e) { upd('dopplerVel', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, vel.toLocaleString())
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, vel.toLocaleString())
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
                                           [['Approaching', -30000], ['At rest', 0], ['Receding', 30000]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('dopplerVel', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('dopplerVel', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           'A moving source shifts the wavelength of its light. Toward observer: blue-shifted (shorter wavelength). Away from observer: red-shifted (longer wavelength). z = ' + fracOff.toFixed(4) + '. Distant galaxies are nearly all redshifted (universe is expanding).'
                                         )
                                       );
@@ -26463,11 +26463,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.planetary_albedo_lab', "❄ Planetary Albedo Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showAlbedo", !d.showAlbedo); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAlbedo ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
                   }, d.showAlbedo ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_much_of_a_planet_s_incoming_sunlig', "How much of a planet's incoming sunlight is reflected vs absorbed? This drives global temperature.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_much_of_a_planet_s_incoming_sunlig', "How much of a planet's incoming sunlight is reflected vs absorbed? This drives global temperature.")),
                 d.showAlbedo && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var iceCover = d.albIce != null ? d.albIce : 30;
@@ -26507,7 +26507,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, stateLabel)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.ice_cover', 'Ice cover (%)'), val: iceCover, key: 'albIce' },
                                             { label: __alloT('stem.solarsystem.cloud_cover', 'Cloud cover (%)'), val: cloudCover, key: 'albCloud' }
@@ -26519,7 +26519,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.albedo_fraction_of_light_reflected_ice', 'Albedo = fraction of light reflected. Ice + clouds are highly reflective (high albedo); dark soil + water absorb (low albedo). More reflection = cooler planet. This is the ice-albedo feedback that drives ice ages.')
                                         )
                                       );
@@ -26533,11 +26533,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.big_bang_stretch', "💥 Big Bang Stretch")),
                   React.createElement('button', {
                     onClick: function() { upd("showBigBang", !d.showBigBang); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBigBang ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showBigBang ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.13_8_billion_years_compressed_into_a_s', "13.8 billion years compressed into a slider. Scrub from singularity to today.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.13_8_billion_years_compressed_into_a_s', "13.8 billion years compressed into a slider. Scrub from singularity to today.")),
                 d.showBigBang && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var time = d.bbTime != null ? d.bbTime : 5;
@@ -26584,11 +26584,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time_2', 'Time')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time_2', 'Time')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.time_2', 'Time'), type: 'range', min: 0, max: 10, step: 0.05, value: time, onChange: function(e) { upd('bbTime', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, time.toFixed(1))
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, time.toFixed(1))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.the_universe_is_13_8_billion_years_old', 'The universe is 13.8 billion years old. It began infinitely dense + hot, then expanded + cooled. Galaxies formed by 1 billion years, our Sun by 9 billion years, and we are here at 13.8 billion years.')
                                         )
                                       );
@@ -26602,11 +26602,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.asteroid_defender', "🎯 Asteroid Defender")),
                   React.createElement('button', {
                     onClick: function() { upd("showDefender", !d.showDefender); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDefender ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showDefender ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_incoming_asteroids_before_they_r', "Click incoming asteroids before they reach Earth. Like NASA's DART mission planetary defense.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_incoming_asteroids_before_they_r', "Click incoming asteroids before they reach Earth. Like NASA's DART mission planetary defense.")),
                 d.showDefender && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var asteroids = d.defAsteroids || [
@@ -26666,7 +26666,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors flex-1 px-3 py-1.5 rounded font-bold text-xs bg-red-600 text-white hover:bg-red-700' }, __alloT('stem.solarsystem.new_wave', '🚀 New Wave')),
                                           React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Hits: ' + earthHits + ' • Asteroids left: ' + asteroids.filter(function(a) { return a.alive; }).length)
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.real_nasa_program_dart_double_asteroid', 'Real NASA program: DART (Double Asteroid Redirection Test) successfully changed Dimorphos\'s orbit in 2022. The Planetary Defense Coordination Office tracks +30,000 near-Earth objects.')
                                         )
                                       );
@@ -26680,11 +26680,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.galaxy_spiral_map', "🌌 Galaxy Spiral Map")),
                   React.createElement('button', {
                     onClick: function() { upd("showGalaxy", !d.showGalaxy); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGalaxy ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showGalaxy ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.four_galaxy_morphologies_spirals_like_', "Four galaxy morphologies. Spirals like ours show arms tracing star formation. Ellipticals are old, irregulars are chaotic.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.four_galaxy_morphologies_spirals_like_', "Four galaxy morphologies. Spirals like ours show arms tracing star formation. Ellipticals are old, irregulars are chaotic.")),
                 d.showGalaxy && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var type = d.galType || 'spiral';
@@ -26724,7 +26724,7 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                                           Object.keys(TYPES).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('galType', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (type === k ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, TYPES[k].name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('galType', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (type === k ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, TYPES[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -26750,11 +26750,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         (type === 'spiral' || type === 'barred') && React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.rotate', 'Rotate')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.rotate', 'Rotate')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.rotate', 'Rotate'), type: 'range', min: 0, max: 360, value: rotation, onChange: function(e) { upd('galRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rotation + '°')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rotation + '°')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           type === 'spiral' ? 'Spiral galaxies like the Milky Way have a central bulge + thin disk with arms tracing star-formation regions. Sun orbits the galactic center in ~225 million years.' : type === 'barred' ? 'Barred spirals have a central bar of stars. ~70% of nearby spirals are barred — including our Milky Way.' : type === 'elliptical' ? 'Old, mostly red stars; little gas + dust; most found in galaxy clusters. Largest galaxies in the universe.' : 'No defined shape; often dwarf galaxies. Large + Small Magellanic Clouds are LMC + SMC irregular dwarfs near the Milky Way.'
                                         )
                                       );
@@ -26768,11 +26768,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.telescope_aperture_lab', "🔭 Telescope Aperture Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showScope", !d.showScope); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showScope ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showScope ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.bigger_aperture_gathers_more_light_res', "Bigger aperture gathers more light + resolves finer detail. Magnification matters less than you think.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.bigger_aperture_gathers_more_light_res', "Bigger aperture gathers more light + resolves finer detail. Magnification matters less than you think.")),
                 d.showScope && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var aperture = d.scopeAp != null ? d.scopeAp : 10;
@@ -26829,7 +26829,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 300, y: 220, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Resolves ' + resolveArcsec.toFixed(1) + '" • Mag ' + limitMag.toFixed(1) + ' faintest')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.aperture_cm', 'Aperture (cm)'), val: aperture, key: 'scopeAp', min: 2, max: 700, log: true, unit: ' cm' },
                                             { label: __alloT('stem.solarsystem.magnification', 'Magnification'), val: magnif, key: 'scopeMag', min: 10, max: 500, step: 5 }
@@ -26848,10 +26848,10 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
                                           [['Binoculars', 5], ['Beginner', 10], ['Mid-range', 20], ['Pro Amateur', 35], ['Hubble', 240], ['JWST', 650]].slice(0, 6).map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('scopeAp', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (Math.abs(aperture - p[1]) < 2 ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('scopeAp', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (Math.abs(aperture - p[1]) < 2 ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.aperture_matters_more_than_magnificati', 'Aperture matters more than magnification! Bigger objective gathers more light + resolves finer detail. Magnification beyond about 20x per cm of aperture just blurs. JWST\'s 6.5 m mirror studies galaxies from the first few hundred million years after the Big Bang.')
                                         )
                                       );
@@ -26865,11 +26865,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.atmospheric_layers', "🌫 Atmospheric Layers")),
                   React.createElement('button', {
                     onClick: function() { upd("showAtmos", !d.showAtmos); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAtmos ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
                   }, d.showAtmos ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_altitude_slider_up_through_ea', "Drag the altitude slider up through Earth's atmosphere. Pressure drops, temp swings, and chemistry changes layer by layer.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_altitude_slider_up_through_ea', "Drag the altitude slider up through Earth's atmosphere. Pressure drops, temp swings, and chemistry changes layer by layer.")),
                 d.showAtmos && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var alt = d.atmAlt != null ? d.atmAlt : 50;
@@ -26915,23 +26915,23 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.altitude_2', 'Altitude')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.altitude_2', 'Altitude')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.altitude_2', 'Altitude'), type: 'range', min: 0, max: 700, step: 1, value: alt, onChange: function(e) { upd('atmAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + 'km')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + 'km')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[0.625rem]' },
                                           [
                                             { l: 'Layer', v: currentLayer.name, c: 'fuchsia' },
                                             { l: 'Pressure', v: pressure < 1 ? pressure.toFixed(3) + ' hPa' : pressure.toFixed(0) + ' hPa', c: 'sky' },
                                             { l: 'Temp', v: tempC.toFixed(0) + '°C', c: 'orange' }
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.l, className: 'p-1.5 rounded text-center ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                              React.createElement('div', { className: 'font-bold text-[10px]' }, s.l),
-                                              React.createElement('div', { className: 'text-[10px]' }, s.v)
+                                              React.createElement('div', { className: 'font-bold text-[0.625rem]' }, s.l),
+                                              React.createElement('div', { className: 'text-[0.625rem]' }, s.v)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           React.createElement('span', { className: 'font-bold' }, currentLayer.name + ': '),
                                           currentLayer.desc
                                         )
@@ -26946,11 +26946,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.phases_of_venus_galileo', "♀ Phases of Venus (Galileo)")),
                   React.createElement('button', {
                     onClick: function() { upd("showPhasesV", !d.showPhasesV); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showPhasesV ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showPhasesV ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.galileo_s_1610_observations_venus_goes', "Galileo's 1610 observations: Venus goes through phases. This proved Venus orbits the Sun, not Earth.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.galileo_s_1610_observations_venus_goes', "Galileo's 1610 observations: Venus goes through phases. This proved Venus orbits the Sun, not Earth.")),
                 d.showPhasesV && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var ang = d.phVAng != null ? d.phVAng : 90;
@@ -27008,11 +27008,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit_2', 'Orbit')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit_2', 'Orbit')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.orbit_2', 'Orbit'), type: 'range', min: 0, max: 360, value: ang, onChange: function(e) { upd('phVAng', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ang + '°')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ang + '°')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.in_1610_galileo_observed_venus_through', 'In 1610 Galileo observed Venus through his telescope and saw it went through phases — like the Moon. This was proof Venus orbits the Sun, not Earth. Ptolemy\'s geocentric system can\'t explain a full Venus. Major evidence for Copernican heliocentrism.')
                                         )
                                       );
@@ -27026,11 +27026,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.magnetic_field_visualizer', "🧲 Magnetic Field Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showMag", !d.showMag); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMag ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showMag ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_magnetic_field_deflects_solar_wind_p', "A magnetic field deflects solar wind + protects atmosphere. Mars lost both; that's why it's barren.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_magnetic_field_deflects_solar_wind_p', "A magnetic field deflects solar wind + protects atmosphere. Mars lost both; that's why it's barren.")),
                 d.showMag && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var strength = d.magStr != null ? d.magStr : 50;
@@ -27079,7 +27079,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 280, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Field strength: ' + strength + '% • Solar wind: ' + solar + '%')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.magnetic_field_3', 'Magnetic field'), val: strength, key: 'magStr' },
                                             { label: __alloT('stem.solarsystem.solar_wind_2', 'Solar wind'), val: solar, key: 'magSolar' }
@@ -27093,10 +27093,10 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
                                           [['Mars (lost)', 5, 70], ['Earth (now)', 70, 50], ['Jupiter (strongest)', 100, 50]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('magStr', p[1]); upd('magSolar', p[2]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('magStr', p[1]); upd('magSolar', p[2]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.earth_s_magnetic_field_deflects_most_s', 'Earth\'s magnetic field deflects most solar wind, protecting atmosphere + life. Mars lost its magnetic field ~4 billion years ago and slowly lost its atmosphere. Jupiter has the strongest field in the solar system.')
                                         )
                                       );
@@ -27117,11 +27117,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.lunar_lander_mini_game', "🛬 Lunar Lander Mini-Game")),
                   React.createElement('button', {
                     onClick: function() { upd("showLander", !d.showLander); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLander ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showLander ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.thrust_to_slow_your_descent_land_softe', "Thrust to slow your descent. Land softer than 2.5 m/s or crash. Manage fuel — there's not enough for free hover.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.thrust_to_slow_your_descent_land_softe', "Thrust to slow your descent. Land softer than 2.5 m/s or crash. Manage fuel — there's not enough for free hover.")),
                 d.showLander && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var ll = d.lander || { y: 30, vy: 0, fuel: 100, landed: false, crashed: false };
@@ -27168,7 +27168,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('button', { onClick: function() { step(); }, disabled: ll.landed || ll.crashed, className: 'flex-1 px-3 py-2 rounded font-bold text-sm ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.fall_tick', '⏬ Fall (tick)')),
                                           React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-sm bg-red-600 text-white hover:bg-red-700' }, '↻')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.apollo_11_nearly_ran_out_of_fuel_durin', 'Apollo 11 nearly ran out of fuel during the lunar descent. Neil Armstrong manually overrode the autopilot to find a smoother landing area. Touchdown happened with ~25 seconds of fuel left.')
                                         )
                                       );
@@ -27182,11 +27182,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.light_year_walker', "⏱ Light-Year Walker")),
                   React.createElement('button', {
                     onClick: function() { upd("showLY", !d.showLY); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLY ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showLY ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pick_a_destination_see_how_long_light_', "Pick a destination + see how long light takes to reach it. Beyond the solar system, distances grow staggering.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pick_a_destination_see_how_long_light_', "Pick a destination + see how long light takes to reach it. Beyond the solar system, distances grow staggering.")),
                 d.showLY && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var dist = d.lyDist != null ? d.lyDist : 0;
@@ -27227,10 +27227,10 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-5 gap-1' },
                                           DESTS.map(function(des, idx) {
-                                            return React.createElement('button', { key: idx, onClick: function() { upd('lyDist', idx); }, className: 'p-1 rounded text-[10px] font-bold ' + (dist === idx ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, des.name);
+                                            return React.createElement('button', { key: idx, onClick: function() { upd('lyDist', idx); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (dist === idx ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, des.name);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.light_moves_300_000_km_s_we_see_distan', 'Light moves 300,000 km/s. We see distant objects as they were when light left them. The Sun we see is 8 minutes old; Proxima Centauri is 4 years old. Andromeda Galaxy is 2.5 million years old.')
                                         )
                                       );
@@ -27244,11 +27244,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.sun_path_across_latitudes', "☀ Sun Path Across Latitudes")),
                   React.createElement('button', {
                     onClick: function() { upd("showSunPath", !d.showSunPath); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSunPath ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showSunPath ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.where_exactly_does_the_sun_rise_set_it', "Where exactly does the Sun rise + set? It depends on your latitude + the day. Try Maine vs Arctic Circle.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.where_exactly_does_the_sun_rise_set_it', "Where exactly does the Sun rise + set? It depends on your latitude + the day. Try Maine vs Arctic Circle.")),
                 d.showSunPath && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var lat = d.sunLat != null ? d.sunLat : 45;
@@ -27291,7 +27291,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'Noon altitude: ' + noon.alt.toFixed(0) + '°')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.latitude_2', 'Latitude'), val: lat, key: 'sunLat', min: -90, max: 90, step: 1 },
                                             { label: __alloT('stem.solarsystem.day_of_year', 'Day of year'), val: doy, key: 'sunDoy', min: 1, max: 365, step: 1 }
@@ -27305,10 +27305,10 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
                                           [['Equator', 0, 80], ['Mid-North', 45, 172], ['Arctic Circle', 67, 172], ['Antarctic Circle', -67, 172], ['Maine (Portland)', 43.7, 172], ['North Pole', 90, 172]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('sunLat', p[1]); upd('sunDoy', p[2]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('sunLat', p[1]); upd('sunDoy', p[2]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.sun_path_depends_on_latitude_season_at', 'Sun path depends on latitude + season. At the equator, sun goes straight overhead. At Arctic Circle, midnight sun on summer solstice + polar night on winter solstice. Maine\'s Portland: midsummer sun is high; midwinter, sun barely clears horizon.')
                                         )
                                       );
@@ -27322,11 +27322,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.habitable_moons', "🌙 Habitable Moons")),
                   React.createElement('button', {
                     onClick: function() { upd("showHabMoons", !d.showHabMoons); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHabMoons ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showHabMoons ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.some_moons_may_host_life_europa_encela', "Some moons may host life: Europa + Enceladus + Titan + Ganymede have subsurface oceans. Active missions search now.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.some_moons_may_host_life_europa_encela', "Some moons may host life: Europa + Enceladus + Titan + Ganymede have subsurface oceans. Active missions search now.")),
                 d.showHabMoons && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var moon = d.habMoon || 'europa';
@@ -27342,7 +27342,7 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                                           Object.keys(MOONS).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('habMoon', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (moon === k ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, k);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('habMoon', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold capitalize ' + (moon === k ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, k);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -27383,7 +27383,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#86efac', fontSize: 10 }, 'Life: ' + sel.life)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           sel.desc
                                         )
                                       );
@@ -27397,11 +27397,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mars_terraforming_lab', "🌱 Mars Terraforming Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showTerraform", !d.showTerraform); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTerraform ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showTerraform ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_would_it_take_to_make_mars_liveab', "What would it take to make Mars liveable? Adjust greenhouse gas, ice melt, and plant cover — watch Mars transform.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_would_it_take_to_make_mars_liveab', "What would it take to make Mars liveable? Adjust greenhouse gas, ice melt, and plant cover — watch Mars transform.")),
                 d.showTerraform && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var co2 = d.tfCO2 != null ? d.tfCO2 : 10;
@@ -27435,7 +27435,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Temp: ' + temp.toFixed(0) + '°C • O₂: ' + oxy.toFixed(1) + '%')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.co_release_greenhouse', 'CO₂ release (greenhouse)'), val: co2, key: 'tfCO2' },
                                             { label: __alloT('stem.solarsystem.polar_ice_melt', 'Polar ice melt'), val: ice, key: 'tfIce' },
@@ -27448,7 +27448,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.terraforming_mars_would_take_thousands', 'Terraforming Mars would take thousands of years. Need to: thicken atmosphere (greenhouse gases), warm surface (melts ice), introduce plants (oxygen). NASA studies suggest current Mars CO2 reserves are too thin to terraform without huge imports. Still mostly science fiction.')
                                         )
                                       );
@@ -27462,11 +27462,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.hubble_deep_field', "🔬 Hubble Deep Field")),
                   React.createElement('button', {
                     onClick: function() { upd("showHDF", !d.showHDF); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHDF ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showHDF ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hubble_stared_at_an_empty_patch_of_sky', "Hubble stared at an empty patch of sky for 10 days and found 3000 distant galaxies. Look closer + each fuzzy blob is a galaxy.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hubble_stared_at_an_empty_patch_of_sky', "Hubble stared at an empty patch of sky for 10 days and found 3000 distant galaxies. Look closer + each fuzzy blob is a galaxy.")),
                 d.showHDF && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var zoom = d.hdfZoom != null ? d.hdfZoom : 1;
@@ -27505,11 +27505,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.zoom', 'Zoom')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.zoom', 'Zoom')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.zoom', 'Zoom'), type: 'range', min: 0.5, max: 4, step: 0.1, value: zoom, onChange: function(e) { upd('hdfZoom', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, zoom.toFixed(1) + '×')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, zoom.toFixed(1) + '×')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.in_1995_hubble_pointed_at_a_tiny_dark_', 'In 1995, Hubble pointed at a tiny dark patch of sky for 10 days. Result: 3000 distant galaxies in one image. JWST has pushed this deeper, studying galaxies from the first few hundred million years after the Big Bang.')
                                         )
                                       );
@@ -27523,11 +27523,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_color_temperature', "🌟 Star Color + Temperature")),
                   React.createElement('button', {
                     onClick: function() { upd("showStarWheel", !d.showStarWheel); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showStarWheel ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showStarWheel ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hotter_stars_look_bluer_cooler_stars_r', "Hotter stars look bluer; cooler stars redder. Stars are classified OBAFGKM by spectral type.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hotter_stars_look_bluer_cooler_stars_r', "Hotter stars look bluer; cooler stars redder. Stars are classified OBAFGKM by spectral type.")),
                 d.showStarWheel && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var temp = d.starTemp != null ? d.starTemp : 5778;
@@ -27577,16 +27577,16 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.temperature', 'Temperature')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.temperature', 'Temperature')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.temperature', 'Temperature'), type: 'range', min: 2500, max: 40000, step: 100, value: temp, onChange: function(e) { upd('starTemp', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, temp + ' K')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, temp + ' K')
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-7 gap-1' },
                                           [['M', 3000], ['K', 4500], ['G', 5800], ['F', 6500], ['A', 8500], ['B', 15000], ['O', 35000]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('starTemp', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (cls.cls === p[0] ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('starTemp', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (cls.cls === p[0] ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.star_color_temperature_astronomy_mnemo', 'Star color = temperature. Astronomy mnemonic for the OBAFGKM spectral sequence (hottest to coolest): \'Oh Be A Fine Girl/Guy, Kiss Me.\' Hotter stars are bigger + brighter + shorter-lived.')
                                         )
                                       );
@@ -27600,11 +27600,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.tidal_locking_simulator', "🔒 Tidal Locking Simulator")),
                   React.createElement('button', {
                     onClick: function() { upd("showTLock", !d.showTLock); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTLock ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showTLock ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.why_does_the_moon_always_show_the_same', "Why does the Moon always show the same face? Tidal forces slowed its rotation. See how distance + mass affect time-to-lock.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.why_does_the_moon_always_show_the_same', "Why does the Moon always show the same face? Tidal forces slowed its rotation. See how distance + mass affect time-to-lock.")),
                 d.showTLock && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var dist = d.tlDist != null ? d.tlDist : 50;
@@ -27631,7 +27631,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 215, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, locked ? 'One face always toward planet (like our Moon)' : 'Still rotating freely')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.distance', 'Distance'), val: dist, key: 'tlDist' },
                                             { label: __alloT('stem.solarsystem.planet_mass', 'Planet mass'), val: mass, key: 'tlMass' }
@@ -27644,7 +27644,7 @@ const d = labToolData.solarSystem || {};
                                           })
 
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.tidal_forces_gradually_slow_a_moon_s_r', 'Tidal forces gradually slow a moon\'s rotation until it matches its orbital period. Our Moon is tidally locked: same face always toward Earth. Mercury is in a 3:2 resonance with the Sun (not quite locked).')
                                         )
                                       );
@@ -27658,11 +27658,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.crater_counter', "🌑 Crater Counter")),
                   React.createElement('button', {
                     onClick: function() { upd("showCrater", !d.showCrater); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCrater ? 'bg-stone-500 text-white' : 'bg-stone-100 text-stone-700 hover:bg-stone-200')
                   }, d.showCrater ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_each_crater_real_planetary_scien', "Click each crater. Real planetary scientists count craters to age surfaces — more craters = older.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_each_crater_real_planetary_scien', "Click each crater. Real planetary scientists count craters to age surfaces — more craters = older.")),
                 d.showCrater && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var craters = d.craterList || [
@@ -27704,7 +27704,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('button', { disabled: found === craters.length, onClick: function() { var next = craters.filter(function(c) { return !c.found; })[0]; if (next) find(next.id); }, className: 'transition-colors px-3 py-1 rounded font-bold text-xs bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed' }, __alloT('stem.solarsystem.mark_next_crater', 'Mark next crater')),
                                           React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-1 rounded font-bold text-xs bg-slate-500 text-white hover:bg-slate-600' }, __alloT('stem.solarsystem.reset_3', 'Reset'))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.crater_counting_is_how_scientists_dete', 'Crater counting is how scientists determine the age of planetary surfaces. More craters = older surface. The Moon\'s highlands are heavily cratered (very old); maria are younger lava flows.')
                                         )
                                       );
@@ -27718,11 +27718,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.gravity_well_visualizer', "⚖ Gravity Well Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showGrav", !d.showGrav); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGrav ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showGrav ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mass_curves_spacetime_drag_mass_watch_', "Mass curves spacetime. Drag mass + watch the well deepen. Roll the ball to see how it falls in.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mass_curves_spacetime_drag_mass_watch_', "Mass curves spacetime. Drag mass + watch the well deepen. Roll the ball to see how it falls in.")),
                 d.showGrav && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var mass = d.gravMass != null ? d.gravMass : 50;
@@ -27777,7 +27777,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Mass ' + mass + 'x Earth')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.mass_2', 'Mass'), val: mass, key: 'gravMass' },
                                             { label: __alloT('stem.solarsystem.ball_position', 'Ball position'), val: ballX, key: 'gravBallX' }
@@ -27789,7 +27789,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.einstein_s_general_relativity_says_mas', 'Einstein\'s general relativity says mass curves spacetime. Objects don\'t feel a force — they follow geodesics through the curved geometry. This is gravity. Black holes curve spacetime so steeply that not even light escapes.')
                                         )
                                       );
@@ -27803,11 +27803,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.asteroid_composition', "🪨 Asteroid Composition")),
                   React.createElement('button', {
                     onClick: function() { upd("showAstComp", !d.showAstComp); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAstComp ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showAstComp ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.three_main_asteroid_types_c_s_m_mining', "Three main asteroid types: C, S, M. Mining companies eye M-type for iron + platinum.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.three_main_asteroid_types_c_s_m_mining', "Three main asteroid types: C, S, M. Mining companies eye M-type for iron + platinum.")),
                 d.showAstComp && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var astType = d.astType || 'cType';
@@ -27838,7 +27838,7 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex gap-1 mb-2' },
                                           Object.keys(TYPES).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('astType', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (astType === k ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, TYPES[k].name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('astType', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (astType === k ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, TYPES[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -27858,7 +27858,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, sel.fraction + '% of all asteroids')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-2 gap-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-2 gap-1 text-[0.625rem]' },
                                           sel.composition.map(function(c, ci) {
                                             return React.createElement('div', { key: ci, className: 'p-1.5 rounded flex items-center gap-2 ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                               React.createElement('div', { style: { width: 12, height: 12, background: c[2], borderRadius: 2 } }),
@@ -27866,7 +27866,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           sel.desc
                                         )
                                       );
@@ -27880,11 +27880,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_microwave_background', "📡 Cosmic Microwave Background")),
                   React.createElement('button', {
                     onClick: function() { upd("showCMB", !d.showCMB); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCMB ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showCMB ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.light_from_380_000_years_after_the_big', "Light from 380,000 years after the Big Bang. Tiny variations are the seeds of every galaxy.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.light_from_380_000_years_after_the_big', "Light from 380,000 years after the Big Bang. Tiny variations are the seeds of every galaxy.")),
                 d.showCMB && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var contrast = d.cmbContrast != null ? d.cmbContrast : 50;
@@ -27914,11 +27914,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.contrast', 'Contrast')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.contrast', 'Contrast')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.contrast', 'Contrast'), type: 'range', min: 0, max: 100, value: contrast, onChange: function(e) { upd('cmbContrast', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, contrast + '%')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, contrast + '%')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.the_cmb_is_leftover_light_from_380_000', 'The CMB is leftover light from 380,000 years after the Big Bang. Tiny temperature variations show where matter was slightly denser. Those denser spots grew into all galaxies + stars we see today. Discovered accidentally by Penzias + Wilson in 1965 (Nobel Prize 1978).')
                                         )
                                       );
@@ -27932,11 +27932,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.saturn_ring_composer', "🪐 Saturn Ring Composer")),
                   React.createElement('button', {
                     onClick: function() { upd("showRings", !d.showRings); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showRings ? 'bg-yellow-700 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200')
                   }, d.showRings ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.saturn_s_rings_are_99_water_ice_in_tri', "Saturn's rings are 99% water ice in trillions of pieces. They might be just 100 million years old.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.saturn_s_rings_are_99_water_ice_in_tri', "Saturn's rings are 99% water ice in trillions of pieces. They might be just 100 million years old.")),
                 d.showRings && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var iceFrac = d.ringIce != null ? d.ringIce : 95;
@@ -27963,7 +27963,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, iceFrac + '% water ice, ' + density + ' rings/bands')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.ice_fraction', 'Ice fraction'), val: iceFrac, key: 'ringIce' },
                                             { label: __alloT('stem.solarsystem.ring_density', 'Ring density'), val: density, key: 'ringDensity' }
@@ -27975,7 +27975,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.saturn_s_rings_are_mostly_water_ice_pa', 'Saturn\'s rings are mostly water ice particles ranging from dust grains to house-sized chunks. They span 282,000 km but are < 1 km thick. Likely formed from a destroyed moon ~100 million years ago — relatively young!')
                                         )
                                       );
@@ -27989,11 +27989,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.custom_planet_builder', "🪐 Custom Planet Builder")),
                   React.createElement('button', {
                     onClick: function() { upd("showBuilder", !d.showBuilder); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBuilder ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200')
                   }, d.showBuilder ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pick_a_core_surface_atmosphere_and_lif', "Pick a core, surface, atmosphere, and life. See what kind of world you've made.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pick_a_core_surface_atmosphere_and_lif', "Pick a core, surface, atmosphere, and life. See what kind of world you've made.")),
                 d.showBuilder && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var pl = d.builderPl || { core: 'iron', surface: 'rock', atmo: 'oxygen', life: false };
@@ -28027,15 +28027,15 @@ const d = labToolData.solarSystem || {};
                                         ['core', 'surface', 'atmo'].map(function(cat) {
                                           var opts = cat === 'core' ? ['iron','rock','ice'] : cat === 'surface' ? ['rock','ice','water','vegetation'] : ['none','co2','oxygen','methane','helium'];
                                           return React.createElement('div', { key: cat, className: 'mt-2' },
-                                            React.createElement('div', { className: 'text-[10px] font-bold mb-1 capitalize ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cat),
+                                            React.createElement('div', { className: 'text-[0.625rem] font-bold mb-1 capitalize ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cat),
                                             React.createElement('div', { className: 'flex flex-wrap gap-1' },
                                               opts.map(function(o) {
-                                                return React.createElement('button', { key: o, onClick: function() { set(cat, o); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (pl[cat] === o ? 'bg-emerald-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, o);
+                                                return React.createElement('button', { key: o, onClick: function() { set(cat, o); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold capitalize ' + (pl[cat] === o ? 'bg-emerald-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, o);
                                               })
                                             )
                                           );
                                         }),
-                                        React.createElement('div', { className: 'mt-2 flex items-center gap-2 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 flex items-center gap-2 text-[0.625rem]' },
                                           React.createElement('label', { className: 'flex items-center gap-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
                                             React.createElement('input', { type: 'checkbox', checked: pl.life, onChange: function(e) { set('life', e.target.checked); } }),
                                             React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.add_life', 'Add life'))
@@ -28052,11 +28052,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.pulsar_beam_sweeper', "📡 Pulsar Beam Sweeper")),
                   React.createElement('button', {
                     onClick: function() { upd("showPulsar", !d.showPulsar); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showPulsar ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showPulsar ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pulsars_are_spinning_neutron_stars_wit', "Pulsars are spinning neutron stars with magnetic beams. Earth sees a pulse only when a beam sweeps by.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pulsars_are_spinning_neutron_stars_wit', "Pulsars are spinning neutron stars with magnetic beams. Earth sees a pulse only when a beam sweeps by.")),
                 d.showPulsar && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var spin = d.pulsarSpin != null ? d.pulsarSpin : 0;
@@ -28084,7 +28084,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 235, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Spin: ' + spin + '° • Tilt: ' + tiltDeg + '° • ' + (Math.abs((spin + 90) % 180 - 90) < 15 && tiltDeg < 30 ? 'BEAM POINTING AT EARTH' : 'Beam aimed elsewhere'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.spin_angle', 'Spin angle'), val: spin, key: 'pulsarSpin', max: 360 },
                                             { label: __alloT('stem.solarsystem.axis_tilt', 'Axis tilt'), val: tiltDeg, key: 'pulsarTilt', max: 90 }
@@ -28096,7 +28096,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.a_pulsar_is_a_rapidly_rotating_neutron', 'A pulsar is a rapidly rotating neutron star. Its magnetic poles emit beams of radiation. We see a pulse only when the beam sweeps past us — like a lighthouse. Some pulse 700 times per second. Jocelyn Bell Burnell discovered the first in 1967.')
                                         )
                                       );
@@ -28110,11 +28110,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_wind_streamer', "💨 Solar Wind Streamer")),
                   React.createElement('button', {
                     onClick: function() { upd("showSWind", !d.showSWind); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSWind ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showSWind ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.stream_of_charged_particles_from_sun_h', "Stream of charged particles from Sun, hitting Earth. Stronger wind = more auroras + GPS disruption.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.stream_of_charged_particles_from_sun_h', "Stream of charged particles from Sun, hitting Earth. Stronger wind = more auroras + GPS disruption.")),
                 d.showSWind && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var speed = d.swSpeed != null ? d.swSpeed : 400;
@@ -28152,7 +28152,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Wind speed: ' + speed + ' km/s • Density: ' + density + ' particles/cm³')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.wind_speed', 'Wind speed'), val: speed, key: 'swSpeed', min: 200, max: 900, step: 10 },
                                             { label: __alloT('stem.solarsystem.density', 'Density'), val: density, key: 'swDens', min: 1, max: 15, step: 1 }
@@ -28164,7 +28164,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.solar_wind_is_a_stream_of_charged_part', 'Solar wind is a stream of charged particles (mostly protons + electrons) constantly flowing from the Sun. Speed varies 250-800 km/s. Strong storms cause auroras + can disrupt GPS + power grids. Carrington 1859 event: telegraphs sparked + caught fire.')
                                         )
                                       );
@@ -28178,11 +28178,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.iss_orbital_position', "🛰 ISS Orbital Position")),
                   React.createElement('button', {
                     onClick: function() { upd("showISS", !d.showISS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showISS ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
                   }, d.showISS ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_iss_orbits_earth_every_90_minutes_', "The ISS orbits Earth every 90 minutes. Sometimes in daylight, sometimes in Earth's shadow.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_iss_orbits_earth_every_90_minutes_', "The ISS orbits Earth every 90 minutes. Sometimes in daylight, sometimes in Earth's shadow.")),
                 d.showISS && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var orb = d.issOrbit != null ? d.issOrbit : 0;
@@ -28219,11 +28219,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit_3', 'Orbit')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit_3', 'Orbit')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.orbit_3', 'Orbit'), type: 'range', min: 0, max: 360, value: orb, onChange: function(e) { upd('issOrbit', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, orb + '°')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, orb + '°')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.the_iss_orbits_400_km_up_at_17_500_mph', 'The ISS orbits 400 km up at 17,500 mph (28,000 km/h). It completes one orbit every 90 minutes — so astronauts see 16 sunrises + sunsets per day. ISS is the largest object humans have built in space.')
                                         )
                                       );
@@ -28237,11 +28237,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.voyager_position_tracker', "🚀 Voyager Position Tracker")),
                   React.createElement('button', {
                     onClick: function() { upd("showVoy", !d.showVoy); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showVoy ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showVoy ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.voyager_1_2_launched_1977_they_are_now', "Voyager 1 + 2 launched in 1977. They are now in interstellar space; Voyager 1 crossed the heliopause in 2012 and Voyager 2 in 2018.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.voyager_1_2_launched_1977_they_are_now', "Voyager 1 + 2 launched in 1977. They are now in interstellar space; Voyager 1 crossed the heliopause in 2012 and Voyager 2 in 2018.")),
                 d.showVoy && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var year = d.voyYear != null ? d.voyYear : 2026;
@@ -28295,11 +28295,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.year', 'Year')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.year', 'Year')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.year', 'Year'), type: 'range', min: 1977, max: 2050, value: year, onChange: function(e) { upd('voyYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year)
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year)
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.voyagers_1_2_launched_1977_to_study_ou', 'Voyagers 1 + 2 launched 1977 to study outer planets. Both crossed the heliopause (boundary of solar wind) in 2012 + 2018 — now in interstellar space. Each carries Golden Record with greetings + music for any aliens who find them.')
                                         )
                                       );
@@ -28313,11 +28313,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mercury_transit', "🌑 Mercury Transit")),
                   React.createElement('button', {
                     onClick: function() { upd("showTrans", !d.showTrans); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTrans ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showTrans ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mercury_passes_in_front_of_the_sun_eve', "Mercury passes in front of the Sun every few years. Watch it cross — but only with a proper solar filter.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mercury_passes_in_front_of_the_sun_eve', "Mercury passes in front of the Sun every few years. Watch it cross — but only with a proper solar filter.")),
                 d.showTrans && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var phase = d.transPhase != null ? d.transPhase : 50;
@@ -28347,11 +28347,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time_3', 'Time')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time_3', 'Time')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.time_3', 'Time'), type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('transPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.a_transit_happens_when_mercury_or_venu', 'A transit happens when Mercury (or Venus) passes between Earth + the Sun. It looks like a small black dot on the Sun. Next Mercury transit: November 13, 2032. Next Venus transit: December 2117 — won\'t happen again until 2125.')
                                         )
                                       );
@@ -28365,11 +28365,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.foucault_pendulum', "🎯 Foucault Pendulum")),
                   React.createElement('button', {
                     onClick: function() { upd("showFouc", !d.showFouc); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFouc ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showFouc ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.l_on_foucault_1851_proved_earth_rotate', "Léon Foucault 1851 proved Earth rotates with a giant pendulum. Its swing-plane rotates faster at the poles.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.l_on_foucault_1851_proved_earth_rotate', "Léon Foucault 1851 proved Earth rotates with a giant pendulum. Its swing-plane rotates faster at the poles.")),
                 d.showFouc && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var lat = d.foucLat != null ? d.foucLat : 45;
@@ -28392,7 +28392,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 270, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Rotates full circle every ' + period.toFixed(1) + ' hours at latitude ' + lat + '°')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.latitude_3', 'Latitude'), val: lat, key: 'foucLat', min: -90, max: 90, step: 5 },
                                             { label: __alloT('stem.solarsystem.hours_elapsed', 'Hours elapsed'), val: t, key: 'foucTime', min: 0, max: 48, step: 0.5 }
@@ -28404,7 +28404,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.l_on_foucault_1851_demonstrated_earth_', 'Léon Foucault 1851 demonstrated Earth\'s rotation with a giant pendulum. Its swing plane appears to rotate because Earth turns under it. At the poles: 24 hours. At equator: never. In Maine: ~34 hours.')
                                         )
                                       );
@@ -28418,11 +28418,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.saturn_hexagon', "⬡ Saturn Hexagon")),
                   React.createElement('button', {
                     onClick: function() { upd("showHex", !d.showHex); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHex ? 'bg-yellow-700 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200')
                   }, d.showHex ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.saturn_s_north_pole_has_a_perfect_hexa', "Saturn's north pole has a perfect hexagonal storm 30,000 km wide. Discovered by Voyager 1981.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.saturn_s_north_pole_has_a_perfect_hexa', "Saturn's north pole has a perfect hexagonal storm 30,000 km wide. Discovered by Voyager 1981.")),
                 d.showHex && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var rot = d.hexRot != null ? d.hexRot : 0;
@@ -28452,11 +28452,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.rotation', 'Rotation')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.rotation', 'Rotation')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.rotation', 'Rotation'), type: 'range', min: 0, max: 360, value: rot, onChange: function(e) { upd('hexRot', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rot + '°')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, rot + '°')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.saturn_has_a_perfect_hexagonal_storm_a', 'Saturn has a perfect hexagonal storm at its north pole — first imaged by Voyager (1981), confirmed by Cassini. The hexagon is 30,000 km wide and persistent. Why hexagonal? Atmospheric jet stream pattern + Rossby waves.')
                                         )
                                       );
@@ -28470,11 +28470,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.sundial_demo', "🕰 Sundial Demo")),
                   React.createElement('button', {
                     onClick: function() { upd("showSundial", !d.showSundial); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSundial ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showSundial ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_original_clock_as_the_sun_arcs_acr', "The original clock. As the Sun arcs across the sky, the gnomon casts a rotating shadow that marks the hours.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_original_clock_as_the_sun_arcs_acr', "The original clock. As the Sun arcs across the sky, the gnomon casts a rotating shadow that marks the hours.")),
                 d.showSundial && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var hour = d.sdHour != null ? d.sdHour : 12;
@@ -28498,11 +28498,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.hour', 'Hour')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.hour', 'Hour')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.hour', 'Hour'), type: 'range', min: 6, max: 18, step: 0.25, value: hour, onChange: function(e) { upd('sdHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour.toFixed(1))
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour.toFixed(1))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.sundials_predate_clocks_by_millennia_a', 'Sundials predate clocks by millennia. As Sun moves across sky, the gnomon\'s shadow rotates. Ancient Egyptians, Greeks, Romans, Chinese all built precise sundials. Modern ones must correct for daylight saving time + equation of time.')
                                         )
                                       );
@@ -28516,11 +28516,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.local_group_map', "🌐 Local Group Map")),
                   React.createElement('button', {
                     onClick: function() { upd("showLG", !d.showLG); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLG ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showLG ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.80_galaxies_span_10_million_light_year', "80 galaxies span 10 million light-years around us. Milky Way + Andromeda may collide in about 4-5 billion years \u2014 2025 studies put the odds near 50/50.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.80_galaxies_span_10_million_light_year', "80 galaxies span 10 million light-years around us. Milky Way + Andromeda may collide in about 4-5 billion years \u2014 2025 studies put the odds near 50/50.")),
                 d.showLG && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var members = [
@@ -28553,7 +28553,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.local_group_80_galaxies_in_10_million_', 'Local Group — ~80 galaxies in 10 million light-years'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.our_local_group_has_80_galaxies_domina', 'Our Local Group has ~80 galaxies dominated by Milky Way + Andromeda. Andromeda is approaching at 110 km/s — a collision is possible in about 4-5 billion years. If it happens: Milkomeda mega-galaxy.')
                                         )
                                       );
@@ -28567,11 +28567,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.asteroid_impact_outcomes', "☄ Asteroid Impact Outcomes")),
                   React.createElement('button', {
                     onClick: function() { upd("showImpact", !d.showImpact); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showImpact ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showImpact ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_size_asteroid_kills_which_level_o', "What size asteroid kills which level of life? Compare from pebble to dinosaur-killer.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_size_asteroid_kills_which_level_o', "What size asteroid kills which level of life? Compare from pebble to dinosaur-killer.")),
                 d.showImpact && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var size = d.impSize != null ? d.impSize : 10;
@@ -28635,16 +28635,16 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.size_m', 'Size (m)')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.size_m', 'Size (m)')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.size_m', 'Size (m)'), type: 'range', min: 0.5, max: 15000, step: 0.5, value: size, onChange: function(e) { upd('impSize', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, size + 'm')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, size + 'm')
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
                                           [['Pebble', 0.5], ['Chelyabinsk', 20], ['Tunguska', 50], ['Chicxulub', 10000]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('impSize', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('impSize', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.atmospheric_entry_destroys_most_rocks_', 'Atmospheric entry destroys most rocks < 5m. Chelyabinsk 2013 (20m) shattered windows but no crater. Tunguska 1908 (50m) flattened 2000km² of forest. Chicxulub 66Ma (10km) killed the dinosaurs.')
                                         )
                                       );
@@ -28658,11 +28658,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.coronal_mass_ejection', "⚡ Coronal Mass Ejection")),
                   React.createElement('button', {
                     onClick: function() { upd("showCME", !d.showCME); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCME ? 'bg-orange-700 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200')
                   }, d.showCME ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_cme_blasts_billions_of_tons_of_plasm', "A CME blasts billions of tons of plasma from Sun. Days later, it can cause spectacular auroras + GPS failures.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_cme_blasts_billions_of_tons_of_plasm', "A CME blasts billions of tons of plasma from Sun. Days later, it can cause spectacular auroras + GPS failures.")),
                 d.showCME && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var phase = d.cmePhase != null ? d.cmePhase : 0;
@@ -28694,7 +28694,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, phase < 20 ? 'Coronal hole — CME building' : phase < 80 ? 'CME launched + traveling' : 'CME hit Earth — aurora!')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.time_after_launch', 'Time after launch'), val: phase, key: 'cmePhase' },
                                             { label: __alloT('stem.solarsystem.cme_size', 'CME size'), val: size, key: 'cmeSize' }
@@ -28706,7 +28706,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.a_coronal_mass_ejection_blasts_billion', 'A Coronal Mass Ejection blasts billions of tons of plasma into space at 1-2 million mph. Takes 1-5 days to reach Earth. Strong CMEs cause geomagnetic storms, vivid auroras, and can disrupt satellites + power grids.')
                                         )
                                       );
@@ -28720,11 +28720,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cepheid_variable_star', "💫 Cepheid Variable Star")),
                   React.createElement('button', {
                     onClick: function() { upd("showPVar", !d.showPVar); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showPVar ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showPVar ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.cepheids_pulse_on_a_regular_cycle_thei', "Cepheids pulse on a regular cycle. Their period reveals their true brightness — a cosmic ruler.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.cepheids_pulse_on_a_regular_cycle_thei', "Cepheids pulse on a regular cycle. Their period reveals their true brightness — a cosmic ruler.")),
                 d.showPVar && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var t = d.pvT != null ? d.pvT : 0;
@@ -28756,7 +28756,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Period: ' + period + ' days • Phase: ' + (phase * 100).toFixed(0) + '%')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.time_days', 'Time (days)'), val: t, key: 'pvT', max: 30, step: 0.1 },
                                             { label: __alloT('stem.solarsystem.period_2', 'Period'), val: period, key: 'pvPer', max: 30, step: 0.5 }
@@ -28768,7 +28768,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.cepheid_variables_pulse_on_a_regular_c', 'Cepheid variables pulse on a regular cycle. Their period directly correlates with their intrinsic brightness (Henrietta Leavitt 1908). Astronomers measure the period + use it to determine true luminosity + distance.')
                                         )
                                       );
@@ -28782,11 +28782,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.comet_orbit_drawer', "☄ Comet Orbit Drawer")),
                   React.createElement('button', {
                     onClick: function() { upd("showCOrb", !d.showCOrb); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCOrb ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showCOrb ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.orbits_range_from_circles_to_long_elli', "Orbits range from circles to long ellipses. Adjust eccentricity to draw planet-like or comet-like paths.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.orbits_range_from_circles_to_long_elli', "Orbits range from circles to long ellipses. Adjust eccentricity to draw planet-like or comet-like paths.")),
                 d.showCOrb && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var ecc = d.cobEcc != null ? d.cobEcc : 0.85;
@@ -28814,16 +28814,16 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity'), type: 'range', min: 0, max: 0.995, step: 0.001, value: ecc, onChange: function(e) { upd('cobEcc', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ecc.toFixed(2))
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ecc.toFixed(2))
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
                                           [['Earth (e=0.017)', 0.017], ['Halley (e=0.97)', 0.97], ['Mercury (e=0.21)', 0.21], ['Hale-Bopp (e=0.995)', 0.995]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('cobEcc', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('cobEcc', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.orbital_eccentricity_goes_from_0_perfe', 'Orbital eccentricity goes from 0 (perfect circle) to 1 (parabolic escape). Planets are nearly circular. Comets are highly elliptical — they sweep close to the Sun + far into the outer system. Hyperbolic orbits (e>1) mean a one-time pass through the solar system.')
                                         )
                                       );
@@ -28840,11 +28840,11 @@ const d = labToolData.solarSystem || {};
                     onClick: function() { upd("showAW", !d.showAW); },
                     'aria-expanded': d.showAW ? 'true' : 'false',
                     'aria-label': (d.showAW ? 'Hide' : 'Open') + ' atmospheric window mini-tool',
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAW ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showAW ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_s_atmosphere_blocks_most_wavelen', "Earth's atmosphere blocks many wavelengths. Visible light, radio, and some infrared windows reach the ground.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_s_atmosphere_blocks_most_wavelen', "Earth's atmosphere blocks many wavelengths. Visible light, radio, and some infrared windows reach the ground.")),
                 d.showAW && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
@@ -28867,7 +28867,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, __alloT('stem.solarsystem.visible_light_radio_waves_penetrate_th', '✔ Visible light, radio waves, and some infrared reach the ground'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.earth_atmosphere_blocks_most_wavelengt', 'Earth atmosphere blocks many wavelengths. Visible light, radio, and some infrared windows reach the ground; UV, X-ray, gamma-ray, and much infrared astronomy require space-based observatories such as Hubble, JWST, Chandra, and Fermi.')
                                         )
                                       );
@@ -28885,11 +28885,11 @@ const d = labToolData.solarSystem || {};
                     'aria-expanded': !!d.showSpc,
                     'aria-controls': 'star-spectra-panel',
                     'aria-label': (d.showSpc ? 'Close' : 'Open') + ' Star Spectra Comparison',
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpc ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showSpc ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.spectra_reveal_temperature_composition_motion', "Spectra reveal temperature, composition, motion, and clues to an object's evolutionary state.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.spectra_reveal_temperature_composition_motion', "Spectra reveal temperature, composition, motion, and clues to an object's evolutionary state.")),
                 d.showSpc && React.createElement('div', { id: 'star-spectra-panel', className: 'mt-2' },
                   (function() {
                                       var element = d.spcEl || 'sun';
@@ -29014,7 +29014,7 @@ const d = labToolData.solarSystem || {};
                                               onClick: function() { upd('spcEl', k); },
                                               'aria-pressed': active,
                                               'aria-label': 'View ' + SP[k].name + ' spectrum',
-                                              className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'))
+                                              className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (active ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'))
                                             }, SP[k].name);
                                           })
                                         ),
@@ -29044,7 +29044,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 209, y: 193, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.wavelength_nm', 'Wavelength (nm)'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), 'aria-live': 'polite' },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), 'aria-live': 'polite' },
                                           React.createElement('div', { className: 'font-bold ' + (isDark ? 'text-fuchsia-200' : 'text-fuchsia-800') }, sel.spectrumType + ' | ' + sel.context),
                                           React.createElement('div', { className: 'mt-1' }, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.key_visible_features', 'Key visible features: ')), sel.signature + '.'),
                                           React.createElement('div', { className: 'mt-1' }, sel.insight),
@@ -29061,11 +29061,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.time_zone_visualizer', "🕐 Time Zone Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showTZ", !d.showTZ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTZ ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showTZ ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_rotates_15_per_hour_watch_when_i', "Earth rotates 15° per hour. Watch when it's noon in Tokyo, when sunrise hits Portland.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_rotates_15_per_hour_watch_when_i', "Earth rotates 15° per hour. Watch when it's noon in Tokyo, when sunrise hits Portland.")),
                 d.showTZ && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var hour = d.tzHour != null ? d.tzHour : 12;
@@ -29091,11 +29091,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.utc_hour', 'UTC Hour')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.utc_hour', 'UTC Hour')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.utc_hour', 'UTC Hour'), type: 'range', min: 0, max: 23, step: 0.5, value: hour, onChange: function(e) { upd('tzHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour + ':00')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour + ':00')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.earth_rotates_15_per_hour_utc_coordina', 'Earth rotates 15° per hour. UTC (Coordinated Universal Time) is the global reference. Time zones offset by ±hours. Portland Maine is UTC-5 (EST) or UTC-4 (EDT). Globally, half of Earth is daylit while half is night.')
                                         )
                                       );
@@ -29109,11 +29109,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mind_blowing_facts_gallery', "💡 Mind-Blowing Facts Gallery")),
                   React.createElement('button', {
                     onClick: function() { upd("showFacts", !d.showFacts); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFacts ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFacts ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_through_12_astronomy_facts_that_', "Click through 12 astronomy facts that defy intuition.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_through_12_astronomy_facts_that_', "Click through 12 astronomy facts that defy intuition.")),
                 d.showFacts && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var idx = d.factIdx || 0;
@@ -29136,11 +29136,11 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-center text-4xl mb-2' }, cur.icon),
                                           React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, cur.f),
-                                          React.createElement('div', { className: 'text-center text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.d)
+                                          React.createElement('div', { className: 'text-center text-[0.6875rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.d)
                                         ),
                                         React.createElement('div', { className: 'flex gap-1 mt-2' },
                                           React.createElement('button', { onClick: function() { upd('factIdx', (idx + FACTS.length - 1) % FACTS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.previous', '← Previous')),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % FACTS.length + 1) + ' / ' + FACTS.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % FACTS.length + 1) + ' / ' + FACTS.length),
                                           React.createElement('button', { onClick: function() { upd('factIdx', (idx + 1) % FACTS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.next_3', 'Next →'))
                                         )
                                       );
@@ -29154,18 +29154,18 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.earth_moon_true_scale', "📐 Earth-Moon True Scale")),
                   React.createElement('button', {
                     onClick: function() { upd("showEMS", !d.showEMS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showEMS ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showEMS ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.textbook_diagrams_lie_the_moon_is_much', "Textbook diagrams lie. The Moon is much farther than drawn. See the real scale.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.textbook_diagrams_lie_the_moon_is_much', "Textbook diagrams lie. The Moon is much farther than drawn. See the real scale.")),
                 d.showEMS && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var scale = d.emScale || 'true';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex gap-1 mb-2' },
                                           [['true', 'True distance'], ['textbook', 'Textbook (wrong!)']].map(function(t) {
-                                            return React.createElement('button', { key: t[0], onClick: function() { upd('emScale', t[0]); }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold ' + (scale === t[0] ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, t[1]);
+                                            return React.createElement('button', { key: t[0], onClick: function() { upd('emScale', t[0]); }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold ' + (scale === t[0] ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, t[1]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -29190,7 +29190,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, scale === 'true' ? 'Moon is ~30 Earth diameters away' : 'Real distance is much greater than usually drawn')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.most_textbooks_draw_the_moon_too_big_t', 'Most textbooks draw the Moon too big + too close. Truth: Moon diameter is 1/4 of Earth\'s, and the distance to the Moon is ~30 Earth diameters. Light takes 1.3 seconds to make the trip.')
                                         )
                                       );
@@ -29204,11 +29204,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.day_length_comparison', "⏰ Day Length Comparison")),
                   React.createElement('button', {
                     onClick: function() { upd("showDL", !d.showDL); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDL ? 'bg-orange-700 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200')
                   }, d.showDL ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.jupiter_has_the_shortest_day_10_hr_ven', "Jupiter has the shortest day (10 hr). Venus has the longest (243 Earth days!).")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.jupiter_has_the_shortest_day_10_hr_ven', "Jupiter has the shortest day (10 hr). Venus has the longest (243 Earth days!).")),
                 d.showDL && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var planets = [
@@ -29241,7 +29241,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 240, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.jupiter_spins_fast_venus_rotates_slowe', 'Jupiter spins fast. Venus rotates slower than its year.'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.gas_giants_spin_fast_because_of_how_th', 'Gas giants spin fast because of how they formed. Venus rotates slowest, possibly due to solar tides + thick atmosphere drag. Earth slows down by ~1.7 milliseconds per century due to Moon\'s gravity.')
                                         )
                                       );
@@ -29255,11 +29255,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.eclipse_path_maker', "🗺 Eclipse Path Maker")),
                   React.createElement('button', {
                     onClick: function() { upd("showEPath", !d.showEPath); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showEPath ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showEPath ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.total_eclipses_cover_narrow_strips_the', "Total eclipses cover narrow strips. The 2024 eclipse path crossed northern Maine.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.total_eclipses_cover_narrow_strips_the', "Total eclipses cover narrow strips. The 2024 eclipse path crossed northern Maine.")),
                 d.showEPath && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var lat = d.ePathLat != null ? d.ePathLat : 40;
@@ -29277,7 +29277,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 205, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, inMaine ? '✨ YOU ARE IN THE PATH OF TOTALITY (northern Maine had totality)' : 'Move to the path of totality')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.latitude_4', 'Latitude'), val: lat, key: 'ePathLat', min: 0, max: 80 },
                                             { label: __alloT('stem.solarsystem.longitude', 'Longitude'), val: lon, key: 'ePathLon', min: -100, max: 100 }
@@ -29289,7 +29289,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.total_solar_eclipses_only_happen_along', 'Total solar eclipses only happen along narrow paths ~100-150 km wide. April 8, 2024 eclipse crossed northern Maine — many Mainers traveled north for totality. Next total eclipse visible from Maine: May 1, 2079.')
                                         )
                                       );
@@ -29303,11 +29303,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_calendar', "📅 Cosmic Calendar")),
                   React.createElement('button', {
                     onClick: function() { upd("showCal", !d.showCal); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCal ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showCal ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.sagan_s_cosmic_calendar_13_8_billion_y', "Sagan's Cosmic Calendar: 13.8 billion years in one year. Humans arrive in the last second.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.sagan_s_cosmic_calendar_13_8_billion_y', "Sagan's Cosmic Calendar: 13.8 billion years in one year. Humans arrive in the last second.")),
                 d.showCal && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var idx = d.calIdx || 0;
@@ -29331,14 +29331,14 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-center font-bold text-xl ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, cur.date),
                                           React.createElement('div', { className: 'text-center font-bold text-base mt-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, cur.event),
-                                          React.createElement('div', { className: 'text-center text-[10px] mt-1 italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, cur.desc)
+                                          React.createElement('div', { className: 'text-center text-[0.625rem] mt-1 italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, cur.desc)
                                         ),
                                         React.createElement('div', { className: 'flex gap-1 mt-2' },
                                           React.createElement('button', { onClick: function() { upd('calIdx', (idx + CAL.length - 1) % CAL.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.earlier', '← Earlier')),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % CAL.length + 1) + ' / ' + CAL.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % CAL.length + 1) + ' / ' + CAL.length),
                                           React.createElement('button', { onClick: function() { upd('calIdx', (idx + 1) % CAL.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.later', 'Later →'))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.carl_sagan_s_cosmic_calendar_compresse', 'Carl Sagan\'s Cosmic Calendar: compresses 13.8 billion years into 1 year. Big Bang = Jan 1. Now = Dec 31 midnight. Humans appeared in the last seconds. Civilizations exist in the last fraction of a second.')
                                         )
                                       );
@@ -29352,11 +29352,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.drake_equation_calculator', "👽 Drake Equation Calculator")),
                   React.createElement('button', {
                     onClick: function() { upd("showDrake", !d.showDrake); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDrake ? 'bg-green-700 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200')
                   }, d.showDrake ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_many_alien_civilizations_adjust_ea', "How many alien civilizations? Adjust each unknown factor + see the answer.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_many_alien_civilizations_adjust_ea', "How many alien civilizations? Adjust each unknown factor + see the answer.")),
                 d.showDrake && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var R = d.drR != null ? d.drR : 1.5;
@@ -29370,9 +29370,9 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'N = ' + N.toFixed(2) + ' communicating civilizations'),
-                                          React.createElement('div', { className: 'text-center text-[10px] mb-3 italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.in_our_milky_way_galaxy_at_any_time', 'in our Milky Way Galaxy at any time'))
+                                          React.createElement('div', { className: 'text-center text-[0.625rem] mb-3 italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.in_our_milky_way_galaxy_at_any_time', 'in our Milky Way Galaxy at any time'))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
+                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
                                           [
                                             { label: __alloT('stem.solarsystem.r_star_formation_rate', 'R: Star formation rate'), val: R, key: 'drR', min: 0.1, max: 10, step: 0.1 },
                                             { label: __alloT('stem.solarsystem.fp_fraction_w_planets', 'fp: Fraction w/ planets'), val: fp, key: 'drFp', min: 0, max: 1, step: 0.05 },
@@ -29389,7 +29389,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.frank_drake_1961_estimating_other_civi', 'Frank Drake 1961: estimating other civilizations. Most factors are unknown — answers from <1 (alone) to millions. Reveals what we don\'t know more than gives an answer. Adjust the sliders to see how sensitive the result is.')
                                         )
                                       );
@@ -29403,11 +29403,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.world_telescopes_catalog', "🔭 World Telescopes Catalog")),
                   React.createElement('button', {
                     onClick: function() { upd("showTelCat", !d.showTelCat); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTelCat ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showTelCat ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.dozen_biggest_best_telescopes_hubble_j', "Dozen biggest + best telescopes: Hubble, JWST, Keck, VLT, ALMA, and what they observe.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.dozen_biggest_best_telescopes_hubble_j', "Dozen biggest + best telescopes: Hubble, JWST, Keck, VLT, ALMA, and what they observe.")),
                 d.showTelCat && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var TELS = [
@@ -29428,15 +29428,15 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           TELS.map(function(t, ti) {
                                             return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'), style: { borderLeft: '3px solid ' + t.color } },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem]' },
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, t.name),
                                                 React.createElement('span', { className: 'font-mono ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, t.aper + 'cm aperture · ' + t.launch)
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] mt-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, t.desc)
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, t.desc)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.a_dozen_of_the_world_s_most_powerful_t', 'A dozen of the world\'s most powerful telescopes. Aperture (cm) is the diameter of the primary mirror. Bigger aperture = more light + finer detail. Space telescopes avoid atmospheric distortion.')
                                         )
                                       );
@@ -29450,11 +29450,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_lifespan_calculator', "⏳ Star Lifespan Calculator")),
                   React.createElement('button', {
                     onClick: function() { upd("showSLT", !d.showSLT); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSLT ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showSLT ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.massive_stars_live_fast_die_young_adju', "Massive stars live fast + die young. Adjust mass + see how long the star burns.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.massive_stars_live_fast_die_young_adju', "Massive stars live fast + die young. Adjust mass + see how long the star burns.")),
                 d.showSLT && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var mass = d.sltMass != null ? d.sltMass : 1;
@@ -29480,11 +29480,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.mass_3', 'Mass')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.mass_3', 'Mass')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.mass_3', 'Mass'), type: 'range', min: 0.1, max: 50, step: 0.1, value: mass, onChange: function(e) { upd('sltMass', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, mass + ' M☉')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, mass + ' M☉')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.massive_stars_burn_fuel_fast_lifespan_', 'Massive stars burn fuel fast. Lifespan ∝ M^-2.5. Sun: 10 Gyr (we are halfway). 10 M☉: only 30 Myr. 0.1 M☉ red dwarf: trillions of years.')
                                         )
                                       );
@@ -29498,11 +29498,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.your_cosmic_journey', "🎯 Your Cosmic Journey")),
                   React.createElement('button', {
                     onClick: function() { upd("showSummary", !d.showSummary); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSummary ? 'bg-green-700 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200')
                   }, d.showSummary ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.track_your_progress_planets_explored_p', "Track your progress: planets explored, points earned, missions logged.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.track_your_progress_planets_explored_p', "Track your progress: planets explored, points earned, missions logged.")),
                 d.showSummary && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var stats = [
@@ -29515,12 +29515,12 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
                                           stats.map(function(s, si) {
                                             return React.createElement('div', { key: si, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
-                                              React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, s.label),
+                                              React.createElement('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, s.label),
                                               React.createElement('div', { className: 'text-lg font-bold ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, s.val)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-3 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-3 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.this_tool_features_35_interactive_mini', 'This tool features 35+ interactive mini-tools spanning astronomy, physics, and exploration. From simulating black holes to flying lunar landers, you can explore the Solar System and beyond.')
                                         )
                                       );
@@ -29534,11 +29534,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.astronomy_hall_of_fame', "👨‍🚀 Astronomy Hall of Fame")),
                   React.createElement('button', {
                     onClick: function() { upd("showAstr", !d.showAstr); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAstr ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showAstr ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.16_milestones_from_ancient_greek_astro', "16 milestones from ancient Greek astronomy to JWST. Names you should know.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.16_milestones_from_ancient_greek_astro', "16 milestones from ancient Greek astronomy to JWST. Names you should know.")),
                 d.showAstr && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var ASTR = [
@@ -29563,15 +29563,15 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           ASTR.map(function(a, ai) {
                                             return React.createElement('div', { key: ai, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem]' },
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, a.year > 0 ? a.year : Math.abs(a.year) + ' BCE'),
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, a.name)
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, a.work)
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, a.work)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.a_2300_year_journey_from_aristarchus_t', 'A 2300-year journey from Aristarchus to JWST. Each discovery built on the last. Science is a relay race — every astronomer stands on the shoulders of those before them.')
                                         )
                                       );
@@ -29589,11 +29589,11 @@ const d = labToolData.solarSystem || {};
                     'aria-expanded': !!d.showSpS,
                     'aria-controls': 'obafgkm-panel',
                     'aria-label': (d.showSpS ? 'Close' : 'Open') + ' OBAFGKM Spectral Classes',
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpS ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showSpS ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.compare_spectral_classes_temperature_fingerprints', "Compare surface-temperature classes and the spectral fingerprints that define them.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.compare_spectral_classes_temperature_fingerprints', "Compare surface-temperature classes and the spectral fingerprints that define them.")),
                 d.showSpS && React.createElement('div', { id: 'obafgkm-panel', className: 'mt-2' },
                   (function() {
                                       var CLASSES = [
@@ -29642,7 +29642,7 @@ const d = labToolData.solarSystem || {};
                                             }, item.cls);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), 'aria-live': 'polite' },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), 'aria-live': 'polite' },
                                           React.createElement('div', { className: 'font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, 'Class ' + selected.cls + ' | ' + selected.range + ' | ' + selected.colorName),
                                           React.createElement('div', { className: 'mt-1' }, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.spectral_fingerprint', 'Spectral fingerprint: ')), selected.feature),
                                           React.createElement('div', { className: 'mt-1' }, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.examples', 'Examples: ')), selected.examples),
@@ -29659,11 +29659,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mars_vs_earth_atmosphere', "🌐 Mars vs Earth Atmosphere")),
                   React.createElement('button', {
                     onClick: function() { upd("showMA", !d.showMA); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMA ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showMA ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mars_has_100_thinner_air_made_of_mostl', "Mars has 100× thinner air made of mostly CO₂. Compare gas composition + pressure.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mars_has_100_thinner_air_made_of_mostl', "Mars has 100× thinner air made of mostly CO₂. Compare gas composition + pressure.")),
                 d.showMA && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
@@ -29674,10 +29674,10 @@ const d = labToolData.solarSystem || {};
                                           ].map(function(p) {
                                             return React.createElement('div', { key: p.name, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-800' : 'bg-slate-50') },
                                               React.createElement('div', { className: 'text-center font-bold text-base mb-2', style: { color: p.color } }, p.name),
-                                              React.createElement('div', { className: 'text-[10px] mb-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Pressure: ' + p.press + ' hPa'),
+                                              React.createElement('div', { className: 'text-[0.625rem] mb-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Pressure: ' + p.press + ' hPa'),
                                               React.createElement('div', { className: 'space-y-1' },
                                                 [{ name: 'N₂', pct: p.n2, color: '#7dd3fc' }, { name: 'O₂', pct: p.o2, color: '#22c55e' }, { name: 'CO₂', pct: p.co2, color: '#fbbf24' }, { name: 'Ar', pct: p.ar, color: '#a78bfa' }].map(function(g) {
-                                                  return React.createElement('div', { key: g.name, className: 'flex items-center gap-1 text-[10px]' },
+                                                  return React.createElement('div', { key: g.name, className: 'flex items-center gap-1 text-[0.625rem]' },
                                                     React.createElement('div', { style: { width: 30 + 'px', textAlign: 'right' } }, g.name),
                                                     React.createElement('div', { style: { flex: 1, height: 8, background: '#374151', borderRadius: 2, overflow: 'hidden' } },
                                                       React.createElement('div', { style: { width: g.pct + '%', height: '100%', background: g.color } })
@@ -29689,7 +29689,7 @@ const d = labToolData.solarSystem || {};
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.mars_atmosphere_is_100_thinner_than_ea', 'Mars atmosphere is 100× thinner than Earth\'s. Composition: 95% CO₂. To breathe on Mars you would need oxygen + pressure 100× more. Almost no nitrogen for fertilization.')
                                         )
                                       );
@@ -29703,11 +29703,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.black_hole_vocabulary', "🕳 Black Hole Vocabulary")),
                   React.createElement('button', {
                     onClick: function() { upd("showBHG", !d.showBHG); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBHG ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showBHG ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_essential_black_hole_terms_event_ho', "10 essential black hole terms: event horizon, singularity, spaghettification, Hawking radiation.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_essential_black_hole_terms_event_ho', "10 essential black hole terms: event horizon, singularity, spaghettification, Hawking radiation.")),
                 d.showBHG && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var TERMS = [
@@ -29726,12 +29726,12 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           TERMS.map(function(t, ti) {
                                             return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'font-bold text-[11px] ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, t[0]),
-                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t[1])
+                                              React.createElement('div', { className: 'font-bold text-[0.6875rem] ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, t[0]),
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t[1])
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.event_horizon_telescope_captured_first', 'Event Horizon Telescope captured first image of M87* black hole (2019) + Sgr A* (2022). The orange ring = light bent around a black sphere where light cannot escape.')
                                         )
                                       );
@@ -29745,11 +29745,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.auroras_across_solar_system', "🌈 Auroras Across Solar System")),
                   React.createElement('button', {
                     onClick: function() { upd("showAuSS", !d.showAuSS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAuSS ? 'bg-green-700 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200')
                   }, d.showAuSS ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.five_planets_have_auroras_earth_s_is_g', "Five planets have auroras. Earth's is green/red, Jupiter's is the most powerful, Mars's is diffuse.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.five_planets_have_auroras_earth_s_is_g', "Five planets have auroras. Earth's is green/red, Jupiter's is the most powerful, Mars's is diffuse.")),
                 d.showAuSS && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var p = d.auPl || 'jupiter';
@@ -29764,7 +29764,7 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                                           Object.keys(PLANETS).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('auPl', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold capitalize ' + (p === k ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, k);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('auPl', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold capitalize ' + (p === k ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, k);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -29779,7 +29779,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, sel.name)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') }, sel.desc)
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') }, sel.desc)
                                       );
                                     })()
                 )
@@ -29791,11 +29791,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.famous_space_missions', "🚀 Famous Space Missions")),
                   React.createElement('button', {
                     onClick: function() { upd("showMP", !d.showMP); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMP ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showMP ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_missions_that_defined_planetary_exp', "10 missions that defined planetary exploration. From Apollo to Cassini to JWST.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_missions_that_defined_planetary_exp', "10 missions that defined planetary exploration. From Apollo to Cassini to JWST.")),
                 d.showMP && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var MISS = [
@@ -29815,9 +29815,9 @@ const d = labToolData.solarSystem || {};
                                           MISS.map(function(m, mi) {
                                             return React.createElement('div', { key: mi, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                               React.createElement('div', { className: 'text-center text-3xl mb-1' }, m.icon),
-                                              React.createElement('div', { className: 'text-center font-bold text-[11px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, m.name),
-                                              React.createElement('div', { className: 'text-center text-[10px] mb-1 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, m.year + ' • ' + m.where),
-                                              React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.desc)
+                                              React.createElement('div', { className: 'text-center font-bold text-[0.6875rem] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, m.name),
+                                              React.createElement('div', { className: 'text-center text-[0.625rem] mb-1 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, m.year + ' • ' + m.where),
+                                              React.createElement('div', { className: 'text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.desc)
                                             );
                                           })
                                         )
@@ -29832,11 +29832,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_magnitude_scale', "✨ Star Magnitude Scale")),
                   React.createElement('button', {
                     onClick: function() { upd("showSMag", !d.showSMag); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSMag ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showSMag ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.brightness_counts_backward_smaller_bri', "Brightness counts backward: smaller = brighter. Visible range spans 60 magnitudes.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.brightness_counts_backward_smaller_bri', "Brightness counts backward: smaller = brighter. Visible range spans 60 magnitudes.")),
                 d.showSMag && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var STARS = [
@@ -29867,7 +29867,7 @@ const d = labToolData.solarSystem || {};
                                             })
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.magnitudes_count_backward_smaller_brig', 'Magnitudes count BACKWARD: smaller = brighter. Each step of 5 = 100× brighter. Hipparchus invented in 130 BCE. Sun: -26.7. JWST sees to mag 34. Reach: 100^((34-(-26))/5) \u2248 10^24 times fainter than the Sun.')
                                         )
                                       );
@@ -29881,11 +29881,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.celestial_coordinate_systems', "🧭 Celestial Coordinate Systems")),
                   React.createElement('button', {
                     onClick: function() { upd("showCoords", !d.showCoords); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCoords ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showCoords ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.four_ways_astronomers_describe_positio', "Four ways astronomers describe positions in the sky.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.four_ways_astronomers_describe_positio', "Four ways astronomers describe positions in the sky.")),
                 d.showCoords && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var sys = d.coordSys || 'equatorial';
@@ -29899,14 +29899,14 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'grid grid-cols-2 gap-1 mb-2' },
                                           Object.keys(SYS).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('coordSys', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (sys === k ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, SYS[k].name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('coordSys', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (sys === k ? 'bg-blue-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, SYS[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border p-3 ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-50') },
                                           React.createElement('div', { className: 'font-bold text-sm mb-2 text-center ' + (isDark ? 'text-amber-300' : 'text-blue-700') }, sel.name),
-                                          React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, sel.desc)
+                                          React.createElement('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, sel.desc)
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.astronomers_use_multiple_coordinate_sy', 'Astronomers use multiple coordinate systems. Equatorial is global + objects keep same coords as Earth rotates. Alt-Az changes constantly as Earth rotates. Galactic is best for studying Milky Way structure.')
                                         )
                                       );
@@ -29920,11 +29920,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.big_numbers_in_astronomy', "🔢 Big Numbers in Astronomy")),
                   React.createElement('button', {
                     onClick: function() { upd("showBN", !d.showBN); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBN ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showBN ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_1_sun_to_10_22_stars_the_scale_of', "From 1 Sun to 10^22 stars. The scale of the universe is staggering.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_1_sun_to_10_22_stars_the_scale_of', "From 1 Sun to 10^22 stars. The scale of the universe is staggering.")),
                 d.showBN && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var BN = [
@@ -29946,11 +29946,11 @@ const d = labToolData.solarSystem || {};
                                           BN.map(function(b, bi) {
                                             return React.createElement('div', { key: bi, className: 'flex items-center gap-2 p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                               React.createElement('div', { className: 'font-bold text-base ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, b.val),
-                                              React.createElement('div', { className: 'text-[11px] flex-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, b.what)
+                                              React.createElement('div', { className: 'text-[0.6875rem] flex-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, b.what)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.astronomy_operates_on_absurd_scales_ho', 'Astronomy operates on absurd scales. "How many stars?" — more than grains of sand on every beach on Earth. "How old?" — 13.8 billion years. Yet some quantities (black hole evaporation) are even bigger.')
                                         )
                                       );
@@ -29964,11 +29964,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.space_debris_tracker', "🛰 Space Debris Tracker")),
                   React.createElement('button', {
                     onClick: function() { upd("showJunk", !d.showJunk); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showJunk ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showJunk ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.36_500_objects_orbit_earth_at_various_', "36,500 objects orbit Earth at various altitudes. Move altitude slider to see what's there.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.36_500_objects_orbit_earth_at_various_', "36,500 objects orbit Earth at various altitudes. Move altitude slider to see what's there.")),
                 d.showJunk && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var alt = d.junkAlt != null ? d.junkAlt : 600;
@@ -30020,11 +30020,11 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.altitude_3', 'Altitude')),
+                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.altitude_3', 'Altitude')),
                                           React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.altitude_3', 'Altitude'), type: 'range', min: 300, max: 36000, value: alt, onChange: function(e) { upd('junkAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[10px] font-mono w-16 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + ' km')
+                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-16 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + ' km')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.36_500_tracked_objects_millions_of_fra', '36,500 tracked objects + millions of fragments orbit Earth. Risk of Kessler Syndrome: cascade of collisions makes space unusable. SpaceX Starlink has 5000+ satellites; planning many more.')
                                         )
                                       );
@@ -30038,11 +30038,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.constellation_mythology', "📜 Constellation Mythology")),
                   React.createElement('button', {
                     onClick: function() { upd("showCM", !d.showCM); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCM ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showCM ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.every_culture_sees_stories_in_the_star', "Every culture sees stories in the stars. From Greek heroes to Aboriginal Emu in the Sky.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.every_culture_sees_stories_in_the_star', "Every culture sees stories in the stars. From Greek heroes to Aboriginal Emu in the Sky.")),
                 d.showCM && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var idx = d.cmIdx || 0;
@@ -30061,15 +30061,15 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-center text-3xl mb-2' }, '✨'),
                                           React.createElement('div', { className: 'text-center font-bold text-lg mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, cur.name),
-                                          React.createElement('div', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.myth),
-                                          React.createElement('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'Cultures: ' + cur.culture)
+                                          React.createElement('div', { className: 'text-[0.6875rem] mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.myth),
+                                          React.createElement('div', { className: 'text-[0.625rem] italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, 'Cultures: ' + cur.culture)
                                         ),
                                         React.createElement('div', { className: 'flex gap-1 mt-2' },
                                           React.createElement('button', { onClick: function() { upd('cmIdx', (idx + MYTHS.length - 1) % MYTHS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.previous_2', '← Previous')),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % MYTHS.length + 1) + ' / ' + MYTHS.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % MYTHS.length + 1) + ' / ' + MYTHS.length),
                                           React.createElement('button', { onClick: function() { upd('cmIdx', (idx + 1) % MYTHS.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.next_4', 'Next →'))
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.stories_projected_onto_stars_by_cultur', 'Stories projected onto stars by cultures worldwide. Aboriginal Australian Emu in the Sky uses dark dust clouds. Polynesian wayfinders use stars to navigate Pacific by memory. Astronomy is also storytelling.')
                                         )
                                       );
@@ -30083,11 +30083,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.exoplanet_detection_methods', "🔍 Exoplanet Detection Methods")),
                   React.createElement('button', {
                     onClick: function() { upd("showExMth", !d.showExMth); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showExMth ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showExMth ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.5_ways_astronomers_find_planets_around', "5 ways astronomers find planets around other stars. Transit + Doppler dominate.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.5_ways_astronomers_find_planets_around', "5 ways astronomers find planets around other stars. Transit + Doppler dominate.")),
                 d.showExMth && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var method = d.exMth || 'transit';
@@ -30102,17 +30102,17 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                                           Object.keys(METHODS).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('exMth', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (method === k ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, METHODS[k].name);
+                                            return React.createElement('button', { key: k, onClick: function() { upd('exMth', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold ' + (method === k ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, METHODS[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                           React.createElement('div', { className: 'flex justify-between mb-2' },
-                                            React.createElement('span', { className: 'font-bold text-[12px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, sel.name),
-                                            React.createElement('span', { className: 'font-mono text-[12px] ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, sel.count + ' confirmed')
+                                            React.createElement('span', { className: 'font-bold text-[0.75rem] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, sel.name),
+                                            React.createElement('span', { className: 'font-mono text-[0.75rem] ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, sel.count + ' confirmed')
                                           ),
-                                          React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, sel.desc)
+                                          React.createElement('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, sel.desc)
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.first_exoplanet_around_a_sun_like_star', 'First exoplanet around a Sun-like star: 51 Pegasi b (1995). Now 6,300+ are confirmed. JWST is doing atmospheric spectroscopy on exoplanets — searching for biosignatures.')
                                         )
                                       );
@@ -30126,11 +30126,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.upcoming_eclipses', "🌙 Upcoming Eclipses")),
                   React.createElement('button', {
                     onClick: function() { upd("showECat", !d.showECat); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showECat ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showECat ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.schedule_of_eclipses_2024_2079_maine_s', "Schedule of eclipses 2024-2079. Maine's next total solar eclipse: 2079.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.schedule_of_eclipses_2024_2079_maine_s', "Schedule of eclipses 2024-2079. Maine's next total solar eclipse: 2079.")),
                 d.showECat && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var EVENTS = [
@@ -30147,16 +30147,16 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           EVENTS.map(function(e, ei) {
                                             return React.createElement('div', { key: ei, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem]' },
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, e.date),
                                                 React.createElement('span', { className: 'font-bold ' + (e.type.indexOf('Solar') >= 0 ? (isDark ? 'text-yellow-300' : 'text-yellow-700') : (isDark ? 'text-orange-400' : 'text-orange-700')) }, e.type)
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, e.where),
-                                              e.notes && React.createElement('div', { className: 'text-[10px] mt-0.5 italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, e.notes)
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, e.where),
+                                              e.notes && React.createElement('div', { className: 'text-[0.625rem] mt-0.5 italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, e.notes)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.total_solar_eclipses_are_rare_about_2_', 'Total solar eclipses are rare. About one every 18 months somewhere on Earth, but each visible from only a narrow path. Lunar eclipses are visible across the whole night side.')
                                         )
                                       );
@@ -30170,11 +30170,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.galaxy_types_gallery', "🌌 Galaxy Types Gallery")),
                   React.createElement('button', {
                     onClick: function() { upd("showGT", !d.showGT); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGT ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showGT ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hubble_s_classification_spirals_ellipt', "Hubble's classification: spirals, ellipticals, irregulars + everything between.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hubble_s_classification_spirals_ellipt', "Hubble's classification: spirals, ellipticals, irregulars + everything between.")),
                 d.showGT && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var TYPES = [
@@ -30193,15 +30193,15 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           TYPES.map(function(t, ti) {
                                             return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'), style: { borderLeft: '3px solid ' + t.color } },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem]' },
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, t.name),
                                                 React.createElement('span', { className: 'italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, 'e.g. ' + t.ex)
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.desc)
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.desc)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.edwin_hubble_classified_galaxies_in_19', 'Edwin Hubble classified galaxies in 1936 — "Hubble tuning fork." Spirals + ellipticals + irregulars. Galaxies evolve via mergers \u2014 the Milky Way is in mid-life; a merger with Andromeda may come in billions of years (2025 studies put the odds near 50/50).')
                                         )
                                       );
@@ -30215,11 +30215,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_speeds_chart', "⚡ Cosmic Speeds Chart")),
                   React.createElement('button', {
                     onClick: function() { upd("showCSp", !d.showCSp); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCSp ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showCSp ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_walking_to_light_speed_log_scale_', "From walking to light speed (log scale). Voyager 1 is the farthest human-made object and one of our fastest outbound probes, but still glacial cosmically.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_walking_to_light_speed_log_scale_', "From walking to light speed (log scale). Voyager 1 is the farthest human-made object and one of our fastest outbound probes, but still glacial cosmically.")),
                 d.showCSp && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var SP = [
@@ -30248,7 +30248,7 @@ const d = labToolData.solarSystem || {};
                                             })
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.voyager_1_is_the_fastest_object_humans', 'Voyager 1 is fast by spacecraft standards and is now the farthest human-made object, yet it would still take about 80,000 years to reach the nearest star. Light makes the same trip in 4 years.')
                                         )
                                       );
@@ -30262,11 +30262,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_forming_region', "✨ Star Forming Region")),
                   React.createElement('button', {
                     onClick: function() { upd("showSFR", !d.showSFR); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSFR ? 'bg-orange-700 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200')
                   }, d.showSFR ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.watch_stars_form_from_cold_dust_to_hot', "Watch stars form from cold dust to hot suns. 6 stages over a few million years.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.watch_stars_form_from_cold_dust_to_hot', "Watch stars form from cold dust to hot suns. 6 stages over a few million years.")),
                 d.showSFR && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var stage = d.sfrStage != null ? d.sfrStage : 0;
@@ -30301,10 +30301,10 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('button', { onClick: function() { upd('sfrStage', Math.max(0, stage - 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '←'),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (stage + 1) + ' / ' + STAGES.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (stage + 1) + ' / ' + STAGES.length),
                                           React.createElement('button', { onClick: function() { upd('sfrStage', Math.min(STAGES.length - 1, stage + 1)); }, className: 'px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, '→')
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.stars_are_born_in_clusters_from_giant_', 'Stars are born in clusters from giant molecular clouds. Total process: a few million years. Famous examples: Orion Nebula (M42), Eagle Nebula (Pillars of Creation), Tarantula Nebula.')
                                         )
                                       );
@@ -30318,11 +30318,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.big_cosmic_questions', "❓ Big Cosmic Questions")),
                   React.createElement('button', {
                     onClick: function() { upd("showCQ", !d.showCQ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCQ ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showCQ ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_of_the_deepest_open_questions_in_co', "10 of the deepest open questions in cosmology. Some have partial answers; some are pure mystery.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_of_the_deepest_open_questions_in_co', "10 of the deepest open questions in cosmology. Some have partial answers; some are pure mystery.")),
                 d.showCQ && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var idx = d.cqIdx || 0;
@@ -30343,11 +30343,11 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-3xl text-center mb-2' }, '🤔'),
                                           React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, cur.q),
-                                          React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.a)
+                                          React.createElement('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cur.a)
                                         ),
                                         React.createElement('div', { className: 'flex gap-1 mt-2' },
                                           React.createElement('button', { onClick: function() { upd('cqIdx', (idx + Q.length - 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.previous_3', '← Previous')),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % Q.length + 1) + ' / ' + Q.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % Q.length + 1) + ' / ' + Q.length),
                                           React.createElement('button', { onClick: function() { upd('cqIdx', (idx + 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.next_5', 'Next →'))
                                         )
                                       );
@@ -30361,11 +30361,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_system_side_by_side', "📊 Solar System Side-by-Side")),
                   React.createElement('button', {
                     onClick: function() { upd("showSQC", !d.showSQC); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSQC ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showSQC ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.quick_table_of_planet_properties_diame', "Quick table of planet properties. Diameter, gravity, day length, moons.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.quick_table_of_planet_properties_diame', "Quick table of planet properties. Diameter, gravity, day length, moons.")),
                 d.showSQC && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var props = [
@@ -30378,7 +30378,7 @@ const d = labToolData.solarSystem || {};
                                       var keys = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter'];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-3 overflow-x-auto ' + (isDark ? 'bg-slate-900' : 'bg-slate-50') },
-                                          React.createElement('table', { className: 'w-full text-[10px]' },
+                                          React.createElement('table', { className: 'w-full text-[0.625rem]' },
                                             React.createElement('caption', { className: 'sr-only' }, __alloT('stem.solarsystem.quick_table_of_planet_properties_diame', 'Quick table of planet properties. Diameter, gravity, day length, moons.')),
                                             React.createElement('thead', null,
                                               React.createElement('tr', null,
@@ -30396,7 +30396,7 @@ const d = labToolData.solarSystem || {};
                                             )
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.side_by_side_comparison_of_key_planet_', 'Side-by-side comparison of key planet properties. Earth = baseline. Sun is about 109x Earth diameter (over a million times its volume). Jupiter has 115 known moons. Venus rotates so slowly its day exceeds its year.')
                                         )
                                       );
@@ -30410,24 +30410,24 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.about_this_tool', "🌌 About This Tool")),
                   React.createElement('button', {
                     onClick: function() { upd("showAbout", !d.showAbout); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAbout ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showAbout ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.40_visual_interactive_mini_tools_made_', "40+ visual + interactive mini-tools. Made for curious students + adults.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.40_visual_interactive_mini_tools_made_', "40+ visual + interactive mini-tools. Made for curious students + adults.")),
                 d.showAbout && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-center text-3xl mb-2' }, '🌌🚀✨'),
                                           React.createElement('h3', { className: 'text-center font-bold text-base mb-3 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.solar_system_explorer_2', 'Solar System Explorer')),
-                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                          React.createElement('div', { className: 'text-[0.6875rem] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
                                             React.createElement('div', null, __alloT('stem.solarsystem.40_interactive_mini_tools_svg_visualiz', '40+ interactive mini-tools, SVG visualizations, and educational simulations.')),
                                             React.createElement('div', null, __alloT('stem.solarsystem.from_a_moon_phase_dial_to_a_black_hole', 'From a moon-phase dial to a black hole visualizer to a Foucault pendulum, every tool is built to make abstract concepts visceral + playable.')),
                                             React.createElement('div', null, __alloT('stem.solarsystem.built_for_k_12_curious_adults_open_all', 'Built for K-12 + curious adults. Open all the tools, or just one — each works standalone.'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-3 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-3 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.part_of_alloflow_stem_lab_built_in_mai', 'Part of AlloFlow STEAM Lab. Built in Maine, USA. All data drawn from NASA, ESA, JAXA, USGS, IAU + public scientific sources. Educational use free.')
                                         )
                                       );
@@ -30441,11 +30441,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.meteor_shower_calendar', "☄ Meteor Shower Calendar")),
                   React.createElement('button', {
                     onClick: function() { upd("showMS", !d.showMS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMS ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showMS ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.9_annual_meteor_showers_their_best_vie', "9 annual meteor showers + their best viewing dates. Mark your calendar.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.9_annual_meteor_showers_their_best_vie', "9 annual meteor showers + their best viewing dates. Mark your calendar.")),
                 d.showMS && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var SHOWERS = [
@@ -30463,15 +30463,15 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           SHOWERS.map(function(s, si) {
                                             return React.createElement('div', { key: si, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem]' },
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, s.name),
                                                 React.createElement('span', { className: 'font-mono ' + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, s.peak)
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.rate + ' from ' + s.from)
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.rate + ' from ' + s.from)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.meteor_showers_happen_when_earth_cross', 'Meteor showers happen when Earth crosses a comet\'s debris stream. Best viewing: dark site, no Moon, after midnight. Perseids + Geminids are the most reliable annual showers.')
                                         )
                                       );
@@ -30485,11 +30485,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.famous_astronomy_quotes', "💬 Famous Astronomy Quotes")),
                   React.createElement('button', {
                     onClick: function() { upd("showFQ", !d.showFQ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFQ ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFQ ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_quotes_from_astronomers_space_trave', "10 quotes from astronomers + space travelers that capture wonder.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_quotes_from_astronomers_space_trave', "10 quotes from astronomers + space travelers that capture wonder.")),
                 d.showFQ && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var idx = d.fqIdx || 0;
@@ -30510,11 +30510,11 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'rounded-lg p-5 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-4xl text-center mb-3' }, '✨'),
                                           React.createElement('div', { className: 'text-center italic text-sm mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, cur.q),
-                                          React.createElement('div', { className: 'text-center text-[11px] font-bold ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, '— ' + cur.who)
+                                          React.createElement('div', { className: 'text-center text-[0.6875rem] font-bold ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, '— ' + cur.who)
                                         ),
                                         React.createElement('div', { className: 'flex gap-1 mt-2' },
                                           React.createElement('button', { onClick: function() { upd('fqIdx', (idx + Q.length - 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.previous_4', '← Previous')),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % Q.length + 1) + ' / ' + Q.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % Q.length + 1) + ' / ' + Q.length),
                                           React.createElement('button', { onClick: function() { upd('fqIdx', (idx + 1) % Q.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.next_6', 'Next →'))
                                         )
                                       );
@@ -30528,11 +30528,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.tonight_sky_observing_guide', "🔭 Tonight Sky Observing Guide")),
                   React.createElement('button', {
                     onClick: function() { upd("showTNT", !d.showTNT); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTNT ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showTNT ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_things_you_can_spot_tonight_with_ju', "10 things you can spot tonight with just your eyes or binoculars.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.10_things_you_can_spot_tonight_with_ju', "10 things you can spot tonight with just your eyes or binoculars.")),
                 d.showTNT && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var ACT = [
@@ -30551,12 +30551,12 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           ACT.map(function(a, ai) {
                                             return React.createElement('div', { key: ai, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'font-bold text-[11px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, a.what),
-                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, a.how)
+                                              React.createElement('div', { className: 'font-bold text-[0.6875rem] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, a.what),
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, a.how)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.best_naked_eye_observing_dark_site_awa', 'Best naked-eye observing: dark site (away from city lights), Moon below horizon, eyes adapted (20-30 min in the dark). Free apps: Stellarium, SkyView, Star Walk help identify what you see.')
                                         )
                                       );
@@ -30570,23 +30570,23 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.pale_blue_dot', "🌍 Pale Blue Dot")),
                   React.createElement('button', {
                     onClick: function() { upd("showClose", !d.showClose); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showClose ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showClose ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.carl_sagan_s_most_quoted_reflection_a_', "Carl Sagan's most-quoted reflection. A pixel containing everyone we have ever known.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.carl_sagan_s_most_quoted_reflection_a_', "Carl Sagan's most-quoted reflection. A pixel containing everyone we have ever known.")),
                 d.showClose && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-5 ' + (isDark ? 'bg-gradient-to-br from-indigo-900 to-purple-900 border border-purple-700' : 'bg-gradient-to-br from-indigo-100 to-purple-100 border border-indigo-300') },
                                           React.createElement('div', { className: 'text-5xl text-center mb-3' }, '🌌'),
                                           React.createElement('h3', { className: 'text-center text-lg font-bold mb-3 ' + (isDark ? 'text-amber-300' : 'text-indigo-800') }, __alloT('stem.solarsystem.the_pale_blue_dot', 'The Pale Blue Dot')),
-                                          React.createElement('div', { className: 'text-[11px] italic space-y-2 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+                                          React.createElement('div', { className: 'text-[0.6875rem] italic space-y-2 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
                                             React.createElement('div', null, __alloT('stem.solarsystem.from_this_distant_vantage_point_the_ea', '"From this distant vantage point, the Earth might not seem of any particular interest. But for us, it\'s different. Consider again that dot. That\'s here. That\'s home. That\'s us. On it everyone you love, everyone you know, everyone you ever heard of, every human being who ever was, lived out their lives."')),
                                             React.createElement('div', { className: 'text-right not-italic font-bold' }, __alloT('stem.solarsystem.carl_sagan_pale_blue_dot_1994', '— Carl Sagan, Pale Blue Dot (1994)'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-3 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-3 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.voyager_1_took_this_photo_of_earth_fro', 'Voyager 1 took this photo of Earth from 6 billion km away on Feb 14, 1990 — a request from Carl Sagan. Earth is a single pixel. Every human in history lived on that pixel.')
                                         )
                                       );
@@ -30600,11 +30600,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.famous_nebulae', "☁ Famous Nebulae")),
                   React.createElement('button', {
                     onClick: function() { upd("showNeb", !d.showNeb); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showNeb ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showNeb ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.8_iconic_deep_sky_objects_star_nurseri', "8 iconic deep-sky objects. Star nurseries, dying-star shells, supernova remnants.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.8_iconic_deep_sky_objects_star_nurseri', "8 iconic deep-sky objects. Star nurseries, dying-star shells, supernova remnants.")),
                 d.showNeb && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var idx = d.nebIdx || 0;
@@ -30637,10 +30637,10 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 185, textAnchor: 'middle', fill: cur.color, fontSize: 10 }, cur.dist.toLocaleString() + ' light-years away')
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[11px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') }, cur.desc),
+                                        React.createElement('div', { className: 'mt-2 text-[0.6875rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') }, cur.desc),
                                         React.createElement('div', { className: 'flex gap-1 mt-2' },
                                           React.createElement('button', { onClick: function() { upd('nebIdx', (idx + N.length - 1) % N.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.previous_5', '← Previous')),
-                                          React.createElement('div', { className: 'flex-1 text-center text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % N.length + 1) + ' / ' + N.length),
+                                          React.createElement('div', { className: 'flex-1 text-center text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, (idx % N.length + 1) + ' / ' + N.length),
                                           React.createElement('button', { onClick: function() { upd('nebIdx', (idx + 1) % N.length); }, className: 'flex-1 px-3 py-1 rounded font-bold text-xs ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.next_7', 'Next →'))
                                         )
                                       );
@@ -30654,11 +30654,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.astronomy_toolkit_guide', "🛠 Astronomy Toolkit Guide")),
                   React.createElement('button', {
                     onClick: function() { upd("showTools", !d.showTools); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTools ? 'bg-green-700 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200')
                   }, d.showTools ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_you_need_to_start_observing_from_', "What you need to start observing — from free apps to scopes that fit any budget.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_you_need_to_start_observing_from_', "What you need to start observing — from free apps to scopes that fit any budget.")),
                 d.showTools && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var TOOLS = [
@@ -30676,14 +30676,14 @@ const d = labToolData.solarSystem || {};
                                           TOOLS.map(function(t, ti) {
                                             return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                               React.createElement('div', { className: 'flex justify-between' },
-                                                React.createElement('span', { className: 'font-bold text-[11px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t.name),
-                                                React.createElement('span', { className: 'text-[10px] font-mono ' + (isDark ? 'text-green-400' : 'text-green-700') }, t.tier)
+                                                React.createElement('span', { className: 'font-bold text-[0.6875rem] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t.name),
+                                                React.createElement('span', { className: 'text-[0.625rem] font-mono ' + (isDark ? 'text-green-400' : 'text-green-700') }, t.tier)
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.desc)
+                                              React.createElement('div', { className: 'text-[0.625rem] mt-0.5 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t.desc)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.most_important_tool_dark_sky_light_pol', 'Most important tool: dark sky. Light pollution wipes out 90% of stars. Katahdin Woods and Waters NM and AMC Maine Woods are certified International Dark Sky places; Acadia and Baxter also offer superb dark skies.')
                                         )
                                       );
@@ -30697,11 +30697,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.how_stars_die', "⚱ How Stars Die")),
                   React.createElement('button', {
                     onClick: function() { upd("showDeath", !d.showDeath); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDeath ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
                   }, d.showDeath ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.star_s_fate_depends_on_mass_brown_dwar', "Star's fate depends on mass: brown dwarf, white dwarf, neutron star, or black hole.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.star_s_fate_depends_on_mass_brown_dwar', "Star's fate depends on mass: brown dwarf, white dwarf, neutron star, or black hole.")),
                 d.showDeath && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var DEATH = [
@@ -30716,15 +30716,15 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1' },
                                           DEATH.map(function(d, di) {
                                             return React.createElement('div', { key: di, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px] mb-1' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem] mb-1' },
                                                 React.createElement('span', { className: 'font-mono font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, d.mass),
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, d.what)
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, d.fate)
+                                              React.createElement('div', { className: 'text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, d.fate)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.how_a_star_dies_depends_almost_entirel', 'How a star dies depends almost entirely on its initial mass. The cutoff between neutron star + black hole is uncertain (Tolman-Oppenheimer-Volkoff limit ~2-3 M☉ for the remnant).')
                                         )
                                       );
@@ -30738,11 +30738,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_distance_reference', "📏 Cosmic Distance Reference")),
                   React.createElement('button', {
                     onClick: function() { upd("showDist", !d.showDist); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDist ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
                   }, d.showDist ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_1km_to_93_billion_light_years_ref', "From 1km to 93 billion light-years. Reference table of cosmic scales.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_1km_to_93_billion_light_years_ref', "From 1km to 93 billion light-years. Reference table of cosmic scales.")),
                 d.showDist && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var REF = [
@@ -30763,13 +30763,13 @@ const d = labToolData.solarSystem || {};
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           REF.map(function(r, ri) {
-                                            return React.createElement('div', { key: ri, className: 'flex justify-between p-2 rounded text-[11px] ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
+                                            return React.createElement('div', { key: ri, className: 'flex justify-between p-2 rounded text-[0.6875rem] ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                               React.createElement('span', { className: 'font-mono font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, r.unit),
                                               React.createElement('span', { className: (isDark ? 'text-slate-300' : 'text-slate-700') }, r.what)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.distances_jump_in_scale_km_to_au_to_ly', 'Distances jump in scale: km to AU to ly to billions of ly. Each step is ~10,000-100,000× larger. Astronomy lives on a log scale.')
                                         )
                                       );
@@ -30783,11 +30783,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.maine_night_sky_by_season', "🌲 Maine Night Sky by Season")),
                   React.createElement('button', {
                     onClick: function() { upd("showMS2", !d.showMS2); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMS2 ? 'bg-green-700 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200')
                   }, d.showMS2 ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.maine_has_world_class_dark_skies_what_', "Maine has world-class dark skies. What to look for each season.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.maine_has_world_class_dark_skies_what_', "Maine has world-class dark skies. What to look for each season.")),
                 d.showMS2 && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var SK = [
@@ -30803,13 +30803,13 @@ const d = labToolData.solarSystem || {};
                                             return React.createElement('div', { key: si, className: 'p-3 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                               React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                                                 React.createElement('span', { className: 'text-xl' }, icons[si]),
-                                                React.createElement('span', { className: 'font-bold text-[12px] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, s.season)
+                                                React.createElement('span', { className: 'font-bold text-[0.75rem] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, s.season)
                                               ),
-                                              React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.what)
+                                              React.createElement('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.what)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.maine_has_fantastic_dark_skies_especia', 'Maine has fantastic dark skies — especially north of the cities. Katahdin Woods and Waters NM and AMC Maine Woods are certified International Dark Sky places; Acadia, Allagash, Baxter, and Cobscook are also wonderfully dark. Winter nights are long + crystal-clear.')
                                         )
                                       );
@@ -30823,11 +30823,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.space_news_timeline', "📰 Space News Timeline")),
                   React.createElement('button', {
                     onClick: function() { upd("showWN", !d.showWN); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showWN ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showWN ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.major_space_missions_events_2024_2027_', "Major space missions + events 2024-2027. Live in interesting times.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.major_space_missions_events_2024_2027_', "Major space missions + events 2024-2027. Live in interesting times.")),
                 d.showWN && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var EV = [
@@ -30845,14 +30845,14 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1' },
                                           EV.map(function(e, ei) {
                                             return React.createElement('div', { key: ei, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px]' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem]' },
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, e.date),
                                                 React.createElement('span', { className: 'flex-1 ml-3 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, e.what)
                                               )
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.space_exploration_is_in_a_renaissance_', 'Space exploration is in a renaissance. New countries (India, Japan, UAE), new private companies (SpaceX, Blue Origin), new missions (Europa Clipper, Artemis, JWST). Look up — and pay attention.')
                                         )
                                       );
@@ -30866,26 +30866,26 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_system_at_a_glance', "📊 Solar System At a Glance")),
                   React.createElement('button', {
                     onClick: function() { upd("showSAG", !d.showSAG); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSAG ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showSAG ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.quick_reference_summary_of_solar_syste', "Quick-reference summary of solar system contents + mass distribution.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.quick_reference_summary_of_solar_syste', "Quick-reference summary of solar system contents + mass distribution.")),
                 d.showSAG && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.solar_system_stats', 'Solar System Stats')),
-                                          React.createElement('div', { className: 'grid grid-cols-2 gap-2 text-[11px]' },
+                                          React.createElement('div', { className: 'grid grid-cols-2 gap-2 text-[0.6875rem]' },
                                             [['Age', '4.6 billion years'], ['Sun mass', '99.86% of total'], ['Planets', '8'], ['Dwarf planets', '5 + many more'], ['Moons (planets)', '400+'], ['Known asteroids', '1,000,000+'], ['Comets', '4000+ known'], ['Kuiper Belt obj', '70,000 est.'], ['Oort Cloud obj', '~trillion'], ['Total mass', '~1.0014 M☉']].map(function(s, si) {
                                               return React.createElement('div', { key: si, className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-800' : 'bg-white') },
-                                                React.createElement('div', { className: 'font-bold text-[10px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, s[0]),
-                                                React.createElement('div', { className: 'text-[11px] font-mono ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, s[1])
+                                                React.createElement('div', { className: 'font-bold text-[0.625rem] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, s[0]),
+                                                React.createElement('div', { className: 'text-[0.6875rem] font-mono ' + (isDark ? 'text-slate-200' : 'text-slate-800') }, s[1])
                                               );
                                             })
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.the_sun_contains_99_86_of_all_solar_sy', 'The Sun contains 99.86% of all solar system mass. Jupiter accounts for two-thirds of the remaining 0.14%. Earth + everything else is the rest.')
                                         )
                                       );
@@ -30899,11 +30899,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.10_most_famous_moons', "🌑 10 Most Famous Moons")),
                   React.createElement('button', {
                     onClick: function() { upd("showFM", !d.showFM); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFM ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFM ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_our_own_luna_to_triton_enceladus_', "From our own Luna to Triton + Enceladus. Some are bigger than Mercury.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_our_own_luna_to_triton_enceladus_', "From our own Luna to Triton + Enceladus. Some are bigger than Mercury.")),
                 d.showFM && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var M = [
@@ -30922,15 +30922,15 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           M.map(function(m, mi) {
                                             return React.createElement('div', { key: mi, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'flex justify-between text-[11px] mb-1' },
+                                              React.createElement('div', { className: 'flex justify-between text-[0.6875rem] mb-1' },
                                                 React.createElement('span', { className: 'font-bold ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, m.name),
                                                 React.createElement('span', { className: 'font-mono ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, m.dia + ' km')
                                               ),
-                                              React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.cool)
+                                              React.createElement('div', { className: 'text-[0.625rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.cool)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.most_spectacular_moons_in_the_solar_sy', 'Most spectacular moons in the solar system. Many are larger than Pluto. Europa + Enceladus + Titan have subsurface oceans and are prime astrobiology targets.')
                                         )
                                       );
@@ -30944,24 +30944,24 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.why_utc_matters', "🌐 Why UTC Matters")),
                   React.createElement('button', {
                     onClick: function() { upd("showUTC", !d.showUTC); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showUTC ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
                   }, d.showUTC ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.astronomers_report_everything_in_utc_t', "Astronomers report everything in UTC. Time zone explainer.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.astronomers_report_everything_in_utc_t', "Astronomers report everything in UTC. Time zone explainer.")),
                 d.showUTC && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900' : 'bg-slate-50') },
-                                          React.createElement('h4', { className: 'font-bold text-[12px] mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.why_we_use_utc', 'Why we use UTC')),
-                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                          React.createElement('h4', { className: 'font-bold text-[0.75rem] mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.why_we_use_utc', 'Why we use UTC')),
+                                          React.createElement('div', { className: 'text-[0.6875rem] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
                                             React.createElement('div', null, __alloT('stem.solarsystem.utc_coordinated_universal_time_is_the_', 'UTC (Coordinated Universal Time) is the global reference. Atomic clocks based.')),
                                             React.createElement('div', null, __alloT('stem.solarsystem.astronomers_report_events_in_utc_so_ob', 'Astronomers report events in UTC so observatories worldwide can compare. SpaceX launches in UTC. NASA missions in UTC.')),
                                             React.createElement('div', null, __alloT('stem.solarsystem.maine_utc_5_est_or_utc_4_edt_london_ut', 'Maine: UTC-5 (EST) or UTC-4 (EDT). London: UTC+0 (GMT) or UTC+1 (BST). Japan: UTC+9.')),
                                             React.createElement('div', null, __alloT('stem.solarsystem.tip_when_you_read_an_astronomy_event_t', 'Tip: when you read an astronomy event timetable, always check whether it\'s in UTC or local.'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.utc_replaced_gmt_in_1972_based_on_atom', 'UTC replaced GMT in 1972. Based on atomic clocks at national laboratories worldwide, averaged. Leap seconds added when needed.')
                                         )
                                       );
@@ -30975,20 +30975,20 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.final_inspiration', "✨ Final Inspiration")),
                   React.createElement('button', {
                     onClick: function() { upd("showIns", !d.showIns); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showIns ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showIns ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "You are how the cosmos knows itself. Keep looking up."),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, "You are how the cosmos knows itself. Keep looking up."),
                 d.showIns && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-5 ' + (isDark ? 'bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-700' : 'bg-gradient-to-br from-purple-100 to-indigo-100 border border-purple-300') },
                                           React.createElement('div', { className: 'text-5xl text-center mb-3' }, '🚀✨🌌'),
                                           React.createElement('h3', { className: 'text-center text-lg font-bold mb-3 ' + (isDark ? 'text-amber-300' : 'text-purple-800') }, __alloT('stem.solarsystem.keep_looking_up', 'Keep Looking Up')),
-                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+                                          React.createElement('div', { className: 'text-[0.6875rem] space-y-2 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
                                             React.createElement('div', { className: 'italic' }, '"The same atoms in your body were forged in stars. Much of the water in your veins likely rode in on ancient asteroids and comets billions of years ago. You are not separate from the cosmos — you are how it knows itself."'),
-                                            React.createElement('div', { className: 'mt-3 text-[10px] not-italic font-bold' }, __alloT('stem.solarsystem.40_interactive_tools_to_explore_in_thi', '40+ interactive tools to explore in this app. Each opens a new window on something cosmic.'))
+                                            React.createElement('div', { className: 'mt-3 text-[0.625rem] not-italic font-bold' }, __alloT('stem.solarsystem.40_interactive_tools_to_explore_in_thi', '40+ interactive tools to explore in this app. Each opens a new window on something cosmic.'))
                                           )
                                         )
                                       );
@@ -31002,11 +31002,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.astronomy_bucket_list', "✅ Astronomy Bucket List")),
                   React.createElement('button', {
                     onClick: function() { upd("showBL", !d.showBL); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBL ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showBL ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.15_cosmic_experiences_worth_chasing_mo', "15 cosmic experiences worth chasing. Most are free + within reach.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.15_cosmic_experiences_worth_chasing_mo', "15 cosmic experiences worth chasing. Most are free + within reach.")),
                 d.showBL && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var L = [
@@ -31031,11 +31031,11 @@ const d = labToolData.solarSystem || {};
                                           L.map(function(l, li) {
                                             return React.createElement('div', { key: li, className: 'flex items-center gap-2 p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
                                               React.createElement('span', { className: 'text-base' }, (li + 1) + '.'),
-                                              React.createElement('span', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, l)
+                                              React.createElement('span', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, l)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.15_cosmic_experiences_worth_chasing_mo_2', '15 cosmic experiences worth chasing. Most cost nothing but time. The night sky asks nothing of you — go meet it.')
                                         )
                                       );
@@ -31049,11 +31049,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.surprising_planet_facts', "💎 Surprising Planet Facts")),
                   React.createElement('button', {
                     onClick: function() { upd("showTR", !d.showTR); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTR ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showTR ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.12_facts_that_defy_what_you_think_you_', "12 facts that defy what you think you know about the planets.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.12_facts_that_defy_what_you_think_you_', "12 facts that defy what you think you know about the planets.")),
                 d.showTR && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var TR = [
@@ -31074,11 +31074,11 @@ const d = labToolData.solarSystem || {};
                                         React.createElement('div', { className: 'space-y-1 max-h-72 overflow-y-auto' },
                                           TR.map(function(t, ti) {
                                             return React.createElement('div', { key: ti, className: 'p-2 rounded ' + (isDark ? 'bg-slate-800' : 'bg-slate-100') },
-                                              React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t)
+                                              React.createElement('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, t)
                                             );
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.12_things_that_surprise_people_about_o', '12 things that surprise people about our solar system. Each one defies the intuitive picture.')
                                         )
                                       );
@@ -31092,24 +31092,24 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.messages_to_the_stars', "📜 Messages to the Stars")),
                   React.createElement('button', {
                     onClick: function() { upd("showMsg", !d.showMsg); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMsg ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
                   }, d.showMsg ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pioneer_plaques_voyager_golden_records', "Pioneer plaques + Voyager Golden Records + Arecibo Message — humanity's signals to whoever might be listening.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pioneer_plaques_voyager_golden_records', "Pioneer plaques + Voyager Golden Records + Arecibo Message — humanity's signals to whoever might be listening.")),
                 d.showMsg && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-amber-50 border border-amber-200') },
                                           React.createElement('div', { className: 'text-center text-3xl mb-2' }, '💿'),
                                           React.createElement('h3', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, __alloT('stem.solarsystem.messages_to_the_stars_2', 'Messages to the Stars')),
-                                          React.createElement('div', { className: 'text-[11px] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                          React.createElement('div', { className: 'text-[0.6875rem] space-y-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
                                             React.createElement('div', null, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.pioneer_plaque_1972_73', 'Pioneer Plaque (1972/73): ')), __alloT('stem.solarsystem.gold_anodized_aluminum_on_pioneer_10_1', 'Gold-anodized aluminum on Pioneer 10 + 11. Shows nude humans, Earth\'s location, hydrogen.')),
                                             React.createElement('div', null, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.voyager_golden_record_1977', 'Voyager Golden Record (1977): ')), __alloT('stem.solarsystem.phonograph_record_on_voyager_1_2_115_p', 'Phonograph record on Voyager 1 + 2. 115 photos, music (Beethoven to Chuck Berry), greetings in 55 languages, sounds of Earth.')),
                                             React.createElement('div', null, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.arecibo_message_1974', 'Arecibo Message (1974): ')), __alloT('stem.solarsystem.radio_broadcast_to_globular_cluster_m1', 'Radio broadcast to globular cluster M13. Will reach in ~25,000 years.'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
+                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.carl_sagan_frank_drake_linda_salzman_s', 'Carl Sagan + Frank Drake + Linda Salzman Sagan + many others designed these. Voyager Record committee included Ann Druyan — whose brainwaves are encoded as part of the record.')
                                         )
                                       );
@@ -31123,18 +31123,18 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.credits', "🎓 Credits")),
                   React.createElement('button', {
                     onClick: function() { upd("showFin", !d.showFin); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFin ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFin ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.acknowledgments_sources', "Acknowledgments + sources.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.acknowledgments_sources', "Acknowledgments + sources.")),
                 d.showFin && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
                                           React.createElement('div', { className: 'text-4xl text-center mb-2' }, '🎓'),
                                           React.createElement('div', { className: 'text-center font-bold text-base mb-2 ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.credits_sources', 'Credits + Sources')),
-                                          React.createElement('div', { className: 'text-[10px] space-y-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                                          React.createElement('div', { className: 'text-[0.625rem] space-y-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
                                             React.createElement('div', null, __alloT('stem.solarsystem.data_nasa_esa_jaxa_usgs_iau_smithsonia', 'Data: NASA, ESA, JAXA, USGS, IAU, Smithsonian, Wikipedia')),
                                             React.createElement('div', null, __alloT('stem.solarsystem.designed_by_aaron_pomeranz_alloflow_ma', 'Designed by Aaron Pomeranz, AlloFlow Maine')),
                                             React.createElement('div', null, __alloT('stem.solarsystem.40_interactive_tools_svg_react', '40+ interactive tools = SVG + React')),
@@ -31152,18 +31152,18 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.keep_wondering', "🌠 Keep Wondering")),
                   React.createElement('button', {
                     onClick: function() { upd("showDn", !d.showDn); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
+                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDn ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showDn ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.every_answer_is_a_doorway_to_the_next_', "Every answer is a doorway to the next question.")),
+                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.every_answer_is_a_doorway_to_the_next_', "Every answer is a doorway to the next question.")),
                 d.showDn && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-4 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-slate-50 border border-slate-200') },
                                           React.createElement('div', { className: 'text-3xl text-center mb-2' }, '🌠'),
                                           React.createElement('div', { className: 'text-center font-bold text-sm ' + (isDark ? 'text-amber-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.done_exploring_keep_wondering', 'Done exploring? Keep wondering.')),
-                                          React.createElement('div', { className: 'text-center text-[11px] mt-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.every_answer_leads_to_a_deeper_questio', 'Every answer leads to a deeper question. That is science.'))
+                                          React.createElement('div', { className: 'text-center text-[0.6875rem] mt-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.every_answer_leads_to_a_deeper_questio', 'Every answer leads to a deeper question. That is science.'))
                                         )
                                       );
                                     })()
@@ -31185,14 +31185,14 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.mission_log', "\uD83D\uDCCB Mission Log")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.no_entries_yet_start_exploring', "No entries yet. Start exploring!"),
                     onClick: function() { upd('showLog', !d.showLog); },
-                    className: "transition-colors text-[11px] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
+                    className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
                   }, d.showLog ? 'Hide' : 'Show (' + (missionLog.length) + ')')
                 ),
                 d.showLog && React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" },
                   missionLog.length === 0
-                    ? React.createElement("div", { className: "text-[11px] italic " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.no_entries_yet_start_exploring_2', "No entries yet. Start exploring!"))
+                    ? React.createElement("div", { className: "text-[0.6875rem] italic " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.no_entries_yet_start_exploring_2', "No entries yet. Start exploring!"))
                     : missionLog.map(function(entry, ei) {
-                        return React.createElement("div", { key: ei, className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex gap-2" },
+                        return React.createElement("div", { key: ei, className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex gap-2" },
                           React.createElement("span", { className: "text-slate-600 font-mono whitespace-nowrap" }, entry.time),
                           entry.text
                         );
@@ -31213,7 +31213,7 @@ const d = labToolData.solarSystem || {};
                       }),
                       (isDark ? '\uD83C\uDF19' : '\u2600\uFE0F') + " Dark Mode"
                     ),
-                React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\uD83C\uDF0D Planets visited: " + planetsVisited.length + "/9")
+                React.createElement("span", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\uD83C\uDF0D Planets visited: " + planetsVisited.length + "/9")
               ),
 
               // === TUTORIAL OVERLAY (first visit) ===
@@ -31278,7 +31278,7 @@ const d = labToolData.solarSystem || {};
               React.createElement("div", { className: "mt-4 border-t pt-3 " + (isDark ? 'border-slate-700' : 'border-slate-200') },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.learning_path', "\uD83D\uDDFA\uFE0F Learning Path")),
-                  d.learningPath && React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full font-bold " + (isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600') }, d.learningPath)
+                  d.learningPath && React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full font-bold " + (isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600') }, d.learningPath)
                 ),
                 React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                   Object.keys(LEARNING_PATHS).map(function(k) {
@@ -31288,8 +31288,8 @@ const d = labToolData.solarSystem || {};
                       className: "p-2 rounded-lg border text-left transition-all " + (active ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 shadow-sm' : 'bg-indigo-50 border-indigo-600 shadow-sm') : (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-600'))
                     },
                       React.createElement("div", { className: "text-sm mb-0.5" }, lp.icon),
-                      React.createElement("div", { className: "text-[11px] font-bold " + (active ? (isDark ? 'text-indigo-300' : 'text-indigo-700') : (isDark ? 'text-slate-300' : 'text-slate-700')) }, lp.name),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, lp.desc)
+                      React.createElement("div", { className: "text-[0.6875rem] font-bold " + (active ? (isDark ? 'text-indigo-300' : 'text-indigo-700') : (isDark ? 'text-slate-300' : 'text-slate-700')) }, lp.name),
+                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, lp.desc)
                     );
                   })
                 ),
@@ -31297,8 +31297,8 @@ const d = labToolData.solarSystem || {};
                 d.learningPath && LEARNING_PATHS[d.learningPath] && React.createElement("div", { className: "mt-2 rounded-lg p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100') },
                   LEARNING_PATHS[d.learningPath].steps.map(function(step, si2) {
                     return React.createElement("div", { key: si2, className: "flex items-start gap-2 mb-1" },
-                      React.createElement("span", { className: "text-[11px] font-bold mt-0.5 " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, (si2 + 1) + '.'),
-                      React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, step)
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold mt-0.5 " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, (si2 + 1) + '.'),
+                      React.createElement("span", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, step)
                     );
                   })
                 )
@@ -31308,7 +31308,7 @@ const d = labToolData.solarSystem || {};
               React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("span", { className: "text-xs font-black text-slate-600" }, __alloT('stem.solarsystem.field_journal', "\uD83D\uDCD3 Field Journal")),
-                  React.createElement("span", { className: "text-[11px] text-slate-200" }, journalEntries.length + ' entries')
+                  React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, journalEntries.length + ' entries')
                 ),
                 React.createElement("button", {
                   onClick: function() { upd('showJournal', !d.showJournal); },
@@ -31318,7 +31318,7 @@ const d = labToolData.solarSystem || {};
                   buildJournalSynthesis(),
                   // New entry form
                   sel && React.createElement("div", { className: "rounded-lg p-3 border space-y-2 " + (isDark ? 'bg-amber-900/15 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
-                    React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "\uD83D\uDCDD New Entry: " + sel.name),
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "\uD83D\uDCDD New Entry: " + sel.name),
                     React.createElement("div", null,
                       React.createElement("label", { htmlFor: 'journal-predict', className: "mb-0.5 block text-xs font-bold text-amber-600" }, __alloT('stem.solarsystem.what_i_predicted', "What I predicted:")),
                       React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: __alloT('stem.solarsystem.before_exploring_i_thought', "Before exploring, I thought..."), className: "w-full resize-none rounded border border-amber-600 p-2 text-xs", style: { fontSize: '12px' } })
@@ -31360,7 +31360,7 @@ const d = labToolData.solarSystem || {};
                   journalEntries.length > 0 && React.createElement("div", { className: "space-y-2" },
                     React.createElement("div", { className: "mt-2 flex items-center justify-between gap-2" },
                       React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.solarsystem.previous_entries', "Previous entries")),
-                      React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[10px] font-black " + (isDark ? 'bg-amber-400/10 text-amber-200' : 'bg-amber-100 text-amber-800') }, journalEntries.length + " saved")
+                      React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.625rem] font-black " + (isDark ? 'bg-amber-400/10 text-amber-200' : 'bg-amber-100 text-amber-800') }, journalEntries.length + " saved")
                     ),
                     filteredJournalEntries.slice(0, journalVisibleCount).map(function(item, ei) {
                       var entry = item.entry;
@@ -31377,12 +31377,12 @@ const d = labToolData.solarSystem || {};
                       return React.createElement("article", { key: String(entry.timestamp || 0) + '-' + entryIndex, "data-solar-journal-entry": "true", "data-journal-index": entryIndex, "aria-label": entry.planet + " journal entry from " + entryDate, className: "rounded-xl border p-3 text-xs shadow-sm " + (isDark ? 'border-slate-700 bg-slate-800/90' : 'border-slate-200 bg-white') },
                         React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2 border-b pb-2 " + (isDark ? 'border-slate-700' : 'border-slate-100') },
                           React.createElement("span", { className: "min-w-0 break-words font-black " + (isDark ? 'text-slate-100' : 'text-slate-800') }, "\uD83C\uDF0D " + entry.planet),
-                          React.createElement("time", { dateTime: entryHasValidDate ? entryMoment.toISOString() : undefined, className: "flex-none text-[10px] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, entryDate)
+                          React.createElement("time", { dateTime: entryHasValidDate ? entryMoment.toISOString() : undefined, className: "flex-none text-[0.625rem] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, entryDate)
                         ),
                         React.createElement("dl", { className: "space-y-2" }, journalFields.map(function(field) {
                           return React.createElement("div", { key: field.key, "data-journal-field": field.key, className: "border-l-2 border-current pl-2 " + field.tone },
-                            React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide" }, field.label),
-                            React.createElement("dd", { className: "mt-0.5 text-[11px] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-700') }, field.value)
+                            React.createElement("dt", { className: "text-[0.625rem] font-black uppercase tracking-wide" }, field.label),
+                            React.createElement("dd", { className: "mt-0.5 text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-700') }, field.value)
                           );
                         })),
                         buildJournalLearningEditor(entry, entryIndex)
@@ -31398,21 +31398,21 @@ const d = labToolData.solarSystem || {};
                 React.createElement("button", {
                   onClick: function() { upd('showVocab', !d.showVocab); },
                   className: "flex items-center gap-2 text-xs font-bold transition-colors " + (isDark ? 'text-slate-300 hover:text-indigo-400' : 'text-slate-600 hover:text-indigo-600')
-                }, "\uD83D\uDCD6 Vocabulary Glossary (" + Object.keys(VOCAB).length + " terms)", React.createElement("span", { className: "text-[11px]" }, d.showVocab ? '\u25B2' : '\u25BC')),
+                }, "\uD83D\uDCD6 Vocabulary Glossary (" + Object.keys(VOCAB).length + " terms)", React.createElement("span", { className: "text-[0.6875rem]" }, d.showVocab ? '\u25B2' : '\u25BC')),
                 d.showVocab && React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" },
                   Object.keys(VOCAB).sort().map(function(term) {
                     var v = VOCAB[term];
                     var looked = (d.vocabLookedUp || []).indexOf(term) !== -1;
                     return React.createElement("button", { key: term,
                       onClick: function() { upd('vocabSelected', d.vocabSelected === term ? null : term); if (!looked) upd('vocabLookedUp', (d.vocabLookedUp || []).concat([term])); },
-                      className: "text-left p-1.5 rounded text-[11px] border transition-all " + (d.vocabSelected === term ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 font-bold text-indigo-300' : 'bg-indigo-50 border-indigo-300 font-bold text-indigo-700') : looked ? (isDark ? 'bg-emerald-900/20 border-emerald-700/30 text-slate-300' : 'bg-emerald-50 border-emerald-100 text-slate-600') : (isDark ? 'transition-colors bg-slate-800 border-slate-700 text-slate-200 hover:border-indigo-500/50' : 'transition-colors bg-white border-slate-100 text-slate-600 hover:border-indigo-200'))
+                      className: "text-left p-1.5 rounded text-[0.6875rem] border transition-all " + (d.vocabSelected === term ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 font-bold text-indigo-300' : 'bg-indigo-50 border-indigo-300 font-bold text-indigo-700') : looked ? (isDark ? 'bg-emerald-900/20 border-emerald-700/30 text-slate-300' : 'bg-emerald-50 border-emerald-100 text-slate-600') : (isDark ? 'transition-colors bg-slate-800 border-slate-700 text-slate-200 hover:border-indigo-500/50' : 'transition-colors bg-white border-slate-100 text-slate-600 hover:border-indigo-200'))
                     }, (looked ? '\u2705 ' : '') + term + (v.grade > 6 ? ' \u2B50' : ''));
                   })
                 ),
                 d.showVocab && d.vocabSelected && VOCAB[d.vocabSelected] && React.createElement("div", { className: "mt-2 rounded-lg p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') },
                   React.createElement("div", { className: "text-xs font-bold mb-1 " + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, d.vocabSelected),
-                  React.createElement("p", { className: "text-[11px] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-600') }, VOCAB[d.vocabSelected].def),
-                  React.createElement("div", { className: "text-[11px] mt-1 " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Grade level: " + VOCAB[d.vocabSelected].grade + "+")
+                  React.createElement("p", { className: "text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-600') }, VOCAB[d.vocabSelected].def),
+                  React.createElement("div", { className: "text-[0.6875rem] mt-1 " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Grade level: " + VOCAB[d.vocabSelected].grade + "+")
                 )
               ),
 
@@ -31421,15 +31421,15 @@ const d = labToolData.solarSystem || {};
                 React.createElement("button", {
                   onClick: function() { upd('showAssignments', !d.showAssignments); },
                   className: "flex items-center gap-2 text-xs font-bold transition-colors " + (isDark ? 'text-slate-300 hover:text-indigo-400' : 'text-slate-600 hover:text-indigo-600')
-                }, __alloT('stem.solarsystem.assignment_mode', "\uD83D\uDCCB Assignment Mode"), React.createElement("span", { className: "text-[11px]" }, d.showAssignments ? '\u25B2' : '\u25BC')),
+                }, __alloT('stem.solarsystem.assignment_mode', "\uD83D\uDCCB Assignment Mode"), React.createElement("span", { className: "text-[0.6875rem]" }, d.showAssignments ? '\u25B2' : '\u25BC')),
                 d.showAssignments && React.createElement("div", { className: "mt-2 space-y-2" },
                   PRESET_ASSIGNMENTS.map(function(asn) {
                     var active = d.activeAssignment === asn.id;
                     var tasksDone = active ? (d['asn_done_' + asn.id] || []) : [];
                     return React.createElement("div", { key: asn.id, className: "rounded-lg border p-3 transition-all " + (active ? (isDark ? 'bg-blue-900/20 border-blue-700/50' : 'bg-blue-50 border-blue-300') : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200')) },
                       React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                        React.createElement("span", { className: "text-[11px] font-bold " + (active ? (isDark ? 'text-blue-300' : 'text-blue-700') : (isDark ? 'text-slate-200' : 'text-slate-700')) }, asn.name),
-                        React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "Grades " + asn.gradeRange)
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold " + (active ? (isDark ? 'text-blue-300' : 'text-blue-700') : (isDark ? 'text-slate-200' : 'text-slate-700')) }, asn.name),
+                        React.createElement("span", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "Grades " + asn.gradeRange)
                       ),
                       React.createElement("div", { className: "space-y-1" },
                         asn.tasks.map(function(task, ti) {
@@ -31441,15 +31441,15 @@ const d = labToolData.solarSystem || {};
                                 upd('asn_done_' + asn.id, updated);
                                 if (!done && updated.length === asn.tasks.length) { addToast('\uD83C\uDF89 Assignment complete: ' + asn.name + '!', 'success'); if (awardStemXP) awardStemXP('solarSystem', 25); }
                               },
-                              className: "mt-0.5 w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[11px] " + (done ? 'bg-emerald-700 border-emerald-500 text-white' : (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'))
+                              className: "mt-0.5 w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[0.6875rem] " + (done ? 'bg-emerald-700 border-emerald-500 text-white' : (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'))
                             }, done ? '\u2713' : ''),
-                            React.createElement("span", { className: "text-[11px] " + (done ? (isDark ? 'text-slate-200 line-through' : 'text-slate-500 line-through') : (isDark ? 'text-slate-300' : 'text-slate-600')) }, task)
+                            React.createElement("span", { className: "text-[0.6875rem] " + (done ? (isDark ? 'text-slate-200 line-through' : 'text-slate-500 line-through') : (isDark ? 'text-slate-300' : 'text-slate-600')) }, task)
                           );
                         })
                       ),
                       !active && React.createElement("button", {
                         onClick: function() { upd('activeAssignment', asn.id); },
-                        className: "mt-2 w-full px-2 py-1 text-[11px] font-bold rounded bg-blue-600 text-white hover:bg-blue-700 transition-all"
+                        className: "mt-2 w-full px-2 py-1 text-[0.6875rem] font-bold rounded bg-blue-600 text-white hover:bg-blue-700 transition-all"
                       }, __alloT('stem.solarsystem.start_assignment', "Start Assignment"))
                     );
                   })
@@ -31463,7 +31463,7 @@ const d = labToolData.solarSystem || {};
                     onClick: exportProgressCSV,
                     className: "px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
                   }, __alloT('stem.solarsystem.export_progress_csv', "\uD83D\uDCCA Export Progress (CSV)")),
-                  React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.for_teacher_review', "For teacher review"))
+                  React.createElement("span", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.for_teacher_review', "For teacher review"))
                 ),
                 // Quick stats summary. Both tile colours are theme-paired: the dark-card
                 // values (slate-400 muted, green-500 earned) measure 2.45 and ~2.0 against
@@ -31477,7 +31477,7 @@ const d = labToolData.solarSystem || {};
                   ].map(function(stat) {
                     return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100') },
                       React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color, fontFamily: 'monospace' } }, stat.value),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, stat.label)
+                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, stat.label)
                     );
                   })
                 )

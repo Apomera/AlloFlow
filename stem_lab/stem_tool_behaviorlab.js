@@ -4049,7 +4049,7 @@ dataRef.current = d;
                 // opens. \u2605 AARON TO RED-PEN THE WORDING \u2014 no AI-authored clinical
                 // framing should ship to a pilot unreviewed.
                 React.createElement("p", {
-                  className: "text-[11px] leading-relaxed",
+                  className: "text-[0.6875rem] leading-relaxed",
                   style: { color: 'var(--bl-muted)', borderLeft: '3px solid var(--bl-amber)', paddingLeft: 10, margin: '2px 0 0' }
                 }, __alloT('stem.behaviorlab.scope_note', 'This lab teaches the concepts of behaviour analysis. It does not qualify anyone to run a functional behaviour assessment or write a behaviour plan \u2014 that is supervised professional work, and the function of a real behaviour is a hypothesis you test with data, not a label you read off a description.')),
 
@@ -4152,7 +4152,7 @@ dataRef.current = d;
 
                             "aria-pressed": active,
 
-                            className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-700 text-purple-200 hover:bg-slate-600 border border-purple-500/30 active:scale-[0.97]')
+                            className: "px-2 py-0.5 rounded text-[0.625rem] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-700 text-purple-200 hover:bg-slate-600 border border-purple-500/30 active:scale-[0.97]')
 
                           }, L.label);
 
@@ -4168,17 +4168,17 @@ dataRef.current = d;
 
                         "aria-label": __alloT('stem.behaviorlab.generate_ai_at', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
 
-                        className: "transition-colors px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
+                        className: "transition-colors px-2.5 py-1 rounded text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
 
                       }, aiLoading ? '\u23F3 Thinking...' : (aiText ? __alloT('stem.behaviorlab.re_explain', '\uD83D\uDD04 Re-explain') : __alloT('stem.behaviorlab.explain_btn', '\uD83E\uDDE0 Explain')))
 
                     ),
 
-                    aiError && React.createElement("p", { className: "text-[11px] text-rose-400", role: "alert" }, aiError),
+                    aiError && React.createElement("p", { className: "text-[0.6875rem] text-rose-400", role: "alert" }, aiError),
 
                     aiText && React.createElement("p", { className: "text-xs text-slate-100 leading-relaxed bg-slate-900/50 rounded-lg p-2 border border-purple-500/20" }, aiText),
 
-                    !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-400" }, __alloT('stem.behaviorlab.click_explain_for_a_classroom_example_', "Click \u201CExplain\u201D for a classroom example of this concept at your chosen reading level."))
+                    !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[0.6875rem] italic text-slate-400" }, __alloT('stem.behaviorlab.click_explain_for_a_classroom_example_', "Click \u201CExplain\u201D for a classroom example of this concept at your chosen reading level."))
 
                   );
 
@@ -4530,7 +4530,7 @@ dataRef.current = d;
 
                   React.createElement("p", { className: "text-lg font-extrabold text-amber-400 tracking-tight" }, '' + blReinforcements),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.reinforcements', "Reinforcements"))
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.behaviorlab.reinforcements', "Reinforcements"))
 
                 ),
 
@@ -4538,7 +4538,7 @@ dataRef.current = d;
 
                   React.createElement("p", { className: "text-lg font-extrabold text-indigo-400 tracking-tight" }, '' + blTick),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.ticks_to_complete', "Ticks to Complete"))
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.behaviorlab.ticks_to_complete', "Ticks to Complete"))
 
                 ),
 
@@ -4548,7 +4548,7 @@ dataRef.current = d;
 
                     blTick > 0 ? (blLevelScore / blTick * 60).toFixed(1) : '0.0'),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.resp_rate_min', "Resp Rate / min"))
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.behaviorlab.resp_rate_min', "Resp Rate / min"))
 
                 ),
 
@@ -4558,7 +4558,7 @@ dataRef.current = d;
 
                     (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1)),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.avg_delay_to_reinforcement', "Avg delay to reinforcement (ticks)"))
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-200" }, __alloT('stem.behaviorlab.avg_delay_to_reinforcement', "Avg delay to reinforcement (ticks)"))
 
                 )
 
@@ -4883,7 +4883,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-1.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.recent_behaviors', "\uD83D\uDD25 Recent Behaviors")),
+              React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold mb-1.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.recent_behaviors', "\uD83D\uDD25 Recent Behaviors")),
 
               React.createElement("div", { className: "flex gap-1 items-center flex-wrap" },
 
@@ -5058,7 +5058,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-purple-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.chain_progress', "\uD83D\uDD17 Chain Progress")),
+              React.createElement("h4", { className: "text-[0.6875rem] text-purple-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.chain_progress', "\uD83D\uDD17 Chain Progress")),
 
               React.createElement("div", { className: "flex items-center justify-center gap-2" },
 
@@ -5106,7 +5106,7 @@ dataRef.current = d;
 
               ),
 
-              React.createElement("p", { className: "text-[11px] text-slate-200 text-center mt-2" },
+              React.createElement("p", { className: "text-[0.6875rem] text-slate-200 text-center mt-2" },
 
                 (currentLevel.goal > 0
                   ? blT('stem.behaviorlab.completed_chains_of', 'Completed chains: {n}/{goal}', { n: blChainHistory.length, goal: currentLevel.goal })
@@ -5123,7 +5123,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-cyan-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.dro_timer', "\u23F1 DRO Timer")),
+              React.createElement("h4", { className: "text-[0.6875rem] text-cyan-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.dro_timer', "\u23F1 DRO Timer")),
 
               // Timer bar
 
@@ -5167,7 +5167,7 @@ dataRef.current = d;
                     ? blT('stem.behaviorlab.dro_successes_of', '\u2705 DRO successes: {n}/{goal}', { n: blDroSuccesses, goal: currentLevel.goal })
                     : blT('stem.behaviorlab.dro_successes', '\u2705 DRO successes: {n}', { n: blDroSuccesses }))),
 
-                React.createElement("p", { className: "text-[11px] text-cyan-300/60 italic" },
+                React.createElement("p", { className: "text-[0.6875rem] text-cyan-300/60 italic" },
 
                   blDroTimer === 0 ? __alloT('stem.behaviorlab.dro_timer_started', 'Timer started — no lever presses needed.') : __alloT('stem.behaviorlab.dro_keep_waiting', 'Keep waiting…'))
 
@@ -5184,7 +5184,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-rose-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.classical_conditioning', "\uD83D\uDD14 Classical Conditioning")),
+              React.createElement("h4", { className: "text-[0.6875rem] text-rose-300 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.classical_conditioning', "\uD83D\uDD14 Classical Conditioning")),
 
               // Phase indicator
 
@@ -5539,7 +5539,7 @@ dataRef.current = d;
 
               // Phase instructions
 
-              React.createElement("p", { className: "text-[11px] text-slate-200 text-center mt-2 italic" },
+              React.createElement("p", { className: "text-[0.6875rem] text-slate-200 text-center mt-2 italic" },
 
                 blCcPhase === 'baseline' ? 'Ring the bell to observe: no response yet (neutral stimulus)' :
 
@@ -5567,7 +5567,7 @@ dataRef.current = d;
 
               },
 
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.last_behavior', "Last Behavior")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.last_behavior', "Last Behavior")),
 
                 React.createElement("p", { className: "text-sm font-extrabold", style: { color: ACTION_COLORS[blMouseAction] || '#94a3b8' } },
 
@@ -5583,7 +5583,7 @@ dataRef.current = d;
 
               },
 
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.session_stats', "Session Stats")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.session_stats', "Session Stats")),
 
                 React.createElement("p", { className: "text-xs text-amber-300" }, blT('stem.behaviorlab.stat_reinforcements', '\uD83C\uDF55 Reinforcements: {n}', { n: blReinforcements })),
 
@@ -5610,7 +5610,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.behavior_probability_weights', "\uD83D\uDCCA Behavior Probability Weights")),
+              React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.behavior_probability_weights', "\uD83D\uDCCA Behavior Probability Weights")),
 
               React.createElement("div", { className: "space-y-1" },
 
@@ -5624,7 +5624,7 @@ dataRef.current = d;
 
                   return React.createElement("div", { key: w.action, className: "flex items-center gap-2" },
 
-                    React.createElement("span", { className: "text-[11px] w-20 truncate " + (highlight ? 'text-amber-300 font-bold' : 'text-slate-200') },
+                    React.createElement("span", { className: "text-[0.6875rem] w-20 truncate " + (highlight ? 'text-amber-300 font-bold' : 'text-slate-200') },
 
                       (highlight ? '\uD83C\uDFAF ' : '') + w.action),
 
@@ -5646,7 +5646,7 @@ dataRef.current = d;
 
                     ),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-200 w-8 text-right font-mono" }, Math.round(w.weight))
+                    React.createElement("span", { className: "text-[0.6875rem] text-slate-200 w-8 text-right font-mono" }, Math.round(w.weight))
 
                   );
 
@@ -5688,7 +5688,7 @@ dataRef.current = d;
 
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.abc_data_log', "\uD83D\uDCCB ABC Data Log")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.abc_data_log', "\uD83D\uDCCB ABC Data Log")),
 
                 // CSV Export button
 
@@ -5750,7 +5750,7 @@ dataRef.current = d;
 
                   },
 
-                  className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 transition-all border border-slate-600/40 active:scale-[0.97]"
+                  className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 transition-all border border-slate-600/40 active:scale-[0.97]"
 
                 }, __alloT('stem.behaviorlab.export_csv', "\uD83D\uDCE5 Export CSV"))
 
@@ -5783,7 +5783,7 @@ dataRef.current = d;
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
             },
-              React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.progress_badges', "\uD83C\uDFC6 Progress Badges")),
+              React.createElement("h3", { className: "text-[0.6875rem] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.progress_badges', "\uD83C\uDFC6 Progress Badges")),
               React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
                 LEVELS.filter(function(l) { return l.id <= 9; }).map(function(l) {
                   var badge = LEVEL_BADGES[l.id];
@@ -5799,12 +5799,12 @@ dataRef.current = d;
                     onClick: function() { if (earned || isCurrent) { upd('blLevel', l.id); upd('blPhase', 'intro'); upd('blLevelScore', 0); upd('blTick', 0); } }
                   },
                     React.createElement("div", { className: "text-2xl " + (isCurrent ? 'animate-bounce motion-reduce:animate-none' : '') }, badge.icon),
-                    React.createElement("div", { className: "text-[11px] font-bold " + (earned ? 'text-amber-400' : 'text-slate-200') }, 'L' + l.id),
-                    earned ? React.createElement("div", { className: "text-[11px] text-green-400" }, __alloT('stem.behaviorlab.earned', '\u2713 Earned')) : React.createElement("div", { className: "text-[11px] text-slate-200" }, '\uD83D\uDD12')
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold " + (earned ? 'text-amber-400' : 'text-slate-200') }, 'L' + l.id),
+                    earned ? React.createElement("div", { className: "text-[0.6875rem] text-green-400" }, __alloT('stem.behaviorlab.earned', '\u2713 Earned')) : React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, '\uD83D\uDD12')
                   );
                 })
               ),
-              React.createElement("div", { className: "text-center mt-2 text-[11px] text-slate-200" },
+              React.createElement("div", { className: "text-center mt-2 text-[0.6875rem] text-slate-200" },
                 blCompletedLevels.length + "/9 levels mastered \u2022 " + (blCompletedLevels.length >= 9 ? '\uD83C\uDF1F ABA Master!' : blCompletedLevels.length >= 5 ? __alloT('stem.behaviorlab.rank_in_training', '\u2B50 Behaviour Analyst in Training') : __alloT('stem.behaviorlab.rank_keep_going', '\uD83D\uDC2D Keep experimenting'))
               )
             ),
@@ -5866,13 +5866,13 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(167,139,250,0.25)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.beyond_pure_aba_neurodiversity_affirmi', "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.beyond_pure_aba_neurodiversity_affirmi', "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed")),
                 React.createElement("button", { onClick: function() { upd('blShowBeyond', !d.blShowBeyond); },
-                  className: "transition-colors text-[11px] text-purple-400 hover:text-purple-300"
+                  className: "transition-colors text-[0.6875rem] text-purple-400 hover:text-purple-300"
                 }, d.blShowBeyond ? __alloT('stem.behaviorlab.hide', 'Hide') : 'View →')
               ),
               d.blShowBeyond && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                React.createElement("div", { className: "text-[0.6875rem] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
                   __alloT('stem.behaviorlab.operant_conditioning_is_a_powerful_set', "Operant conditioning is a powerful set of tools AND has been used in ways the autistic community has documented as harmful. Good modern practice holds both truths at once. School psychs and BCBAs working in K-12 settings need the critical lens to apply ABA ethically — not just the technical mechanics.")),
                 React.createElement("div", { className: "space-y-2" },
                   BEYOND_ABA.map(function(b, bi) {
@@ -5967,13 +5967,13 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_comparison', "\uD83D\uDCC8 Schedule Comparison")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_comparison', "\uD83D\uDCC8 Schedule Comparison")),
                 React.createElement("button", { onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
-                  className: "transition-colors text-[11px] text-amber-400 hover:text-amber-300"
+                  className: "transition-colors text-[0.6875rem] text-amber-400 hover:text-amber-300"
                 }, blSchedCanvas ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.compare_schedules_arrow', 'Compare Schedules \u2192'))
               ),
               blSchedCanvas && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.watch_how_different_reinforcement_sche', "Four schedules, one session each, drawn on the same scales so the slopes are comparable. Tick marks under a line are reinforcer deliveries. The pattern each one produces is named under its own plot — the skill is seeing it before you read it.")),
+                React.createElement("div", { className: "text-[0.6875rem] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.watch_how_different_reinforcement_sche', "Four schedules, one session each, drawn on the same scales so the slopes are comparable. Tick marks under a line are reinforcer deliveries. The pattern each one produces is named under its own plot — the skill is seeing it before you read it.")),
                 // Canvas for animated cumulative records
                 React.createElement("canvas", {
                   id: "bl-sched-compare-canvas",
@@ -6092,11 +6092,11 @@ dataRef.current = d;
                 React.createElement("div", { className: "flex gap-2 mt-2 justify-center" },
                   React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.toggle_schedule_animation', "Toggle schedule animation"),
                     onClick: function() { upd('blSchedPaused', !blSchedPaused); },
-                    className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (blSchedPaused ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-100')
+                    className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (blSchedPaused ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-100')
                   }, blSchedPaused ? __alloT('stem.behaviorlab.play_btn', '\u25B6 Play') : __alloT('stem.behaviorlab.pause_btn2', '\u23F8 Pause')),
                   React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.reset_schedule_animation', "Reset schedule animation"),
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
-                    className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
+                    className: "transition-colors px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
                   }, __alloT('stem.behaviorlab.reset_2', '\u21BB Reset'))
                 ),
                 // Schedule details
@@ -6108,11 +6108,11 @@ dataRef.current = d;
                     },
                       React.createElement("div", { className: "flex items-center gap-1 mb-1" },
                         React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: sch.color } }),
-                        React.createElement("span", { className: "text-[11px] font-black text-white" }, sch.name),
-                        React.createElement("span", { className: "text-[11px] font-mono", style: { color: sch.color } }, '(' + sch.abbrev + ')')
+                        React.createElement("span", { className: "text-[0.6875rem] font-black text-white" }, sch.name),
+                        React.createElement("span", { className: "text-[0.6875rem] font-mono", style: { color: sch.color } }, '(' + sch.abbrev + ')')
                       ),
-                      React.createElement("div", { className: "text-[11px] text-slate-200" }, sch.desc),
-                      React.createElement("div", { className: "text-[11px] text-amber-400 mt-1 italic" }, '\uD83D\uDCA1 ' + sch.example)
+                      React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, sch.desc),
+                      React.createElement("div", { className: "text-[0.6875rem] text-amber-400 mt-1 italic" }, '\uD83D\uDCA1 ' + sch.example)
                     );
                   })
                 )
@@ -6127,10 +6127,10 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.25)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_sleuth_identify_the_schedule_', "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_sleuth_identify_the_schedule_', "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve")),
                 React.createElement("button", {
                   onClick: function() { upd('blShowSleuth', !d.blShowSleuth); },
-                  className: "transition-colors text-[11px] text-amber-400 hover:text-amber-300"
+                  className: "transition-colors text-[0.6875rem] text-amber-400 hover:text-amber-300"
                 }, d.blShowSleuth ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.play_arrow', 'Play \u2192'))
               ),
               d.blShowSleuth && (function() {
@@ -6153,11 +6153,11 @@ dataRef.current = d;
                 }
                 if (sleuthIdx < 0) {
                   return React.createElement("div", { className: "text-center py-4" },
-                    React.createElement("p", { className: "text-[11px] text-slate-300 mb-3 italic" }, __alloT('stem.behaviorlab.you_will_see_one_unlabeled_cumulative_', "You will see one unlabeled cumulative-response curve. Pick which schedule produced it. The curve shape is the only clue.")),
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-300 mb-3 italic" }, __alloT('stem.behaviorlab.you_will_see_one_unlabeled_cumulative_', "You will see one unlabeled cumulative-response curve. Pick which schedule produced it. The curve shape is the only clue.")),
                     React.createElement("button", {
                       onClick: startRound,
                       "aria-label": __alloT('stem.behaviorlab.start_schedule_sleuth', "Start Schedule Sleuth"),
-                      className: "transition-colors px-4 py-2 rounded-lg bg-amber-700 text-white font-bold text-[11px] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
+                      className: "transition-colors px-4 py-2 rounded-lg bg-amber-700 text-white font-bold text-[0.6875rem] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
                     }, __alloT('stem.behaviorlab.start_the_game', "\uD83D\uDD75\uFE0F Start the game"))
                   );
                 }
@@ -6196,7 +6196,7 @@ dataRef.current = d;
                 var pct = sleuthRounds > 0 ? Math.round((sleuthScore / sleuthRounds) * 100) : 0;
                 return React.createElement("div", null,
                   // Score header
-                  React.createElement("div", { className: "flex items-center justify-between mb-2 text-[11px] flex-wrap gap-2" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2 text-[0.6875rem] flex-wrap gap-2" },
                     React.createElement("div", { className: "flex gap-3 items-center" },
                       React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.round', "Round "), React.createElement("strong", { className: "text-white" }, sleuthRounds + (sleuthAnswered ? '' : '+1'))),
                       React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.streak', "Streak "), React.createElement("strong", { className: "text-amber-400" }, sleuthStreak)),
@@ -6211,8 +6211,8 @@ dataRef.current = d;
                     open: sleuthRounds === 0,
                     style: { background: 'rgba(15,23,42,0.5)', borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 }
                   },
-                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300 select-none" }, __alloT('stem.behaviorlab.how_to_read_this_curve_click_to_toggle', '📜 How to read this curve (click to toggle)')),
-                    React.createElement("div", { className: "px-3 pb-3 space-y-2 text-[11px] text-slate-300" },
+                    React.createElement("summary", { className: "cursor-pointer text-[0.6875rem] font-bold px-3 py-2 select-none text-cyan-300 select-none" }, __alloT('stem.behaviorlab.how_to_read_this_curve_click_to_toggle', '📜 How to read this curve (click to toggle)')),
+                    React.createElement("div", { className: "px-3 pb-3 space-y-2 text-[0.6875rem] text-slate-300" },
                       React.createElement("p", { className: "leading-relaxed" },
                         // "each REINFORCED response" was wrong, and wrong in a way that
                         // breaks the reading skill this panel teaches: EVERY response
@@ -6230,11 +6230,11 @@ dataRef.current = d;
                         ].map(function(s, i) {
                           return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + s.color + '55', borderRadius: 6, padding: '6px 8px' } },
                             React.createElement('div', { style: { color: s.color, fontWeight: 800, fontSize: 10 } }, s.abbrev + ' · ' + s.name),
-                            React.createElement('div', { className: 'text-[10px] text-slate-300 leading-tight' }, s.pattern)
+                            React.createElement('div', { className: 'text-[0.625rem] text-slate-300 leading-tight' }, s.pattern)
                           );
                         })
                       ),
-                      React.createElement('p', { className: 'text-[10px] italic text-slate-400 pt-1 border-t border-slate-700' },
+                      React.createElement('p', { className: 'text-[0.625rem] italic text-slate-400 pt-1 border-t border-slate-700' },
                         __alloT('stem.behaviorlab.tip_focus_on_shape_not_absolute_height', 'Tip: focus on shape, not absolute height. The curve below is unlabeled until you guess.')
                       )
                     )
@@ -6298,7 +6298,7 @@ dataRef.current = d;
                   React.createElement("details", {
                     style: { background: 'rgba(15,23,42,0.5)', borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)', marginTop: 8 }
                   },
-                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300" },
+                    React.createElement("summary", { className: "cursor-pointer text-[0.6875rem] font-bold px-3 py-2 select-none text-cyan-300" },
                       __alloT('stem.behaviorlab.show_the_record_as_numbers', '\ud83d\udd22 The same record, as numbers')),
                     React.createElement("div", { className: "px-3 pb-3", style: { overflowX: 'auto' } },
                       React.createElement("table", { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10.5, color: 'var(--bl-text)' } },
@@ -6360,10 +6360,10 @@ dataRef.current = d;
                       border: '1px solid ' + (sleuthPick === sleuthIdx ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.45)')
                     }
                   },
-                    React.createElement("div", { className: "text-[11px] font-bold mb-1", style: { color: sleuthPick === sleuthIdx ? '#86efac' : '#fca5a5' } },
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold mb-1", style: { color: sleuthPick === sleuthIdx ? '#86efac' : '#fca5a5' } },
                       sleuthPick === sleuthIdx ? '\u2705 Correct \u2014 ' + sch.name : '\u274C Not quite \u2014 it was ' + sch.name + (sleuthPick != null ? ' (you picked ' + SCHEDULE_TYPES[sleuthPick].abbrev + ')' : '')
                     ),
-                    React.createElement("div", { className: "text-[11px] text-slate-200 leading-relaxed mb-2" },
+                    React.createElement("div", { className: "text-[0.6875rem] text-slate-200 leading-relaxed mb-2" },
                       sch.pattern === 'high-pause' ? __alloT('stem.behaviorlab.sleuth_why_fr', 'Fixed Ratio creates a *post-reinforcement pause* after each delivery, then a rapid burst of responses to reach the next reinforcer. Look for the staircase shape with brief flat plateaus.')
                       : sch.pattern === 'high-steady' ? __alloT('stem.behaviorlab.sleuth_why_vr', 'Variable Ratio produces the *steepest, smoothest* climb because the next reinforcer could come at any moment. This is the slot-machine pattern \u2014 most resistant to extinction.')
                       : sch.pattern === 'scallop' ? __alloT('stem.behaviorlab.sleuth_why_fi', 'Fixed Interval produces a *scallop*: slow responding right after reinforcement, then accelerating as the interval ends and the next reinforcer becomes available. Look for repeating concave curves.')
@@ -6372,7 +6372,7 @@ dataRef.current = d;
                     React.createElement("button", {
                       onClick: startRound,
                       "aria-label": __alloT('stem.behaviorlab.next_round', "Next round"),
-                      className: "transition-colors px-4 py-1.5 rounded-lg bg-amber-700 text-white font-bold text-[11px] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
+                      className: "transition-colors px-4 py-1.5 rounded-lg bg-amber-700 text-white font-bold text-[0.6875rem] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
                     }, __alloT('stem.behaviorlab.next_round_2', "\u27A1\uFE0F Next round"))
                   )
                 );
@@ -6386,17 +6386,17 @@ dataRef.current = d;
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
             },
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.reinforcement_punishment_matrix', "\u2696\uFE0F Reinforcement \u0026 Punishment Matrix")),
-              React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.the_4_quadrants_of_operant_conditionin', "The 4 quadrants of operant conditioning. Click each cell to learn more:")),
+              React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.reinforcement_punishment_matrix', "\u2696\uFE0F Reinforcement \u0026 Punishment Matrix")),
+              React.createElement("div", { className: "text-[0.6875rem] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.the_4_quadrants_of_operant_conditionin', "The 4 quadrants of operant conditioning. Click each cell to learn more:")),
               // Column headers
               React.createElement("div", { className: "grid grid-cols-3 gap-1 mb-1" },
                 React.createElement("div", null),
-                React.createElement("div", { className: "text-center text-[11px] font-bold text-emerald-400 uppercase" }, __alloT('stem.behaviorlab.add_stimulus', "\u2795 Add Stimulus")),
-                React.createElement("div", { className: "text-center text-[11px] font-bold text-blue-400 uppercase" }, __alloT('stem.behaviorlab.remove_stimulus', "\u2796 Remove Stimulus"))
+                React.createElement("div", { className: "text-center text-[0.6875rem] font-bold text-emerald-400 uppercase" }, __alloT('stem.behaviorlab.add_stimulus', "\u2795 Add Stimulus")),
+                React.createElement("div", { className: "text-center text-[0.6875rem] font-bold text-blue-400 uppercase" }, __alloT('stem.behaviorlab.remove_stimulus', "\u2796 Remove Stimulus"))
               ),
               // Row 1: Reinforcement
               React.createElement("div", { className: "grid grid-cols-3 gap-1 mb-1" },
-                React.createElement("div", { className: "flex items-center text-[11px] font-bold text-green-400 uppercase pr-1" }, __alloT('stem.behaviorlab.increase_behavior', "\u2B06 Increase Behavior")),
+                React.createElement("div", { className: "flex items-center text-[0.6875rem] font-bold text-green-400 uppercase pr-1" }, __alloT('stem.behaviorlab.increase_behavior', "\u2B06 Increase Behavior")),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 0; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
@@ -6405,14 +6405,14 @@ dataRef.current = d;
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, m.icon),
-                    React.createElement("div", { className: "text-[11px] font-black", style: { color: m.color } }, m.abbrev),
-                    React.createElement("div", { className: "text-[11px] text-slate-200" }, m.name)
+                    React.createElement("div", { className: "text-[0.6875rem] font-black", style: { color: m.color } }, m.abbrev),
+                    React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, m.name)
                   );
                 })
               ),
               // Row 2: Punishment
               React.createElement("div", { className: "grid grid-cols-3 gap-1" },
-                React.createElement("div", { className: "flex items-center text-[11px] font-bold text-red-400 uppercase pr-1" }, __alloT('stem.behaviorlab.decrease_behavior', "\u2B07 Decrease Behavior")),
+                React.createElement("div", { className: "flex items-center text-[0.6875rem] font-bold text-red-400 uppercase pr-1" }, __alloT('stem.behaviorlab.decrease_behavior', "\u2B07 Decrease Behavior")),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 1; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
@@ -6421,8 +6421,8 @@ dataRef.current = d;
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, m.icon),
-                    React.createElement("div", { className: "text-[11px] font-black", style: { color: m.color } }, m.abbrev),
-                    React.createElement("div", { className: "text-[11px] text-slate-200" }, m.name)
+                    React.createElement("div", { className: "text-[0.6875rem] font-black", style: { color: m.color } }, m.abbrev),
+                    React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, m.name)
                   );
                 })
               ),
@@ -6434,18 +6434,18 @@ dataRef.current = d;
                   className: "mt-3 rounded-xl p-3 border",
                   style: { borderColor: sel.color + '60', background: sel.color + '08' }
                 },
-                  React.createElement("div", { className: "text-[11px] font-black mb-1", style: { color: sel.color } }, sel.icon + ' ' + sel.name + ' (' + sel.abbrev + ')'),
-                  React.createElement("div", { className: "text-[11px] text-slate-100 mb-1" }, sel.formal),
-                  React.createElement("div", { className: "text-[11px] text-slate-200 mb-2" },
+                  React.createElement("div", { className: "text-[0.6875rem] font-black mb-1", style: { color: sel.color } }, sel.icon + ' ' + sel.name + ' (' + sel.abbrev + ')'),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-100 mb-1" }, sel.formal),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-200 mb-2" },
                     React.createElement("span", { className: "font-bold text-emerald-400" }, sel.action),
                     __alloT('stem.behaviorlab.a_stimulus_to', ' a stimulus to '),
                     React.createElement("span", { className: "font-bold text-blue-400" }, sel.effect),
                     ' behavior'
                   ),
-                  React.createElement("div", { className: "text-[11px] text-amber-400 font-medium mb-1" }, __alloT('stem.behaviorlab.real_world_examples', '\uD83D\uDCA1 Real-world examples:')),
+                  React.createElement("div", { className: "text-[0.6875rem] text-amber-400 font-medium mb-1" }, __alloT('stem.behaviorlab.real_world_examples', '\uD83D\uDCA1 Real-world examples:')),
                   React.createElement("ul", { className: "space-y-0.5 ml-2" },
                     sel.examples.map(function(ex, exi) {
-                      return React.createElement("li", { key: exi, className: "text-[11px] text-slate-200 list-disc" }, ex);
+                      return React.createElement("li", { key: exi, className: "text-[0.6875rem] text-slate-200 list-disc" }, ex);
                     })
                   )
                 );
@@ -6457,26 +6457,26 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.operant_vs_classical_conditioning', "\uD83D\uDD2C Operant vs Classical Conditioning")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.operant_vs_classical_conditioning', "\uD83D\uDD2C Operant vs Classical Conditioning")),
                 React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.aspect', "Aspect"),
                   onClick: function() { upd('blShowCondCompare', !blShowCondCompare); },
-                  className: "transition-colors text-[11px] text-violet-400 hover:text-violet-300"
+                  className: "transition-colors text-[0.6875rem] text-violet-400 hover:text-violet-300"
                 }, blShowCondCompare ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.compare_arrow', 'Compare \u2192'))
               ),
               blShowCondCompare && React.createElement("div", null,
                 React.createElement("div", { className: "rounded-xl overflow-hidden border border-slate-700/30" },
                   // Header row
                   React.createElement("div", { className: "grid grid-cols-3 bg-slate-800/60" },
-                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-slate-200 uppercase" }, __alloT('stem.behaviorlab.aspect_2', 'Aspect')),
-                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-amber-400 uppercase text-center border-l border-slate-700/30" }, __alloT('stem.behaviorlab.operant', '\uD83D\uDC2D Operant')),
-                    React.createElement("div", { className: "p-1.5 text-[11px] font-bold text-violet-400 uppercase text-center border-l border-slate-700/30" }, __alloT('stem.behaviorlab.classical', '\uD83D\uDC36 Classical'))
+                    React.createElement("div", { className: "p-1.5 text-[0.6875rem] font-bold text-slate-200 uppercase" }, __alloT('stem.behaviorlab.aspect_2', 'Aspect')),
+                    React.createElement("div", { className: "p-1.5 text-[0.6875rem] font-bold text-amber-400 uppercase text-center border-l border-slate-700/30" }, __alloT('stem.behaviorlab.operant', '\uD83D\uDC2D Operant')),
+                    React.createElement("div", { className: "p-1.5 text-[0.6875rem] font-bold text-violet-400 uppercase text-center border-l border-slate-700/30" }, __alloT('stem.behaviorlab.classical', '\uD83D\uDC36 Classical'))
                   ),
                   // Data rows
                   CONDITIONING_COMPARE.map(function(row, ri) {
                     return React.createElement("div", { key: ri, className: "grid grid-cols-3 " + (ri % 2 === 0 ? 'bg-slate-900/30' : 'bg-slate-800/20') },
-                      React.createElement("div", { className: "p-1.5 text-[11px] font-medium text-slate-100 border-t border-slate-700/20" }, row.aspect),
-                      React.createElement("div", { className: "p-1.5 text-[11px] text-amber-300/80 border-t border-l border-slate-700/20" }, row.operant),
-                      React.createElement("div", { className: "p-1.5 text-[11px] text-violet-300/80 border-t border-l border-slate-700/20" }, row.classical)
+                      React.createElement("div", { className: "p-1.5 text-[0.6875rem] font-medium text-slate-100 border-t border-slate-700/20" }, row.aspect),
+                      React.createElement("div", { className: "p-1.5 text-[0.6875rem] text-amber-300/80 border-t border-l border-slate-700/20" }, row.operant),
+                      React.createElement("div", { className: "p-1.5 text-[0.6875rem] text-violet-300/80 border-t border-l border-slate-700/20" }, row.classical)
                     );
                   })
                 )
@@ -6490,16 +6490,16 @@ dataRef.current = d;
               // "Clinical Scenarios" reads as case practice. They are written
               // scenarios with one defensible answer each \u2014 practice at applying the
               // concepts, which is a different and smaller claim.
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.behaviorlab.practice_scenarios', 'Practice Scenarios') + " (" + (blScenarioIdx + 1) + "/" + SCENARIO_CHALLENGES.length + ")"),
+              React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.behaviorlab.practice_scenarios', 'Practice Scenarios') + " (" + (blScenarioIdx + 1) + "/" + SCENARIO_CHALLENGES.length + ")"),
               // Streak indicator
               blStreak > 0 && React.createElement("div", { className: "text-center mb-2" },
-                React.createElement("span", { className: "inline-block px-3 py-0.5 rounded-full text-[11px] font-bold " + (blStreak >= 5 ? 'bg-amber-700 text-white behaviorlab-glow-pulse' : blStreak >= 3 ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-700 text-slate-100') },
+                React.createElement("span", { className: "inline-block px-3 py-0.5 rounded-full text-[0.6875rem] font-bold " + (blStreak >= 5 ? 'bg-amber-700 text-white behaviorlab-glow-pulse' : blStreak >= 3 ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-700 text-slate-100') },
                   '\uD83D\uDD25 ' + blStreak + ' streak!' + (blStreak >= 5 ? ' AMAZING!' : blStreak >= 3 ? __alloT('stem.behaviorlab.streak_on_fire', ' On fire!') : ''))
               ),
               // Score
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
-                React.createElement("span", { className: "text-[11px] text-slate-200" }, blT('stem.behaviorlab.stat_score_of', 'Score: {n}/{total}', { n: blScenarioScore, total: blScenarioTotal })),
-                React.createElement("span", { className: "text-[11px] text-amber-500" }, blT('stem.behaviorlab.stat_best_streak', 'Best streak: {n}', { n: blBestStreak }))
+                React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, blT('stem.behaviorlab.stat_score_of', 'Score: {n}/{total}', { n: blScenarioScore, total: blScenarioTotal })),
+                React.createElement("span", { className: "text-[0.6875rem] text-amber-500" }, blT('stem.behaviorlab.stat_best_streak', 'Best streak: {n}', { n: blBestStreak }))
               ),
               (function() {
                 var sc = SCENARIO_CHALLENGES[blScenarioIdx];
@@ -6509,9 +6509,9 @@ dataRef.current = d;
                 return React.createElement("div", null,
                   // Scenario description
                   React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 mb-2 border border-slate-700/30" },
-                    React.createElement("div", { className: "text-[11px] text-slate-100 leading-relaxed" }, sc.scenario)
+                    React.createElement("div", { className: "text-[0.6875rem] text-slate-100 leading-relaxed" }, sc.scenario)
                   ),
-                  React.createElement("div", { className: "text-[11px] font-bold text-white mb-2" }, sc.question),
+                  React.createElement("div", { className: "text-[0.6875rem] font-bold text-white mb-2" }, sc.question),
                   // Options
                   React.createElement("div", { className: "space-y-1.5 mb-2" },
                     sc.options.map(function(opt, oi) {
@@ -6538,7 +6538,7 @@ dataRef.current = d;
                             if (addToast) addToast(__alloT('stem.behaviorlab.toast_scenario_wrong', '\u274C Not quite \u2014 read the explanation.'), 'info');
                           }
                         },
-                        className: "w-full text-left p-2 rounded-lg border text-[11px] transition-all " + bgClass,
+                        className: "w-full text-left p-2 rounded-lg border text-[0.6875rem] transition-all " + bgClass,
                         disabled: answered
                       },
                         React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-emerald-400' : answered && isSelected ? 'text-red-400' : 'text-slate-200') },
@@ -6549,11 +6549,11 @@ dataRef.current = d;
                   ),
                   // Feedback
                   answered && React.createElement("div", { className: "space-y-2" },
-                    React.createElement("div", { className: "rounded-xl p-2.5 text-[11px] " + (isCorrect ? 'bg-emerald-900/20 border border-emerald-700/30 text-emerald-300' : 'bg-red-900/20 border border-red-700/30 text-red-300') },
+                    React.createElement("div", { className: "rounded-xl p-2.5 text-[0.6875rem] " + (isCorrect ? 'bg-emerald-900/20 border border-emerald-700/30 text-emerald-300' : 'bg-red-900/20 border border-red-700/30 text-red-300') },
                       React.createElement("span", { className: "font-bold" }, isCorrect ? '\u2705 ' : '\u274C '),
                       sc.explain
                     ),
-                    React.createElement("div", { className: "rounded-xl p-2.5 text-[11px] bg-blue-900/20 border border-blue-700/30 text-blue-300" },
+                    React.createElement("div", { className: "rounded-xl p-2.5 text-[0.6875rem] bg-blue-900/20 border border-blue-700/30 text-blue-300" },
                       React.createElement("span", { className: "font-bold" }, __alloT('stem.behaviorlab.better_approach', '\uD83D\uDCA1 Better approach: ')),
                       sc.better
                     ),
@@ -6563,7 +6563,7 @@ dataRef.current = d;
                         upd('blScenarioIdx', nextIdx);
                         upd('blScenarioAnswer', -1);
                       },
-                      className: "w-full py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-red-600 to-amber-700 text-white hover:from-red-600 hover:to-amber-700 transition-all"
+                      className: "w-full py-1.5 rounded-lg text-[0.6875rem] font-bold bg-gradient-to-r from-red-600 to-amber-700 text-white hover:from-red-600 hover:to-amber-700 transition-all"
                     }, blT('stem.behaviorlab.next_scenario', 'Next scenario \u2192 ({n}/{total})', { n: (blScenarioIdx + 1) % SCENARIO_CHALLENGES.length + 1, total: SCENARIO_CHALLENGES.length }))
                   )
                 );
@@ -6578,9 +6578,9 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.aba_history_timeline', "\uD83D\uDCC5 ABA History Timeline")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.aba_history_timeline', "\uD83D\uDCC5 ABA History Timeline")),
                 React.createElement("button", { onClick: function() { upd('blShowTimeline', !blShowTimeline); },
-                  className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
+                  className: "transition-colors text-[0.6875rem] text-blue-400 hover:text-blue-300"
                 }, blShowTimeline ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.explore_arrow', 'Explore \u2192'))
               ),
               blShowTimeline && React.createElement("div", { className: "relative ml-4" },
@@ -6601,8 +6601,8 @@ dataRef.current = d;
                       React.createElement("div", { className: "rounded-lg p-2 border " + eraColor },
                         React.createElement("div", { className: "flex items-center gap-1.5" },
                           React.createElement("span", { className: "text-lg" }, ms.icon),
-                          React.createElement("span", { className: "text-[11px] font-black text-amber-400 font-mono" }, ms.year),
-                          React.createElement("span", { className: "text-[11px] text-slate-100 leading-tight" }, ms.event)
+                          React.createElement("span", { className: "text-[0.6875rem] font-black text-amber-400 font-mono" }, ms.year),
+                          React.createElement("span", { className: "text-[0.6875rem] text-slate-100 leading-tight" }, ms.event)
                         )
                       )
                     );
@@ -6613,7 +6613,7 @@ dataRef.current = d;
                   [{ name: __alloT('stem.behaviorlab.foundations', 'Foundations'), color: 'bg-blue-500' }, { name: __alloT('stem.behaviorlab.growth', 'Growth'), color: 'bg-amber-500' }, { name: __alloT('stem.behaviorlab.applied', 'Applied'), color: 'bg-emerald-500' }, { name: __alloT('stem.behaviorlab.modern', 'Modern'), color: 'bg-violet-500' }].map(function(era) {
                     return React.createElement("div", { key: era.name, className: "flex items-center gap-1" },
                       React.createElement("div", { className: "w-2 h-2 rounded-full " + era.color }),
-                      React.createElement("span", { className: "text-[11px] text-slate-200" }, era.name)
+                      React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, era.name)
                     );
                   })
                 )
@@ -6625,9 +6625,9 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(16,185,129,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.quick_reference_cards', "\uD83D\uDCCB Quick Reference Cards")),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.quick_reference_cards', "\uD83D\uDCCB Quick Reference Cards")),
                 React.createElement("button", { onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
-                  className: "transition-colors text-[11px] text-emerald-400 hover:text-emerald-300"
+                  className: "transition-colors text-[0.6875rem] text-emerald-400 hover:text-emerald-300"
                 }, blShowQuickRef ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.view_arrow', 'View \u2192'))
               ),
               blShowQuickRef && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
@@ -6638,9 +6638,9 @@ dataRef.current = d;
                   },
                     React.createElement("div", { className: "flex items-center gap-1 mb-1" },
                       React.createElement("span", { className: "text-lg" }, card.icon),
-                      React.createElement("span", { className: "text-[11px] font-black", style: { color: card.color } }, card.title)
+                      React.createElement("span", { className: "text-[0.6875rem] font-black", style: { color: card.color } }, card.title)
                     ),
-                    React.createElement("div", { className: "text-[11px] text-slate-200 leading-relaxed" }, card.content)
+                    React.createElement("div", { className: "text-[0.6875rem] text-slate-200 leading-relaxed" }, card.content)
                   );
                 })
               )
@@ -6652,9 +6652,9 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(148,163,184,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.aba_glossary_n', '\uD83D\uDCD6 ABA glossary ({n} terms)', { n: ABA_GLOSSARY.length })),
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.aba_glossary_n', '\uD83D\uDCD6 ABA glossary ({n} terms)', { n: ABA_GLOSSARY.length })),
                 React.createElement("button", { onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
-                  className: "transition-colors text-[11px] text-slate-200 hover:text-slate-100"
+                  className: "transition-colors text-[0.6875rem] text-slate-200 hover:text-slate-100"
                 }, d.blShowGlossary ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.browse_arrow', 'Browse \u2192'))
               ),
               d.blShowGlossary && React.createElement("div", null,
@@ -6665,8 +6665,8 @@ dataRef.current = d;
                       onClick: function() { upd('blGlossaryIdx', isActive ? null : gli); },
                       className: "cursor-pointer rounded-lg p-1.5 border transition-all " + (isActive ? 'bg-slate-700 border-amber-500/50' : 'transition-colors bg-slate-700/20 border-slate-700 hover:border-slate-500')
                     },
-                      React.createElement("div", { className: "text-[11px] font-bold " + (isActive ? 'text-amber-300' : 'text-slate-100') }, gl.term),
-                      isActive && React.createElement("div", { className: "text-[11px] text-slate-200 mt-0.5" }, gl.def)
+                      React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isActive ? 'text-amber-300' : 'text-slate-100') }, gl.term),
+                      isActive && React.createElement("div", { className: "text-[0.6875rem] text-slate-200 mt-0.5" }, gl.def)
                     );
                   })
                 )
@@ -6682,13 +6682,13 @@ dataRef.current = d;
 
             },
 
-              React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.three_term_contingency_2', "\uD83D\uDD17 Three-Term Contingency")),
+              React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, __alloT('stem.behaviorlab.three_term_contingency_2', "\uD83D\uDD17 Three-Term Contingency")),
 
               React.createElement("div", { className: "flex items-center gap-2 justify-center flex-wrap" },
 
                 React.createElement("div", { className: "bg-blue-900/40 rounded-lg px-3 py-2 text-center border border-blue-700/30 min-w-[80px]" },
 
-                  React.createElement("p", { className: "text-[11px] text-blue-400 font-bold" }, __alloT('stem.behaviorlab.abc_antecedent', 'ANTECEDENT')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-blue-400 font-bold" }, __alloT('stem.behaviorlab.abc_antecedent', 'ANTECEDENT')),
 
                   React.createElement("p", { className: "text-xs text-blue-200 font-medium" }, currentLevel.contingency.a)
 
@@ -6698,7 +6698,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-amber-900/40 rounded-lg px-3 py-2 text-center border border-amber-700/30 min-w-[80px]" },
 
-                  React.createElement("p", { className: "text-[11px] text-amber-400 font-bold" }, __alloT('stem.behaviorlab.abc_behavior', 'BEHAVIOR')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-amber-400 font-bold" }, __alloT('stem.behaviorlab.abc_behavior', 'BEHAVIOR')),
 
                   React.createElement("p", { className: "text-xs text-amber-200 font-medium" }, currentLevel.contingency.b)
 
@@ -6708,7 +6708,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-emerald-900/40 rounded-lg px-3 py-2 text-center border border-emerald-700/30 min-w-[80px]" },
 
-                  React.createElement("p", { className: "text-[11px] text-emerald-400 font-bold" }, __alloT('stem.behaviorlab.abc_consequence', 'CONSEQUENCE')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-emerald-400 font-bold" }, __alloT('stem.behaviorlab.abc_consequence', 'CONSEQUENCE')),
 
                   React.createElement("p", { className: "text-xs text-emerald-200 font-medium" }, currentLevel.contingency.c)
 

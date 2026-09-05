@@ -6,7 +6,7 @@ exports[`brainAtlas render goldens > detail panel: cerebellum (ACCURACY LOCK —
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 157,
-  "sha": "3e82f31f489aa8e9",
+  "sha": "561ab2f1269530c9",
   "svgs": 0,
 }
 `;
@@ -16,8 +16,8 @@ exports[`brainAtlas render goldens > detail panel: dopamine (ACCURACY LOCK — n
   "buttons": 64,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 188,
-  "sha": "be0ebb4f1794297b",
+  "lengthBucket": 189,
+  "sha": "ff11fa80188855b6",
   "svgs": 1,
 }
 `;
@@ -28,7 +28,7 @@ exports[`brainAtlas render goldens > quiz mode renders a question + options 1`] 
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 146,
-  "sha": "b97ad989a2372c5e",
+  "sha": "b57a3ddc9211a056",
   "svgs": 0,
 }
 `;
@@ -105,7 +105,7 @@ exports[`brainAtlas render goldens > view: eegWaves renders + pins a digest 1`] 
   "canvases": 2,
   "inputs": 1,
   "lengthBucket": 181,
-  "sha": "bdb0fab06b8a846c",
+  "sha": "ef9c37480eba8057",
   "svgs": 0,
 }
 `;
@@ -182,7 +182,7 @@ exports[`brainAtlas render goldens > view: neuromyths renders + pins a digest 1`
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 188,
-  "sha": "94aff5c623fc9700",
+  "sha": "266cdef75374529b",
   "svgs": 0,
 }
 `;
@@ -193,7 +193,7 @@ exports[`brainAtlas render goldens > view: neuron renders + pins a digest 1`] = 
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 175,
-  "sha": "eb62784d68ecec46",
+  "sha": "dc543c60f95c58e6",
   "svgs": 0,
 }
 `;
@@ -203,8 +203,8 @@ exports[`brainAtlas render goldens > view: neurotransmitters renders + pins a di
   "buttons": 78,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 263,
-  "sha": "28ddf8d9c96d54bd",
+  "lengthBucket": 264,
+  "sha": "c49afa5d55a6849c",
   "svgs": 1,
 }
 `;
@@ -237,7 +237,7 @@ exports[`brainAtlas render goldens > view: stimulate renders + pins a digest 1`]
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 177,
-  "sha": "1addbee988ba0940",
+  "sha": "e376c25167d9b60d",
   "svgs": 0,
 }
 `;

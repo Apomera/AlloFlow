@@ -245,7 +245,7 @@
           t('stem.moleculeShelf.open_note', 'Molecule Shelf is open. Keep this AlloFlow window open too — it powers the AI coach.')),
         popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
           t('stem.moleculeShelf.closed_note', 'Molecule Shelf was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[11px] text-slate-400 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed' },
           t('stem.moleculeShelf.credit', 'Molecular viewer: Mol* (molstar.org), free and open source under the MIT license — the viewer used by the RCSB Protein Data Bank and PDBe. Structures are fetched from the PDB by ID. The viewer and structures load from the web, so the shelf needs internet.'))
       );
     }

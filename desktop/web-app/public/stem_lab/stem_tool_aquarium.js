@@ -12041,7 +12041,7 @@ window.StemLab = window.StemLab || {
       status === 'loading' && React.createElement('div', { role: 'status', 'aria-live': 'polite', className: 'absolute inset-0 flex items-center justify-center bg-slate-950/80 text-sm font-bold text-cyan-100' }, 'Building the 3D habitat'),
       status === 'error' && React.createElement('div', { role: 'status', className: 'absolute inset-0 flex items-center justify-center bg-slate-950/90 p-6 text-center text-sm text-amber-100' }, 'The 3D view could not start. The synchronized habitat plan and controls remain fully available.'),
       status === 'ready' && React.createElement('div', { className: 'absolute bottom-2 left-2 flex gap-1 rounded-lg bg-slate-950/75 p-1', role: 'group', 'aria-label': '3D camera presets' },
-        ['front', 'top', 'left'].map(function(view) { return React.createElement('button', { key: view, type: 'button', onClick: function() { if (engineRef.current) engineRef.current.setView(view); }, className: 'rounded border border-white/20 bg-white/10 px-2 py-1 text-[9px] font-bold text-white hover:bg-white/20' }, view.charAt(0).toUpperCase() + view.slice(1)); })
+        ['front', 'top', 'left'].map(function(view) { return React.createElement('button', { key: view, type: 'button', onClick: function() { if (engineRef.current) engineRef.current.setView(view); }, className: 'rounded border border-white/20 bg-white/10 px-2 py-1 text-[0.5625rem] font-bold text-white hover:bg-white/20' }, view.charAt(0).toUpperCase() + view.slice(1)); })
       )
     );
   }
@@ -19518,9 +19518,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                   }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
                   React.createElement("div", { className: "flex-1 min-w-0" },
-                    React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-cyan-700" }, __alloT('stem.aquarium.tank_systems_mission', 'Tank Systems Mission')),
+                    React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-[0.16em] text-cyan-700" }, __alloT('stem.aquarium.tank_systems_mission', 'Tank Systems Mission')),
                     React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-slate-900 leading-tight" }, __alloT('stem.aquarium.aquaculture_ocean_lab', "\uD83D\uDC20 Aquaculture & Ocean Lab")),
-                    React.createElement("p", { className: "text-[12px] sm:text-sm text-slate-700 leading-relaxed max-w-2xl mt-1" },
+                    React.createElement("p", { className: "text-[0.75rem] sm:text-sm text-slate-700 leading-relaxed max-w-2xl mt-1" },
                       __alloT('stem.aquarium.aquarium_focus_copy', 'Keep a miniature ecosystem stable: choose a tank, stock it carefully, read the water chemistry, and connect those choices to ocean-scale systems.'))
                   ),
 
@@ -19536,7 +19536,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     },
 
-                    className: "hidden sm:inline-flex items-center justify-center text-[11px] font-black text-cyan-900 bg-white/85 hover:bg-white border border-cyan-200 rounded-full px-3 py-1.5 transition-all shadow-sm"
+                    className: "hidden sm:inline-flex items-center justify-center text-[0.6875rem] font-black text-cyan-900 bg-white/85 hover:bg-white border border-cyan-200 rounded-full px-3 py-1.5 transition-all shadow-sm"
 
                   }, __alloT('stem.aquarium.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 
@@ -19550,8 +19550,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                     { k: 'day', label: __alloT('stem.aquarium.sim_day', 'Sim day'), value: selectedTank ? ('Day ' + (simDay || 0)) : __alloT('stem.aquarium.ready', 'Ready') }
                   ].map(function (stat) {
                     return React.createElement("div", { key: stat.k, className: "rounded-xl bg-white/80 border border-white/80 px-3 py-2 shadow-sm" },
-                      React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-500" }, stat.label),
-                      React.createElement("div", { className: "text-[12px] font-black text-slate-900 truncate" }, stat.value)
+                      React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-500" }, stat.label),
+                      React.createElement("div", { className: "text-[0.75rem] font-black text-slate-900 truncate" }, stat.value)
                     );
                   })
                 ),
@@ -19566,9 +19566,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                     },
                       React.createElement("div", { className: "flex items-center gap-2" },
                         React.createElement("span", { className: "text-lg", 'aria-hidden': 'true' }, route.icon),
-                        React.createElement("span", { className: "text-[12px] font-black" }, route.title)
+                        React.createElement("span", { className: "text-[0.75rem] font-black" }, route.title)
                       ),
-                      React.createElement("p", { className: "mt-1 text-[11px] leading-snug opacity-80" }, route.detail)
+                      React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-snug opacity-80" }, route.detail)
                     );
                   })
                 )
@@ -19604,7 +19604,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   role: "tab",
                   'aria-selected': mode === tab.id,
 
-                  className: "min-h-[48px] px-2 rounded-xl text-[12px] font-black transition-all duration-200 flex flex-col items-center justify-center gap-0.5 " + (mode === tab.id ? tab.activeClass : "text-cyan-900 hover:text-sky-800 hover:bg-white/75")
+                  className: "min-h-[48px] px-2 rounded-xl text-[0.75rem] font-black transition-all duration-200 flex flex-col items-center justify-center gap-0.5 " + (mode === tab.id ? tab.activeClass : "text-cyan-900 hover:text-sky-800 hover:bg-white/75")
 
                 }, React.createElement("span", { className: "text-base leading-none", 'aria-hidden': 'true' }, tab.icon), React.createElement("span", { className: "leading-tight" }, tab.label));
 
@@ -19659,9 +19659,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement("span", { className: "text-xl", 'aria-hidden': "true" }, "\uD83C\uDF93"),
                 React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("h3", { id: "aquarium-learning-path-title", className: "text-sm font-black text-cyan-950" }, "Guided Aquarium Learning Path"),
-                  React.createElement("p", { className: "text-[10px] text-cyan-800" }, "Learn by changing the ecosystem, observing evidence, and explaining the result.")
+                  React.createElement("p", { className: "text-[0.625rem] text-cyan-800" }, "Learn by changing the ecosystem, observing evidence, and explaining the result.")
                 ),
-                React.createElement("span", { className: "rounded-full bg-cyan-100 px-2 py-1 text-[10px] font-bold text-cyan-800" }, tutorialCompletedCount + "/" + TUTORIAL_STEPS.length + " evidence checks")
+                React.createElement("span", { className: "rounded-full bg-cyan-100 px-2 py-1 text-[0.625rem] font-bold text-cyan-800" }, tutorialCompletedCount + "/" + TUTORIAL_STEPS.length + " evidence checks")
               ),
               React.createElement("div", {
                 role: "progressbar",
@@ -19674,27 +19674,27 @@ var d = (labToolData && labToolData._aquarium) || {};
               React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white p-3" },
                 React.createElement("div", { className: "mb-2 flex items-start justify-between gap-2" },
                   React.createElement("h4", { className: "text-sm font-black text-slate-900" }, currentTutorialLesson.title),
-                  React.createElement("span", { className: "shrink-0 rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600" }, "Lesson " + (tutorialStep + 1) + " of " + TUTORIAL_STEPS.length)
+                  React.createElement("span", { className: "shrink-0 rounded bg-slate-100 px-2 py-0.5 text-[0.625rem] font-bold text-slate-600" }, "Lesson " + (tutorialStep + 1) + " of " + TUTORIAL_STEPS.length)
                 ),
-                React.createElement("p", { className: "mb-2 rounded-lg bg-cyan-50 p-2 text-[11px] font-semibold leading-relaxed text-cyan-950" }, currentTutorialLesson.concept),
+                React.createElement("p", { className: "mb-2 rounded-lg bg-cyan-50 p-2 text-[0.6875rem] font-semibold leading-relaxed text-cyan-950" }, currentTutorialLesson.concept),
                 React.createElement("div", { className: "grid gap-2 sm:grid-cols-2" },
-                  React.createElement("div", { className: "rounded-lg border border-blue-100 bg-blue-50 p-2 text-[10px] leading-relaxed text-blue-950" },
+                  React.createElement("div", { className: "rounded-lg border border-blue-100 bg-blue-50 p-2 text-[0.625rem] leading-relaxed text-blue-950" },
                     React.createElement("strong", { className: "block text-blue-800" }, "Do this"),
                     currentTutorialLesson.objective
                   ),
-                  React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50 p-2 text-[10px] leading-relaxed text-violet-950" },
+                  React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50 p-2 text-[0.625rem] leading-relaxed text-violet-950" },
                     React.createElement("strong", { className: "block text-violet-800" }, "Why it matters"),
                     currentTutorialLesson.why
                   )
                 ),
-                React.createElement("p", { className: "mt-2 text-[10px] leading-relaxed text-slate-600" },
+                React.createElement("p", { className: "mt-2 text-[0.625rem] leading-relaxed text-slate-600" },
                   React.createElement("strong", { className: "text-slate-800" }, "Observe: "),
                   currentTutorialLesson.observe
                 ),
                 React.createElement("div", {
                   role: "status",
                   'aria-live': "polite",
-                  className: "mt-2 rounded-lg border px-2 py-1.5 text-[10px] font-bold " + (currentTutorialEvidence.complete ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-amber-300 bg-amber-50 text-amber-900")
+                  className: "mt-2 rounded-lg border px-2 py-1.5 text-[0.625rem] font-bold " + (currentTutorialEvidence.complete ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-amber-300 bg-amber-50 text-amber-900")
                 }, (currentTutorialEvidence.complete ? "\u2705 Evidence ready: " : "\uD83D\uDD0E Evidence needed: ") + currentTutorialEvidence.label)
               ),
               React.createElement("button", {
@@ -19702,7 +19702,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 'aria-expanded': tutorialOutlineOpen,
                 'aria-controls': "aquarium-learning-outline",
                 onClick: function () { upd('tutorialOutlineOpen', !tutorialOutlineOpen); },
-                className: "mt-2 rounded-lg px-2 py-1 text-[10px] font-bold text-cyan-800 hover:bg-cyan-100"
+                className: "mt-2 rounded-lg px-2 py-1 text-[0.625rem] font-bold text-cyan-800 hover:bg-cyan-100"
               }, tutorialOutlineOpen ? "Hide all lessons" : "View all lessons"),
               tutorialOutlineOpen && React.createElement("ol", {
                 id: "aquarium-learning-outline",
@@ -19715,7 +19715,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     type: "button",
                     onClick: function () { selectTutorialLesson(lessonIndex); },
                     'aria-current': lessonIndex === tutorialStep ? "step" : undefined,
-                    className: "w-full rounded-lg border px-2 py-1.5 text-left text-[10px] font-bold " + (lessonIndex === tutorialStep ? "border-cyan-500 bg-cyan-100 text-cyan-950" : lessonRecorded ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50")
+                    className: "w-full rounded-lg border px-2 py-1.5 text-left text-[0.625rem] font-bold " + (lessonIndex === tutorialStep ? "border-cyan-500 bg-cyan-100 text-cyan-950" : lessonRecorded ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50")
                   }, (lessonRecorded ? "\u2705 " : lessonIndex === tutorialStep ? "\u25B6 " : "\u25CB ") + lesson.title)
                 );
               })),
@@ -19725,7 +19725,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 'aria-expanded': tutorialNotebookOpen,
                 'aria-controls': "aquarium-lesson-notebook",
                 onClick: function () { upd('tutorialNotebookOpen', !tutorialNotebookOpen); },
-                className: "mt-2 flex w-full items-center justify-between rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-[10px] font-bold text-indigo-900 hover:bg-indigo-100"
+                className: "mt-2 flex w-full items-center justify-between rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-[0.625rem] font-bold text-indigo-900 hover:bg-indigo-100"
               },
                 React.createElement("span", null, "\uD83D\uDCD3 Lesson lab notebook"),
                 React.createElement("span", { className: "rounded-full bg-white px-2 py-0.5" }, tutorialNotebookSavedCount + "/" + TUTORIAL_STEPS.length + " lessons with notes")
@@ -19738,13 +19738,13 @@ var d = (labToolData && labToolData._aquarium) || {};
               },
                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                   React.createElement("div", null,
-                    React.createElement("h5", { className: "text-[11px] font-black text-indigo-950" }, "Predict \u2192 Observe \u2192 Explain"),
-                    React.createElement("p", { className: "text-[9px] text-slate-500" }, "Notes autosave. Type, use your device's dictation, or leave them blank; writing is not required to operate the simulation.")
+                    React.createElement("h5", { className: "text-[0.6875rem] font-black text-indigo-950" }, "Predict \u2192 Observe \u2192 Explain"),
+                    React.createElement("p", { className: "text-[0.5625rem] text-slate-500" }, "Notes autosave. Type, use your device's dictation, or leave them blank; writing is not required to operate the simulation.")
                   ),
-                  React.createElement("span", { role: "status", 'aria-live': "polite", className: "rounded bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700" }, "Autosaved")
+                  React.createElement("span", { role: "status", 'aria-live': "polite", className: "rounded bg-emerald-50 px-2 py-0.5 text-[0.5625rem] font-bold text-emerald-700" }, "Autosaved")
                 ),
-                React.createElement("label", { htmlFor: "aquarium-note-prediction", className: "block text-[10px] font-black text-slate-800" }, "1. Prediction"),
-                React.createElement("p", { id: "aquarium-note-prediction-prompt", className: "text-[9px] leading-relaxed text-slate-600" }, currentTutorialLesson.predict),
+                React.createElement("label", { htmlFor: "aquarium-note-prediction", className: "block text-[0.625rem] font-black text-slate-800" }, "1. Prediction"),
+                React.createElement("p", { id: "aquarium-note-prediction-prompt", className: "text-[0.5625rem] leading-relaxed text-slate-600" }, currentTutorialLesson.predict),
                 React.createElement("textarea", {
                   id: "aquarium-note-prediction",
                   value: currentTutorialNote.prediction,
@@ -19753,14 +19753,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                   'aria-describedby': "aquarium-note-prediction-prompt",
                   onChange: function (event) { updateTutorialNote('prediction', event.target.value); },
                   placeholder: "I predict... because...",
-                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[10px] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[0.625rem] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 }),
                 React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
-                  React.createElement("label", { htmlFor: "aquarium-note-observation", className: "text-[10px] font-black text-slate-800" }, "2. Observation and evidence"),
+                  React.createElement("label", { htmlFor: "aquarium-note-observation", className: "text-[0.625rem] font-black text-slate-800" }, "2. Observation and evidence"),
                   React.createElement("button", {
                     type: "button",
                     onClick: captureTutorialObservation,
-                    className: "rounded-lg border border-indigo-400 bg-indigo-50 px-2 py-1 text-[9px] font-bold text-indigo-800 hover:bg-indigo-100"
+                    className: "rounded-lg border border-indigo-400 bg-indigo-50 px-2 py-1 text-[0.5625rem] font-bold text-indigo-800 hover:bg-indigo-100"
                   }, "\uD83D\uDCCB Capture live readings")
                 ),
                 React.createElement("textarea", {
@@ -19770,10 +19770,10 @@ var d = (labToolData && labToolData._aquarium) || {};
                   rows: 3,
                   onChange: function (event) { updateTutorialNote('observation', event.target.value); },
                   placeholder: "I observed... The reading changed from... to...",
-                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 font-mono text-[9px] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 font-mono text-[0.5625rem] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 }),
-                React.createElement("label", { htmlFor: "aquarium-note-explanation", className: "block text-[10px] font-black text-slate-800" }, "3. Claim, evidence, and reasoning"),
-                React.createElement("p", { id: "aquarium-note-explanation-prompt", className: "text-[9px] leading-relaxed text-slate-600" }, currentTutorialLesson.explain),
+                React.createElement("label", { htmlFor: "aquarium-note-explanation", className: "block text-[0.625rem] font-black text-slate-800" }, "3. Claim, evidence, and reasoning"),
+                React.createElement("p", { id: "aquarium-note-explanation-prompt", className: "text-[0.5625rem] leading-relaxed text-slate-600" }, currentTutorialLesson.explain),
                 React.createElement("textarea", {
                   id: "aquarium-note-explanation",
                   value: currentTutorialNote.explanation,
@@ -19782,26 +19782,26 @@ var d = (labToolData && labToolData._aquarium) || {};
                   'aria-describedby': "aquarium-note-explanation-prompt",
                   onChange: function (event) { updateTutorialNote('explanation', event.target.value); },
                   placeholder: "Claim: ... Evidence: ... Reasoning: ...",
-                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[10px] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[0.625rem] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 }),
-                React.createElement("p", { className: "text-right text-[9px] text-slate-600" }, (currentTutorialNote.prediction.length + currentTutorialNote.observation.length + currentTutorialNote.explanation.length) + " characters saved for this lesson")
+                React.createElement("p", { className: "text-right text-[0.5625rem] text-slate-600" }, (currentTutorialNote.prediction.length + currentTutorialNote.observation.length + currentTutorialNote.explanation.length) + " characters saved for this lesson")
               ),
               React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
                 React.createElement("button", {
                   type: "button",
                   disabled: tutorialStep === 0,
                   onClick: previousTutorial,
-                  className: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[0.625rem] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 }, "\u2190 Previous"),
                 React.createElement("button", {
                   type: "button",
                   onClick: advanceTutorial,
-                  className: "rounded-lg border px-3 py-1.5 text-[10px] font-black " + (currentTutorialEvidence.complete ? "border-cyan-700 bg-cyan-700 text-white hover:bg-cyan-800" : "border-amber-500 bg-amber-50 text-amber-900 hover:bg-amber-100")
+                  className: "rounded-lg border px-3 py-1.5 text-[0.625rem] font-black " + (currentTutorialEvidence.complete ? "border-cyan-700 bg-cyan-700 text-white hover:bg-cyan-800" : "border-amber-500 bg-amber-50 text-amber-900 hover:bg-amber-100")
                 }, currentTutorialEvidence.complete ? (tutorialStep === TUTORIAL_STEPS.length - 1 ? "Record evidence & finish" : "Record evidence & continue \u2192") : "Check objective"),
                 React.createElement("button", {
                   type: "button",
                   onClick: dismissTutorial,
-                  className: "rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-100"
+                  className: "rounded-lg px-3 py-1.5 text-[0.625rem] font-bold text-slate-600 hover:bg-slate-100"
                 }, "Hide learning path")
               )
             ),
@@ -19809,10 +19809,10 @@ var d = (labToolData && labToolData._aquarium) || {};
               type: "button",
               onClick: resumeTutorial,
               'aria-label': "Resume Aquarium guided learning path, " + tutorialCompletedCount + " of " + TUTORIAL_STEPS.length + " evidence checks recorded",
-              className: "mb-2 flex w-full items-center justify-between rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-left text-[11px] font-bold text-cyan-900 hover:bg-cyan-100"
+              className: "mb-2 flex w-full items-center justify-between rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-left text-[0.6875rem] font-bold text-cyan-900 hover:bg-cyan-100"
             },
               React.createElement("span", null, "\uD83C\uDF93 " + (tutorialCompletedCount === TUTORIAL_STEPS.length ? "Review completed learning path" : "Resume guided learning path")),
-              React.createElement("span", { className: "rounded-full bg-white px-2 py-0.5 text-[10px]" }, tutorialCompletedCount + "/" + TUTORIAL_STEPS.length)
+              React.createElement("span", { className: "rounded-full bg-white px-2 py-0.5 text-[0.625rem]" }, tutorialCompletedCount + "/" + TUTORIAL_STEPS.length)
             ),
 
             // ═══ ANATOMY VIEWER OVERLAY ═══
@@ -19861,7 +19861,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("h4", { className: "text-base font-bold text-white" }, sp.name),
 
-                    React.createElement("p", { className: "text-[11px] text-indigo-300/80" }, plan.label)
+                    React.createElement("p", { className: "text-[0.6875rem] text-indigo-300/80" }, plan.label)
 
                   ),
 
@@ -19985,9 +19985,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             React.createElement("div", { className: "bg-slate-800/95 backdrop-blur-sm rounded-lg p-2.5 border border-cyan-500/30 shadow-xl" },
 
-                              React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, part.name),
+                              React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-300 mb-0.5" }, part.name),
 
-                              React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, part.desc)
+                              React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" }, part.desc)
 
                             )
 
@@ -20021,9 +20021,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     },
 
-                      React.createElement("span", { className: "w-4 h-4 flex items-center justify-center rounded-full text-[11px] font-bold flex-shrink-0 " + (isHighlighted ? "bg-cyan-400 text-slate-900" : "bg-slate-600 text-slate-300") }, String(i + 1)),
+                      React.createElement("span", { className: "w-4 h-4 flex items-center justify-center rounded-full text-[0.6875rem] font-bold flex-shrink-0 " + (isHighlighted ? "bg-cyan-400 text-slate-900" : "bg-slate-600 text-slate-300") }, String(i + 1)),
 
-                      React.createElement("span", { className: "text-[11px] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-200") }, part.name)
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-200") }, part.name)
 
                     );
 
@@ -20041,9 +20041,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   sp.fact && React.createElement("div", { className: "bg-indigo-500/10 rounded-xl p-3 border border-indigo-400/20" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-indigo-300 mb-0.5" }, __alloT('stem.aquarium.did_you_know', "\uD83D\uDCA1 Did You Know?")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-indigo-300 mb-0.5" }, __alloT('stem.aquarium.did_you_know', "\uD83D\uDCA1 Did You Know?")),
 
-                    React.createElement("p", { className: "text-[11px] text-indigo-200/80 leading-relaxed" }, sp.fact)
+                    React.createElement("p", { className: "text-[0.6875rem] text-indigo-200/80 leading-relaxed" }, sp.fact)
 
                   ),
 
@@ -20051,9 +20051,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   extraInfo.override && React.createElement("div", { className: "bg-cyan-500/10 rounded-xl p-3 border border-cyan-400/20" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, __alloT('stem.aquarium.unique_anatomy', "\uD83E\uDDAC Unique Anatomy")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-300 mb-0.5" }, __alloT('stem.aquarium.unique_anatomy', "\uD83E\uDDAC Unique Anatomy")),
 
-                    React.createElement("p", { className: "text-[11px] text-cyan-200/80 leading-relaxed" }, extraInfo.override)
+                    React.createElement("p", { className: "text-[0.6875rem] text-cyan-200/80 leading-relaxed" }, extraInfo.override)
 
                   ),
 
@@ -20061,9 +20061,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   extraInfo.locomotion && React.createElement("div", { className: "bg-emerald-500/10 rounded-xl p-3 border border-emerald-400/20" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-300 mb-0.5" }, __alloT('stem.aquarium.how_it_moves', "\uD83C\uDFCA How It Moves")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-emerald-300 mb-0.5" }, __alloT('stem.aquarium.how_it_moves', "\uD83C\uDFCA How It Moves")),
 
-                    React.createElement("p", { className: "text-[11px] text-emerald-200/80 leading-relaxed" }, extraInfo.locomotion)
+                    React.createElement("p", { className: "text-[0.6875rem] text-emerald-200/80 leading-relaxed" }, extraInfo.locomotion)
 
                   ),
 
@@ -20071,11 +20071,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   sp.habitat && React.createElement("div", { className: "flex gap-2 flex-wrap" },
 
-                    React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-bold border border-blue-400/20" }, "\uD83C\uDF0A " + sp.habitat),
+                    React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-bold border border-blue-400/20" }, "\uD83C\uDF0A " + sp.habitat),
 
-                    sp.diet && React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-900 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
+                    sp.diet && React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-900 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
 
-                    sp.status && React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full font-bold " + (sp.status === 'CR' ? 'bg-red-500/20 text-red-300 border border-red-400/20' : sp.status === 'EN' ? 'bg-red-500/15 text-red-300 border border-red-400/20' : sp.status === 'VU' ? 'bg-amber-500/15 text-amber-300 border border-amber-400/20' : 'bg-green-500/15 text-green-300 border border-green-400/20') },
+                    sp.status && React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full font-bold " + (sp.status === 'CR' ? 'bg-red-500/20 text-red-300 border border-red-400/20' : sp.status === 'EN' ? 'bg-red-500/15 text-red-300 border border-red-400/20' : sp.status === 'VU' ? 'bg-amber-500/15 text-amber-300 border border-amber-400/20' : 'bg-green-500/15 text-green-300 border border-green-400/20') },
 
                       "\uD83D\uDEE1\uFE0F " + ({ LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' }[sp.status] || sp.status))
 
@@ -20115,11 +20115,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               React.createElement("div", { className: "lg:col-span-4 rounded-2xl border border-cyan-200 bg-white p-4 shadow-sm" },
 
-                React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[0.14em] text-cyan-700" }, __alloT('stem.aquarium.choose_your_tank', "\uD83D\uDC1F Choose Your Tank")),
+                React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-[0.14em] text-cyan-700" }, __alloT('stem.aquarium.choose_your_tank', "\uD83D\uDC1F Choose Your Tank")),
 
                 React.createElement("h4", { className: "text-lg font-black text-slate-900 mt-1" }, __alloT('stem.aquarium.starter_ecosystem', 'Starter ecosystem')),
 
-                React.createElement("p", { className: "text-[12px] text-slate-700 leading-relaxed mt-2" },
+                React.createElement("p", { className: "text-[0.75rem] text-slate-700 leading-relaxed mt-2" },
                   __alloT('stem.aquarium.starter_ecosystem_copy', 'Pick a habitat, add stock slowly, and watch the water chemistry respond. A smaller bioload gives the bacteria time to keep up.')),
 
                 React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2" },
@@ -20130,16 +20130,16 @@ var d = (labToolData && labToolData._aquarium) || {};
                     { label: __alloT('stem.aquarium.plant_bonus', 'Plant bonus'), value: 'Nitrate sink' }
                   ].map(function (item) {
                     return React.createElement("div", { key: item.label, className: "rounded-xl bg-cyan-50 border border-cyan-100 p-2" },
-                      React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-700" }, item.label),
-                      React.createElement("div", { className: "text-[12px] font-black text-slate-900" }, item.value)
+                      React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-cyan-700" }, item.label),
+                      React.createElement("div", { className: "text-[0.75rem] font-black text-slate-900" }, item.value)
                     );
                   })
                 ),
 
                 React.createElement("div", { className: "mt-4 rounded-xl bg-gradient-to-br from-slate-900 to-cyan-950 p-3 text-white overflow-hidden relative" },
                   React.createElement("div", { className: "absolute inset-0 opacity-30", style: { background: 'radial-gradient(circle at 20% 20%, rgba(34,211,238,0.55), transparent 35%), radial-gradient(circle at 85% 60%, rgba(14,165,233,0.35), transparent 34%)' } }),
-                  React.createElement("div", { className: "relative z-10 text-[11px] font-bold text-cyan-100" }, __alloT('stem.aquarium.first_lab_goal', 'First lab goal')),
-                  React.createElement("div", { className: "relative z-10 text-[13px] font-black mt-1" }, __alloT('stem.aquarium.first_lab_goal_copy', 'Reach Day 3 with stable ammonia and at least one healthy fish.'))
+                  React.createElement("div", { className: "relative z-10 text-[0.6875rem] font-bold text-cyan-100" }, __alloT('stem.aquarium.first_lab_goal', 'First lab goal')),
+                  React.createElement("div", { className: "relative z-10 text-[0.8125rem] font-black mt-1" }, __alloT('stem.aquarium.first_lab_goal_copy', 'Reach Day 3 with stable ammonia and at least one healthy fish.'))
                 )
 
               ),
@@ -20164,7 +20164,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement("div", { className: "absolute inset-x-0 top-0 h-7 opacity-40", style: { background: 'repeating-linear-gradient(110deg, rgba(255,255,255,0.45) 0 16px, rgba(255,255,255,0.08) 16px 34px)' } }),
                       React.createElement("div", { className: "absolute bottom-0 inset-x-0 h-6 bg-amber-900/30" }),
                       React.createElement("div", { className: "absolute left-4 top-4 text-3xl drop-shadow", 'aria-hidden': 'true' }, tank.name.split(' ')[0]),
-                      React.createElement("div", { className: "absolute right-3 top-3 rounded-full bg-white/85 text-[10px] font-black text-slate-800 px-2 py-1 border border-white" }, diffLabel),
+                      React.createElement("div", { className: "absolute right-3 top-3 rounded-full bg-white/85 text-[0.625rem] font-black text-slate-800 px-2 py-1 border border-white" }, diffLabel),
                       React.createElement("div", { className: "absolute left-5 bottom-4 flex gap-1" },
                         [0, 1, 2, 3, 4].map(function (i) {
                           return React.createElement("span", { key: i, className: "block w-1.5 h-1.5 rounded-full bg-white/70", style: { transform: 'translateY(' + ((i % 2) * 4) + 'px)' } });
@@ -20176,19 +20176,19 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement("div", { className: "flex items-start gap-2" },
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("div", { className: "text-sm font-black text-slate-900 truncate" }, tank.name.split(' ').slice(1).join(' ') || tank.name),
-                          React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mt-1" }, tank.desc)
+                          React.createElement("p", { className: "text-[0.6875rem] text-slate-600 leading-relaxed mt-1" }, tank.desc)
                         ),
-                        React.createElement("span", { className: "text-[11px] text-amber-600 font-black whitespace-nowrap" }, '\u2B50'.repeat(tank.diff))
+                        React.createElement("span", { className: "text-[0.6875rem] text-amber-600 font-black whitespace-nowrap" }, '\u2B50'.repeat(tank.diff))
                       ),
 
-                      React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold" },
+                      React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5 text-[0.625rem] font-bold" },
                         React.createElement("span", { className: "rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 px-2 py-1" }, tank.size + " gal"),
                         React.createElement("span", { className: "rounded-full bg-sky-50 text-sky-800 border border-sky-200 px-2 py-1" }, tank.temp + "\u00B0F"),
                         React.createElement("span", { className: "rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-1" }, "pH " + tank.pH),
                         tank.salinity > 0 && React.createElement("span", { className: "rounded-full bg-blue-50 text-blue-800 border border-blue-200 px-2 py-1" }, tank.salinity + " ppt")
                       ),
 
-                      React.createElement("div", { className: "mt-3 text-[11px] font-black text-cyan-800 group-hover:text-cyan-950" }, __alloT('stem.aquarium.start_this_tank', 'Start this tank') + ' \u2192')
+                      React.createElement("div", { className: "mt-3 text-[0.6875rem] font-black text-cyan-800 group-hover:text-cyan-950" }, __alloT('stem.aquarium.start_this_tank', 'Start this tank') + ' \u2192')
                     )
 
                   );
@@ -20808,7 +20808,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   className: "rounded-xl border border-cyan-300 bg-gradient-to-br from-cyan-50 to-sky-50"
                 },
                   React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800" }, __alloT('stem.aquarium.how_to_keep_this_tank_alive_click_to_t', "📜 How to keep this tank alive (click to toggle)")),
-                  React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
+                  React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[0.6875rem] text-slate-700" },
                     React.createElement("div", null,
                       React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, __alloT('stem.aquarium.goal', "🎯 Goal")),
                       React.createElement("p", { className: "leading-relaxed" },
@@ -20832,7 +20832,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.speed_control', "Speed control")), __alloT('stem.aquarium.pause_to_read_run_1_5_to_watch_the_cyc', ": pause to read, run 1×-5× to watch the cycle unfold. Days advance every tick."))
                       )
                     ),
-                    React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-cyan-200" },
+                    React.createElement("div", { className: "text-[0.625rem] italic text-slate-600 pt-1 border-t border-cyan-200" },
                       __alloT('stem.aquarium.tip_click_any_chemistry_card_below_for', "Tip: click any chemistry card below for its safe range + 'what to do' guide. The cards turn amber or red when a value drifts out of the safe zone."))
                   )
                 ),
@@ -20846,11 +20846,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                   className: "rounded-xl px-3 py-2 border flex items-center gap-3 flex-wrap",
                   style: { background: 'linear-gradient(135deg,' + waterStatus.bg + ' 0%,rgba(255,255,255,0.85) 100%)', borderColor: waterStatus.color + '66', borderLeft: '4px solid ' + waterStatus.color }
                 },
-                  React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider", style: { color: waterStatus.color } }, '💧 ' + waterStatus.label),
-                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '📅 Day ' + (simDay || 0))),
-                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🐟 ' + fishAlive + ' fish')),
-                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '📊 Bioload ' + loadPct + '%')),
-                  React.createElement("div", { className: "ml-auto text-[11px] italic text-slate-600 hidden sm:block" }, anyCrit ? 'Do a 25% water change now.' : anyWarn ? 'Watch the trends. Reduce feeding.' : 'Tank is stable. Keep going.')
+                  React.createElement("div", { className: "text-[0.6875rem] font-black uppercase tracking-wider", style: { color: waterStatus.color } }, '💧 ' + waterStatus.label),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-700" }, React.createElement("strong", null, '📅 Day ' + (simDay || 0))),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-700" }, React.createElement("strong", null, '🐟 ' + fishAlive + ' fish')),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-700" }, React.createElement("strong", null, '📊 Bioload ' + loadPct + '%')),
+                  React.createElement("div", { className: "ml-auto text-[0.6875rem] italic text-slate-600 hidden sm:block" }, anyCrit ? 'Do a 25% water change now.' : anyWarn ? 'Watch the trends. Reduce feeding.' : 'Tank is stable. Keep going.')
                 ),
 
                 // Tank header with time & speed
@@ -20881,7 +20881,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex items-center gap-1.5" },
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, __alloT('stem.aquarium.speed', "\u23F1 Speed:")),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 mr-1" }, __alloT('stem.aquarium.speed', "\u23F1 Speed:")),
 
                     [
 
@@ -20919,13 +20919,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     }),
 
-                    React.createElement("span", { className: "ml-auto text-[11px] text-slate-600 font-mono" }, "T:" + simTick)
+                    React.createElement("span", { className: "ml-auto text-[0.6875rem] text-slate-600 font-mono" }, "T:" + simTick)
 
                   ),
 
                   // Tank lighting toggle — day/moonlight/night
                   React.createElement("div", { className: "flex items-center gap-1.5 mt-2" },
-                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, __alloT('stem.aquarium.light_2', "\uD83D\uDCA1 Light:")),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 mr-1" }, __alloT('stem.aquarium.light_2', "\uD83D\uDCA1 Light:")),
                     [
                       { id: 'day', label: __alloT('stem.aquarium.day', '\u2600\uFE0F Day'), color: 'bg-amber-100 text-amber-700 border-amber-300' },
                       { id: 'blue', label: __alloT('stem.aquarium.moonlight', '\uD83D\uDD35 Moonlight'), color: 'bg-blue-100 text-blue-700 border-blue-300' },
@@ -20935,7 +20935,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       return React.createElement("button", {
                         key: lm.id,
                         onClick: function() { upd('tankLight', lm.id); sfxClick(); },
-                        className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-700 border-slate-500 hover:bg-slate-100')
+                        className: "px-2 py-1 text-[0.6875rem] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-700 border-slate-500 hover:bg-slate-100')
                       }, lm.label);
                     })
                   )
@@ -20952,7 +20952,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("h4", { className: "text-xs font-bold text-cyan-700" }, __alloT('stem.aquarium.water_chemistry', "\uD83E\uDDEA Water Chemistry")),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, __alloT('stem.aquarium.tap_any_card_for_details', "Tap any card for details"))
+                    React.createElement("span", { className: "text-[0.6875rem] text-slate-600 italic" }, __alloT('stem.aquarium.tap_any_card_for_details', "Tap any card for details"))
 
                   ),
 
@@ -21004,7 +21004,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, (CHEM_INFO[p.key] || {}).icon || '', ' ', p.label),
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600 font-bold" }, (CHEM_INFO[p.key] || {}).icon || '', ' ', p.label),
 
                         React.createElement("div", { className: "text-sm font-bold " + statusColor(st) }, statusIcon(st) + " " + p.val)
 
@@ -21015,8 +21015,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                   ),
                   chemHistory.length > 1 && React.createElement("div", { className: "mt-3 rounded-xl border border-cyan-200 bg-white/80 p-3", role: "group", 'aria-label': "Nitrogen cycle trends" },
                     React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
-                      React.createElement("h5", { className: "text-[11px] font-black text-cyan-800" }, "Nitrogen cycle - recent 48 hours"),
-                      React.createElement("span", { className: "text-[10px] text-slate-500" }, chemHistory.length + " readings")
+                      React.createElement("h5", { className: "text-[0.6875rem] font-black text-cyan-800" }, "Nitrogen cycle - recent 48 hours"),
+                      React.createElement("span", { className: "text-[0.625rem] text-slate-500" }, chemHistory.length + " readings")
                     ),
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
                       [
@@ -21030,7 +21030,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var thresholdY = H - pad - series.threshold / series.max * (H - pad * 2);
                         var latest = values[values.length - 1];
                         return React.createElement("div", { key: series.key, className: "rounded-lg bg-slate-50 border border-slate-200 p-2" },
-                          React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mb-1" }, series.label + ": " + latest.toFixed(series.key === "nitrate" ? 1 : 2) + " " + series.unit),
+                          React.createElement("div", { className: "text-[0.625rem] font-bold text-slate-700 mb-1" }, series.label + ": " + latest.toFixed(series.key === "nitrate" ? 1 : 2) + " " + series.unit),
                           React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: 42, role: "img", 'aria-label': series.label + " trend across " + values.length + " readings; latest " + latest.toFixed(2) + " " + series.unit },
                             React.createElement("line", { x1: 0, y1: thresholdY, x2: W, y2: thresholdY, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "3 2" }),
                             React.createElement("polyline", { points: pts, fill: "none", stroke: series.color, strokeWidth: 2, vectorEffect: "non-scaling-stroke" })
@@ -21058,11 +21058,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("h5", { className: "text-xs font-bold text-cyan-800" }, info.icon + " " + info.name),
 
-                        React.createElement("button", { type: "button", 'aria-label': "Close chemistry explanation", onClick: function () { upd('chemTooltip', null); }, className: "text-[11px] text-slate-600 hover:text-slate-600" }, "\u2715")
+                        React.createElement("button", { type: "button", 'aria-label': "Close chemistry explanation", onClick: function () { upd('chemTooltip', null); }, className: "text-[0.6875rem] text-slate-600 hover:text-slate-600" }, "\u2715")
 
                       ),
 
-                      React.createElement("div", { className: "space-y-2 text-[11px] leading-relaxed" },
+                      React.createElement("div", { className: "space-y-2 text-[0.6875rem] leading-relaxed" },
 
                         React.createElement("div", { className: "bg-cyan-50 rounded-lg p-2" },
 
@@ -21092,7 +21092,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           React.createElement("p", { className: "font-bold text-indigo-700 mb-0.5" }, __alloT('stem.aquarium.current_math', "\uD83E\uDDEE Current Math")),
 
-                          React.createElement("pre", { className: "text-[11px] text-slate-600 font-mono whitespace-pre-wrap" }, mathStr)
+                          React.createElement("pre", { className: "text-[0.6875rem] text-slate-600 font-mono whitespace-pre-wrap" }, mathStr)
 
                         ),
 
@@ -21112,13 +21112,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Nitrogen cycle mini-diagram
 
-                  !chemTooltip && React.createElement("div", { className: "mt-3 flex items-center justify-center gap-1 text-[11px] text-slate-600 bg-gradient-to-r from-red-50/50 via-orange-50/50 to-green-50/50 rounded-xl p-2.5 border border-slate-100" },
+                  !chemTooltip && React.createElement("div", { className: "mt-3 flex items-center justify-center gap-1 text-[0.6875rem] text-slate-600 bg-gradient-to-r from-red-50/50 via-orange-50/50 to-green-50/50 rounded-xl p-2.5 border border-slate-100" },
 
                     React.createElement("span", { className: "font-bold text-red-500" }, "NH\u2083"),
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.nitrosomonas_2', "Nitrosomonas")),
+                    React.createElement("span", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.nitrosomonas_2', "Nitrosomonas")),
 
                     React.createElement("span", null, " \u2192 "),
 
@@ -21126,7 +21126,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.nitrobacter_2', "Nitrobacter")),
+                    React.createElement("span", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.nitrobacter_2', "Nitrobacter")),
 
                     React.createElement("span", null, " \u2192 "),
 
@@ -21148,11 +21148,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                     React.createElement("div", null,
                       React.createElement("h3", { id: "aquarium-exchange-network-title", className: "text-sm font-black" }, "\uD83C\uDF0D Living Ecosystem Exchange Network"),
-                      React.createElement("p", { className: "mt-0.5 text-[10px] text-cyan-100" }, "Follow matter, energy, shelter, and health through the whole tank.")
+                      React.createElement("p", { className: "mt-0.5 text-[0.625rem] text-cyan-100" }, "Follow matter, energy, shelter, and health through the whole tank.")
                     ),
                     React.createElement("div", { className: "rounded-lg border border-cyan-400/30 bg-black/20 px-2 py-1 text-right" },
-                      React.createElement("div", { className: "text-[8px] font-bold uppercase tracking-wider text-cyan-300" }, "Focus"),
-                      React.createElement("div", { className: "text-[10px] font-black text-white" }, ecosystemFocusLabel)
+                      React.createElement("div", { className: "text-[0.5rem] font-bold uppercase tracking-wider text-cyan-300" }, "Focus"),
+                      React.createElement("div", { className: "text-[0.625rem] font-black text-white" }, ecosystemFocusLabel)
                     )
                   ),
 
@@ -21163,10 +21163,10 @@ var d = (labToolData && labToolData._aquarium) || {};
                         type: "button",
                         onClick: function () { upd('ecosystemExchangeView', viewOption.id); },
                         'aria-pressed': ecosystemExchangeView === viewOption.id,
-                        className: "rounded-full border px-2 py-1 text-[9px] font-black transition-all " + (ecosystemExchangeView === viewOption.id ? "border-cyan-300 bg-cyan-400 text-slate-950" : "border-white/20 bg-white/5 text-cyan-100 hover:bg-white/10")
+                        className: "rounded-full border px-2 py-1 text-[0.5625rem] font-black transition-all " + (ecosystemExchangeView === viewOption.id ? "border-cyan-300 bg-cyan-400 text-slate-950" : "border-white/20 bg-white/5 text-cyan-100 hover:bg-white/10")
                       }, viewOption.label);
                     }),
-                    React.createElement("span", { className: "ml-1 text-[9px] font-bold text-cyan-200" }, ecosystemViewData.phaseLabel)
+                    React.createElement("span", { className: "ml-1 text-[0.5625rem] font-bold text-cyan-200" }, ecosystemViewData.phaseLabel)
                   ),
 
                   React.createElement("div", { className: "mt-2 flex flex-wrap gap-1", role: "group", 'aria-label': "Focus an ecosystem role" },
@@ -21176,7 +21176,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         type: "button",
                         onClick: function () { updMulti({ ecosystemFocusType: focusOption.id, ecosystemFocusId: null }); },
                         'aria-pressed': ecosystemFocusType === focusOption.id && !ecosystemFocusId,
-                        className: "rounded-md border px-2 py-1 text-[9px] font-bold " + (ecosystemFocusType === focusOption.id && !ecosystemFocusId ? "border-emerald-300 bg-emerald-400/25 text-emerald-100" : "border-white/15 bg-black/10 text-slate-200 hover:bg-white/10")
+                        className: "rounded-md border px-2 py-1 text-[0.5625rem] font-bold " + (ecosystemFocusType === focusOption.id && !ecosystemFocusId ? "border-emerald-300 bg-emerald-400/25 text-emerald-100" : "border-white/15 bg-black/10 text-slate-200 hover:bg-white/10")
                       }, focusOption.label);
                     })
                   ),
@@ -21195,13 +21195,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                           className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'fish' ? "border-cyan-300 bg-cyan-400/25 ring-2 ring-cyan-300/30" : "border-cyan-500/30 bg-cyan-950/70")
                         },
                           React.createElement("div", { className: "text-2xl", "aria-hidden": "true" }, "\uD83D\uDC1F"),
-                          React.createElement("div", { className: "text-[10px] font-black" }, ecosystemFocusType === 'fish' && ecosystemFocusId ? ecosystemFocusLabel : "Organisms"),
-                          React.createElement("div", { className: "text-[8px] text-cyan-200" }, ecosystemFocusedFishLoad.toFixed(1) + " bioload")
+                          React.createElement("div", { className: "text-[0.625rem] font-black" }, ecosystemFocusType === 'fish' && ecosystemFocusId ? ecosystemFocusLabel : "Organisms"),
+                          React.createElement("div", { className: "text-[0.5rem] text-cyan-200" }, ecosystemFocusedFishLoad.toFixed(1) + " bioload")
                         ),
                         React.createElement("div", { className: "flex flex-col items-center justify-center rounded-lg border border-rose-400/25 bg-rose-500/10 px-1 text-center" },
                           React.createElement("div", { className: "text-lg text-rose-300", "aria-hidden": "true" }, "\u2192"),
-                          React.createElement("div", { className: "text-[9px] font-black text-rose-200" }, "WASTE"),
-                          React.createElement("div", { className: "text-[8px] text-rose-100" }, "+" + ecosystemViewData.fishAmmonia.toFixed(3) + " NH\u2083")
+                          React.createElement("div", { className: "text-[0.5625rem] font-black text-rose-200" }, "WASTE"),
+                          React.createElement("div", { className: "text-[0.5rem] text-rose-100" }, "+" + ecosystemViewData.fishAmmonia.toFixed(3) + " NH\u2083")
                         ),
                         React.createElement("button", {
                           type: "button",
@@ -21210,13 +21210,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                           className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'bacteria' ? "border-violet-300 bg-violet-400/25 ring-2 ring-violet-300/30" : "border-violet-500/30 bg-violet-950/60")
                         },
                           React.createElement("div", { className: "text-2xl", "aria-hidden": "true" }, "\uD83E\uDDA0"),
-                          React.createElement("div", { className: "text-[10px] font-black" }, "Nitrifying bacteria"),
-                          React.createElement("div", { className: "text-[8px] text-violet-200" }, "NH\u2083 \u2192 NO\u2082 \u2192 NO\u2083")
+                          React.createElement("div", { className: "text-[0.625rem] font-black" }, "Nitrifying bacteria"),
+                          React.createElement("div", { className: "text-[0.5rem] text-violet-200" }, "NH\u2083 \u2192 NO\u2082 \u2192 NO\u2083")
                         ),
                         React.createElement("div", { className: "flex flex-col items-center justify-center rounded-lg border border-amber-400/25 bg-amber-500/10 px-1 text-center" },
                           React.createElement("div", { className: "text-lg text-amber-300", "aria-hidden": "true" }, "\u2192"),
-                          React.createElement("div", { className: "text-[9px] font-black text-amber-200" }, "NUTRIENT"),
-                          React.createElement("div", { className: "text-[8px] text-amber-100" }, ecosystemViewData.plantNitrate.toFixed(3) + " NO\u2083 used")
+                          React.createElement("div", { className: "text-[0.5625rem] font-black text-amber-200" }, "NUTRIENT"),
+                          React.createElement("div", { className: "text-[0.5rem] text-amber-100" }, ecosystemViewData.plantNitrate.toFixed(3) + " NO\u2083 used")
                         ),
                         React.createElement("button", {
                           type: "button",
@@ -21225,15 +21225,15 @@ var d = (labToolData && labToolData._aquarium) || {};
                           className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'plant' ? "border-emerald-300 bg-emerald-400/25 ring-2 ring-emerald-300/30" : "border-emerald-500/30 bg-emerald-950/60")
                         },
                           React.createElement("div", { className: "text-2xl", "aria-hidden": "true" }, "\uD83C\uDF3F"),
-                          React.createElement("div", { className: "text-[10px] font-black" }, ecosystemFocusType === 'plant' && ecosystemFocusId ? ecosystemFocusLabel : "Plants"),
-                          React.createElement("div", { className: "text-[8px] text-emerald-200" }, ecosystemPlantTotals.biomass.toFixed(1) + " biomass")
+                          React.createElement("div", { className: "text-[0.625rem] font-black" }, ecosystemFocusType === 'plant' && ecosystemFocusId ? ecosystemFocusLabel : "Plants"),
+                          React.createElement("div", { className: "text-[0.5rem] text-emerald-200" }, ecosystemPlantTotals.biomass.toFixed(1) + " biomass")
                         )
                       ),
 
                       React.createElement("div", { className: "aquarium-exchange-row", style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
                         React.createElement("div", { className: "rounded-lg border border-emerald-400/25 bg-emerald-500/10 p-1.5 text-center" },
-                          React.createElement("div", { className: "text-[9px] font-black text-emerald-200" }, "O\u2082 + SHELTER"),
-                          React.createElement("div", { className: "text-[8px] text-emerald-100" }, "+" + ecosystemViewData.plantOxygen.toFixed(3) + " O\u2082 \u2022 +" + ecosystemShelterBonus + "% fry")
+                          React.createElement("div", { className: "text-[0.5625rem] font-black text-emerald-200" }, "O\u2082 + SHELTER"),
+                          React.createElement("div", { className: "text-[0.5rem] text-emerald-100" }, "+" + ecosystemViewData.plantOxygen.toFixed(3) + " O\u2082 \u2022 +" + ecosystemShelterBonus + "% fry")
                         ),
                         React.createElement("div", { className: "flex items-center justify-center text-xl font-black text-emerald-300", "aria-hidden": "true" }, "\u2190"),
                         React.createElement("button", {
@@ -21243,20 +21243,20 @@ var d = (labToolData && labToolData._aquarium) || {};
                           className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'water' ? "border-sky-300 bg-sky-400/25 ring-2 ring-sky-300/30" : "border-sky-500/30 bg-sky-950/60")
                         },
                           React.createElement("div", { className: "text-xl", "aria-hidden": "true" }, "\uD83D\uDCA7"),
-                          React.createElement("div", { className: "text-[10px] font-black" }, "Shared water"),
-                          React.createElement("div", { className: "text-[8px] text-sky-200" }, waterChem.dissolvedO2.toFixed(1) + " O\u2082 \u2022 " + waterChem.co2.toFixed(1) + " CO\u2082")
+                          React.createElement("div", { className: "text-[0.625rem] font-black" }, "Shared water"),
+                          React.createElement("div", { className: "text-[0.5rem] text-sky-200" }, waterChem.dissolvedO2.toFixed(1) + " O\u2082 \u2022 " + waterChem.co2.toFixed(1) + " CO\u2082")
                         ),
                         React.createElement("div", { className: "flex items-center justify-center text-xl font-black text-cyan-300", "aria-hidden": "true" }, "\u2192"),
                         React.createElement("div", { className: "rounded-lg border border-cyan-400/25 bg-cyan-500/10 p-1.5 text-center" },
-                          React.createElement("div", { className: "text-[9px] font-black text-cyan-200" }, "CO\u2082 + RESPIRATION"),
-                          React.createElement("div", { className: "text-[8px] text-cyan-100" }, "+" + ecosystemViewData.fishCO2.toFixed(3) + " fish CO\u2082 \u2022 -" + ecosystemViewData.plantOxygenUse.toFixed(3) + " O\u2082")
+                          React.createElement("div", { className: "text-[0.5625rem] font-black text-cyan-200" }, "CO\u2082 + RESPIRATION"),
+                          React.createElement("div", { className: "text-[0.5rem] text-cyan-100" }, "+" + ecosystemViewData.fishCO2.toFixed(3) + " fish CO\u2082 \u2022 -" + ecosystemViewData.plantOxygenUse.toFixed(3) + " O\u2082")
                         )
                       ),
 
                       React.createElement("div", { className: "aquarium-exchange-row", style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
                         React.createElement("div", { className: "rounded-lg border border-lime-400/25 bg-lime-500/10 p-1.5 text-center" },
-                          React.createElement("div", { className: "text-[9px] font-black text-lime-200" }, "PLANT COMPETITION"),
-                          React.createElement("div", { className: "text-[8px] text-lime-100" }, "-" + ecosystemAlgaeSuppression + "% algae growth")
+                          React.createElement("div", { className: "text-[0.5625rem] font-black text-lime-200" }, "PLANT COMPETITION"),
+                          React.createElement("div", { className: "text-[0.5rem] text-lime-100" }, "-" + ecosystemAlgaeSuppression + "% algae growth")
                         ),
                         React.createElement("div", { className: "flex items-center justify-center text-xl font-black text-lime-300", "aria-hidden": "true" }, "\u2192"),
                         React.createElement("button", {
@@ -21266,30 +21266,30 @@ var d = (labToolData && labToolData._aquarium) || {};
                           className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'algae' ? "border-lime-300 bg-lime-400/25 ring-2 ring-lime-300/30" : "border-lime-500/30 bg-lime-950/60")
                         },
                           React.createElement("div", { className: "text-xl", "aria-hidden": "true" }, "\uD83D\uDFE2"),
-                          React.createElement("div", { className: "text-[10px] font-black" }, "Algae"),
-                          React.createElement("div", { className: "text-[8px] text-lime-200" }, algaeLevel.toFixed(1) + "% level")
+                          React.createElement("div", { className: "text-[0.625rem] font-black" }, "Algae"),
+                          React.createElement("div", { className: "text-[0.5rem] text-lime-200" }, algaeLevel.toFixed(1) + "% level")
                         ),
                         React.createElement("div", { className: "flex flex-col items-center justify-center rounded-lg border border-teal-400/25 bg-teal-500/10 p-1 text-center" },
                           React.createElement("div", { className: "text-lg font-black text-teal-300", "aria-hidden": "true" }, "\u2192"),
-                          React.createElement("div", { className: "text-[8px] text-teal-100" }, ecosystemAlgaeGrazed.toFixed(3) + " grazed")
+                          React.createElement("div", { className: "text-[0.5rem] text-teal-100" }, ecosystemAlgaeGrazed.toFixed(3) + " grazed")
                         ),
                         React.createElement("div", { className: "rounded-lg border border-teal-400/25 bg-teal-500/10 p-1.5 text-center" },
-                          React.createElement("div", { className: "text-[9px] font-black text-teal-200" }, "\uD83D\uDC1F GRAZERS"),
-                          React.createElement("div", { className: "text-[8px] text-teal-100" }, ecosystemGrazerCount + " algae/biofilm feeders")
+                          React.createElement("div", { className: "text-[0.5625rem] font-black text-teal-200" }, "\uD83D\uDC1F GRAZERS"),
+                          React.createElement("div", { className: "text-[0.5rem] text-teal-100" }, ecosystemGrazerCount + " algae/biofilm feeders")
                         )
                       )
                     )
                   ),
 
-                  ecosystemFocusId && React.createElement("div", { className: "mt-2 rounded-lg border border-fuchsia-300/30 bg-fuchsia-400/10 p-2 text-[9px] text-fuchsia-100", role: "status" },
+                  ecosystemFocusId && React.createElement("div", { className: "mt-2 rounded-lg border border-fuchsia-300/30 bg-fuchsia-400/10 p-2 text-[0.5625rem] text-fuchsia-100", role: "status" },
                     "\uD83D\uDD0E Rates are traced through ", React.createElement("strong", null, ecosystemFocusLabel), ". Other nodes remain visible so its dependencies are not taken out of context."
                   ),
 
                   React.createElement("details", { className: "mt-3 rounded-xl border border-cyan-300/25 bg-black/20 p-2.5", open: true },
-                    React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-cyan-100" }, "\u2696 Matter budget ledger — last aquarium-hour tick"),
-                    React.createElement("p", { className: "mt-1 text-[8px] leading-relaxed text-slate-300" }, "Each pool follows the same equation: sources − sinks = modeled net. The observed change comes from the stored chemistry reading after rounding and safety bounds."),
+                    React.createElement("summary", { className: "cursor-pointer text-[0.625rem] font-black text-cyan-100" }, "\u2696 Matter budget ledger — last aquarium-hour tick"),
+                    React.createElement("p", { className: "mt-1 text-[0.5rem] leading-relaxed text-slate-300" }, "Each pool follows the same equation: sources − sinks = modeled net. The observed change comes from the stored chemistry reading after rounding and safety bounds."),
                     ecosystemMatterBudgets.length === 0
-                      ? React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-white/20 p-3 text-center text-[9px] text-slate-300" }, "Run one aquarium-hour tick to audit oxygen, carbon, and nitrogen flows.")
+                      ? React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-white/20 p-3 text-center text-[0.5625rem] text-slate-300" }, "Run one aquarium-hour tick to audit oxygen, carbon, and nitrogen flows.")
                       : React.createElement("div", { className: "mt-2 grid gap-2 lg:grid-cols-2", role: "list", 'aria-label': "Matter source and sink budgets for the last aquarium-hour tick" },
                         ecosystemMatterBudgets.map(function(budget) {
                           var observedPrefix = budget.observedNet > 0 ? '+' : '';
@@ -21305,12 +21305,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                           },
                             React.createElement("div", { className: "flex items-start justify-between gap-2" },
                               React.createElement("div", null,
-                                React.createElement("h5", { className: "text-[9px] font-black text-white" }, budget.label),
-                                React.createElement("div", { className: "text-[7px] text-slate-400" }, budget.unit)
+                                React.createElement("h5", { className: "text-[0.5625rem] font-black text-white" }, budget.label),
+                                React.createElement("div", { className: "text-[0.4375rem] text-slate-400" }, budget.unit)
                               ),
                               React.createElement("div", { className: "text-right" },
-                                React.createElement("div", { className: "text-[11px] font-black " + (budget.direction === 'rise' ? "text-cyan-300" : budget.direction === 'fall' ? "text-fuchsia-300" : "text-slate-300") }, directionSymbol + " " + observedPrefix + budget.observedNet.toFixed(3)),
-                                React.createElement("div", { className: "text-[7px] text-slate-400" }, "observed pool change")
+                                React.createElement("div", { className: "text-[0.6875rem] font-black " + (budget.direction === 'rise' ? "text-cyan-300" : budget.direction === 'fall' ? "text-fuchsia-300" : "text-slate-300") }, directionSymbol + " " + observedPrefix + budget.observedNet.toFixed(3)),
+                                React.createElement("div", { className: "text-[0.4375rem] text-slate-400" }, "observed pool change")
                               )
                             ),
                             React.createElement("div", { className: "mt-2", role: "img", 'aria-label': budget.label + " magnitude comparison: sources " + budget.sourceTotal.toFixed(3) + ", sinks " + budget.sinkTotal.toFixed(3) },
@@ -21322,36 +21322,36 @@ var d = (labToolData && labToolData._aquarium) || {};
                                   React.createElement("span", { className: "h-full rounded-r-full bg-gradient-to-r from-rose-300 to-rose-600", style: { width: sinkBarWidth + '%' } })
                                 )
                               ),
-                              React.createElement("div", { className: "mt-0.5 grid grid-cols-2 text-[7px] font-bold" },
+                              React.createElement("div", { className: "mt-0.5 grid grid-cols-2 text-[0.4375rem] font-bold" },
                                 React.createElement("span", { className: "text-right text-emerald-200 pr-1" }, "sources"),
                                 React.createElement("span", { className: "text-rose-200 pl-1" }, "sinks")
                               )
                             ),
                             React.createElement("div", { className: "aquarium-budget-flow mt-2" },
                               React.createElement("div", { className: "rounded-md border border-emerald-300/20 bg-emerald-400/10 p-1.5" },
-                                React.createElement("div", { className: "text-[7px] font-black uppercase text-emerald-200" }, "Sources +" + budget.sourceTotal.toFixed(3)),
+                                React.createElement("div", { className: "text-[0.4375rem] font-black uppercase text-emerald-200" }, "Sources +" + budget.sourceTotal.toFixed(3)),
                                 budget.sources.length
                                   ? React.createElement("ul", { className: "mt-1 space-y-0.5" }, budget.sources.map(function(sourceItem) {
-                                      return React.createElement("li", { key: sourceItem.label, className: "flex justify-between gap-1 text-[7px] text-emerald-50" }, React.createElement("span", null, sourceItem.label), React.createElement("span", { className: "font-mono" }, sourceItem.value.toFixed(3)));
+                                      return React.createElement("li", { key: sourceItem.label, className: "flex justify-between gap-1 text-[0.4375rem] text-emerald-50" }, React.createElement("span", null, sourceItem.label), React.createElement("span", { className: "font-mono" }, sourceItem.value.toFixed(3)));
                                     }))
-                                  : React.createElement("div", { className: "mt-1 text-[7px] text-emerald-100/60" }, "No measured source")
+                                  : React.createElement("div", { className: "mt-1 text-[0.4375rem] text-emerald-100/60" }, "No measured source")
                               ),
                               React.createElement("div", { className: "aquarium-budget-arrow", 'aria-hidden': "true" }, "\u2192"),
                               React.createElement("div", { className: "rounded-md border border-rose-300/20 bg-rose-400/10 p-1.5" },
-                                React.createElement("div", { className: "text-[7px] font-black uppercase text-rose-200" }, "Sinks −" + budget.sinkTotal.toFixed(3)),
+                                React.createElement("div", { className: "text-[0.4375rem] font-black uppercase text-rose-200" }, "Sinks −" + budget.sinkTotal.toFixed(3)),
                                 budget.sinks.length
                                   ? React.createElement("ul", { className: "mt-1 space-y-0.5" }, budget.sinks.map(function(sinkItem) {
-                                      return React.createElement("li", { key: sinkItem.label, className: "flex justify-between gap-1 text-[7px] text-rose-50" }, React.createElement("span", null, sinkItem.label), React.createElement("span", { className: "font-mono" }, sinkItem.value.toFixed(3)));
+                                      return React.createElement("li", { key: sinkItem.label, className: "flex justify-between gap-1 text-[0.4375rem] text-rose-50" }, React.createElement("span", null, sinkItem.label), React.createElement("span", { className: "font-mono" }, sinkItem.value.toFixed(3)));
                                     }))
-                                  : React.createElement("div", { className: "mt-1 text-[7px] text-rose-100/60" }, "No measured sink")
+                                  : React.createElement("div", { className: "mt-1 text-[0.4375rem] text-rose-100/60" }, "No measured sink")
                               )
                             ),
-                            React.createElement("div", { className: "mt-1.5 rounded bg-black/25 px-1.5 py-1 font-mono text-[7px] text-slate-200" }, budget.sourceTotal.toFixed(3) + " − " + budget.sinkTotal.toFixed(3) + " = " + modeledPrefix + budget.modeledNet.toFixed(3) + " modeled"),
-                            Math.abs(budget.residual) > 0.011 && React.createElement("div", { className: "mt-1 text-[7px] leading-relaxed text-amber-200" }, "Observed-model residual " + (budget.residual > 0 ? "+" : "") + budget.residual.toFixed(3) + ". Check rounding, concentration bounds, or unmodeled boundary exchange.")
+                            React.createElement("div", { className: "mt-1.5 rounded bg-black/25 px-1.5 py-1 font-mono text-[0.4375rem] text-slate-200" }, budget.sourceTotal.toFixed(3) + " − " + budget.sinkTotal.toFixed(3) + " = " + modeledPrefix + budget.modeledNet.toFixed(3) + " modeled"),
+                            Math.abs(budget.residual) > 0.011 && React.createElement("div", { className: "mt-1 text-[0.4375rem] leading-relaxed text-amber-200" }, "Observed-model residual " + (budget.residual > 0 ? "+" : "") + budget.residual.toFixed(3) + ". Check rounding, concentration bounds, or unmodeled boundary exchange.")
                           );
                         })
                       ),
-                    React.createElement("div", { className: "mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[7px] text-slate-400" },
+                    React.createElement("div", { className: "mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.4375rem] text-slate-400" },
                       React.createElement("span", null, "Habitat service: +" + ecosystemShelterBonus + "% fry survival"),
                       React.createElement("span", null, "Competition: " + ecosystemAlgaeSuppression + "% algae suppression"),
                       React.createElement("span", null, "Rates are teaching estimates; trends matter more than false precision.")
@@ -21360,25 +21360,25 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
                     React.createElement("div", { className: "rounded-lg border border-rose-300/25 bg-rose-500/10 p-2" },
-                      React.createElement("div", { className: "text-[9px] font-black text-rose-200" }, "Without these plants next tick"),
-                      React.createElement("div", { className: "mt-1 text-[9px] leading-relaxed text-rose-50" }, "O\u2082 about " + withoutPlantsNextOxygen.toFixed(2) + "; nitrate about " + withoutPlantsNextNitrate.toFixed(1) + "; shelter bonus 0%.")
+                      React.createElement("div", { className: "text-[0.5625rem] font-black text-rose-200" }, "Without these plants next tick"),
+                      React.createElement("div", { className: "mt-1 text-[0.5625rem] leading-relaxed text-rose-50" }, "O\u2082 about " + withoutPlantsNextOxygen.toFixed(2) + "; nitrate about " + withoutPlantsNextNitrate.toFixed(1) + "; shelter bonus 0%.")
                     ),
                     React.createElement("div", { className: "rounded-lg border border-sky-300/25 bg-sky-500/10 p-2" },
-                      React.createElement("div", { className: "text-[9px] font-black text-sky-200" }, "Without these organisms next tick"),
-                      React.createElement("div", { className: "mt-1 text-[9px] leading-relaxed text-sky-50" }, "Ammonia about " + withoutFishNextAmmonia.toFixed(2) + "; O\u2082 demand falls by " + ecosystemViewData.fishOxygen.toFixed(3) + ".")
+                      React.createElement("div", { className: "text-[0.5625rem] font-black text-sky-200" }, "Without these organisms next tick"),
+                      React.createElement("div", { className: "mt-1 text-[0.5625rem] leading-relaxed text-sky-50" }, "Ammonia about " + withoutFishNextAmmonia.toFixed(2) + "; O\u2082 demand falls by " + ecosystemViewData.fishOxygen.toFixed(3) + ".")
                     ),
                     React.createElement("div", { className: "rounded-lg border border-lime-300/25 bg-lime-500/10 p-2" },
-                      React.createElement("div", { className: "text-[9px] font-black text-lime-200" }, "Competition & grazing"),
-                      React.createElement("div", { className: "mt-1 text-[9px] leading-relaxed text-lime-50" }, "Plants suppress algae " + ecosystemAlgaeSuppression + "%; " + ecosystemGrazerCount + " grazers consumed " + ecosystemAlgaeGrazed.toFixed(3) + " last tick.")
+                      React.createElement("div", { className: "text-[0.5625rem] font-black text-lime-200" }, "Competition & grazing"),
+                      React.createElement("div", { className: "mt-1 text-[0.5625rem] leading-relaxed text-lime-50" }, "Plants suppress algae " + ecosystemAlgaeSuppression + "%; " + ecosystemGrazerCount + " grazers consumed " + ecosystemAlgaeGrazed.toFixed(3) + " last tick.")
                     )
                   ),
 
                   React.createElement("details", { className: "mt-3 rounded-lg border border-white/15 bg-black/20 p-2", open: lastEcosystemExchange !== null },
-                    React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-cyan-100" }, "\uD83D\uDD0D Why did the ecosystem change?"),
+                    React.createElement("summary", { className: "cursor-pointer text-[0.625rem] font-black text-cyan-100" }, "\uD83D\uDD0D Why did the ecosystem change?"),
                     React.createElement("ul", { className: "mt-2 space-y-1", role: "log", 'aria-live': "polite" }, ecosystemCausalReasons.map(function (reason, reasonIndex) {
-                      return React.createElement("li", { key: 'exchange-reason-' + reasonIndex, className: "rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[9px] leading-relaxed text-slate-100" }, reason);
+                      return React.createElement("li", { key: 'exchange-reason-' + reasonIndex, className: "rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[0.5625rem] leading-relaxed text-slate-100" }, reason);
                     })),
-                    lastEcosystemExchange && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1 text-[8px] text-slate-300" },
+                    lastEcosystemExchange && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1 text-[0.5rem] text-slate-300" },
                       Object.keys(lastEcosystemExchange.chemistryDelta || {}).map(function (chemistryKey) {
                         var deltaValue = lastEcosystemExchange.chemistryDelta[chemistryKey];
                         return React.createElement("span", { key: chemistryKey, className: "rounded bg-black/30 px-1.5 py-0.5" }, chemistryKey + " " + (deltaValue > 0 ? "+" : "") + deltaValue);
@@ -21393,7 +21393,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                     React.createElement("div", null,
                       React.createElement("h4", { id: "aquarium-vitality-map-title", className: "text-xs font-black text-fuchsia-100" }, "\uD83D\uDC93 Living System Vitality Map"),
-                      React.createElement("p", { className: "mt-0.5 text-[9px] leading-relaxed text-fuchsia-200" }, "Compare organism vitality and plant health in one place. Select a living component to trace or inspect it.")
+                      React.createElement("p", { className: "mt-0.5 text-[0.5625rem] leading-relaxed text-fuchsia-200" }, "Compare organism vitality and plant health in one place. Select a living component to trace or inspect it.")
                     ),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Filter living system vitality" },
                       [
@@ -21402,7 +21402,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         { id: 'critical', label: "Critical " + ecosystemVitalityCounts.critical }
                       ].map(function(filterOption) {
                         var vitalityFilterActive = ecosystemVitalityFilter === filterOption.id;
-                        return React.createElement("button", { key: filterOption.id, type: "button", onClick: function() { upd('ecosystemVitalityFilter', filterOption.id); }, 'aria-pressed': vitalityFilterActive, className: "rounded-full border px-2 py-1 text-[8px] font-black " + (vitalityFilterActive ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/20 bg-white/5 text-fuchsia-100 hover:bg-white/10") }, filterOption.label);
+                        return React.createElement("button", { key: filterOption.id, type: "button", onClick: function() { upd('ecosystemVitalityFilter', filterOption.id); }, 'aria-pressed': vitalityFilterActive, className: "rounded-full border px-2 py-1 text-[0.5rem] font-black " + (vitalityFilterActive ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/20 bg-white/5 text-fuchsia-100 hover:bg-white/10") }, filterOption.label);
                       })
                     )
                   ),
@@ -21414,11 +21414,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                     ].map(function(summaryItem) {
                       return React.createElement("div", { key: summaryItem.label, role: "listitem", className: "rounded-lg border p-1.5 text-center " + summaryItem.bg },
                         React.createElement("div", { className: "text-base font-black " + summaryItem.color }, summaryItem.value),
-                        React.createElement("div", { className: "text-[7px] font-bold uppercase tracking-wide text-slate-300" }, summaryItem.label)
+                        React.createElement("div", { className: "text-[0.4375rem] font-bold uppercase tracking-wide text-slate-300" }, summaryItem.label)
                       );
                     })
                   ),
-                  ecosystemWeakestVitalityItem && React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-1 rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-[8px]" },
+                  ecosystemWeakestVitalityItem && React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-1 rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-[0.5rem]" },
                     React.createElement("span", { className: "text-slate-300" }, "Lowest current score"),
                     React.createElement("strong", { className: ecosystemWeakestVitalityItem.status === 'critical' ? "text-rose-200" : ecosystemWeakestVitalityItem.status === 'watch' ? "text-amber-200" : "text-emerald-200" }, ecosystemWeakestVitalityItem.label + " " + ecosystemWeakestVitalityItem.score + "/100 \u2022 " + ecosystemWeakestVitalityItem.limiting)
                   ),
@@ -21449,45 +21449,45 @@ var d = (labToolData && labToolData._aquarium) || {};
                           React.createElement("div", { className: "flex items-center gap-2" },
                             React.createElement("span", { className: "relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full p-[4px]", style: { background: "conic-gradient(" + vitalityPalette.ring + " " + Math.max(0, Math.min(100, vitalityItem.score)) * 3.6 + "deg, rgba(71,85,105,0.55) 0deg)" }, 'aria-hidden': "true" },
                               React.createElement("span", { className: "flex h-full w-full items-center justify-center rounded-full bg-slate-950 text-lg" }, vitalityItem.icon),
-                              React.createElement("span", { className: "absolute -bottom-1 rounded-full border border-white/15 bg-slate-950 px-1 text-[7px] font-black text-white" }, vitalityItem.score)
+                              React.createElement("span", { className: "absolute -bottom-1 rounded-full border border-white/15 bg-slate-950 px-1 text-[0.4375rem] font-black text-white" }, vitalityItem.score)
                             ),
                             React.createElement("span", { className: "min-w-0 flex-1" },
                               React.createElement("span", { className: "flex items-start justify-between gap-1" },
-                                React.createElement("strong", { className: "truncate text-[9px] text-white" }, vitalityItem.label),
-                                React.createElement("span", { className: "shrink-0 rounded-full px-1.5 py-0.5 text-[7px] font-black " + vitalityPalette.badge }, vitalityPalette.label)
+                                React.createElement("strong", { className: "truncate text-[0.5625rem] text-white" }, vitalityItem.label),
+                                React.createElement("span", { className: "shrink-0 rounded-full px-1.5 py-0.5 text-[0.4375rem] font-black " + vitalityPalette.badge }, vitalityPalette.label)
                               ),
-                              React.createElement("span", { className: "mt-0.5 block truncate text-[7px] text-slate-400" }, vitalityItem.type),
-                              React.createElement("span", { className: "mt-1 block truncate text-[8px] text-fuchsia-100", title: vitalityItem.limiting }, "Limiting: " + vitalityItem.limiting),
-                              React.createElement("span", { className: "mt-0.5 block text-[7px] font-bold text-slate-300" }, vitalityTrendSymbol + " " + vitalityItem.trend + (vitalityItem.kind === 'plant' ? " \u2022 inspect plant" : " \u2022 trace exchanges"))
+                              React.createElement("span", { className: "mt-0.5 block truncate text-[0.4375rem] text-slate-400" }, vitalityItem.type),
+                              React.createElement("span", { className: "mt-1 block truncate text-[0.5rem] text-fuchsia-100", title: vitalityItem.limiting }, "Limiting: " + vitalityItem.limiting),
+                              React.createElement("span", { className: "mt-0.5 block text-[0.4375rem] font-bold text-slate-300" }, vitalityTrendSymbol + " " + vitalityItem.trend + (vitalityItem.kind === 'plant' ? " \u2022 inspect plant" : " \u2022 trace exchanges"))
                             )
                           )
                         );
                       })
                     )
-                    : React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-fuchsia-300/30 p-3 text-center text-[9px] text-fuchsia-100" },
+                    : React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-fuchsia-300/30 p-3 text-center text-[0.5625rem] text-fuchsia-100" },
                       ecosystemVitalityItems.length === 0 ? "Add organisms or plants to begin the vitality map." : "No living components match this filter.",
                       ecosystemVitalityItems.length > 0 && React.createElement("button", { type: "button", onClick: function() { upd('ecosystemVitalityFilter', 'all'); }, className: "ml-1 underline decoration-fuchsia-300 underline-offset-2" }, "Show all")
                     ),
-                  React.createElement("p", { className: "mt-2 text-[7px] leading-relaxed text-slate-400" }, "Ring length represents the 0–100 score; labels preserve meaning without relying on color. Organism scores combine chemistry, space, shelter, nutrition, stress, and illness. Plant rings show simulated specimen health.")
+                  React.createElement("p", { className: "mt-2 text-[0.4375rem] leading-relaxed text-slate-400" }, "Ring length represents the 0–100 score; labels preserve meaning without relying on color. Organism scores combine chemistry, space, shelter, nutrition, stress, and illness. Plant rings show simulated specimen health.")
                 ),
                 // Persistent 24-hour exchange history + intervention comparison
                 React.createElement("section", { className: "rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 p-3 text-white", 'aria-labelledby': "aquarium-exchange-history-title" },
                   React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                     React.createElement("div", null,
                       React.createElement("h4", { id: "aquarium-exchange-history-title", className: "text-xs font-black text-cyan-100" }, __alloT('stem.aquarium.exchange_history_title', "\uD83D\uDCC8 Ecosystem exchange history")),
-                      React.createElement("p", { className: "mt-0.5 text-[9px] text-cyan-200" }, __alloT('stem.aquarium.exchange_history_desc', "Aligned 24-hour lanes reveal whether chemistry and organism vitality move together."))
+                      React.createElement("p", { className: "mt-0.5 text-[0.5625rem] text-cyan-200" }, __alloT('stem.aquarium.exchange_history_desc', "Aligned 24-hour lanes reveal whether chemistry and organism vitality move together."))
                     ),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Ecosystem comparison baseline controls" },
-                      React.createElement("button", { type: "button", onClick: markEcosystemBaseline, disabled: !ecosystemPredictionReady, title: ecosystemPredictionReady ? "Lock predictions and record this baseline" : "Choose a direction for all three predictions first", className: "rounded-md border border-cyan-300 bg-cyan-400 px-2 py-1 text-[9px] font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-40" }, ecosystemBaseline ? __alloT('stem.aquarium.replace_baseline', "Replace baseline") : __alloT('stem.aquarium.mark_baseline', "Mark baseline")),
-                      ecosystemBaseline && React.createElement("button", { type: "button", onClick: function () { upd('ecosystemBaseline', null); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[9px] font-bold text-cyan-100" }, __alloT('stem.aquarium.clear_baseline', "Clear")),
-                      React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('csv'); }, disabled: ecosystemExchangeHistory.length === 0, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[9px] font-bold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, __alloT('stem.aquarium.export_csv', "Export CSV")),
-                      React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('json'); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[9px] font-bold text-cyan-100" }, __alloT('stem.aquarium.export_json', "Export JSON"))
+                      React.createElement("button", { type: "button", onClick: markEcosystemBaseline, disabled: !ecosystemPredictionReady, title: ecosystemPredictionReady ? "Lock predictions and record this baseline" : "Choose a direction for all three predictions first", className: "rounded-md border border-cyan-300 bg-cyan-400 px-2 py-1 text-[0.5625rem] font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-40" }, ecosystemBaseline ? __alloT('stem.aquarium.replace_baseline', "Replace baseline") : __alloT('stem.aquarium.mark_baseline', "Mark baseline")),
+                      ecosystemBaseline && React.createElement("button", { type: "button", onClick: function () { upd('ecosystemBaseline', null); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-cyan-100" }, __alloT('stem.aquarium.clear_baseline', "Clear")),
+                      React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('csv'); }, disabled: ecosystemExchangeHistory.length === 0, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, __alloT('stem.aquarium.export_csv', "Export CSV")),
+                      React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('json'); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-cyan-100" }, __alloT('stem.aquarium.export_json', "Export JSON"))
                     )
                   ),
                   React.createElement("div", { className: "mt-3 rounded-xl border border-cyan-300/20 bg-gradient-to-r from-cyan-950/80 via-indigo-950/80 to-emerald-950/80 p-2.5", 'aria-label': "Controlled investigation progress" },
                     React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                      React.createElement("strong", { className: "text-[9px] text-cyan-100" }, "Investigation path"),
-                      React.createElement("span", { className: "text-[8px] font-bold text-cyan-200" }, "Stage " + (ecosystemInvestigationStage + 1) + " of 4")
+                      React.createElement("strong", { className: "text-[0.5625rem] text-cyan-100" }, "Investigation path"),
+                      React.createElement("span", { className: "text-[0.5rem] font-bold text-cyan-200" }, "Stage " + (ecosystemInvestigationStage + 1) + " of 4")
                     ),
                     React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800", role: "progressbar", 'aria-label': "Controlled investigation progress", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': ecosystemInvestigationProgress },
                       React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-emerald-400 transition-all", style: { width: ecosystemInvestigationProgress + '%' } })
@@ -21503,28 +21503,28 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var stageActive = stageIndex === ecosystemInvestigationStage;
                         return React.createElement("li", { key: stageItem.label, 'aria-current': stageActive ? "step" : undefined, className: "relative rounded-lg border p-2 " + (stageActive ? "border-cyan-300 bg-cyan-300/15 shadow-[0_0_16px_rgba(34,211,238,0.12)]" : stageComplete ? "border-emerald-300/30 bg-emerald-400/10" : "border-white/10 bg-black/15") },
                           React.createElement("div", { className: "flex items-center gap-1" },
-                            React.createElement("span", { className: "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[8px] font-black " + (stageActive ? "bg-cyan-300 text-slate-950" : stageComplete ? "bg-emerald-400 text-emerald-950" : "bg-slate-700 text-slate-300"), 'aria-hidden': "true" }, stageComplete ? "\u2713" : String(stageIndex + 1)),
-                            React.createElement("strong", { className: "text-[8px] " + (stageActive ? "text-cyan-100" : stageComplete ? "text-emerald-100" : "text-slate-300") }, stageItem.label.replace(/^\d\s/, ''))
+                            React.createElement("span", { className: "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-black " + (stageActive ? "bg-cyan-300 text-slate-950" : stageComplete ? "bg-emerald-400 text-emerald-950" : "bg-slate-700 text-slate-300"), 'aria-hidden': "true" }, stageComplete ? "\u2713" : String(stageIndex + 1)),
+                            React.createElement("strong", { className: "text-[0.5rem] " + (stageActive ? "text-cyan-100" : stageComplete ? "text-emerald-100" : "text-slate-300") }, stageItem.label.replace(/^\d\s/, ''))
                           ),
-                          React.createElement("div", { className: "mt-1 truncate text-[7px] " + (stageActive ? "text-cyan-200" : "text-slate-400"), title: stageItem.detail }, stageItem.detail)
+                          React.createElement("div", { className: "mt-1 truncate text-[0.4375rem] " + (stageActive ? "text-cyan-200" : "text-slate-400"), title: stageItem.detail }, stageItem.detail)
                         );
                       })
                     )
                   ),                  React.createElement("div", { className: "mt-3 rounded-xl border border-indigo-300/30 bg-indigo-500/10 p-2.5" },
                     React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                       React.createElement("div", null,
-                        React.createElement("h5", { className: "text-[10px] font-black text-indigo-100" }, "1. Preregister your prediction"),
-                        React.createElement("p", { className: "mt-0.5 text-[8px] leading-relaxed text-indigo-200" }, ecosystemBaseline ? "Predictions are locked to the marked baseline. Clear the baseline to design a new investigation." : "Choose the expected direction before collecting evidence. ‘Stable’ means change stays inside the model’s measurement deadband.")
+                        React.createElement("h5", { className: "text-[0.625rem] font-black text-indigo-100" }, "1. Preregister your prediction"),
+                        React.createElement("p", { className: "mt-0.5 text-[0.5rem] leading-relaxed text-indigo-200" }, ecosystemBaseline ? "Predictions are locked to the marked baseline. Clear the baseline to design a new investigation." : "Choose the expected direction before collecting evidence. ‘Stable’ means change stays inside the model’s measurement deadband.")
                       ),
-                      React.createElement("span", { role: "status", className: "rounded-full border px-2 py-0.5 text-[8px] font-black " + (ecosystemPredictionReady ? "border-emerald-300/40 bg-emerald-400/15 text-emerald-100" : "border-amber-300/40 bg-amber-400/15 text-amber-100") }, ecosystemPredictionReady ? "3/3 predictions ready" : "Prediction required")
+                      React.createElement("span", { role: "status", className: "rounded-full border px-2 py-0.5 text-[0.5rem] font-black " + (ecosystemPredictionReady ? "border-emerald-300/40 bg-emerald-400/15 text-emerald-100" : "border-amber-300/40 bg-amber-400/15 text-amber-100") }, ecosystemPredictionReady ? "3/3 predictions ready" : "Prediction required")
                     ),
-                    React.createElement("label", { htmlFor: "aquarium-intervention-plan", className: "mt-2 block text-[8px] font-black uppercase tracking-wide text-indigo-200" }, "Planned one-variable change (optional label)"),
+                    React.createElement("label", { htmlFor: "aquarium-intervention-plan", className: "mt-2 block text-[0.5rem] font-black uppercase tracking-wide text-indigo-200" }, "Planned one-variable change (optional label)"),
                     React.createElement("input", {
                       id: "aquarium-intervention-plan", type: "text", maxLength: 240, value: ecosystemBaseline ? ecosystemBaseline.plannedIntervention || '' : ecosystemInterventionNote,
                       disabled: !!ecosystemBaseline,
                       onChange: function(event) { upd('ecosystemInterventionNote', String(event.target.value || '').slice(0, 240)); },
                       placeholder: "Example: add one anubias plant",
-                      className: "mt-1 w-full rounded-md border border-indigo-300/30 bg-slate-950/60 px-2 py-1.5 text-[9px] text-white placeholder:text-slate-500 disabled:opacity-70"
+                      className: "mt-1 w-full rounded-md border border-indigo-300/30 bg-slate-950/60 px-2 py-1.5 text-[0.5625rem] text-white placeholder:text-slate-500 disabled:opacity-70"
                     }),
                     React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-3" },
                       [
@@ -21533,7 +21533,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         { id: 'vitality', label: "Mean vitality" }
                       ].map(function(metric) {
                         return React.createElement("div", { key: metric.id, className: "rounded-lg border border-white/10 bg-black/20 p-1.5" },
-                          React.createElement("div", { className: "text-[8px] font-black text-indigo-100" }, metric.label),
+                          React.createElement("div", { className: "text-[0.5rem] font-black text-indigo-100" }, metric.label),
                           React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1", role: "group", 'aria-label': metric.label + " predicted direction" },
                             [
                               { id: 'fall', label: "\u2193 Fall" },
@@ -21545,7 +21545,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                                 key: directionOption.id, type: "button", disabled: !!ecosystemBaseline,
                                 onClick: function() { updateEcosystemPrediction(metric.id, directionOption.id); },
                                 'aria-pressed': selectedDirection,
-                                className: "rounded border px-1 py-1 text-[8px] font-bold disabled:cursor-not-allowed " + (selectedDirection ? "border-indigo-200 bg-indigo-300 text-indigo-950" : "border-white/15 bg-white/5 text-indigo-100 hover:bg-white/10")
+                                className: "rounded border px-1 py-1 text-[0.5rem] font-bold disabled:cursor-not-allowed " + (selectedDirection ? "border-indigo-200 bg-indigo-300 text-indigo-950" : "border-white/15 bg-white/5 text-indigo-100 hover:bg-white/10")
                               }, directionOption.label);
                             })
                           )
@@ -21578,9 +21578,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement("text", { x: "118", y: "140", fill: "#94a3b8", fontSize: "8" }, "\u2190 " + ecosystemHistoryPoints.length + " hours ago"),
                       React.createElement("text", { x: "622", y: "140", fill: "#94a3b8", fontSize: "8", textAnchor: "end" }, "now \u2192")
                     )
-                    : React.createElement("div", { className: "mt-3 rounded-lg border border-dashed border-cyan-300/30 p-3 text-center text-[10px] text-cyan-100" }, __alloT('stem.aquarium.run_two_ticks_for_history', "Run two aquarium-hour ticks to begin the exchange history.")),
+                    : React.createElement("div", { className: "mt-3 rounded-lg border border-dashed border-cyan-300/30 p-3 text-center text-[0.625rem] text-cyan-100" }, __alloT('stem.aquarium.run_two_ticks_for_history', "Run two aquarium-hour ticks to begin the exchange history.")),
                   ecosystemBaseline && baselineDeltas && React.createElement("div", { className: "mt-3" },
-                    React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1 text-[9px] text-cyan-100" },
+                    React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1 text-[0.5625rem] text-cyan-100" },
                       React.createElement("strong", null, __alloT('stem.aquarium.change_from_baseline', "Change from baseline")),
                       React.createElement("span", null, baselineAge + " aquarium hours \u2022 plants " + (baselineDeltas.plants >= 0 ? "+" : "") + baselineDeltas.plants + " \u2022 organisms " + (baselineDeltas.organisms >= 0 ? "+" : "") + baselineDeltas.organisms)
                     ),
@@ -21592,7 +21592,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       ].map(function (comparison) {
                         var direction = comparison.value > 0 ? '+' : '';
                         return React.createElement("div", { key: comparison.label, role: "listitem", className: "rounded-lg border border-white/15 bg-white/5 p-2" },
-                          React.createElement("div", { className: "text-[8px] font-black uppercase text-cyan-300" }, comparison.label),
+                          React.createElement("div", { className: "text-[0.5rem] font-black uppercase text-cyan-300" }, comparison.label),
                           React.createElement("div", { className: "text-sm font-black text-white" }, direction + comparison.value.toFixed(comparison.digits) + comparison.unit)
                         );
                       })
@@ -21603,23 +21603,23 @@ var d = (labToolData && labToolData._aquarium) || {};
                     role: "status", 'aria-live': "polite"
                   },
                     React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
-                      React.createElement("strong", { className: "text-[10px] " + (ecosystemInterventionComparison.confounded ? "text-rose-100" : ecosystemInterventionComparison.controlled ? "text-emerald-100" : "text-amber-100") },
+                      React.createElement("strong", { className: "text-[0.625rem] " + (ecosystemInterventionComparison.confounded ? "text-rose-100" : ecosystemInterventionComparison.controlled ? "text-emerald-100" : "text-amber-100") },
                         ecosystemInterventionComparison.confounded ? "\u26A0 Confounded investigation" : ecosystemInterventionComparison.controlled ? "\u2713 One-variable intervention" : "2. Make exactly one change"
                       ),
-                      React.createElement("span", { className: "text-[8px] text-slate-200" }, baselineAge + " aquarium hours since baseline")
+                      React.createElement("span", { className: "text-[0.5rem] text-slate-200" }, baselineAge + " aquarium hours since baseline")
                     ),
-                    React.createElement("p", { className: "mt-1 text-[9px] leading-relaxed text-slate-100" },
+                    React.createElement("p", { className: "mt-1 text-[0.5625rem] leading-relaxed text-slate-100" },
                       ecosystemInterventionComparison.confounded
                         ? ecosystemInterventionComparison.count + " factors changed: " + ecosystemInterventionComparison.summary + ". The effects cannot be isolated; replace the baseline and change only one factor."
                         : ecosystemInterventionComparison.controlled
                           ? "Changed factor: " + ecosystemInterventionComparison.summary + ". Keep all other planned factors unchanged until the six-hour observation is complete."
                           : "No planned factor has changed yet. Add or remove one plant or organism, change one equipment level, or toggle the light."
                     ),
-                    ecosystemBaseline.plannedIntervention && React.createElement("p", { className: "mt-1 text-[8px] text-slate-300" }, "Preregistered plan: " + ecosystemBaseline.plannedIntervention),
+                    ecosystemBaseline.plannedIntervention && React.createElement("p", { className: "mt-1 text-[0.5rem] text-slate-300" }, "Preregistered plan: " + ecosystemBaseline.plannedIntervention),
                     ecosystemInterventionComparison.controlled && ecosystemPredictionEvaluation && React.createElement("div", { className: "mt-2 rounded-lg border border-white/10 bg-black/20 p-2" },
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                        React.createElement("h5", { className: "text-[9px] font-black text-cyan-100" }, "3. Prediction check"),
-                        React.createElement("span", { className: "text-[8px] font-bold " + (baselineAge >= 6 ? "text-emerald-200" : "text-amber-200") }, baselineAge >= 6 ? (ecosystemPredictionEvaluation.total ? ecosystemPredictionEvaluation.matched + "/" + ecosystemPredictionEvaluation.total + " directions matched" : "Legacy baseline: no predictions") : Math.max(0, 6 - baselineAge) + " observation hours remaining")
+                        React.createElement("h5", { className: "text-[0.5625rem] font-black text-cyan-100" }, "3. Prediction check"),
+                        React.createElement("span", { className: "text-[0.5rem] font-bold " + (baselineAge >= 6 ? "text-emerald-200" : "text-amber-200") }, baselineAge >= 6 ? (ecosystemPredictionEvaluation.total ? ecosystemPredictionEvaluation.matched + "/" + ecosystemPredictionEvaluation.total + " directions matched" : "Legacy baseline: no predictions") : Math.max(0, 6 - baselineAge) + " observation hours remaining")
                       ),
                       React.createElement("div", { className: "mt-1.5 grid grid-cols-1 gap-1 sm:grid-cols-3", role: "list", 'aria-label': "Predicted and observed ecosystem directions" },
                         ecosystemPredictionEvaluation.results.map(function(result) {
@@ -21627,28 +21627,28 @@ var d = (labToolData && labToolData._aquarium) || {};
                           var resultReady = baselineAge >= 6;
                           return React.createElement("div", { key: result.id, role: "listitem", className: "rounded-md border border-white/10 bg-white/5 p-1.5" },
                             React.createElement("div", { className: "flex items-center justify-between gap-1" },
-                              React.createElement("strong", { className: "text-[8px] text-cyan-200" }, result.label),
-                              resultReady && result.predicted && React.createElement("span", { 'aria-label': result.matches ? "Prediction matched" : "Prediction did not match", className: "text-[10px] " + (result.matches ? "text-emerald-300" : "text-amber-300") }, result.matches ? '\u2713' : '\u21BB')
+                              React.createElement("strong", { className: "text-[0.5rem] text-cyan-200" }, result.label),
+                              resultReady && result.predicted && React.createElement("span", { 'aria-label': result.matches ? "Prediction matched" : "Prediction did not match", className: "text-[0.625rem] " + (result.matches ? "text-emerald-300" : "text-amber-300") }, result.matches ? '\u2713' : '\u21BB')
                             ),
-                            React.createElement("div", { className: "mt-0.5 text-[8px] text-slate-200" }, "Predicted: " + (directionLabels[result.predicted] || 'not recorded')),
-                            React.createElement("div", { className: "text-[8px] text-slate-200" }, resultReady ? "Observed: " + directionLabels[result.observed] : "Observed: collecting evidence"),
-                            resultReady && React.createElement("div", { className: "font-mono text-[8px] text-slate-400" }, "\u0394 " + (result.delta > 0 ? "+" : "") + result.delta.toFixed(result.id === 'vitality' ? 0 : result.id === 'nitrate' ? 1 : 2))
+                            React.createElement("div", { className: "mt-0.5 text-[0.5rem] text-slate-200" }, "Predicted: " + (directionLabels[result.predicted] || 'not recorded')),
+                            React.createElement("div", { className: "text-[0.5rem] text-slate-200" }, resultReady ? "Observed: " + directionLabels[result.observed] : "Observed: collecting evidence"),
+                            resultReady && React.createElement("div", { className: "font-mono text-[0.5rem] text-slate-400" }, "\u0394 " + (result.delta > 0 ? "+" : "") + result.delta.toFixed(result.id === 'vitality' ? 0 : result.id === 'nitrate' ? 1 : 2))
                           );
                         })
                       ),
-                      baselineAge >= 6 && React.createElement("p", { className: "mt-1.5 text-[8px] leading-relaxed text-slate-300" }, "A mismatch is useful evidence, not failure. Use the exchange network and event log to identify an overlooked pathway or model limitation.")
+                      baselineAge >= 6 && React.createElement("p", { className: "mt-1.5 text-[0.5rem] leading-relaxed text-slate-300" }, "A mismatch is useful evidence, not failure. Use the exchange network and event log to identify an overlooked pathway or model limitation.")
                     )
                   ),
                   React.createElement("details", { className: "mt-3 rounded-lg border border-emerald-300/25 bg-emerald-400/10 p-2" },
-                    React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-emerald-100" }, __alloT('stem.aquarium.guided_exchange_investigation', "\uD83E\uDDEA Guided investigation: make one change")),
-                    React.createElement("ol", { className: "mt-2 list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-emerald-50" },
+                    React.createElement("summary", { className: "cursor-pointer text-[0.625rem] font-black text-emerald-100" }, __alloT('stem.aquarium.guided_exchange_investigation', "\uD83E\uDDEA Guided investigation: make one change")),
+                    React.createElement("ol", { className: "mt-2 list-decimal space-y-1 pl-4 text-[0.5625rem] leading-relaxed text-emerald-50" },
                       React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_predict', "Predict how oxygen, nitrate, and vitality will respond.")),
                       React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_mark', "Mark the baseline, then change one variable: add a plant, adjust light, change stocking, or service equipment.")),
                       React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_observe', "Observe at least six aquarium hours without making another change.")),
                       React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_explain', "Explain the result by tracing the changed component through the exchange network and citing the baseline difference."))
                     )
                   ),
-                  lastEcosystemExchange && lastEcosystemExchange.model && React.createElement("p", { className: "mt-2 text-[8px] leading-relaxed text-slate-400" },
+                  lastEcosystemExchange && lastEcosystemExchange.model && React.createElement("p", { className: "mt-2 text-[0.5rem] leading-relaxed text-slate-400" },
                     "Model basis: " + lastEcosystemExchange.model.volumeGallons + " gal, concentration scale \u00D7" + lastEcosystemExchange.model.volumeScale.toFixed(2) + ". Oxygen saturation target " + lastEcosystemExchange.atmosphere.oxygenSaturationTarget.toFixed(2) + " mg/L. " + lastEcosystemExchange.model.uncertainty
                   )
                 ),
@@ -21658,7 +21658,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, "\uD83C\uDF31 Aquatic Plants (" + tankPlants.length + "/8)"),
 
-                    tankPlants.length > 0 && React.createElement("span", { className: "text-[11px] text-emerald-500 italic" },
+                    tankPlants.length > 0 && React.createElement("span", { className: "text-[0.6875rem] text-emerald-500 italic" },
 
                       "\uD83C\uDF3F " + tankPlants.reduce(function (s, pid) { var b = plantBiomass[pid]; return s + (b ? b : 0); }, 0).toFixed(1) + " total biomass"
 
@@ -21669,11 +21669,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                   // Current plants list
 
                   React.createElement("details", { className: "mb-3 rounded-xl border border-emerald-200 bg-white/75 p-2", open: ecosystemOrganismPlantRelationships.length > 0 },
-                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-black text-emerald-800" },
+                    React.createElement("summary", { className: "cursor-pointer text-[0.6875rem] font-black text-emerald-800" },
                       __alloT('stem.aquarium.organism_plant_relationships', "\uD83D\uDD17 Organism \u2194 plant relationships") + " (" + ecosystemOrganismPlantRelationships.length + ")"
                     ),
                     ecosystemOrganismPlantRelationships.length === 0
-                      ? React.createElement("p", { className: "mt-2 text-[10px] text-slate-600" }, __alloT('stem.aquarium.stock_organisms_to_map_plant_relationships', "Stock organisms to map shelter, browsing, grazing, and recycling relationships."))
+                      ? React.createElement("p", { className: "mt-2 text-[0.625rem] text-slate-600" }, __alloT('stem.aquarium.stock_organisms_to_map_plant_relationships', "Stock organisms to map shelter, browsing, grazing, and recycling relationships."))
                       : React.createElement("div", { className: "mt-2 space-y-2" },
                         React.createElement("div", { className: "grid grid-cols-2 gap-1 sm:grid-cols-4", role: "list", 'aria-label': "Organism plant relationship totals" },
                           [
@@ -21684,7 +21684,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                           ].map(function (metric) {
                             return React.createElement("div", { key: metric.label, role: "listitem", className: "rounded-lg border border-emerald-100 bg-white p-1.5 text-center" },
                               React.createElement("div", { className: "text-sm font-black text-emerald-800" }, metric.value),
-                              React.createElement("div", { className: "text-[8px] font-bold text-slate-600" }, metric.label)
+                              React.createElement("div", { className: "text-[0.5rem] font-bold text-slate-600" }, metric.label)
                             );
                           })
                         ),
@@ -21703,15 +21703,15 @@ var d = (labToolData && labToolData._aquarium) || {};
                               'aria-label': item.name + ". " + item.relationship.summary + ". " + relationshipEffect
                             },
                               React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                                React.createElement("strong", { className: "text-[10px] text-emerald-900" }, item.name),
-                                React.createElement("span", { className: "text-[8px] text-slate-500" }, item.type)
+                                React.createElement("strong", { className: "text-[0.625rem] text-emerald-900" }, item.name),
+                                React.createElement("span", { className: "text-[0.5rem] text-slate-500" }, item.type)
                               ),
-                              React.createElement("div", { className: "mt-0.5 text-[9px] font-bold text-emerald-700" }, item.relationship.summary),
-                              React.createElement("div", { className: "mt-0.5 text-[8px] leading-relaxed text-slate-600" }, relationshipEffect)
+                              React.createElement("div", { className: "mt-0.5 text-[0.5625rem] font-bold text-emerald-700" }, item.relationship.summary),
+                              React.createElement("div", { className: "mt-0.5 text-[0.5rem] leading-relaxed text-slate-600" }, relationshipEffect)
                             );
                           })
                         ),
-                        React.createElement("div", { className: "rounded-lg border border-amber-200 bg-amber-50 p-2 text-[9px] text-amber-900", role: "status" },
+                        React.createElement("div", { className: "rounded-lg border border-amber-200 bg-amber-50 p-2 text-[0.5625rem] text-amber-900", role: "status" },
                           "Last tick: organisms browsed " + ecosystemPlantHerbivory.toFixed(3) + " plant biomass and grazed " + ecosystemAlgaeGrazed.toFixed(3) + " algae biomass. These are different food-web pathways."
                         )
                       )
@@ -21763,14 +21763,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                           },
                             React.createElement("span", { className: "text-lg", 'aria-hidden': "true" }, pSpec.icon || '\uD83C\uDF3F'),
                             React.createElement("div", { className: "min-w-0 flex-1" },
-                              React.createElement("div", { className: "truncate text-[11px] font-bold text-emerald-800" }, pSpec.name),
+                              React.createElement("div", { className: "truncate text-[0.6875rem] font-bold text-emerald-800" }, pSpec.name),
                               React.createElement("div", { className: "mt-0.5 flex items-center gap-2" },
                                 React.createElement("div", { className: "h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100", "aria-hidden": "true" },
                                   React.createElement("div", { style: { width: Math.max(0, Math.min(100, hp)) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hpColor })
                                 ),
-                                React.createElement("span", { className: "font-mono text-[11px] " + hpTextColor }, hp.toFixed(0) + '%'),
-                                React.createElement("span", { className: "text-[11px] text-slate-500" }, '\uD83C\uDF3F' + bm.toFixed(1)),
-                                (ecosystemPlantHerbivoryByPlant[pid] || 0) > 0 && React.createElement("span", { className: "rounded bg-amber-100 px-1 text-[8px] font-black text-amber-800", title: "Biomass eaten by plant-browsing organisms last tick" }, "Browsed -" + ecosystemPlantHerbivoryByPlant[pid].toFixed(3))
+                                React.createElement("span", { className: "font-mono text-[0.6875rem] " + hpTextColor }, hp.toFixed(0) + '%'),
+                                React.createElement("span", { className: "text-[0.6875rem] text-slate-500" }, '\uD83C\uDF3F' + bm.toFixed(1)),
+                                (ecosystemPlantHerbivoryByPlant[pid] || 0) > 0 && React.createElement("span", { className: "rounded bg-amber-100 px-1 text-[0.5rem] font-black text-amber-800", title: "Biomass eaten by plant-browsing organisms last tick" }, "Browsed -" + ecosystemPlantHerbivoryByPlant[pid].toFixed(3))
                               )
                             )
                           ),
@@ -21779,7 +21779,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             onClick: function () { removePlant(idx); },
 
-                            className: "text-[11px] text-red-400 hover:text-red-600 font-bold px-1",
+                            className: "text-[0.6875rem] text-red-400 hover:text-red-600 font-bold px-1",
 
                             title: __alloT('stem.aquarium.remove_plant_2', "Remove plant")
 
@@ -21795,7 +21795,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   tankPlants.length < 8 && React.createElement("div", { className: "mt-2" },
 
-                    React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 mb-1" }, __alloT('stem.aquarium.add_a_plant', "\u2795 Add a Plant:")),
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold text-emerald-600 mb-1" }, __alloT('stem.aquarium.add_a_plant', "\u2795 Add a Plant:")),
 
                     React.createElement("div", { className: "grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto" },
 
@@ -21815,18 +21815,18 @@ var d = (labToolData && labToolData._aquarium) || {};
                             'aria-pressed': selectedPlantId === ps.id,
                             className: "min-w-0 flex-1 rounded-md p-1 text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           },
-                            React.createElement("span", { className: "block truncate text-[11px] font-bold text-emerald-900" }, (ps.icon || '\uD83C\uDF3F') + ' ' + ps.name),
-                            React.createElement("span", { className: "mt-0.5 block text-[9px] leading-tight text-slate-600" },
+                            React.createElement("span", { className: "block truncate text-[0.6875rem] font-bold text-emerald-900" }, (ps.icon || '\uD83C\uDF3F') + ' ' + ps.name),
+                            React.createElement("span", { className: "mt-0.5 block text-[0.5625rem] leading-tight text-slate-600" },
                               "O\u2082 +" + ps.o2.toFixed(2) + " | NO\u2083 -" + ps.nitrateAbsorb.toFixed(2) + " | \u2600\uFE0F " + ps.light
                             ),
-                            React.createElement("span", { className: "mt-0.5 block text-[9px] font-bold text-emerald-700" }, "Learn more")
+                            React.createElement("span", { className: "mt-0.5 block text-[0.5625rem] font-bold text-emerald-700" }, "Learn more")
                           ),
                           React.createElement("button", {
                             type: "button",
                             disabled: alreadyAdded,
                             onClick: function () { addPlant(ps.id); },
                             'aria-label': alreadyAdded ? ps.name + " is already planted" : "Plant " + ps.name,
-                            className: "shrink-0 rounded-md border px-1.5 text-[9px] font-black " + (alreadyAdded ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-600" : "border-emerald-800 bg-emerald-700 text-white hover:bg-emerald-800")
+                            className: "shrink-0 rounded-md border px-1.5 text-[0.5625rem] font-black " + (alreadyAdded ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-600" : "border-emerald-800 bg-emerald-700 text-white hover:bg-emerald-800")
                           }, alreadyAdded ? "\u2713" : "+ Plant")
                         );
 
@@ -21850,13 +21850,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                           React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, selectedPlant.icon || '\uD83C\uDF3F'),
                           React.createElement("div", null,
                             React.createElement("h4", { id: "aquarium-plant-profile-title", className: "text-sm font-black text-emerald-950" }, selectedPlant.name),
-                            React.createElement("div", { className: "text-[10px] italic text-slate-600" }, selectedPlantProfile.scientific + " \u2022 " + selectedPlantProfile.family)
+                            React.createElement("div", { className: "text-[0.625rem] italic text-slate-600" }, selectedPlantProfile.scientific + " \u2022 " + selectedPlantProfile.family)
                           )
                         ),
                         React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" },
-                          React.createElement("span", { className: "rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800" }, tankPlants.indexOf(selectedPlant.id) !== -1 ? "Planted specimen" : "Catalog species"),
-                          React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold text-amber-800" }, selectedPlant.light + " light"),
-                          tankPlants.indexOf(selectedPlant.id) !== -1 && React.createElement("span", { className: "rounded-full bg-cyan-100 px-2 py-0.5 text-[9px] font-bold text-cyan-800" }, "Health " + Math.round(selectedPlantHealth) + "% \u2022 biomass " + selectedPlantBiomass.toFixed(1))
+                          React.createElement("span", { className: "rounded-full bg-emerald-100 px-2 py-0.5 text-[0.5625rem] font-bold text-emerald-800" }, tankPlants.indexOf(selectedPlant.id) !== -1 ? "Planted specimen" : "Catalog species"),
+                          React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[0.5625rem] font-bold text-amber-800" }, selectedPlant.light + " light"),
+                          tankPlants.indexOf(selectedPlant.id) !== -1 && React.createElement("span", { className: "rounded-full bg-cyan-100 px-2 py-0.5 text-[0.5625rem] font-bold text-cyan-800" }, "Health " + Math.round(selectedPlantHealth) + "% \u2022 biomass " + selectedPlantBiomass.toFixed(1))
                         )
                       ),
                       React.createElement("button", {
@@ -21866,15 +21866,15 @@ var d = (labToolData && labToolData._aquarium) || {};
                         'aria-label': "Close plant field guide"
                       }, "\u2715")
                     ),
-                    React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-slate-700" }, selectedPlant.desc),
-                    React.createElement("div", { className: "mt-2 rounded-lg bg-emerald-50 p-2 text-[10px] leading-relaxed text-emerald-900" },
+                    React.createElement("p", { className: "mt-2 text-[0.6875rem] leading-relaxed text-slate-700" }, selectedPlant.desc),
+                    React.createElement("div", { className: "mt-2 rounded-lg bg-emerald-50 p-2 text-[0.625rem] leading-relaxed text-emerald-900" },
                       React.createElement("strong", null, "Why it matters: "), selectedPlant.fact
                     ),
                     React.createElement("div", { className: "mt-3 grid gap-2 lg:grid-cols-2" },
                       React.createElement("figure", { className: "overflow-hidden rounded-xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-blue-100 p-2" },
                         React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                          React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-950" }, "Aquascape placement map"),
-                          React.createElement("span", { className: "rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-black text-cyan-800" }, selectedPlantPlacementLabel)
+                          React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-cyan-950" }, "Aquascape placement map"),
+                          React.createElement("span", { className: "rounded-full bg-white/80 px-2 py-0.5 text-[0.5625rem] font-black text-cyan-800" }, selectedPlantPlacementLabel)
                         ),
                         React.createElement("div", {
                           className: "relative mt-2 overflow-hidden rounded-lg border-2 border-cyan-300",
@@ -21901,13 +21901,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                             }
                           }, selectedPlant.icon || '\uD83C\uDF3F')
                         ),
-                        React.createElement("figcaption", { className: "mt-1.5 text-[9px] leading-relaxed text-cyan-950" }, selectedPlantProfile.placement)
+                        React.createElement("figcaption", { className: "mt-1.5 text-[0.5625rem] leading-relaxed text-cyan-950" }, selectedPlantProfile.placement)
                       ),
 
                       React.createElement("figure", { className: "rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-2" },
                         React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                          React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-950" }, "Plant physiology flow"),
-                          React.createElement("span", { className: "text-[9px] font-bold text-emerald-700" }, selectedPlantPhotosynthesisActive ? "DAY FLOW" : "REFERENCE FLOW")
+                          React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-950" }, "Plant physiology flow"),
+                          React.createElement("span", { className: "text-[0.5625rem] font-bold text-emerald-700" }, selectedPlantPhotosynthesisActive ? "DAY FLOW" : "REFERENCE FLOW")
                         ),
                         React.createElement("div", {
                           className: "mt-2 items-center gap-1",
@@ -21918,42 +21918,42 @@ var d = (labToolData && labToolData._aquarium) || {};
                           React.createElement("div", { className: "space-y-1" },
                             [[currentLightDefinition.icon || '\u2600\uFE0F', "Light", currentLightDefinition.name], ["CO\u2082", "Carbon", waterChem.co2.toFixed(1) + " mg/L"], ["NO\u2083", "Nitrogen", waterChem.nitrate.toFixed(1) + " ppm"]].map(function (input) {
                               return React.createElement("div", { key: input[1], className: "rounded-md border border-amber-200 bg-amber-50 p-1 text-center" },
-                                React.createElement("div", { className: "text-[10px] font-black text-amber-900" }, input[0] + " " + input[1]),
-                                React.createElement("div", { className: "truncate text-[8px] text-amber-800" }, input[2])
+                                React.createElement("div", { className: "text-[0.625rem] font-black text-amber-900" }, input[0] + " " + input[1]),
+                                React.createElement("div", { className: "truncate text-[0.5rem] text-amber-800" }, input[2])
                               );
                             })
                           ),
                           React.createElement("div", { "aria-hidden": "true", className: "text-lg font-black text-emerald-500" }, "\u2192"),
                           React.createElement("div", { className: "rounded-xl border-2 border-emerald-400 bg-emerald-700 p-2 text-center text-white shadow-md" },
                             React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, selectedPlant.icon || '\uD83C\uDF3F'),
-                            React.createElement("div", { className: "text-[9px] font-black" }, "PHOTOSYNTHESIS"),
-                            React.createElement("div", { className: "mt-0.5 text-[8px] text-emerald-100" }, selectedPlantPhotosynthesisActive ? "active now" : "depends on light period")
+                            React.createElement("div", { className: "text-[0.5625rem] font-black" }, "PHOTOSYNTHESIS"),
+                            React.createElement("div", { className: "mt-0.5 text-[0.5rem] text-emerald-100" }, selectedPlantPhotosynthesisActive ? "active now" : "depends on light period")
                           ),
                           React.createElement("div", { "aria-hidden": "true", className: "text-lg font-black text-emerald-500" }, "\u2192"),
                           React.createElement("div", { className: "space-y-1" },
                             [["O\u2082", "Oxygen", selectedPlantLiveContribution ? selectedPlantLiveContribution.oxygenPerHour.toFixed(3) + "/hr" : "\u2014"], ["\uD83C\uDF31", "Biomass", selectedPlantLiveContribution ? selectedPlantLiveContribution.projectedGrowth.toFixed(3) : "\u2014"], ["\uD83D\uDC1F", "Habitat", "cover + surface"]].map(function (output) {
                               return React.createElement("div", { key: output[1], className: "rounded-md border border-cyan-200 bg-cyan-50 p-1 text-center" },
-                                React.createElement("div", { className: "text-[10px] font-black text-cyan-900" }, output[0] + " " + output[1]),
-                                React.createElement("div", { className: "text-[8px] text-cyan-800" }, output[2])
+                                React.createElement("div", { className: "text-[0.625rem] font-black text-cyan-900" }, output[0] + " " + output[1]),
+                                React.createElement("div", { className: "text-[0.5rem] text-cyan-800" }, output[2])
                               );
                             })
                           )
                         ),
-                        React.createElement("figcaption", { className: "mt-1.5 text-[9px] leading-relaxed text-emerald-950" }, "At night, photosynthesis stops but respiration continues; this specimen's modeled night O\u2082 use is " + (selectedPlantLiveContribution ? selectedPlantLiveContribution.nightOxygenUse.toFixed(3) : "0.000") + " per hour.")
+                        React.createElement("figcaption", { className: "mt-1.5 text-[0.5625rem] leading-relaxed text-emerald-950" }, "At night, photosynthesis stops but respiration continues; this specimen's modeled night O\u2082 use is " + (selectedPlantLiveContribution ? selectedPlantLiveContribution.nightOxygenUse.toFixed(3) : "0.000") + " per hour.")
                       )
                     ),
 
                     React.createElement("figure", { className: "mt-2 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-2", 'aria-labelledby': "aquarium-plant-resource-title" },
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                        React.createElement("h5", { id: "aquarium-plant-resource-title", className: "text-[10px] font-black uppercase tracking-wide text-indigo-950" }, "Live limiting-factor diagram"),
-                        selectedPlantLimitingResource && React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (selectedPlantLimitingResource.status === 'ready' ? "bg-emerald-100 text-emerald-800" : selectedPlantLimitingResource.status === 'close' ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800") },
+                        React.createElement("h5", { id: "aquarium-plant-resource-title", className: "text-[0.625rem] font-black uppercase tracking-wide text-indigo-950" }, "Live limiting-factor diagram"),
+                        selectedPlantLimitingResource && React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[0.5625rem] font-black " + (selectedPlantLimitingResource.status === 'ready' ? "bg-emerald-100 text-emerald-800" : selectedPlantLimitingResource.status === 'close' ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800") },
                           selectedPlantLimitingResource.status === 'ready' ? "Resources meet modeled demand" : "Watch: " + selectedPlantLimitingResource.label
                         )
                       ),
                       React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-3" }, selectedPlantResourceDiagram.map(function (resource) {
                         var resourceColor = resource.status === 'ready' ? '#10b981' : resource.status === 'close' ? '#f59e0b' : '#f43f5e';
                         return React.createElement("div", { key: resource.id, className: "rounded-lg border border-white bg-white/80 p-2 shadow-sm" },
-                          React.createElement("div", { className: "flex items-center justify-between text-[9px]" },
+                          React.createElement("div", { className: "flex items-center justify-between text-[0.5625rem]" },
                             React.createElement("span", { className: "font-black text-slate-800" }, resource.icon + " " + resource.label),
                             React.createElement("span", { className: "font-bold " + (resource.status === 'ready' ? "text-emerald-700" : resource.status === 'close' ? "text-amber-700" : "text-rose-700") }, resource.status === 'ready' ? "READY" : resource.status === 'close' ? "NEAR" : "LIMITING")
                           ),
@@ -21968,59 +21968,59 @@ var d = (labToolData && labToolData._aquarium) || {};
                             React.createElement("div", { style: { width: resource.available + '%', height: '100%', borderRadius: '999px', background: resourceColor, transition: 'width 0.35s ease' } }),
                             React.createElement("div", { title: "Modeled need " + resource.need, style: { position: 'absolute', left: resource.need + '%', top: '-3px', bottom: '-3px', width: '2px', background: '#312e81', transform: 'translateX(-1px)' } })
                           ),
-                          React.createElement("div", { className: "mt-1 flex justify-between text-[8px] text-slate-600" },
+                          React.createElement("div", { className: "mt-1 flex justify-between text-[0.5rem] text-slate-600" },
                             React.createElement("span", null, "Available " + resource.available),
                             React.createElement("span", null, "Need \u2502 " + resource.need)
                           ),
-                          React.createElement("div", { className: "mt-0.5 truncate text-[8px] text-slate-500", title: resource.detail }, resource.detail)
+                          React.createElement("div", { className: "mt-0.5 truncate text-[0.5rem] text-slate-500", title: resource.detail }, resource.detail)
                         );
                       })),
-                      React.createElement("figcaption", { className: "mt-2 text-[9px] leading-relaxed text-indigo-900/80" }, "Teaching indices compare current simulator resources with this species' relative demand. The dark marker is modeled need; these are not laboratory units.")
+                      React.createElement("figcaption", { className: "mt-2 text-[0.5625rem] leading-relaxed text-indigo-900/80" }, "Teaching indices compare current simulator resources with this species' relative demand. The dark marker is modeled need; these are not laboratory units.")
                     ),
 
                     React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-2" },
                       React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
-                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Identity & habitat"),
-                        React.createElement("dl", { className: "mt-1 space-y-1 text-[10px] leading-relaxed" },
+                        React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, "Identity & habitat"),
+                        React.createElement("dl", { className: "mt-1 space-y-1 text-[0.625rem] leading-relaxed" },
                           React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Native range: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.nativeRange)),
                           React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Habitat: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.habitat)),
                           React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Growth form: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.form))
                         )
                       ),
                       React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
-                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Care envelope"),
-                        React.createElement("dl", { className: "mt-1 space-y-1 text-[10px] leading-relaxed" },
+                        React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, "Care envelope"),
+                        React.createElement("dl", { className: "mt-1 space-y-1 text-[0.625rem] leading-relaxed" },
                           React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Parameters: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.parameters)),
                           React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Placement: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.placement)),
                           React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Substrate: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.substrate))
                         )
                       ),
                       React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
-                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Light, carbon & nutrition"),
-                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Light: "), selectedPlantProfile.lightGuide),
-                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "CO\u2082: "), selectedPlantProfile.co2Guide),
-                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Nutrition: "), selectedPlantProfile.nutrition)
+                        React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, "Light, carbon & nutrition"),
+                        React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Light: "), selectedPlantProfile.lightGuide),
+                        React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "CO\u2082: "), selectedPlantProfile.co2Guide),
+                        React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Nutrition: "), selectedPlantProfile.nutrition)
                       ),
                       React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
-                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Growth & maintenance"),
-                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Propagation: "), selectedPlantProfile.propagation),
-                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Routine: "), selectedPlantProfile.maintenance),
-                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Diagnosis: "), selectedPlantProfile.diagnosis)
+                        React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-emerald-800" }, "Growth & maintenance"),
+                        React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Propagation: "), selectedPlantProfile.propagation),
+                        React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Routine: "), selectedPlantProfile.maintenance),
+                        React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Diagnosis: "), selectedPlantProfile.diagnosis)
                       )
                     ),
                     React.createElement("details", { className: "mt-2 rounded-lg border border-emerald-100 bg-emerald-50/40 p-2" },
-                      React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-emerald-900" }, "Ecology, compatibility & aquascaping"),
-                      React.createElement("p", { className: "mt-2 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Compatibility: "), selectedPlantProfile.compatibility),
-                      React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Ecology: "), selectedPlantProfile.ecology),
-                      React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Aquascape role: "), selectedPlantProfile.aquascape),
-                      React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-rose-700" }, React.createElement("strong", null, "Watch for: "), selectedPlantProfile.cautions)
+                      React.createElement("summary", { className: "cursor-pointer text-[0.625rem] font-black text-emerald-900" }, "Ecology, compatibility & aquascaping"),
+                      React.createElement("p", { className: "mt-2 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Compatibility: "), selectedPlantProfile.compatibility),
+                      React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Ecology: "), selectedPlantProfile.ecology),
+                      React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Aquascape role: "), selectedPlantProfile.aquascape),
+                      React.createElement("p", { className: "mt-1 text-[0.625rem] leading-relaxed text-rose-700" }, React.createElement("strong", null, "Watch for: "), selectedPlantProfile.cautions)
                     ),
                     tankPlants.indexOf(selectedPlant.id) !== -1 && selectedPlantLiveContribution && React.createElement("div", { className: "mt-3 rounded-lg border border-cyan-200 bg-cyan-50 p-2" },
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-900" }, "Live specimen contribution"),
-                        React.createElement("span", { className: "text-[9px] font-bold " + (selectedPlantPhotosynthesisActive ? "text-emerald-700" : "text-slate-600") }, selectedPlantPhotosynthesisActive ? "\u25CF Photosynthesis active" : "\u25CB Photosynthesis paused")
+                        React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-cyan-900" }, "Live specimen contribution"),
+                        React.createElement("span", { className: "text-[0.5625rem] font-bold " + (selectedPlantPhotosynthesisActive ? "text-emerald-700" : "text-slate-600") }, selectedPlantPhotosynthesisActive ? "\u25CF Photosynthesis active" : "\u25CB Photosynthesis paused")
                       ),
-                      React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1 text-[9px] sm:grid-cols-5" },
+                      React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1 text-[0.5625rem] sm:grid-cols-5" },
                         [["O\u2082 / hr", selectedPlantLiveContribution.oxygenPerHour.toFixed(3)], ["NO\u2083 / hr", selectedPlantLiveContribution.nitrateUsePerHour.toFixed(3)], ["CO\u2082 / hr", selectedPlantLiveContribution.co2UsePerHour.toFixed(3)], ["Night O\u2082 use", selectedPlantLiveContribution.nightOxygenUse.toFixed(3)], ["Growth forecast", selectedPlantLiveContribution.projectedGrowth.toFixed(3)]].map(function (metric) {
                           return React.createElement("div", { key: metric[0], className: "rounded bg-white p-1.5 text-center" },
                             React.createElement("div", { className: "font-black text-cyan-900" }, metric[1]),
@@ -22028,18 +22028,18 @@ var d = (labToolData && labToolData._aquarium) || {};
                           );
                         })
                       ),
-                      React.createElement("p", { className: "mt-1.5 text-[9px] leading-relaxed text-cyan-900/80" }, "Rates are simulator estimates using this specimen's health, biomass, light output, algae shading, and current photoperiod.")
+                      React.createElement("p", { className: "mt-1.5 text-[0.5625rem] leading-relaxed text-cyan-900/80" }, "Rates are simulator estimates using this specimen's health, biomass, light output, algae shading, and current photoperiod.")
                     ),
                     tankPlants.indexOf(selectedPlant.id) !== -1 && React.createElement("div", { className: "mt-2", role: "status" },
-                      React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Care signals"),
+                      React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-700" }, "Care signals"),
                       React.createElement("ul", { className: "mt-1 space-y-1" }, selectedPlantCareAlerts.map(function (alert, alertIndex) {
                         var alertStyle = alert.severity === 'danger' ? 'border-rose-200 bg-rose-50 text-rose-800' : alert.severity === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800';
-                        return React.createElement("li", { key: 'plant-alert-' + alertIndex, className: "rounded border p-1.5 text-[10px] leading-relaxed " + alertStyle }, alert.text);
+                        return React.createElement("li", { key: 'plant-alert-' + alertIndex, className: "rounded border p-1.5 text-[0.625rem] leading-relaxed " + alertStyle }, alert.text);
                       }))
                     ),
                     React.createElement("div", { className: "mt-3 rounded-lg border border-violet-200 bg-violet-50 p-2" },
-                      React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-violet-900" }, "Care reasoning check"),
-                      React.createElement("p", { className: "mt-1 text-[10px] font-bold text-slate-700" }, "Which care plan best fits " + selectedPlant.name + "?"),
+                      React.createElement("h5", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-900" }, "Care reasoning check"),
+                      React.createElement("p", { className: "mt-1 text-[0.625rem] font-bold text-slate-700" }, "Which care plan best fits " + selectedPlant.name + "?"),
                       React.createElement("div", { className: "mt-2 space-y-1" }, selectedPlantCheckOptions.map(function (option, optionIndex) {
                         var wasSelected = selectedPlantLearningAnswer && selectedPlantLearningAnswer.selected === optionIndex;
                         return React.createElement("button", {
@@ -22047,11 +22047,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                           type: "button",
                           onClick: function () { answerPlantLearningCheck(optionIndex); },
                           'aria-pressed': !!wasSelected,
-                          className: "block w-full rounded border p-1.5 text-left text-[10px] leading-relaxed transition-colors " + (wasSelected ? "border-violet-600 bg-violet-100 text-violet-950" : "border-violet-100 bg-white text-slate-700 hover:border-violet-400")
+                          className: "block w-full rounded border p-1.5 text-left text-[0.625rem] leading-relaxed transition-colors " + (wasSelected ? "border-violet-600 bg-violet-100 text-violet-950" : "border-violet-100 bg-white text-slate-700 hover:border-violet-400")
                         }, String.fromCharCode(65 + optionIndex) + ". " + option);
                       })),
                       selectedPlantLearningAnswer && React.createElement("div", {
-                        className: "mt-2 rounded p-1.5 text-[10px] leading-relaxed " + (selectedPlantLearningAnswer.correct ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"),
+                        className: "mt-2 rounded p-1.5 text-[0.625rem] leading-relaxed " + (selectedPlantLearningAnswer.correct ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"),
                         role: "status"
                       },
                         React.createElement("strong", null, selectedPlantLearningAnswer.correct ? "Correct. " : "Not quite. "),
@@ -22068,7 +22068,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Ecosystem tip
 
-                  tankPlants.length > 0 && React.createElement("div", { className: "mt-2 text-[11px] text-emerald-600/80 bg-emerald-100/40 rounded-lg p-2 leading-relaxed" },
+                  tankPlants.length > 0 && React.createElement("div", { className: "mt-2 text-[0.6875rem] text-emerald-600/80 bg-emerald-100/40 rounded-lg p-2 leading-relaxed" },
 
                     "\uD83D\uDCA1 ",
 
@@ -22124,7 +22124,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("h4", { className: "text-xs font-bold text-pink-700" }, __alloT('stem.aquarium.breeding_status', "\uD83D\uDC9E Breeding Status")),
 
-                      React.createElement("span", { className: "text-[11px] text-pink-700 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
+                      React.createElement("span", { className: "text-[0.6875rem] text-pink-700 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
 
                     ),
 
@@ -22170,13 +22170,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             React.createElement("div", { className: "flex-1 min-w-0" },
 
-                              React.createElement("div", { className: "text-[11px] font-bold text-pink-800 truncate" }, sp.name),
+                              React.createElement("div", { className: "text-[0.6875rem] font-bold text-pink-800 truncate" }, sp.name),
 
-                              React.createElement("div", { className: "text-[11px] text-pink-400" }, stratLabels[bData.type] + " \u2022 Pop: " + pop + "/" + bData.minPop + " min")
+                              React.createElement("div", { className: "text-[0.6875rem] text-pink-400" }, stratLabels[bData.type] + " \u2022 Pop: " + pop + "/" + bData.minPop + " min")
 
                             ),
 
-                            isGestating && React.createElement("span", { className: "text-[11px] font-mono text-pink-700 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
+                            isGestating && React.createElement("span", { className: "text-[0.6875rem] font-mono text-pink-700 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
 
                           ),
 
@@ -22190,23 +22190,23 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             React.createElement("div", { className: "flex justify-between mt-0.5" },
 
-                              React.createElement("span", { className: "text-[11px] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
+                              React.createElement("span", { className: "text-[0.6875rem] text-pink-400" }, bs.stage === 'gestating' && bData.type === 'egg_layer' && bs.eggsLogged ? '\uD83E\uDD5A Eggs developing...' : '\u2764\uFE0F Gestating...'),
 
-                              React.createElement("span", { className: "text-[11px] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
+                              React.createElement("span", { className: "text-[0.6875rem] text-pink-400" }, "Expected: " + bs.fryCount + " fry")
 
                             )
 
                           ),
 
-                          !isGestating && cooldownLeft > 0 && React.createElement("div", { className: "mt-1 text-[11px] text-slate-600 italic" }, "\u23F3 Cooldown: " + cooldownLeft + " ticks remaining"),
+                          !isGestating && cooldownLeft > 0 && React.createElement("div", { className: "mt-1 text-[0.6875rem] text-slate-600 italic" }, "\u23F3 Cooldown: " + cooldownLeft + " ticks remaining"),
 
                           !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
 
-                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (popOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (popOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
 
-                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (stressOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
 
-                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
+                            React.createElement("span", { className: "text-[0.6875rem] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
 
                           )
 
@@ -22216,7 +22216,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     ),
 
-                    React.createElement("div", { className: "mt-2 text-[11px] text-pink-600/80 bg-pink-100/40 rounded-lg p-2 leading-relaxed" },
+                    React.createElement("div", { className: "mt-2 text-[0.6875rem] text-pink-600/80 bg-pink-100/40 rounded-lg p-2 leading-relaxed" },
 
                       "\uD83D\uDCA1 ",
 
@@ -22912,12 +22912,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 p-3" },
                     React.createElement("div", null,
                       React.createElement("h4", { id: "aquarium-habitat-studio-title", className: "text-sm font-black text-teal-100" }, "\uD83E\uDEA8 Spatial Habitat Studio"),
-                      React.createElement("p", { className: "mt-0.5 max-w-2xl text-[9px] leading-relaxed text-cyan-100" }, "Design the tank in three dimensions, then test how shelter, territory boundaries, flow breaks, plant anchors, and open swimming space change living-system vitality.")
+                      React.createElement("p", { className: "mt-0.5 max-w-2xl text-[0.5625rem] leading-relaxed text-cyan-100" }, "Design the tank in three dimensions, then test how shelter, territory boundaries, flow breaks, plant anchors, and open swimming space change living-system vitality.")
                     ),
                     React.createElement("button", {
                       type: "button", 'aria-expanded': habitatStudioOpen, 'aria-controls': "aquarium-habitat-studio-body",
                       onClick: function() { upd('habitatStudioOpen', !habitatStudioOpen); },
-                      className: "rounded-lg border border-teal-200/40 bg-white/10 px-3 py-1.5 text-[10px] font-black text-teal-50 hover:bg-white/20"
+                      className: "rounded-lg border border-teal-200/40 bg-white/10 px-3 py-1.5 text-[0.625rem] font-black text-teal-50 hover:bg-white/20"
                     }, habitatStudioOpen ? "Close studio" : (habitatLayout.length ? "Edit habitat" : "Build habitat"))
                   ),
                   React.createElement("div", { className: "grid grid-cols-2 gap-px border-t border-white/10 bg-white/10 sm:grid-cols-5", role: "list", 'aria-label': "Current habitat scores" },
@@ -22930,7 +22930,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     ].map(function(metric) {
                       return React.createElement("div", { key: metric.label, role: "listitem", className: "bg-slate-950/55 p-2 text-center" },
                         React.createElement("div", { className: "text-base font-black " + (metric.value >= 70 ? "text-emerald-300" : metric.value >= 35 ? "text-amber-300" : "text-rose-300") }, metric.icon + " " + metric.value),
-                        React.createElement("div", { className: "text-[7px] font-bold uppercase tracking-wide text-slate-300" }, metric.label)
+                        React.createElement("div", { className: "text-[0.4375rem] font-bold uppercase tracking-wide text-slate-300" }, metric.label)
                       );
                     })
                   ),
@@ -22938,39 +22938,39 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement("section", { className: "overflow-hidden rounded-xl border border-amber-300/30 bg-gradient-to-br from-amber-950/80 via-slate-950/70 to-violet-950/70", 'aria-labelledby': "aquarium-habitat-missions-title" },
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 p-2.5" },
                         React.createElement("div", null,
-                          React.createElement("h5", { id: "aquarium-habitat-missions-title", className: "text-[10px] font-black text-amber-100" }, "🎯 3D Habitat Field Missions"),
-                          React.createElement("p", { className: "text-[8px] text-amber-200" }, "Predict → build → observe → revise and explain. Stars reflect mission success, fair testing, and organism welfare—not prediction accuracy.")
+                          React.createElement("h5", { id: "aquarium-habitat-missions-title", className: "text-[0.625rem] font-black text-amber-100" }, "🎯 3D Habitat Field Missions"),
+                          React.createElement("p", { className: "text-[0.5rem] text-amber-200" }, "Predict → build → observe → revise and explain. Stars reflect mission success, fair testing, and organism welfare—not prediction accuracy.")
                         ),
                         React.createElement("div", { className: "flex items-center gap-1.5" },
-                          React.createElement("span", { className: "rounded-full bg-amber-300 px-2 py-0.5 text-[8px] font-black text-amber-950", 'aria-label': habitatMissionPoints + " habitat mission points" }, "🏅 " + habitatMissionPoints + " pts"),
-                          React.createElement("span", { className: "rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[8px] font-bold text-white" }, Object.keys(habitatMissionCompleted).filter(function(missionId) { return habitatMissionCompleted[missionId] && habitatMissionCompleted[missionId].success; }).length + "/" + habitatMissionCatalog.length + " complete"),
-                          React.createElement("button", { type: "button", 'aria-expanded': habitatMissionPanelOpen, 'aria-controls': "aquarium-habitat-mission-body", onClick: function() { upd('habitatMissionPanelOpen', !habitatMissionPanelOpen); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[8px] font-bold text-white" }, habitatMissionPanelOpen ? "Hide" : "Show")
+                          React.createElement("span", { className: "rounded-full bg-amber-300 px-2 py-0.5 text-[0.5rem] font-black text-amber-950", 'aria-label': habitatMissionPoints + " habitat mission points" }, "🏅 " + habitatMissionPoints + " pts"),
+                          React.createElement("span", { className: "rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[0.5rem] font-bold text-white" }, Object.keys(habitatMissionCompleted).filter(function(missionId) { return habitatMissionCompleted[missionId] && habitatMissionCompleted[missionId].success; }).length + "/" + habitatMissionCatalog.length + " complete"),
+                          React.createElement("button", { type: "button", 'aria-expanded': habitatMissionPanelOpen, 'aria-controls': "aquarium-habitat-mission-body", onClick: function() { upd('habitatMissionPanelOpen', !habitatMissionPanelOpen); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[0.5rem] font-bold text-white" }, habitatMissionPanelOpen ? "Hide" : "Show")
                         )
                       ),
                       habitatMissionPanelOpen && React.createElement("div", { id: "aquarium-habitat-mission-body", className: "border-t border-white/10 p-2.5" },
                         !activeHabitatMission
                           ? React.createElement(React.Fragment, null,
-                              tankFish.length === 0 && React.createElement("div", { role: "note", className: "mb-2 rounded-lg border border-amber-300/30 bg-amber-400/10 p-2 text-[8px] text-amber-100" }, "Add at least one resident before starting a mission so the model can evaluate organism-specific consequences."),
+                              tankFish.length === 0 && React.createElement("div", { role: "note", className: "mb-2 rounded-lg border border-amber-300/30 bg-amber-400/10 p-2 text-[0.5rem] text-amber-100" }, "Add at least one resident before starting a mission so the model can evaluate organism-specific consequences."),
                               React.createElement("div", { className: "grid gap-2 md:grid-cols-2 xl:grid-cols-4", role: "list", 'aria-label': "Habitat field missions" }, habitatMissionCatalog.map(function(mission) {
                                 var missionRecord = habitatMissionCompleted[mission.id] || null;
                                 return React.createElement("article", { key: mission.id, role: "listitem", className: "rounded-lg border p-2 " + (missionRecord && missionRecord.success ? "border-emerald-300/35 bg-emerald-400/10" : "border-white/15 bg-white/5") },
                                   React.createElement("div", { className: "flex items-start justify-between gap-1" },
-                                    React.createElement("strong", { className: "text-[9px] text-white" }, mission.icon + " " + mission.title),
-                                    missionRecord && React.createElement("span", { className: "text-[8px] text-amber-300", 'aria-label': missionRecord.stars + " of 3 stars" }, "★".repeat(Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))) + "☆".repeat(3 - Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))))
+                                    React.createElement("strong", { className: "text-[0.5625rem] text-white" }, mission.icon + " " + mission.title),
+                                    missionRecord && React.createElement("span", { className: "text-[0.5rem] text-amber-300", 'aria-label': missionRecord.stars + " of 3 stars" }, "★".repeat(Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))) + "☆".repeat(3 - Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))))
                                   ),
-                                  React.createElement("p", { className: "mt-1 min-h-[3.3em] text-[7px] leading-relaxed text-slate-200" }, mission.brief),
-                                  React.createElement("div", { className: "mt-1 text-[7px] text-slate-400" }, mission.requiredTicks + " observation ticks" + (missionRecord ? " • " + missionRecord.attempts + " attempt" + (missionRecord.attempts === 1 ? "" : "s") : "")),
-                                  React.createElement("button", { type: "button", disabled: tankFish.length === 0, onClick: function() { startHabitatMission(mission.id); }, className: "mt-1.5 w-full rounded border border-amber-200/30 bg-amber-300/15 px-2 py-1 text-[8px] font-black text-amber-100 hover:bg-amber-300 hover:text-amber-950 disabled:opacity-40" }, missionRecord ? "Replay mission" : "Start mission")
+                                  React.createElement("p", { className: "mt-1 min-h-[3.3em] text-[0.4375rem] leading-relaxed text-slate-200" }, mission.brief),
+                                  React.createElement("div", { className: "mt-1 text-[0.4375rem] text-slate-400" }, mission.requiredTicks + " observation ticks" + (missionRecord ? " • " + missionRecord.attempts + " attempt" + (missionRecord.attempts === 1 ? "" : "s") : "")),
+                                  React.createElement("button", { type: "button", disabled: tankFish.length === 0, onClick: function() { startHabitatMission(mission.id); }, className: "mt-1.5 w-full rounded border border-amber-200/30 bg-amber-300/15 px-2 py-1 text-[0.5rem] font-black text-amber-100 hover:bg-amber-300 hover:text-amber-950 disabled:opacity-40" }, missionRecord ? "Replay mission" : "Start mission")
                                 );
                               }))
                             )
                           : React.createElement(React.Fragment, null,
                               React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                                 React.createElement("div", null,
-                                  React.createElement("strong", { className: "text-[11px] text-white" }, activeHabitatMission.icon + " " + activeHabitatMission.title),
-                                  React.createElement("p", { className: "mt-0.5 text-[8px] text-slate-200" }, activeHabitatMission.brief)
+                                  React.createElement("strong", { className: "text-[0.6875rem] text-white" }, activeHabitatMission.icon + " " + activeHabitatMission.title),
+                                  React.createElement("p", { className: "mt-0.5 text-[0.5rem] text-slate-200" }, activeHabitatMission.brief)
                                 ),
-                                React.createElement("button", { type: "button", onClick: function() { updMulti({ habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionRevision: '', habitatMissionReflection: '' }); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[8px] font-bold text-white" }, "Mission board")
+                                React.createElement("button", { type: "button", onClick: function() { updMulti({ habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionRevision: '', habitatMissionReflection: '' }); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[0.5rem] font-bold text-white" }, "Mission board")
                               ),
                               React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1", role: "list", 'aria-label': "Mission learning-loop stages" },
                                 [
@@ -22979,81 +22979,81 @@ var d = (labToolData && labToolData._aquarium) || {};
                                   var currentIndex = ['predict', 'build', 'observe', 'reflect'].indexOf(habitatMissionStage);
                                   var complete = stageIndex < currentIndex;
                                   var current = stage.id === habitatMissionStage;
-                                  return React.createElement("div", { key: stage.id, role: "listitem", className: "rounded px-1 py-1 text-center text-[7px] font-black " + (current ? "bg-amber-300 text-amber-950" : complete ? "bg-emerald-400/20 text-emerald-200" : "bg-white/5 text-slate-400"), 'aria-current': current ? 'step' : undefined }, (complete ? "✓ " : "") + stage.label);
+                                  return React.createElement("div", { key: stage.id, role: "listitem", className: "rounded px-1 py-1 text-center text-[0.4375rem] font-black " + (current ? "bg-amber-300 text-amber-950" : complete ? "bg-emerald-400/20 text-emerald-200" : "bg-white/5 text-slate-400"), 'aria-current': current ? 'step' : undefined }, (complete ? "✓ " : "") + stage.label);
                                 })
                               ),
                               habitatMissionStage === 'predict' && React.createElement("div", { className: "mt-2 rounded-lg border border-violet-300/25 bg-violet-400/10 p-2" },
-                                React.createElement("strong", { className: "text-[9px] text-violet-100" }, "Prediction: which outcome will improve the most?"),
-                                React.createElement("p", { className: "mt-0.5 text-[7px] text-violet-200" }, "Commit before editing. Any prediction can earn full inquiry credit when you run a fair test and revise from evidence."),
+                                React.createElement("strong", { className: "text-[0.5625rem] text-violet-100" }, "Prediction: which outcome will improve the most?"),
+                                React.createElement("p", { className: "mt-0.5 text-[0.4375rem] text-violet-200" }, "Commit before editing. Any prediction can earn full inquiry credit when you run a fair test and revise from evidence."),
                                 React.createElement("div", { className: "mt-1.5 grid grid-cols-2 gap-1 sm:grid-cols-4", role: "group", 'aria-label': "Choose mission prediction" },
                                   [
                                     { id: 'shelter', label: '🏠 Shelter' }, { id: 'territory', label: '⚑ Territory' }, { id: 'openSwim', label: '🌊 Open swim' }, { id: 'minimum', label: '🛟 Weakest resident' }
-                                  ].map(function(option) { return React.createElement("button", { key: option.id, type: "button", onClick: function() { chooseHabitatMissionPrediction(option.id); }, className: "rounded border border-violet-200/25 bg-slate-950/35 px-2 py-1.5 text-[8px] font-bold text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, option.label); })
+                                  ].map(function(option) { return React.createElement("button", { key: option.id, type: "button", onClick: function() { chooseHabitatMissionPrediction(option.id); }, className: "rounded border border-violet-200/25 bg-slate-950/35 px-2 py-1.5 text-[0.5rem] font-bold text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, option.label); })
                                 )
                               ),
                               habitatMissionStage === 'build' && React.createElement("div", { className: "mt-2 rounded-lg border border-cyan-300/25 bg-cyan-400/10 p-2" },
                                 React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                                   React.createElement("div", null,
-                                    React.createElement("strong", { className: "text-[9px] text-cyan-100" }, "Build one controlled intervention"),
-                                    React.createElement("p", { className: "text-[7px] text-cyan-200" }, "Prediction locked: " + habitatMissionPrediction + ". Use 3D, plan controls, or a what-if forecast.")
+                                    React.createElement("strong", { className: "text-[0.5625rem] text-cyan-100" }, "Build one controlled intervention"),
+                                    React.createElement("p", { className: "text-[0.4375rem] text-cyan-200" }, "Prediction locked: " + habitatMissionPrediction + ". Use 3D, plan controls, or a what-if forecast.")
                                   ),
-                                  React.createElement("span", { role: "status", className: "rounded-full px-2 py-0.5 text-[7px] font-black " + (habitatMissionLayoutChanged ? "bg-emerald-300 text-emerald-950" : "bg-slate-700 text-slate-200") }, habitatMissionLayoutChanged ? "Intervention detected" : "No habitat change yet")
+                                  React.createElement("span", { role: "status", className: "rounded-full px-2 py-0.5 text-[0.4375rem] font-black " + (habitatMissionLayoutChanged ? "bg-emerald-300 text-emerald-950" : "bg-slate-700 text-slate-200") }, habitatMissionLayoutChanged ? "Intervention detected" : "No habitat change yet")
                                 ),
                                 React.createElement("div", { className: "mt-1.5 grid grid-cols-3 gap-1 text-center" },
                                   [
                                     { label: 'Shelter', before: habitatMissionBaseline.shelter, now: habitatMissionCurrent.shelter },
                                     { label: 'Open swim', before: habitatMissionBaseline.openSwim, now: habitatMissionCurrent.openSwim },
                                     { label: 'Minimum fit', before: habitatMissionBaseline.minimum, now: habitatMissionCurrent.minimum }
-                                  ].map(function(metric) { return React.createElement("div", { key: metric.label, className: "rounded bg-slate-950/40 p-1 text-[7px] text-slate-200" }, React.createElement("strong", { className: "block text-[9px] text-white" }, metric.before + " → " + metric.now), metric.label); })
+                                  ].map(function(metric) { return React.createElement("div", { key: metric.label, className: "rounded bg-slate-950/40 p-1 text-[0.4375rem] text-slate-200" }, React.createElement("strong", { className: "block text-[0.5625rem] text-white" }, metric.before + " → " + metric.now), metric.label); })
                                 ),
-                                React.createElement("button", { type: "button", disabled: !habitatMissionLayoutChanged, onClick: beginHabitatMissionObservation, className: "mt-2 w-full rounded border border-cyan-200/30 bg-cyan-300/15 px-2 py-1.5 text-[8px] font-black text-cyan-100 hover:bg-cyan-300 hover:text-cyan-950 disabled:opacity-40" }, "Lock intervention and observe")
+                                React.createElement("button", { type: "button", disabled: !habitatMissionLayoutChanged, onClick: beginHabitatMissionObservation, className: "mt-2 w-full rounded border border-cyan-200/30 bg-cyan-300/15 px-2 py-1.5 text-[0.5rem] font-black text-cyan-100 hover:bg-cyan-300 hover:text-cyan-950 disabled:opacity-40" }, "Lock intervention and observe")
                               ),
                               habitatMissionStage === 'observe' && React.createElement("div", { className: "mt-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 p-2" },
                                 React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                                   React.createElement("div", null,
-                                    React.createElement("strong", { className: "text-[9px] text-emerald-100" }, "Observe organism response in 3D"),
-                                    React.createElement("p", { className: "text-[7px] text-emerald-200" }, "Behavior paths are active. Watch movement range, stress, vitality, and exchange evidence.")
+                                    React.createElement("strong", { className: "text-[0.5625rem] text-emerald-100" }, "Observe organism response in 3D"),
+                                    React.createElement("p", { className: "text-[0.4375rem] text-emerald-200" }, "Behavior paths are active. Watch movement range, stress, vitality, and exchange evidence.")
                                   ),
-                                  React.createElement("button", { type: "button", onClick: function() { if (simRunning) { upd('simRunning', false); stopAquariumRuntime(false); } else { var missionSpeed = simSpeed || 1; updMulti({ simRunning: true, simSpeed: missionSpeed }); startAquaAmbient(); startAquaSimInterval(missionSpeed); } }, className: "rounded border border-emerald-200/30 px-2 py-1 text-[8px] font-black " + (simRunning ? "bg-rose-400/20 text-rose-100" : "bg-emerald-300 text-emerald-950") }, simRunning ? "Pause observation" : "Run observation")
+                                  React.createElement("button", { type: "button", onClick: function() { if (simRunning) { upd('simRunning', false); stopAquariumRuntime(false); } else { var missionSpeed = simSpeed || 1; updMulti({ simRunning: true, simSpeed: missionSpeed }); startAquaAmbient(); startAquaSimInterval(missionSpeed); } }, className: "rounded border border-emerald-200/30 px-2 py-1 text-[0.5rem] font-black " + (simRunning ? "bg-rose-400/20 text-rose-100" : "bg-emerald-300 text-emerald-950") }, simRunning ? "Pause observation" : "Run observation")
                                 ),
-                                !habitatMissionObservationControlled && React.createElement("div", { role: "alert", className: "mt-1.5 rounded-lg border border-rose-300/35 bg-rose-400/15 p-1.5 text-[7px] font-bold text-rose-100" }, "Confounded trial: the habitat changed after observation began. Evaluate to inspect the failed control criterion, or return to the mission board and retry."),
+                                !habitatMissionObservationControlled && React.createElement("div", { role: "alert", className: "mt-1.5 rounded-lg border border-rose-300/35 bg-rose-400/15 p-1.5 text-[0.4375rem] font-bold text-rose-100" }, "Confounded trial: the habitat changed after observation began. Evaluate to inspect the failed control criterion, or return to the mission board and retry."),
                                 React.createElement("div", { className: "mt-1.5 h-2 overflow-hidden rounded-full bg-slate-950/60", role: "progressbar", 'aria-label': "Mission observation progress", 'aria-valuemin': 0, 'aria-valuemax': activeHabitatMission.requiredTicks, 'aria-valuenow': Math.min(activeHabitatMission.requiredTicks, habitatMissionElapsedTicks) }, React.createElement("div", { className: "h-full bg-emerald-400 transition-all", style: { width: Math.min(100, habitatMissionElapsedTicks / activeHabitatMission.requiredTicks * 100) + '%' } })),
-                                React.createElement("div", { className: "mt-1 flex flex-wrap justify-between gap-1 text-[7px] text-emerald-100" },
+                                React.createElement("div", { className: "mt-1 flex flex-wrap justify-between gap-1 text-[0.4375rem] text-emerald-100" },
                                   React.createElement("span", null, habitatMissionElapsedTicks + "/" + activeHabitatMission.requiredTicks + " ticks"),
                                   React.createElement("span", null, "Vitality " + habitatMissionCurrent.vitality + " (" + (habitatMissionLiveEvaluation.deltas.vitality >= 0 ? "+" : "") + habitatMissionLiveEvaluation.deltas.vitality + ")"),
                                   React.createElement("span", null, "Stress " + habitatMissionCurrent.stress + " (" + (habitatMissionLiveEvaluation.deltas.stress >= 0 ? "+" : "") + habitatMissionLiveEvaluation.deltas.stress + ")")
                                 ),
-                                React.createElement("button", { type: "button", disabled: habitatMissionElapsedTicks < activeHabitatMission.requiredTicks, onClick: evaluateActiveHabitatMission, className: "mt-2 w-full rounded border border-emerald-200/30 bg-emerald-300/15 px-2 py-1.5 text-[8px] font-black text-emerald-100 hover:bg-emerald-300 hover:text-emerald-950 disabled:opacity-40" }, habitatMissionElapsedTicks < activeHabitatMission.requiredTicks ? "Observe " + (activeHabitatMission.requiredTicks - habitatMissionElapsedTicks) + " more ticks" : "Evaluate mission evidence")
+                                React.createElement("button", { type: "button", disabled: habitatMissionElapsedTicks < activeHabitatMission.requiredTicks, onClick: evaluateActiveHabitatMission, className: "mt-2 w-full rounded border border-emerald-200/30 bg-emerald-300/15 px-2 py-1.5 text-[0.5rem] font-black text-emerald-100 hover:bg-emerald-300 hover:text-emerald-950 disabled:opacity-40" }, habitatMissionElapsedTicks < activeHabitatMission.requiredTicks ? "Observe " + (activeHabitatMission.requiredTicks - habitatMissionElapsedTicks) + " more ticks" : "Evaluate mission evidence")
                               ),
                               habitatMissionStage === 'reflect' && habitatMissionOutcome && React.createElement("div", { className: "mt-2 rounded-lg border p-2 " + (habitatMissionOutcome.success ? "border-emerald-300/30 bg-emerald-400/10" : "border-amber-300/30 bg-amber-400/10") },
                                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                                   React.createElement("div", null,
-                                    React.createElement("strong", { className: "text-[10px] text-white" }, habitatMissionOutcome.success ? "Targets met — explain why" : "Revise using the evidence"),
-                                    React.createElement("p", { className: "text-[7px] text-slate-200" }, "Prediction " + (habitatMissionOutcome.predictionMatched ? "matched" : "differed from") + " the strongest change; this does not affect stars • vitality " + (habitatMissionOutcome.vitalityProtected ? "protected" : "was not protected"))
+                                    React.createElement("strong", { className: "text-[0.625rem] text-white" }, habitatMissionOutcome.success ? "Targets met — explain why" : "Revise using the evidence"),
+                                    React.createElement("p", { className: "text-[0.4375rem] text-slate-200" }, "Prediction " + (habitatMissionOutcome.predictionMatched ? "matched" : "differed from") + " the strongest change; this does not affect stars • vitality " + (habitatMissionOutcome.vitalityProtected ? "protected" : "was not protected"))
                                   ),
                                   React.createElement("span", { className: "text-sm text-amber-300", 'aria-label': habitatMissionOutcome.stars + " of 3 investigation stars earned" }, "★".repeat(habitatMissionOutcome.stars) + "☆".repeat(3 - habitatMissionOutcome.stars))
                                 ),
-                                React.createElement("p", { className: "mt-1 text-[7px] font-bold text-amber-200" }, "Investigation stars: mission targets • controlled observation • welfare protection"),
-                                React.createElement("div", { className: "mt-1.5 grid gap-1 sm:grid-cols-2", role: "list", 'aria-label': "Mission success criteria" }, habitatMissionOutcome.conditions.map(function(condition) { return React.createElement("div", { key: condition.id, role: "listitem", className: "rounded border px-1.5 py-1 text-[7px] " + (condition.met ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100" : "border-rose-300/25 bg-rose-400/10 text-rose-100") }, (condition.met ? "✓ " : "○ ") + condition.label); })),
+                                React.createElement("p", { className: "mt-1 text-[0.4375rem] font-bold text-amber-200" }, "Investigation stars: mission targets • controlled observation • welfare protection"),
+                                React.createElement("div", { className: "mt-1.5 grid gap-1 sm:grid-cols-2", role: "list", 'aria-label': "Mission success criteria" }, habitatMissionOutcome.conditions.map(function(condition) { return React.createElement("div", { key: condition.id, role: "listitem", className: "rounded border px-1.5 py-1 text-[0.4375rem] " + (condition.met ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100" : "border-rose-300/25 bg-rose-400/10 text-rose-100") }, (condition.met ? "✓ " : "○ ") + condition.label); })),
                                 React.createElement("fieldset", { className: "mt-2 rounded-lg border border-violet-200/25 bg-violet-400/10 p-2", 'data-aquarium-mission-revision': "true" },
-                                  React.createElement("legend", { className: "px-1 text-[8px] font-black text-violet-100" }, "How did the evidence affect your prediction?"),
+                                  React.createElement("legend", { className: "px-1 text-[0.5rem] font-black text-violet-100" }, "How did the evidence affect your prediction?"),
                                   React.createElement("div", { className: "grid gap-1 sm:grid-cols-3", role: "radiogroup", 'aria-label': "Habitat mission prediction revision" }, [
                                     { id: 'supported', label: 'It strengthened my explanation' },
                                     { id: 'revised', label: 'It changed my explanation' },
                                     { id: 'uncertain', label: 'I would run another test' }
                                   ].map(function(option) {
                                     var selectedRevision = habitatMissionRevision === option.id;
-                                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1 rounded border p-1.5 text-[7px] font-bold " + (selectedRevision ? "border-violet-200 bg-violet-200 text-violet-950" : "border-white/15 text-violet-100") },
+                                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1 rounded border p-1.5 text-[0.4375rem] font-bold " + (selectedRevision ? "border-violet-200 bg-violet-200 text-violet-950" : "border-white/15 text-violet-100") },
                                       React.createElement("input", { type: "radio", name: "aquarium-habitat-mission-revision", value: option.id, checked: selectedRevision, onChange: function() { upd('habitatMissionRevision', option.id); }, className: "mt-0.5 h-3.5 w-3.5 accent-violet-300" }),
                                       React.createElement("span", null, option.label)
                                     );
                                   }))
                                 ),
-                                React.createElement("label", { htmlFor: "aquarium-habitat-mission-reflection", className: "mt-2 block text-[8px] font-black text-white" }, "Prediction revision and evidence"),
-                                React.createElement("textarea", { id: "aquarium-habitat-mission-reflection", value: habitatMissionReflection, maxLength: 600, onChange: function(event) { upd('habitatMissionReflection', event.target.value.slice(0, 600)); }, placeholder: "State whether the evidence supported or changed your prediction. Cite at least two numbers or observations.", className: "mt-1 min-h-[66px] w-full rounded-lg border border-white/20 bg-slate-950/60 p-2 text-[8px] text-white placeholder:text-slate-400" }),
+                                React.createElement("label", { htmlFor: "aquarium-habitat-mission-reflection", className: "mt-2 block text-[0.5rem] font-black text-white" }, "Prediction revision and evidence"),
+                                React.createElement("textarea", { id: "aquarium-habitat-mission-reflection", value: habitatMissionReflection, maxLength: 600, onChange: function(event) { upd('habitatMissionReflection', event.target.value.slice(0, 600)); }, placeholder: "State whether the evidence supported or changed your prediction. Cite at least two numbers or observations.", className: "mt-1 min-h-[66px] w-full rounded-lg border border-white/20 bg-slate-950/60 p-2 text-[0.5rem] text-white placeholder:text-slate-400" }),
                                 React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-1" },
-                                  React.createElement("button", { type: "button", disabled: !habitatMissionRevision || habitatMissionReflection.trim().length < 20, 'aria-disabled': habitatMissionRevision && habitatMissionReflection.trim().length >= 20 ? 'false' : 'true', onClick: recordHabitatMissionReflection, className: "flex-1 rounded border border-amber-200/30 bg-amber-300 px-2 py-1.5 text-[8px] font-black text-amber-950 disabled:opacity-40" }, habitatMissionOutcome.success ? "Save revision and claim points" : "Record revision and return"),
-                                  !habitatMissionOutcome.success && React.createElement("button", { type: "button", onClick: retryHabitatMission, className: "rounded border border-white/20 bg-white/5 px-2 py-1.5 text-[8px] font-bold text-white" }, "Retry from current tank")
+                                  React.createElement("button", { type: "button", disabled: !habitatMissionRevision || habitatMissionReflection.trim().length < 20, 'aria-disabled': habitatMissionRevision && habitatMissionReflection.trim().length >= 20 ? 'false' : 'true', onClick: recordHabitatMissionReflection, className: "flex-1 rounded border border-amber-200/30 bg-amber-300 px-2 py-1.5 text-[0.5rem] font-black text-amber-950 disabled:opacity-40" }, habitatMissionOutcome.success ? "Save revision and claim points" : "Record revision and return"),
+                                  !habitatMissionOutcome.success && React.createElement("button", { type: "button", onClick: retryHabitatMission, className: "rounded border border-white/20 bg-white/5 px-2 py-1.5 text-[0.5rem] font-bold text-white" }, "Retry from current tank")
                                 )
                               )
                             )
@@ -23063,33 +23063,33 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement("div", { className: "flex gap-1", role: "group", 'aria-label': "Habitat view mode" },
                         ['plan', '3d'].map(function(viewMode) {
                           var active = habitatViewMode === viewMode;
-                          return React.createElement("button", { key: viewMode, type: "button", 'aria-pressed': active, onClick: function() { upd('habitatViewMode', viewMode); }, className: "rounded-lg border px-2.5 py-1 text-[9px] font-black " + (active ? "border-cyan-200 bg-cyan-300 text-slate-950" : "border-white/20 bg-white/5 text-cyan-100 hover:bg-white/10") }, viewMode === '3d' ? "3D orbit view" : "Accessible plan");
+                          return React.createElement("button", { key: viewMode, type: "button", 'aria-pressed': active, onClick: function() { upd('habitatViewMode', viewMode); }, className: "rounded-lg border px-2.5 py-1 text-[0.5625rem] font-black " + (active ? "border-cyan-200 bg-cyan-300 text-slate-950" : "border-white/20 bg-white/5 text-cyan-100 hover:bg-white/10") }, viewMode === '3d' ? "3D orbit view" : "Accessible plan");
                         })
                       ),
                       React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Habitat ecological overlay" },
                         ['none', 'shelter', 'territory', 'flow', 'light', 'organisms', 'interactions'].map(function(overlayId) {
                           var active = habitatOverlay === overlayId;
-                          return React.createElement("button", { key: overlayId, type: "button", 'aria-pressed': active, onClick: function() { upd('habitatOverlay', overlayId); }, className: "rounded-full border px-2 py-1 text-[8px] font-bold " + (active ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/20 bg-white/5 text-slate-200 hover:bg-white/10") }, overlayId.charAt(0).toUpperCase() + overlayId.slice(1));
+                          return React.createElement("button", { key: overlayId, type: "button", 'aria-pressed': active, onClick: function() { upd('habitatOverlay', overlayId); }, className: "rounded-full border px-2 py-1 text-[0.5rem] font-bold " + (active ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/20 bg-white/5 text-slate-200 hover:bg-white/10") }, overlayId.charAt(0).toUpperCase() + overlayId.slice(1));
                         })
                       ),
-                      React.createElement("button", { type: "button", onClick: undoHabitatEdit, disabled: !habitatUndoLayout.length && !habitatLayout.length, className: "rounded-lg border border-white/20 bg-white/5 px-2 py-1 text-[9px] font-bold text-white disabled:opacity-35" }, "\u21B6 Undo")
+                      React.createElement("button", { type: "button", onClick: undoHabitatEdit, disabled: !habitatUndoLayout.length && !habitatLayout.length, className: "rounded-lg border border-white/20 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-white disabled:opacity-35" }, "\u21B6 Undo")
                     ),
                     React.createElement("div", { className: "grid gap-3 xl:grid-cols-[190px_minmax(0,1fr)_220px]" },
                       React.createElement("aside", { className: "rounded-xl border border-white/10 bg-slate-950/45 p-2", 'aria-label': "Habitat object catalog" },
-                        React.createElement("strong", { className: "text-[9px] uppercase tracking-wide text-teal-200" }, "Add structure"),
+                        React.createElement("strong", { className: "text-[0.5625rem] uppercase tracking-wide text-teal-200" }, "Add structure"),
                         React.createElement("div", { className: "mt-1.5 space-y-1" }, habitatCatalog.map(function(type) {
                           return React.createElement("button", { key: type.id, type: "button", disabled: habitatLayout.length >= 12, onClick: function() { addHabitatItem(type.id); }, 'aria-label': "Add " + type.label + ". Shelter " + type.shelter + ", territory " + type.territory + ", flow break " + type.flowBreak + ".", className: "w-full rounded-lg border border-white/15 bg-white/5 p-1.5 text-left hover:border-teal-300 hover:bg-white/10 disabled:opacity-40" },
-                            React.createElement("span", { className: "flex items-center justify-between gap-1 text-[9px] font-black text-white" }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[7px] text-teal-200" }, "+" + type.shelter + " cover")),
-                            React.createElement("span", { className: "mt-0.5 block text-[7px] text-slate-300" }, "Territory " + type.territory + " \u2022 Flow " + type.flowBreak + " \u2022 Anchors " + type.plantAnchors)
+                            React.createElement("span", { className: "flex items-center justify-between gap-1 text-[0.5625rem] font-black text-white" }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[0.4375rem] text-teal-200" }, "+" + type.shelter + " cover")),
+                            React.createElement("span", { className: "mt-0.5 block text-[0.4375rem] text-slate-300" }, "Territory " + type.territory + " \u2022 Flow " + type.flowBreak + " \u2022 Anchors " + type.plantAnchors)
                           );
                         })),
-                        React.createElement("strong", { className: "mt-3 block text-[9px] uppercase tracking-wide text-teal-200" }, "Start from a pattern"),
+                        React.createElement("strong", { className: "mt-3 block text-[0.5625rem] uppercase tracking-wide text-teal-200" }, "Start from a pattern"),
                         React.createElement("div", { className: "mt-1 grid gap-1" },
                           [
                             { id: 'community', label: 'Balanced community' },
                             { id: 'spawning', label: 'Spawning refuge' },
                             { id: 'iwagumi', label: 'Open stone layout' }
-                          ].map(function(preset) { return React.createElement("button", { key: preset.id, type: "button", onClick: function() { applyHabitatPreset(preset.id); }, className: "rounded border border-teal-300/20 bg-teal-300/5 px-2 py-1 text-[8px] font-bold text-teal-100 hover:bg-teal-300/10" }, preset.label); })
+                          ].map(function(preset) { return React.createElement("button", { key: preset.id, type: "button", onClick: function() { applyHabitatPreset(preset.id); }, className: "rounded border border-teal-300/20 bg-teal-300/5 px-2 py-1 text-[0.5rem] font-bold text-teal-100 hover:bg-teal-300/10" }, preset.label); })
                         )
                       ),
                       React.createElement("div", { className: "min-w-0" },
@@ -23159,7 +23159,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                                 return React.createElement(React.Fragment, { key: 'organism-path-' + fitItem.id },
                                   anchorItem && React.createElement("svg", { className: "pointer-events-none absolute inset-0 z-[4] h-full w-full", viewBox: "0 0 100 100", preserveAspectRatio: "none", 'aria-hidden': "true" }, React.createElement("line", { x1: markerLeft, y1: trailTop, x2: anchorLeft, y2: anchorTop, stroke: trailColor, strokeWidth: focused ? 0.9 : 0.45, strokeDasharray: "2 2", opacity: focused ? 0.9 : 0.45 })),
                                   React.createElement("div", { className: "pointer-events-none absolute z-[4] rounded-[50%] border border-dashed", 'aria-hidden': "true", style: { left: trailLeft + '%', top: Math.max(1, Math.min(99 - trailHeight, trailTop - trailHeight / 2)) + '%', width: trailWidth + '%', height: trailHeight + '%', borderColor: trailColor, backgroundColor: trailColor + '12', boxShadow: focused ? '0 0 0 3px ' + trailColor + '55' : 'none' } }),
-                                  focused && React.createElement("div", { className: "pointer-events-none absolute z-[8] max-w-[150px] rounded bg-slate-950/90 px-1.5 py-1 text-[6px] font-bold leading-tight text-white", style: { left: Math.min(72, markerLeft + 4) + '%', top: Math.max(2, trailTop - 10) + '%' } }, fitItem.behaviorLabel),
+                                  focused && React.createElement("div", { className: "pointer-events-none absolute z-[8] max-w-[150px] rounded bg-slate-950/90 px-1.5 py-1 text-[0.375rem] font-bold leading-tight text-white", style: { left: Math.min(72, markerLeft + 4) + '%', top: Math.max(2, trailTop - 10) + '%' } }, fitItem.behaviorLabel),
                                   React.createElement("button", { type: "button", onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': focused, 'aria-label': "Focus " + fitItem.name + ". " + fitItem.behaviorLabel + ". " + fitItem.zone + " water occupancy. Habitat fit " + fitItem.score + " out of 100.", title: fitItem.name + " • " + fitItem.behaviorLabel + " • fit " + fitItem.score, className: "absolute z-[7] flex h-8 w-8 items-center justify-center rounded-full border bg-slate-950/85 text-base shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white", style: { left: markerLeft + '%', top: trailTop + '%', transform: 'translate(-50%, -50%)', borderColor: trailColor, boxShadow: focused ? '0 0 0 4px ' + trailColor + '66' : '0 3px 10px rgba(0,0,0,.45)' } }, fitItem.icon)
                                 );
                               }),
@@ -23180,28 +23180,28 @@ var d = (labToolData && labToolData._aquarium) || {};
                               }),
                               habitatLayout.length === 0 && React.createElement("div", { className: "absolute inset-0 flex items-center justify-center p-6 text-center text-xs text-cyan-100" }, "Choose a structure or apply a habitat pattern. The grid represents tank width and front-to-back depth.")
                             ),
-                        React.createElement("p", { className: "mt-1 text-[8px] leading-relaxed text-cyan-100" }, habitatViewMode === '3d' ? "Drag to orbit and scroll to zoom. Select structures or organisms in the scene; synchronized controls remain keyboard-operable." : "Plan view preserves exact selection and movement without requiring WebGL. Left/right change tank width; forward/back change depth."),
-                        habitatOverlay === 'organisms' && React.createElement("div", { role: "note", className: "mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-white/10 bg-slate-950/45 p-1.5 text-[7px] text-cyan-100" },
+                        React.createElement("p", { className: "mt-1 text-[0.5rem] leading-relaxed text-cyan-100" }, habitatViewMode === '3d' ? "Drag to orbit and scroll to zoom. Select structures or organisms in the scene; synchronized controls remain keyboard-operable." : "Plan view preserves exact selection and movement without requiring WebGL. Left/right change tank width; forward/back change depth."),
+                        habitatOverlay === 'organisms' && React.createElement("div", { role: "note", className: "mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-white/10 bg-slate-950/45 p-1.5 text-[0.4375rem] text-cyan-100" },
                           React.createElement("strong", { className: "text-white" }, "Behavior map:"),
                           React.createElement("span", null, "Path size estimates usable movement from habitat fit"),
                           React.createElement("span", null, "green excellent • cyan workable • amber strained • rose poor"),
                           React.createElement("span", null, "Select a resident to trace its ecosystem exchanges")
                         ),
-                        habitatOverlay === 'interactions' && React.createElement("section", { className: "mt-1.5 rounded-lg border border-fuchsia-300/20 bg-slate-950/55 p-2 text-[8px] text-slate-100", 'aria-labelledby': "habitat-interaction-title" },
+                        habitatOverlay === 'interactions' && React.createElement("section", { className: "mt-1.5 rounded-lg border border-fuchsia-300/20 bg-slate-950/55 p-2 text-[0.5rem] text-slate-100", 'aria-labelledby': "habitat-interaction-title" },
                           React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                            React.createElement("strong", { id: "habitat-interaction-title", className: "text-[9px] text-white" }, "Living interaction network"),
+                            React.createElement("strong", { id: "habitat-interaction-title", className: "text-[0.5625rem] text-white" }, "Living interaction network"),
                             React.createElement("span", { className: "rounded-full bg-fuchsia-300/10 px-2 py-0.5 font-bold text-fuchsia-100" }, habitatVisibleInteractionLinks.length + " shown / " + habitatInteractionNetwork.total + " exchanges")
                           ),
                           React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-1", role: "group", 'aria-label': "Filter interaction pathways by modeled strength" },
-                            React.createElement("span", { className: "mr-1 text-[7px] font-bold text-slate-300" }, "Show:"),
+                            React.createElement("span", { className: "mr-1 text-[0.4375rem] font-bold text-slate-300" }, "Show:"),
                             ['all', 'weak', 'watch', 'healthy'].map(function(filterId) {
                               var filterActive = habitatInteractionFilter === filterId;
                               var filterLabel = filterId === 'all' ? 'All' : filterId === 'weak' ? 'Weak <65%' : filterId === 'watch' ? 'Watch 65–84%' : 'Healthy 85%+';
-                              return React.createElement("button", { key: filterId, type: "button", 'aria-pressed': filterActive, onClick: function() { upd('habitatInteractionFilter', filterId); }, className: "rounded-full border px-1.5 py-0.5 text-[7px] font-bold " + (filterActive ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/15 bg-white/5 text-slate-200 hover:bg-white/10") }, filterLabel);
+                              return React.createElement("button", { key: filterId, type: "button", 'aria-pressed': filterActive, onClick: function() { upd('habitatInteractionFilter', filterId); }, className: "rounded-full border px-1.5 py-0.5 text-[0.4375rem] font-bold " + (filterActive ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/15 bg-white/5 text-slate-200 hover:bg-white/10") }, filterLabel);
                             }),
-                            React.createElement("span", { className: "ml-auto text-[7px] text-slate-400" }, habitatVisibleInteractionLinks.length + " shown / " + habitatInteractionNetwork.total)
+                            React.createElement("span", { className: "ml-auto text-[0.4375rem] text-slate-400" }, habitatVisibleInteractionLinks.length + " shown / " + habitatInteractionNetwork.total)
                           ),
-                          React.createElement("div", { className: "mt-1 rounded-md border border-white/10 bg-white/5 p-1.5 text-[7px] text-fuchsia-100", role: "note", 'aria-label': "Interaction network diagnostic" },
+                          React.createElement("div", { className: "mt-1 rounded-md border border-white/10 bg-white/5 p-1.5 text-[0.4375rem] text-fuchsia-100", role: "note", 'aria-label': "Interaction network diagnostic" },
                             React.createElement("div", { className: "flex flex-wrap items-center gap-x-2 gap-y-1" },
                               React.createElement("strong", null, "Network reading:"),
                               interactionPanelSummary.total > 0 ? "Average pathway strength " + interactionPanelSummary.averageStrength + "%. Weakest: " + interactionPanelSummary.weakest.label + " (" + interactionPanelSummary.minimumStrength + "%). Strongest: " + interactionPanelSummary.strongest.label + " (" + interactionPanelSummary.strongest.strength + ")." : "No exchange pathway is modeled yet."
@@ -23213,11 +23213,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                             habitatFocusedInteraction && React.createElement("p", { className: "mt-1 rounded bg-fuchsia-300/10 px-1.5 py-1 font-bold text-fuchsia-100" }, "Focused path: " + habitatFocusedInteraction.label + " • " + habitatFocusedInteraction.strength + "% strength"),
                             React.createElement("p", { className: "mt-1 leading-snug text-slate-300" }, interactionPanelRecommendation)
                           ),
-                          React.createElement("div", { className: "mt-1 rounded-md border border-amber-300/20 bg-amber-300/10 px-1.5 py-1 text-[7px] leading-snug text-amber-100", role: "note", 'aria-label': "Interaction experiment prompt" },
+                          React.createElement("div", { className: "mt-1 rounded-md border border-amber-300/20 bg-amber-300/10 px-1.5 py-1 text-[0.4375rem] leading-snug text-amber-100", role: "note", 'aria-label': "Interaction experiment prompt" },
                             React.createElement("strong", null, "Micro-experiment: "),
                             interactionLearningPrompt
                           ),
-                          React.createElement("div", { className: "mt-1 rounded-md border border-sky-300/20 bg-sky-300/10 px-1.5 py-1 text-[7px] leading-snug text-sky-100", role: "group", 'aria-label': "Interaction baseline comparison" },
+                          React.createElement("div", { className: "mt-1 rounded-md border border-sky-300/20 bg-sky-300/10 px-1.5 py-1 text-[0.4375rem] leading-snug text-sky-100", role: "group", 'aria-label': "Interaction baseline comparison" },
                             React.createElement("div", null,
                               React.createElement("strong", null, "Before / after: "),
                               habitatInteractionBaselineComparable
@@ -23227,15 +23227,15 @@ var d = (labToolData && labToolData._aquarium) || {};
                                   : "Capture a baseline before changing one habitat variable."
                             ),
                             React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" },
-                              React.createElement("button", { type: "button", onClick: function() { upd('habitatInteractionBaseline', { tick: simTick, filter: habitatInteractionFilter, averageStrength: interactionPanelSummary.averageStrength, total: interactionPanelSummary.total, bands: Object.assign({}, interactionPanelSummary.bands) }); }, className: "rounded border border-sky-200/30 bg-sky-200/10 px-1.5 py-0.5 text-[7px] font-bold text-sky-50" }, habitatInteractionBaselineComparable ? "Update baseline" : "Capture baseline"),
-                              habitatInteractionBaseline && React.createElement("button", { type: "button", onClick: function() { upd('habitatInteractionBaseline', null); }, className: "rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[7px] font-bold text-slate-200" }, "Clear baseline")
+                              React.createElement("button", { type: "button", onClick: function() { upd('habitatInteractionBaseline', { tick: simTick, filter: habitatInteractionFilter, averageStrength: interactionPanelSummary.averageStrength, total: interactionPanelSummary.total, bands: Object.assign({}, interactionPanelSummary.bands) }); }, className: "rounded border border-sky-200/30 bg-sky-200/10 px-1.5 py-0.5 text-[0.4375rem] font-bold text-sky-50" }, habitatInteractionBaselineComparable ? "Update baseline" : "Capture baseline"),
+                              habitatInteractionBaseline && React.createElement("button", { type: "button", onClick: function() { upd('habitatInteractionBaseline', null); }, className: "rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[0.4375rem] font-bold text-slate-200" }, "Clear baseline")
                             )
                           ),
                           React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-3 gap-y-1", 'aria-label': "Interaction diagram legend" }, [
                             ['symbiosis', 'purple', 'two-way partnership'], ['cleaning', 'cyan', 'cleaner to client'], ['browsing', 'amber', 'plant to browser'],
                             ['cover', 'green', 'plant cover to resident'], ['grazing', 'lime', 'algae to grazer'], ['recycling', 'orange', 'detritus to recycler']
                           ].map(function(legendItem) { return React.createElement("span", { key: legendItem[0] }, React.createElement("strong", null, legendItem[0] + ": "), legendItem[1] + " — " + legendItem[2]); })),
-                          React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-cyan-300/15 bg-cyan-400/5 px-1.5 py-1 text-[7px] text-slate-300", 'aria-label': "Interaction direction and strength key" }, [
+                          React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-cyan-300/15 bg-cyan-400/5 px-1.5 py-1 text-[0.4375rem] text-slate-300", 'aria-label': "Interaction direction and strength key" }, [
                             React.createElement("span", { key: "directed", className: "font-bold text-cyan-200" }, "\u2192 Directed flow"),
                             React.createElement("span", { key: "bidirectional", className: "font-bold text-purple-200" }, "\u21C4 Bidirectional exchange"),
                             React.createElement("span", { key: "strength" }, "Thicker/brighter paths = stronger"),
@@ -23266,22 +23266,22 @@ var d = (labToolData && labToolData._aquarium) || {};
                                     var endpointTone = endpoint.vitality >= 85 ? "text-emerald-200" : endpoint.vitality >= 65 ? "text-amber-200" : "text-rose-200";
                                     var endpointBar = endpoint.vitality >= 85 ? "bg-emerald-300" : endpoint.vitality >= 65 ? "bg-amber-300" : "bg-rose-300";
                                     return React.createElement("div", { key: endpoint.key, className: "rounded border border-white/10 bg-slate-950/40 px-1 py-0.5" },
-                                      React.createElement("div", { className: "flex items-center justify-between gap-1 text-[7px]" },
+                                      React.createElement("div", { className: "flex items-center justify-between gap-1 text-[0.4375rem]" },
                                         React.createElement("span", { className: "truncate text-slate-300", title: endpoint.endpoint.label }, endpoint.endpoint.label),
                                         React.createElement("strong", { className: endpointTone }, endpoint.vitality + "%")
                                       ),
                                       React.createElement("div", { className: "mt-0.5 h-1 overflow-hidden rounded bg-slate-950/80", role: "progressbar", 'aria-label': endpoint.endpoint.label + " vitality", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': endpoint.vitality }, React.createElement("div", { className: "h-full " + endpointBar, style: { width: endpoint.vitality + '%' } }))
                                     );
                                   })),
-                                  React.createElement("div", { className: "mt-1 flex items-center justify-between gap-2 rounded border border-amber-200/20 bg-amber-300/10 px-1 py-0.5 text-[7px]", role: "status" },
+                                  React.createElement("div", { className: "mt-1 flex items-center justify-between gap-2 rounded border border-amber-200/20 bg-amber-300/10 px-1 py-0.5 text-[0.4375rem]", role: "status" },
                                     React.createElement("span", { className: "font-bold text-amber-100" }, "Limiting endpoint"),
                                     React.createElement("span", { className: "truncate text-amber-50", title: limitingEndpoint.label }, limitingEndpoint.label + " • " + limitingEndpoint.vitality + "%"),
                                     (limitingEndpoint.kind === 'organism' || limitingEndpoint.kind === 'plant') && React.createElement("button", { type: "button", onClick: function() { focusEndpoint(limitingEndpoint); }, className: "shrink-0 rounded border border-amber-200/30 bg-amber-200/10 px-1 py-0.5 font-bold text-amber-50" }, "Inspect")
                                   ),
                                   React.createElement("p", { className: "mt-0.5 leading-snug text-slate-300" }, interaction.detail + " " + interaction.strength + "% modeled pathway strength. " + interaction.healthSignal),
                                   React.createElement("div", { className: "mt-1 flex items-center justify-between gap-2" },
-                                    React.createElement("span", { className: "text-[7px] text-slate-400" }, interaction.selected ? "Focused in both views" : "Select this pathway to trace it"),
-                                    React.createElement("button", { type: "button", 'aria-pressed': interaction.selected === true, 'aria-label': (interaction.selected ? "Clear focus from " : "Focus ") + interaction.label, onClick: function() { updMulti({ habitatSelectedInteractionId: interaction.selected ? null : interaction.id, habitatOverlay: 'interactions' }); }, className: "rounded border border-fuchsia-200/30 bg-fuchsia-200/10 px-1.5 py-0.5 text-[7px] font-bold text-fuchsia-100" }, interaction.selected ? "Clear focus" : "Focus path")
+                                    React.createElement("span", { className: "text-[0.4375rem] text-slate-400" }, interaction.selected ? "Focused in both views" : "Select this pathway to trace it"),
+                                    React.createElement("button", { type: "button", 'aria-pressed': interaction.selected === true, 'aria-label': (interaction.selected ? "Clear focus from " : "Focus ") + interaction.label, onClick: function() { updMulti({ habitatSelectedInteractionId: interaction.selected ? null : interaction.id, habitatOverlay: 'interactions' }); }, className: "rounded border border-fuchsia-200/30 bg-fuchsia-200/10 px-1.5 py-0.5 text-[0.4375rem] font-bold text-fuchsia-100" }, interaction.selected ? "Clear focus" : "Focus path")
                                   )
                                 );
                               }))
@@ -23291,32 +23291,32 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement("aside", { className: "rounded-xl border border-white/10 bg-slate-950/45 p-2", 'aria-label': "Selected habitat object inspector" },
                         selectedHabitatItem && selectedHabitatType
                           ? React.createElement(React.Fragment, null,
-                              React.createElement("div", { className: "flex items-center justify-between gap-2" }, React.createElement("strong", { className: "text-[10px] text-white" }, selectedHabitatType.icon + " " + selectedHabitatType.label), React.createElement("button", { type: "button", onClick: removeSelectedHabitatItem, className: "rounded border border-rose-300/30 bg-rose-400/10 px-1.5 py-0.5 text-[8px] font-bold text-rose-200" }, "Remove")),
-                              React.createElement("p", { className: "mt-1 text-[8px] text-slate-300" }, "Position " + selectedHabitatItem.x.toFixed(1) + " wide, " + selectedHabitatItem.z.toFixed(1) + " deep \u2022 rotation " + Math.round(selectedHabitatItem.rotation) + "\u00B0 \u2022 scale " + selectedHabitatItem.scale.toFixed(2)),
+                              React.createElement("div", { className: "flex items-center justify-between gap-2" }, React.createElement("strong", { className: "text-[0.625rem] text-white" }, selectedHabitatType.icon + " " + selectedHabitatType.label), React.createElement("button", { type: "button", onClick: removeSelectedHabitatItem, className: "rounded border border-rose-300/30 bg-rose-400/10 px-1.5 py-0.5 text-[0.5rem] font-bold text-rose-200" }, "Remove")),
+                              React.createElement("p", { className: "mt-1 text-[0.5rem] text-slate-300" }, "Position " + selectedHabitatItem.x.toFixed(1) + " wide, " + selectedHabitatItem.z.toFixed(1) + " deep \u2022 rotation " + Math.round(selectedHabitatItem.rotation) + "\u00B0 \u2022 scale " + selectedHabitatItem.scale.toFixed(2)),
                               React.createElement("div", { className: "mx-auto mt-2 grid w-28 grid-cols-3 gap-1", role: "group", 'aria-label': "Move selected habitat object" },
                                 React.createElement("span", null), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0, -0.5); }, 'aria-label': "Move toward the back", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2191"), React.createElement("span", null),
                                 React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(-0.5, 0); }, 'aria-label': "Move left", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2190"), React.createElement("span", { className: "flex items-center justify-center text-xs", 'aria-hidden': "true" }, selectedHabitatType.icon), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0.5, 0); }, 'aria-label': "Move right", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2192"),
                                 React.createElement("span", null), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0, 0.5); }, 'aria-label': "Move toward the front", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2193"), React.createElement("span", null)
                               ),
                               React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" },
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation - 15 }, selectedHabitatType.label + ' rotated left.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "\u21BA Rotate"),
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation + 15 }, selectedHabitatType.label + ' rotated right.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "Rotate \u21BB"),
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.max(0.65, selectedHabitatItem.scale - 0.1) }, selectedHabitatType.label + ' made smaller.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "\u2212 Size"),
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.min(1.6, selectedHabitatItem.scale + 0.1) }, selectedHabitatType.label + ' made larger.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "+ Size")
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation - 15 }, selectedHabitatType.label + ' rotated left.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "\u21BA Rotate"),
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation + 15 }, selectedHabitatType.label + ' rotated right.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "Rotate \u21BB"),
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.max(0.65, selectedHabitatItem.scale - 0.1) }, selectedHabitatType.label + ' made smaller.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "\u2212 Size"),
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.min(1.6, selectedHabitatItem.scale + 0.1) }, selectedHabitatType.label + ' made larger.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "+ Size")
                               ),
-                              React.createElement("div", { className: "mt-2 rounded-lg border border-white/10 bg-white/5 p-1.5 text-[8px] leading-relaxed text-slate-200" }, "Effects: shelter " + selectedHabitatType.shelter + ", territory " + selectedHabitatType.territory + ", flow break " + selectedHabitatType.flowBreak + ", plant anchors " + selectedHabitatType.plantAnchors + ", spawning " + selectedHabitatType.spawning + ".")
+                              React.createElement("div", { className: "mt-2 rounded-lg border border-white/10 bg-white/5 p-1.5 text-[0.5rem] leading-relaxed text-slate-200" }, "Effects: shelter " + selectedHabitatType.shelter + ", territory " + selectedHabitatType.territory + ", flow break " + selectedHabitatType.flowBreak + ", plant anchors " + selectedHabitatType.plantAnchors + ", spawning " + selectedHabitatType.spawning + ".")
                             )
-                          : React.createElement("p", { className: "text-[9px] leading-relaxed text-slate-300" }, "Select a structure in either view or from this list to move, rotate, resize, or remove it."),
-                        habitatLayout.length > 0 && React.createElement("div", { className: "mt-2 max-h-32 space-y-1 overflow-y-auto", role: "group", 'aria-label': "Habitat structures" }, habitatLayout.map(function(item) { var type = habitatCatalog.find(function(candidate) { return candidate.id === item.type; }); return type && React.createElement("button", { key: item.id, type: "button", onClick: function() { upd('selectedHabitatItemId', item.id); }, className: "flex w-full items-center justify-between rounded border px-1.5 py-1 text-left text-[8px] " + (item.id === selectedHabitatItemId ? "border-fuchsia-300 bg-fuchsia-300/15 text-fuchsia-100" : "border-white/10 bg-white/5 text-slate-200") }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[7px] text-slate-400" }, item.x.toFixed(1) + ", " + item.z.toFixed(1))); }))
+                          : React.createElement("p", { className: "text-[0.5625rem] leading-relaxed text-slate-300" }, "Select a structure in either view or from this list to move, rotate, resize, or remove it."),
+                        habitatLayout.length > 0 && React.createElement("div", { className: "mt-2 max-h-32 space-y-1 overflow-y-auto", role: "group", 'aria-label': "Habitat structures" }, habitatLayout.map(function(item) { var type = habitatCatalog.find(function(candidate) { return candidate.id === item.type; }); return type && React.createElement("button", { key: item.id, type: "button", onClick: function() { upd('selectedHabitatItemId', item.id); }, className: "flex w-full items-center justify-between rounded border px-1.5 py-1 text-left text-[0.5rem] " + (item.id === selectedHabitatItemId ? "border-fuchsia-300 bg-fuchsia-300/15 text-fuchsia-100" : "border-white/10 bg-white/5 text-slate-200") }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[0.4375rem] text-slate-400" }, item.x.toFixed(1) + ", " + item.z.toFixed(1))); }))
                       )
                     ),
                     React.createElement("section", { className: "rounded-xl border border-violet-300/30 bg-violet-950/35 p-2.5", 'aria-labelledby': "aquarium-habitat-forecast-title" },
                       React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                         React.createElement("div", null,
-                          React.createElement("h5", { id: "aquarium-habitat-forecast-title", className: "text-[10px] font-black text-violet-100" }, "🔭 What-if Habitat Forecast"),
-                          React.createElement("p", { className: "mt-0.5 max-w-2xl text-[8px] leading-relaxed text-violet-200" }, "Compare modeled consequences before changing the tank. Forecasts protect the weakest resident, expose open-water tradeoffs, and never alter the habitat until you apply one.")
+                          React.createElement("h5", { id: "aquarium-habitat-forecast-title", className: "text-[0.625rem] font-black text-violet-100" }, "🔭 What-if Habitat Forecast"),
+                          React.createElement("p", { className: "mt-0.5 max-w-2xl text-[0.5rem] leading-relaxed text-violet-200" }, "Compare modeled consequences before changing the tank. Forecasts protect the weakest resident, expose open-water tradeoffs, and never alter the habitat until you apply one.")
                         ),
-                        React.createElement("div", { className: "rounded-lg border border-violet-200/25 bg-slate-950/50 px-2 py-1 text-[7px] text-violet-100" }, "Current: average " + habitatCommunityFit.average + " • minimum " + habitatCommunityFit.minimum + " • open swim " + habitatSummary.openSwimScore)
+                        React.createElement("div", { className: "rounded-lg border border-violet-200/25 bg-slate-950/50 px-2 py-1 text-[0.4375rem] text-violet-100" }, "Current: average " + habitatCommunityFit.average + " • minimum " + habitatCommunityFit.minimum + " • open swim " + habitatSummary.openSwimScore)
                       ),
                       React.createElement("div", { className: "mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-3", role: "list", 'aria-label': "Reversible habitat design forecasts" }, habitatForecasts.map(function(forecast) {
                         var isBestForecast = forecast.id === habitatBestForecastId;
@@ -23331,41 +23331,41 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var previewTone = forecast.averageDelta > 0 || forecast.minimumDelta > 0 ? 'border-emerald-300/35 bg-emerald-400/10' : forecast.openDelta > 0 ? 'border-cyan-300/35 bg-cyan-400/10' : 'border-white/15 bg-slate-950/35';
                         return React.createElement("article", { key: forecast.id, role: "listitem", className: "rounded-xl border p-2 " + previewTone },
                           React.createElement("div", { className: "flex items-start justify-between gap-2" },
-                            React.createElement("strong", { className: "text-[9px] text-white" }, forecast.icon + " " + forecast.label),
-                            isBestForecast && React.createElement("span", { className: "rounded-full bg-emerald-300 px-1.5 py-0.5 text-[7px] font-black text-emerald-950" }, "Best modeled tradeoff")
+                            React.createElement("strong", { className: "text-[0.5625rem] text-white" }, forecast.icon + " " + forecast.label),
+                            isBestForecast && React.createElement("span", { className: "rounded-full bg-emerald-300 px-1.5 py-0.5 text-[0.4375rem] font-black text-emerald-950" }, "Best modeled tradeoff")
                           ),
                           React.createElement("div", { className: "mt-1.5 space-y-1", 'aria-label': forecast.label + " comparison. Current average " + habitatFitAverage + ", forecast average " + forecast.average },
-                            React.createElement("div", { className: "grid grid-cols-[44px_1fr_24px] items-center gap-1 text-[7px] text-slate-300" }, React.createElement("span", null, "Current"), React.createElement("div", { className: "h-1.5 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full bg-slate-400", style: { width: habitatFitAverage + '%' } })), React.createElement("strong", { className: "text-right text-slate-100" }, habitatFitAverage)),
-                            React.createElement("div", { className: "grid grid-cols-[44px_1fr_24px] items-center gap-1 text-[7px] text-violet-200" }, React.createElement("span", null, "Forecast"), React.createElement("div", { className: "h-1.5 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full " + (forecast.average >= 85 ? "bg-emerald-400" : forecast.average >= 65 ? "bg-cyan-400" : forecast.average >= 45 ? "bg-amber-400" : "bg-rose-400"), style: { width: forecast.average + '%' } })), React.createElement("strong", { className: "text-right text-white" }, forecast.average))
+                            React.createElement("div", { className: "grid grid-cols-[44px_1fr_24px] items-center gap-1 text-[0.4375rem] text-slate-300" }, React.createElement("span", null, "Current"), React.createElement("div", { className: "h-1.5 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full bg-slate-400", style: { width: habitatFitAverage + '%' } })), React.createElement("strong", { className: "text-right text-slate-100" }, habitatFitAverage)),
+                            React.createElement("div", { className: "grid grid-cols-[44px_1fr_24px] items-center gap-1 text-[0.4375rem] text-violet-200" }, React.createElement("span", null, "Forecast"), React.createElement("div", { className: "h-1.5 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full " + (forecast.average >= 85 ? "bg-emerald-400" : forecast.average >= 65 ? "bg-cyan-400" : forecast.average >= 45 ? "bg-amber-400" : "bg-rose-400"), style: { width: forecast.average + '%' } })), React.createElement("strong", { className: "text-right text-white" }, forecast.average))
                           ),
                           React.createElement("div", { className: "mt-1.5 grid grid-cols-3 gap-1 text-center" },
-                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[9px] text-white" }, forecast.minimum), React.createElement("span", { className: "block text-[6px] uppercase text-slate-400" }, "minimum")),
-                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[9px] text-white" }, forecast.openSwim), React.createElement("span", { className: "block text-[6px] uppercase text-slate-400" }, "open swim")),
-                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[9px] text-white" }, forecast.shelter), React.createElement("span", { className: "block text-[6px] uppercase text-slate-400" }, "shelter"))
+                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[0.5625rem] text-white" }, forecast.minimum), React.createElement("span", { className: "block text-[0.375rem] uppercase text-slate-400" }, "minimum")),
+                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[0.5625rem] text-white" }, forecast.openSwim), React.createElement("span", { className: "block text-[0.375rem] uppercase text-slate-400" }, "open swim")),
+                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[0.5625rem] text-white" }, forecast.shelter), React.createElement("span", { className: "block text-[0.375rem] uppercase text-slate-400" }, "shelter"))
                           ),
-                          React.createElement("p", { className: "mt-1.5 min-h-[2.2em] text-[7px] leading-snug text-slate-200" }, forecastTradeoffs.join(' • ') + "."),
-                          React.createElement("button", { type: "button", onClick: function() { applyHabitatForecast(forecast); }, 'aria-label': "Apply forecast: " + forecast.label + ". " + forecastTradeoffs.join(', ') + ".", className: "mt-1.5 w-full rounded-lg border border-violet-200/35 bg-violet-300/15 px-2 py-1 text-[8px] font-black text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, "Apply this preview")
+                          React.createElement("p", { className: "mt-1.5 min-h-[2.2em] text-[0.4375rem] leading-snug text-slate-200" }, forecastTradeoffs.join(' • ') + "."),
+                          React.createElement("button", { type: "button", onClick: function() { applyHabitatForecast(forecast); }, 'aria-label': "Apply forecast: " + forecast.label + ". " + forecastTradeoffs.join(', ') + ".", className: "mt-1.5 w-full rounded-lg border border-violet-200/35 bg-violet-300/15 px-2 py-1 text-[0.5rem] font-black text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, "Apply this preview")
                         );
                       })),
-                      React.createElement("p", { className: "mt-2 text-[7px] leading-relaxed text-slate-300" }, "Forecasts are comparative model outputs, not guarantees. Apply one change, observe stress and vitality across several ticks, then use Undo or compare against your experimental baseline.")
+                      React.createElement("p", { className: "mt-2 text-[0.4375rem] leading-relaxed text-slate-300" }, "Forecasts are comparative model outputs, not guarantees. Apply one change, observe stress and vitality across several ticks, then use Undo or compare against your experimental baseline.")
                     ),
                     React.createElement("section", { className: "rounded-xl border border-cyan-300/25 bg-cyan-950/35 p-2.5", 'aria-labelledby': "aquarium-habitat-fit-title" },
                       React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                         React.createElement("div", null,
-                          React.createElement("h5", { id: "aquarium-habitat-fit-title", className: "text-[10px] font-black text-cyan-100" }, "🐟 Organism Habitat Fit"),
-                          React.createElement("p", { className: "mt-0.5 text-[8px] leading-relaxed text-cyan-200" }, "The same layout can help one species and strain another. Each profile compares this organism’s behavioral and breeding needs with available structure, plants, and swimming room.")
+                          React.createElement("h5", { id: "aquarium-habitat-fit-title", className: "text-[0.625rem] font-black text-cyan-100" }, "🐟 Organism Habitat Fit"),
+                          React.createElement("p", { className: "mt-0.5 text-[0.5rem] leading-relaxed text-cyan-200" }, "The same layout can help one species and strain another. Each profile compares this organism’s behavioral and breeding needs with available structure, plants, and swimming room.")
                         ),
                         React.createElement("div", { className: "rounded-lg border border-cyan-200/30 bg-slate-950/50 px-2 py-1 text-center", 'aria-label': "Average organism habitat fit " + habitatFitAverage + " out of 100" },
                           React.createElement("strong", { className: "block text-sm " + (habitatFitAverage >= 85 ? "text-emerald-300" : habitatFitAverage >= 65 ? "text-amber-200" : "text-rose-300") }, habitatFitAverage + "/100"),
-                          React.createElement("span", { className: "block text-[7px] uppercase tracking-wide text-cyan-200" }, "stock average")
+                          React.createElement("span", { className: "block text-[0.4375rem] uppercase tracking-wide text-cyan-200" }, "stock average")
                         )
                       ),
                       habitatWeakestFit && React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-fuchsia-300/25 bg-fuchsia-400/10 p-2", role: "status" },
-                        React.createElement("p", { className: "min-w-0 flex-1 text-[8px] leading-relaxed text-fuchsia-100" },
+                        React.createElement("p", { className: "min-w-0 flex-1 text-[0.5rem] leading-relaxed text-fuchsia-100" },
                           React.createElement("strong", null, "Priority: " + habitatWeakestFit.icon + " " + habitatWeakestFit.name + " needs " + habitatWeakestFit.limiting.label.toLowerCase() + ". "),
                           habitatWeakestFit.limiting.recommendation
                         ),
-                        habitatRecommendedType && habitatWeakestFit.score < 85 && React.createElement("button", { type: "button", disabled: habitatLayout.length >= 12, onClick: function() { addHabitatItem(habitatRecommendedType); }, className: "rounded-lg border border-fuchsia-200/50 bg-fuchsia-200 px-2 py-1 text-[8px] font-black text-fuchsia-950 hover:bg-white disabled:opacity-40" }, "Add recommended structure")
+                        habitatRecommendedType && habitatWeakestFit.score < 85 && React.createElement("button", { type: "button", disabled: habitatLayout.length >= 12, onClick: function() { addHabitatItem(habitatRecommendedType); }, className: "rounded-lg border border-fuchsia-200/50 bg-fuchsia-200 px-2 py-1 text-[0.5rem] font-black text-fuchsia-950 hover:bg-white disabled:opacity-40" }, "Add recommended structure")
                       ),
                       habitatFitItems.length > 0
                         ? React.createElement("div", { className: "mt-2 grid gap-2 lg:grid-cols-2", role: "list", 'aria-label': "Habitat fit by organism" }, habitatFitItems.map(function(fitItem) {
@@ -23375,23 +23375,23 @@ var d = (labToolData && labToolData._aquarium) || {};
                             return React.createElement("article", { key: fitItem.id, role: "listitem", className: "rounded-xl border p-2 " + fitTone },
                               React.createElement("div", { className: "flex items-start justify-between gap-2" },
                                 React.createElement("div", { className: "min-w-0" },
-                                  React.createElement("strong", { className: "block truncate text-[10px] text-white" }, fitItem.icon + " " + fitItem.name),
-                                  React.createElement("span", { className: "block text-[7px] font-bold uppercase tracking-wide text-slate-300" }, fitItem.type + " • " + fitItem.zone + " water • " + fitItem.status)
+                                  React.createElement("strong", { className: "block truncate text-[0.625rem] text-white" }, fitItem.icon + " " + fitItem.name),
+                                  React.createElement("span", { className: "block text-[0.4375rem] font-bold uppercase tracking-wide text-slate-300" }, fitItem.type + " • " + fitItem.zone + " water • " + fitItem.status)
                                 ),
                                 React.createElement("div", { className: "text-right" },
                                   React.createElement("strong", { className: "block text-base " + fitText }, fitItem.score),
-                                  React.createElement("span", { className: "block text-[7px] text-slate-300" }, "/100 fit")
+                                  React.createElement("span", { className: "block text-[0.4375rem] text-slate-300" }, "/100 fit")
                                 )
                               ),
                               React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-950/70", role: "progressbar", 'aria-label': fitItem.name + " habitat fit", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': fitItem.score },
                                 React.createElement("div", { className: "h-full rounded-full " + (fitItem.score >= 85 ? "bg-emerald-400" : fitItem.score >= 65 ? "bg-cyan-400" : fitItem.score >= 45 ? "bg-amber-400" : "bg-rose-400"), style: { width: fitItem.score + '%' } })
                               ),
-                              React.createElement("div", { className: "mt-1.5 flex flex-wrap items-center gap-1 rounded-md border border-cyan-300/15 bg-cyan-400/5 px-1.5 py-1 text-[7px] text-cyan-100" },
+                              React.createElement("div", { className: "mt-1.5 flex flex-wrap items-center gap-1 rounded-md border border-cyan-300/15 bg-cyan-400/5 px-1.5 py-1 text-[0.4375rem] text-cyan-100" },
                                 React.createElement("strong", null, "Behavior:"),
                                 React.createElement("span", null, fitItem.behaviorLabel),
-                                React.createElement("span", { className: "ml-auto rounded-full bg-slate-950/55 px-1.5 py-0.5 text-[6px] text-slate-300" }, "Anchor: " + fitItem.anchorLabel)
+                                React.createElement("span", { className: "ml-auto rounded-full bg-slate-950/55 px-1.5 py-0.5 text-[0.375rem] text-slate-300" }, "Anchor: " + fitItem.anchorLabel)
                               ),
-                              residentInteractionLinks.length > 0 && React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-1 rounded-md border border-fuchsia-300/15 bg-fuchsia-400/5 px-1.5 py-1 text-[7px] text-fuchsia-100" },
+                              residentInteractionLinks.length > 0 && React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-1 rounded-md border border-fuchsia-300/15 bg-fuchsia-400/5 px-1.5 py-1 text-[0.4375rem] text-fuchsia-100" },
                                 React.createElement("strong", null, "Interactions:"),
                                 residentInteractionLinks.slice(0, 3).map(function(interaction) { return React.createElement("span", { key: interaction.id, className: "rounded-full bg-slate-950/55 px-1.5 py-0.5" }, interaction.type + " — " + interaction.label + " (" + interaction.strength + "%)"); }),
                                 residentInteractionLinks.length > 3 && React.createElement("span", null, "+" + (residentInteractionLinks.length - 3) + " more"),
@@ -23399,26 +23399,26 @@ var d = (labToolData && labToolData._aquarium) || {};
                               ),
                               React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" }, fitItem.factors.filter(function(factorItem) { return factorItem.weight > 0; }).map(function(factorItem) {
                                 return React.createElement("div", { key: factorItem.id, className: "rounded-md border border-white/10 bg-slate-950/35 p-1", title: factorItem.recommendation },
-                                  React.createElement("div", { className: "flex items-center justify-between gap-1 text-[7px]" }, React.createElement("span", { className: "truncate text-slate-200" }, factorItem.label), React.createElement("strong", { className: factorItem.score >= 100 ? "text-emerald-300" : factorItem.score >= 65 ? "text-amber-200" : "text-rose-300" }, factorItem.available + "/" + factorItem.need)),
+                                  React.createElement("div", { className: "flex items-center justify-between gap-1 text-[0.4375rem]" }, React.createElement("span", { className: "truncate text-slate-200" }, factorItem.label), React.createElement("strong", { className: factorItem.score >= 100 ? "text-emerald-300" : factorItem.score >= 65 ? "text-amber-200" : "text-rose-300" }, factorItem.available + "/" + factorItem.need)),
                                   React.createElement("div", { className: "mt-0.5 h-1 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full " + (factorItem.score >= 100 ? "bg-emerald-400" : factorItem.score >= 65 ? "bg-amber-400" : "bg-rose-400"), style: { width: factorItem.score + '%' } }))
                                 );
                               })),
                               React.createElement("div", { className: "mt-1.5 flex items-center justify-between gap-2" },
-                                React.createElement("span", { className: "text-[7px] leading-snug text-slate-200" }, "Limiting: " + fitItem.limiting.label + " • available " + fitItem.limiting.available + ", need " + fitItem.limiting.need),
-                                React.createElement("button", { type: "button", onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id, className: "shrink-0 rounded border border-cyan-200/30 bg-white/5 px-1.5 py-0.5 text-[7px] font-bold text-cyan-100 hover:bg-white/10" }, "Trace exchanges")
+                                React.createElement("span", { className: "text-[0.4375rem] leading-snug text-slate-200" }, "Limiting: " + fitItem.limiting.label + " • available " + fitItem.limiting.available + ", need " + fitItem.limiting.need),
+                                React.createElement("button", { type: "button", onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id, className: "shrink-0 rounded border border-cyan-200/30 bg-white/5 px-1.5 py-0.5 text-[0.4375rem] font-bold text-cyan-100 hover:bg-white/10" }, "Trace exchanges")
                               )
                             );
                           }))
-                        : React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-cyan-300/25 p-3 text-center text-[9px] text-cyan-100" }, "Add living stock to reveal species-specific retreat, territory, swimming, and spawning requirements."),
-                      React.createElement("p", { className: "mt-2 text-[7px] leading-relaxed text-slate-300" }, "Diagram key: each mini-bar shows available habitat / modeled need. Color and words carry the same meaning; values are comparative design guidance, not universal husbandry prescriptions.")
+                        : React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-cyan-300/25 p-3 text-center text-[0.5625rem] text-cyan-100" }, "Add living stock to reveal species-specific retreat, territory, swimming, and spawning requirements."),
+                      React.createElement("p", { className: "mt-2 text-[0.4375rem] leading-relaxed text-slate-300" }, "Diagram key: each mini-bar shows available habitat / modeled need. Color and words carry the same meaning; values are comparative design guidance, not universal husbandry prescriptions.")
                     ),
                     tankPlants.length > 0 && React.createElement("div", { className: "rounded-xl border border-emerald-300/20 bg-emerald-950/35 p-2" },
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
-                        React.createElement("div", null, React.createElement("strong", { className: "text-[9px] text-emerald-100" }, "Plant spatial placement"), React.createElement("p", { className: "text-[8px] text-emerald-200" }, selectedPlant ? "Move " + selectedPlant.name + " and compare its species-informed recommendation." : "Select a planted specimen in the plan or plant panel first.")),
-                        selectedPlant && React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Place " + selectedPlant.name + " in habitat zone" }, ['foreground', 'midground', 'background', 'hardscape', 'surface', 'emergent', 'refugium'].map(function(zoneId) { var active = selectedPlantPlacementZone === zoneId; return React.createElement("button", { key: zoneId, type: "button", 'aria-pressed': active, onClick: function() { setSelectedPlantHabitatZone(zoneId); }, className: "rounded-full border px-2 py-1 text-[8px] font-bold " + (active ? "border-emerald-200 bg-emerald-300 text-emerald-950" : "border-white/20 bg-white/5 text-emerald-100") }, zoneId); }))
+                        React.createElement("div", null, React.createElement("strong", { className: "text-[0.5625rem] text-emerald-100" }, "Plant spatial placement"), React.createElement("p", { className: "text-[0.5rem] text-emerald-200" }, selectedPlant ? "Move " + selectedPlant.name + " and compare its species-informed recommendation." : "Select a planted specimen in the plan or plant panel first.")),
+                        selectedPlant && React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Place " + selectedPlant.name + " in habitat zone" }, ['foreground', 'midground', 'background', 'hardscape', 'surface', 'emergent', 'refugium'].map(function(zoneId) { var active = selectedPlantPlacementZone === zoneId; return React.createElement("button", { key: zoneId, type: "button", 'aria-pressed': active, onClick: function() { setSelectedPlantHabitatZone(zoneId); }, className: "rounded-full border px-2 py-1 text-[0.5rem] font-bold " + (active ? "border-emerald-200 bg-emerald-300 text-emerald-950" : "border-white/20 bg-white/5 text-emerald-100") }, zoneId); }))
                       )
                     ),
-                    React.createElement("div", { role: "note", className: "rounded-xl border p-2 text-[9px] leading-relaxed " + (habitatSummary.openSwimScore < 45 ? "border-rose-300/40 bg-rose-400/10 text-rose-100" : habitatSummary.shelterScore < 25 ? "border-amber-300/40 bg-amber-400/10 text-amber-100" : "border-emerald-300/30 bg-emerald-400/10 text-emerald-100") },
+                    React.createElement("div", { role: "note", className: "rounded-xl border p-2 text-[0.5625rem] leading-relaxed " + (habitatSummary.openSwimScore < 45 ? "border-rose-300/40 bg-rose-400/10 text-rose-100" : habitatSummary.shelterScore < 25 ? "border-amber-300/40 bg-amber-400/10 text-amber-100" : "border-emerald-300/30 bg-emerald-400/10 text-emerald-100") },
                       React.createElement("strong", null, "Design reading: "),
                       habitatLayout.length === 0 ? "The tank currently relies on plants alone for cover. Add structure, but preserve open water." : habitatSummary.openSwimScore < 45 ? "The layout provides structure but crowds the swimming volume. Shrink, remove, or spread objects before adding active fish." : habitatSummary.shelterScore < 25 ? "Open swimming space is strong, but vulnerable or territorial organisms have little retreat cover." : "This layout balances usable structure with open water. Use overlays and organism vitality to test whether the pattern fits the stocked species.",
                       " Habitat changes are recorded as experimental interventions, so change one factor at a time when a baseline is active."
@@ -23432,11 +23432,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1" },
                     React.createElement("div", null,
                       React.createElement("h4", { className: "text-xs font-extrabold text-slate-800" }, "\u2795 Add Living Stock"),
-                      React.createElement("p", { className: "text-[10px] text-slate-700" }, "Preview capacity, compatibility, and chemistry before stocking.")
+                      React.createElement("p", { className: "text-[0.625rem] text-slate-700" }, "Preview capacity, compatibility, and chemistry before stocking.")
                     ),
                     React.createElement("div", { className: "text-right" },
-                      React.createElement("span", { className: "block rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-bold text-cyan-900" }, filteredStockSpecies.length + " shown \u2022 " + species.length + " total"),
-                      React.createElement("span", { className: "mt-1 block text-[9px] font-bold text-slate-700" }, capacityRemaining + " load available")
+                      React.createElement("span", { className: "block rounded-full bg-cyan-100 px-2 py-0.5 text-[0.625rem] font-bold text-cyan-900" }, filteredStockSpecies.length + " shown \u2022 " + species.length + " total"),
+                      React.createElement("span", { className: "mt-1 block text-[0.5625rem] font-bold text-slate-700" }, capacityRemaining + " load available")
                     )
                   ),
 
@@ -23449,7 +23449,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         type: "button",
                         'aria-pressed': filterActive,
                         onClick: function () { upd('stockCatalogFilter', filterType); },
-                        className: "rounded-full border px-2 py-1 text-[9px] font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 " + (filterActive ? "border-cyan-800 bg-cyan-800 text-white" : "border-slate-400 bg-white text-slate-800 hover:border-cyan-700 hover:bg-cyan-50")
+                        className: "rounded-full border px-2 py-1 text-[0.5625rem] font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 " + (filterActive ? "border-cyan-800 bg-cyan-800 text-white" : "border-slate-400 bg-white text-slate-800 hover:border-cyan-700 hover:bg-cyan-50")
                       }, filterType + " " + filterCount);
                     })
                   ),
@@ -23498,24 +23498,24 @@ var d = (labToolData && labToolData._aquarium) || {};
                         title: capacityExceeded ? capacityLabel : sp.fact
 
                       },
-                        React.createElement("span", { className: "flex items-center justify-between gap-2 text-[11px] font-extrabold text-slate-900" },
+                        React.createElement("span", { className: "flex items-center justify-between gap-2 text-[0.6875rem] font-extrabold text-slate-900" },
                           React.createElement("span", null, sp.icon + " " + sp.name),
-                          React.createElement("span", { className: "shrink-0 rounded bg-white px-1.5 py-0.5 text-[9px] text-slate-800 ring-1 ring-slate-300" }, sp.load + " load \u2192 " + projectedPct + "%")
+                          React.createElement("span", { className: "shrink-0 rounded bg-white px-1.5 py-0.5 text-[0.5625rem] text-slate-800 ring-1 ring-slate-300" }, sp.load + " load \u2192 " + projectedPct + "%")
                         ),
-                        React.createElement("span", { className: "mt-0.5 block text-[9px] font-semibold text-slate-800" }, organismType + " \u2022 " + ecosystemRole),
+                        React.createElement("span", { className: "mt-0.5 block text-[0.5625rem] font-semibold text-slate-800" }, organismType + " \u2022 " + ecosystemRole),
                         React.createElement("span", { className: "mt-1 flex flex-wrap gap-1" },
-                          React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[8px] font-bold " + (capacityExceeded ? "bg-rose-200 text-rose-900" : conflictNames.length ? "bg-amber-200 text-amber-950" : "bg-emerald-100 text-emerald-900") }, capacityExceeded ? '\u26D4 Over capacity' : conflictNames.length ? '\u26A0 Compatibility review' : '\u2713 Stock fit'),
-                          chemistryWarnings.length > 0 && React.createElement("span", { className: "inline-flex rounded-full bg-orange-100 px-1.5 py-0.5 text-[8px] font-bold text-orange-900" }, "Check " + chemistryWarnings.join(' + ')),
-                          sp.symbiosisWith && React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[8px] font-bold " + (symbiosisPartnerPresent ? "bg-violet-100 text-violet-900" : "bg-slate-200 text-slate-900") }, symbiosisPartnerPresent ? '\u21C4 Partner active' : '\u21C4 Partner absent'),
-                          mechanicLabel && React.createElement("span", { className: "inline-flex rounded-full bg-indigo-100 px-1.5 py-0.5 text-[8px] font-bold text-indigo-900" }, "\u2699 " + mechanicLabel)
+                          React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[0.5rem] font-bold " + (capacityExceeded ? "bg-rose-200 text-rose-900" : conflictNames.length ? "bg-amber-200 text-amber-950" : "bg-emerald-100 text-emerald-900") }, capacityExceeded ? '\u26D4 Over capacity' : conflictNames.length ? '\u26A0 Compatibility review' : '\u2713 Stock fit'),
+                          chemistryWarnings.length > 0 && React.createElement("span", { className: "inline-flex rounded-full bg-orange-100 px-1.5 py-0.5 text-[0.5rem] font-bold text-orange-900" }, "Check " + chemistryWarnings.join(' + ')),
+                          sp.symbiosisWith && React.createElement("span", { className: "inline-flex rounded-full px-1.5 py-0.5 text-[0.5rem] font-bold " + (symbiosisPartnerPresent ? "bg-violet-100 text-violet-900" : "bg-slate-200 text-slate-900") }, symbiosisPartnerPresent ? '\u21C4 Partner active' : '\u21C4 Partner absent'),
+                          mechanicLabel && React.createElement("span", { className: "inline-flex rounded-full bg-indigo-100 px-1.5 py-0.5 text-[0.5rem] font-bold text-indigo-900" }, "\u2699 " + mechanicLabel)
                         ),
-                        (conflictNames.length > 0 || chemistryWarnings.length > 0) && React.createElement("span", { className: "mt-1 block text-[9px] font-bold leading-snug text-amber-950" }, conflictNames.length ? "Observe behavior with " + conflictNames.join(', ') + "." : "Current " + chemistryWarnings.join(' and ') + " falls outside this organism's range.")
+                        (conflictNames.length > 0 || chemistryWarnings.length > 0) && React.createElement("span", { className: "mt-1 block text-[0.5625rem] font-bold leading-snug text-amber-950" }, conflictNames.length ? "Observe behavior with " + conflictNames.join(', ') + "." : "Current " + chemistryWarnings.join(' and ') + " falls outside this organism's range.")
                       );
 
                     })
 
                   ),
-                  React.createElement("div", { role: "note", className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[10px] leading-relaxed text-amber-900" },
+                  React.createElement("div", { role: "note", className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[0.625rem] leading-relaxed text-amber-900" },
                     React.createElement("strong", null, "Ecology, not a cleanup shortcut: "),
                     "grazers turn algae into waste, corals exchange gases with their algal partners, and copepods move energy to plankton-eaters. Filtration and maintenance are still required."
                   ),
@@ -23536,7 +23536,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         onClick: function () { removeFish(idx); },
 
-                        className: "px-2 py-0.5 text-[11px] bg-cyan-100 text-cyan-800 rounded-full cursor-pointer hover:bg-red-100 hover:text-red-700 transition-all",
+                        className: "px-2 py-0.5 text-[0.6875rem] bg-cyan-100 text-cyan-800 rounded-full cursor-pointer hover:bg-red-100 hover:text-red-700 transition-all",
 
                         title: __alloT('stem.aquarium.click_to_remove', "Click to remove")
 
@@ -23561,9 +23561,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" },
                       React.createElement("h4", { className: "text-xs font-extrabold text-indigo-900" }, "\uD83D\uDD27 Life-Support Systems"),
                       React.createElement("div", { className: "flex items-center gap-1" },
-                        equipmentFaultCount > 0 && React.createElement("span", { role: "alert", 'aria-live': "assertive", className: "rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white" }, "\u26D4 " + equipmentFaultCount + " offline"),
-                        equipmentNeedsServiceCount > 0 && React.createElement("span", { role: "status", 'aria-live': "polite", className: "rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800" }, "\u26A0\uFE0F " + equipmentNeedsServiceCount + " need service"),
-                        React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800", 'aria-label': coins + " coins available" }, "\uD83E\uDE99 " + coins)
+                        equipmentFaultCount > 0 && React.createElement("span", { role: "alert", 'aria-live': "assertive", className: "rounded-full bg-red-600 px-2 py-0.5 text-[0.625rem] font-bold text-white" }, "\u26D4 " + equipmentFaultCount + " offline"),
+                        equipmentNeedsServiceCount > 0 && React.createElement("span", { role: "status", 'aria-live': "polite", className: "rounded-full bg-amber-100 px-2 py-0.5 text-[0.625rem] font-bold text-amber-800" }, "\u26A0\uFE0F " + equipmentNeedsServiceCount + " need service"),
+                        React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[0.625rem] font-bold text-amber-800", 'aria-label': coins + " coins available" }, "\uD83E\uDE99 " + coins)
                       )
                     ),
                     React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-2" },
@@ -23590,16 +23590,16 @@ var d = (labToolData && labToolData._aquarium) || {};
                         },
                           React.createElement("div", { className: "flex items-start justify-between gap-2" },
                             React.createElement("div", { className: "min-w-0" },
-                              React.createElement("div", { className: "truncate text-[11px] font-extrabold text-slate-700" }, catalog.icon + " " + catalog.name),
-                              React.createElement("div", { className: "truncate text-[10px] font-semibold text-indigo-700", title: current.desc }, current.name)
+                              React.createElement("div", { className: "truncate text-[0.6875rem] font-extrabold text-slate-700" }, catalog.icon + " " + catalog.name),
+                              React.createElement("div", { className: "truncate text-[0.625rem] font-semibold text-indigo-700", title: current.desc }, current.name)
                             ),
-                              fault && React.createElement("span", { className: "rounded bg-red-600 px-1 text-[9px] font-black text-white" }, "OFFLINE"),
+                              fault && React.createElement("span", { className: "rounded bg-red-600 px-1 text-[0.5625rem] font-black text-white" }, "OFFLINE"),
                             React.createElement("div", { className: "flex shrink-0 items-center gap-1" },
-                              React.createElement("span", { className: "rounded bg-indigo-100 px-1 text-[9px] font-bold text-indigo-700" }, "Lv " + currentLevel),
-                              React.createElement("span", { className: "rounded bg-slate-100 px-1 text-[9px] font-bold text-slate-600" }, Math.round(condition) + "%")
+                              React.createElement("span", { className: "rounded bg-indigo-100 px-1 text-[0.5625rem] font-bold text-indigo-700" }, "Lv " + currentLevel),
+                              React.createElement("span", { className: "rounded bg-slate-100 px-1 text-[0.5625rem] font-bold text-slate-600" }, Math.round(condition) + "%")
                             )
                           ),
-                          React.createElement("p", { className: "my-1 text-[9px] leading-snug text-slate-600" }, impact),
+                          React.createElement("p", { className: "my-1 text-[0.5625rem] leading-snug text-slate-600" }, impact),
                           React.createElement("div", {
                             role: "progressbar",
                             'aria-label': catalog.name + " condition",
@@ -23613,19 +23613,19 @@ var d = (labToolData && labToolData._aquarium) || {};
                             disabled: !next,
                             onClick: function () { buyEquipment(type); },
                             'aria-label': next ? "Upgrade " + catalog.name + " to " + next.name + " for " + next.cost + " coins" : catalog.name + " is fully upgraded",
-                            className: "w-full rounded-md border px-2 py-1 text-[10px] font-bold " + (next ? (coins >= next.cost ? "border-indigo-500 bg-indigo-50 text-indigo-700 hover:bg-indigo-100" : "border-slate-300 bg-slate-50 text-slate-500") : "cursor-not-allowed border-emerald-300 bg-emerald-50 text-emerald-700")
+                            className: "w-full rounded-md border px-2 py-1 text-[0.625rem] font-bold " + (next ? (coins >= next.cost ? "border-indigo-500 bg-indigo-50 text-indigo-700 hover:bg-indigo-100" : "border-slate-300 bg-slate-50 text-slate-500") : "cursor-not-allowed border-emerald-300 bg-emerald-50 text-emerald-700")
                           }, next ? "Upgrade: " + next.name + " (" + next.cost + ")" : "\u2713 Maximum"),
                           fault ? React.createElement("button", {
                             type: "button",
                             disabled: coins < repairCost,
                             onClick: function () { repairEquipment(type); },
                             'aria-label': "Repair " + catalog.name + " for " + repairCost + " coins",
-                            className: "mt-1 w-full rounded-md border border-red-600 bg-red-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500"
+                            className: "mt-1 w-full rounded-md border border-red-600 bg-red-600 px-2 py-1 text-[0.625rem] font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500"
                           }, "\uD83D\uDEE0\uFE0F Repair (" + repairCost + ")") : condition < 95 && React.createElement("button", {
                             type: "button",
                             onClick: function () { serviceEquipment(type); },
                             'aria-label': "Service " + catalog.name + " and restore full output",
-                            className: "mt-1 w-full rounded-md border px-2 py-1 text-[10px] font-bold " + (condition <= 25 ? "border-red-500 bg-red-50 text-red-700 hover:bg-red-100" : "border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100")
+                            className: "mt-1 w-full rounded-md border px-2 py-1 text-[0.625rem] font-bold " + (condition <= 25 ? "border-red-500 bg-red-50 text-red-700 hover:bg-red-100" : "border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100")
                           }, type === 'filter' ? "\uD83E\uDDFD Clean filter" : "\uD83D\uDD27 Service system")
                         );
                       })
@@ -23639,7 +23639,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                       React.createElement("div", null,
                         React.createElement("h4", { className: "text-xs font-extrabold text-slate-800" }, "\uD83D\uDCC5 Preventive Maintenance"),
-                        React.createElement("p", { className: "text-[10px] text-slate-600" }, maintenanceOverdue
+                        React.createElement("p", { className: "text-[0.625rem] text-slate-600" }, maintenanceOverdue
                           ? "Weekly service overdue by " + (hoursSinceWaterChange - 168) + " hours"
                           : (168 - hoursSinceWaterChange) + " hours until weekly service")
                       ),
@@ -23648,14 +23648,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                           type: "button",
                           onClick: function () { doWaterChange(recommendedWaterChangePercent); },
                           'aria-label': "Perform recommended " + recommendedWaterChangePercent + " percent water change",
-                          className: "rounded-lg border border-blue-600 bg-blue-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-blue-700"
+                          className: "rounded-lg border border-blue-600 bg-blue-600 px-2 py-1 text-[0.625rem] font-bold text-white hover:bg-blue-700"
                         }, "\uD83D\uDCA7 Do recommended " + recommendedWaterChangePercent + "%"),
                         React.createElement("button", {
                           type: "button",
                           'aria-expanded': maintenanceHistoryExpanded,
                           'aria-controls': "aquarium-maintenance-history",
                           onClick: function () { upd('maintenanceHistoryExpanded', !maintenanceHistoryExpanded); },
-                          className: "rounded-lg border border-slate-400 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50"
+                          className: "rounded-lg border border-slate-400 bg-white px-2 py-1 text-[0.625rem] font-bold text-slate-700 hover:bg-slate-50"
                         }, maintenanceHistoryExpanded ? "Hide history" : "Service history")
                       )
                     ),
@@ -23667,17 +23667,17 @@ var d = (labToolData && labToolData._aquarium) || {};
                       'aria-valuenow': Math.min(168, hoursSinceWaterChange),
                       className: "mt-2 h-2 overflow-hidden rounded-full bg-white"
                     }, React.createElement("div", { className: "h-full rounded-full " + (maintenanceOverdue ? "bg-amber-500" : "bg-emerald-500"), style: { width: Math.min(100, hoursSinceWaterChange / 168 * 100) + "%" } })),
-                    React.createElement("p", { className: "mt-1 text-[10px] font-semibold text-slate-700", 'aria-live': "polite" }, "Recommendation: " + recommendedWaterChangePercent + "% ? " + maintenanceRecommendation),
+                    React.createElement("p", { className: "mt-1 text-[0.625rem] font-semibold text-slate-700", 'aria-live': "polite" }, "Recommendation: " + recommendedWaterChangePercent + "% ? " + maintenanceRecommendation),
                     maintenanceHistoryExpanded && React.createElement("div", {
                       id: "aquarium-maintenance-history",
                       role: "list",
                       'aria-label': "Water change service history",
                       className: "mt-2 max-h-32 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1"
                     }, maintenanceLog.length === 0
-                      ? React.createElement("p", { className: "px-1 py-1 text-[10px] text-slate-500" }, "No water changes recorded yet.")
+                      ? React.createElement("p", { className: "px-1 py-1 text-[0.625rem] text-slate-500" }, "No water changes recorded yet.")
                       : maintenanceLog.slice().reverse().map(function (entry, historyIndex) {
                         var serviceHour = (entry.hour < 10 ? "0" : "") + entry.hour;
-                        return React.createElement("div", { role: "listitem", key: entry.tick + "-service-" + historyIndex, className: "border-b border-slate-100 px-1 py-1 text-[10px] last:border-b-0" },
+                        return React.createElement("div", { role: "listitem", key: entry.tick + "-service-" + historyIndex, className: "border-b border-slate-100 px-1 py-1 text-[0.625rem] last:border-b-0" },
                           React.createElement("div", { className: "flex justify-between gap-2 font-bold text-slate-700" },
                             React.createElement("span", null, "Day " + entry.day + " " + serviceHour + ":00"),
                             React.createElement("span", { className: "text-blue-700" }, entry.percent + "% change")
@@ -23688,13 +23688,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                       }))
                   ),
                   waterChem && React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2" },
-                    React.createElement("label", { htmlFor: "aquarium-water-change-percent", className: "text-[11px] font-bold text-blue-800" }, "Water change:"),
-                    React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-500 bg-white px-2 py-1 text-[11px] font-bold text-blue-900", 'aria-label': "Water change percentage" },
+                    React.createElement("label", { htmlFor: "aquarium-water-change-percent", className: "text-[0.6875rem] font-bold text-blue-800" }, "Water change:"),
+                    React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-500 bg-white px-2 py-1 text-[0.6875rem] font-bold text-blue-900", 'aria-label': "Water change percentage" },
                       [10, 25, 50].map(function(percentOption) {
                         return React.createElement("option", { key: percentOption, value: percentOption }, percentOption + "%");
                       })
                     ),
-                    React.createElement("span", { className: "text-[10px] text-blue-900", 'aria-live': "polite" }, "Preview - NH3 " + (waterChem.ammonia * (1 - waterChangePercent / 100)).toFixed(2) + ", NO2 " + (waterChem.nitrite * (1 - waterChangePercent / 100)).toFixed(2) + ", NO3 " + (waterChem.nitrate * (1 - waterChangePercent / 100)).toFixed(1) + " ppm")
+                    React.createElement("span", { className: "text-[0.625rem] text-blue-900", 'aria-live': "polite" }, "Preview - NH3 " + (waterChem.ammonia * (1 - waterChangePercent / 100)).toFixed(2) + ", NO2 " + (waterChem.nitrite * (1 - waterChangePercent / 100)).toFixed(2) + ", NO3 " + (waterChem.nitrate * (1 - waterChangePercent / 100)).toFixed(1) + " ppm")
                   ),
 
                   React.createElement("div", { className: "flex gap-2" },
@@ -23737,7 +23737,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (soundEnabled ? "bg-cyan-50 text-cyan-800 border-cyan-600" : "bg-slate-100 text-slate-700 border-slate-500")
                     }, soundEnabled ? "\uD83D\uDD0A Sound" : "\uD83D\uDD07 Muted"),
 
-                    React.createElement("label", { className: "flex items-center gap-1 rounded-xl border border-cyan-300 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-900", title: "Aquarium sound volume" },
+                    React.createElement("label", { className: "flex items-center gap-1 rounded-xl border border-cyan-300 bg-cyan-50 px-2 py-1 text-[0.625rem] font-bold text-cyan-900", title: "Aquarium sound volume" },
                       React.createElement("span", { 'aria-hidden': "true" }, soundVolume + "%"),
                       React.createElement("input", { type: "range", min: 0, max: 100, step: 5, value: soundVolume, onChange: function (event) { upd('soundVolume', Number(event.target.value)); }, 'aria-label': "Aquarium sound volume", className: "w-16 accent-cyan-600" })
                     ),
@@ -23805,7 +23805,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.aquarium.feeding_report', "Feeding Report")),
 
-                      React.createElement("button", { type: "button", 'aria-label': "Close feeding report", onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[11px] text-slate-600" }, "\u2715")
+                      React.createElement("button", { type: "button", 'aria-label': "Close feeding report", onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[0.6875rem] text-slate-600" }, "\u2715")
 
                     ),
 
@@ -23813,7 +23813,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.fish_fed', "Fish Fed")),
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.fish_fed', "Fish Fed")),
 
                         React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
 
@@ -23821,7 +23821,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.hunger', "Hunger \u2193")),
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.hunger', "Hunger \u2193")),
 
                         React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
 
@@ -23829,7 +23829,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.nh', "NH\u2083 \u2191")),
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.aquarium.nh', "NH\u2083 \u2191")),
 
                         React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
 
@@ -23837,13 +23837,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     ),
 
-                    feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[11px] text-red-700 font-bold mb-1" },
+                    feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[0.6875rem] text-red-700 font-bold mb-1" },
 
                       "\u26A0\uFE0F " + feedingLog.overfedCount + " fish already full! Excess food = extra ammonia waste."
 
                     ),
 
-                    React.createElement("p", { className: "text-[11px] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
+                    React.createElement("p", { className: "text-[0.6875rem] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
 
                   )
 
@@ -23885,7 +23885,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       health.tips.map(function (tip, i) {
 
-                        return React.createElement("p", { key: i, className: "text-[11px] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
+                        return React.createElement("p", { key: i, className: "text-[0.6875rem] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
 
                       })
 
@@ -23907,13 +23907,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                       type: "button",
                       onClick: quarantineAllSickFish,
                       'aria-label': "Move all " + mainTankSickFishIds.length + " sick fish to the hospital tank",
-                      className: "rounded-lg border border-violet-500 bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-100"
+                      className: "rounded-lg border border-violet-500 bg-violet-50 px-2 py-1 text-[0.625rem] font-bold text-violet-700 hover:bg-violet-100"
                     }, "\uD83C\uDFE5 Isolate all sick (" + mainTankSickFishIds.length + ")")
                   ),
                   (mainTankSickFishIds.length > 0 || hospitalFishCount > 0) && React.createElement("div", {
                     role: "status",
                     'aria-live': "polite",
-                    className: "mb-2 rounded-lg border px-2 py-1 text-[10px] font-semibold " + (mainTankSickFishIds.length > 0 ? "border-amber-300 bg-amber-50 text-amber-800" : "border-violet-200 bg-violet-50 text-violet-700")
+                    className: "mb-2 rounded-lg border px-2 py-1 text-[0.625rem] font-semibold " + (mainTankSickFishIds.length > 0 ? "border-amber-300 bg-amber-50 text-amber-800" : "border-violet-200 bg-violet-50 text-violet-700")
                   }, mainTankSickFishIds.length > 0
                     ? "\u26A0\uFE0F Outbreak risk: " + mainTankSickFishIds.length + " sick fish remain in the display tank. Contact spread is possible."
                     : "\uD83C\uDFE5 Hospital active: " + hospitalFishCount + " fish isolated" + (quarantinedSickCount > 0 ? ", " + quarantinedSickCount + " recovering." : ".")),
@@ -23982,16 +23982,16 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 truncate" }, displayName),
+                              React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 truncate" }, displayName),
                               React.createElement("div", { className: "flex items-center gap-1" },
-                                isQuarantined && React.createElement("span", { className: "rounded bg-violet-100 px-1 text-[9px] font-bold text-violet-700", title: "In hospital tank for " + quarantineHours + " hours" }, "\uD83C\uDFE5 Hospital"),
-                                React.createElement("span", { className: "text-[11px] font-bold " + hungerTextColor }, hungerText),
+                                isQuarantined && React.createElement("span", { className: "rounded bg-violet-100 px-1 text-[0.5625rem] font-bold text-violet-700", title: "In hospital tank for " + quarantineHours + " hours" }, "\uD83C\uDFE5 Hospital"),
+                                React.createElement("span", { className: "text-[0.6875rem] font-bold " + hungerTextColor }, hungerText),
                                 React.createElement("button", {
                                   type: "button",
                                   onClick: function () { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fishKey }); },
                                   'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fishKey,
                                   'aria-label': "Trace " + displayName + " through the ecosystem exchange network",
-                                  className: "rounded border px-1 py-0.5 text-[8px] font-black " + (ecosystemFocusType === 'fish' && ecosystemFocusId === fishKey ? "border-fuchsia-500 bg-fuchsia-100 text-fuchsia-800" : "border-cyan-400 bg-cyan-50 text-cyan-700")
+                                  className: "rounded border px-1 py-0.5 text-[0.5rem] font-black " + (ecosystemFocusType === 'fish' && ecosystemFocusId === fishKey ? "border-fuchsia-500 bg-fuchsia-100 text-fuchsia-800" : "border-cyan-400 bg-cyan-50 text-cyan-700")
                                 }, "\uD83D\uDD0E Trace")
                               )
                             ),
@@ -24003,9 +24003,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                               'aria-label': "Name for " + (sp ? sp.name : "organism") + " " + (idx + 1),
                               onChange: function (event) { var updatedNames = Object.assign({}, fishNames); var nextName = event.target.value.slice(0, 24); if (nextName) updatedNames[fishKey] = nextName; else delete updatedNames[fishKey]; upd('fishNames', updatedNames); },
                               onBlur: function (event) { var completedName = event.target.value.trim(); if (completedName && (!lastCare || lastCare.msg !== 'Named ' + completedName)) appendFishCare(fishKey, 'Named ' + completedName); },
-                              className: "mb-1 w-full rounded border border-slate-500 bg-white px-1 py-0.5 text-[10px] text-slate-700"
+                              className: "mb-1 w-full rounded border border-slate-500 bg-white px-1 py-0.5 text-[0.625rem] text-slate-700"
                             }),
-                            React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " vitality " + careScore + " out of 100. Limiting factor: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score + ". Age " + ageLabel + (isQuarantined ? ", in hospital tank for " + quarantineHours + " hours" : "") + (lastCare ? ". Latest care: " + lastCare.msg : "") },
+                            React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[0.625rem] text-slate-600", 'aria-label': displayName + " vitality " + careScore + " out of 100. Limiting factor: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score + ". Age " + ageLabel + (isQuarantined ? ", in hospital tank for " + quarantineHours + " hours" : "") + (lastCare ? ". Latest care: " + lastCare.msg : "") },
                               React.createElement("span", { className: "font-bold whitespace-nowrap " + careScoreColor, title: "Vitality combines oxygen, nitrogen toxins, temperature, pH, space, shelter, nutrition, stress, and illness" }, "Vitality " + careScore + "/100"),
                               React.createElement("span", { className: "whitespace-nowrap font-bold", title: persistentVitality && persistentVitality.lowTicks ? persistentVitality.lowTicks + " consecutive critical hours" : "Smoothed multi-hour vitality trend" }, "\u2022 " + vitalityTrendLabel),
                               React.createElement("span", { className: "whitespace-nowrap" }, "\u2022 Age " + ageLabel),
@@ -24013,9 +24013,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                             ),
                             React.createElement("div", { className: "flex items-center gap-1" },
                             React.createElement("details", { className: "mb-1 rounded border border-indigo-100 bg-indigo-50/60 px-1.5 py-1" },
-                              React.createElement("summary", { className: "cursor-pointer text-[9px] font-bold text-indigo-800" }, "Why vitality? Limiting: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score),
+                              React.createElement("summary", { className: "cursor-pointer text-[0.5625rem] font-bold text-indigo-800" }, "Why vitality? Limiting: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score),
                               fishVitalitySeries.length > 1 && React.createElement("div", { className: "mt-1 rounded bg-white p-1" },
-                                React.createElement("div", { className: "flex items-center justify-between text-[8px] font-bold text-slate-600" },
+                                React.createElement("div", { className: "flex items-center justify-between text-[0.5rem] font-bold text-slate-600" },
                                   React.createElement("span", null, "Vitality trajectory"),
                                   React.createElement("span", null, fishVitalitySeries.length + "h \u2022 " + vitalityTrendLabel)
                                 ),
@@ -24028,14 +24028,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                               React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-1 sm:grid-cols-3", role: "list", 'aria-label': displayName + " vitality factors" }, vitalityFactors.map(function (factor) {
                                 var factorColor = factor.score >= 80 ? 'bg-emerald-500' : factor.score >= 55 ? 'bg-amber-500' : 'bg-rose-500';
                                 return React.createElement("div", { key: factor.id, role: "listitem", className: "rounded bg-white p-1", title: factor.detail },
-                                  React.createElement("div", { className: "flex justify-between gap-1 text-[8px]" },
+                                  React.createElement("div", { className: "flex justify-between gap-1 text-[0.5rem]" },
                                     React.createElement("span", { className: "font-bold text-slate-600" }, factor.label),
                                     React.createElement("span", { className: "font-black text-slate-800" }, factor.score)
                                   ),
                                   React.createElement("div", { className: "mt-0.5 h-1 overflow-hidden rounded-full bg-slate-200", "aria-hidden": "true" },
                                     React.createElement("div", { className: "h-full rounded-full " + factorColor, style: { width: factor.score + '%' } })
                                   ),
-                                  React.createElement("div", { className: "mt-0.5 truncate text-[7px] text-slate-500" }, factor.detail)
+                                  React.createElement("div", { className: "mt-0.5 truncate text-[0.4375rem] text-slate-500" }, factor.detail)
                                 );
                               }))
                             ),
@@ -24047,27 +24047,27 @@ var d = (labToolData && labToolData._aquarium) || {};
                                 disabled: hunger <= 10,
                                 'aria-label': hunger <= 10 ? displayName + " is full" : "Feed " + displayName + " individually",
                                 onClick: function () { feedIndividual(fishKey, fId); },
-                                className: "rounded-md border px-1.5 py-0.5 text-[10px] font-bold " + (hunger <= 10 ? "cursor-not-allowed border-slate-300 bg-slate-100 text-slate-600" : "border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100")
+                                className: "rounded-md border px-1.5 py-0.5 text-[0.625rem] font-bold " + (hunger <= 10 ? "cursor-not-allowed border-slate-300 bg-slate-100 text-slate-600" : "border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100")
                               }, hunger <= 10 ? "Full" : "Feed"),
                               fishSickness[fishKey] && React.createElement("button", {
                                 type: "button",
                                 'aria-label': "Treat " + displayName + " for " + fishSickness[fishKey].disease,
                                 onClick: function () { medicateFish(fishKey); },
-                                className: "rounded-md border border-rose-500 bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100"
+                                className: "rounded-md border border-rose-500 bg-rose-50 px-1.5 py-0.5 text-[0.625rem] font-bold text-rose-700 hover:bg-rose-100"
                               }, "Treat"),
                               React.createElement("button", {
                                 type: "button",
                                 'aria-pressed': isQuarantined,
                                 'aria-label': isQuarantined ? (fishSickness[fishKey] ? displayName + " is recovering in the hospital tank" : "Release " + displayName + " from the hospital tank") : "Move " + displayName + " to the hospital tank",
                                 onClick: function () { toggleFishQuarantine(fishKey); },
-                                className: "rounded-md border px-1.5 py-0.5 text-[10px] font-bold " + (isQuarantined ? "border-violet-500 bg-violet-100 text-violet-700 hover:bg-violet-200" : "border-violet-400 bg-white text-violet-700 hover:bg-violet-50")
+                                className: "rounded-md border px-1.5 py-0.5 text-[0.625rem] font-bold " + (isQuarantined ? "border-violet-500 bg-violet-100 text-violet-700 hover:bg-violet-200" : "border-violet-400 bg-white text-violet-700 hover:bg-violet-50")
                               }, isQuarantined ? (fishSickness[fishKey] ? "Hospital" : "Release") : "Isolate"),
                               React.createElement("button", {
                                 type: "button",
                                 'aria-expanded': historyExpanded,
                                 'aria-controls': historyId,
                                 onClick: function () { upd('expandedCareFish', historyExpanded ? null : fishKey); },
-                                className: "rounded-md border border-sky-400 bg-sky-50 px-1.5 py-0.5 text-[10px] font-bold text-sky-700 hover:bg-sky-100"
+                                className: "rounded-md border border-sky-400 bg-sky-50 px-1.5 py-0.5 text-[0.625rem] font-bold text-sky-700 hover:bg-sky-100"
                               }, historyExpanded ? "Hide" : "History")
                             ),
                             historyExpanded && React.createElement("div", {
@@ -24077,10 +24077,10 @@ var d = (labToolData && labToolData._aquarium) || {};
                               className: "mt-1 max-h-28 overflow-y-auto rounded-lg border border-sky-200 bg-white p-1"
                             },
                               careEntries.length === 0
-                                ? React.createElement("p", { className: "px-1 py-0.5 text-[10px] text-slate-500" }, "No care events yet.")
+                                ? React.createElement("p", { className: "px-1 py-0.5 text-[0.625rem] text-slate-500" }, "No care events yet.")
                                 : careEntries.slice().reverse().map(function (entry, historyIndex) {
                                   var historyHour = (entry.hour < 10 ? '0' : '') + entry.hour;
-                                  return React.createElement("div", { role: "listitem", key: fishKey + '-care-' + historyIndex, className: "flex gap-1 border-b border-slate-100 px-1 py-0.5 text-[10px] last:border-b-0" },
+                                  return React.createElement("div", { role: "listitem", key: fishKey + '-care-' + historyIndex, className: "flex gap-1 border-b border-slate-100 px-1 py-0.5 text-[0.625rem] last:border-b-0" },
                                     React.createElement("span", { className: "shrink-0 font-bold text-sky-700" }, "Day " + entry.day + " " + historyHour + ":00"),
                                     React.createElement("span", { className: "text-slate-600" }, entry.msg)
                                   );
@@ -24088,7 +24088,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             )
                           ),
 
-                          isQuarantined ? React.createElement("span", { className: "text-[11px] text-violet-600", title: 'Hospital tank' }, '\uD83C\uDFE5') : stress > 30 && React.createElement("span", { className: "text-[11px] text-red-500", title: 'Stress: ' + Math.round(stress) + '%' }, '\u26A0\uFE0F')
+                          isQuarantined ? React.createElement("span", { className: "text-[0.6875rem] text-violet-600", title: 'Hospital tank' }, '\uD83C\uDFE5') : stress > 30 && React.createElement("span", { className: "text-[0.6875rem] text-red-500", title: 'Stress: ' + Math.round(stress) + '%' }, '\u26A0\uFE0F')
 
                         );
 
@@ -24114,7 +24114,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title),
 
-                    aiEvent.category && React.createElement("span", { className: "text-[11px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
+                    aiEvent.category && React.createElement("span", { className: "text-[0.6875rem] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
 
                     React.createElement("button", { type: "button", 'aria-label': "Dismiss aquarium event", onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
 
@@ -24134,7 +24134,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("span", { className: "text-xs" }, '\uD83C\uDF93'),
 
-                        React.createElement("p", { className: "text-[11px] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
+                        React.createElement("p", { className: "text-[0.6875rem] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
 
                       )
 
@@ -24144,7 +24144,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("div", { className: "space-y-2" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.aquarium.what_do_you_do', '\u2696\uFE0F What do you do?')),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.aquarium.what_do_you_do', '\u2696\uFE0F What do you do?')),
 
                       (aiEvent.choices || []).map(function (choice, idx) {
 
@@ -24162,7 +24162,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             React.createElement("span", { className: "text-xs font-bold text-slate-700 group-hover:text-blue-700" }, choice.label),
 
-                            choice.xp > 0 && React.createElement("span", { className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700" }, '+' + choice.xp + ' XP')
+                            choice.xp > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700" }, '+' + choice.xp + ' XP')
 
                           )
 
@@ -24224,7 +24224,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
 
-                  React.createElement("h4", { className: "text-[11px] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
+                  React.createElement("h4", { className: "text-[0.6875rem] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
 
                     React.createElement("span", null, '\uD83D\uDCD3'),
 
@@ -24242,17 +24242,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("div", { className: "flex items-center gap-1" },
 
-                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 truncate" }, entry.title),
+                          React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 truncate" }, entry.title),
 
-                          React.createElement("span", { className: "text-[11px] text-slate-600 flex-shrink-0" }, 'Day ' + entry.day)
+                          React.createElement("span", { className: "text-[0.6875rem] text-slate-600 flex-shrink-0" }, 'Day ' + entry.day)
 
                         ),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600 truncate" }, entry.choice + ' → ' + (entry.outcome || '').substring(0, 60) + '...')
+                        React.createElement("p", { className: "text-[0.6875rem] text-slate-600 truncate" }, entry.choice + ' → ' + (entry.outcome || '').substring(0, 60) + '...')
 
                       ),
 
-                      entry.xp > 0 ? React.createElement("span", { className: "text-[11px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0" }, '+' + entry.xp) : null
+                      entry.xp > 0 ? React.createElement("span", { className: "text-[0.6875rem] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 flex-shrink-0" }, '+' + entry.xp) : null
 
                     );
 
@@ -24266,11 +24266,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 eventLog.length > 0 && React.createElement("div", { role: "log", 'aria-live': "polite", 'aria-relevant': "additions text", 'aria-label': "Aquarium event log", className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
 
-                  React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
+                  React.createElement("h4", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
 
                   eventLog.slice().reverse().slice(0, 10).map(function (evt, i) {
 
-                    return React.createElement("p", { key: i, className: "text-[11px] text-slate-600" }, "[T" + evt.tick + "] " + evt.msg);
+                    return React.createElement("p", { key: i, className: "text-[0.6875rem] text-slate-600" }, "[T" + evt.tick + "] " + evt.msg);
 
                   })
 
@@ -24296,7 +24296,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 className: "rounded-xl border border-blue-300 bg-gradient-to-br from-blue-50 to-sky-50"
               },
                 React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-blue-800" }, __alloT('stem.aquarium.how_fisheries_management_works_click_t', "\uD83D\uDCDC How fisheries management works (click to toggle)")),
-                React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
+                React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[0.6875rem] text-slate-700" },
                   React.createElement("div", null,
                     React.createElement("div", { className: "font-black mb-1 text-blue-900" }, __alloT('stem.aquarium.what_you_re_doing', "\uD83C\uDFAF What you're doing")),
                     React.createElement("p", { className: "leading-relaxed" },
@@ -24316,7 +24316,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement("p", { className: "leading-relaxed" },
                       __alloT('stem.aquarium.when_a_species_drops_below_10_of_its_c', "When a species drops below 10% of its carrying capacity (K), it has collapsed. Real-world example: Atlantic cod (1992 Newfoundland) collapsed from over-fishing and hasn't recovered 30+ years later. Sharks below 10% of K is also catastrophic because they're the top predator, and removing them cascades down the food web."))
                   ),
-                  React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-blue-200" },
+                  React.createElement("div", { className: "text-[0.625rem] italic text-slate-600 pt-1 border-t border-blue-200" },
                     __alloT('stem.aquarium.tip_try_free_play_first_to_see_how_the', "Tip: try Free Play first to see how the populations move year over year. Then take a scenario (Feed the Town, Recovery Plan, Balanced Eco) for a target."))
                 )
               ),
@@ -24383,10 +24383,10 @@ var d = (labToolData && labToolData._aquarium) || {};
                   className: "rounded-xl px-3 py-2 border flex flex-wrap items-center gap-2",
                   style: { background: 'linear-gradient(135deg,' + statusBg + ' 0%,rgba(255,255,255,0.85) 100%)', borderColor: statusBorder, borderLeft: '4px solid ' + statusColor }
                 },
-                  React.createElement("div", { className: "text-[12px] font-black", style: { color: statusColor } }, info.title),
-                  React.createElement("div", { className: "text-[11px] text-slate-700 flex-1 min-w-[160px]" }, info.goal),
-                  React.createElement("div", { className: "text-[11px] font-mono font-bold", style: { color: statusColor } }, info.progress),
-                  info.coach && React.createElement("div", { className: "text-[10px] italic text-slate-600 basis-full" }, '\uD83D\uDCA1 ' + info.coach)
+                  React.createElement("div", { className: "text-[0.75rem] font-black", style: { color: statusColor } }, info.title),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-700 flex-1 min-w-[160px]" }, info.goal),
+                  React.createElement("div", { className: "text-[0.6875rem] font-mono font-bold", style: { color: statusColor } }, info.progress),
+                  info.coach && React.createElement("div", { className: "text-[0.625rem] italic text-slate-600 basis-full" }, '\uD83D\uDCA1 ' + info.coach)
                 );
               })(),
 
@@ -24478,7 +24478,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     // Percentage badge
 
-                    React.createElement("div", { className: "mt-1 inline-block px-1.5 py-0.5 rounded-full text-[11px] font-bold " + (critical ? "bg-red-100 text-red-700" : pct > 50 ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-800") }, pct + "% K")
+                    React.createElement("div", { className: "mt-1 inline-block px-1.5 py-0.5 rounded-full text-[0.6875rem] font-bold " + (critical ? "bg-red-100 text-red-700" : pct > 50 ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-800") }, pct + "% K")
 
                   );
 
@@ -24492,7 +24492,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, __alloT('stem.aquarium.population_history', "\uD83D\uDCC8 Population History"), React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
+                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, __alloT('stem.aquarium.population_history', "\uD83D\uDCC8 Population History"), React.createElement("span", { className: "text-[0.6875rem] text-slate-600 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
 
                 React.createElement("div", { className: "relative", style: { height: '96px' } },
 
@@ -24560,7 +24560,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 ),
 
-                React.createElement("div", { className: "flex gap-3 mt-4 text-[11px]" },
+                React.createElement("div", { className: "flex gap-3 mt-4 text-[0.6875rem]" },
 
                   React.createElement("span", { className: "font-bold", style: { color: '#0ea5e9' } }, __alloT('stem.aquarium.sardines_2', "\u25CF Sardines")),
 
@@ -24664,7 +24664,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   }),
 
-                  React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
+                  React.createElement("span", { className: "text-[0.6875rem] text-slate-600 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
 
                 ),
 
@@ -24765,13 +24765,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                 className: "rounded-xl border border-teal-300 bg-gradient-to-br from-teal-50 to-cyan-50"
               },
                 React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-teal-800" }, __alloT('stem.aquarium.what_you_re_exploring_click_to_toggle', "📜 What you're exploring (click to toggle)")),
-                React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
+                React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[0.6875rem] text-slate-700" },
                   React.createElement("div", null,
                     React.createElement("div", { className: "font-black mb-1 text-teal-900" }, __alloT('stem.aquarium.the_five_ocean_zones', "🌊 The five ocean zones")),
                     React.createElement("p", { className: "leading-relaxed" },
                       __alloT('stem.aquarium.the_ocean_is_layered_by_depth_each_lay', "The ocean is layered by depth. Each layer has its own pressure, temperature, light, and creatures adapted to those conditions. Tap a zone band below to see species that live there."))
                   ),
-                  React.createElement("ul", { className: "grid grid-cols-1 md:grid-cols-5 gap-1 text-[10px] leading-tight" },
+                  React.createElement("ul", { className: "grid grid-cols-1 md:grid-cols-5 gap-1 text-[0.625rem] leading-tight" },
                     [
                       { name: __alloT('stem.aquarium.sunlight_epipelagic', 'Sunlight (Epipelagic)'),  depth: '0-200 m',       fact: __alloT('stem.aquarium.photosynthesis_happens_here_90_of_mari', 'Photosynthesis happens here. 90% of marine life.') },
                       { name: __alloT('stem.aquarium.twilight_mesopelagic', 'Twilight (Mesopelagic)'), depth: '200-1,000 m',   fact: __alloT('stem.aquarium.dim_light_bioluminescence_appears', 'Dim light. Bioluminescence appears.') },
@@ -24786,7 +24786,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       );
                     })
                   ),
-                  React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-teal-200" },
+                  React.createElement("div", { className: "text-[0.625rem] italic text-slate-600 pt-1 border-t border-teal-200" },
                     __alloT('stem.aquarium.goal_tap_each_zone_to_expand_it_click_', "🎯 Goal: tap each zone to expand it, click a species to learn its habitat / diet / status, then test yourself with the quiz below. Aim to answer 10 questions to unlock the deep-sea biodiversity badge."))
                 )
               ),
@@ -24812,11 +24812,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                     borderLeft: '4px solid ' + statusColor
                   }
                 },
-                  React.createElement("div", { className: "text-[12px] font-black", style: { color: statusColor } }, __alloT('stem.aquarium.marine_science_2', '🔬 Marine Science')),
-                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🌊 Zones: ' + zonesExplored + '/5')),
-                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🐠 Species: ' + speciesClicked + '/' + totalSpecies)),
-                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🧠 Quiz: ' + quizCorrect + '/' + quizDone + (quizDone > 0 ? ' (' + Math.round(quizCorrect / quizDone * 100) + '%)' : ''))),
-                  quizComplete && React.createElement("div", { className: "ml-auto text-[11px] font-bold", style: { color: statusColor } }, __alloT('stem.aquarium.badge_unlocked', '🏅 Badge unlocked'))
+                  React.createElement("div", { className: "text-[0.75rem] font-black", style: { color: statusColor } }, __alloT('stem.aquarium.marine_science_2', '🔬 Marine Science')),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-700" }, React.createElement("strong", null, '🌊 Zones: ' + zonesExplored + '/5')),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-700" }, React.createElement("strong", null, '🐠 Species: ' + speciesClicked + '/' + totalSpecies)),
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-700" }, React.createElement("strong", null, '🧠 Quiz: ' + quizCorrect + '/' + quizDone + (quizDone > 0 ? ' (' + Math.round(quizCorrect / quizDone * 100) + '%)' : ''))),
+                  quizComplete && React.createElement("div", { className: "ml-auto text-[0.6875rem] font-bold", style: { color: statusColor } }, __alloT('stem.aquarium.badge_unlocked', '🏅 Badge unlocked'))
                 );
               })(),
 
@@ -24851,9 +24851,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-white drop-shadow-sm" }, zone.name),
 
-                      React.createElement("span", { className: "text-[11px] text-white/70 ml-auto font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.depth),
+                      React.createElement("span", { className: "text-[0.6875rem] text-white/70 ml-auto font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.depth),
 
-                      React.createElement("span", { className: "text-[11px] text-white/60 font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.temp)
+                      React.createElement("span", { className: "text-[0.6875rem] text-white/60 font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.temp)
 
                     ),
 
@@ -24870,13 +24870,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                             upd('selectedSpecies', sp.id); openAnatomy(sp.id); sfxBubble();
                           },
 
-                          className: "px-2.5 py-1 bg-white/25 rounded-full text-[11px] text-white font-bold hover:bg-white/40 hover:shadow-lg transition-all duration-200 backdrop-blur-sm border border-white/10"
+                          className: "px-2.5 py-1 bg-white/25 rounded-full text-[0.6875rem] text-white font-bold hover:bg-white/40 hover:shadow-lg transition-all duration-200 backdrop-blur-sm border border-white/10"
 
                         }, sp.icon + " " + sp.name);
 
                       }),
 
-                      zoneSpecies.length === 0 && React.createElement("span", { className: "text-[11px] text-white/50 italic" }, __alloT('stem.aquarium.few_species_survive_here', "Few species survive here"))
+                      zoneSpecies.length === 0 && React.createElement("span", { className: "text-[0.6875rem] text-white/50 italic" }, __alloT('stem.aquarium.few_species_survive_here', "Few species survive here"))
 
                     )
 
@@ -24912,11 +24912,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "flex gap-2 mt-1 flex-wrap" },
 
-                        React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold" }, "\uD83C\uDF0A " + sp.habitat),
+                        React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold" }, "\uD83C\uDF0A " + sp.habitat),
 
-                        React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 font-bold" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
+                        React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 font-bold" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
 
-                        React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full font-bold " + (statusColors[sp.status] || '') }, "\uD83D\uDEE1\uFE0F " + (statusLabels[sp.status] || sp.status))
+                        React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 rounded-full font-bold " + (statusColors[sp.status] || '') }, "\uD83D\uDEE1\uFE0F " + (statusLabels[sp.status] || sp.status))
 
                       )
 
@@ -25004,7 +25004,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     onClick: generateQuiz,
 
-                    className: "mt-1 px-3 py-1 text-[11px] font-bold bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
+                    className: "mt-1 px-3 py-1 text-[0.6875rem] font-bold bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
 
                   }, __alloT('stem.aquarium.next_question_2', "Next Question \u2192"))
 
@@ -25030,7 +25030,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83d\udcd6'),
                     React.createElement('h3', { className: 'text-base font-black text-emerald-900' }, __alloT('stem.aquarium.aquarium_curriculum_library', 'Aquarium Curriculum Library')),
-                    React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-emerald-700 bg-white border border-emerald-300 rounded-full px-2 py-0.5' }, LEARN_LIBRARY.length + ' articles')
+                    React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-emerald-700 bg-white border border-emerald-300 rounded-full px-2 py-0.5' }, LEARN_LIBRARY.length + ' articles')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
                     __alloT('stem.aquarium.long_form_articles_on_the_science_and_', 'Long-form articles on the science and craft of keeping aquariums. Each piece reads in under 12 minutes. Use the category filter to narrow the list, then click any article to open the full text on the right.'))
@@ -25041,7 +25041,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     return React.createElement('button', {
                       key: c, 'aria-pressed': sel,
                       onClick: function () { upd('libCategory', c); },
-                      className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-emerald-700 text-white border-emerald-800' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50')
+                      className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-emerald-700 text-white border-emerald-800' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50')
                     }, c);
                   })
                 ),
@@ -25055,9 +25055,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                         onClick: function () { upd('libArticle', a.id); },
                         className: 'w-full text-left rounded-xl border p-2.5 transition-all ' + (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-emerald-300')
                       },
-                        React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide' }, a.category + ' \u00b7 ' + a.level + ' \u00b7 ' + a.readMinutes + ' min'),
+                        React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide' }, a.category + ' \u00b7 ' + a.level + ' \u00b7 ' + a.readMinutes + ' min'),
                         React.createElement('div', { className: 'text-sm font-extrabold mt-0.5 leading-tight' }, a.title),
-                        React.createElement('div', { className: 'text-[11px] mt-1 leading-snug ' + (sel ? 'opacity-90' : 'opacity-75') }, a.summary.slice(0, 110) + (a.summary.length > 110 ? '\u2026' : ''))
+                        React.createElement('div', { className: 'text-[0.6875rem] mt-1 leading-snug ' + (sel ? 'opacity-90' : 'opacity-75') }, a.summary.slice(0, 110) + (a.summary.length > 110 ? '\u2026' : ''))
                       );
                     })
                   ),
@@ -25066,26 +25066,26 @@ var d = (labToolData && labToolData._aquarium) || {};
                     active && React.createElement('article', { className: 'rounded-2xl border-2 border-emerald-300 bg-white p-4 space-y-3 shadow-sm' },
                       React.createElement('div', { className: 'pb-2 border-b border-emerald-200' },
                         React.createElement('div', { className: 'flex flex-wrap items-center gap-1.5 mb-1' },
-                          React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5' }, active.category),
-                          React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-800 rounded-full px-2 py-0.5' }, active.level),
-                          React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-800 rounded-full px-2 py-0.5' }, active.readMinutes + ' min read')
+                          React.createElement('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5' }, active.category),
+                          React.createElement('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wide bg-amber-100 text-amber-800 rounded-full px-2 py-0.5' }, active.level),
+                          React.createElement('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wide bg-slate-100 text-slate-800 rounded-full px-2 py-0.5' }, active.readMinutes + ' min read')
                         ),
                         React.createElement('h2', { className: 'text-xl font-black text-emerald-900 leading-tight' }, active.title),
-                        active.keyIdea && React.createElement('p', { className: 'mt-1.5 text-[12px] italic text-emerald-800 bg-emerald-50 border-l-4 border-emerald-400 rounded-r px-3 py-1.5' },
+                        active.keyIdea && React.createElement('p', { className: 'mt-1.5 text-[0.75rem] italic text-emerald-800 bg-emerald-50 border-l-4 border-emerald-400 rounded-r px-3 py-1.5' },
                           React.createElement('strong', null, __alloT('stem.aquarium.key_idea', 'Key idea: ')), active.keyIdea)
                       ),
-                      React.createElement('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, active.summary),
+                      React.createElement('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, active.summary),
                       React.createElement('div', { className: 'space-y-2.5' },
                         (active.sections || []).map(function (sec, i) {
                           return React.createElement('section', { key: i, className: 'rounded-lg bg-slate-50 border border-slate-200 p-3' },
-                            React.createElement('h3', { className: 'text-[13px] font-extrabold text-slate-800 mb-1' }, '\u2014 ' + sec.heading),
+                            React.createElement('h3', { className: 'text-[0.8125rem] font-extrabold text-slate-800 mb-1' }, '\u2014 ' + sec.heading),
                             React.createElement('p', { className: 'text-[11.5px] text-slate-700 leading-relaxed whitespace-pre-line' }, sec.body)
                           );
                         })
                       ),
                       active.furtherReading && active.furtherReading.length > 0 && React.createElement('div', { className: 'pt-2 mt-2 border-t border-emerald-200' },
-                        React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-1' }, __alloT('stem.aquarium.further_reading', 'Further reading')),
-                        React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5 text-[11px] text-slate-600' },
+                        React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-emerald-700 mb-1' }, __alloT('stem.aquarium.further_reading', 'Further reading')),
+                        React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5 text-[0.6875rem] text-slate-600' },
                           active.furtherReading.map(function (r, i) { return React.createElement('li', { key: i }, r); })
                         )
                       )
@@ -25132,18 +25132,18 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (Array.isArray(val)) {
                   return React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
                     val.map(function (v, i) {
-                      return React.createElement('li', { key: i, className: 'text-[11px] text-slate-700' },
+                      return React.createElement('li', { key: i, className: 'text-[0.6875rem] text-slate-700' },
                         (v && typeof v === 'object') ? Object.keys(v).map(function (k) { return k + ': ' + v[k]; }).join(' \u00b7 ') : String(v));
                     }));
                 }
                 if (typeof val === 'object') {
                   return React.createElement('div', { className: 'space-y-0.5' },
                     Object.keys(val).map(function (k) {
-                      return React.createElement('p', { key: k, className: 'text-[11px] text-slate-700' },
+                      return React.createElement('p', { key: k, className: 'text-[0.6875rem] text-slate-700' },
                         React.createElement('span', { className: 'font-bold text-slate-500' }, k + ': '), String(val[k]));
                     }));
                 }
-                return React.createElement('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, String(val));
+                return React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, String(val));
               }
 
               function refLabel(key) {
@@ -25154,7 +25154,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 // Some tables are plain arrays of sentences rather than objects.
                 if (typeof entry === 'string') {
                   return React.createElement('li', {
-                    key: i, className: 'rounded-xl border border-sky-200 bg-white p-2.5 text-[12px] text-slate-800 leading-relaxed'
+                    key: i, className: 'rounded-xl border border-sky-200 bg-white p-2.5 text-[0.75rem] text-slate-800 leading-relaxed'
                   }, entry);
                 }
                 var titleKey = refActive.titleKey;
@@ -25162,13 +25162,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                 return React.createElement('li', {
                   key: i, className: 'rounded-xl border border-sky-200 bg-white p-2.5'
                 },
-                  React.createElement('h5', { className: 'text-[12px] font-black text-sky-900 mb-1' }, heading),
+                  React.createElement('h5', { className: 'text-[0.75rem] font-black text-sky-900 mb-1' }, heading),
                   React.createElement('div', { className: 'space-y-1' },
                     Object.keys(entry).filter(function (k) { return k !== titleKey && k !== 'id'; }).map(function (k) {
                       var node = refValue(entry[k]);
                       if (!node) return null;
                       return React.createElement('div', { key: k },
-                        React.createElement('span', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-700' }, refLabel(k)),
+                        React.createElement('span', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-sky-700' }, refLabel(k)),
                         node);
                     })
                   )
@@ -25183,7 +25183,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83d\udcda'),
                     React.createElement('h3', { className: 'text-base font-black text-sky-900' },
                       __alloT('stem.aquarium.reference_library', 'Reference Library')),
-                    React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-sky-700 bg-white border border-sky-300 rounded-full px-2 py-0.5' },
+                    React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-sky-700 bg-white border border-sky-300 rounded-full px-2 py-0.5' },
                       AQUARIUM_REFERENCE_LIBRARY.length + ' tables \u00b7 ' + totalEntries + ' entries')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
@@ -25197,9 +25197,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                     id: 'aq-ref-search', type: 'search', value: d.refQuery || '',
                     placeholder: __alloT('stem.aquarium.search_tables', 'Search tables\u2026'),
                     onChange: function (e) { upd('refQuery', e.target.value); },
-                    className: 'flex-1 min-w-[10rem] rounded-lg border border-sky-300 px-2.5 py-1.5 text-[12px]'
+                    className: 'flex-1 min-w-[10rem] rounded-lg border border-sky-300 px-2.5 py-1.5 text-[0.75rem]'
                   }),
-                  React.createElement('span', { className: 'text-[10px] font-bold text-slate-500' },
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold text-slate-500' },
                     refVisible.length === AQUARIUM_REFERENCE_LIBRARY.length
                       ? __alloT('stem.aquarium.showing_all', 'showing all')
                       : 'showing ' + refVisible.length)
@@ -25211,7 +25211,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     return React.createElement('button', {
                       key: c, type: 'button', 'aria-pressed': sel ? 'true' : 'false',
                       onClick: function () { upd('refCategory', c); },
-                      className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' +
+                      className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' +
                         (sel ? 'bg-sky-700 text-white border-sky-800' : 'bg-white text-sky-800 border-sky-300 hover:bg-sky-50')
                     }, c);
                   })
@@ -25220,7 +25220,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
                   React.createElement('aside', { className: 'lg:col-span-4 space-y-1.5 max-h-[640px] overflow-y-auto pr-1', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.aquarium.article_index_2', 'Article index') },
                     refVisible.length === 0
-                      ? React.createElement('p', { className: 'text-[11px] text-slate-600 italic' },
+                      ? React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 italic' },
                           __alloT('stem.aquarium.no_table_matches', 'No table matches that search.'))
                       : refVisible.map(function (s) {
                           var sel = s.id === refActive.id;
@@ -25230,8 +25230,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                             className: 'w-full text-left rounded-xl border p-2.5 transition-all ' +
                               (sel ? 'bg-sky-700 text-white border-sky-800 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-sky-300')
                           },
-                            React.createElement('span', { className: 'block text-[12px] font-black' }, s.title),
-                            React.createElement('span', { className: 'block text-[10px] ' + (sel ? 'text-sky-100' : 'text-slate-500') },
+                            React.createElement('span', { className: 'block text-[0.75rem] font-black' }, s.title),
+                            React.createElement('span', { className: 'block text-[0.625rem] ' + (sel ? 'text-sky-100' : 'text-slate-500') },
                               s.category + ' \u00b7 ' + s.data.length + ' entries')
                           );
                         })
@@ -25284,7 +25284,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83c\udfaf'),
                     React.createElement('h3', { className: 'text-base font-black text-amber-900' }, __alloT('stem.aquarium.aquarium_quiz_lab', 'Aquarium Quiz Lab')),
-                    React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-amber-800 bg-white border border-amber-300 rounded-full px-2 py-0.5' }, AQUARIUM_QUIZ_BANK.length + ' questions')
+                    React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-amber-800 bg-white border border-amber-300 rounded-full px-2 py-0.5' }, AQUARIUM_QUIZ_BANK.length + ' questions')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
                     __alloT('stem.aquarium.test_yourself_on_aquarium_science_chem', 'Test yourself on aquarium science: chemistry, cycling, stocking, plants, equipment, health, saltwater, marine biology, and conservation. Filter by category or difficulty, work through at your pace, and review explanations after each answer.'))
@@ -25298,7 +25298,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     { label: __alloT('stem.aquarium.streak', 'Streak'), value: (d.quizStreak || 0), accent: '#f59e0b' }
                   ].map(function (s, i) {
                     return React.createElement('div', { key: i, className: 'rounded-xl border-2 bg-white p-2.5 text-center', style: { borderColor: s.accent + '44' } },
-                      React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-500' }, s.label),
+                      React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-slate-500' }, s.label),
                       React.createElement('div', { className: 'text-lg font-black mt-0.5', style: { color: s.accent } }, String(s.value))
                     );
                   })
@@ -25306,25 +25306,25 @@ var d = (labToolData && labToolData._aquarium) || {};
                 // Filters
                 React.createElement('div', { className: 'rounded-xl bg-white border border-amber-200 p-2.5 space-y-2' },
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-1' }, __alloT('stem.aquarium.category', 'Category')),
+                    React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-amber-700 mb-1' }, __alloT('stem.aquarium.category', 'Category')),
                     React.createElement('div', { className: 'flex flex-wrap gap-1' },
                       quizCategories.map(function (c) {
                         var sel = c === quizCategory;
                         return React.createElement('button', { key: c, 'aria-pressed': sel,
                           onClick: function () { updMulti({ quizCategory: c, quizCurrent: 0, quizShowExplanation: false }); },
-                          className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50')
+                          className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50')
                         }, c);
                       })
                     )
                   ),
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-1' }, __alloT('stem.aquarium.difficulty', 'Difficulty')),
+                    React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-amber-700 mb-1' }, __alloT('stem.aquarium.difficulty', 'Difficulty')),
                     React.createElement('div', { className: 'flex flex-wrap gap-1' },
                       ['All', 'easy', 'medium', 'hard'].map(function (dif) {
                         var sel = dif === quizDifficulty;
                         return React.createElement('button', { key: dif, 'aria-pressed': sel,
                           onClick: function () { updMulti({ quizDifficulty: dif, quizCurrent: 0, quizShowExplanation: false }); },
-                          className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-orange-800 border-orange-300 hover:bg-orange-50')
+                          className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-orange-800 border-orange-300 hover:bg-orange-50')
                         }, dif === 'All' ? 'All' : dif.charAt(0).toUpperCase() + dif.slice(1));
                       })
                     )
@@ -25332,7 +25332,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 ),
                 // Current question
                 currentQ && React.createElement('div', { className: 'rounded-2xl border-2 border-amber-400 bg-white p-4 shadow-sm space-y-3' },
-                  React.createElement('div', { className: 'flex items-center gap-2 text-[11px]' },
+                  React.createElement('div', { className: 'flex items-center gap-2 text-[0.6875rem]' },
                     React.createElement('span', { className: 'font-bold text-amber-800' }, 'Question ' + (quizCurrent + 1) + ' of ' + filteredQuiz.length),
                     React.createElement('span', { className: 'rounded-full px-2 py-0.5 bg-amber-100 text-amber-900 font-bold' }, currentQ.category),
                     React.createElement('span', { className: 'rounded-full px-2 py-0.5 ' + (currentQ.difficulty === 'easy' ? 'bg-green-100 text-green-800' : currentQ.difficulty === 'medium' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800') + ' font-bold' }, currentQ.difficulty)
@@ -25364,14 +25364,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                         },
                         className: cls
                       },
-                        React.createElement('span', { className: 'inline-block w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[11px] font-black mr-2 leading-6 text-center' }, ['A', 'B', 'C', 'D'][i]),
+                        React.createElement('span', { className: 'inline-block w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[0.6875rem] font-black mr-2 leading-6 text-center' }, ['A', 'B', 'C', 'D'][i]),
                         opt,
                         answered && isCorrect && React.createElement('span', { className: 'float-right text-green-600 font-black' }, '\u2713'),
                         answered && isPicked && !isCorrect && React.createElement('span', { className: 'float-right text-red-600 font-black' }, '\u2717')
                       );
                     })
                   ),
-                  quizAnswers[currentQ.id] !== undefined && React.createElement('div', { className: 'rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-[12px] text-slate-800' },
+                  quizAnswers[currentQ.id] !== undefined && React.createElement('div', { className: 'rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-[0.75rem] text-slate-800' },
                     React.createElement('div', { className: 'font-extrabold text-amber-900 mb-1' }, __alloT('stem.aquarium.explanation', '\u2014 Explanation')),
                     React.createElement('p', { className: 'leading-relaxed' }, currentQ.explanation)
                   ),
@@ -25381,33 +25381,33 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var prev = (quizCurrent - 1 + filteredQuiz.length) % filteredQuiz.length;
                         updMulti({ quizCurrent: prev, quizShowExplanation: false });
                       },
-                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50'
+                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[0.6875rem] font-bold rounded-full bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50'
                     }, __alloT('stem.aquarium.previous', '\u2190 Previous')),
                     React.createElement('button', {
                       onClick: function () {
                         var next = (quizCurrent + 1) % filteredQuiz.length;
                         updMulti({ quizCurrent: next, quizShowExplanation: false });
                       },
-                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-amber-700 text-white border-2 border-amber-600 hover:bg-amber-800'
+                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[0.6875rem] font-bold rounded-full bg-amber-700 text-white border-2 border-amber-600 hover:bg-amber-800'
                     }, __alloT('stem.aquarium.next_question_3', 'Next Question \u2192')),
                     React.createElement('button', {
                       onClick: function () {
                         updMulti({ quizAnswers: {}, quizCurrent: 0, quizShowExplanation: false, quizStreak: 0 });
                       },
-                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-white border-2 border-red-300 text-red-700 hover:bg-red-50'
+                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[0.6875rem] font-bold rounded-full bg-white border-2 border-red-300 text-red-700 hover:bg-red-50'
                     }, __alloT('stem.aquarium.reset_all_answers', '\u21bb Reset All Answers')),
                     React.createElement('button', {
                       onClick: function () {
                         var unanswered = filteredQuiz.findIndex(function (q) { return quizAnswers[q.id] === undefined; });
                         if (unanswered >= 0) updMulti({ quizCurrent: unanswered, quizShowExplanation: false });
                       },
-                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-white border-2 border-blue-300 text-blue-700 hover:bg-blue-50'
+                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[0.6875rem] font-bold rounded-full bg-white border-2 border-blue-300 text-blue-700 hover:bg-blue-50'
                     }, __alloT('stem.aquarium.jump_to_next_unanswered', '\u2924 Jump to next unanswered'))
                   )
                 ),
                 // Question grid / minimap
                 React.createElement('div', { className: 'rounded-xl bg-white border border-amber-200 p-2.5' },
-                  React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-1.5' }, 'Question map ' + (quizCategory !== 'All' ? '\u00b7 ' + quizCategory : '')),
+                  React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-amber-700 mb-1.5' }, 'Question map ' + (quizCategory !== 'All' ? '\u00b7 ' + quizCategory : '')),
                   React.createElement('div', { className: 'grid grid-cols-10 sm:grid-cols-16 md:grid-cols-20 gap-1' },
                     filteredQuiz.map(function (q, i) {
                       var picked = quizAnswers[q.id];
@@ -25421,7 +25421,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         onClick: function () { updMulti({ quizCurrent: i, quizShowExplanation: answered }); },
                         title: 'Q' + (i + 1) + ' \u00b7 ' + q.category,
                         style: { background: bg, color: fg, boxShadow: ring },
-                        className: 'aspect-square rounded text-[10px] font-black flex items-center justify-center'
+                        className: 'aspect-square rounded text-[0.625rem] font-black flex items-center justify-center'
                       }, i + 1);
                     })
                   )
@@ -25468,7 +25468,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83e\uddea'),
                     React.createElement('h3', { className: 'text-base font-black text-violet-900' }, __alloT('stem.aquarium.water_chemistry_simulator_2', 'Water Chemistry Simulator')),
-                    React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-violet-800 bg-white border border-violet-300 rounded-full px-2 py-0.5' }, sliderKeys.length + ' parameters')
+                    React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-violet-800 bg-white border border-violet-300 rounded-full px-2 py-0.5' }, sliderKeys.length + ' parameters')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
                     __alloT('stem.aquarium.drag_the_sliders_to_see_how_water_chem', 'Drag the sliders to see how water chemistry parameters interact. The diagnosis panel updates in real time with warnings, recommended actions, and color-coded ideal ranges. Load a scenario from the right column to compare healthy vs. stressed tanks.'))
@@ -25476,7 +25476,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
                   // Sliders column
                   React.createElement('div', { className: 'lg:col-span-7 rounded-2xl bg-white border-2 border-violet-200 p-3 space-y-2.5' },
-                    React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide' }, __alloT('stem.aquarium.parameters', '\u2014 Parameters')),
+                    React.createElement('h4', { className: 'text-[0.75rem] font-extrabold text-violet-900 uppercase tracking-wide' }, __alloT('stem.aquarium.parameters', '\u2014 Parameters')),
                     sliderKeys.map(function (k) {
                       var c = CHEMISTRY_SLIDER_DEFAULTS[k]; var v = params[k];
                       var isIdeal = v >= c.ideal[0] && v <= c.ideal[1];
@@ -25484,7 +25484,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       var idealStartPct = ((c.ideal[0] - c.min) / (c.max - c.min)) * 100;
                       var idealEndPct = ((c.ideal[1] - c.min) / (c.max - c.min)) * 100;
                       return React.createElement('div', { key: k, className: 'space-y-1' },
-                        React.createElement('div', { className: 'flex items-center justify-between text-[11px]' },
+                        React.createElement('div', { className: 'flex items-center justify-between text-[0.6875rem]' },
                           React.createElement('label', { htmlFor: 'slider-' + k, className: 'font-bold text-slate-800' }, c.label),
                           React.createElement('span', { className: 'font-mono font-black ' + (isIdeal ? 'text-green-700' : 'text-red-700') },
                             v.toFixed(c.step >= 1 ? 0 : c.step >= 0.1 ? 1 : 2) + ' ' + c.unit + (isIdeal ? ' \u2713' : ' \u26a0'))
@@ -25502,7 +25502,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             className: 'w-full relative z-10'
                           })
                         ),
-                        React.createElement('div', { className: 'flex justify-between text-[10px] font-mono text-slate-500' },
+                        React.createElement('div', { className: 'flex justify-between text-[0.625rem] font-mono text-slate-500' },
                           React.createElement('span', null, c.min + ' ' + c.unit),
                           React.createElement('span', { className: 'text-green-700 font-bold' }, 'ideal: ' + c.ideal[0] + '\u2013' + c.ideal[1] + ' ' + c.unit),
                           React.createElement('span', null, c.max + ' ' + c.unit)
@@ -25525,34 +25525,34 @@ var d = (labToolData && labToolData._aquarium) || {};
                         { k: 'Cycled', color: '#16a34a', desc: __alloT('stem.aquarium.ammonia_nitrite_0_nitrate_present_bact', 'Ammonia & nitrite ≈ 0, nitrate present — bacteria established. Safe; keep nitrate down with water changes.') }
                       ];
                       return React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
-                        React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.nitrogen_cycle_stage', '— Nitrogen cycle stage')),
+                        React.createElement('h4', { className: 'text-[0.75rem] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.nitrogen_cycle_stage', '— Nitrogen cycle stage')),
                         React.createElement('div', { className: 'flex items-center gap-1 mb-2 flex-wrap' },
                           STAGES.map(function (s, i) {
                             return React.createElement(React.Fragment, { key: s.k },
-                              i > 0 && React.createElement('span', { className: 'text-slate-500 text-[10px]' }, '→'),
-                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-600 bg-slate-100'), style: i === stageIdx ? { background: ({ '#16a34a': '#166534', '#22c55e': '#15803d', '#0ea5e9': '#0369a1', '#f59e0b': '#b45309', '#ef4444': '#b91c1c', '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#06b6d4': '#0e7490' })[s.color] || s.color } : {} }, s.k));
+                              i > 0 && React.createElement('span', { className: 'text-slate-500 text-[0.625rem]' }, '→'),
+                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[0.625rem] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-600 bg-slate-100'), style: i === stageIdx ? { background: ({ '#16a34a': '#166534', '#22c55e': '#15803d', '#0ea5e9': '#0369a1', '#f59e0b': '#b45309', '#ef4444': '#b91c1c', '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#06b6d4': '#0e7490' })[s.color] || s.color } : {} }, s.k));
                           })
                         ),
-                        React.createElement('p', { className: 'text-[11px] text-slate-700 leading-snug' }, STAGES[stageIdx].desc)
+                        React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 leading-snug' }, STAGES[stageIdx].desc)
                       );
                     })(),
                     // Diagnosis
                     React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
-                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.live_diagnosis', '\u2014 Live Diagnosis')),
+                      React.createElement('h4', { className: 'text-[0.75rem] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.live_diagnosis', '\u2014 Live Diagnosis')),
                       React.createElement('div', { className: 'space-y-1.5' },
                         alerts.map(function (a, i) {
                           var palette = a.severity === 'critical' ? { bg: 'bg-red-50', border: 'border-red-400', text: 'text-red-900', icon: '\u26d4' }
                             : a.severity === 'warning' ? { bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-900', icon: '\u26a0' }
                             : a.severity === 'info' ? { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-900', icon: '\u2139' }
                             : { bg: 'bg-green-50', border: 'border-green-400', text: 'text-green-900', icon: '\u2705' };
-                          return React.createElement('div', { key: i, className: 'rounded-lg border-l-4 p-2 text-[11px] leading-snug ' + palette.bg + ' ' + palette.border + ' ' + palette.text },
+                          return React.createElement('div', { key: i, className: 'rounded-lg border-l-4 p-2 text-[0.6875rem] leading-snug ' + palette.bg + ' ' + palette.border + ' ' + palette.text },
                             React.createElement('span', { className: 'font-black mr-1' }, palette.icon), a.text);
                         })
                       )
                     ),
                     // Scenarios
                     React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
-                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.scenario_library', '\u2014 Scenario Library')),
+                      React.createElement('h4', { className: 'text-[0.75rem] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.scenario_library', '\u2014 Scenario Library')),
                       React.createElement('p', { className: 'text-[10.5px] text-slate-600 italic mb-2' }, __alloT('stem.aquarium.click_any_scenario_to_load_its_paramet', 'Click any scenario to load its parameters into the sliders.')),
                       React.createElement('div', { className: 'space-y-1' },
                         CHEMISTRY_SCENARIO_RECIPES.map(function (r) {
@@ -25563,7 +25563,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             className: 'w-full text-left rounded-lg border border-violet-200 p-2 hover:bg-violet-50 hover:border-violet-400 transition-colors'
                           },
                             React.createElement('div', { className: 'text-[11.5px] font-bold text-violet-900' }, r.name),
-                            React.createElement('div', { className: 'text-[10px] text-slate-600 mt-0.5 line-clamp-2' }, r.story)
+                            React.createElement('div', { className: 'text-[0.625rem] text-slate-600 mt-0.5 line-clamp-2' }, r.story)
                           );
                         })
                       )
@@ -25584,11 +25584,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                     ),
                     React.createElement('p', { className: 'text-[11.5px] text-slate-700 mb-2 italic' }, active.story),
                     React.createElement('div', { className: 'rounded-lg bg-white border border-violet-300 p-2 mb-2' },
-                      React.createElement('div', { className: 'text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1' }, __alloT('stem.aquarium.diagnosis', '\u2014 Diagnosis')),
+                      React.createElement('div', { className: 'text-[0.625rem] font-bold text-violet-800 uppercase tracking-wide mb-1' }, __alloT('stem.aquarium.diagnosis', '\u2014 Diagnosis')),
                       React.createElement('p', { className: 'text-[11.5px] text-slate-800' }, active.diagnosis)
                     ),
                     React.createElement('div', { className: 'rounded-lg bg-white border border-violet-300 p-2' },
-                      React.createElement('div', { className: 'text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1' }, __alloT('stem.aquarium.recommended_actions', '\u2014 Recommended Actions')),
+                      React.createElement('div', { className: 'text-[0.625rem] font-bold text-violet-800 uppercase tracking-wide mb-1' }, __alloT('stem.aquarium.recommended_actions', '\u2014 Recommended Actions')),
                       React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5 text-[11.5px] text-slate-800' },
                         active.actions.map(function (a, i) { return React.createElement('li', { key: i }, a); })
                       )
@@ -25651,14 +25651,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                   React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\u270f\ufe0f'),
                     React.createElement('h3', { className: 'text-base font-black text-pink-900' }, __alloT('stem.aquarium.tank_designer', 'Tank Designer')),
-                    React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-pink-800 bg-white border border-pink-300 rounded-full px-2 py-0.5' }, DESIGNER_FISH_CATALOG.length + ' species, ' + DESIGNER_PLANT_CATALOG.length + ' plants')
+                    React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-pink-800 bg-white border border-pink-300 rounded-full px-2 py-0.5' }, DESIGNER_FISH_CATALOG.length + ' species, ' + DESIGNER_PLANT_CATALOG.length + ' plants')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
                     __alloT('stem.aquarium.pick_a_tank_size_choose_fish_from_the_', 'Pick a tank size, choose fish from the catalog, and watch the SVG visualization update. Compatibility checks flag temperature mismatches, pH conflicts, schooling minimums, and overstocking in real time.'))
                 ),
                 // Tank size selector
                 React.createElement('div', { className: 'rounded-xl bg-white border-2 border-pink-200 p-2.5' },
-                  React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-pink-700 mb-1.5' }, __alloT('stem.aquarium.tank_size', '\u2014 Tank Size')),
+                  React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-pink-700 mb-1.5' }, __alloT('stem.aquarium.tank_size', '\u2014 Tank Size')),
                   React.createElement('div', { className: 'flex flex-wrap gap-1' },
                     [
                       { gal: 5,   name: __alloT('stem.aquarium.5g_nano', '5g Nano') },
@@ -25672,7 +25672,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       var sel = tankSize === t.gal;
                       return React.createElement('button', { key: t.gal, 'aria-pressed': sel,
                         onClick: function () { updMulti({ designerTankSize: t.gal, designerWidth: 0, designerHeight: 0 }); },
-                        className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300 hover:bg-pink-50')
+                        className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300 hover:bg-pink-50')
                       }, t.name);
                     })
                   )
@@ -25735,28 +25735,28 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
                   React.createElement('div', { className: 'lg:col-span-7 rounded-2xl bg-white border-2 border-pink-200 p-3 space-y-2' },
                     React.createElement('div', { className: 'flex items-center justify-between' },
-                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-pink-900 uppercase tracking-wide' }, __alloT('stem.aquarium.current_stocking', '\u2014 Current Stocking')),
+                      React.createElement('h4', { className: 'text-[0.75rem] font-extrabold text-pink-900 uppercase tracking-wide' }, __alloT('stem.aquarium.current_stocking', '\u2014 Current Stocking')),
                       React.createElement('div', { className: 'flex items-center gap-1.5' },
                         ['fish', 'plants'].map(function (p) {
                           var sel = picker === p;
                           return React.createElement('button', { key: p, 'aria-pressed': sel,
                             onClick: function () { upd('designerPicker', p); },
-                            className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300')
+                            className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300')
                           }, p === 'fish' ? '\ud83d\udc20 Fish' : '\ud83c\udf3f Plants');
                         })
                       )
                     ),
-                    stockList.length === 0 && plantList.length === 0 && React.createElement('p', { className: 'text-[11px] text-slate-500 italic py-2' },
+                    stockList.length === 0 && plantList.length === 0 && React.createElement('p', { className: 'text-[0.6875rem] text-slate-500 italic py-2' },
                       __alloT('stem.aquarium.no_fish_or_plants_added_yet_click_item', 'No fish or plants added yet. Click items in the catalog on the right.')),
                     stockList.length > 0 && React.createElement('div', null,
-                      React.createElement('div', { className: 'text-[10px] font-bold text-pink-700 mb-1' }, __alloT('stem.aquarium.fish', 'Fish')),
+                      React.createElement('div', { className: 'text-[0.625rem] font-bold text-pink-700 mb-1' }, __alloT('stem.aquarium.fish', 'Fish')),
                       React.createElement('div', { className: 'space-y-0.5' },
                         stockList.map(function (s, si) {
                           var f = DESIGNER_FISH_CATALOG.filter(function (x) { return x.id === s.id; })[0]; if (!f) return null;
-                          return React.createElement('div', { key: f.id, className: 'flex items-center gap-2 text-[11px] bg-pink-50 rounded p-1.5' },
+                          return React.createElement('div', { key: f.id, className: 'flex items-center gap-2 text-[0.6875rem] bg-pink-50 rounded p-1.5' },
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded-full', style: { background: f.color } }),
                             React.createElement('span', { className: 'flex-1 font-bold text-slate-800' }, f.common),
-                            React.createElement('span', { className: 'text-[10px] text-slate-600' }, f.adultSize + '"'),
+                            React.createElement('span', { className: 'text-[0.625rem] text-slate-600' }, f.adultSize + '"'),
                             React.createElement('button', { onClick: function () {
                               var ns = stockList.slice(); ns[si] = Object.assign({}, s, { qty: Math.max(0, s.qty - 1) });
                               ns = ns.filter(function (x) { return x.qty > 0; });
@@ -25772,14 +25772,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                       )
                     ),
                     plantList.length > 0 && React.createElement('div', { className: 'pt-1' },
-                      React.createElement('div', { className: 'text-[10px] font-bold text-green-700 mb-1' }, __alloT('stem.aquarium.plants_2', 'Plants')),
+                      React.createElement('div', { className: 'text-[0.625rem] font-bold text-green-700 mb-1' }, __alloT('stem.aquarium.plants_2', 'Plants')),
                       React.createElement('div', { className: 'space-y-0.5' },
                         plantList.map(function (s, si) {
                           var pl = DESIGNER_PLANT_CATALOG.filter(function (x) { return x.id === s.id; })[0]; if (!pl) return null;
-                          return React.createElement('div', { key: pl.id, className: 'flex items-center gap-2 text-[11px] bg-green-50 rounded p-1.5' },
+                          return React.createElement('div', { key: pl.id, className: 'flex items-center gap-2 text-[0.6875rem] bg-green-50 rounded p-1.5' },
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded', style: { background: pl.color } }),
                             React.createElement('span', { className: 'flex-1 font-bold text-slate-800' }, pl.common),
-                            React.createElement('span', { className: 'text-[10px] text-slate-600' }, pl.heightInches + '"'),
+                            React.createElement('span', { className: 'text-[0.625rem] text-slate-600' }, pl.heightInches + '"'),
                             React.createElement('button', { onClick: function () {
                               var ns = plantList.slice(); ns[si] = Object.assign({}, s, { qty: Math.max(0, s.qty - 1) });
                               ns = ns.filter(function (x) { return x.qty > 0; });
@@ -25795,7 +25795,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       )
                     ),
                     // Stats footer
-                    (stockList.length > 0 || plantList.length > 0) && React.createElement('div', { className: 'pt-2 mt-1 border-t border-pink-200 text-[11px] flex flex-wrap gap-3' },
+                    (stockList.length > 0 || plantList.length > 0) && React.createElement('div', { className: 'pt-2 mt-1 border-t border-pink-200 text-[0.6875rem] flex flex-wrap gap-3' },
                       React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, 'Tank: '), tankSize + 'g'),
                       React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, __alloT('stem.aquarium.total_fish', 'Total fish: ')), totalFish),
                       React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, __alloT('stem.aquarium.fish_inches', 'Fish inches: ')), totalFishInches.toFixed(1)),
@@ -25803,27 +25803,27 @@ var d = (labToolData && labToolData._aquarium) || {};
                     ),
                     // Conflicts
                     conflicts.length > 0 && React.createElement('div', { className: 'pt-2 mt-1 border-t border-pink-200 space-y-1' },
-                      React.createElement('div', { className: 'text-[10px] font-bold uppercase text-red-700' }, '\u2014 Conflicts (' + conflicts.length + ')'),
+                      React.createElement('div', { className: 'text-[0.625rem] font-bold uppercase text-red-700' }, '\u2014 Conflicts (' + conflicts.length + ')'),
                       conflicts.slice(0, 10).map(function (c) {
-                        return React.createElement('div', { key: c.id, className: 'text-[11px] rounded border-l-4 p-1.5 ' +
+                        return React.createElement('div', { key: c.id, className: 'text-[0.6875rem] rounded border-l-4 p-1.5 ' +
                           (c.severity === 'critical' ? 'bg-red-50 border-red-500 text-red-900' : 'bg-amber-50 border-amber-500 text-amber-900')
                         }, (c.severity === 'critical' ? '\u26d4 ' : '\u26a0 ') + c.text);
                       })
                     ),
                     React.createElement('button', {
                       onClick: function () { updMulti({ designerStock: [], designerPlants: [] }); },
-                      className: 'mt-1 px-2.5 py-1 text-[10px] font-bold bg-white border-2 border-red-300 text-red-700 rounded-full hover:bg-red-50'
+                      className: 'mt-1 px-2.5 py-1 text-[0.625rem] font-bold bg-white border-2 border-red-300 text-red-700 rounded-full hover:bg-red-50'
                     }, __alloT('stem.aquarium.clear_all', '\u21bb Clear all'))
                   ),
                   // Catalog picker
                   React.createElement('div', { className: 'lg:col-span-5 rounded-2xl bg-white border-2 border-pink-200 p-3' },
-                    React.createElement('h4', { className: 'text-[12px] font-extrabold text-pink-900 uppercase tracking-wide mb-2' }, '\u2014 ' + (picker === 'fish' ? 'Fish' : 'Plant') + ' Catalog'),
+                    React.createElement('h4', { className: 'text-[0.75rem] font-extrabold text-pink-900 uppercase tracking-wide mb-2' }, '\u2014 ' + (picker === 'fish' ? 'Fish' : 'Plant') + ' Catalog'),
                     picker === 'fish' && React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                       ['all', 'beginner', 'intermediate', 'advanced'].map(function (c) {
                         var sel = c === careFilter;
                         return React.createElement('button', { key: c, 'aria-pressed': sel,
                           onClick: function () { upd('designerCareFilter', c); },
-                          className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300')
+                          className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300')
                         }, c.charAt(0).toUpperCase() + c.slice(1));
                       })
                     ),
@@ -25832,7 +25832,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var sel = z === zoneFilter;
                         return React.createElement('button', { key: z, 'aria-pressed': sel,
                           onClick: function () { upd('designerZoneFilter', z); },
-                          className: 'text-[10px] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-800 border-rose-300')
+                          className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-800 border-rose-300')
                         }, z === 'all' ? 'All zones' : z.charAt(0).toUpperCase() + z.slice(1));
                       })
                     ),
@@ -25853,10 +25853,10 @@ var d = (labToolData && labToolData._aquarium) || {};
                           React.createElement('div', { className: 'flex items-center gap-2' },
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded-full flex-shrink-0', style: { background: f.color, border: '1px solid ' + f.accent } }),
                             React.createElement('div', { className: 'flex-1 min-w-0' },
-                              React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 truncate' }, f.common),
-                              React.createElement('div', { className: 'text-[10px] text-slate-500 italic truncate' }, f.sci + ' \u00b7 ' + f.adultSize + '" \u00b7 ' + f.minGallons + 'g+ \u00b7 ' + f.careLevel)
+                              React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-800 truncate' }, f.common),
+                              React.createElement('div', { className: 'text-[0.625rem] text-slate-500 italic truncate' }, f.sci + ' \u00b7 ' + f.adultSize + '" \u00b7 ' + f.minGallons + 'g+ \u00b7 ' + f.careLevel)
                             ),
-                            existing && React.createElement('span', { className: 'text-[10px] font-black text-pink-700 bg-pink-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
+                            existing && React.createElement('span', { className: 'text-[0.625rem] font-black text-pink-700 bg-pink-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
                           )
                         );
                       }),
@@ -25876,10 +25876,10 @@ var d = (labToolData && labToolData._aquarium) || {};
                           React.createElement('div', { className: 'flex items-center gap-2' },
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded flex-shrink-0', style: { background: pl.color } }),
                             React.createElement('div', { className: 'flex-1 min-w-0' },
-                              React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 truncate' }, pl.common),
-                              React.createElement('div', { className: 'text-[10px] text-slate-500 italic truncate' }, pl.sci + ' \u00b7 ' + pl.heightInches + '" \u00b7 ' + pl.light + ' light \u00b7 CO\u2082: ' + pl.co2)
+                              React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-800 truncate' }, pl.common),
+                              React.createElement('div', { className: 'text-[0.625rem] text-slate-500 italic truncate' }, pl.sci + ' \u00b7 ' + pl.heightInches + '" \u00b7 ' + pl.light + ' light \u00b7 CO\u2082: ' + pl.co2)
                             ),
-                            existing && React.createElement('span', { className: 'text-[10px] font-black text-green-700 bg-green-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
+                            existing && React.createElement('span', { className: 'text-[0.625rem] font-black text-green-700 bg-green-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
                           )
                         );
                       })
@@ -25906,39 +25906,39 @@ var d = (labToolData && labToolData._aquarium) || {};
               }[state];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 shadow-sm space-y-3' },
                 h('h3', { className: 'text-sm font-black text-cyan-700' }, __alloT('stem.aquarium.fish_stress_discovery', '🐟 Fish stress discovery')),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.aquarium.sliders_for_ammonia_nitrite_temperatur', 'Sliders for ammonia, nitrite, temperature. Discrete 3-state stress level. No score, no reveal.')),
+                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.aquarium.sliders_for_ammonia_nitrite_temperatur', 'Sliders for ammonia, nitrite, temperature. Discrete 3-state stress level. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                   [{ k: 'ammonia', l: 'NH₃ (ppm)', mn: 0, mx: 5, st: 0.05 },
                    { k: 'nitrite', l: 'NO₂ (ppm)', mn: 0, mx: 3, st: 0.05 },
                    { k: 'tempC', l: 'Temp (°C)', mn: 10, mx: 35, st: 0.5 }].map(function(s) {
                     return h('div', { key: s.k },
-                      h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                      h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
                       h('input', { id: 'sh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.aquarium.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.aquarium.reset_2', '↺ Reset'))
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.aquarium.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.aquarium.reset_2', '↺ Reset'))
                 ),
                 h('textarea', { 'aria-label': __alloT('stem.aquarium.hypothesis_input', 'Water toxicity hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.aquarium.hypothesis_which_parameter_is_most_tox', 'Hypothesis: Which parameter is most toxic at what level?'),
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.aquarium.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.aquarium.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, __alloT('stem.aquarium.real_tropical_tanks_nh_should_be_0_inv', 'Real tropical tanks: NH₃ should be 0. Investigate why.')),
                     h('li', null, __alloT('stem.aquarium.how_does_temperature_change_nh_toxicit', 'How does temperature change NH₃ toxicity? (Hint: pH/ionization)')))),
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   __alloT('stem.aquarium.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { 'aria-label': __alloT('stem.aquarium.explanation_input', 'Nitrogen cycle explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.aquarium.explain_why_nitrogen_cycle_balance_is_', 'Explain why nitrogen cycle balance is critical for fish health.'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.aquarium.design_note_discrete_3_state_stress_ma', 'Design note: discrete 3-state stress marker; no toxicity score; no reveal — by design.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[0.625rem] italic text-slate-500' }, __alloT('stem.aquarium.design_note_discrete_3_state_stress_ma', 'Design note: discrete 3-state stress marker; no toxicity score; no reveal — by design.'))
               );
             })()
 

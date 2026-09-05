@@ -1853,7 +1853,7 @@ const d = labToolData.wave;
               return React.createElement("div", { role: "region", "aria-label": __alloT('stem.wave.tour_region_label', 'Getting started tips'), className: "mb-3 p-3 rounded-xl border-2 border-cyan-300 bg-cyan-50 flex items-center gap-3 flex-wrap" },
                 React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, cur.icon),
                 React.createElement("p", { className: "text-xs text-cyan-900 font-semibold flex-1 min-w-[200px] m-0" }, cur.text),
-                React.createElement("span", { className: "text-[10px] font-bold text-cyan-700" }, (step + 1) + '/' + TOUR.length),
+                React.createElement("span", { className: "text-[0.625rem] font-bold text-cyan-700" }, (step + 1) + '/' + TOUR.length),
                 React.createElement("button", { onClick: function () { if (step + 1 >= TOUR.length) done(); else upd('tourStep', step + 1); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-800 active:scale-[0.97]" }, step + 1 >= TOUR.length ? '✓ ' + __alloT('stem.wave.tour_done', 'Done') : __alloT('stem.wave.tour_next', 'Next') + ' →'),
                 React.createElement("button", { onClick: done, "aria-label": __alloT('stem.wave.tour_skip_label', 'Skip the tour'), className: "transition-colors px-2 py-1.5 rounded-lg text-xs text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]" }, __alloT('stem.wave.tour_skip', 'Skip'))
               );
@@ -1865,7 +1865,7 @@ const d = labToolData.wave;
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, __alloT('stem.wave.badge_animated', 'ANIMATED'))
+              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[0.6875rem] font-bold rounded-full" }, __alloT('stem.wave.badge_animated', 'ANIMATED'))
 
             ),
 
@@ -1886,7 +1886,7 @@ const d = labToolData.wave;
                       terse: m[1]
                     });
                   }
-                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-slate-900 text-white shadow-md ring-1 ring-cyan-300/70' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]') }, m[1]);
+                }, className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-slate-900 text-white shadow-md ring-1 ring-cyan-300/70' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]') }, m[1]);
 
               }),
 
@@ -2027,17 +2027,17 @@ const d = labToolData.wave;
               React.createElement("div", {
                 className: "pointer-events-none absolute left-3 top-3 rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-white shadow-xl backdrop-blur-md"
               },
-                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/80" }, __alloT('stem.wave.overlay_live_wave', 'Live wave')),
+                React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wider text-cyan-100/80" }, __alloT('stem.wave.overlay_live_wave', 'Live wave')),
                 React.createElement("p", { className: "text-sm font-black leading-tight" }, waveViewMeta.label),
-                React.createElement("p", { className: "mt-1 text-[11px] text-cyan-50/90" }, "A " + displayAmp + " | f " + displayFreq + " Hz | T " + displayPeriod.toFixed(2) + " s")
+                React.createElement("p", { className: "mt-1 text-[0.6875rem] text-cyan-50/90" }, "A " + displayAmp + " | f " + displayFreq + " Hz | T " + displayPeriod.toFixed(2) + " s")
               ),
 
               React.createElement("div", {
                 className: "pointer-events-none absolute right-3 top-3 hidden rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-right text-white shadow-xl backdrop-blur-md sm:block"
               },
-                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-slate-200/80" }, waveViewMeta.chip),
-                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, __alloT('stem.wave.overlay_type', 'Type') + " " + activeWaveType),
-                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, __alloT('stem.wave.overlay_medium', 'Medium') + " " + displayMediumSpeed + " m/s")
+                React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wider text-slate-200/80" }, waveViewMeta.chip),
+                React.createElement("p", { className: "text-[0.6875rem] text-slate-100/90" }, __alloT('stem.wave.overlay_type', 'Type') + " " + activeWaveType),
+                React.createElement("p", { className: "text-[0.6875rem] text-slate-100/90" }, __alloT('stem.wave.overlay_medium', 'Medium') + " " + displayMediumSpeed + " m/s")
               ),
 
               React.createElement("div", {
@@ -2049,20 +2049,20 @@ const d = labToolData.wave;
                   [__alloT('stem.wave.readout_energy', 'Energy'), (displayAmp * displayAmp).toFixed(0)]
                 ].map(function(item) {
                   return React.createElement("div", { key: item[0], className: "rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/75" }, item[0]),
+                    React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wider text-cyan-100/75" }, item[0]),
                     React.createElement("p", { className: "text-xs font-black leading-tight" }, item[1])
                   );
                 }),
 
                 waveMode === 'spectrum' && React.createElement("div", { className: "rounded-lg border border-emerald-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200/80" }, __alloT('stem.wave.overlay_timbre_harmonics', 'Timbre = harmonics')),
+                  React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wider text-emerald-200/80" }, __alloT('stem.wave.overlay_timbre_harmonics', 'Timbre = harmonics')),
                   React.createElement("p", { className: "text-xs font-bold leading-tight" }, timbreNote)
                 ),
 
                 waveMode === 'longitudinal' && React.createElement("div", { className: "rounded-lg border border-amber-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-amber-200/80" }, "● " + __alloT('stem.wave.overlay_gold_tracer', 'Gold tracer')),
+                  React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wider text-amber-200/80" }, "● " + __alloT('stem.wave.overlay_gold_tracer', 'Gold tracer')),
                   React.createElement("p", { className: "text-xs font-bold leading-tight" }, __alloT('stem.wave.overlay_jiggles', 'Jiggles in place — the wave travels, the matter does not')),
-                  React.createElement("p", { className: "mt-1 flex flex-wrap gap-x-2 text-[11px] font-bold" },
+                  React.createElement("p", { className: "mt-1 flex flex-wrap gap-x-2 text-[0.6875rem] font-bold" },
                     React.createElement("span", { className: "text-rose-200" }, __alloT('stem.wave.overlay_warm_compression', 'Warm = compression')),
                     React.createElement("span", { className: "text-blue-200" }, __alloT('stem.wave.overlay_blue_rarefaction', 'Blue = rarefaction')))
                 )
@@ -2082,10 +2082,10 @@ const d = labToolData.wave;
             },
               React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                 React.createElement("div", null,
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-slate-500" }, __alloT('stem.wave.live_measurements_label', 'Live measurements')),
+                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.18em] text-slate-500" }, __alloT('stem.wave.live_measurements_label', 'Live measurements')),
                   React.createElement("div", { className: "mt-0.5 text-xs font-black text-slate-900" }, waveViewMeta.label + " • " + waveViewMeta.chip)
                 ),
-                React.createElement("span", { className: "rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide", style: { borderColor: waveViewMeta.accent + '66', background: waveViewMeta.accent + '15', color: waveViewMeta.accent } }, d.paused ? __alloT('stem.wave.live_paused', 'Paused') : __alloT('stem.wave.live_running', 'Running'))
+                React.createElement("span", { className: "rounded-full border px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide", style: { borderColor: waveViewMeta.accent + '66', background: waveViewMeta.accent + '15', color: waveViewMeta.accent } }, d.paused ? __alloT('stem.wave.live_paused', 'Paused') : __alloT('stem.wave.live_running', 'Running'))
               ),
               React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" }, [
                 [__alloT('stem.wave.live_waveform', 'Waveform'), activeWaveType, 'text-cyan-700'],
@@ -2096,7 +2096,7 @@ const d = labToolData.wave;
                 [__alloT('stem.wave.live_medium_speed', 'Medium speed'), displayMediumSpeed + ' m/s', 'text-amber-700']
               ].map(function (item) {
                 return React.createElement("div", { key: item[0], className: "rounded-lg border border-slate-200 bg-white px-2.5 py-2" },
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-500" }, item[0]),
+                  React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-500" }, item[0]),
                   React.createElement("div", { className: "mt-0.5 truncate font-mono text-sm font-black " + item[2] }, String(item[1]))
                 );
               }))
@@ -2166,7 +2166,7 @@ const d = labToolData.wave;
 
                 React.createElement("div", { key: s.k, className: "bg-white rounded-lg p-3 border border-slate-200 shadow-sm" },
 
-                  React.createElement("label", { className: "text-[11px] font-black text-slate-600 block uppercase tracking-wide" }, s.label),
+                  React.createElement("label", { className: "text-[0.6875rem] font-black text-slate-600 block uppercase tracking-wide" }, s.label),
 
                   React.createElement("span", { className: "mt-1 text-lg font-black text-slate-900 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
@@ -2211,31 +2211,31 @@ const d = labToolData.wave;
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, "A2:"),
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, "A2:"),
 
                   React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': __alloT('stem.wave.aria_second_amplitude', 'Second wave amplitude'), onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.amplitude2 || 30)
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, d.amplitude2 || 30)
 
                 ),
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "f2:"),
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-500 font-bold" }, "f2:"),
 
                   React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': __alloT('stem.wave.aria_second_frequency', 'Second wave frequency'), onChange: e => { var v2 = parseFloat(e.target.value); upd('frequency2', v2); syncOsc({ freq2: v2 }); }, className: "w-24 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.frequency2 || 3)
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, d.frequency2 || 3)
 
                 ),
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-500 font-bold" }, "\u03C6\u2082:"),
 
                   React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': __alloT('stem.wave.aria_second_phase', 'Second wave phase'), onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
 
                 )
 
@@ -2249,12 +2249,12 @@ const d = labToolData.wave;
                   if (typeof addToast === 'function') addToast('\uD83C\uDFB5 ' + __alloT('stem.wave.toast_beats', 'Beats: 4 Hz + 4.5 Hz \u2014 watch (and hear) the slow 0.5 Hz pulse'), 'info');
                 },
                 'aria-label': __alloT('stem.wave.aria_beats_preset', 'Beats preset \u2014 two waves at 4 and 4.5 hertz so the beat envelope is visible'),
-                className: "transition-colors px-2.5 py-1 rounded-lg text-[11px] font-bold bg-pink-600 text-white hover:bg-pink-700 active:scale-[0.97]"
+                className: "transition-colors px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold bg-pink-600 text-white hover:bg-pink-700 active:scale-[0.97]"
               }, '\uD83C\uDFB5 ' + __alloT('stem.wave.btn_beats', 'Beats')),
 
               d.showSecond && interferenceLabel && React.createElement("span", {
                 role: "status",
-                className: "text-[11px] font-bold text-purple-700 bg-purple-100 border border-purple-300 rounded-full px-2 py-0.5"
+                className: "text-[0.6875rem] font-bold text-purple-700 bg-purple-100 border border-purple-300 rounded-full px-2 py-0.5"
               }, '\u2011\u2011\u2011 ' + interferenceLabel)
 
             ),
@@ -2273,11 +2273,11 @@ const d = labToolData.wave;
 
               d.damping && React.createElement("div", { className: "flex items-center gap-1" },
 
-                React.createElement("span", { className: "text-[11px] text-amber-500 font-bold" }, "\u03B1:"),
+                React.createElement("span", { className: "text-[0.6875rem] text-amber-500 font-bold" }, "\u03B1:"),
 
                 React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, 'aria-label': __alloT('stem.wave.aria_damping_coeff', 'Damping coefficient'), onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
 
-                React.createElement("span", { className: "text-[11px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
+                React.createElement("span", { className: "text-[0.6875rem] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
 
               )
 
@@ -2315,10 +2315,10 @@ const d = labToolData.wave;
                   upd('rippleSrc1', null); upd('rippleSrc2', null);
                   if (typeof addToast === 'function') addToast(__alloT('stem.wave.toast_sources_reset', 'Sources reset to defaults'), 'info');
                 },
-                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]",
+                className: "transition-colors px-3 py-1 rounded-md text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]",
                 'aria-label': __alloT('stem.wave.aria_reset_sources', 'Reset source positions to defaults')
               }, '↻ ' + __alloT('stem.wave.btn_reset_sources', 'Reset sources')),
-              React.createElement("span", { className: "text-[11px] text-indigo-800 ml-auto" },
+              React.createElement("span", { className: "text-[0.6875rem] text-indigo-800 ml-auto" },
                 React.createElement("strong", null, __alloT('stem.wave.ripple_bright', 'Bright')), __alloT('stem.wave.ripple_constructive', ' = constructive · '),
                 React.createElement("strong", null, __alloT('stem.wave.ripple_dark', 'dark')), __alloT('stem.wave.ripple_destructive_hint', ' = destructive · 💡 drag the red sources'))
 
@@ -2334,7 +2334,7 @@ const d = labToolData.wave;
                     return React.createElement('button', {
                       key: et,
                       onClick: function() { upd('reflectionEnd', et); },
-                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-700 text-white') : 'transition-colors bg-white text-slate-600 hover:bg-amber-100 active:scale-[0.97]'),
+                      className: 'px-2.5 py-1 text-[0.6875rem] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-700 text-white') : 'transition-colors bg-white text-slate-600 hover:bg-amber-100 active:scale-[0.97]'),
                       'aria-pressed': active,
                       'aria-label': et === 'fixed' ? __alloT('stem.wave.aria_fixed_end', 'Fixed end (string tied down — phase inverts on reflection)') : __alloT('stem.wave.aria_free_end', 'Free end (string free to move — phase preserved on reflection)')
                     }, et === 'fixed' ? '🔒 ' + __alloT('stem.wave.btn_fixed', 'Fixed') : '🪁 ' + __alloT('stem.wave.btn_free', 'Free'));
@@ -2358,10 +2358,10 @@ const d = labToolData.wave;
                   upd('wallFrac', null);
                   if (typeof addToast === 'function') addToast(__alloT('stem.wave.toast_wall_reset', 'Wall reset to 75% across'), 'info');
                 },
-                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]",
+                className: "transition-colors px-3 py-1 rounded-md text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]",
                 'aria-label': __alloT('stem.wave.aria_reset_wall', 'Reset wall position')
               }, '↻ ' + __alloT('stem.wave.btn_reset_wall', 'Reset wall')),
-              React.createElement("span", { className: "text-[11px] text-amber-900 ml-auto" },
+              React.createElement("span", { className: "text-[0.6875rem] text-amber-900 ml-auto" },
                 React.createElement("span", { style: { color: '#92400e', fontWeight: 700 } }, '— ' + __alloT('stem.wave.refl_solid', 'solid')), __alloT('stem.wave.refl_solid_desc', ': incident + reflected · '),
                 React.createElement("span", { style: { color: '#be185d', fontWeight: 700 } }, '‑‑ ' + __alloT('stem.wave.refl_dashed', 'dashed')), __alloT('stem.wave.refl_dashed_desc', ': reflected alone · 💡 drag the gold wall or use the slider'))
             ),
@@ -2380,15 +2380,15 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("span", { className: "text-[11px] text-rose-700" }, __alloT('stem.wave.doppler_mach', 'of sound speed (Mach number)')),
+              React.createElement("span", { className: "text-[0.6875rem] text-rose-700" }, __alloT('stem.wave.doppler_mach', 'of sound speed (Mach number)')),
 
               (function() {
                 var _m = d.sourceSpeed !== undefined ? d.sourceSpeed : 0.3;
                 var _f0 = d.frequency || 2;
                 return React.createElement(React.Fragment, null,
-                  React.createElement("span", { className: "text-[11px] font-bold text-red-700 bg-red-100 border border-red-200 rounded-full px-2 py-0.5" }, __alloT('stem.wave.doppler_approaching', 'approaching') + " f′ = " + (_f0 / (1 - Math.min(_m, 0.95))).toFixed(1) + " Hz"),
-                  React.createElement("span", { className: "text-[11px] font-bold text-sky-700 bg-sky-100 border border-sky-200 rounded-full px-2 py-0.5" }, __alloT('stem.wave.doppler_receding', 'receding') + " f′ = " + (_f0 / (1 + _m)).toFixed(1) + " Hz"),
-                  React.createElement("span", { className: "text-[10px] text-rose-700 italic" }, (_waveAudio.ctx && d.soundPlaying) ? "🔊 " + __alloT('stem.wave.doppler_tone_bends', 'the tone bends as the source passes the observer') : "▶ " + __alloT('stem.wave.doppler_press_play', 'press Play Sound to HEAR the shift'))
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-red-700 bg-red-100 border border-red-200 rounded-full px-2 py-0.5" }, __alloT('stem.wave.doppler_approaching', 'approaching') + " f′ = " + (_f0 / (1 - Math.min(_m, 0.95))).toFixed(1) + " Hz"),
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-sky-700 bg-sky-100 border border-sky-200 rounded-full px-2 py-0.5" }, __alloT('stem.wave.doppler_receding', 'receding') + " f′ = " + (_f0 / (1 + _m)).toFixed(1) + " Hz"),
+                  React.createElement("span", { className: "text-[0.625rem] text-rose-700 italic" }, (_waveAudio.ctx && d.soundPlaying) ? "🔊 " + __alloT('stem.wave.doppler_tone_bends', 'the tone bends as the source passes the observer') : "▶ " + __alloT('stem.wave.doppler_press_play', 'press Play Sound to HEAR the shift'))
                 );
               })()
 
@@ -2398,7 +2398,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "bg-slate-900 rounded-lg p-4 mb-3 text-center border border-slate-700 shadow-lg" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD " + __alloT('stem.wave.wave_equation_heading', 'Wave Equation')),
+              React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-300 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD " + __alloT('stem.wave.wave_equation_heading', 'Wave Equation')),
 
               
 
@@ -2406,7 +2406,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "mb-3 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/50 inline-block text-center" },
 
-                 React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5" }, __alloT('stem.wave.general_formula', 'General Formula')),
+                 React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-400 uppercase tracking-wider mb-0.5" }, __alloT('stem.wave.general_formula', 'General Formula')),
 
                  React.createElement("p", { className: "text-sm font-mono font-bold text-slate-300" }, 
 
@@ -2422,7 +2422,7 @@ const d = labToolData.wave;
 
               (d.matchTarget && d.matchTarget.isEquation) && React.createElement("div", { className: "mb-3 p-2 bg-purple-900/50 rounded-lg border border-purple-500/50 inline-block text-left" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, __alloT('stem.wave.target_equation', 'Target Equation:')),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-purple-300 uppercase tracking-wider mb-1" }, __alloT('stem.wave.target_equation', 'Target Equation:')),
 
                   React.createElement("div", { className: "text-lg font-mono font-bold opacity-90 tracking-tight" }, 
 
@@ -2432,7 +2432,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
+              React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-400 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
 
                   (d.matchTarget && d.matchTarget.isEquation) ? __alloT('stem.wave.your_equation', 'Your Equation:') : __alloT('stem.wave.current_equation', 'Current Equation:'),
 
@@ -2444,9 +2444,9 @@ const d = labToolData.wave;
 
                     return pct > 90 
 
-                      ? React.createElement("span", {className: "text-[11px] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + __alloT('stem.wave.pct_match', '% match'))
+                      ? React.createElement("span", {className: "text-[0.6875rem] font-bold text-emerald-400 bg-emerald-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, "\u2705 " + pct + __alloT('stem.wave.pct_match', '% match'))
 
-                      : React.createElement("span", {className: "text-[11px] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + __alloT('stem.wave.pct_match', '% match'));
+                      : React.createElement("span", {className: "text-[0.6875rem] font-bold text-amber-400 bg-amber-900/50 px-1.5 py-0.5 rounded-full ml-2 lowercase tracking-normal"}, pct + __alloT('stem.wave.pct_match', '% match'));
                   })()
 
               ),
@@ -2457,7 +2457,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[11px] text-slate-400 mt-2" }, 
+              React.createElement("p", { className: "text-[0.6875rem] text-slate-400 mt-2" }, 
 
                   waveMode === 'standing' 
 
@@ -2475,7 +2475,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_wavelength', 'Wavelength') + " \u03BB"),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_wavelength', 'Wavelength') + " \u03BB"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, wavelength.toFixed(1) + " m")
 
@@ -2483,7 +2483,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_period', 'Period') + " T"),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_period', 'Period') + " T"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(3) + " s")
 
@@ -2491,7 +2491,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_wave_speed', 'Wave Speed') + " v"),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_wave_speed', 'Wave Speed') + " v"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, waveSpeedCalc.toFixed(0) + " m/s")
 
@@ -2499,7 +2499,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_energy', 'Energy')),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 uppercase" }, __alloT('stem.wave.card_energy', 'Energy')),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, "\u221D A\u00B2 = " + (d.amplitude * d.amplitude).toFixed(0))
 
@@ -2552,7 +2552,7 @@ const d = labToolData.wave;
                           setLabToolData(function (prev) { var prior = (prev && prev.wave) || {}; return Object.assign({}, prev, { wave: Object.assign({}, prior, m.demo) }); });
                           if (typeof addToast === 'function') addToast('👀 ' + m.btn, 'info');
                         },
-                        className: "transition-colors px-2.5 py-1 rounded-md text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 active:scale-[0.97]"
+                        className: "transition-colors px-2.5 py-1 rounded-md text-[0.6875rem] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 active:scale-[0.97]"
                       }, '👀 ' + m.btn)
                     );
                   })
@@ -2712,7 +2712,7 @@ const d = labToolData.wave;
                     });
                     if (typeof addToast === 'function') addToast('\uD83D\uDC40 ' + __alloT('stem.wave.toast_sim_setup', 'Sim set up to demonstrate this \u2014 watch the wave'), 'info');
                   },
-                  className: "transition-colors ml-2 px-2 py-1 rounded-md text-[11px] font-bold bg-white border " + (d.quiz.chosen === d.quiz.a ? 'border-emerald-400 text-emerald-700 hover:bg-emerald-100' : 'border-red-400 text-red-700 hover:bg-red-100') + " active:scale-[0.97]"
+                  className: "transition-colors ml-2 px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-white border " + (d.quiz.chosen === d.quiz.a ? 'border-emerald-400 text-emerald-700 hover:bg-emerald-100' : 'border-red-400 text-red-700 hover:bg-red-100') + " active:scale-[0.97]"
                 }, '\uD83D\uDC40 ' + __alloT('stem.wave.btn_show_in_sim', 'Show me in the sim'))
               )
 
@@ -2763,7 +2763,7 @@ const d = labToolData.wave;
                         onClick: function () { setAiLevel(L.id); },
                         "aria-label": __alloT('stem.wave.aria_reading_level', 'Reading level: ') + L.label + (active ? __alloT('stem.wave.aria_selected', ' (selected)') : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-purple-700 border border-purple-600 hover:bg-purple-100 active:scale-[0.97]')
+                        className: "px-2 py-0.5 rounded text-[0.625rem] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-purple-700 border border-purple-600 hover:bg-purple-100 active:scale-[0.97]')
                       }, L.label);
                     })
                   ),
@@ -2771,12 +2771,12 @@ const d = labToolData.wave;
                     onClick: explain,
                     disabled: aiLoading,
                     "aria-label": __alloT('stem.wave.aria_generate_at', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + __alloT('stem.wave.aria_level_suffix', ' level'),
-                    className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
+                    className: "transition-colors px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
                   }, aiLoading ? '\u23F3 ' + __alloT('stem.wave.ai_thinking', 'Thinking...') : (aiText ? '\uD83D\uDD04 ' + __alloT('stem.wave.ai_reexplain', 'Re-explain') : '\uD83E\uDDE0 ' + __alloT('stem.wave.ai_explain', 'Explain')))
                 ),
-                aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                aiError && React.createElement("p", { className: "text-[0.6875rem] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-600" + onHostInk }, __alloT('stem.wave.ai_placeholder', 'Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.'))
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[0.6875rem] italic text-slate-600" + onHostInk }, __alloT('stem.wave.ai_placeholder', 'Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.'))
               );
             })()
 
@@ -2917,7 +2917,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-200' },
           React.createElement('div', null,
             React.createElement('h3', { className: 'text-base font-black text-cyan-900' }, '🌊 ' + __alloT('stem.wave.exp_library_title', 'Wave Reference Library')),
-            React.createElement('div', { className: 'text-[11px] text-cyan-700 mt-0.5' }, __alloT('stem.wave.exp_library_subtitle', 'Interactive references — pick a topic below to explore.'))
+            React.createElement('div', { className: 'text-[0.6875rem] text-cyan-700 mt-0.5' }, __alloT('stem.wave.exp_library_subtitle', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && React.createElement('button', {
             onClick: function() { setExp({ expSection: null }); },
@@ -3000,7 +3000,7 @@ const d = labToolData.wave;
           return React.createElement('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1.5 rounded-md text-[11px] font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1.5 rounded-md text-[0.6875rem] font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         // Accordion: one group open at a time — 47 chips at once was a wall.
@@ -3020,8 +3020,8 @@ const d = labToolData.wave;
                 'aria-expanded': isOpen,
                 className: 'transition-colors w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-' + g.color + '-50'
               },
-                React.createElement('span', { className: 'text-[11px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 flex-1' }, g.label),
-                React.createElement('span', { className: 'text-[10px] text-slate-500 font-bold' }, (g.tabs || []).length + __alloT('stem.wave.count_topics', ' topics ') + (isOpen ? '▲' : '▼'))
+                React.createElement('span', { className: 'text-[0.6875rem] font-extrabold tracking-widest uppercase text-' + g.color + '-700 flex-1' }, g.label),
+                React.createElement('span', { className: 'text-[0.625rem] text-slate-500 font-bold' }, (g.tabs || []).length + __alloT('stem.wave.count_topics', ' topics ') + (isOpen ? '▲' : '▼'))
               ),
               isOpen && React.createElement('div', { role: 'group', 'aria-label': g.label + __alloT('stem.wave.aria_topics_suffix', ' topics'), className: 'px-3 pb-2 flex items-center gap-1.5 flex-wrap' },
                 (g.tabs || []).map(function(s) { return renderBtn(s, g.color); })
@@ -3034,17 +3034,17 @@ const d = labToolData.wave;
       function renderTypesSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌊 ' + __alloT('stem.wave.tab_types', 'Wave types')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_types_intro', 'Waves are categorized by particle motion relative to propagation, and by whether they need a medium. All carry energy but no matter from one place to another.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_types_intro', 'Waves are categorized by particle motion relative to propagation, and by whether they need a medium. All carry energy but no matter from one place to another.')),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             WAVE_TYPES.map(function(w, i) {
               return React.createElement('div', { key: 'w'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
                   React.createElement('span', { className: 'text-xl text-cyan-600' }, w.icon),
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, w.name),
-                  React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800' }, w.speed)
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold ml-auto px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800' }, w.speed)
                 ),
-                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, w.desc),
-                React.createElement('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.wave.label_examples', 'Examples: '), w.examples.join(', '))
+                React.createElement('div', { className: 'text-[0.75rem] text-slate-700 leading-relaxed mb-1' }, w.desc),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.wave.label_examples', 'Examples: '), w.examples.join(', '))
               );
             })
           )
@@ -3054,16 +3054,16 @@ const d = labToolData.wave;
       function renderQuantitiesSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📐 ' + __alloT('stem.wave.tab_quantities', 'Wave quantities')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_quantities_intro', 'The full vocabulary needed to describe any wave. Most quantities are related — once you know two, you can derive the rest.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_quantities_intro', 'The full vocabulary needed to describe any wave. Most quantities are related — once you know two, you can derive the rest.')),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             WAVE_QUANTITIES.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
                   React.createElement('span', { className: 'text-lg font-black text-cyan-700 font-mono min-w-[24px] tracking-tight' }, q.sym),
-                  React.createElement('span', { className: 'text-[12px] font-bold text-slate-800' }, q.name),
-                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, q.units)
+                  React.createElement('span', { className: 'text-[0.75rem] font-bold text-slate-800' }, q.name),
+                  React.createElement('span', { className: 'text-[0.625rem] text-slate-500 ml-auto' }, q.units)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, q.def)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, q.def)
               );
             })
           )
@@ -3077,7 +3077,7 @@ const d = labToolData.wave;
             WAVE_FORMULAS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'flex items-baseline gap-3 p-2 rounded-md bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'text-sm font-bold text-indigo-800 font-mono min-w-[200px]' }, f.eq),
-                React.createElement('div', { className: 'text-[11px] text-slate-700' }, f.purpose)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700' }, f.purpose)
               );
             })
           )
@@ -3087,20 +3087,20 @@ const d = labToolData.wave;
       function renderInterferenceSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '+ ' + __alloT('stem.wave.sec_interference_title', 'Interference + superposition')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_interference_intro', 'When two waves meet, their displacements add (principle of superposition). After passing through each other, each wave continues unchanged.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_interference_intro', 'When two waves meet, their displacements add (principle of superposition). After passing through each other, each wave continues unchanged.')),
           React.createElement('div', { className: 'space-y-2 mb-3' },
             INTERFERENCE_PATTERNS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
                   React.createElement('span', { className: 'text-2xl font-black text-cyan-700 tracking-tight' }, p.icon),
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, p.type),
-                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, p.condition)
+                  React.createElement('span', { className: 'text-[0.625rem] text-slate-500 ml-auto font-mono' }, p.condition)
                 ),
-                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed' }, p.result)
+                React.createElement('div', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, p.result)
               );
             })
           ),
-          React.createElement('div', { className: 'p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+          React.createElement('div', { className: 'p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900' },
             React.createElement('strong', null, '💡 ' + __alloT('stem.wave.sec_beats_label', 'Beats: ')), __alloT('stem.wave.sec_beats_text', 'Two waves of slightly different frequency interfere alternately constructively + destructively. Beat frequency = |f₁ − f₂|. Musicians use this to tune by ear.')
           )
         );
@@ -3109,21 +3109,21 @@ const d = labToolData.wave;
       function renderDopplerSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🚓 ' + __alloT('stem.wave.tab_doppler', 'Doppler effect')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_doppler_intro', 'Frequency observed changes when source and/or observer move relative to each other. The ambulance siren that drops pitch as it passes you = sound Doppler. Galaxy redshift = light Doppler.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_doppler_intro', 'Frequency observed changes when source and/or observer move relative to each other. The ambulance siren that drops pitch as it passes you = sound Doppler. Galaxy redshift = light Doppler.')),
           React.createElement('div', { className: 'space-y-2' },
             DOPPLER_CASES.map(function(c, i) {
               return React.createElement('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.case),
-                  React.createElement('span', { className: 'text-[11px] font-bold ml-auto px-2 py-0.5 rounded bg-cyan-100 text-cyan-800' }, c.effect)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.case),
+                  React.createElement('span', { className: 'text-[0.6875rem] font-bold ml-auto px-2 py-0.5 rounded bg-cyan-100 text-cyan-800' }, c.effect)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.detail)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.detail)
               );
             })
           ),
           React.createElement('div', { className: 'mt-3 p-3 rounded-md bg-emerald-50 border border-emerald-200' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, '📡 ' + __alloT('stem.wave.sec_applications', 'Applications')),
-            React.createElement('div', { className: 'text-[11px] text-emerald-900 leading-relaxed' },
+            React.createElement('div', { className: 'text-[0.6875rem] font-bold text-emerald-800 mb-1' }, '📡 ' + __alloT('stem.wave.sec_applications', 'Applications')),
+            React.createElement('div', { className: 'text-[0.6875rem] text-emerald-900 leading-relaxed' },
               '• ' + __alloT('stem.wave.doppler_app_radar', 'Police radar: bounces microwaves off your car; Doppler shift = your speed. '),
               '• ' + __alloT('stem.wave.doppler_app_ultrasound', 'Doppler ultrasound: measures blood flow direction + speed. '),
               '• ' + __alloT('stem.wave.doppler_app_hubble', 'Hubble\'s discovery: distant galaxies are redshifted → universe expanding. '),
@@ -3136,16 +3136,16 @@ const d = labToolData.wave;
       function renderSpectrumSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚡ ' + __alloT('stem.wave.sec_spectrum_title', 'Electromagnetic spectrum')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_spectrum_intro', 'All EM waves travel at c in vacuum. The full spectrum spans 18+ orders of magnitude in frequency. We see only a narrow sliver (visible light). Energy per photon: E = hf — higher frequency = more energetic.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_spectrum_intro', 'All EM waves travel at c in vacuum. The full spectrum spans 18+ orders of magnitude in frequency. We see only a narrow sliver (visible light). Energy per photon: E = hf — higher frequency = more energetic.')),
           React.createElement('div', { className: 'space-y-1.5' },
             EM_SPECTRUM.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-0.5' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800 min-w-[100px]' }, s.name),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800 ml-auto' }, s.energy + __alloT('stem.wave.label_energy_suffix', ' energy'))
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800 min-w-[100px]' }, s.name),
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800 ml-auto' }, s.energy + __alloT('stem.wave.label_energy_suffix', ' energy'))
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-0.5 font-mono' }, 'λ: ', s.λ, '  ·  f: ', s.f),
-                React.createElement('div', { className: 'text-[11px] text-slate-700' }, __alloT('stem.wave.label_uses', 'Uses: '), s.uses)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mb-0.5 font-mono' }, 'λ: ', s.λ, '  ·  f: ', s.f),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700' }, __alloT('stem.wave.label_uses', 'Uses: '), s.uses)
               );
             })
           )
@@ -3155,14 +3155,14 @@ const d = labToolData.wave;
       function renderColorsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌈 ' + __alloT('stem.wave.sec_colors_title', 'Visible light spectrum')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_colors_intro', 'Human vision spans ~380-700 nm. Each color corresponds to a specific range of wavelengths. White light = mix of all visible wavelengths.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_colors_intro', 'Human vision spans ~380-700 nm. Each color corresponds to a specific range of wavelengths. White light = mix of all visible wavelengths.')),
           React.createElement('div', { className: 'grid gap-2' },
             VISIBLE_COLORS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-2.5 rounded-lg border border-slate-200 flex items-center gap-3', style: { background: c.hex + '15' } },
                 React.createElement('div', { className: 'w-8 h-8 rounded shrink-0', style: { background: c.hex, border: '1px solid rgba(0,0,0,0.1)' } }),
                 React.createElement('div', { className: 'flex-1' },
-                  React.createElement('div', { className: 'text-[12px] font-black text-slate-800' }, c.color, React.createElement('span', { className: 'text-[10px] font-mono text-slate-500 ml-2' }, c.λnm, ' nm  ·  ', c.f)),
-                  React.createElement('div', { className: 'text-[11px] text-slate-700 italic' }, c.notes)
+                  React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800' }, c.color, React.createElement('span', { className: 'text-[0.625rem] font-mono text-slate-500 ml-2' }, c.λnm, ' nm  ·  ', c.f)),
+                  React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 italic' }, c.notes)
                 )
               );
             })
@@ -3173,19 +3173,19 @@ const d = labToolData.wave;
       function renderHarmonicsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎵 ' + __alloT('stem.wave.sec_harmonics_title', 'Harmonics — modes of vibration')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_harmonics_intro', 'A vibrating string supports an infinite series of modes called harmonics. Each has a specific number of nodes (zero-amplitude points) + antinodes (max-amplitude points). The mix of harmonics = timbre.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_harmonics_intro', 'A vibrating string supports an infinite series of modes called harmonics. Each has a specific number of nodes (zero-amplitude points) + antinodes (max-amplitude points). The mix of harmonics = timbre.')),
           React.createElement('div', { className: 'space-y-1.5' },
             HARMONICS.map(function(h, i) {
               return React.createElement('div', { key: 'h' + i, scope: 'col', className: 'flex items-baseline gap-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'min-w-[140px]' },
-                  React.createElement('div', { className: 'text-[12px] font-black text-slate-800' }, h.mode),
-                  React.createElement('div', { className: 'text-[10px] text-slate-500 font-mono' }, h.nodes + __alloT('stem.wave.label_nodes_f', ' nodes · f = ') + h.f)
+                  React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800' }, h.mode),
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-500 font-mono' }, h.nodes + __alloT('stem.wave.label_nodes_f', ' nodes · f = ') + h.f)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h.desc)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, h.desc)
               );
             })
           ),
-          React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
+          React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[0.6875rem] text-purple-900' },
             React.createElement('strong', null, '💡 ' + __alloT('stem.wave.harm_callout_label', 'Why instruments sound different: ')), __alloT('stem.wave.harm_callout_text', 'A note at 440 Hz on a violin and a flute both have fundamental at 440 Hz. The MIX of higher harmonics (the spectrum) is different — that\'s timbre. Pure sine = boring; rich harmonic content = recognizable instrument.')
           )
         );
@@ -3194,17 +3194,17 @@ const d = labToolData.wave;
       function renderInstrumentsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎸 ' + __alloT('stem.wave.sec_instruments_title', 'Standing waves in instruments')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_instruments_intro', 'Instruments make tones by setting up standing waves. The boundary conditions (open/closed/fixed ends) determine which harmonics are allowed.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_instruments_intro', 'Instruments make tones by setting up standing waves. The boundary conditions (open/closed/fixed ends) determine which harmonics are allowed.')),
           React.createElement('div', { className: 'space-y-2' },
             STANDING_WAVE_INSTRUMENTS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, s.instrument),
-                  React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-purple-100 text-purple-800' }, s.harmonics)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.instrument),
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-purple-100 text-purple-800' }, s.harmonics)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, React.createElement('strong', null, __alloT('stem.wave.label_boundary', 'Boundary: ')), s.boundary),
-                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded mb-1 inline-block' }, s.formula),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.note)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' }, React.createElement('strong', null, __alloT('stem.wave.label_boundary', 'Boundary: ')), s.boundary),
+                React.createElement('div', { className: 'text-[0.6875rem] font-mono text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded mb-1 inline-block' }, s.formula),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.note)
               );
             })
           )
@@ -3214,7 +3214,7 @@ const d = labToolData.wave;
       function renderDecibelsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 ' + __alloT('stem.wave.sec_decibels_title', 'Sound intensity (decibels)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_decibels_intro', 'Decibels are a logarithmic scale. +10 dB ≈ 10× intensity, perceived as ~2× as loud. dB SPL (sound pressure level) is referenced to threshold of human hearing.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_decibels_intro', 'Decibels are a logarithmic scale. +10 dB ≈ 10× intensity, perceived as ~2× as loud. dB SPL (sound pressure level) is referenced to threshold of human hearing.')),
           React.createElement('div', { className: 'space-y-1' },
             SOUND_INTENSITY.map(function(s, i) {
               var dangerLevel = s.db >= 120 ? 'red' : s.db >= 85 ? 'amber' : 'emerald';
@@ -3225,12 +3225,12 @@ const d = labToolData.wave;
               };
               return React.createElement('div', { key: 's'+i, className: 'flex items-center gap-3 p-2 rounded-md border ' + colors[dangerLevel] },
                 React.createElement('div', { className: 'text-base font-black font-mono min-w-[44px]' }, s.db + ' dB'),
-                React.createElement('div', { className: 'text-[12px] font-bold min-w-[140px]' }, s.source),
-                React.createElement('div', { className: 'text-[11px] italic flex-1' }, s.notes)
+                React.createElement('div', { className: 'text-[0.75rem] font-bold min-w-[140px]' }, s.source),
+                React.createElement('div', { className: 'text-[0.6875rem] italic flex-1' }, s.notes)
               );
             })
           ),
-          React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-red-50 border border-red-300 text-[11px] text-red-900' },
+          React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-red-50 border border-red-300 text-[0.6875rem] text-red-900' },
             React.createElement('strong', null, '⚠ ' + __alloT('stem.wave.db_callout_label', 'Permanent hearing loss: ')), __alloT('stem.wave.db_callout_text', 'OSHA: 85 dB for 8 hours, 90 dB for 4 hours, etc. (each +5 dB halves safe exposure time). Wear ear protection at concerts, with power tools, at firing ranges.')
           )
         );
@@ -3282,7 +3282,7 @@ const d = labToolData.wave;
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔬 ' + __alloT('stem.wave.sec_discover_title', 'Discover the wave equation')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             __alloT('stem.wave.sec_discover_intro', 'A string is fixed at both ends. Wiggle the controls. Watch what changes and what stays the same. Log a few observations, then try to spot the pattern. Hit "I see it" when you think you have the law — no peeking.')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             // Left: live SVG visualization
@@ -3294,41 +3294,41 @@ const d = labToolData.wave;
                 h('circle', { cx: 250, cy: 50, r: 4, fill: '#fbbf24' }),
                 h('text', { x: 130, y: 92, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.wave.svg_length_2m', 'Length L = 2.0 m (fixed)'))
               ),
-              h('div', { className: 'mt-2 grid grid-cols-2 gap-2 text-[11px]' },
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2 text-[0.6875rem]' },
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-cyan-300' },
-                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.card_period', 'Period') + ' T'),
+                  h('div', { className: 'text-[0.5625rem] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.card_period', 'Period') + ' T'),
                   h('div', { className: 'font-mono font-bold text-base' }, period.toFixed(3) + ' s')
                 ),
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-cyan-300' },
-                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.card_wavelength', 'Wavelength') + ' λ'),
+                  h('div', { className: 'text-[0.5625rem] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.card_wavelength', 'Wavelength') + ' λ'),
                   h('div', { className: 'font-mono font-bold text-base' }, wavelength.toFixed(3) + ' m')
                 ),
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-amber-300' },
-                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.label_wavespeed', 'Wave speed') + ' v'),
+                  h('div', { className: 'text-[0.5625rem] uppercase text-slate-400 tracking-wider' }, __alloT('stem.wave.label_wavespeed', 'Wave speed') + ' v'),
                   h('div', { className: 'font-mono font-bold text-base' }, v.toFixed(2) + ' m/s')
                 ),
                 h('div', { className: 'p-1.5 rounded bg-slate-800 text-violet-300' },
-                  h('div', { className: 'text-[9px] uppercase text-slate-400 tracking-wider' }, 'f × λ'),
+                  h('div', { className: 'text-[0.5625rem] uppercase text-slate-400 tracking-wider' }, 'f × λ'),
                   h('div', { className: 'font-mono font-bold text-base' }, f_lambda.toFixed(2))
                 )
               )
             ),
             // Right: controls + observation log
             h('div', { className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-              h('label', { htmlFor: 'discFreq', className: 'block text-[11px] font-bold text-slate-700' }, __alloT('stem.wave.disc_freq_label', 'Frequency f: ') + lab.freq.toFixed(2) + ' Hz'),
+              h('label', { htmlFor: 'discFreq', className: 'block text-[0.6875rem] font-bold text-slate-700' }, __alloT('stem.wave.disc_freq_label', 'Frequency f: ') + lab.freq.toFixed(2) + ' Hz'),
               h('input', { id: 'discFreq', type: 'range', min: 1, max: 20, step: 0.5, value: lab.freq, onChange: function(e) { setLab({ freq: parseFloat(e.target.value) }); }, className: 'w-full', 'aria-label': __alloT('stem.wave.ctrl_frequency_aria', 'Frequency in hertz') }),
-              h('label', { htmlFor: 'discTen', className: 'block text-[11px] font-bold text-slate-700 mt-2' }, __alloT('stem.wave.disc_tension_label', 'String tension T: ') + lab.tension + ' N'),
+              h('label', { htmlFor: 'discTen', className: 'block text-[0.6875rem] font-bold text-slate-700 mt-2' }, __alloT('stem.wave.disc_tension_label', 'String tension T: ') + lab.tension + ' N'),
               h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': __alloT('stem.wave.aria_tension_newtons', 'Tension in newtons') }),
-              h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, __alloT('stem.wave.disc_mu_note', '(string mass density μ fixed at 0.01 kg/m)')),
+              h('p', { className: 'text-[0.625rem] text-slate-500 italic mt-1' }, __alloT('stem.wave.disc_mu_note', '(string mass density μ fixed at 0.01 kg/m)')),
               h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:ring-2 focus:ring-cyan-300 focus:outline-none active:scale-[0.97]' }, '📝 ' + __alloT('stem.wave.btn_log_observation', 'Log observation')),
-                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ ' + __alloT('stem.wave.btn_revealed', 'Revealed') : '💡 ' + __alloT('stem.wave.btn_i_see_it', 'I see it')),
-                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]' }, '↻ ' + __alloT('stem.wave.btn_reset', 'Reset'))
+                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:ring-2 focus:ring-cyan-300 focus:outline-none active:scale-[0.97]' }, '📝 ' + __alloT('stem.wave.btn_log_observation', 'Log observation')),
+                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ ' + __alloT('stem.wave.btn_revealed', 'Revealed') : '💡 ' + __alloT('stem.wave.btn_i_see_it', 'I see it')),
+                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]' }, '↻ ' + __alloT('stem.wave.btn_reset', 'Reset'))
               ),
               (lab.observationsLogged || []).length > 0 && h('div', { className: 'mt-2' },
-                h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, __alloT('stem.wave.disc_your_observations', 'Your observations')),
+                h('div', { className: 'text-[0.625rem] font-bold text-slate-600 uppercase tracking-wider mb-1' }, __alloT('stem.wave.disc_your_observations', 'Your observations')),
                 h('div', { className: 'overflow-x-auto' },
-                  h('table', { className: 'text-[10px] border-collapse w-full' },
+                  h('table', { className: 'text-[0.625rem] border-collapse w-full' },
                     h('thead', null, h('tr', { className: 'bg-slate-200' },
                       ['f (Hz)', 'T (N)', 'λ (m)', 'v (m/s)', 'f·λ'].map(function(c) { return h('th', { key: c, scope: 'col', className: 'px-1 py-0.5 text-left' }, c); })
                     )),
@@ -3349,13 +3349,13 @@ const d = labToolData.wave;
             )
           ),
           // Discovery prompt — appears regardless, escalates as observations + reveal happen
-          (lab.observationsLogged || []).length >= 2 && !lab.discovered && h('div', { className: 'mt-3 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[12px] text-amber-900' },
+          (lab.observationsLogged || []).length >= 2 && !lab.discovered && h('div', { className: 'mt-3 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[0.75rem] text-amber-900' },
             h('strong', null, '🔍 ' + __alloT('stem.wave.disc_hypothesis_label', 'Hypothesis time: ')), __alloT('stem.wave.disc_hypothesis_text', 'Compare your f × λ column. Is it constant for different f values at the same tension? What about when you change tension? Form a hypothesis before clicking "I see it".')),
           lab.discovered && h('div', { className: 'mt-3 p-3 rounded-lg bg-emerald-50 border-l-4 border-l-emerald-500' },
             h('div', { className: 'font-black text-emerald-900 mb-1' }, '✨ ' + __alloT('stem.wave.disc_equation_label', 'The wave equation: ') + 'v = f · λ'),
-            h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+            h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' },
               __alloT('stem.wave.disc_reveal_text', 'For a wave on a string, the speed v depends ONLY on the string\'s tension and mass density (v = √(T/μ)). The product f·λ always equals v. Change frequency → wavelength compensates so f·λ stays constant. Increase tension → wave speed jumps → f·λ jumps with it. Frequency × wavelength is one of the deepest constancies in physics: it shows up identically for light, sound, water waves, and quantum matter waves.')),
-            h('p', { className: 'text-[11px] text-emerald-700 mt-1 italic' }, __alloT('stem.wave.disc_reveal_hertz', 'You just discovered it the way Hertz did — by watching what stays constant when you change one variable at a time.'))
+            h('p', { className: 'text-[0.6875rem] text-emerald-700 mt-1 italic' }, __alloT('stem.wave.disc_reveal_hertz', 'You just discovered it the way Hertz did — by watching what stays constant when you change one variable at a time.'))
           )
         );
       }
@@ -3408,7 +3408,7 @@ const d = labToolData.wave;
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🎯 ' + __alloT('stem.wave.btn_standing_hunt', 'Standing-wave hunt')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             __alloT('stem.wave.sec_standinghunt_intro', 'A string fixed at both ends. You control the tension and the driving frequency. There is no "right answer" — and no answer dump. Sweep the sliders. Look for the rare frequencies where the string locks into a clean standing pattern. Type what you discover in your own words.')),
           // Live SVG
           h('div', { className: 'mb-2 rounded border border-slate-200 bg-slate-50 p-2' },
@@ -3430,25 +3430,25 @@ const d = labToolData.wave;
           // Sliders — continuous manipulation, no chip pool
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
             h('div', null,
-              h('label', { htmlFor: 'sh-tension', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+              h('label', { htmlFor: 'sh-tension', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
                 __alloT('stem.wave.sh_tension_label', 'Tension: '), h('span', { className: 'font-mono text-indigo-700' }, lab.tension.toFixed(0) + ' N')),
               h('input', {
                 id: 'sh-tension', type: 'range', min: 10, max: 200, step: 1, value: lab.tension,
                 onChange: function(e) { setLab({ tension: parseFloat(e.target.value) }); },
                 className: 'w-full', 'aria-label': __alloT('stem.wave.aria_tension_newtons', 'Tension in newtons')
               }),
-              h('div', { className: 'text-[9px] text-slate-500 flex justify-between' },
+              h('div', { className: 'text-[0.5625rem] text-slate-500 flex justify-between' },
                 h('span', null, '10 N'), h('span', null, '200 N'))
             ),
             h('div', null,
-              h('label', { htmlFor: 'sh-freq', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+              h('label', { htmlFor: 'sh-freq', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
                 __alloT('stem.wave.sh_frequency_label', 'Frequency: '), h('span', { className: 'font-mono text-indigo-700' }, lab.freq.toFixed(2) + ' Hz')),
               h('input', {
                 id: 'sh-freq', type: 'range', min: 1, max: 30, step: 0.05, value: lab.freq,
                 onChange: function(e) { setLab({ freq: parseFloat(e.target.value) }); },
                 className: 'w-full', 'aria-label': __alloT('stem.wave.aria_driving_freq', 'Driving frequency in hertz')
               }),
-              h('div', { className: 'text-[9px] text-slate-500 flex justify-between' },
+              h('div', { className: 'text-[0.5625rem] text-slate-500 flex justify-between' },
                 h('span', null, '1 Hz'), h('span', null, '30 Hz'))
             )
           ),
@@ -3456,17 +3456,17 @@ const d = labToolData.wave;
           h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
             h('button', {
               onClick: logObservation,
-              className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300 active:scale-[0.97]'
+              className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300 active:scale-[0.97]'
             }, '📋 ' + __alloT('stem.wave.sh_log_observation', 'Log this observation')),
             h('button', {
               onClick: function() { setLab({ tension: 50, freq: 4, observationsLogged: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-              className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300 active:scale-[0.97]'
+              className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-300 active:scale-[0.97]'
             }, '↺ ' + __alloT('stem.wave.btn_reset', 'Reset')),
-            (lab.observationsLogged || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (lab.observationsLogged || []).length + __alloT('stem.wave.sh_obs_logged', ' observation(s) logged'))
+            (lab.observationsLogged || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (lab.observationsLogged || []).length + __alloT('stem.wave.sh_obs_logged', ' observation(s) logged'))
           ),
           // Observation log (auto-tabulated; no commentary required)
           (lab.observationsLogged || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
-            h('table', { className: 'text-[10px] w-full border-collapse' },
+            h('table', { className: 'text-[0.625rem] w-full border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100 text-slate-700' },
                   ['T (N)', 'f (Hz)', 'v (m/s)', 'λ (m)', 'n', __alloT('stem.wave.sh_col_locked', 'locked')].map(function(h2, i) {
@@ -3490,14 +3490,14 @@ const d = labToolData.wave;
           ),
           // Hypothesis textarea — learner-typed, free-form
           h('div', { className: 'mb-3' },
-            h('label', { htmlFor: 'sh-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+            h('label', { htmlFor: 'sh-hypo', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
               __alloT('stem.wave.sh_hypothesis_label', 'Your hypothesis (free text — no right answer):')),
             h('textarea', {
               id: 'sh-hypo',
               value: lab.hypothesis || '',
               onChange: function(e) { setLab({ hypothesis: e.target.value }); },
               placeholder: __alloT('stem.wave.sh_hypothesis_placeholder', 'What pattern do you notice in the values where the string locks into a clean standing wave? Type your own theory.'),
-              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug',
+              className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug',
               rows: 3
             })
           ),
@@ -3505,9 +3505,9 @@ const d = labToolData.wave;
           h('div', { className: 'mb-3' },
             !lab.stuckRevealed && h('button', {
               onClick: function() { setLab({ stuckRevealed: true }); },
-              className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 active:scale-[0.97]'
+              className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-300 active:scale-[0.97]'
             }, '🤔 ' + __alloT('stem.wave.sh_stuck_btn', 'I\'m stuck — show me some questions to think about (no answers)')),
-            lab.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+            lab.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
               h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.wave.sh_open_questions', 'Open questions (no answers — investigate by manipulating):')),
               h('ul', { className: 'list-disc pl-5 space-y-1' },
                 h('li', null, __alloT('stem.wave.sh_q1', 'Try f = 5 Hz at T = 100 N, then T = 25 N. Does the locked state happen at the same f? Why might that be?')),
@@ -3516,7 +3516,7 @@ const d = labToolData.wave;
                 h('li', null, __alloT('stem.wave.sh_q4', 'Log 4-5 locked observations. Look at the n column — what value do they share? Is that a coincidence or a constraint?')),
                 h('li', null, __alloT('stem.wave.sh_q5', 'What relationship between f, T, and L would have to be true for an integer number of half-wavelengths to fit on the string?'))
               ),
-              h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, __alloT('stem.wave.sh_no_answers', 'No answers will be revealed here. The point is to push your thinking, not to hand you a result.'))
+              h('div', { className: 'text-[0.625rem] italic text-amber-700 mt-2' }, __alloT('stem.wave.sh_no_answers', 'No answers will be revealed here. The point is to push your thinking, not to hand you a result.'))
             )
           ),
           // "I see it now" self-mark + explanation textarea — no automated scoring
@@ -3528,20 +3528,20 @@ const d = labToolData.wave;
                 onChange: function(e) { setLab({ understood: e.target.checked }); },
                 className: 'w-4 h-4'
               }),
-              h('label', { htmlFor: 'sh-understood', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
+              h('label', { htmlFor: 'sh-understood', className: 'text-[0.75rem] font-bold text-emerald-900 cursor-pointer' },
                 __alloT('stem.wave.sh_understood_label', 'I think I understand the pattern now — let me explain it in my own words'))
             ),
             lab.understood && h('textarea', {
               value: lab.explanation || '',
               onChange: function(e) { setLab({ explanation: e.target.value }); },
               'aria-label': __alloT('stem.wave.explanation_input', 'Standing-wave explanation'), placeholder: __alloT('stem.wave.sh_explanation_placeholder', 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?'),
-              className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white',
+              className: 'w-full text-[0.75rem] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white',
               rows: 4
             }),
-            lab.understood && (lab.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+            lab.understood && (lab.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700' },
               '✓ ' + __alloT('stem.wave.sh_saved_note', 'Saved. Notice — nobody checked your answer. The point of inquiry is the thinking that produced it, not external validation.'))
           ),
-          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic' },
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.625rem] text-slate-600 italic' },
             __alloT('stem.wave.sh_design_note', 'Design note: this widget has no score, no chips, no reveal button, and no right-answer check. Everything you discover comes from manipulation and observation. That is what "inquiry" looks like when the answer-dump is removed.'))
         );
       }
@@ -3552,8 +3552,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-1' },
             WAVE_GLOSSARY.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900' }, g.term),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900' }, g.term),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.def)
               );
             })
           )
@@ -3720,9 +3720,9 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-2' },
             OPTICS_ELEMENTS.map(function(o, i) {
               return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.name),
-                React.createElement('div', { className: 'text-[11px] text-cyan-700 font-bold mb-1' }, o.behavior),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.use)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, o.name),
+                React.createElement('div', { className: 'text-[0.6875rem] text-cyan-700 font-bold mb-1' }, o.behavior),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, o.use)
               );
             })
           )
@@ -3732,9 +3732,9 @@ const d = labToolData.wave;
       function renderRefractionSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '↻ ' + __alloT('stem.wave.sec_refraction_title', 'Refractive indices')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_refraction_intro', 'Snell\'s law: n₁ sin θ₁ = n₂ sin θ₂. Light slows by factor n in material; n is wavelength-dependent (dispersion).')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_refraction_intro', 'Snell\'s law: n₁ sin θ₁ = n₂ sin θ₂. Light slows by factor n in material; n is wavelength-dependent (dispersion).')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_material', 'Material'), 'n', __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -3747,7 +3747,7 @@ const d = labToolData.wave;
                   return React.createElement('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, r.material),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, r.n),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, r.notes)
                   );
                 })
               )
@@ -3759,13 +3759,13 @@ const d = labToolData.wave;
       function renderDiffractionSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∿ ' + __alloT('stem.wave.tab_diffraction', 'Diffraction')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_diffraction_intro', 'Diffraction = bending of waves around obstacles or through openings. Most noticeable when feature size ≈ wavelength.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_diffraction_intro', 'Diffraction = bending of waves around obstacles or through openings. Most noticeable when feature size ≈ wavelength.')),
           React.createElement('div', { className: 'space-y-2' },
             DIFFRACTION_FACTS.map(function(d, i) {
               return React.createElement('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, d.fact),
-                React.createElement('div', { className: 'text-[11px] font-mono text-cyan-700 font-bold mb-1' }, d.formula),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, d.notes)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, d.fact),
+                React.createElement('div', { className: 'text-[0.6875rem] font-mono text-cyan-700 font-bold mb-1' }, d.formula),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, d.notes)
               );
             })
           )
@@ -3778,8 +3778,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-2' },
             POLARIZATION_NOTES.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, p.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, p.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.detail)
               );
             })
           )
@@ -3789,12 +3789,12 @@ const d = labToolData.wave;
       function renderQuantumSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⚛ ' + __alloT('stem.wave.tab_quantum', 'Quantum waves')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_quantum_intro', 'In quantum mechanics, every particle has wave properties. The "wave function" ψ gives probability amplitude.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_quantum_intro', 'In quantum mechanics, every particle has wave properties. The "wave function" ψ gives probability amplitude.')),
           React.createElement('div', { className: 'space-y-2' },
             QUANTUM_WAVES.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, q.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, q.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, q.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, q.detail)
               );
             })
           )
@@ -3805,26 +3805,26 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🌋 ' + __alloT('stem.wave.tab_seismicwaves', 'Seismic waves')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.tab_types', 'Wave types')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.tab_types', 'Wave types')),
             React.createElement('div', { className: 'space-y-1' },
               SEISMIC_WAVES.map(function(w, i) {
                 return React.createElement('div', { key: 'w'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, w.name),
-                    React.createElement('span', { className: 'text-[10px] text-cyan-700 ml-auto font-mono' }, w.speed)
+                    React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, w.name),
+                    React.createElement('span', { className: 'text-[0.625rem] text-cyan-700 ml-auto font-mono' }, w.speed)
                   ),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700 italic mb-0.5' }, w.type),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, w.notes)
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700 italic mb-0.5' }, w.type),
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, w.notes)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_seismology_essentials', 'Seismology essentials')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_seismology_essentials', 'Seismology essentials')),
           React.createElement('div', { className: 'space-y-1' },
             SEISMIC_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                React.createElement('div', { className: 'text-[0.6875rem] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -3835,25 +3835,25 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🏄 ' + __alloT('stem.wave.tab_oceanwaves', 'Ocean waves')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_ocean_wave_types', 'Ocean wave types')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_ocean_wave_types', 'Ocean wave types')),
             React.createElement('div', { className: 'space-y-1' },
               OCEAN_WAVES.map(function(o, i) {
                 return React.createElement('div', { key: 'o'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, o.type),
-                    React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto' }, 'T: ' + o.period + ' · λ: ' + o.wavelength)
+                    React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, o.type),
+                    React.createElement('span', { className: 'text-[0.625rem] text-cyan-700 font-mono ml-auto' }, 'T: ' + o.period + ' · λ: ' + o.wavelength)
                   ),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, o.notes)
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, o.notes)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_wave_physics_water', 'Wave physics in water')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_wave_physics_water', 'Wave physics in water')),
           React.createElement('div', { className: 'space-y-1' },
             OCEAN_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                React.createElement('div', { className: 'text-[0.6875rem] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -3863,15 +3863,15 @@ const d = labToolData.wave;
       function renderAntennasSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📶 ' + __alloT('stem.wave.sec_antennas_title', 'Antenna types')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_antennas_intro', 'Antenna size typically tied to wavelength. Lower frequency = longer wavelength = bigger antenna.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_antennas_intro', 'Antenna size typically tied to wavelength. Lower frequency = longer wavelength = bigger antenna.')),
           React.createElement('div', { className: 'space-y-2' },
             ANTENNA_TYPES.map(function(a, i) {
               return React.createElement('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, a.type),
-                  React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, a.size)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, a.type),
+                  React.createElement('span', { className: 'text-[0.625rem] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, a.size)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, a.use)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, a.use)
               );
             })
           )
@@ -3884,8 +3884,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-2' },
             RADAR_SONAR.map(function(r, i) {
               return React.createElement('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, r.system),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, r.use)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, r.system),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, r.use)
               );
             })
           )
@@ -3898,8 +3898,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-2' },
             SHOCKWAVE_FACTS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, s.fact),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, s.fact),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
               );
             })
           )
@@ -3913,10 +3913,10 @@ const d = labToolData.wave;
             WAVE_HISTORY.map(function(h2, i) {
               return React.createElement('div', { key: 'h' + i, scope: 'col', className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-0.5' },
-                  React.createElement('span', { className: 'text-[10px] font-mono text-cyan-700 font-bold' }, h2.year),
-                  React.createElement('span', { className: 'text-[12px] font-black text-cyan-900' }, h2.who)
+                  React.createElement('span', { className: 'text-[0.625rem] font-mono text-cyan-700 font-bold' }, h2.year),
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-cyan-900' }, h2.who)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, h2.what)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, h2.what)
               );
             })
           )
@@ -4005,9 +4005,9 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎧 ' + __alloT('stem.wave.sec_recordings_title', 'Audio formats + quality')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_formats', 'Common audio file formats')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_formats', 'Common audio file formats')),
             React.createElement('div', { className: 'overflow-x-auto' },
-              React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
                     [__alloT('stem.wave.col_format', 'Format'), __alloT('stem.wave.col_extension', 'Extension'), __alloT('stem.wave.col_compression', 'Compression'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4019,18 +4019,18 @@ const d = labToolData.wave;
                   AUDIO_FORMATS.map(function(a, i) {
                     return React.createElement('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                       React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.format),
-                      React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[10px]' }, a.extension),
-                      React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, a.compression),
-                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                      React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[0.625rem]' }, a.extension),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, a.compression),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, a.notes)
                     );
                   })
                 )
               )
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_bitrates', 'Common bitrates')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_bitrates', 'Common bitrates')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_quality_level', 'Quality level'), __alloT('stem.wave.col_bitrate', 'Bitrate'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4042,8 +4042,8 @@ const d = labToolData.wave;
                 AUDIO_BITRATES.map(function(b, i) {
                   return React.createElement('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.quality),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, b.bitrate),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, b.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[0.625rem]' }, b.bitrate),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, b.notes)
                   );
                 })
               )
@@ -4086,13 +4086,13 @@ const d = labToolData.wave;
       function renderOpticalFactsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '👁 ' + __alloT('stem.wave.sec_optical_facts_title', 'Optical illusions + perception phenomena')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_optical_facts_intro', 'Visual perception is active — brain interprets, fills in gaps, makes guesses. Illusions reveal the underlying processes.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_optical_facts_intro', 'Visual perception is active — brain interprets, fills in gaps, makes guesses. Illusions reveal the underlying processes.')),
           React.createElement('div', { className: 'space-y-2' },
             OPTICAL_ILLUSIONS.map(function(o, i) {
               return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, o.illusion),
-                React.createElement('div', { className: 'text-[11px] text-cyan-700 italic mb-1' }, o.description),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.explanation)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, o.illusion),
+                React.createElement('div', { className: 'text-[0.6875rem] text-cyan-700 italic mb-1' }, o.description),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, o.explanation)
               );
             })
           )
@@ -4171,7 +4171,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏲ ' + __alloT('stem.wave.sec_speeds2_title', 'Wave speeds in detail')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_wave_medium', 'Wave + medium'), __alloT('stem.wave.col_speed', 'Speed'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4183,8 +4183,8 @@ const d = labToolData.wave;
                 DETAILED_SPEEDS.map(function(s, i) {
                   return React.createElement('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.thing),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, s.speed),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[0.625rem]' }, s.speed),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, s.notes)
                   );
                 })
               )
@@ -4197,9 +4197,9 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📷 ' + __alloT('stem.wave.sec_cameras_title', 'Camera lenses + photography')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_lens_focal_lengths', 'Lens focal lengths (35mm full-frame)')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_lens_focal_lengths', 'Lens focal lengths (35mm full-frame)')),
             React.createElement('div', { className: 'overflow-x-auto' },
-              React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
                     [__alloT('stem.wave.col_lens', 'Lens'), __alloT('stem.wave.col_fov', 'Field of view'), __alloT('stem.wave.col_use', 'Use')].map(function(hh, i) {
@@ -4211,20 +4211,20 @@ const d = labToolData.wave;
                   CAMERA_LENSES.map(function(L, i) {
                     return React.createElement('tr', { key: 'L'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                       React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, L.lens),
-                      React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, L.fov),
-                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, L.use)
+                      React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[0.625rem]' }, L.fov),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem]' }, L.use)
                     );
                   })
                 )
               )
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_photography_essentials', 'Photography essentials')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_photography_essentials', 'Photography essentials')),
           React.createElement('div', { className: 'space-y-1' },
             CAMERA_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                React.createElement('div', { className: 'text-[0.6875rem] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -4297,9 +4297,9 @@ const d = labToolData.wave;
       function renderStarsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⭐ ' + __alloT('stem.wave.sec_stars_title', 'Notable stars (visible spectra)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_stars_intro', 'Star color reflects surface temperature: red coolest (~3,000 K) → orange → yellow → white → blue hottest (~30,000+ K). Spectral types O-B-A-F-G-K-M.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_stars_intro', 'Star color reflects surface temperature: red coolest (~3,000 K) → orange → yellow → white → blue hottest (~30,000+ K). Spectral types O-B-A-F-G-K-M.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Star', 'Type', 'Temp', 'Distance', 'Notes'].map(function(hh, i) {
@@ -4311,10 +4311,10 @@ const d = labToolData.wave;
                 STAR_DATA.map(function(s, i) {
                   return React.createElement('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.star),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[10px]' }, s.type),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, s.temp),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, s.distance),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[0.625rem]' }, s.type),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, s.temp),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, s.distance),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, s.notes)
                   );
                 })
               )
@@ -4327,28 +4327,28 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📺 ' + __alloT('stem.wave.sec_tvfreq_title', 'Display technologies + resolutions')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_display_types', 'Display types')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_display_types', 'Display types')),
             React.createElement('div', { className: 'space-y-1' },
               SCREEN_TYPES.map(function(s, i) {
                 return React.createElement('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, s.type),
-                    React.createElement('span', { className: 'text-[10px] font-mono text-cyan-700 ml-auto' }, s.refresh)
+                    React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, s.type),
+                    React.createElement('span', { className: 'text-[0.625rem] font-mono text-cyan-700 ml-auto' }, s.refresh)
                   ),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, s.notes)
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, s.notes)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_standard_resolutions', 'Standard resolutions')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_standard_resolutions', 'Standard resolutions')),
           React.createElement('div', { className: 'space-y-1' },
             SCREEN_RESOLUTIONS.map(function(r, i) {
               return React.createElement('div', { key: 'r'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                  React.createElement('span', { className: 'text-[11px] font-black text-cyan-900' }, r.name),
-                  React.createElement('span', { className: 'text-[10px] font-mono text-cyan-700 ml-auto font-bold' }, r.resolution)
+                  React.createElement('span', { className: 'text-[0.6875rem] font-black text-cyan-900' }, r.name),
+                  React.createElement('span', { className: 'text-[0.625rem] font-mono text-cyan-700 ml-auto font-bold' }, r.resolution)
                 ),
-                React.createElement('div', { className: 'text-[10px] text-slate-700' }, r.notes)
+                React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, r.notes)
               );
             })
           )
@@ -4358,9 +4358,9 @@ const d = labToolData.wave;
       function renderNoiseSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🔊 ' + __alloT('stem.wave.sec_noise_title', 'Sound levels (dB SPL)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_noise_intro', 'Decibels are logarithmic: +10 dB ≈ 10× sound intensity but ~2× perceived loudness. Sustained exposure >85 dB damages hearing.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_noise_intro', 'Decibels are logarithmic: +10 dB ≈ 10× sound intensity but ~2× perceived loudness. Sustained exposure >85 dB damages hearing.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_source', 'Source'), __alloT('stem.wave.col_level', 'Level'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4372,8 +4372,8 @@ const d = labToolData.wave;
                 NOISE_LEVELS.map(function(n, i) {
                   return React.createElement('tr', { key: 'n'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, n.source),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, n.db),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, n.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[0.625rem]' }, n.db),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, n.notes)
                   );
                 })
               )
@@ -4501,7 +4501,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🦇 ' + __alloT('stem.wave.sec_animals_title', 'Animal hearing ranges')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_animal', 'Animal'), __alloT('stem.wave.col_hearing_range', 'Hearing range'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4514,7 +4514,7 @@ const d = labToolData.wave;
                   return React.createElement('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, a.animal),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, a.range),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, a.notes)
                   );
                 })
               )
@@ -4527,7 +4527,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎻 ' + __alloT('stem.wave.sec_instrumentfreq_title', 'Musical instrument frequencies')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_instrument', 'Instrument'), __alloT('stem.wave.col_range', 'Range'), __alloT('stem.wave.col_notes_notation', 'Notes (notation)'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4539,9 +4539,9 @@ const d = labToolData.wave;
                 INSTRUMENT_FREQS.map(function(I, i) {
                   return React.createElement('tr', { key: 'I'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, I.instrument),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, I.range),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, I.fundamental),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, I.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[0.625rem]' }, I.range),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, I.fundamental),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, I.notes)
                   );
                 })
               )
@@ -4553,9 +4553,9 @@ const d = labToolData.wave;
       function renderRadioSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📻 ' + __alloT('stem.wave.sec_radio_bands_title', 'Radio frequency bands (ITU)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_radio_bands_intro', 'EM waves below visible light, classified by frequency. Lower bands penetrate further; higher bands carry more data.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_radio_bands_intro', 'EM waves below visible light, classified by frequency. Lower bands penetrate further; higher bands carry more data.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_band', 'Band'), __alloT('stem.wave.col_frequency', 'Frequency'), __alloT('stem.wave.col_wavelength', 'Wavelength'), __alloT('stem.wave.col_use', 'Use')].map(function(hh, i) {
@@ -4567,9 +4567,9 @@ const d = labToolData.wave;
                 RADIO_BANDS.map(function(b, i) {
                   return React.createElement('tr', { key: 'b'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.band),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, b.range),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, b.wavelength),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, b.use)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[0.625rem]' }, b.range),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, b.wavelength),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem]' }, b.use)
                   );
                 })
               )
@@ -4582,7 +4582,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 ' + __alloT('stem.wave.sec_colorhex_title', 'Named colors + their wavelengths')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_color', 'Color'), __alloT('stem.wave.col_hex', 'Hex'), 'λ peak', __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4595,8 +4595,8 @@ const d = labToolData.wave;
                   return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800', style: { borderLeft: '8px solid ' + c.hex } }, c.name),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.hex),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[10px]' }, c.wavelength),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 text-[0.625rem]' }, c.wavelength),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -4609,7 +4609,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⏱ ' + __alloT('stem.wave.sec_wavespeed_title', 'Wave speeds in different media')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Medium', 'Speed', 'Notes'].map(function(hh, i) {
@@ -4621,8 +4621,8 @@ const d = labToolData.wave;
                 WAVE_SPEEDS.map(function(w, i) {
                   return React.createElement('tr', { key: 'w'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, w.medium),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[10px]' }, w.speed),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, w.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold text-[0.625rem]' }, w.speed),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, w.notes)
                   );
                 })
               )
@@ -4808,15 +4808,15 @@ const d = labToolData.wave;
       function renderColors2Section() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎨 ' + __alloT('stem.wave.tab_colormodels', 'Color models')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_colors2_intro', 'Different ways to describe color numerically. Each is suited to a specific medium or application.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_colors2_intro', 'Different ways to describe color numerically. Each is suited to a specific medium or application.')),
           React.createElement('div', { className: 'space-y-2' },
             COLOR_MODELS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.model),
-                  React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, c.use)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.model),
+                  React.createElement('span', { className: 'text-[0.625rem] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, c.use)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.notes)
               );
             })
           )
@@ -4827,25 +4827,25 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '⫸ ' + __alloT('stem.wave.tab_lasers', 'Lasers')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_laser_types', 'Common laser types')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_common_laser_types', 'Common laser types')),
             React.createElement('div', { className: 'space-y-1' },
               LASER_TYPES.map(function(L, i) {
                 return React.createElement('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, L.type),
-                    React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto' }, L.wavelength + ' · ' + L.power)
+                    React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, L.type),
+                    React.createElement('span', { className: 'text-[0.625rem] text-cyan-700 font-mono ml-auto' }, L.wavelength + ' · ' + L.power)
                   ),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, L.use)
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, L.use)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_laser_physics', 'Laser physics essentials')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.wave.sec_laser_physics', 'Laser physics essentials')),
           React.createElement('div', { className: 'space-y-1' },
             LASER_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[11px] font-black text-cyan-900 mb-0.5' }, f.fact),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                React.createElement('div', { className: 'text-[0.6875rem] font-black text-cyan-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -4858,8 +4858,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-1' },
             FIBER_OPTICS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, f.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, f.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -4870,7 +4870,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 ' + __alloT('stem.wave.sec_protocols_title', 'Wireless communication protocols')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_standard', 'Standard'), __alloT('stem.wave.col_freq_band', 'Frequency band'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4883,7 +4883,7 @@ const d = labToolData.wave;
                   return React.createElement('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.name),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, p.band),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, p.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, p.notes)
                   );
                 })
               )
@@ -4898,8 +4898,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-1' },
             MUSIC_ACOUSTICS.map(function(m, i) {
               return React.createElement('div', { key: 'm'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, m.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, m.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.detail)
               );
             })
           )
@@ -4912,9 +4912,9 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-2' },
             EAR_PARTS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, p.part),
-                React.createElement('div', { className: 'text-[11px] text-cyan-700 font-bold mb-1' }, p.function),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, p.notes)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, p.part),
+                React.createElement('div', { className: 'text-[0.6875rem] text-cyan-700 font-bold mb-1' }, p.function),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.notes)
               );
             })
           )
@@ -4928,11 +4928,11 @@ const d = labToolData.wave;
             MEDICAL_IMAGING.map(function(m, i) {
               return React.createElement('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, m.method),
-                  React.createElement('span', { className: 'text-[10px] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, m.radiation)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, m.method),
+                  React.createElement('span', { className: 'text-[0.625rem] text-cyan-700 font-mono ml-auto px-2 py-0.5 rounded bg-cyan-100' }, m.radiation)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, __alloT('stem.wave.label_use_colon', 'Use: ')), m.use),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.notes)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, __alloT('stem.wave.label_use_colon', 'Use: ')), m.use),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.notes)
               );
             })
           )
@@ -4945,8 +4945,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-1' },
             SATELLITE_FACTS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, s.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, s.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, s.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
               );
             })
           )
@@ -4959,8 +4959,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-1' },
             GW_FACTS.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-cyan-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, g.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, g.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.detail)
               );
             })
           )
@@ -4971,7 +4971,7 @@ const d = labToolData.wave;
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '∑ ' + __alloT('stem.wave.sec_units_title', 'Wave units & symbols')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_quantity', 'Quantity'), __alloT('stem.wave.col_symbol', 'Symbol'), __alloT('stem.wave.col_unit', 'Unit'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
@@ -4985,7 +4985,7 @@ const d = labToolData.wave;
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, u.quantity),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-cyan-700 font-bold' }, u.symbol),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, u.unit),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, u.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, u.notes)
                   );
                 })
               )
@@ -5000,8 +5000,8 @@ const d = labToolData.wave;
           React.createElement('div', { className: 'space-y-2' },
             WAVE_CAREERS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-cyan-900 mb-0.5' }, c.career),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.use)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-cyan-900 mb-0.5' }, c.career),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.use)
               );
             })
           )

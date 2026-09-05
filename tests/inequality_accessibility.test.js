@@ -26,6 +26,6 @@ describe('Inequality Lab text accessibility', () => {
     loadTool('stem_lab/stem_tool_inequality.js', 'inequality');
     const html = renderTool('inequality', { inequality: {} });
     expect(html).not.toMatch(/text-\[(?:[0-9])px\]/);
-    expect(html).toContain('text-[10px]');
+    expect(html).toContain('text-[0.625rem]');
   });
 });

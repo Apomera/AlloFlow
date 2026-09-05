@@ -9050,7 +9050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             ];
             var toneCol = { harm: '#fb7185', origin: '#fcd34d', protect: '#6ee7b7' };
             return h('div', { className: 'mb-4 rounded-xl bg-slate-900/50 border border-slate-700 p-3', role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.timeline_1908_ellis_island_binet_trans', 'Timeline: 1908 Ellis Island Binet translations, 1916 Stanford-Binet, 1927 Buck v. Bell, 1979 Larry P. v. Riles, 1990 ADA, 2002 Atkins v. Virginia.') },
-              h('div', { className: 'text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2' }, __alloT('stem.assessmentliteracy.the_historical_shadow', '🕰️ The historical shadow')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-slate-400 uppercase tracking-widest mb-2' }, __alloT('stem.assessmentliteracy.the_historical_shadow', '🕰️ The historical shadow')),
               EV.map(function(e, i) {
                 var col = toneCol[e.tone];
                 return h('div', { key: i, className: 'flex items-baseline gap-2 py-1', style: { borderLeft: '2px solid ' + col, paddingLeft: 10, marginLeft: 4 } },
@@ -9058,7 +9058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   h('span', { className: 'text-xs text-slate-200 leading-snug' }, e.icon + ' ' + e.t)
                 );
               }),
-              h('div', { className: 'flex flex-wrap gap-3 mt-2 pl-3 text-[9px]' },
+              h('div', { className: 'flex flex-wrap gap-3 mt-2 pl-3 text-[0.5625rem]' },
                 h('span', { style: { color: '#fb7185', fontWeight: 700 } }, __alloT('stem.assessmentliteracy.harm', '● harm')),
                 h('span', { style: { color: '#fcd34d', fontWeight: 700 } }, __alloT('stem.assessmentliteracy.origin', '● origin')),
                 h('span', { style: { color: '#6ee7b7', fontWeight: 700 } }, __alloT('stem.assessmentliteracy.protection', '● protection')))
@@ -9991,7 +9991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('div', { className: 'text-xs text-slate-300' }, 'of retests yield a different 4-letter type')
             ),
             h('div', { className: 'space-y-1.5' },
-              h('div', { className: 'text-[11px] text-slate-400 mb-1' }, 'How often each dimension’s letter flips on retest:'),
+              h('div', { className: 'text-[0.6875rem] text-slate-400 mb-1' }, 'How often each dimension’s letter flips on retest:'),
               Object.keys(sim.letterFlipPct).map(function(k) {
                 var v = sim.letterFlipPct[k];
                 return h('div', { key: k, className: 'flex items-center gap-2' },
@@ -17292,7 +17292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return { fill: '#cbd5e1', border: 'var(--allo-stem-border, #475569)' };
           }
           return h('div', { className: 'p-4 rounded-xl bg-slate-900/60 border border-amber-500/30' },
-            h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-3' }, '📏 Predictive validity at a glance'),
+            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-amber-300 mb-3' }, '📏 Predictive validity at a glance'),
             h('div', { className: 'space-y-2' },
               HIRING_METHODS.map(function(m) {
                 var r = parseR(m.r);
@@ -17322,7 +17322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 );
               })
             ),
-            h('div', { className: 'mt-2 flex justify-between text-[10px] font-mono text-slate-300' },
+            h('div', { className: 'mt-2 flex justify-between text-[0.625rem] font-mono text-slate-300' },
               h('span', null, '0.0'),
               h('span', null, '0.2 small'),
               h('span', null, '0.4 medium'),
@@ -18148,7 +18148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'A psychoeducational report is a dense legal-clinical document that parents, teachers, and advocates often need to interpret without training. Here\'s the anatomy — what each section should contain and the red flags to watch for.'),
         // Step-flow overview lifts the BirdLab career-pathway pattern.
         h('div', { className: 'p-4 rounded-2xl bg-gradient-to-br from-slate-900/80 to-sky-950/60 border border-sky-500/40' },
-          h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-sky-300 mb-3' }, 'The 8-section flow'),
+          h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-sky-300 mb-3' }, 'The 8-section flow'),
           h('div', { className: 'flex flex-wrap items-stretch gap-1.5' },
             REPORT_ANATOMY.map(function(r, i) {
               var isLast = i === REPORT_ANATOMY.length - 1;

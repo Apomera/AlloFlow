@@ -11,7 +11,7 @@ describe('ChemBalance reduced-motion accessibility', () => {
 
   it('disables the bonus pulse when the user requests reduced motion', () => {
     expect(source).toContain(
-      "className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse motion-reduce:animate-none'",
+      "className: 'text-[0.6875rem] font-bold text-fuchsia-600 animate-pulse motion-reduce:animate-none'",
     );
   });
 

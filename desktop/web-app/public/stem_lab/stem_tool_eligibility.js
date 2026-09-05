@@ -796,7 +796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
               ? __alloT('stem.elig.cats_err', 'The official text could not be loaded, so no categories are shown. This tool quotes 34 CFR 300.8 rather than restating it from memory.')
               : __alloT('stem.elig.cats_loading', 'Loading the official text…'))
           : h('div', null,
-            h('p', { className: 'text-[11px] mb-2', style: { color: pal.muted } },
+            h('p', { className: 'text-[0.6875rem] mb-2', style: { color: pal.muted } },
               __alloT('stem.elig.cats_src', 'Quoted verbatim from') + ' 34 CFR § 300.8 — ' + (_idea.currentAsOf ? __alloT('stem.elig.current', 'current as of') + ' ' + _idea.currentAsOf : '') ),
             h('div', { className: 'flex flex-col gap-1.5' },
               cats.map(function(c) {
@@ -808,11 +808,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
                     className: 'w-full text-left rounded-lg px-3 py-1.5 text-xs font-bold border',
                     style: open ? { background: pal.btn, color: '#fff', borderColor: pal.btn } : { background: pal.panel, color: pal.text, borderColor: pal.border }
                   }, c.name),
-                  open ? h('p', { className: 'text-[12px] leading-relaxed px-3 py-2', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, c.text) : null
+                  open ? h('p', { className: 'text-[0.75rem] leading-relaxed px-3 py-2', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } }, c.text) : null
                 );
               })
             ),
-            h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } },
+            h('p', { className: 'text-[0.6875rem] mt-2', style: { color: pal.muted } },
               __alloT('stem.elig.cats_note', 'These are EDUCATIONAL definitions applied by a team — not clinical criteria, and not the same words a clinician uses.'))
           )
         ),
@@ -836,7 +836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
         !isBrief && h('section', { className: 'rounded-2xl p-4 mb-5', style: { background: pal.card, border: '2px solid ' + pal.border }, 'aria-labelledby': 'elig-cases-title' },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1' },
             h('h3', { id: 'elig-cases-title', className: 'text-sm font-black' }, __alloT('stem.elig.cases', 'What questions and evidence are still open?')),
-            h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (cur + 1) + ' / ' + SCENARIOS.length)),
+            h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.muted } }, (cur + 1) + ' / ' + SCENARIOS.length)),
           h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
             __alloT('stem.elig.cases_sub', 'Select every question you would carry into the team discussion, then reveal a suggested starting set. There is no eligibility score, and the suggestions are not exhaustive.')),
           sc ? h('div', { className: 'rounded-xl p-3 mb-3 text-sm leading-relaxed', style: { background: pal.panel, border: '1px solid ' + pal.border } }, sc.text) : null,
@@ -901,7 +901,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
             h('time', { dateTime: SOURCE_REVIEWED_DATE, className: 'font-bold' }, SOURCE_REVIEWED_LABEL),
             ' Regulations and official guidance can change; confirm the current federal text, controlling state rules, and local procedures.'
           ),
-          _idea && (_idea.currentAsOf || _idea.retrievedAt) ? h('p', { className: 'text-[11px] mb-3', style: { color: pal.muted } },
+          _idea && (_idea.currentAsOf || _idea.retrievedAt) ? h('p', { className: 'text-[0.6875rem] mb-3', style: { color: pal.muted } },
             'Bundled IDEA corpus: ' +
             (_idea.currentAsOf ? 'currentAsOf ' + _idea.currentAsOf : '') +
             (_idea.currentAsOf && _idea.retrievedAt ? '; ' : '') +
@@ -920,7 +920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
             })
           )
         ),
-        h('p', { className: 'text-[11px] mt-3 leading-snug', style: { color: pal.muted } },
+        h('p', { className: 'text-[0.6875rem] mt-3 leading-snug', style: { color: pal.muted } },
           __alloT('stem.elig.disclaimer', 'Educational information, not legal or clinical advice. This guide never diagnoses a student or decides eligibility, services, goals, or placement. Federal sources provide a baseline; state and district procedures vary. Do not enter student names or report text into this guide.'))
       );
     }

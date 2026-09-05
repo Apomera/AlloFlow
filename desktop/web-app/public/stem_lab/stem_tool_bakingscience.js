@@ -510,7 +510,7 @@
             h('section', { 'data-baking-kitchen-bench': 'true', className: 'mb-5 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-900 via-orange-900 to-slate-900 p-4 text-white shadow-lg' },
               h('div', { className: 'grid gap-3 lg:grid-cols-[1.2fr_0.8fr]' },
                 h('div', null,
-                  h('div', { className: 'text-[10px] font-black uppercase text-amber-200' }, tr('baking.kitchen_bench', 'Kitchen bench')),
+                  h('div', { className: 'text-[0.625rem] font-black uppercase text-amber-200' }, tr('baking.kitchen_bench', 'Kitchen bench')),
                   h('div', { className: 'text-xl font-black leading-tight' }, tr('baking.kitchen_bench_title', 'Start with a visible reaction')),
                   h('p', { className: 'mt-1 mb-3 text-xs leading-relaxed text-amber-50/85' },
                     tr('baking.kitchen_bench_copy', 'Choose a hands-on loop first: bubbles, emulsions, scaling, or browning. The full activity list stays below for deeper practice.')),
@@ -522,7 +522,7 @@
                         className: 'min-h-[76px] rounded-xl border border-white/15 bg-white/10 p-3 text-left text-white transition hover:bg-white/15 active:scale-[0.99]' },
                         h('div', { className: 'text-lg' }, st.icon),
                         h('div', { className: 'text-xs font-black' }, label),
-                        h('div', { className: 'mt-1 text-[10px] leading-snug text-amber-100/85' }, subtoolDesc(st))
+                        h('div', { className: 'mt-1 text-[0.625rem] leading-snug text-amber-100/85' }, subtoolDesc(st))
                       );
                     })
                   )
@@ -536,7 +536,7 @@
                   ].map(function(card) {
                     return h('div', { key: card.label, className: 'rounded-xl border border-white/10 bg-slate-950/30 p-3 text-center' },
                       h('div', { className: 'text-2xl font-black tabular-nums text-amber-100' }, card.value),
-                      h('div', { className: 'text-[10px] font-black uppercase text-amber-200/80' }, card.label)
+                      h('div', { className: 'text-[0.625rem] font-black uppercase text-amber-200/80' }, card.label)
                     );
                   })
                 )
@@ -565,31 +565,31 @@
             h('div', { className: 'mt-8 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2' },
               h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-amber-700 tabular-nums' }, ext.leaveningRuns || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-amber-800' }, tr('baking.stats.reactions', 'Reactions'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-amber-800' }, tr('baking.stats.reactions', 'Reactions'))
               ),
               h('div', { className: 'rounded-xl bg-yellow-50 border border-yellow-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-yellow-700 tabular-nums' }, ext.emulsionsSolved || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-yellow-800' }, tr('baking.stats.emulsions', 'Emulsions'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-yellow-800' }, tr('baking.stats.emulsions', 'Emulsions'))
               ),
               h('div', { className: 'rounded-xl bg-orange-50 border border-orange-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-orange-700 tabular-nums' }, ext.recipesScaled || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-800' }, tr('baking.stats.recipes_scaled', 'Recipes scaled'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-orange-800' }, tr('baking.stats.recipes_scaled', 'Recipes scaled'))
               ),
               h('div', { className: 'rounded-xl bg-rose-50 border border-rose-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-rose-700 tabular-nums' }, (ext.ovenEventsFound || []).length + '/' + OVEN_EVENTS.length),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-rose-800' }, tr('baking.stats.oven_events', 'Oven events'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-rose-800' }, tr('baking.stats.oven_events', 'Oven events'))
               ),
               h('div', { className: 'rounded-xl bg-pink-50 border border-pink-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-pink-700 tabular-nums' }, ext.diagnosesCorrect || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-800' }, tr('baking.stats.diagnoses', 'Diagnoses'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-pink-800' }, tr('baking.stats.diagnoses', 'Diagnoses'))
               ),
               h('div', { className: 'rounded-xl bg-teal-50 border border-teal-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-teal-700 tabular-nums' }, ext.glutenMatches || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-teal-800' }, tr('baking.stats.gluten_matches', 'Gluten matches'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-teal-800' }, tr('baking.stats.gluten_matches', 'Gluten matches'))
               ),
               h('div', { className: 'rounded-xl bg-orange-50 border border-orange-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-orange-700 tabular-nums' }, ext.browningPerfections || 0),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-orange-800' }, tr('baking.stats.brownings', 'Perfect bakes'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-orange-800' }, tr('baking.stats.brownings', 'Perfect bakes'))
               )
             )
           );
@@ -734,7 +734,7 @@
                       },
                         h('div', { className: 'text-2xl mb-1', 'aria-hidden': true }, b.emoji),
                         h('div', null, b.name),
-                        h('div', { className: 'text-[9px] font-normal mt-0.5 opacity-80' }, b.complete ? tr('baking.leavening.complete_base', 'complete') : tr('baking.leavening.needs_acid', 'needs acid'))
+                        h('div', { className: 'text-[0.5625rem] font-normal mt-0.5 opacity-80' }, b.complete ? tr('baking.leavening.complete_base', 'complete') : tr('baking.leavening.needs_acid', 'needs acid'))
                       );
                     })
                   )
@@ -792,11 +792,11 @@
                 ),
                 // Bake verdict card
                 yieldPct > 0 && h('div', { className: 'rounded-xl bg-white/70 border border-amber-200 p-2.5' },
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (overLeavened ? 'text-red-600' : 'text-amber-700') + ' mb-0.5' }, tr('baking.leavening.verdict_title', 'Bake verdict')),
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider ' + (overLeavened ? 'text-red-600' : 'text-amber-700') + ' mb-0.5' }, tr('baking.leavening.verdict_title', 'Bake verdict')),
                   h('div', { className: 'text-xs font-semibold ' + (overLeavened ? 'text-red-800' : 'text-slate-800') }, verdictText)
                 ),
                 h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, explain),
-                h('div', { className: 'text-[11px] text-slate-500 italic' }, acid.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-500 italic' }, acid.notes)
               )
             ),
             // Science explainer
@@ -922,8 +922,8 @@
                   broken ? (
                     // Separated
                     h('div', { className: 'absolute inset-0 flex flex-col' },
-                      h('div', { style: { flex: oilPct, background: '#fcd34d' }, className: 'flex items-center justify-center text-[10px] font-bold text-amber-900' }, tr('baking.emulsion.oil_layer', 'Oil layer')),
-                      h('div', { style: { flex: waterPct, background: '#bae6fd' }, className: 'flex items-center justify-center text-[10px] font-bold text-sky-900' }, tr('baking.emulsion.water_layer', 'Water layer'))
+                      h('div', { style: { flex: oilPct, background: '#fcd34d' }, className: 'flex items-center justify-center text-[0.625rem] font-bold text-amber-900' }, tr('baking.emulsion.oil_layer', 'Oil layer')),
+                      h('div', { style: { flex: waterPct, background: '#bae6fd' }, className: 'flex items-center justify-center text-[0.625rem] font-bold text-sky-900' }, tr('baking.emulsion.water_layer', 'Water layer'))
                     )
                   ) : (
                     // Mixed
@@ -1062,7 +1062,7 @@
                           onChange: function(e) { upd('scaleLockFlourGrams', parseInt(e.target.value, 10)); },
                           className: 'w-full accent-orange-500'
                         }),
-                        h('div', { className: 'mt-1 text-[10px] text-slate-500 italic' }, tr('baking.scaler.lock_flour_hint', 'Pick a flour amount and everything else scales by baker\u2019s %.'))
+                        h('div', { className: 'mt-1 text-[0.625rem] text-slate-500 italic' }, tr('baking.scaler.lock_flour_hint', 'Pick a flour amount and everything else scales by baker\u2019s %.'))
                       )
                     : h('div', null,
                         h('div', { className: 'flex items-center justify-between mb-1' },
@@ -1092,7 +1092,7 @@
                       }, u);
                     })
                   ),
-                  unit === 'cups' && h('div', { className: 'mt-2 text-[10px] text-slate-500 italic' }, tr('baking.scaler.cup_warning', 'Cup conversions are approximate \u2014 always weigh for precision.'))
+                  unit === 'cups' && h('div', { className: 'mt-2 text-[0.625rem] text-slate-500 italic' }, tr('baking.scaler.cup_warning', 'Cup conversions are approximate \u2014 always weigh for precision.'))
                 ),
                 // Hydration readout (only meaningful when the recipe has a liquid)
                 hydrationPct > 0 && h('div', { className: 'rounded-2xl bg-gradient-to-br from-sky-50 to-blue-50 border-2 border-sky-200 p-4' },
@@ -1106,7 +1106,7 @@
                       style: { width: Math.min(100, hydrationPct) + '%', transition: 'width 0.4s ease' }
                     })
                   ),
-                  h('div', { className: 'mt-1 text-[10px] text-slate-500' }, tr('baking.scaler.hydration_hint', 'Liquid weight \u00f7 flour weight. Higher hydration = more open crumb.'))
+                  h('div', { className: 'mt-1 text-[0.625rem] text-slate-500' }, tr('baking.scaler.hydration_hint', 'Liquid weight \u00f7 flour weight. Higher hydration = more open crumb.'))
                 ),
                 h('button', {
                   onClick: applyScale,
@@ -1120,7 +1120,7 @@
                   h('div', { className: 'text-xs text-orange-700' }, tr('baking.scaler.flour_anchor', 'Flour = 100% (baker\u2019s %)'))
                 ),
                 h('table', { className: 'w-full text-sm' },
-                  h('thead', { className: 'bg-slate-50 text-[10px] uppercase tracking-wider text-slate-600' },
+                  h('thead', { className: 'bg-slate-50 text-[0.625rem] uppercase tracking-wider text-slate-600' },
                     h('tr', null,
                       h('th', { scope: 'col', className: 'text-left px-3 py-2' }, tr('baking.scaler.col_ingredient', 'Ingredient')),
                       h('th', { scope: 'col', className: 'text-right px-3 py-2' }, tr('baking.scaler.col_amount', 'Amount')),
@@ -1265,7 +1265,7 @@
                   className: 'relative w-full accent-rose-500'
                 })
               ),
-              h('div', { className: 'flex justify-between text-[10px] text-rose-300/70 mt-1' },
+              h('div', { className: 'flex justify-between text-[0.625rem] text-rose-300/70 mt-1' },
                 h('span', null, __alloT('stem.bakingscience.cold', 'Cold')),
                 h('span', null, __alloT('stem.bakingscience.warm', 'Warm')),
                 h('span', null, __alloT('stem.bakingscience.baking', 'Baking')),
@@ -1278,7 +1278,7 @@
                   var inZone = temp >= z.from && temp <= Math.max(z.to, z.from + 5);
                   return h('span', {
                     key: z.id,
-                    className: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ' + (inZone ? 'bg-white text-rose-900 shadow scale-105' : 'bg-white/10 text-rose-200/80'),
+                    className: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold transition-all ' + (inZone ? 'bg-white text-rose-900 shadow scale-105' : 'bg-white/10 text-rose-200/80'),
                     title: formatTemp(z.from) + (z.to !== z.from ? '\u2013' + formatTemp(z.to) : '')
                   },
                     h('span', { className: 'w-2 h-2 rounded-full', style: { background: z.color } }),
@@ -1344,7 +1344,7 @@
                     h('div', { className: 'flex-grow' },
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('strong', { className: passed ? 'text-rose-900' : 'text-slate-500' }, e.label),
-                        h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded-full ' + (passed ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-600') }, formatTemp(e.temp))
+                        h('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full ' + (passed ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-600') }, formatTemp(e.temp))
                       ),
                       h('div', { className: 'text-xs text-slate-600 mt-0.5' }, e.body)
                     )
@@ -1460,21 +1460,21 @@
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4' },
               h('div', { className: 'rounded-xl bg-pink-50 border border-pink-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-pink-700 tabular-nums' }, (idx + 1) + '/' + order.length),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-800' }, tr('baking.diagnosis.scenario', 'Scenario'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-pink-800' }, tr('baking.diagnosis.scenario', 'Scenario'))
               ),
               h('div', { className: 'rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-emerald-700 tabular-nums' }, correct),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-800' }, tr('baking.diagnosis.correct', 'Correct'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-emerald-800' }, tr('baking.diagnosis.correct', 'Correct'))
               ),
               h('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-indigo-700 tabular-nums' }, accuracy + '%'),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-indigo-800' }, tr('baking.diagnosis.accuracy', 'Accuracy'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-indigo-800' }, tr('baking.diagnosis.accuracy', 'Accuracy'))
               ),
               h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-center' },
                 h('div', { className: 'text-xl font-black text-amber-700 tabular-nums flex items-center justify-center gap-1' },
                   streak >= 2 ? '\uD83D\uDD25' : '', streak
                 ),
-                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-amber-800' }, tr('baking.diagnosis.streak', 'Streak'))
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-amber-800' }, tr('baking.diagnosis.streak', 'Streak'))
               )
             ),
             // Symptom card
@@ -1483,8 +1483,8 @@
                 h('div', { className: 'text-4xl shrink-0', 'aria-hidden': true }, '\uD83E\uDD14'),
                 h('div', { className: 'flex-grow' },
                   h('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
-                    h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-pink-700' }, tr('baking.diagnosis.symptom', 'Symptom')),
-                    h('span', { className: 'text-[10px] font-bold uppercase tracking-wider bg-' + meta.color + '-100 text-' + meta.color + '-700 border border-' + meta.color + '-200 px-2 py-0.5 rounded-full' }, meta.label)
+                    h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-pink-700' }, tr('baking.diagnosis.symptom', 'Symptom')),
+                    h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider bg-' + meta.color + '-100 text-' + meta.color + '-700 border border-' + meta.color + '-200 px-2 py-0.5 rounded-full' }, meta.label)
                   ),
                   h('p', { className: 'text-lg font-semibold text-slate-900 leading-snug' }, '\u201C' + scenario.symptom + '\u201D')
                 )
@@ -1492,7 +1492,7 @@
             ),
             // Options
             h('div', { className: 'space-y-2 mb-4' },
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-800 mb-1' }, tr('baking.diagnosis.pick_cause', 'Pick the most likely cause')),
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-800 mb-1' }, tr('baking.diagnosis.pick_cause', 'Pick the most likely cause')),
               scenario.options.map(function(opt) {
                 var isSelected = selected === opt.id;
                 var isCorrect = opt.correct;
@@ -1540,7 +1540,7 @@
               }, tr('baking.diagnosis.next', 'Next scenario') + ' \u2192')
             ),
             // Best-streak note
-            ext.diagBestStreak > 0 && h('div', { className: 'mt-4 text-center text-[11px] text-slate-500' },
+            ext.diagBestStreak > 0 && h('div', { className: 'mt-4 text-center text-[0.6875rem] text-slate-500' },
               tr('baking.diagnosis.best_streak', 'Best streak this session: {n}', { n: ext.diagBestStreak })
             )
           );
@@ -1687,7 +1687,7 @@
                       return h('button', {
                         key: fp.id,
                         onClick: function() { upd('glutenProtein', fp.protein); },
-                        className: 'px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ' + (active ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-700 hover:bg-teal-100')
+                        className: 'px-2 py-0.5 rounded-full text-[0.625rem] font-bold transition-colors ' + (active ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-700 hover:bg-teal-100')
                       }, fp.label);
                     })
                   )
@@ -1708,7 +1708,7 @@
                     onChange: function(e) { upd('glutenHydration', parseInt(e.target.value, 10)); },
                     className: 'w-full accent-sky-500'
                   }),
-                  h('div', { className: 'mt-1 flex justify-between text-[10px] text-slate-500' },
+                  h('div', { className: 'mt-1 flex justify-between text-[0.625rem] text-slate-500' },
                     h('span', null, tr('baking.gluten.hydr_dry', 'Stiff')),
                     h('span', null, tr('baking.gluten.hydr_sweet', 'Sweet spot')),
                     h('span', null, tr('baking.gluten.hydr_wet', 'Batter'))
@@ -1730,7 +1730,7 @@
                     onChange: function(e) { upd('glutenKnead', parseInt(e.target.value, 10)); },
                     className: 'w-full accent-emerald-500'
                   }),
-                  overworked && h('div', { className: 'mt-1 text-[10px] font-bold text-red-600 flex items-center gap-1' },
+                  overworked && h('div', { className: 'mt-1 text-[0.625rem] font-bold text-red-600 flex items-center gap-1' },
                     '\u26A0\uFE0F ', tr('baking.gluten.over_warning', 'Past 15 min risks over-kneading.')
                   )
                 ),
@@ -1777,7 +1777,7 @@
                    verdictTone === 'teal' ? 'bg-teal-50 border-teal-300 text-teal-900' :
                    'bg-emerald-50 border-emerald-300 text-emerald-900')
                 },
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-70' }, tr('baking.gluten.verdict', 'Best for')),
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-0.5 opacity-70' }, tr('baking.gluten.verdict', 'Best for')),
                   h('div', { className: 'text-sm font-bold' }, verdictLabel)
                 ),
                 // Factor breakdown mini-bars
@@ -1787,7 +1787,7 @@
                     { label: tr('baking.gluten.hydration', 'Hydration'),     val: hydrationFactor,  color: 'sky' },
                     { label: tr('baking.gluten.knead',     'Knead time'),    val: kneadFactor,      color: 'emerald' }
                   ].map(function(f, i) {
-                    return h('div', { key: i, className: 'flex items-center gap-2 text-[11px]' },
+                    return h('div', { key: i, className: 'flex items-center gap-2 text-[0.6875rem]' },
                       h('div', { className: 'w-24 font-bold text-slate-700 shrink-0' }, f.label),
                       h('div', { className: 'flex-grow h-1.5 rounded-full bg-slate-200 overflow-hidden' },
                         h('div', { className: 'h-full bg-' + f.color + '-500 transition-all', style: { width: Math.round(f.val * 100) + '%' } })
@@ -1812,8 +1812,8 @@
                     title: tgt.note
                   },
                     h('div', { className: 'text-sm font-black ' + (match ? 'text-emerald-800' : 'text-slate-800') }, tgt.label),
-                    h('div', { className: 'text-[10px] text-slate-500 mt-0.5 leading-snug' }, __alloT('stem.bakingscience.' + (tgt.id) + '_note', tgt.note)),
-                    h('div', { className: 'mt-1 text-[10px] font-bold ' + (match ? 'text-emerald-700' : 'text-slate-500') },
+                    h('div', { className: 'text-[0.625rem] text-slate-500 mt-0.5 leading-snug' }, __alloT('stem.bakingscience.' + (tgt.id) + '_note', tgt.note)),
+                    h('div', { className: 'mt-1 text-[0.625rem] font-bold ' + (match ? 'text-emerald-700' : 'text-slate-500') },
                       match ? ('\u2713 ' + tr('baking.gluten.match', 'Match!')) : (tr('baking.gluten.distance', 'Distance: {n}', { n: dist }))
                     )
                   );
@@ -1974,7 +1974,7 @@
                     onChange: function(e) { upd('brownTemp', parseInt(e.target.value, 10)); },
                     className: 'w-full accent-orange-500'
                   }),
-                  h('div', { className: 'mt-1 flex justify-between text-[10px] text-slate-500' },
+                  h('div', { className: 'mt-1 flex justify-between text-[0.625rem] text-slate-500' },
                     h('span', null, '150'),
                     h('span', null, __alloT('stem.bakingscience.285_m', '285 M')),
                     h('span', null, __alloT('stem.bakingscience.320_c', '320 C')),
@@ -2013,7 +2013,7 @@
                       }, opt.label);
                     })
                   ),
-                  h('div', { className: 'mt-2 text-[10px] text-slate-500 italic' }, tr('baking.browning.moisture_hint', 'Wet surfaces can\u2019t exceed 212\u00B0F \u2014 water has to evaporate first.'))
+                  h('div', { className: 'mt-2 text-[0.625rem] text-slate-500 italic' }, tr('baking.browning.moisture_hint', 'Wet surfaces can\u2019t exceed 212\u00B0F \u2014 water has to evaporate first.'))
                 ),
                 h('button', {
                   onClick: cook,
@@ -2037,22 +2037,22 @@
                 ),
                 // Reaction share
                 h('div', { className: 'space-y-1.5' },
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500' }, tr('baking.browning.reactions', 'Active reactions')),
-                  h('div', { className: 'flex items-center gap-2 text-[11px]' },
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-500' }, tr('baking.browning.reactions', 'Active reactions')),
+                  h('div', { className: 'flex items-center gap-2 text-[0.6875rem]' },
                     h('div', { className: 'w-24 font-bold text-red-700 shrink-0' }, tr('baking.browning.maillard', 'Maillard')),
                     h('div', { className: 'flex-grow h-2 rounded-full bg-slate-200 overflow-hidden' },
                       h('div', { className: 'h-full bg-gradient-to-r from-red-400 to-red-600 transition-all', style: { width: Math.round(mProgress * 100) + '%' } })
                     ),
                     h('div', { className: 'w-10 text-right tabular-nums font-bold text-red-700' }, Math.round(mProgress * 100) + '%')
                   ),
-                  h('div', { className: 'flex items-center gap-2 text-[11px]' },
+                  h('div', { className: 'flex items-center gap-2 text-[0.6875rem]' },
                     h('div', { className: 'w-24 font-bold text-amber-700 shrink-0' }, tr('baking.browning.caramel', 'Caramelization')),
                     h('div', { className: 'flex-grow h-2 rounded-full bg-slate-200 overflow-hidden' },
                       h('div', { className: 'h-full bg-gradient-to-r from-amber-400 to-amber-600 transition-all', style: { width: Math.round(cProgress * 100) + '%' } })
                     ),
                     h('div', { className: 'w-10 text-right tabular-nums font-bold text-amber-700' }, Math.round(cProgress * 100) + '%')
                   ),
-                  burnProgress > 0 && h('div', { className: 'flex items-center gap-2 text-[11px]' },
+                  burnProgress > 0 && h('div', { className: 'flex items-center gap-2 text-[0.6875rem]' },
                     h('div', { className: 'w-24 font-bold text-red-900 shrink-0' }, tr('baking.browning.burn', 'Burn / pyrolysis')),
                     h('div', { className: 'flex-grow h-2 rounded-full bg-slate-200 overflow-hidden' },
                       h('div', { className: 'h-full bg-gradient-to-r from-red-700 to-red-900 transition-all', style: { width: Math.round(burnProgress * 100) + '%' } })
@@ -2062,12 +2062,12 @@
                 ),
                 // Flavor words
                 flavors.length > 0 && h('div', null,
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, tr('baking.browning.flavors', 'Flavor notes')),
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-500 mb-1' }, tr('baking.browning.flavors', 'Flavor notes')),
                   h('div', { className: 'flex flex-wrap gap-1' },
                     flavors.map(function(fv, i) {
                       return h('span', {
                         key: i,
-                        className: 'inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ' + (isBurnt ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-white text-orange-800 border border-orange-200')
+                        className: 'inline-block px-2 py-0.5 rounded-full text-[0.6875rem] font-bold ' + (isBurnt ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-white text-orange-800 border border-orange-200')
                       }, fv);
                     })
                   )
@@ -2082,7 +2082,7 @@
                   h('div', { className: 'text-sm font-bold' }, verdict)
                 ),
                 // Per-food note
-                h('div', { className: 'text-[11px] text-slate-600 italic' }, food.note)
+                h('div', { className: 'text-[0.6875rem] text-slate-600 italic' }, food.note)
               )
             ),
             // Science
@@ -2172,7 +2172,7 @@
                     onClick: function () { upd('aiLevel', L.id); },
                     'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
                     'aria-pressed': active,
-                    className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
+                    className: 'px-2 py-0.5 rounded text-[0.625rem] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
                   }, L.label);
                 })
               ),
@@ -2181,12 +2181,12 @@
                 disabled: aiLoading,
                 'aria-busy': aiLoading,
                 'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
-                className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
               }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
             ),
-            aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
+            aiError && h('p', { className: 'text-[0.6875rem] text-rose-600', role: 'alert' }, aiError),
             aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
-            !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-600' }, __alloT('stem.bakingscience.click_explain_for_an_ai_breakdown_of_t', 'Click \u201CExplain\u201D for an AI breakdown of the current activity at your chosen reading level.'))
+            !aiText && !aiLoading && !aiError && h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, __alloT('stem.bakingscience.click_explain_for_an_ai_breakdown_of_t', 'Click \u201CExplain\u201D for an AI breakdown of the current activity at your chosen reading level.'))
           );
         }
 
@@ -2225,29 +2225,29 @@
           }
           return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-200 shadow-sm' },
             h('h3', { className: 'text-sm font-black text-amber-700 mb-1' }, __alloT('stem.bakingscience.caramel_discovery', '🍯 Caramel discovery')),
-            h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+            h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
               'You are heating sugar. Adjust temperature, time, and moisture. The pan will show you one of four discrete stages (raw / light / perfect / burnt). There is no right answer and no reveal. Sweep the sliders. Log observations. Type what you discover.'),
             // Discrete stage marker — large and prominent
             h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stageMeta.bg, border: '2px solid ' + stageMeta.border } },
               h('div', { className: 'text-lg font-black mb-1', style: { color: stageMeta.color } }, stageMeta.label),
-              h('div', { className: 'text-[11px] text-slate-700' }, stageMeta.desc)
+              h('div', { className: 'text-[0.6875rem] text-slate-700' }, stageMeta.desc)
             ),
             // Sliders
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
               h('div', null,
-                h('label', { htmlFor: 'ch-temp', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                h('label', { htmlFor: 'ch-temp', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
                   'Temperature: ', h('span', { className: 'font-mono text-amber-700' }, iq.temp + ' °F')),
                 h('input', { id: 'ch-temp', type: 'range', min: 200, max: 400, step: 5, value: iq.temp,
                   onChange: function(e) { setIQ({ temp: parseInt(e.target.value, 10) }); },
                   className: 'w-full', 'aria-label': __alloT('stem.bakingscience.temperature', 'Temperature') })),
               h('div', null,
-                h('label', { htmlFor: 'ch-time', className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                h('label', { htmlFor: 'ch-time', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
                   'Time: ', h('span', { className: 'font-mono text-amber-700' }, iq.time + ' min')),
                 h('input', { id: 'ch-time', type: 'range', min: 0, max: 15, step: 1, value: iq.time,
                   onChange: function(e) { setIQ({ time: parseInt(e.target.value, 10) }); },
                   className: 'w-full', 'aria-label': __alloT('stem.bakingscience.time', 'Time') })),
               h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Moisture:'),
+                h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, 'Moisture:'),
                 h('div', { className: 'flex gap-1' },
                   ['dry', 'wet'].map(function(m) {
                     var active = iq.moisture === m;
@@ -2255,18 +2255,18 @@
                       onClick: function() { setIQ({ moisture: m }); },
                       'aria-pressed': active,
                       'aria-label': m === 'dry' ? __alloT('stem.bakingscience.moisture_dry', 'Dry moisture') : __alloT('stem.bakingscience.moisture_wet', 'Wet moisture'),
-                      className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50') }, m);
+                      className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50') }, m);
                   })))
             ),
             // Log + reset
             h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-              h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.bakingscience.log_observation', '📋 Log observation')),
+              h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.bakingscience.log_observation', '📋 Log observation')),
               h('button', { onClick: function() { setIQ({ temp: 280, time: 6, moisture: 'dry', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.bakingscience.reset', '↺ Reset')),
-              (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.bakingscience.reset', '↺ Reset')),
+              (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
             ),
             (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
-              h('table', { className: 'text-[10px] w-full border-collapse' },
+              h('table', { className: 'text-[0.625rem] w-full border-collapse' },
                 h('thead', null, h('tr', { className: 'bg-slate-100' },
                   ['temp °F', 'time min', 'moisture', 'stage'].map(function(c, i) {
                     return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
@@ -2281,18 +2281,18 @@
             ),
             // Free-text hypothesis
             h('div', { className: 'mb-3' },
-              h('label', { htmlFor: 'ch-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.bakingscience.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
+              h('label', { htmlFor: 'ch-hypo', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.bakingscience.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
               h('textarea', { id: 'ch-hypo', value: iq.hypothesis || '',
                 onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                 placeholder: __alloT('stem.bakingscience.which_slider_matters_most_for_hitting_', 'Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?'),
-                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
+                className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
             ),
             // Opt-in open questions
             h('div', { className: 'mb-3' },
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
+                className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' },
                 __alloT('stem.bakingscience.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
-              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                 h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.bakingscience.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
                   h('li', null, __alloT('stem.bakingscience.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch what happens.')),
@@ -2300,23 +2300,23 @@
                   h('li', null, __alloT('stem.bakingscience.find_two_different_settings_that_both_', 'Find two different settings that both produce the same stage. What do they share?')),
                   h('li', null, __alloT('stem.bakingscience.notice_where_a_small_change_flips_the_', 'Notice where a small change flips the stage versus where larger changes do nothing.')),
                   h('li', null, __alloT('stem.bakingscience.real_caramel_chefs_talk_about_controll', 'Real caramel chefs talk about "controlling the rate of Maillard." Investigate why moisture matters.'))),
-                h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, __alloT('stem.bakingscience.no_answers_no_specific_values_investig', 'No answers, no specific values. Investigate.')))
+                h('div', { className: 'text-[0.625rem] italic text-amber-700 mt-2' }, __alloT('stem.bakingscience.no_answers_no_specific_values_investig', 'No answers, no specific values. Investigate.')))
             ),
             // Self-mark
             h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('input', { type: 'checkbox', id: 'ch-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                h('label', { htmlFor: 'ch-und', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('label', { htmlFor: 'ch-und', className: 'text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                   __alloT('stem.bakingscience.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
               iq.understood && h('textarea', { value: iq.explanation || '',
                 onChange: function(e) { setIQ({ explanation: e.target.value }); },
                 placeholder: __alloT('stem.bakingscience.explain_in_your_own_words_how_do_tempe', 'Explain in your own words: how do temperature, time, and moisture interact? What makes perfect caramel hard?'),
-                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4,
+                className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4,
                 'aria-label': __alloT('stem.bakingscience.explanation_input', 'Baking science explanation') }),
-              iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+              iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700' },
                 __alloT('stem.bakingscience.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
             ),
-            h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
+            h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.625rem] italic text-slate-600' },
               __alloT('stem.bakingscience.design_note_no_caramel_quality_score_n', 'Design note: no caramel-quality score, no reveal button. Stage is shown as a discrete 4-band marker, not a continuous gradient — by design, to discourage optimization-gaming behavior.'))
           );
         }

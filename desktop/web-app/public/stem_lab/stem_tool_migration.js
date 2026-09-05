@@ -2822,7 +2822,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Read aloud button
           callTTS && h('div', { className: 'flex justify-end' },
             h('button', {
-              className: 'px-2.5 py-1 rounded-lg text-[11px] font-medium ' + btnSecondary,
+              className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-medium ' + btnSecondary,
               'aria-label': t('stem.migration.read_v_formation_explanation_aloud', 'Read V-Formation explanation aloud'),
               onClick: vReadAloud
             }, t('stem.migration.read_aloud', '\uD83D\uDD0A Read Aloud'))
@@ -2929,9 +2929,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 },
                   h('div', { className: 'flex items-center justify-between' },
                     h('span', { className: 'text-xs font-bold ' + textPrimary }, fact.title),
-                    h('span', { className: 'text-[11px] ' + textMuted, 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
+                    h('span', { className: 'text-[0.6875rem] ' + textMuted, 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
                   ),
-                  isExpanded && h('p', { className: 'text-[11px] mt-2 leading-relaxed ' + textSecondary }, fact.text)
+                  isExpanded && h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed ' + textSecondary }, fact.text)
                 );
               })
             )
@@ -2942,7 +2942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.migration_world_records', '\uD83C\uDFC6 Migration World Records')),
             h('div', { className: 'space-y-1.5' },
               MIGRATION_RECORDS.map(function(rec, ri) {
-                return h('div', { key: ri, className: 'flex items-start gap-2 text-[11px]' },
+                return h('div', { key: ri, className: 'flex items-start gap-2 text-[0.6875rem]' },
                   h('span', { className: 'font-bold min-w-[120px] ' + accent }, rec.species),
                   h('div', null,
                     h('span', { className: 'font-medium ' + textPrimary }, rec.record + ': '),
@@ -2976,11 +2976,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
               h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, t('stem.migration.energy_budget_calculator', '\u26A1 Energy Budget Calculator')),
-              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, t('stem.migration.adjust_the_sliders_to_see_how_distance', 'Adjust the sliders to see how distance, body size, wind, and formation affect a bird\'s energy needs. This models the real physics of migratory flight.')),
+              h('p', { className: 'text-[0.6875rem] mb-3 ' + textSecondary }, t('stem.migration.adjust_the_sliders_to_see_how_distance', 'Adjust the sliders to see how distance, body size, wind, and formation affect a bird\'s energy needs. This models the real physics of migratory flight.')),
               h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                 // Distance slider
                 h('div', null,
-                  h('label', { className: 'text-[11px] font-bold ' + textPrimary }, 'Distance: ' + ebDist.toLocaleString() + ' mi'),
+                  h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, 'Distance: ' + ebDist.toLocaleString() + ' mi'),
                   h('input', { type: 'range', min: 100, max: 7000, step: 100, value: ebDist,
                     'aria-label': 'Migration distance: ' + ebDist + ' miles',
                     className: 'w-full accent-amber-500',
@@ -2989,17 +2989,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ),
                 // Weight slider
                 h('div', null,
-                  h('label', { className: 'text-[11px] font-bold ' + textPrimary }, 'Bird weight: ' + ebWeight + 'g'),
+                  h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, 'Bird weight: ' + ebWeight + 'g'),
                   h('input', { type: 'range', min: 5, max: 5000, step: 5, value: ebWeight,
                     'aria-label': 'Bird body weight: ' + ebWeight + ' grams',
                     className: 'w-full accent-amber-500',
                     onChange: function(e) { upd('ebWeight', parseInt(e.target.value, 10)); }
                   }),
-                  h('div', { className: 'text-[11px] ' + textMuted }, ebWeight < 20 ? 'Hummingbird-sized' : ebWeight < 50 ? 'Warbler-sized' : ebWeight < 200 ? 'Robin-sized' : ebWeight < 1000 ? 'Duck-sized' : ebWeight < 3000 ? 'Goose-sized' : 'Swan-sized')
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, ebWeight < 20 ? 'Hummingbird-sized' : ebWeight < 50 ? 'Warbler-sized' : ebWeight < 200 ? 'Robin-sized' : ebWeight < 1000 ? 'Duck-sized' : ebWeight < 3000 ? 'Goose-sized' : 'Swan-sized')
                 ),
                 // Headwind slider
                 h('div', null,
-                  h('label', { className: 'text-[11px] font-bold ' + textPrimary }, 'Headwind: ' + ebHeadwind + ' mph'),
+                  h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, 'Headwind: ' + ebHeadwind + ' mph'),
                   h('input', { type: 'range', min: 0, max: 25, value: ebHeadwind,
                     'aria-label': 'Headwind speed: ' + ebHeadwind + ' miles per hour',
                     className: 'w-full accent-red-400',
@@ -3009,7 +3009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 // V-formation toggle
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', {
-                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (ebVForm ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700')),
+                    className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' + (ebVForm ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700')),
                     'aria-pressed': ebVForm ? 'true' : 'false',
                     'aria-label': 'V-formation: ' + (ebVForm ? 'on, saving 35% energy' : 'off'),
                     onClick: function() { upd('ebVFormation', !ebVForm); }
@@ -3020,22 +3020,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', 'aria-live': 'polite' },
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + accent }, Math.round(totalCost).toLocaleString()),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.kcal_needed', 'kcal needed'))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.kcal_needed', 'kcal needed'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + accent }, fatNeeded.toFixed(1) + 'g'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.fat_required', 'fat required'))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.fat_required', 'fat required'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + (percentBodyWeight > 80 ? 'text-red-500' : accent) }, Math.round(percentBodyWeight) + '%'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.of_body_weight', 'of body weight'))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.of_body_weight', 'of body weight'))
                 ),
                 h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
                   h('div', { className: 'text-lg font-black ' + accent }, foodEquivalent.toLocaleString()),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.insects_equivalent', 'insects equivalent'))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.insects_equivalent', 'insects equivalent'))
                 )
               ),
-              h('div', { className: 'mt-2 text-[11px] leading-relaxed ' + textSecondary },
+              h('div', { className: 'mt-2 text-[0.6875rem] leading-relaxed ' + textSecondary },
                 h('p', null, '\uD83D\uDD2C ', h('strong', null, t('stem.migration.the_science', 'The science: ')), t('stem.migration.bird_flight_costs_12x_their_resting_me', 'Bird flight costs ~12x their resting metabolic rate (Kleiber\'s Law). Fat provides 9 kcal/g \u2014 the most energy-dense fuel in biology. Before migration, birds enter '), h('strong', null, 'hyperphagia'), t('stem.migration.a_feeding_frenzy_where_they_may_double', ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through '), h('strong', null, t('stem.migration.55_of_its_body_weight', '55% of its body weight')), t('stem.migration.during_its_record_non_stop_flight_2026', ' during a record non-stop flight of 8,425 miles, Alaska to Tasmania.')),
                 percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold text-red-500' }, t('stem.migration.this_journey_requires_more_fat_than_th', '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.'))
               )
@@ -3053,9 +3053,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
               h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, t('stem.migration.altitude_physiology', '\u2708\uFE0F Altitude Physiology')),
-              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, t('stem.migration.some_birds_migrate_at_extreme_altitude', 'Some birds migrate at extreme altitudes \u2014 Bar-headed Geese cross the Himalayas at 29,000 feet. Drag the slider to see how conditions change.')),
+              h('p', { className: 'text-[0.6875rem] mb-3 ' + textSecondary }, t('stem.migration.some_birds_migrate_at_extreme_altitude', 'Some birds migrate at extreme altitudes \u2014 Bar-headed Geese cross the Himalayas at 29,000 feet. Drag the slider to see how conditions change.')),
               h('div', { className: 'mb-3' },
-                h('label', { className: 'text-[11px] font-bold ' + textPrimary }, '\u2B06\uFE0F Altitude: ' + altFeet.toLocaleString() + ' ft (' + Math.round(altFeet * 0.3048) + ' m)'),
+                h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, '\u2B06\uFE0F Altitude: ' + altFeet.toLocaleString() + ' ft (' + Math.round(altFeet * 0.3048) + ' m)'),
                 h('input', { type: 'range', min: 0, max: 37000, step: 500, value: altFeet,
                   'aria-label': 'Flight altitude: ' + altFeet + ' feet. Oxygen: ' + Math.round(oxygenPercent) + '%. Temperature: ' + Math.round(tempF) + ' degrees Fahrenheit.',
                   className: 'w-full accent-sky-500',
@@ -3069,32 +3069,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 ' + (oxygenPercent < 50 ? 'bg-red-500' : oxygenPercent < 70 ? 'bg-amber-500' : 'bg-green-500'), style: { height: oxygenPercent + '%' } })
                   ),
                   h('div', { className: 'text-sm font-black mt-1 ' + (oxygenPercent < 50 ? 'text-red-500' : textPrimary) }, Math.round(oxygenPercent) + '%'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'O\u2082')
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, 'O\u2082')
                 ),
                 h('div', { className: 'text-center' },
                   h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 ' + (tempC < -20 ? 'bg-blue-600' : tempC < 0 ? 'bg-sky-400' : 'bg-amber-400'), style: { height: Math.max(5, ((tempC + 60) / 75 * 100)) + '%' } })
                   ),
                   h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, Math.round(tempF) + '\u00B0F'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, Math.round(tempC) + '\u00B0C')
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, Math.round(tempC) + '\u00B0C')
                 ),
                 h('div', { className: 'text-center' },
                   h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 bg-purple-500', style: { height: airDensity + '%' } })
                   ),
                   h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, Math.round(airDensity) + '%'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.air_density', 'Air density'))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.air_density', 'Air density'))
                 ),
                 h('div', { className: 'text-center' },
                   h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 bg-cyan-500', style: { height: Math.min(100, windAtAlt / 80 * 100) + '%' } })
                   ),
                   h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, windAtAlt + ' mph'),
-                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, t('stem.migration.wind', 'Wind'))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.wind', 'Wind'))
                 )
               ),
               // Science context
-              h('div', { className: 'mt-3 text-[11px] leading-relaxed ' + textSecondary },
+              h('div', { className: 'mt-3 text-[0.6875rem] leading-relaxed ' + textSecondary },
                 altFeet > 25000 ? h('p', null, '\u{1F9EC} ', h('strong', null, t('stem.migration.extreme_altitude', 'Extreme altitude! ')), t('stem.migration.bar_headed_geese_survive_here_thanks_t', 'Bar-headed Geese survive here thanks to hemoglobin that binds oxygen more tightly, larger lungs, and more efficient mitochondria. Most mammals would be unconscious at this altitude. Their blood has a special hemoglobin mutation (Pro\u2192Ala at position 119) that increases oxygen affinity by 50%.')) :
                 altFeet > 15000 ? h('p', null, '\u{1F9EC} ', h('strong', null, t('stem.migration.high_altitude_zone', 'High altitude zone. ')), t('stem.migration.many_songbirds_migrate_at_this_range_w', 'Many songbirds migrate at this range, where thinner air reduces drag but oxygen is scarce. Birds compensate with more efficient breathing \u2014 their one-way airflow system extracts oxygen on both inhale and exhale, unlike mammalian lungs which only extract on inhale.')) :
                 altFeet > 5000 ? h('p', null, '\uD83D\uDC26 ', h('strong', null, t('stem.migration.common_cruising_altitude', 'Common cruising altitude. ')), t('stem.migration.most_migrants_fly_between_5_000_15_000', 'Most migrants fly between 5,000-15,000 feet. Air temperature drops ~3.5\u00B0F per 1,000 feet (standard lapse rate). Birds choose altitude to find favorable winds \u2014 the same bird may fly at 2,000 feet one night and 12,000 the next.')) :
@@ -3609,7 +3609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   role: 'radio',
                   'aria-checked': active ? 'true' : 'false',
                   'aria-label': 'Wind from ' + cd.label + (active ? ', selected' : ''),
-                  className: 'w-10 h-10 rounded-full text-[11px] font-bold transition-all ' + (active ? 'bg-sky-700 text-white ring-2 ring-sky-300' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
+                  className: 'w-10 h-10 rounded-full text-[0.6875rem] font-bold transition-all ' + (active ? 'bg-sky-700 text-white ring-2 ring-sky-300' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
                   tabIndex: active ? 0 : -1,
                   onClick: function() { upd('windDir', cd.angle); }
                 }, cd.label);
@@ -3626,7 +3626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 onChange: function(e) { upd('windSpeed', parseInt(e.target.value, 10)); }
               }),
               h('span', { className: 'text-xs font-bold min-w-[80px] text-right ' + textPrimary }, windSpeed + ' mph'),
-              h('span', { className: 'text-[11px] ' + textMuted }, getBeaufort(windSpeed))
+              h('span', { className: 'text-[0.6875rem] ' + textMuted }, getBeaufort(windSpeed))
             )
           ),
 
@@ -3645,9 +3645,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 return h('div', { key: card.title, className: 'rounded-lg p-3 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                   h('div', { className: 'flex items-center gap-1.5 mb-1' },
                     h('span', { className: 'text-base', 'aria-hidden': 'true' }, card.emoji),
-                    h('span', { className: 'text-[11px] font-bold ' + textPrimary }, card.title)
+                    h('span', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, card.title)
                   ),
-                  h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, card.text)
+                  h('p', { className: 'text-[0.6875rem] leading-relaxed ' + textSecondary }, card.text)
                 );
               })
             )
@@ -3681,8 +3681,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Particle physics legend
           h('div', { className: 'rounded-lg p-3 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50/50') },
-            h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, t('stem.migration.particle_color_guide', '\uD83C\uDFA8 Particle Color Guide')),
-            h('div', { className: 'flex flex-wrap gap-3 text-[11px] ' + textSecondary },
+            h('div', { className: 'text-[0.6875rem] font-bold mb-1 ' + textPrimary }, t('stem.migration.particle_color_guide', '\uD83C\uDFA8 Particle Color Guide')),
+            h('div', { className: 'flex flex-wrap gap-3 text-[0.6875rem] ' + textSecondary },
               h('span', null, h('span', { style: { color: '#7dd3fc' } }, '\u25CF'), t('stem.migration.light_blue_slow_wind', ' Light blue = slow wind')),
               h('span', null, h('span', { style: { color: 'var(--allo-stem-text, #ffffff)' } }, '\u25CF'), t('stem.migration.white_moderate_wind', ' White = moderate wind')),
               h('span', null, h('span', { style: { color: '#fbbf24' } }, '\u25CF'), t('stem.migration.yellow_fast_wind', ' Yellow = fast wind')),
@@ -4429,8 +4429,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('div', { className: 'flex items-center gap-1.5' },
                   h('span', { className: 'text-lg', 'aria-hidden': 'true' }, sp.emoji),
                   h('div', null,
-                    h('div', { className: 'text-[11px] font-bold ' + textPrimary }, sp.name),
-                    h('div', { className: 'text-[11px] ' + textMuted },
+                    h('div', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, sp.name),
+                    h('div', { className: 'text-[0.6875rem] ' + textMuted },
                       h('span', { style: { color: fwColor.stroke } }, '\u25CF'),
                       ' ' + sp.flyway.charAt(0).toUpperCase() + sp.flyway.slice(1) + ' \u2022 ' + sp.distance.toLocaleString() + ' mi'
                     )
@@ -4448,7 +4448,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, sp.emoji),
                 h('div', null,
                   h('h3', { className: 'font-bold text-sm ' + textPrimary }, sp.name),
-                  h('div', { className: 'text-[11px] ' + textMuted }, sp.formation + ' \u2022 ' + sp.flyway.charAt(0).toUpperCase() + sp.flyway.slice(1) + ' Flyway')
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, sp.formation + ' \u2022 ' + sp.flyway.charAt(0).toUpperCase() + sp.flyway.slice(1) + ' Flyway')
                 )
               ),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-center' },
@@ -4460,7 +4460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ].map(function(stat) {
                   return h('div', { key: stat.label, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
                     h('div', { className: 'text-xs font-bold ' + accent }, stat.value),
-                    h('div', { className: 'text-[11px] ' + textMuted }, stat.label)
+                    h('div', { className: 'text-[0.6875rem] ' + textMuted }, stat.label)
                   );
                 })
               ),
@@ -4498,7 +4498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('div', { className: 'w-2.5 h-2.5 rounded-full', style: { backgroundColor: fw.color } }),
                     h('span', { className: 'text-xs font-bold ' + textPrimary }, fw.name)
                   ),
-                  h('div', { className: 'space-y-1 text-[11px] ' + textSecondary },
+                  h('div', { className: 'space-y-1 text-[0.6875rem] ' + textSecondary },
                     h('div', null, h('strong', null, 'Species: '), fw.birds),
                     h('div', null, h('strong', null, 'Terrain: '), fw.terrain),
                     h('div', null, h('strong', null, 'Key: '), fw.key)
@@ -4521,8 +4521,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   { period: 'Sep-Nov', desc: t('stem.migration.peak_fall_raptors_ride_thermals_along_', 'Peak fall: Raptors ride thermals along mountain ridges. Songbirds follow cold fronts south. Geese fly in V-formation at night.') }
                 ].map(function(time) {
                   return h('div', { key: time.period, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50') },
-                    h('div', { className: 'text-[11px] font-bold ' + accent + ' mb-0.5' }, time.period),
-                    h('p', { className: 'text-[11px] ' + textSecondary }, time.desc)
+                    h('div', { className: 'text-[0.6875rem] font-bold ' + accent + ' mb-0.5' }, time.period),
+                    h('p', { className: 'text-[0.6875rem] ' + textSecondary }, time.desc)
                   );
                 })
               ),
@@ -4557,9 +4557,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   return h('div', { key: phys.title, className: 'rounded-lg p-2.5 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                     h('div', { className: 'flex items-center gap-1.5 mb-1' },
                       h('span', { className: 'text-base', 'aria-hidden': 'true' }, phys.emoji),
-                      h('span', { className: 'text-[11px] font-bold ' + textPrimary }, phys.title)
+                      h('span', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, phys.title)
                     ),
-                    h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, phys.text)
+                    h('p', { className: 'text-[0.6875rem] leading-relaxed ' + textSecondary }, phys.text)
                   );
                 })
               )
@@ -4570,7 +4570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.species_comparison', '\uD83D\uDCCA Species Comparison')),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'w-full text-[11px] ' + textSecondary, role: 'table' },
+              h('table', { className: 'w-full text-[0.6875rem] ' + textSecondary, role: 'table' },
                 h('thead', null,
                   h('tr', { className: 'border-b ' + borderCol },
                     ['Species', 'Distance', 'Speed', 'Altitude', 'Weight', 'Flyway', 'Formation'].map(function(col) {
@@ -4602,7 +4602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 )
               )
             ),
-            h('p', { className: 'text-[11px] mt-2 italic ' + textMuted }, t('stem.migration.distances_are_approximate_annual_migra', 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude.'))
+            h('p', { className: 'text-[0.6875rem] mt-2 italic ' + textMuted }, t('stem.migration.distances_are_approximate_annual_migra', 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude.'))
           ),
 
           // Technology & tracking
@@ -5288,7 +5288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             ].map(function(s) {
               return h('div', { key: s.label, className: 'rounded-lg p-2 border ' + borderCol + ' ' + cardBg },
                 h('div', { className: 'text-sm font-black', style: { color: s.color } }, s.value),
-                h('div', { className: 'text-[11px] ' + textMuted }, s.label)
+                h('div', { className: 'text-[0.6875rem] ' + textMuted }, s.label)
               );
             })
           ),
@@ -5310,11 +5310,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('span', { className: 'text-lg', 'aria-hidden': 'true' }, wt.emoji),
                     h('div', null,
                       h('div', { className: 'text-xs font-bold ' + textPrimary }, wt.name),
-                      h('div', { className: 'text-[11px] ' + textMuted }, wt.shape)
+                      h('div', { className: 'text-[0.6875rem] ' + textMuted }, wt.shape)
                     )
                   ),
-                  h('div', { className: 'text-[11px] ' + textSecondary + ' leading-relaxed' }, __alloT('stem.migration.' + (wt.id) + '_desc', wt.desc)),
-                  h('div', { className: 'flex gap-2 mt-1.5 text-[11px]' },
+                  h('div', { className: 'text-[0.6875rem] ' + textSecondary + ' leading-relaxed' }, __alloT('stem.migration.' + (wt.id) + '_desc', wt.desc)),
+                  h('div', { className: 'flex gap-2 mt-1.5 text-[0.6875rem]' },
                     h('span', { className: accent }, 'AR: ' + wt.aspectRatio),
                     h('span', { className: textMuted }, 'Best AoA: ' + wt.bestAngle + '\u00B0'),
                     h('span', { className: textMuted }, 'Stall: ' + wt.stallAngle + '\u00B0')
@@ -5329,25 +5329,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.flight_physics_explained', '\uD83D\uDCDA Flight Physics Explained')),
             h('div', { className: 'text-xs leading-relaxed space-y-3 ' + textSecondary },
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.bernoulli_s_principle', 'Bernoulli\'s Principle')),
+                h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.bernoulli_s_principle', 'Bernoulli\'s Principle')),
                 h('p', null, t('stem.migration.as_air_speeds_up_its_pressure_drops_a_', 'As air speeds up, its pressure drops. A wing\'s curved upper surface forces air to travel faster over the top than under the bottom. This creates '), h('strong', null, t('stem.migration.lower_pressure_above', 'lower pressure above')), ' and ', h('strong', null, t('stem.migration.higher_pressure_below', 'higher pressure below')), t('stem.migration.the_wing_generating_lift', ' the wing, generating lift.')),
-                h('p', { className: 'mt-1 font-mono text-[11px] ' + accent }, t('stem.migration.p_pv_pgh_constant', 'P + \u00BDpv\u00B2 + pgh = constant'))
+                h('p', { className: 'mt-1 font-mono text-[0.6875rem] ' + accent }, t('stem.migration.p_pv_pgh_constant', 'P + \u00BDpv\u00B2 + pgh = constant'))
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.angle_of_attack_stall', 'Angle of Attack & Stall')),
+                h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.angle_of_attack_stall', 'Angle of Attack & Stall')),
                 h('p', null, t('stem.migration.as_the_angle_of_attack_increases_lift_', 'As the angle of attack increases, lift increases \u2014 up to a point. Beyond the '), h('strong', null, t('stem.migration.critical_angle', 'critical angle')), t('stem.migration.stall_angle_airflow_separates_from_the', ' (stall angle), airflow separates from the upper surface. The wing loses its smooth airflow, lift drops dramatically, and drag spikes. This is a "stall."')),
                 h('p', { className: 'mt-1' }, t('stem.migration.current_wing_s_stall_angle', 'Current wing\'s stall angle: '), h('strong', { className: 'text-red-500' }, wing.stallAngle + '\u00B0'), t('stem.migration.best_l_d_at', '. Best L/D at: '), h('strong', { className: 'text-green-500' }, wing.bestAngle + '\u00B0'), '.')
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.lift_to_drag_ratio_l_d', 'Lift-to-Drag Ratio (L/D)')),
+                h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.lift_to_drag_ratio_l_d', 'Lift-to-Drag Ratio (L/D)')),
                 h('p', null, t('stem.migration.l_d_measures_aerodynamic_efficiency_a_', 'L/D measures aerodynamic efficiency. A higher L/D means more lift per unit of drag. Albatrosses achieve L/D ratios of '), h('strong', null, '20:1'), t('stem.migration.meaning_20_pounds_of_lift_for_every_1_', ' (meaning 20 pounds of lift for every 1 pound of drag), among the best in nature. Modern sailplanes reach '), h('strong', null, '60:1'), '.')
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.induced_vs_parasite_drag', 'Induced vs Parasite Drag')),
+                h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.induced_vs_parasite_drag', 'Induced vs Parasite Drag')),
                 h('p', null, h('strong', null, t('stem.migration.induced_drag', 'Induced drag')), t('stem.migration.is_a_byproduct_of_creating_lift_the_wi', ' is a byproduct of creating lift \u2014 the wingtip vortices that V-formation birds exploit. It decreases with speed. '), h('strong', null, t('stem.migration.parasite_drag', 'Parasite drag')), t('stem.migration.comes_from_the_bird_s_body_pushing_thr', ' comes from the bird\'s body pushing through air \u2014 it increases with speed\u00B2. At the intersection of these two curves lies the '), h('strong', null, t('stem.migration.minimum_drag_speed', 'minimum drag speed')), t('stem.migration.the_most_efficient_cruising_speed', ' \u2014 the most efficient cruising speed.'))
               ),
               h('div', null,
-                h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, t('stem.migration.reynolds_number', 'Reynolds Number')),
+                h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.reynolds_number', 'Reynolds Number')),
                 h('p', null, t('stem.migration.bird_flight_operates_at_reynolds_numbe', 'Bird flight operates at Reynolds numbers between 10,000 and 500,000 \u2014 a tricky aerodynamic regime. At these scales, the boundary layer (thin layer of air clinging to the wing surface) is partly laminar and partly turbulent. Bird feathers create micro-turbulence that actually '), h('strong', null, 'helps'), t('stem.migration.maintain_airflow_attachment_especially', ' maintain airflow attachment, especially at high angles of attack. This is something engineers are still trying to replicate in drone designs.'))
               )
             )
@@ -5366,8 +5366,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   { title: t('stem.migration.morphing_wings', 'Morphing Wings'), text: t('stem.migration.birds_continuously_adjust_wing_shape_a', 'Birds continuously adjust wing shape, angle, and feather positions during flight \u2014 far more sophisticated than any aircraft. NASA and MIT are developing "morphing wing" technology that uses flexible materials and actuators to mimic bird-like wing adjustment, potentially improving efficiency by 8-12%.') }
                 ].map(function(eng) {
                   return h('div', { key: eng.title, className: 'rounded-lg p-2.5 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
-                    h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, eng.title),
-                    h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, eng.text)
+                    h('div', { className: 'text-[0.6875rem] font-bold mb-1 ' + textPrimary }, eng.title),
+                    h('p', { className: 'text-[0.6875rem] leading-relaxed ' + textSecondary }, eng.text)
                   );
                 })
               )
@@ -5395,7 +5395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.migration_energy_budget', '\u26A1 Migration Energy Budget')),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
               h('p', null, t('stem.migration.consider_a_ruby_throated_hummingbird_c', 'Consider a Ruby-throated Hummingbird crossing the Gulf of Mexico (500 miles non-stop):')),
-              h('div', { className: 'font-mono text-[11px] p-2 rounded-lg mt-1 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
+              h('div', { className: 'font-mono text-[0.6875rem] p-2 rounded-lg mt-1 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
                 h('div', null, t('stem.migration.body_mass_3_5g', 'Body mass: 3.5g')),
                 h('div', null, t('stem.migration.pre_flight_fat_2g_57_body_weight', 'Pre-flight fat: +2g (57% body weight!)')),
                 h('div', null, t('stem.migration.fat_energy_density_9_kcal_g', 'Fat energy density: 9 kcal/g')),
@@ -5926,7 +5926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('span', { className: 'text-xl', 'aria-hidden': 'true' }, nm.icon),
                       h('span', { className: 'text-xs font-bold ' + textPrimary }, nm.name)
                     ),
-                    isExpanded && h('p', { className: 'text-[11px] leading-relaxed mt-2 ' + textSecondary }, __alloT('stem.migration.' + (nm.id) + '_desc', nm.desc))
+                    isExpanded && h('p', { className: 'text-[0.6875rem] leading-relaxed mt-2 ' + textSecondary }, __alloT('stem.migration.' + (nm.id) + '_desc', nm.desc))
                   )
                 );
               })
@@ -5956,28 +5956,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // Status bar
               h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.energy', '\u26A1 Energy')),
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.energy', '\u26A1 Energy')),
                   h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
                     h('div', { className: 'h-full rounded-full transition-all ' + (challengeEnergy > 50 ? 'bg-green-500' : challengeEnergy > 25 ? 'bg-yellow-500' : 'bg-red-500'), style: { width: challengeEnergy + '%' } })
                   ),
                   h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeEnergy + '%')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.distance_2', '\uD83D\uDCCD Distance')),
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.distance_2', '\uD83D\uDCCD Distance')),
                   h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
                     h('div', { className: 'h-full bg-sky-500 rounded-full transition-all', style: { width: ((challengeDistance - challengeDistRemaining) / challengeDistance * 100) + '%' } })
                   ),
                   h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeDistRemaining + ' mi left')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.flock', '\uD83E\uDEBF Flock')),
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.flock', '\uD83E\uDEBF Flock')),
                   h('div', { className: 'text-sm font-bold ' + textPrimary }, challengeFlockSize),
-                  h('div', { className: 'text-[11px] ' + textMuted }, 'birds')
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, 'birds')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[11px] ' + textMuted }, t('stem.migration.weather', '\uD83C\uDF24\uFE0F Weather')),
-                  h('div', { className: 'text-[11px] font-bold ' + textPrimary }, challengeWeather),
-                  h('div', { className: 'text-[11px] ' + textMuted }, 'Step ' + (challengeStep + 1))
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.weather', '\uD83C\uDF24\uFE0F Weather')),
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, challengeWeather),
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, 'Step ' + (challengeStep + 1))
                 )
               ),
 
@@ -6005,7 +6005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       onClick: function() { makeChoice(ci); }
                     },
                       h('div', { className: 'text-xs font-bold ' + textPrimary }, ch.label),
-                      h('div', { className: 'flex gap-3 mt-1 text-[11px]' },
+                      h('div', { className: 'flex gap-3 mt-1 text-[0.6875rem]' },
                         h('span', { className: (ch.energy_cost || 0) > 0 ? 'text-green-600 font-bold' : 'text-red-500 font-bold' }, '\u26A1 ' + (ch.energy_cost > 0 ? '+' : '') + ch.energy_cost + (ch.energy_cost > 0 ? ' gain' : ' cost')),
                         h('span', { className: 'text-sky-500 font-bold' }, '\uD83D\uDCCD +' + (ch.distance_gain || 0) + ' mi'),
                         ch.flock_change !== 0 && h('span', { className: (ch.flock_change > 0 ? 'text-green-600' : 'text-red-500') + ' font-bold' }, '\uD83E\uDEBF ' + (ch.flock_change > 0 ? '+' : '') + ch.flock_change + (ch.flock_change > 0 ? ' birds join' : ' birds lost'))
@@ -6037,15 +6037,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
               // Journey log
               challengeLog.length > 0 && h('details', { className: 'text-xs ' + textSecondary },
-                h('summary', { className: 'cursor-pointer font-bold ' + textPrimary + ' text-[11px]' }, '\uD83D\uDCDC Journey Log (' + challengeLog.length + ' steps)'),
+                h('summary', { className: 'cursor-pointer font-bold ' + textPrimary + ' text-[0.6875rem]' }, '\uD83D\uDCDC Journey Log (' + challengeLog.length + ' steps)'),
                 h('div', { className: 'mt-2 space-y-1 max-h-40 overflow-y-auto' },
                   challengeLog.map(function(entry, ei) {
                     return h('div', { key: ei, className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                       h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'font-bold text-[11px] ' + accent }, 'Step ' + entry.step),
-                        h('span', { className: 'text-[11px] ' + textMuted }, '\u26A1' + entry.energy + '% \u2022 ' + entry.remaining + 'mi \u2022 ' + entry.flock + ' birds')
+                        h('span', { className: 'font-bold text-[0.6875rem] ' + accent }, 'Step ' + entry.step),
+                        h('span', { className: 'text-[0.6875rem] ' + textMuted }, '\u26A1' + entry.energy + '% \u2022 ' + entry.remaining + 'mi \u2022 ' + entry.flock + ' birds')
                       ),
-                      h('div', { className: 'text-[11px] mt-0.5' }, h('em', null, entry.choice), ' \u2014 ', entry.result)
+                      h('div', { className: 'text-[0.6875rem] mt-0.5' }, h('em', null, entry.choice), ' \u2014 ', entry.result)
                     );
                   })
                 )
@@ -6059,7 +6059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Threats to migratory birds
           h('div', { className: 'space-y-2' },
             h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.threats_to_migratory_birds', '\u26A0\uFE0F Threats to Migratory Birds')),
-            h('p', { className: 'text-[11px] ' + textSecondary }, t('stem.migration.migratory_birds_face_growing_dangers_u', 'Migratory birds face growing dangers. Understanding these threats is the first step toward conservation.')),
+            h('p', { className: 'text-[0.6875rem] ' + textSecondary }, t('stem.migration.migratory_birds_face_growing_dangers_u', 'Migratory birds face growing dangers. Understanding these threats is the first step toward conservation.')),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
               MIGRATION_THREATS.map(function(th, ti) {
                 return h('div', { key: ti, className: 'rounded-lg p-3 border ' + borderCol + ' ' + cardBg },
@@ -6067,7 +6067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('span', { className: 'text-lg', 'aria-hidden': 'true' }, th.emoji),
                     h('span', { className: 'text-xs font-bold ' + textPrimary }, th.threat)
                   ),
-                  h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, th.desc)
+                  h('p', { className: 'text-[0.6875rem] leading-relaxed ' + textSecondary }, th.desc)
                 );
               })
             )
@@ -6119,8 +6119,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 { term: 'Fallout', def: 'Mass emergency landing due to bad weather' }
               ].map(function(v) {
                 return h('div', { key: v.term, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50') },
-                  h('div', { className: 'text-[11px] font-bold ' + accent }, v.term),
-                  h('div', { className: 'text-[11px] ' + textSecondary }, v.def)
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + accent }, v.term),
+                  h('div', { className: 'text-[0.6875rem] ' + textSecondary }, v.def)
                 );
               })
             )

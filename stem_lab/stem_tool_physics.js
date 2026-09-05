@@ -1979,12 +1979,12 @@ const d = labToolData.physics;
                   React.createElement("div", { className: "min-w-0" },
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.physics.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
-                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, __alloT('stem.physics.projectile_mission', 'Projectile mission'))
+                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, __alloT('stem.physics.projectile_mission', 'Projectile mission'))
                     ),
                     React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }, "\u26A1 " + __alloT('stem.physics.physics_simulator', 'Physics Simulator')),
                     React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-cyan-100" }, __alloT('stem.physics.tool_intro_blurb', 'Investigate how launch conditions shape motion, then support each claim with trajectory evidence.')),
                     React.createElement("div", { className: "mt-3 rounded-xl border border-white/15 bg-white/10 p-3" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200" }, __alloT('stem.physics.recommended_next_move', 'Recommended next move')),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-cyan-200" }, __alloT('stem.physics.recommended_next_move', 'Recommended next move')),
                       React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, physicsNext)
                     )
                   ),
@@ -1996,7 +1996,7 @@ const d = labToolData.physics;
                     ].map(function(metric) {
                       return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
                         React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
-                        React.createElement("div", { className: "mt-1 text-[10px] leading-snug font-bold uppercase tracking-wider text-cyan-200" }, metric.label)
+                        React.createElement("div", { className: "mt-1 text-[0.625rem] leading-snug font-bold uppercase tracking-wider text-cyan-200" }, metric.label)
                       );
                     })
                   )
@@ -2136,7 +2136,7 @@ const d = labToolData.physics;
 
               // \u2500\u2500 Quantitative estimation challenge \u2500\u2500
               React.createElement("div", { className: "flex items-center gap-1.5 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-2 py-1", "data-physics-estimation-challenge": "true", title: "Quantitative estimation challenge: closeness earns XP; inquiry reflections are never graded for matching." },
-                React.createElement("label", { htmlFor: "physPredict", className: "text-[11px] font-bold text-fuchsia-700" }, "\uD83D\uDCCF " + __alloT('stem.physics.predict_landing', 'Estimate landing:')),
+                React.createElement("label", { htmlFor: "physPredict", className: "text-[0.6875rem] font-bold text-fuchsia-700" }, "\uD83D\uDCCF " + __alloT('stem.physics.predict_landing', 'Estimate landing:')),
                 React.createElement("input", {
                   id: "physPredict",
                   type: "number",
@@ -2149,12 +2149,12 @@ const d = labToolData.physics;
                   onChange: function(e) { upd('predictedRange', e.target.value); },
                   className: "w-16 px-1.5 py-0.5 text-xs font-mono border border-fuchsia-600 rounded bg-white text-slate-700 focus:outline-none focus:border-fuchsia-500"
                 }),
-                React.createElement("span", { className: "text-[10px] text-fuchsia-600" }, "m")
+                React.createElement("span", { className: "text-[0.625rem] text-fuchsia-600" }, "m")
               ),
 
               // \u2500\u2500 Estimation result feedback (shown after landing if an estimate was made) \u2500\u2500
               d.predictionResult && React.createElement("div", {
-                className: "px-2 py-1 rounded-lg text-[11px] font-bold border " + (
+                className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold border " + (
                   d.predictionResult.tier === 'bullseye' ? 'bg-fuchsia-700 text-white border-fuchsia-800' :
                   d.predictionResult.tier === 'close' ? 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300' :
                   'bg-slate-100 text-slate-700 border-slate-300'
@@ -2233,7 +2233,7 @@ const d = labToolData.physics;
               // vectors, energy bars, and position without losing context.
               // Active speed gets indigo background so state is obvious.
               React.createElement("div", { className: "flex items-center gap-0 bg-slate-50 border border-slate-300 rounded-lg overflow-hidden", role: "group", "aria-label": __alloT('stem.physics.sim_speed', 'Simulation speed') },
-                React.createElement("span", { className: "px-2 py-1.5 text-[10px] font-bold text-slate-600 bg-slate-100 border-r border-slate-300" }, __alloT('stem.physics.speed_caps', 'SPEED')),
+                React.createElement("span", { className: "px-2 py-1.5 text-[0.625rem] font-bold text-slate-600 bg-slate-100 border-r border-slate-300" }, __alloT('stem.physics.speed_caps', 'SPEED')),
                 [{ v: 1.0, label: "1×" }, { v: 0.5, label: "½×" }, { v: 0.25, label: "¼×" }, { v: 0, label: "⏸" }].map(function (sp) {
                   var isActive = (d.simSpeed != null ? d.simSpeed : 1.0) === sp.v;
                   return React.createElement("button", {
@@ -2318,13 +2318,13 @@ const d = labToolData.physics;
             d.predictionResult && React.createElement("section", { className: "mb-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3", "data-physics-estimation-reflection": "true", role: "region", "aria-label": "Range estimation comparison and reflection" },
               React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 React.createElement("div", null,
-                  React.createElement("h4", { className: "text-[11px] font-black uppercase tracking-wide text-fuchsia-800" }, "Quantitative estimation challenge"),
-                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, "Closeness earns estimation XP here because numerical calibration is the skill. Your reflection earns completion credit regardless of the error.")
+                  React.createElement("h4", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-fuchsia-800" }, "Quantitative estimation challenge"),
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, "Closeness earns estimation XP here because numerical calibration is the skill. Your reflection earns completion credit regardless of the error.")
                 ),
-                React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-fuchsia-800" }, d.predictionResult.errPct.toFixed(0) + "% error")
+                React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-fuchsia-800" }, d.predictionResult.errPct.toFixed(0) + "% error")
               ),
               React.createElement("fieldset", { className: "mt-2" },
-                React.createElement("legend", { className: "text-[10px] font-black text-fuchsia-900" }, "How did the measured result affect your estimate?"),
+                React.createElement("legend", { className: "text-[0.625rem] font-black text-fuchsia-900" }, "How did the measured result affect your estimate?"),
                 React.createElement("div", { className: "mt-1 grid gap-1 sm:grid-cols-3", role: "radiogroup", "aria-label": "How the measured range affected the estimate" },
                   [
                     { id: 'supported', label: 'It supported my method' },
@@ -2332,20 +2332,20 @@ const d = labToolData.physics;
                     { id: 'uncertain', label: 'I need another controlled trial' }
                   ].map(function(option) {
                     var selectedRevision = d.predictionResult.revision === option.id;
-                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1.5 rounded-lg border p-2 text-[10px] font-bold " + (selectedRevision ? "border-fuchsia-500 bg-white text-fuchsia-950" : "border-fuchsia-200 bg-white/60 text-slate-700") },
+                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1.5 rounded-lg border p-2 text-[0.625rem] font-bold " + (selectedRevision ? "border-fuchsia-500 bg-white text-fuchsia-950" : "border-fuchsia-200 bg-white/60 text-slate-700") },
                       React.createElement("input", { type: "radio", name: "physics-estimation-revision", value: option.id, checked: selectedRevision, onChange: function() { upd('predictionResult', Object.assign({}, d.predictionResult, { revision: option.id, reflectionComplete: false })); }, className: "mt-0.5 h-4 w-4 accent-fuchsia-700" }),
                       React.createElement("span", null, option.label)
                     );
                   })
                 )
               ),
-              React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[10px] font-black text-fuchsia-900" }, "What will you keep or change next time?"),
-              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: "The measured range and percent error show... Next time I will...", className: "mt-1 w-full rounded-lg border border-fuchsia-500 bg-white p-2 text-[11px] text-slate-800" }),
+              React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[0.625rem] font-black text-fuchsia-900" }, "What will you keep or change next time?"),
+              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: "The measured range and percent error show... Next time I will...", className: "mt-1 w-full rounded-lg border border-fuchsia-500 bg-white p-2 text-[0.6875rem] text-slate-800" }),
               React.createElement("button", { type: "button", disabled: !d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete, "aria-disabled": d.predictionResult.revision && String(d.predictionResult.reason || '').trim().length >= 12 && !d.predictionResult.reflectionComplete ? "false" : "true", onClick: function() {
                 if (!d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete) return;
                 upd('predictionResult', Object.assign({}, d.predictionResult, { reflectionComplete: true }));
                 if (awardStemXP) awardStemXP('estimate_reflection', 5, 'Reflected on range evidence');
-              }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[10px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? "Reflection saved" : "Save estimation reflection")
+              }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? "Reflection saved" : "Save estimation reflection")
             ),
 
             React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
@@ -2357,7 +2357,7 @@ const d = labToolData.physics;
                 );
                 return React.createElement("div", { key: s.k, className: "text-center rounded-lg p-2 border " + (isLocked ? 'bg-red-50 border-red-300' : 'bg-slate-50') },
 
-                  React.createElement("label", { className: "text-[11px] font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-600') }, isLocked ? '\u{1F512} ' + s.label : s.label),
+                  React.createElement("label", { className: "text-[0.6875rem] font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-600') }, isLocked ? '\u{1F512} ' + s.label : s.label),
 
                   React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
 
@@ -2378,10 +2378,10 @@ const d = labToolData.physics;
 
             // ── XP & Stats Bar ──
             React.createElement("div", { className: "flex items-center gap-3 mb-2 px-1" },
-              React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') } }, "\uD83D\uDE80 " + __alloT('stem.physics.launches_count', 'Launches: ') + (d.launchCount || 0)),
-              React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#92400e') } }, "\uD83C\uDFAF " + __alloT('stem.physics.targets_count', 'Targets: ') + (d.targetsHit || 0)),
-              d.predictionStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f') } }, "\uD83D\uDCCF " + __alloT('stem.physics.prediction_streak_count', 'Estimation streak: ') + d.predictionStreak),
-              d.quizStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fdba74' : '#9a3412') } }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak)
+              React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') } }, "\uD83D\uDE80 " + __alloT('stem.physics.launches_count', 'Launches: ') + (d.launchCount || 0)),
+              React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#92400e') } }, "\uD83C\uDFAF " + __alloT('stem.physics.targets_count', 'Targets: ') + (d.targetsHit || 0)),
+              d.predictionStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f') } }, "\uD83D\uDCCF " + __alloT('stem.physics.prediction_streak_count', 'Estimation streak: ') + d.predictionStreak),
+              d.quizStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fdba74' : '#9a3412') } }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak)
             ),
 
             // \u2500\u2500 Live "Show Your Work" Formulas Panel \u2500\u2500
@@ -2403,16 +2403,16 @@ const d = labToolData.physics;
               var Row = function(label, color, sym, sub, calc, numeric, unit) {
                 return React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-fuchsia-100 mb-1.5" },
                   React.createElement("div", { className: "flex items-baseline gap-2 mb-1" },
-                    React.createElement("span", { className: "text-[11px] font-bold " + color }, label),
-                    React.createElement("span", { className: "font-mono text-[12px] text-slate-700" }, sym)
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold " + color }, label),
+                    React.createElement("span", { className: "font-mono text-[0.75rem] text-slate-700" }, sym)
                   ),
-                  React.createElement("div", { className: "font-mono text-[11px] text-slate-500 ml-3" }, "= " + sub),
-                  calc && React.createElement("div", { className: "font-mono text-[11px] text-slate-500 ml-3" }, "= " + calc),
-                  React.createElement("div", { className: "font-mono text-[12px] font-bold text-fuchsia-700 ml-3" }, "= " + numeric.toFixed(2) + " " + unit)
+                  React.createElement("div", { className: "font-mono text-[0.6875rem] text-slate-500 ml-3" }, "= " + sub),
+                  calc && React.createElement("div", { className: "font-mono text-[0.6875rem] text-slate-500 ml-3" }, "= " + calc),
+                  React.createElement("div", { className: "font-mono text-[0.75rem] font-bold text-fuchsia-700 ml-3" }, "= " + numeric.toFixed(2) + " " + unit)
                 );
               };
               return React.createElement("div", { className: "bg-fuchsia-50 rounded-xl border border-fuchsia-200 p-3 mb-3 animate-in fade-in duration-200", role: "region", "aria-label": __alloT('stem.physics.aria_show_work_panel', 'Show your work formulas panel') },
-                React.createElement("p", { className: "text-[11px] font-bold text-fuchsia-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCDD " + __alloT('stem.physics.show_your_work_title', 'Show Your Work (no-drag ideal)')),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-fuchsia-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCDD " + __alloT('stem.physics.show_your_work_title', 'Show Your Work (no-drag ideal)')),
                 Row(
                   __alloT('stem.physics.row_range', 'Range:'),
                   "text-blue-600",
@@ -2437,7 +2437,7 @@ const d = labToolData.physics;
                   (2 * vel * sinT).toFixed(2) + " / " + grav,
                   flightT, "s"
                 ),
-                d.airResist && React.createElement("p", { className: "text-[10px] text-orange-700 italic mt-1" },
+                d.airResist && React.createElement("p", { className: "text-[0.625rem] text-orange-700 italic mt-1" },
                   "\u26A0\uFE0F " + __alloT('stem.physics.air_drag_warning', 'Air drag is ON. Actual values will be lower than these no-drag predictions.')
                 )
               );
@@ -2455,7 +2455,7 @@ const d = labToolData.physics;
               var lastTrail = trails.length > 0 ? trails[trails.length - 1] : null;
               if (!lastTrail || lastTrail.length < 2) {
                 return React.createElement("div", { className: "bg-teal-50 rounded-xl border border-teal-200 p-3 mb-3" },
-                  React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase tracking-wider mb-1" }, "\u{1F4C9} " + __alloT('stem.physics.motion_components', 'Motion Components')),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-teal-700 uppercase tracking-wider mb-1" }, "\u{1F4C9} " + __alloT('stem.physics.motion_components', 'Motion Components')),
                   React.createElement("p", { className: "text-xs text-teal-600 italic" }, __alloT('stem.physics.launch_to_see_vx_vy', 'Launch a projectile to see Vx-vs-t and Vy-vs-t.'))
                 );
               }
@@ -2497,12 +2497,12 @@ const d = labToolData.physics;
                 return React.createElement('text', { x: x, y: y, fontSize: size || 9, fill: color || '#64748b', textAnchor: anchor || 'middle', fontFamily: 'monospace' }, text);
               };
               return React.createElement("div", { className: "bg-teal-50 rounded-xl border border-teal-200 p-3 mb-3 animate-in fade-in duration-200" },
-                React.createElement("p", { className: "text-[11px] font-bold text-teal-700 uppercase tracking-wider mb-2" },
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-teal-700 uppercase tracking-wider mb-2" },
                   "\u{1F4C9} " + __alloT('stem.physics.motion_components_recent', 'Motion Components (most recent launch)')
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", { className: "bg-white rounded-lg p-2 border border-teal-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-blue-600 mb-1" }, __alloT('stem.physics.vx_vs_t_label', 'Vx vs t — horizontal velocity')),
+                    React.createElement("p", { className: "text-[0.625rem] font-bold text-blue-600 mb-1" }, __alloT('stem.physics.vx_vs_t_label', 'Vx vs t — horizontal velocity')),
                     React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H, role: "img", "aria-label": __alloT('stem.physics.aria_vx_graph', 'Horizontal velocity over time, a flat line') },
                       axisLine(padL, padT, padL, padT + innerH, '#94a3b8'),
                       axisLine(padL, padT + innerH, W - padR, padT + innerH, '#94a3b8'),
@@ -2513,10 +2513,10 @@ const d = labToolData.physics;
                       lbl(W - padR, H - 4, tMax.toFixed(1) + 's', '#475569', 8, 'end'),
                       lbl(padL + innerW / 2, H - 4, __alloT('stem.physics.axis_time_s', 'time (s)'), '#94a3b8', 8, 'middle')
                     ),
-                    React.createElement("p", { className: "text-[10px] text-blue-700 mt-1 italic" }, __alloT('stem.physics.vx_flat_note', 'Flat → no horizontal force, Vx is constant.'))
+                    React.createElement("p", { className: "text-[0.625rem] text-blue-700 mt-1 italic" }, __alloT('stem.physics.vx_flat_note', 'Flat → no horizontal force, Vx is constant.'))
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 border border-teal-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-purple-600 mb-1" }, __alloT('stem.physics.vy_vs_t_label', 'Vy vs t — vertical velocity')),
+                    React.createElement("p", { className: "text-[0.625rem] font-bold text-purple-600 mb-1" }, __alloT('stem.physics.vy_vs_t_label', 'Vy vs t — vertical velocity')),
                     React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H, role: "img", "aria-label": __alloT('stem.physics.aria_vy_graph', 'Vertical velocity over time, decreasing through zero at apex') },
                       axisLine(padL, padT, padL, padT + innerH, '#94a3b8'),
                       axisLine(padL, vyY0, W - padR, vyY0, '#cbd5e1'),
@@ -2528,10 +2528,10 @@ const d = labToolData.physics;
                       lbl(W - padR, H - 4, tMax.toFixed(1) + 's', '#475569', 8, 'end'),
                       lbl(padL + innerW / 2, H - 4, __alloT('stem.physics.axis_time_s', 'time (s)'), '#94a3b8', 8, 'middle')
                     ),
-                    React.createElement("p", { className: "text-[10px] text-purple-700 mt-1 italic" }, __alloT('stem.physics.vy_line_note', 'Straight line → constant gravity. Crosses zero at apex.'))
+                    React.createElement("p", { className: "text-[0.625rem] text-purple-700 mt-1 italic" }, __alloT('stem.physics.vy_line_note', 'Straight line → constant gravity. Crosses zero at apex.'))
                   )
                 ),
-                React.createElement("p", { className: "text-[10px] text-teal-700 italic mt-2 text-center" },
+                React.createElement("p", { className: "text-[0.625rem] text-teal-700 italic mt-2 text-center" },
                   "\u{1F4A1} " + __alloT('stem.physics.motion_independent_note', 'Horizontal and vertical motion are independent. Gravity only affects Vy.')
                 ),
 
@@ -2575,7 +2575,7 @@ const d = labToolData.physics;
                     return React.createElement('text', { x: x, y: y, fontSize: size || 9, fill: color || '#64748b', textAnchor: anchor || 'middle', fontFamily: 'monospace' }, text);
                   };
                   return React.createElement("div", { className: "bg-white rounded-lg p-2 border border-teal-100 mt-2" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" },
+                    React.createElement("p", { className: "text-[0.625rem] font-bold text-amber-700 mb-1" },
                       "R vs θ — range across all angles at v=" + vel + " m/s, g=" + grav + " m/s²"
                     ),
                     React.createElement("svg", { viewBox: "0 0 " + rW + " " + rH, width: "100%", height: rH, role: "img", "aria-label": __alloT('stem.physics.aria_range_angle_graph', 'Range as a function of launch angle, peaking at 45 degrees') },
@@ -2605,7 +2605,7 @@ const d = labToolData.physics;
                         'you: ' + ang + '° → R=' + curR.toFixed(1) + 'm'
                       )
                     ),
-                    React.createElement("p", { className: "text-[10px] text-amber-700 mt-1 italic" },
+                    React.createElement("p", { className: "text-[0.625rem] text-amber-700 mt-1 italic" },
                       d.airResist
                         ? __alloT('stem.physics.sweep_note_drag', 'With drag, the actual optimum is lower than 45° (~38-42°). This chart is no-drag.')
                         : __alloT('stem.physics.sweep_note_nodrag', 'Range peaks at exactly 45° without drag. Complementary angles (e.g. 30° and 60°) hit the same R.')
@@ -2660,7 +2660,7 @@ const d = labToolData.physics;
 
             // ── Real-Time Flight Data Table ──
             d.showFlightData && React.createElement("div", { className: "bg-cyan-50 rounded-xl border border-cyan-200 p-3 mb-3 overflow-x-auto animate-in fade-in duration-200" },
-              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA " + __alloT('stem.physics.flight_data_title', 'Flight Data')),
+              React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA " + __alloT('stem.physics.flight_data_title', 'Flight Data')),
               (function() {
                 var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
                 var trails = cv && cv._trails ? cv._trails : [];
@@ -2703,11 +2703,11 @@ const d = labToolData.physics;
             // ═══ TARGET DESTRUCTION MODE UI ═══
             React.createElement("div", { className: "bg-gradient-to-r from-red-50 to-amber-50 rounded-xl border border-red-200 p-3 mb-3" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("p", { className: "text-[11px] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} " + __alloT('stem.physics.target_mode_title', 'Target Destruction Mode')),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} " + __alloT('stem.physics.target_mode_title', 'Target Destruction Mode')),
                 !d.targetMode
                   ? React.createElement("button", { "aria-label": __alloT('stem.physics.start_mission', 'Start Mission'),
                       onClick: function() { upd('targetMode', true); startTargetRound(1); },
-                      className: "px-3 py-1 bg-red-600 text-white text-[11px] font-bold rounded-lg hover:bg-red-700 transition-all"
+                      className: "px-3 py-1 bg-red-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-red-700 transition-all"
                     }, "\u25B6 " + __alloT('stem.physics.start_mission', 'Start Mission'))
                   : React.createElement("div", { className: "flex gap-1.5" },
                       React.createElement("button", { "aria-label": __alloT('stem.physics.next_round', 'Next Round'),
@@ -2718,16 +2718,16 @@ const d = labToolData.physics;
                           }
                         },
                         disabled: !(d.targetList && d.targetList.every(function(t){return t.destroyed;})),
-                        className: "px-3 py-1 text-[11px] font-bold rounded-lg transition-all " +
+                        className: "px-3 py-1 text-[0.6875rem] font-bold rounded-lg transition-all " +
                           (d.targetList && d.targetList.every(function(t){return t.destroyed;}) ? 'bg-emerald-700 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
                       }, "\u27A1 " + __alloT('stem.physics.next_round', 'Next Round')),
                       React.createElement("button", { "aria-label": __alloT('stem.physics.retry', 'Retry'),
                         onClick: function() { startTargetRound(d.targetRound || 1); },
-                        className: "px-3 py-1 bg-amber-700 text-white text-[11px] font-bold rounded-lg hover:bg-amber-800 transition-all"
+                        className: "px-3 py-1 bg-amber-700 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-amber-800 transition-all"
                       }, "\u{1F504} " + __alloT('stem.physics.retry', 'Retry')),
                       React.createElement("button", { "aria-label": __alloT('stem.physics.end', 'End'),
                         onClick: function() { upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false); },
-                        className: "px-3 py-1 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                        className: "px-3 py-1 bg-slate-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u2716 " + __alloT('stem.physics.end', 'End'))
                     )
               ),
@@ -2741,9 +2741,9 @@ const d = labToolData.physics;
                       __alloT('stem.physics.round_prefix', 'Round ') + (d.targetRound || 1) + "/" + TARGET_LEVELS.length + " — " +
                       (TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).label
                     ),
-                    React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, __alloT('stem.physics.score_prefix', 'Score: ') + (d.targetScore || 0) + " XP")
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-700" }, __alloT('stem.physics.score_prefix', 'Score: ') + (d.targetScore || 0) + " XP")
                   ),
-                  React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" },
+                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1" },
                     (TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).desc
                   )
                 ),
@@ -2762,7 +2762,7 @@ const d = labToolData.physics;
                   d.targetList.map(function(tgt, i) {
                     return React.createElement("span", {
                       key: i,
-                      className: "px-2 py-0.5 rounded-full text-[11px] font-bold " +
+                      className: "px-2 py-0.5 rounded-full text-[0.6875rem] font-bold " +
                         (tgt.destroyed ? 'bg-emerald-100 text-emerald-700 line-through' : 'bg-amber-100 text-amber-700')
                     }, (tgt.destroyed ? "\u2705 " : "\u{1F4E6} ") + tgt.x + "m");
                   })
@@ -2779,26 +2779,26 @@ const d = labToolData.physics;
 
                 // Calculation Scaffold (appears after 2 misses)
                 d.targetShowScaffold && React.createElement("div", { className: "bg-amber-50 rounded-lg border border-amber-200 p-3 animate-in fade-in duration-300" },
-                  React.createElement("p", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "\u{1F4DD} " + __alloT('stem.physics.calculation_helper', 'Calculation Helper')),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "\u{1F4DD} " + __alloT('stem.physics.calculation_helper', 'Calculation Helper')),
                   (function() {
                     var ans = getTargetAnswer();
                     if (!ans) return React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.physics.no_active_target', 'No active target'));
                     return React.createElement("div", { className: "space-y-1" },
                       React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.physics.equation_label', 'Equation: '), React.createElement("b", { className: "font-mono text-blue-700" }, ans.equation)),
                       React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.physics.substitution_label', 'Substitution: '), React.createElement("span", { className: "font-mono text-emerald-700" }, ans.steps)),
-                      React.createElement("p", { className: "text-[11px] text-amber-700 italic mt-1" }, "\u{1F4A1} " + __alloT('stem.physics.try_setting_prefix', 'Try setting ') + ans.param + __alloT('stem.physics.to_approximately', ' to approximately ') + (ans.value ? ans.value.toFixed(1) : '?'))
+                      React.createElement("p", { className: "text-[0.6875rem] text-amber-700 italic mt-1" }, "\u{1F4A1} " + __alloT('stem.physics.try_setting_prefix', 'Try setting ') + ans.param + __alloT('stem.physics.to_approximately', ' to approximately ') + (ans.value ? ans.value.toFixed(1) : '?'))
                     );
                   })()
                 ),
 
                 // Attempt counter
-                React.createElement("p", { className: "text-[11px] text-slate-600 text-right" }, __alloT('stem.physics.attempts_prefix', 'Attempts: ') + (d.targetAttempts || 0))
+                React.createElement("p", { className: "text-[0.6875rem] text-slate-600 text-right" }, __alloT('stem.physics.attempts_prefix', 'Attempts: ') + (d.targetAttempts || 0))
               )
             ),
 
             // ── Multi-Tier Challenges ──
             React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-pink-50 rounded-xl border border-violet-200 p-3 mb-3" },
-              React.createElement("p", { className: "text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83C\uDFC6 " + __alloT('stem.physics.challenges_title', 'Challenges')),
+              React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83C\uDFC6 " + __alloT('stem.physics.challenges_title', 'Challenges')),
               React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                 [
                   { tier: 1, label: '\uD83E\uDD47 ' + __alloT('stem.physics.challenge_tier_1', 'Tier 1'), desc: __alloT('stem.physics.challenge_desc_1', 'Hit the 50m flag'), target: 50, tol: 10, reward: 10, req: '' },
@@ -2819,8 +2819,8 @@ const d = labToolData.physics;
                       (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-600')
                   },
                     React.createElement("p", { className: "text-xs font-bold " + (completed ? 'text-emerald-700' : 'text-violet-700') }, completed ? '\u2705 ' + ch.label : ch.label),
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, ch.desc),
-                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mt-1" }, '+' + ch.reward + ' XP')
+                    React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1" }, ch.desc),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 mt-1" }, '+' + ch.reward + ' XP')
                   );
                 })
               )
@@ -2830,13 +2830,13 @@ const d = labToolData.physics;
 
             React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-indigo-50 rounded-xl border border-sky-200 p-3 mb-3" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-sky-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCDD " + __alloT('stem.physics.kinematic_equations', 'Kinematic Equations')),
+              React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCDD " + __alloT('stem.physics.kinematic_equations', 'Kinematic Equations')),
 
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border text-center" },
 
-                  React.createElement("p", { className: "text-[11px] text-sky-700 font-bold" }, __alloT('stem.physics.label_range', 'Range')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-sky-700 font-bold" }, __alloT('stem.physics.label_range', 'Range')),
 
                   React.createElement("p", { className: "text-xs font-mono font-bold text-sky-800" }, "R = v\u00B2sin(2\u03B8)/g")
 
@@ -2844,7 +2844,7 @@ const d = labToolData.physics;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border text-center" },
 
-                  React.createElement("p", { className: "text-[11px] text-sky-700 font-bold" }, __alloT('stem.physics.label_max_height', 'Max Height')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-sky-700 font-bold" }, __alloT('stem.physics.label_max_height', 'Max Height')),
 
                   React.createElement("p", { className: "text-xs font-mono font-bold text-sky-800" }, "H = v\u00B2sin\u00B2(\u03B8)/2g")
 
@@ -2852,7 +2852,7 @@ const d = labToolData.physics;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border text-center" },
 
-                  React.createElement("p", { className: "text-[11px] text-sky-700 font-bold" }, __alloT('stem.physics.label_flight_time', 'Flight Time')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-sky-700 font-bold" }, __alloT('stem.physics.label_flight_time', 'Flight Time')),
 
                   React.createElement("p", { className: "text-xs font-mono font-bold text-sky-800" }, "T = 2v\u00B7sin(\u03B8)/g")
 
@@ -2860,7 +2860,7 @@ const d = labToolData.physics;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border text-center" },
 
-                  React.createElement("p", { className: "text-[11px] text-sky-700 font-bold" }, __alloT('stem.physics.label_position', 'Position')),
+                  React.createElement("p", { className: "text-[0.6875rem] text-sky-700 font-bold" }, __alloT('stem.physics.label_position', 'Position')),
 
                   React.createElement("p", { className: "text-xs font-mono font-bold text-sky-800" }, "y = v\u2080t - \u00BDgt\u00B2")
 
@@ -2868,7 +2868,7 @@ const d = labToolData.physics;
 
               ),
 
-              d.airResist && React.createElement("p", { className: "mt-2 text-[11px] text-orange-500 italic" }, "\u26A0\uFE0F " + __alloT('stem.physics.air_drag_modifies', 'Air drag modifies these equations — real range will be shorter than the idealized calculation below.'))
+              d.airResist && React.createElement("p", { className: "mt-2 text-[0.6875rem] text-orange-500 italic" }, "\u26A0\uFE0F " + __alloT('stem.physics.air_drag_modifies', 'Air drag modifies these equations — real range will be shorter than the idealized calculation below.'))
 
             ),
 
@@ -2876,7 +2876,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-sky-700 uppercase" }, __alloT('stem.physics.label_range', 'Range')),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-700 uppercase" }, __alloT('stem.physics.label_range', 'Range')),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var r = d.angle * Math.PI / 180; return ((d.velocity * d.velocity * Math.sin(2 * r)) / d.gravity).toFixed(1); })() + " m")
 
@@ -2884,7 +2884,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-sky-700 uppercase" }, __alloT('stem.physics.label_max_height', 'Max Height')),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-700 uppercase" }, __alloT('stem.physics.label_max_height', 'Max Height')),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (vy * vy / (2 * d.gravity)).toFixed(1); })() + " m")
 
@@ -2892,7 +2892,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-sky-700 uppercase" }, __alloT('stem.physics.label_flight_time', 'Flight Time')),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-700 uppercase" }, __alloT('stem.physics.label_flight_time', 'Flight Time')),
 
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (2 * vy / d.gravity).toFixed(2); })() + " s")
 
@@ -2906,7 +2906,7 @@ const d = labToolData.physics;
 
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.physics.predict_the_landing', 'Calculate the Landing')),
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.physics.predict_the_landing', 'Calculate the Landing')),
 
                 React.createElement("button", { "aria-label": __alloT('stem.physics.aria_generate_quiz', 'Generate range calculation quiz'),
 
@@ -2944,7 +2944,7 @@ const d = labToolData.physics;
 
                     upd('quizAnswer', qRange); upd('quizOptions', opts); upd('quizPicked', null); upd('quizFeedback', null);
 
-                  }, className: "px-3 py-1 bg-amber-700 text-white text-[11px] font-bold rounded-lg hover:bg-amber-700 transition-all"
+                  }, className: "px-3 py-1 bg-amber-700 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-amber-700 transition-all"
 
                 }, d.quizActive ? "\uD83D\uDD04 " + __alloT('stem.physics.new_question', 'New Question') : "\u25B6 " + __alloT('stem.physics.start_quiz', 'Start Quiz'))
 
@@ -3045,10 +3045,10 @@ const d = labToolData.physics;
               }
               return React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700 uppercase tracking-wider" }, "\uD83E\uDDE0 " + __alloT('stem.physics.physics_myths_title', 'Physics Myths \u2014 true or false?')),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider" }, "\uD83E\uDDE0 " + __alloT('stem.physics.physics_myths_title', 'Physics Myths \u2014 true or false?')),
                   React.createElement("button", { "aria-label": __alloT('stem.physics.aria_start_myth', 'Start a physics myth question'),
                     onClick: startMyth,
-                    className: "px-3 py-1 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-all"
+                    className: "px-3 py-1 bg-violet-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-violet-700 transition-all"
                   }, myth ? "\uD83D\uDD04 " + __alloT('stem.physics.new_myth', 'New Myth') : "\u25B6 " + __alloT('stem.physics.start', 'Start'))
                 ),
                 myth && React.createElement("div", { className: "space-y-2" },
@@ -3075,7 +3075,7 @@ const d = labToolData.physics;
                     React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? 'text-emerald-700' : 'text-red-700') },
                       (myth.chosen === myth.t ? '\u2705 ' + __alloT('stem.physics.correct_dash', 'Correct \u2014 ') : '\u274C ' + __alloT('stem.physics.not_quite_dash', 'Not quite \u2014 ')) + (myth.t ? __alloT('stem.physics.true_period', 'TRUE.') : __alloT('stem.physics.false_period', 'FALSE.'))),
                     React.createElement("p", { className: "text-xs leading-relaxed text-slate-700 mb-1" }, myth.why),
-                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold text-indigo-700" }, "\uD83D\uDD2C " + __alloT('stem.physics.try_it_in_sim', 'Try it in the sim: ') + myth.tryIt)
+                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed font-bold text-indigo-700" }, "\uD83D\uDD2C " + __alloT('stem.physics.try_it_in_sim', 'Try it in the sim: ') + myth.tryIt)
                   )
                 )
               );
@@ -3115,7 +3115,7 @@ const d = labToolData.physics;
               }
               return h('div', { className: 'mt-4 p-4 rounded-xl bg-white border border-indigo-200 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-indigo-700 mb-1' }, '\uD83C\uDF0D ' + __alloT('stem.physics.iq_title', 'Gravity-angle discovery')),
-                h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+                h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
                   __alloT('stem.physics.iq_intro', 'Three sliders control gravity (any planet), launch angle, and velocity. The simulator tells you whether your projectile range is near-optimal, reasonable, or far-off \u2014 a discrete 3-state outcome (no numeric score). Sweep the sliders. Log observations. Type what you discover.')),
                 h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
                   h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
@@ -3123,7 +3123,7 @@ const d = labToolData.physics;
                   // (stateMeta.bg is forced to #000000 there), so this readout's
                   // slate-700 landed at 2.03:1 on it — the label got the yellow
                   // treatment and its sub-line was missed.
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1', style: isContrast ? { color: '#ffff00' } : undefined }, __alloT('stem.physics.iq_range_prefix', 'Range ') + range.toFixed(1) + __alloT('stem.physics.iq_range_mid', ' m (max possible at this v + g: ') + maxRange.toFixed(1) + __alloT('stem.physics.iq_range_end', ' m)'))
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1', style: isContrast ? { color: '#ffff00' } : undefined }, __alloT('stem.physics.iq_range_prefix', 'Range ') + range.toFixed(1) + __alloT('stem.physics.iq_range_mid', ' m (max possible at this v + g: ') + maxRange.toFixed(1) + __alloT('stem.physics.iq_range_end', ' m)'))
                 ),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
                   [
@@ -3132,7 +3132,7 @@ const d = labToolData.physics;
                     { key: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'),  val: iq.velocity, min: 5,  max: 50, step: 1   }
                   ].map(function(s) {
                     return h('div', { key: s.key },
-                      h('label', { htmlFor: 'gh-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                      h('label', { htmlFor: 'gh-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
                         s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
                       h('input', { id: 'gh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
                         onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
@@ -3140,13 +3140,13 @@ const d = labToolData.physics;
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB ' + __alloT('stem.physics.iq_log', 'Log')),
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB ' + __alloT('stem.physics.iq_log', 'Log')),
                   h('button', { onClick: function() { setIQ({ gravity: 9.8, angle: 45, velocity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-500' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
-                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.physics.iq_logged', ' logged'))
+                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.physics.iq_logged', ' logged'))
                 ),
                 (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
-                  h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                  h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
                     h('thead', null, h('tr', { className: 'bg-slate-100' },
                       ['g', __alloT('stem.physics.iq_col_angle', 'angle\u00B0'), 'v', __alloT('stem.physics.iq_col_range', 'range m'), __alloT('stem.physics.iq_col_state', 'state')].map(function(c, i) {
                         return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
@@ -3161,17 +3161,17 @@ const d = labToolData.physics;
                     })))
                 ),
                 h('div', { className: 'mb-3' },
-                  h('label', { htmlFor: 'gh-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.physics.iq_hypothesis_label', 'Your hypothesis (free text \u2014 no right answer):')),
+                  h('label', { htmlFor: 'gh-hypo', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.physics.iq_hypothesis_label', 'Your hypothesis (free text \u2014 no right answer):')),
                   h('textarea', { id: 'gh-hypo', value: iq.hypothesis || '',
                     onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                     placeholder: __alloT('stem.physics.iq_hypothesis_placeholder', 'Is the optimal angle the same on every planet? Does doubling velocity double range? Type your own theory.'),
-                    className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 })
+                    className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 })
                 ),
                 h('div', { className: 'mb-3' },
                   !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                    className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
+                    className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' },
                     '\uD83E\uDD14 ' + __alloT('stem.physics.iq_stuck_btn', "I'm stuck \u2014 show me questions to think about (no answers)")),
-                  iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                     h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.physics.iq_open_prompts', 'Open prompts \u2014 investigate by manipulating:')),
                     h('ul', { className: 'list-disc pl-5 space-y-1' },
                       h('li', null, __alloT('stem.physics.iq_prompt_1', 'Hold two sliders steady. Move the third. Watch what happens.')),
@@ -3179,21 +3179,21 @@ const d = labToolData.physics;
                       h('li', null, __alloT('stem.physics.iq_prompt_3', 'Try switching planets via the gravity slider. Does the best angle change?')),
                       h('li', null, __alloT('stem.physics.iq_prompt_4', 'Log several "optimal" observations. What angle do they share?')),
                       h('li', null, __alloT('stem.physics.iq_prompt_5', 'Real artillery uses tables not formulas. What does that suggest about the relationship between angle and range?'))),
-                    h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, __alloT('stem.physics.iq_no_answers', 'No answers. Investigate.')))
+                    h('div', { className: 'text-[0.625rem] italic text-amber-700 mt-2' }, __alloT('stem.physics.iq_no_answers', 'No answers. Investigate.')))
                 ),
                 h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                   h('div', { className: 'flex items-center gap-2 mb-2' },
                     h('input', { type: 'checkbox', id: 'gh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                    h('label', { htmlFor: 'gh-und', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    h('label', { htmlFor: 'gh-und', className: 'text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                       __alloT('stem.physics.iq_understand_label', 'I think I understand the trade-offs \u2014 let me explain them in my own words'))),
                   iq.understood && h('textarea', { value: iq.explanation || '',
                     onChange: function(e) { setIQ({ explanation: e.target.value }); },
                     'aria-label': __alloT('stem.physics.iq_explanation_input', 'Projectile physics explanation'), placeholder: __alloT('stem.physics.iq_explain_placeholder', 'Explain in your own words: how do gravity, angle, and velocity interact? Why is 45\u00B0 special \u2014 or is it?'),
-                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
-                  iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
+                  iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700' },
                     '\u2713 ' + __alloT('stem.physics.iq_saved_note', 'Saved. Notice \u2014 nobody checked your answer.'))
                 ),
-                h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
+                h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.625rem] italic text-slate-600' },
                   __alloT('stem.physics.iq_design_note', 'Design note: no numeric range target, no reveal button. Range quality is shown as a discrete 3-state marker, not a continuous gradient \u2014 by design, to discourage optimization-gaming behavior.'))
               );
             })(),
@@ -3236,7 +3236,7 @@ const d = labToolData.physics;
                         onClick: function () { upd('aiLevel', L.id); },
                         "aria-label": __alloT('stem.physics.aria_reading_level_prefix', 'Reading level: ') + L.label + (active ? __alloT('stem.physics.selected_suffix', ' (selected)') : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                        className: "px-2 py-0.5 rounded text-[0.625rem] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
                       }, L.label);
                     })
                   ),
@@ -3244,12 +3244,12 @@ const d = labToolData.physics;
                     onClick: explain,
                     disabled: aiLoading,
                     "aria-label": __alloT('stem.physics.aria_generate_ai_prefix', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || __alloT('stem.physics.level_grade5', 'Grade 5')) + __alloT('stem.physics.aria_level_suffix', ' level'),
-                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                    className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
                   }, aiLoading ? '\u23F3 ' + __alloT('stem.physics.thinking', 'Thinking...') : (aiText ? '\uD83D\uDD04 ' + __alloT('stem.physics.re_explain', 'Re-explain') : '\uD83E\uDDE0 ' + __alloT('stem.physics.explain', 'Explain')))
                 ),
-                aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                aiError && React.createElement("p", { className: "text-[0.6875rem] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-600" }, __alloT('stem.physics.ai_empty_hint', 'Click \u201CExplain\u201D for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.'))
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[0.6875rem] italic text-slate-600" }, __alloT('stem.physics.ai_empty_hint', 'Click \u201CExplain\u201D for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.'))
               );
             })()
 

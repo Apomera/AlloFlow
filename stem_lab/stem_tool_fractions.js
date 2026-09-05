@@ -2168,7 +2168,7 @@ window.StemLab = window.StemLab || {
         bars.push(h('div', { key: 'rw' + w, style: { width: 60 } }, drawBar(den, den, color)));
       }
       if (wholes > 4) {
-        bars.push(h('span', { key: 'more', className: 'self-center text-[11px] font-bold text-slate-600 px-1' }, '+' + (wholes - 4) + ' more'));
+        bars.push(h('span', { key: 'more', className: 'self-center text-[0.6875rem] font-bold text-slate-600 px-1' }, '+' + (wholes - 4) + ' more'));
       }
       if (rem > 0 || bars.length === 0) {
         bars.push(h('div', { key: 'rem', style: { width: 60 } }, drawBar(rem, den, color)));
@@ -2548,14 +2548,14 @@ window.StemLab = window.StemLab || {
           )
         ),
         h('div', { className: 'bg-sky-100 rounded-lg p-2 border border-sky-300' },
-          h('p', { className: 'text-[11px] text-sky-900' },
+          h('p', { className: 'text-[0.6875rem] text-sky-900' },
             __alloT('stem.fractions.take_the_highest_power_of_each_prime_t', 'Take the highest power of each prime that appears:')
           ),
           h('div', { className: 'font-mono text-sky-900 text-sm font-bold mt-1' },
             'LCM(' + a + ', ' + b + ') = ' + info.lcmVal
           )
         ),
-        h('p', { className: 'text-[11px] text-sky-700 italic' },
+        h('p', { className: 'text-[0.6875rem] text-sky-700 italic' },
           '💡 The LCM is the smallest common denominator. Multiply each fraction so its denominator becomes ' + info.lcmVal + '.'
         )
       );
@@ -2583,8 +2583,8 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border-2 border-violet-200 p-4 space-y-2' },
         h('h4', { className: 'text-sm font-black text-violet-800' }, '✂️ Simplifying ' + n + '/' + d + ' step by step'),
         h('div', { className: 'bg-white rounded-lg p-2 border border-violet-200' },
-          h('p', { className: 'text-[11px] text-violet-700 mb-1' }, 'GCD(' + n + ', ' + d + ') = ', h('b', null, g)),
-          h('p', { className: 'text-[11px] text-violet-700' }, __alloT('stem.fractions.divide_top_and_bottom_by_the_gcd', 'Divide top and bottom by the GCD:'))
+          h('p', { className: 'text-[0.6875rem] text-violet-700 mb-1' }, 'GCD(' + n + ', ' + d + ') = ', h('b', null, g)),
+          h('p', { className: 'text-[0.6875rem] text-violet-700' }, __alloT('stem.fractions.divide_top_and_bottom_by_the_gcd', 'Divide top and bottom by the GCD:'))
         ),
         steps.length > 0
           ? h('div', { className: 'space-y-1' },
@@ -2598,7 +2598,7 @@ window.StemLab = window.StemLab || {
                 );
               })
             )
-          : h('p', { className: 'text-[11px] text-violet-700 italic' }, __alloT('stem.fractions.already_in_simplest_form', 'Already in simplest form!')),
+          : h('p', { className: 'text-[0.6875rem] text-violet-700 italic' }, __alloT('stem.fractions.already_in_simplest_form', 'Already in simplest form!')),
         h('div', { className: 'bg-violet-100 rounded-lg p-2 border border-violet-300 text-center' },
           h('span', { className: 'text-sm font-bold text-violet-900' },
             n + '/' + d + ' → ', h('b', null, sn + '/' + sd)
@@ -2641,7 +2641,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         whole > 0 && h('div', { className: 'bg-white rounded-lg p-2 border border-amber-200' },
-          h('p', { className: 'text-[11px] text-amber-700 mb-1' }, 'Visual: ' + whole + ' whole' + (whole > 1 ? 's' : '') + (rem > 0 ? ' + ' + rem + '/' + improperD : '')),
+          h('p', { className: 'text-[0.6875rem] text-amber-700 mb-1' }, 'Visual: ' + whole + ' whole' + (whole > 1 ? 's' : '') + (rem > 0 ? ' + ' + rem + '/' + improperD : '')),
           h('div', { className: 'flex items-center gap-2 flex-wrap' }, icons)
         )
       );
@@ -2690,10 +2690,10 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-lg p-3 border border-blue-200 font-mono text-sm' },
           h('div', { className: 'mb-1 text-blue-900' }, n + ' / ' + d + ' = ', h('b', null, decStr)),
           terminates
-            ? h('p', { className: 'text-[11px] text-emerald-700 mt-1' }, __alloT('stem.fractions.terminating_decimal_denominator_only_h', '✓ Terminating decimal (denominator only has prime factors 2 and 5)'))
-            : h('p', { className: 'text-[11px] text-amber-700 mt-1' }, __alloT('stem.fractions.repeating_decimal_parentheses_mark_the', '↻ Repeating decimal (parentheses mark the repeating block)'))
+            ? h('p', { className: 'text-[0.6875rem] text-emerald-700 mt-1' }, __alloT('stem.fractions.terminating_decimal_denominator_only_h', '✓ Terminating decimal (denominator only has prime factors 2 and 5)'))
+            : h('p', { className: 'text-[0.6875rem] text-amber-700 mt-1' }, __alloT('stem.fractions.repeating_decimal_parentheses_mark_the', '↻ Repeating decimal (parentheses mark the repeating block)'))
         ),
-        h('p', { className: 'text-[11px] text-blue-700 italic' },
+        h('p', { className: 'text-[0.6875rem] text-blue-700 italic' },
           '💡 ',
           terminates
             ? 'When the denominator has only 2s and 5s in its prime factorization, the decimal terminates.'
@@ -2995,7 +2995,7 @@ window.StemLab = window.StemLab || {
                 }, h('span', { className: 'sr-only' }, (i + 1) + ' of ' + pd));
               })
             ),
-            h('p', { className: 'text-[11px] text-slate-600 mt-2 mb-0' },
+            h('p', { className: 'text-[0.6875rem] text-slate-600 mt-2 mb-0' },
               'Click the strip to set the numerator directly; use the sliders to change the whole.'
             )
           )
@@ -3005,7 +3005,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'fraction-lab-kicker' }, 'Build the fraction'),
             h('div', { className: 'mt-2' },
               h('label', { htmlFor: denId, className: 'block text-xs font-black text-slate-700' }, __alloT('stem.fractions.denominator_parts', 'Denominator (parts)')),
-              h('p', { id: denId + '-hint', className: 'text-[11px] text-slate-500 mt-0.5 mb-0' }, 'How many equal parts make one whole.'),
+              h('p', { id: denId + '-hint', className: 'text-[0.6875rem] text-slate-500 mt-0.5 mb-0' }, 'How many equal parts make one whole.'),
               h('div', { className: 'fraction-lab-slider-row' },
                 h('input', {
                   id: denId,
@@ -3018,7 +3018,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'mt-3' },
               h('label', { htmlFor: numId, className: 'block text-xs font-black text-slate-700' }, __alloT('stem.fractions.numerator_selected', 'Numerator (selected)')),
-              h('p', { id: numId + '-hint', className: 'text-[11px] text-slate-500 mt-0.5 mb-0' }, 'How many of those equal parts are filled.'),
+              h('p', { id: numId + '-hint', className: 'text-[0.6875rem] text-slate-500 mt-0.5 mb-0' }, 'How many of those equal parts are filled.'),
               h('div', { className: 'fraction-lab-slider-row' },
                 h('input', {
                   id: numId,
@@ -3093,11 +3093,11 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         // Quick presets
         h('div', { className: 'flex flex-wrap gap-1.5' },
-          h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' + onHostInk }, 'Presets:'),
+          h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 self-center' + onHostInk }, 'Presets:'),
           [[1,2,1,3],[2,5,3,8],[3,4,5,6],[1,4,2,8],[7,10,3,5],[5,12,1,3]].map(function(pr) {
             return h('button', { key: pr.join('-'),
               onClick: function() { sfxClick(); upd({ num1: pr[0], den1: pr[1], num2: pr[2], den2: pr[3], quiz: null }); },
-              className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all'
+              className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all'
             }, pr[0] + '/' + pr[1] + ' vs ' + pr[2] + '/' + pr[3]);
           })
         ),
@@ -3321,7 +3321,7 @@ window.StemLab = window.StemLab || {
         return h('section', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-3', 'aria-labelledby': 'signed-number-line-title' },
           h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 mb-1' },
             h('h3', { id: 'signed-number-line-title', className: 'text-xs font-black text-slate-800' }, 'Signed position map'),
-            h('span', { className: 'text-[11px] font-bold text-slate-500' }, 'Auto-scaled from -' + axisLabel(bound) + ' to ' + axisLabel(bound))
+            h('span', { className: 'text-[0.6875rem] font-bold text-slate-500' }, 'Auto-scaled from -' + axisLabel(bound) + ' to ' + axisLabel(bound))
           ),
           h('svg', { viewBox: '0 0 ' + width + ' ' + height, width: '100%', height: height, role: 'img', 'aria-label': chartLabel, className: 'block mx-auto', style: { maxWidth: width + 'px' } }, elements),
           h('p', { className: 'text-xs text-slate-700 text-center font-semibold' }, movementText)
@@ -3348,7 +3348,7 @@ window.StemLab = window.StemLab || {
           }
         }
         return h('div', { className: 'bg-white rounded-xl border p-3 text-center' },
-          h('p', { className: 'text-[11px] font-bold text-green-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.area_model', '\uD83D\uDFE9 Area Model')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-green-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.area_model', '\uD83D\uDFE9 Area Model')),
           h('svg', { 'aria-hidden': 'true', viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 200) }, cells),
           h('p', { className: 'text-xs text-slate-600 mt-1' },
             'Green = ' + num1 + '\u00D7' + num2 + ' = ' + (num1 * num2) + ' out of ' + (den1 * den2) + ' total cells'
@@ -3363,7 +3363,7 @@ window.StemLab = window.StemLab || {
         h('div', { role: 'note', className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3 flex flex-wrap items-center gap-3' },
           h('div', { className: 'flex-1 min-w-[220px]' },
             h('p', { className: 'text-xs font-black text-indigo-800' }, 'Signed fractions'),
-            h('p', { className: 'text-[11px] text-indigo-700 mt-0.5' }, signedFractions ? 'Sign Detective is active. Predict positive, zero, or negative before the exact result is revealed.' : 'Enable negative numerators to practice Grade 7 rational-number sign rules.')
+            h('p', { className: 'text-[0.6875rem] text-indigo-700 mt-0.5' }, signedFractions ? 'Sign Detective is active. Predict positive, zero, or negative before the exact result is revealed.' : 'Enable negative numerators to practice Grade 7 rational-number sign rules.')
           ),
           h('button', { type: 'button', role: 'switch', 'aria-checked': signedFractions, 'aria-label': 'Signed fraction mode',
             onClick: function() { var next = !signedFractions; upd({ signedFractions: next, num1: next ? num1 : Math.abs(num1), num2: next ? num2 : Math.abs(num2), signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
@@ -3374,18 +3374,18 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap items-center gap-3' },
             h('div', { className: 'flex-1 min-w-[190px]' },
               h('h3', { id: 'sign-missions-title', className: 'text-sm font-black' }, 'Sign Detective missions'),
-              h('p', { className: 'text-[11px] text-slate-300 mt-0.5', 'aria-live': 'polite' }, activeMission ? 'Mission ' + (activeMission.index + 1) + ' of ' + SIGNED_OPERATION_CHALLENGES.length + ': ' + activeMission.label : 'Practice a curated mix of signed addition, subtraction, multiplication, and division.')
+              h('p', { className: 'text-[0.6875rem] text-slate-300 mt-0.5', 'aria-live': 'polite' }, activeMission ? 'Mission ' + (activeMission.index + 1) + ' of ' + SIGNED_OPERATION_CHALLENGES.length + ': ' + activeMission.label : 'Practice a curated mix of signed addition, subtraction, multiplication, and division.')
             ),
             h('button', { type: 'button', onClick: startNextSignChallenge, className: 'px-3 py-2 rounded-lg bg-cyan-400 text-slate-950 text-xs font-black hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900' }, activeMission ? (signReveal ? 'Next mission' : 'Change mission') : 'Start mission')
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 mt-3 text-center' },
-            h('div', null, h('p', { className: 'text-lg font-black text-cyan-300' }, signCorrectCount + '/' + signAttemptCount), h('p', { className: 'text-[10px] text-slate-300' }, 'Correct')),
-            h('div', null, h('p', { className: 'text-lg font-black text-amber-300' }, signStreak), h('p', { className: 'text-[10px] text-slate-300' }, 'Streak')),
-            h('div', null, h('p', { className: 'text-lg font-black text-emerald-300' }, signBestStreak), h('p', { className: 'text-[10px] text-slate-300' }, 'Best'))
+            h('div', null, h('p', { className: 'text-lg font-black text-cyan-300' }, signCorrectCount + '/' + signAttemptCount), h('p', { className: 'text-[0.625rem] text-slate-300' }, 'Correct')),
+            h('div', null, h('p', { className: 'text-lg font-black text-amber-300' }, signStreak), h('p', { className: 'text-[0.625rem] text-slate-300' }, 'Streak')),
+            h('div', null, h('p', { className: 'text-lg font-black text-emerald-300' }, signBestStreak), h('p', { className: 'text-[0.625rem] text-slate-300' }, 'Best'))
           ),
           h('div', { className: 'mt-2 flex items-center gap-2' },
             h('progress', { max: 100, value: signAccuracy, 'aria-label': 'Sign Detective accuracy: ' + signAccuracy + ' percent', className: 'w-full h-2 accent-cyan-400' }),
-            h('span', { className: 'text-[10px] font-bold text-slate-300 w-9 text-right' }, signAccuracy + '%')
+            h('span', { className: 'text-[0.625rem] font-bold text-slate-300 w-9 text-right' }, signAccuracy + '%')
           )
         ),
         // Fraction inputs (compact)
@@ -3426,7 +3426,7 @@ window.StemLab = window.StemLab || {
         signedFractions && h('fieldset', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-3' },
           h('legend', { className: 'px-1 text-xs font-black text-violet-800' }, 'Sign Detective: predict the result'),
           opUndefined ? h('p', { role: 'status', className: 'text-xs text-red-700' }, 'The second fraction is zero, so division is undefined and has no sign.') : h(React.Fragment, null,
-            !signReveal && h('p', { className: 'text-[11px] text-violet-700 mb-2' }, 'Strategy: ' + signReasoning.prompt),
+            !signReveal && h('p', { className: 'text-[0.6875rem] text-violet-700 mb-2' }, 'Strategy: ' + signReasoning.prompt),
             h('div', { className: 'grid grid-cols-3 gap-2' }, ['positive', 'zero', 'negative'].map(function(choice) {
               return h('label', { key: choice, className: 'flex items-center justify-center gap-2 rounded-lg border px-2 py-2 text-xs font-bold cursor-pointer ' + (signPrediction === choice ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200') },
                 h('input', { type: 'radio', name: 'fraction-sign-prediction', value: choice, checked: signPrediction === choice, disabled: opUndefined || signReveal, onChange: function() { upd({ signPrediction: choice, signFeedback: null }); } }),
@@ -3442,7 +3442,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-xs font-black' }, 'Reasoning coach: ' + signReasoning.title),
                 signReasoning.rewrite && h('p', { className: 'mt-1 font-mono text-xs font-bold break-words' }, signReasoning.rewrite),
                 h('p', { className: 'mt-1 text-xs' }, signReasoning.rule),
-                h('p', { className: 'mt-1 text-[11px] font-bold text-violet-700' }, signReasoning.cue)
+                h('p', { className: 'mt-1 text-[0.6875rem] font-bold text-violet-700' }, signReasoning.cue)
               )
             )
           )
@@ -3522,7 +3522,7 @@ window.StemLab = window.StemLab || {
         ),
         // Equiv chains
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-4' },
-          h('p', { className: 'text-[11px] font-bold text-orange-700 uppercase tracking-wider mb-2' }, '\uD83D\uDD17 Equivalent Fractions for ' + s1[0] + '/' + s1[1]),
+          h('p', { className: 'text-[0.6875rem] font-bold text-orange-700 uppercase tracking-wider mb-2' }, '\uD83D\uDD17 Equivalent Fractions for ' + s1[0] + '/' + s1[1]),
           h('div', { className: 'flex flex-wrap gap-2 mb-3' },
             equivChain(num1, den1, 8).map(function(eq, i) {
               return h('div', {
@@ -3530,11 +3530,11 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-2 rounded-lg border text-center transition-all ' + (i === 0 ? 'bg-blue-100 border-blue-300 shadow-sm' : 'bg-slate-50 border-slate-200 hover:bg-blue-50')
               },
                 h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-blue-700' : 'text-slate-700') }, eq[0] + '/' + eq[1]),
-                h('span', { className: 'text-[11px] text-slate-600 block' }, '\u00D7' + (i + 1))
+                h('span', { className: 'text-[0.6875rem] text-slate-600 block' }, '\u00D7' + (i + 1))
               );
             })
           ),
-          h('p', { className: 'text-[11px] font-bold text-orange-700 uppercase tracking-wider mb-2 mt-3' }, '\uD83D\uDD17 Equivalent Fractions for ' + s2[0] + '/' + s2[1]),
+          h('p', { className: 'text-[0.6875rem] font-bold text-orange-700 uppercase tracking-wider mb-2 mt-3' }, '\uD83D\uDD17 Equivalent Fractions for ' + s2[0] + '/' + s2[1]),
           h('div', { className: 'flex flex-wrap gap-2' },
             equivChain(num2, den2, 8).map(function(eq, i) {
               return h('div', {
@@ -3542,7 +3542,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-2 rounded-lg border text-center transition-all ' + (i === 0 ? 'bg-red-100 border-red-300 shadow-sm' : 'bg-slate-50 border-slate-200 hover:bg-red-50')
               },
                 h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-red-700' : 'text-slate-700') }, eq[0] + '/' + eq[1]),
-                h('span', { className: 'text-[11px] text-slate-600 block' }, '\u00D7' + (i + 1))
+                h('span', { className: 'text-[0.6875rem] text-slate-600 block' }, '\u00D7' + (i + 1))
               );
             })
           ),
@@ -3642,7 +3642,7 @@ window.StemLab = window.StemLab || {
                   style: { width: Math.min(cPct, 100) + '%', backgroundColor: '#0f766e', transition: 'width 0.3s' },
                   className: 'h-full rounded-full flex items-center justify-center'
                 },
-                  cPct >= 15 && h('span', { className: 'text-[11px] font-bold text-white' }, cPct.toFixed(0) + '%')
+                  cPct >= 15 && h('span', { className: 'text-[0.6875rem] font-bold text-white' }, cPct.toFixed(0) + '%')
                 )
               )
             )
@@ -3702,7 +3702,7 @@ window.StemLab = window.StemLab || {
             className: 'text-xs font-bold text-teal-700 hover:text-teal-900 transition-colors'
           }, (showBenchmarks ? '\u25BC' : '\u25B6') + ' Benchmark Fractions Reference'),
           showBenchmarks && h('div', { className: 'mt-2 bg-white rounded-xl border p-3' },
-            h('div', { className: 'grid grid-cols-3 gap-1 text-[11px] font-bold mb-1' },
+            h('div', { className: 'grid grid-cols-3 gap-1 text-[0.6875rem] font-bold mb-1' },
               h('span', { className: 'text-slate-600' }, __alloT('stem.fractions.fraction_3', 'Fraction')),
               h('span', { className: 'text-slate-600' }, __alloT('stem.fractions.decimal_2', 'Decimal')),
               h('span', { className: 'text-slate-600' }, __alloT('stem.fractions.percent_3', 'Percent'))
@@ -3817,7 +3817,7 @@ window.StemLab = window.StemLab || {
                   'data-fraction': num + '/' + den,
                   'data-unit-fraction': '1/' + den,
                   'data-highlighted-length': fillsHighlightedLength ? 'true' : 'false',
-                  className: 'h-8 min-w-0 p-0 text-[9px] font-bold focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:ring-offset-1 disabled:cursor-wait',
+                  className: 'h-8 min-w-0 p-0 text-[0.5625rem] font-bold focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:ring-offset-1 disabled:cursor-wait',
                   style: {
                     background: fillsHighlightedLength ? '#fbbf24' : isSelected ? '#7e22ce' : colors[rowIdx % colors.length],
                     color: fillsHighlightedLength ? '#0f172a' : '#ffffff',
@@ -3829,7 +3829,7 @@ window.StemLab = window.StemLab || {
                 }, den <= 8 ? '1/' + den : ''));
               }
               return h('div', { key: 'row' + rowIdx, className: 'flex items-center gap-2' },
-                h('span', { className: 'w-8 shrink-0 text-right text-[11px] font-bold text-slate-600', 'aria-hidden': 'true' }, '/' + den),
+                h('span', { className: 'w-8 shrink-0 text-right text-[0.6875rem] font-bold text-slate-600', 'aria-hidden': 'true' }, '/' + den),
                 h('div', { className: 'grid flex-1 gap-px', style: { gridTemplateColumns: 'repeat(' + den + ', minmax(0, 1fr))' } }, pieces2)
               );
             })
@@ -3840,7 +3840,7 @@ window.StemLab = window.StemLab || {
         ),
         // Quick equivalent finder
         h('div', { className: 'bg-white rounded-xl border p-3' },
-          h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.find_equivalents', '\uD83D\uDD0D Find Equivalents')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.find_equivalents', '\uD83D\uDD0D Find Equivalents')),
           h('div', { className: 'flex gap-2 flex-wrap' },
             [
               { n: 1, d: 2, l: '1/2' }, { n: 1, d: 3, l: '1/3' }, { n: 1, d: 4, l: '1/4' },
@@ -3897,7 +3897,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: q,
               onClick: function() { upd({ aiQuestion: q }); },
-              className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
+              className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
             }, q);
           })
         ),
@@ -3910,7 +3910,7 @@ window.StemLab = window.StemLab || {
       var earned = Object.keys(badges).length;
       if (earned === 0) return null;
       return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-        h('p', { className: 'text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-2' },
+        h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider mb-2' },
           '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
         ),
         h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -3937,7 +3937,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4' },
         h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
           h('h4', { className: 'text-sm font-bold text-rose-800 mb-2' }, __alloT('stem.fractions.visual_model_picker', '🎨 Visual model picker')),
-          h('p', { className: 'text-[11px] text-rose-700 mb-2' },
+          h('p', { className: 'text-[0.6875rem] text-rose-700 mb-2' },
             __alloT('stem.fractions.different_visual_models_highlight_diff', 'Different visual models highlight different aspects of fractions. Pie shows part-of-whole, number line shows magnitude, area shows multiplication, set shows discrete groups.')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-7 gap-1', role: 'radiogroup', 'aria-label': __alloT('stem.fractions.visual_model', 'Visual model') },
@@ -3948,11 +3948,11 @@ window.StemLab = window.StemLab || {
                 role: 'radio', 'aria-checked': active,
                 onClick: function() { sfxClick(); upd({ model: m.id }); announceToSR(m.label + ' model selected'); },
                 title: m.desc,
-                className: 'flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-[11px] font-bold transition-all ' +
+                className: 'flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                   (active ? 'bg-rose-600 text-white shadow-md' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-100')
               },
                 h('span', { className: 'text-base leading-none' }, m.icon),
-                h('span', { className: 'leading-tight text-[10px]' }, m.label)
+                h('span', { className: 'leading-tight text-[0.625rem]' }, m.label)
               );
             })
           )
@@ -3987,7 +3987,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.showing', 'Showing '), h('span', { className: 'font-mono text-rose-700' }, pieces.numerator + '/' + pieces.denominator),
             ' as ', h('b', null, (MODELS.find(function(m) { return m.id === currentModel; }) || {}).label)
           ),
-          h('p', { className: 'text-[11px] text-rose-700 italic mt-1' },
+          h('p', { className: 'text-[0.6875rem] text-rose-700 italic mt-1' },
             (MODELS.find(function(m) { return m.id === currentModel; }) || {}).desc
           )
         )
@@ -4029,11 +4029,11 @@ window.StemLab = window.StemLab || {
           body: h('div', { className: 'space-y-3' },
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', { className: 'bg-white rounded-xl p-3 border border-violet-200' },
-                h('p', { className: 'text-[11px] font-bold text-violet-700 mb-1 text-center' }, __alloT('stem.fractions.pie_model', 'Pie model')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-violet-700 mb-1 text-center' }, __alloT('stem.fractions.pie_model', 'Pie model')),
                 drawPie(craN, craD, 140, palMain)
               ),
               h('div', { className: 'bg-white rounded-xl p-3 border border-violet-200' },
-                h('p', { className: 'text-[11px] font-bold text-violet-700 mb-1 text-center' }, __alloT('stem.fractions.bar_model', 'Bar model')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-violet-700 mb-1 text-center' }, __alloT('stem.fractions.bar_model', 'Bar model')),
                 drawBar(craN, craD, palMain)
               )
             ),
@@ -4073,7 +4073,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-gradient-to-r from-amber-50 via-violet-50 to-sky-50 rounded-xl p-3 border border-slate-200' },
           h('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, __alloT('stem.fractions.cra_progression_concrete_representatio', '📚 CRA progression — Concrete → Representational → Abstract')),
-          h('p', { className: 'text-[11px] text-slate-700' },
+          h('p', { className: 'text-[0.6875rem] text-slate-700' },
             __alloT('stem.fractions.bruner_s_cra_framework_is_the_textbook', 'Bruner\'s CRA framework is the textbook approach for math instruction in special education. '),
             __alloT('stem.fractions.move_through_three_stages_with_the_sam', 'Move through three stages with the same fraction to build conceptual understanding before procedural fluency.')
           )
@@ -4093,7 +4093,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'bg-white rounded-xl p-4 border-2 border-slate-200' },
           h('h5', { className: 'text-sm font-black text-slate-800 mb-1' }, stage.headline),
-          h('p', { className: 'text-[11px] text-slate-700 italic mb-3' }, stage.description),
+          h('p', { className: 'text-[0.6875rem] text-slate-700 italic mb-3' }, stage.description),
           stage.body
         ),
         // Fraction control for CRA
@@ -4155,17 +4155,17 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-2' }, __alloT('stem.fractions.real_world_word_problems', '📖 Real-world word problems')),
-          h('p', { className: 'text-[11px] text-amber-700 mb-2' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700 mb-2' },
             __alloT('stem.fractions.fractions_make_sense_when_they_connect', 'Fractions make sense when they connect to the world. Pick a context and a grade level to find problems that match your interests.')
           ),
           h('div', { className: 'flex flex-wrap gap-2 mb-2' },
             h('div', { className: 'flex items-center gap-1' },
-              h('span', { className: 'text-[10px] font-bold text-amber-700' }, 'Context:'),
+              h('span', { className: 'text-[0.625rem] font-bold text-amber-700' }, 'Context:'),
               h('select', {
                 value: wpFilter,
                 onChange: function(e) { upd({ wpFilter: e.target.value, wpIdx: 0, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); },
                 'aria-label': __alloT('stem.fractions.context_filter', 'Context filter'),
-                className: 'text-[11px] px-2 py-1 rounded border border-amber-600 bg-white text-amber-800'
+                className: 'text-[0.6875rem] px-2 py-1 rounded border border-amber-600 bg-white text-amber-800'
               },
                 h('option', { value: 'all' }, __alloT('stem.fractions.all_contexts', 'All contexts')),
                 Object.keys(CONTEXTS).map(function(k) {
@@ -4174,12 +4174,12 @@ window.StemLab = window.StemLab || {
               )
             ),
             h('div', { className: 'flex items-center gap-1' },
-              h('span', { className: 'text-[10px] font-bold text-amber-700' }, 'Difficulty:'),
+              h('span', { className: 'text-[0.625rem] font-bold text-amber-700' }, 'Difficulty:'),
               h('select', {
                 value: wpGrade,
                 onChange: function(e) { upd({ wpGrade: e.target.value, wpIdx: 0, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); },
                 'aria-label': __alloT('stem.fractions.difficulty_filter', 'Difficulty filter'),
-                className: 'text-[11px] px-2 py-1 rounded border border-amber-600 bg-white text-amber-800'
+                className: 'text-[0.6875rem] px-2 py-1 rounded border border-amber-600 bg-white text-amber-800'
               },
                 h('option', { value: 'all' }, __alloT('stem.fractions.all_grades', 'All grades')),
                 h('option', { value: 'easy' }, __alloT('stem.fractions.easy_3_4', 'Easy (3-4)')),
@@ -4187,7 +4187,7 @@ window.StemLab = window.StemLab || {
                 h('option', { value: 'hard' }, __alloT('stem.fractions.hard_5_6', 'Hard (5-6)'))
               )
             ),
-            h('span', { className: 'text-[10px] text-amber-700 ml-auto' },
+            h('span', { className: 'text-[0.625rem] text-amber-700 ml-auto' },
               'Problem ' + (wpIdx % filtered.length + 1) + ' of ' + filtered.length
             )
           )
@@ -4199,7 +4199,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex-1' },
               h('h5', { className: 'text-sm font-black text-amber-900' }, problem.title),
               h('p', { className: 'text-sm text-slate-800 mt-1 leading-relaxed' }, problem.story),
-              standard && h('p', { className: 'text-[10px] text-amber-700 italic mt-1' }, 'Aligns with ' + standard.code + ' — ' + standard.title)
+              standard && h('p', { className: 'text-[0.625rem] text-amber-700 italic mt-1' }, 'Aligns with ' + standard.code + ' — ' + standard.title)
             )
           ),
           // Answer input
@@ -4236,24 +4236,24 @@ window.StemLab = window.StemLab || {
                   }
                 },
                 disabled: wpHintLevel >= (problem.hints || []).length,
-                className: 'px-2 py-1 rounded text-[11px] font-bold ' +
+                className: 'px-2 py-1 rounded text-[0.6875rem] font-bold ' +
                   (wpHintLevel < (problem.hints || []).length ? 'transition-colors bg-amber-200 text-amber-900 hover:bg-amber-300' : 'bg-slate-100 text-slate-600')
               }, '💡 ' + (wpHintLevel === 0 ? 'Show hint' : 'Next hint (' + wpHintLevel + '/' + (problem.hints || []).length + ')')),
               h('button', {
                 onClick: function() { upd({ wpFeedback: { correct: false, msg: '📚 Worked solution: ' + problem.worked, hintRevealed: true } }); sfxClick(); },
-                className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300'
+                className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300'
               }, __alloT('stem.fractions.show_solution', '📚 Show solution'))
             ),
             h('div', { className: 'flex gap-1' },
               h('button', {
                 onClick: function() { upd({ wpIdx: (wpIdx - 1 + filtered.length) % filtered.length, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); },
                 'aria-label': __alloT('stem.fractions.previous_problem', 'Previous problem'),
-                className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-100 text-amber-800 hover:bg-amber-200'
+                className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-amber-100 text-amber-800 hover:bg-amber-200'
               }, __alloT('stem.fractions.prev', '← Prev')),
               h('button', {
                 onClick: function() { upd({ wpIdx: (wpIdx + 1) % filtered.length, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); sfxNewChallenge(); },
                 'aria-label': __alloT('stem.fractions.next_problem', 'Next problem'),
-                className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800'
+                className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800'
               }, __alloT('stem.fractions.next', 'Next →'))
             )
           )
@@ -4294,7 +4294,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
           h('h4', { className: 'text-sm font-bold text-indigo-800 mb-2' }, __alloT('stem.fractions.common_core_standards_k_8_fraction_tra', '📋 Common Core Standards — K-8 fraction trajectory')),
-          h('p', { className: 'text-[11px] text-indigo-700 mb-2' },
+          h('p', { className: 'text-[0.6875rem] text-indigo-700 mb-2' },
             __alloT('stem.fractions.each_tool_in_fraction_lab_is_mapped_to', 'Each tool in Fraction Lab is mapped to one or more CCSS standards. Use this view to plan instruction, find tools for a specific standard, or build evidence for IEP goal alignment.')
           ),
           h('div', { className: 'flex gap-1 flex-wrap' },
@@ -4304,7 +4304,7 @@ window.StemLab = window.StemLab || {
               return h('button', {
                 key: 'g-' + g,
                 onClick: function() { upd({ stdGrade: g }); },
-                className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+                className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                   (active ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100')
               }, label);
             })
@@ -4314,16 +4314,16 @@ window.StemLab = window.StemLab || {
           filtered.map(function(c) {
             return h('div', { key: c.code, className: 'bg-white rounded-lg p-3 border border-indigo-100' },
               h('div', { className: 'flex items-start gap-2' },
-                h('span', { className: 'text-[11px] font-bold text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded' }, c.code),
-                h('span', { className: 'text-[11px] text-indigo-700 italic' }, 'Grade ' + c.grade)
+                h('span', { className: 'text-[0.6875rem] font-bold text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded' }, c.code),
+                h('span', { className: 'text-[0.6875rem] text-indigo-700 italic' }, 'Grade ' + c.grade)
               ),
               h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, c.title),
-              h('p', { className: 'text-[11px] text-slate-700 mt-0.5' }, c.desc),
+              h('p', { className: 'text-[0.6875rem] text-slate-700 mt-0.5' }, c.desc),
               c.features && c.features.length > 0 && h('div', { className: 'flex gap-1 mt-2 flex-wrap' },
-                h('span', { className: 'text-[10px] text-indigo-700 font-bold' }, '→'),
+                h('span', { className: 'text-[0.625rem] text-indigo-700 font-bold' }, '→'),
                 c.features.map(function(f) {
                   return h('span', { key: 'f-' + c.code + '-' + f,
-                    className: 'text-[10px] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200'
+                    className: 'text-[0.625rem] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200'
                   }, f);
                 })
               )
@@ -4344,7 +4344,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
           h('h4', { className: 'text-sm font-bold text-rose-800 mb-2' }, __alloT('stem.fractions.common_fraction_misconceptions', '⚠️ Common fraction misconceptions')),
-          h('p', { className: 'text-[11px] text-rose-700 mb-2' },
+          h('p', { className: 'text-[0.6875rem] text-rose-700 mb-2' },
             __alloT('stem.fractions.a_reference_library_of_the_12_most_doc', 'A reference library of the 12 most-documented fraction misconceptions, each with research-grounded remediation strategies. '),
             __alloT('stem.fractions.click_any_misconception_to_expand_its_', 'Click any misconception to expand its full description, why it happens, and what to do about it.')
           ),
@@ -4354,7 +4354,7 @@ window.StemLab = window.StemLab || {
               return h('button', {
                 key: 'ms-' + s,
                 onClick: function() { upd({ miscSeverity: s }); },
-                className: 'px-2 py-1 rounded text-[11px] font-bold transition-all capitalize ' +
+                className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all capitalize ' +
                   (active ? 'bg-rose-700 text-white' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-100')
               }, s === 'all' ? 'All severities' : s);
             })
@@ -4375,21 +4375,21 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'flex items-center gap-2 flex-wrap' },
                       h('span', { className: 'text-xs font-bold text-slate-800' }, m.label),
-                      h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded uppercase bg-' + sc + '-100 text-' + sc + '-700' }, m.severity),
-                      h('span', { className: 'text-[10px] text-slate-500 italic' }, 'Grade ' + m.grade)
+                      h('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded uppercase bg-' + sc + '-100 text-' + sc + '-700' }, m.severity),
+                      h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, 'Grade ' + m.grade)
                     ),
-                    h('p', { className: 'text-[11px] text-slate-700 mt-1' }, m.description)
+                    h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, m.description)
                   )
                 )
               ),
               expanded && h('div', { className: 'p-3 border-t border-' + sc + '-200 bg-' + sc + '-50 space-y-2' },
                 h('div', null,
-                  h('p', { className: 'text-[11px] font-bold text-slate-800 mb-0.5' }, __alloT('stem.fractions.why_it_happens', '🤔 Why it happens')),
-                  h('p', { className: 'text-[11px] text-slate-700' }, m.whyItHappens)
+                  h('p', { className: 'text-[0.6875rem] font-bold text-slate-800 mb-0.5' }, __alloT('stem.fractions.why_it_happens', '🤔 Why it happens')),
+                  h('p', { className: 'text-[0.6875rem] text-slate-700' }, m.whyItHappens)
                 ),
                 h('div', null,
-                  h('p', { className: 'text-[11px] font-bold text-slate-800 mb-0.5' }, __alloT('stem.fractions.remediation_strategies', '🛠️ Remediation strategies')),
-                  h('ul', { className: 'text-[11px] text-slate-700 list-disc pl-5 space-y-0.5' },
+                  h('p', { className: 'text-[0.6875rem] font-bold text-slate-800 mb-0.5' }, __alloT('stem.fractions.remediation_strategies', '🛠️ Remediation strategies')),
+                  h('ul', { className: 'text-[0.6875rem] text-slate-700 list-disc pl-5 space-y-0.5' },
                     m.remediation.map(function(r, ri) {
                       return h('li', { key: 'r-' + m.id + '-' + ri }, r);
                     })
@@ -4488,7 +4488,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-sm text-red-800' }, 'Served: ', h('b', null, ps.served + ' / 10')),
           h('button', {
             onClick: startPizzaShop,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-red-200 text-red-900 hover:bg-red-300'
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-red-200 text-red-900 hover:bg-red-300'
           }, __alloT('stem.fractions.restart', '↺ Restart'))
         ),
         // Customer order
@@ -4507,7 +4507,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex justify-center' }, drawPie(ps.slices, ps.totalSlices, 200, '#dc2626')),
           h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', { className: 'bg-red-50 rounded-lg p-2 border border-red-200' },
-              h('p', { className: 'text-[11px] font-bold text-red-700' }, __alloT('stem.fractions.pizza_size_total_slices', 'Pizza size (total slices):')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-red-700' }, __alloT('stem.fractions.pizza_size_total_slices', 'Pizza size (total slices):')),
               h('div', { className: 'flex items-center gap-2 mt-1' },
                 h('button', { onClick: function() {
                   upd({ psGame: Object.assign({}, ps, { totalSlices: Math.max(2, ps.totalSlices - 1), slices: 0 }) });
@@ -4519,7 +4519,7 @@ window.StemLab = window.StemLab || {
               )
             ),
             h('div', { className: 'bg-red-50 rounded-lg p-2 border border-red-200' },
-              h('p', { className: 'text-[11px] font-bold text-red-700' }, __alloT('stem.fractions.slices_to_serve', 'Slices to serve:')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-red-700' }, __alloT('stem.fractions.slices_to_serve', 'Slices to serve:')),
               h('div', { className: 'flex items-center gap-2 mt-1' },
                 h('button', { onClick: function() {
                   upd({ psGame: Object.assign({}, ps, { slices: Math.max(0, ps.slices - 1) }) });
@@ -4595,7 +4595,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-sm text-blue-800' }, 'Mistakes: ' + fr.mistakes),
           h('button', {
             onClick: startFractionRace,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-blue-200 text-blue-800 hover:bg-blue-300'
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-blue-200 text-blue-800 hover:bg-blue-300'
           }, __alloT('stem.fractions.restart_2', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 space-y-3' },
@@ -4705,7 +4705,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-sm text-purple-800' }, 'Matched: ' + (em.matched.length / 2) + ' / 6 pairs'),
           h('button', {
             onClick: startEMGame,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-purple-200 text-purple-800 hover:bg-purple-300'
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-purple-200 text-purple-800 hover:bg-purple-300'
           }, __alloT('stem.fractions.restart_3', '↺ Restart'))
         ),
         h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
@@ -4806,7 +4806,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-sm text-cyan-800' }, 'Lives: ' + '❤️'.repeat(ff.lives)),
           h('button', {
             onClick: startFishGame,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300'
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300'
           }, __alloT('stem.fractions.restart_4', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-4 text-center' },
@@ -4871,7 +4871,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-1' }, __alloT('stem.fractions.build_the_whole', '🧱 Build the Whole')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.combine_fraction_strips_to_make_exactl', 'Combine fraction strips to make exactly 1. Choose pieces that add to the whole.')
           )
         ),
@@ -4881,14 +4881,14 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-amber-700 text-sm' }, '·'),
           h('span', { className: 'text-sm text-amber-800' }, __alloT('stem.fractions.current_sum', 'Current sum: '), h('span', { className: 'font-mono font-bold' }, total.toFixed(3))),
           h('button', { onClick: resetBuild,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-amber-300 text-amber-900 hover:bg-amber-400' }, __alloT('stem.fractions.clear', '↺ Clear'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-amber-300 text-amber-900 hover:bg-amber-400' }, __alloT('stem.fractions.clear', '↺ Clear'))
         ),
         // Current build visualization
         h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-3' },
-          h('p', { className: 'text-[11px] font-bold text-amber-700 mb-2' }, 'Your build (' + bw.selected.length + ' pieces):'),
+          h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-2' }, 'Your build (' + bw.selected.length + ' pieces):'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             bw.selected.length === 0
-              ? h('p', { className: 'text-[11px] italic text-slate-500' }, __alloT('stem.fractions.no_pieces_yet_add_from_below', 'No pieces yet. Add from below.'))
+              ? h('p', { className: 'text-[0.6875rem] italic text-slate-500' }, __alloT('stem.fractions.no_pieces_yet_add_from_below', 'No pieces yet. Add from below.'))
               : bw.selected.map(function(f, i) {
                   return h('div', { key: 'sel-' + i, style: {
                     width: (f.n / f.d * 200) + 'px',
@@ -4909,13 +4909,13 @@ window.StemLab = window.StemLab || {
               transition: 'width 0.3s'
             } })
           ),
-          h('p', { className: 'text-center text-[11px] mt-1 ' + (total > bw.target ? 'text-red-700' : 'text-amber-700') },
+          h('p', { className: 'text-center text-[0.6875rem] mt-1 ' + (total > bw.target ? 'text-red-700' : 'text-amber-700') },
             total === bw.target ? '✓ Perfect — equal to ' + bw.target : total > bw.target ? '⚠ Over ' + bw.target : 'Need ' + (bw.target - total).toFixed(3) + ' more'
           )
         ),
         // Fragment palette
         h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-3' },
-          h('p', { className: 'text-[11px] font-bold text-amber-700 mb-2' }, __alloT('stem.fractions.pick_a_piece_to_add', 'Pick a piece to add:')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-2' }, __alloT('stem.fractions.pick_a_piece_to_add', 'Pick a piece to add:')),
           h('div', { className: 'grid grid-cols-4 gap-2' },
             FRAGMENT_OPTIONS.map(function(f) {
               return h('button', {
@@ -4991,7 +4991,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '🔢'),
           h('span', { className: 'font-bold text-green-800' }, 'Score: ' + pb.score),
           h('button', { onClick: startPattern,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-green-200 text-green-800 hover:bg-green-300' }, __alloT('stem.fractions.restart_5', '↺ Restart'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-green-200 text-green-800 hover:bg-green-300' }, __alloT('stem.fractions.restart_5', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-4 space-y-3' },
           h('p', { className: 'text-sm font-bold text-green-800 text-center' }, __alloT('stem.fractions.what_comes_next', 'What comes next?')),
@@ -5111,12 +5111,12 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-sm text-yellow-700' }, '·'),
           h('span', { className: 'text-sm text-yellow-800' }, 'Called: ' + bg.called.length),
           h('button', { onClick: startBingo,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-yellow-200 text-yellow-800 hover:bg-yellow-300' }, __alloT('stem.fractions.new_card_2', '↺ New card'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-yellow-200 text-yellow-800 hover:bg-yellow-300' }, __alloT('stem.fractions.new_card_2', '↺ New card'))
         ),
         bg.current && h('div', { className: 'bg-white rounded-xl border-2 border-yellow-200 p-3 text-center' },
           h('p', { className: 'text-xs font-bold text-yellow-700' }, __alloT('stem.fractions.now_calling', 'Now calling:')),
           h('p', { className: 'text-3xl font-bold text-yellow-900 font-mono' }, bg.current.n + '/' + bg.current.d),
-          h('p', { className: 'text-[11px] text-yellow-600 italic' }, __alloT('stem.fractions.or_any_equivalent', '(or any equivalent)'))
+          h('p', { className: 'text-[0.6875rem] text-yellow-600 italic' }, __alloT('stem.fractions.or_any_equivalent', '(or any equivalent)'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-yellow-200 p-3' },
           h('div', { className: 'grid grid-cols-5 gap-1' },
@@ -5183,7 +5183,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-orange-700 max-w-md mx-auto' },
             __alloT('stem.fractions.two_fractions_face_off_pick_which_is_l', 'Two fractions face off. Pick which is larger to pull the rope. 5 correct pulls = win the tug!')
           ),
-          h('p', { className: 'text-[11px] text-orange-600' }, 'Wins so far: ' + (tw.score || 0)),
+          h('p', { className: 'text-[0.6875rem] text-orange-600' }, 'Wins so far: ' + (tw.score || 0)),
           h('button', { onClick: startTug,
             className: 'transition-colors px-6 py-3 bg-orange-700 text-white font-bold rounded-xl hover:bg-orange-800' }, __alloT('stem.fractions.start_tugging', '🪢 Start tugging'))
         );
@@ -5195,7 +5195,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '🪢'),
           h('span', { className: 'font-bold text-orange-800' }, 'Wins: ' + tw.score),
           h('button', { onClick: startTug,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-orange-200 text-orange-900 hover:bg-orange-300' }, __alloT('stem.fractions.restart_6', '↺ Restart'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-orange-200 text-orange-900 hover:bg-orange-300' }, __alloT('stem.fractions.restart_6', '↺ Restart'))
         ),
         // Tug bar visualization
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-4 space-y-2' },
@@ -5210,7 +5210,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { position: 'absolute', top: 0, left: '0', width: 4, height: '100%', background: '#dc2626' } }),
             h('div', { style: { position: 'absolute', top: 0, right: '0', width: 4, height: '100%', background: '#16a34a' } })
           ),
-          h('p', { className: 'text-center text-[11px] text-orange-700 italic' }, '5 correct pulls to win | Position: ' + pos)
+          h('p', { className: 'text-center text-[0.6875rem] text-orange-700 italic' }, '5 correct pulls to win | Position: ' + pos)
         ),
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('button', {
@@ -5218,14 +5218,14 @@ window.StemLab = window.StemLab || {
             className: 'p-4 bg-rose-100 border-2 border-rose-300 rounded-xl hover:bg-rose-200 hover:border-rose-500 transition-all'
           },
             h('div', { className: 'text-3xl font-bold text-rose-800 font-mono text-center' }, a.n + '/' + a.d),
-            h('p', { className: 'text-[10px] text-rose-600 text-center mt-1' }, '(= ' + (a.n / a.d).toFixed(3) + ')')
+            h('p', { className: 'text-[0.625rem] text-rose-600 text-center mt-1' }, '(= ' + (a.n / a.d).toFixed(3) + ')')
           ),
           h('button', {
             onClick: function() { answer('b'); },
             className: 'p-4 bg-emerald-100 border-2 border-emerald-300 rounded-xl hover:bg-emerald-200 hover:border-emerald-500 transition-all'
           },
             h('div', { className: 'text-3xl font-bold text-emerald-800 font-mono text-center' }, b.n + '/' + b.d),
-            h('p', { className: 'text-[10px] text-emerald-600 text-center mt-1' }, '(= ' + (b.n / b.d).toFixed(3) + ')')
+            h('p', { className: 'text-[0.625rem] text-emerald-600 text-center mt-1' }, '(= ' + (b.n / b.d).toFixed(3) + ')')
           )
         ),
         h('p', { className: 'text-center text-sm font-bold text-orange-800' }, __alloT('stem.fractions.tap_the_bigger_fraction_to_pull', 'Tap the bigger fraction to pull!'))
@@ -5288,7 +5288,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '🔍'),
           h('span', { className: 'font-bold text-pink-800' }, 'Hints used: ' + hs.hintsShown + ' / 3'),
           h('button', { onClick: startHide,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-pink-200 text-pink-900 hover:bg-pink-300' }, __alloT('stem.fractions.new_hunt', '↺ New hunt'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-pink-200 text-pink-900 hover:bg-pink-300' }, __alloT('stem.fractions.new_hunt', '↺ New hunt'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-4 space-y-2' },
           h('p', { className: 'text-sm font-bold text-pink-800' }, __alloT('stem.fractions.what_fraction_is_hiding', '🔮 What fraction is hiding?')),
@@ -5301,7 +5301,7 @@ window.StemLab = window.StemLab || {
           ),
           !hs.gameOver && h('button', {
             onClick: revealHint, disabled: hs.hintsShown >= 3,
-            className: 'px-3 py-1 rounded text-[11px] font-bold ' +
+            className: 'px-3 py-1 rounded text-[0.6875rem] font-bold ' +
               (hs.hintsShown < 3 ? 'transition-colors bg-pink-200 text-pink-900 hover:bg-pink-300' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
           }, '💡 Reveal clue ' + (hs.hintsShown + 1)),
           !hs.gameOver && h('div', { className: 'flex gap-2 mt-2' },
@@ -5317,9 +5317,9 @@ window.StemLab = window.StemLab || {
           ),
           hs.gameOver && hs.won && h('div', { className: 'bg-emerald-50 rounded-lg p-3 border-2 border-emerald-300' },
             h('p', { className: 'text-base font-black text-emerald-800' }, '🎉 You found ' + t.n + '/' + t.d + '!'),
-            h('p', { className: 'text-[11px] text-emerald-700 mt-1' }, hs.hintsShown === 0 ? 'No hints needed!' : 'Used ' + hs.hintsShown + ' clue' + (hs.hintsShown === 1 ? '' : 's') + '.')
+            h('p', { className: 'text-[0.6875rem] text-emerald-700 mt-1' }, hs.hintsShown === 0 ? 'No hints needed!' : 'Used ' + hs.hintsShown + ' clue' + (hs.hintsShown === 1 ? '' : 's') + '.')
           ),
-          hs.guesses.length > 0 && h('p', { className: 'text-[11px] text-pink-700' },
+          hs.guesses.length > 0 && h('p', { className: 'text-[0.6875rem] text-pink-700' },
             'Previous guesses: ' + hs.guesses.join(', ')
           )
         )
@@ -5506,11 +5506,11 @@ window.StemLab = window.StemLab || {
       // ── helper: a comfort/accessibility row (shared by menu + in-game) ──
       var toggleChip = function(key, label) {
         return h('button', { key: 'tg-' + key, onClick: function() { toggle(key); }, 'aria-pressed': !!g[key],
-          className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+          className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
             (g[key] ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50') },
           (g[key] ? '☑ ' : '☐ ') + label);
       };
-      var tempoSlider = h('label', { className: 'flex items-center gap-2 text-[11px] font-bold text-slate-600' },
+      var tempoSlider = h('label', { className: 'flex items-center gap-2 text-[0.6875rem] font-bold text-slate-600' },
         __alloT('stem.fractions.belt_speed', 'Belt speed'),
         h('input', { type: 'range', min: 0.25, max: 2, step: 0.25, value: g.tempo, 'aria-label': __alloT('stem.fractions.belt_speed_2', 'Belt speed'),
           onChange: function(e) { setTempo(e.target.value); }, className: 'w-28' }),
@@ -5530,7 +5530,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { startGame(true, true); },
                 className: 'transition-colors px-4 py-3 rounded-xl text-sm font-bold bg-white text-green-700 border-2 border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.timed_service', '⏱ Timed Service'))
             ),
-            h('div', { className: 'flex items-center gap-2 justify-center text-[11px] text-green-700 pt-1' },
+            h('div', { className: 'flex items-center gap-2 justify-center text-[0.6875rem] text-green-700 pt-1' },
               __alloT('stem.fractions.level', 'Level'),
               [1, 2, 3, 4, 5].map(function(L) {
                 return h('button', { key: 'lv' + L, onClick: function() { save({ level: L, nameShare: L >= 3, freeEntry: L >= 5 }); },
@@ -5540,15 +5540,15 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'pt-1' },
               h('div', { className: 'flex items-center gap-1 justify-center' },
-                h('span', { className: 'text-[11px] font-bold text-green-700' }, 'Answer:'),
+                h('span', { className: 'text-[0.6875rem] font-bold text-green-700' }, 'Answer:'),
                 [['show', 'Show'], ['pick', 'Pick'], ['type', 'Type']].map(function(m) {
                   var cur = g.freeEntry ? 'type' : g.nameShare ? 'pick' : 'show';
                   return h('button', { key: 'am-' + m[0], 'aria-pressed': cur === m[0],
                     onClick: function() { save({ nameShare: m[0] !== 'show', freeEntry: m[0] === 'type' }); },
-                    className: 'px-2 py-1 rounded text-[11px] font-bold ' + (cur === m[0] ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, m[1]);
+                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold ' + (cur === m[0] ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, m[1]);
                 })
               ),
-              h('p', { className: 'text-[10px] text-green-600 mt-0.5' }, __alloT('stem.fractions.show_read_it_pick_choose_the_fraction_', 'Show = read it; Pick = choose the fraction; Type = type it (hardest). Auto-set by level; change anytime.'))
+              h('p', { className: 'text-[0.625rem] text-green-600 mt-0.5' }, __alloT('stem.fractions.show_read_it_pick_choose_the_fraction_', 'Show = read it; Pick = choose the fraction; Type = type it (hardest). Auto-set by level; change anytime.'))
             )
           ),
           h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 space-y-2' },
@@ -5558,13 +5558,13 @@ window.StemLab = window.StemLab || {
               toggleChip('audioOn', 'Audio'), toggleChip('reducedMotion', 'Reduced motion'),
               toggleChip('focusMode', 'Focus mode'), toggleChip('hideScore', 'Hide score')),
             h('div', { className: 'flex flex-wrap gap-1.5 items-center' },
-              h('span', { className: 'text-[11px] font-bold text-slate-500' }, 'Presets:'),
-              h('button', { onClick: function() { preset('quiet'); }, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.quiet_kid', 'Quiet Kid')),
-              h('button', { onClick: function() { preset('motor'); }, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.motor', 'Motor')),
-              h('button', { onClick: function() { preset('visual'); }, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.visual_3', 'Visual')),
-              h('button', { onClick: function() { preset('audio'); }, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.audio_only', 'Audio only'))
+              h('span', { className: 'text-[0.6875rem] font-bold text-slate-500' }, 'Presets:'),
+              h('button', { onClick: function() { preset('quiet'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.quiet_kid', 'Quiet Kid')),
+              h('button', { onClick: function() { preset('motor'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.motor', 'Motor')),
+              h('button', { onClick: function() { preset('visual'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.visual_3', 'Visual')),
+              h('button', { onClick: function() { preset('audio'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.audio_only', 'Audio only'))
             ),
-            h('p', { className: 'text-[10px] text-slate-400 italic' }, __alloT('stem.fractions.zen_mode_has_no_timer_and_no_game_over', 'Zen mode has no timer and no game-over. A missed plate in Timed mode just loops back around.'))
+            h('p', { className: 'text-[0.625rem] text-slate-400 italic' }, __alloT('stem.fractions.zen_mode_has_no_timer_and_no_game_over', 'Zen mode has no timer and no game-over. A missed plate in Timed mode just loops back around.'))
           )
         );
       }
@@ -5593,19 +5593,19 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-5xl' }, '🧾'),
             h('h4', { className: 'text-xl font-black text-green-800' }, __alloT('stem.fractions.service_complete_even_steven_approves', 'Service complete - Even Steven approves!')),
             h('div', { className: 'bg-white rounded-lg border border-green-200 p-3 inline-block' },
-              h('p', { className: 'text-[11px] text-slate-500 mb-1' }, introTxt),
+              h('p', { className: 'text-[0.6875rem] text-slate-500 mb-1' }, introTxt),
               h('p', { className: 'text-base font-mono font-bold text-green-800' }, closure)
             ),
             h('div', { className: 'flex gap-4 justify-center text-sm pt-1' },
               h('span', { className: 'font-bold text-green-700' }, '😋 Happy tables: ' + g.served),
               h('span', { className: 'font-bold text-amber-700' }, '🔥 Best combo: ' + (g.bestCombo || 0))
             ),
-            (lgServed > 0 ? h('div', { className: 'bg-white/70 rounded-lg border border-slate-200 p-2 text-left text-[11px] text-slate-700 space-y-0.5 max-w-sm mx-auto' },
+            (lgServed > 0 ? h('div', { className: 'bg-white/70 rounded-lg border border-slate-200 p-2 text-left text-[0.6875rem] text-slate-700 space-y-0.5 max-w-sm mx-auto' },
               h('p', { className: 'font-bold text-slate-800' }, __alloT('stem.fractions.practice_this_sitting', '\uD83D\uDCCB Practice this sitting')),
               h('p', null, 'Plates served: ' + lgServed + ' (' + (lg.unit || 0) + ' unit, ' + (lg.tray || 0) + ' tray, ' + (lg.mixed || 0) + ' mixed)'),
               h('p', null, 'Fair serves: ' + (lg.correct || 0) + ' of ' + (lg.attempts || 0) + ' tries (' + lgPct + '%)'),
               (lgErrs.length ? h('p', null, 'Most common stumble: ' + lgErrs[0][0] + ' (' + lgErrs[0][1] + ')') : h('p', { className: 'text-green-700' }, __alloT('stem.fractions.no_stumbles_every_serve_was_fair', 'No stumbles - every serve was fair.'))),
-              h('p', { className: 'text-[10px] text-slate-400 italic' }, __alloT('stem.fractions.a_record_of_what_was_practiced_not_a_m', 'A record of what was practiced, not a measure of ability.'))
+              h('p', { className: 'text-[0.625rem] text-slate-400 italic' }, __alloT('stem.fractions.a_record_of_what_was_practiced_not_a_m', 'A record of what was practiced, not a measure of ability.'))
             ) : null),
             h('div', { className: 'flex flex-wrap gap-2 justify-center pt-2' },
               h('button', { onClick: function() { save({ level: Math.min(5, (g.level || 1) + 1) }); startGame(g.timed); },
@@ -5632,7 +5632,7 @@ window.StemLab = window.StemLab || {
         dishVisual = h('div', { className: 'flex flex-col items-center gap-1' },
           h('div', { className: 'text-3xl' }, a.food.e),
           drawPie(1, g.input, 170, '#16a34a'),
-          h('p', { className: 'text-[11px] text-slate-500' }, '1 ' + a.food.n + ', cut into ' + g.input + ' equal shares')
+          h('p', { className: 'text-[0.6875rem] text-slate-500' }, '1 ' + a.food.n + ', cut into ' + g.input + ' equal shares')
         );
       } else if (a.kind === 'mixed') {
         var mWhole = Math.floor(a.tray / g.input);
@@ -5640,18 +5640,18 @@ window.StemLab = window.StemLab || {
         dishVisual = h('div', { className: 'flex flex-col items-center gap-1' },
           h('div', { className: 'text-xl' }, Array.apply(null, { length: Math.min(a.tray, 12) }).map(function() { return a.food.e; }).join(' ')),
           h('div', { className: 'flex items-center justify-center gap-2 flex-wrap' },
-            h('span', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.fractions.each_guest', 'each guest:')),
+            h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, __alloT('stem.fractions.each_guest', 'each guest:')),
             (mWhole > 0 ? h('span', { className: 'text-2xl' }, Array.apply(null, { length: mWhole }).map(function() { return a.food.e; }).join('')) : null),
             (mRem > 0 ? h('span', { className: 'text-slate-500 font-bold' }, '+') : null),
             (mRem > 0 ? drawPie(mRem, g.input, 64, '#16a34a') : null)
           ),
-          h('p', { className: 'text-[11px] text-slate-500' }, a.tray + ' ' + a.food.n + ' shared equally among ' + g.input + ' guests')
+          h('p', { className: 'text-[0.6875rem] text-slate-500' }, a.tray + ' ' + a.food.n + ' shared equally among ' + g.input + ' guests')
         );
       } else {
         dishVisual = h('div', { className: 'flex flex-col items-center gap-1' },
           h('div', { className: 'text-xl' }, Array.apply(null, { length: Math.min(a.tray, 12) }).map(function() { return a.food.e; }).join(' ')),
           drawBar(divides ? perItems : 0, a.tray, '#16a34a'),
-          h('p', { className: 'text-[11px] text-slate-500' }, a.tray + ' ' + a.food.n + ', shared into ' + g.input + ' equal groups')
+          h('p', { className: 'text-[0.6875rem] text-slate-500' }, a.tray + ' ' + a.food.n + ', shared into ' + g.input + ' equal groups')
         );
       }
 
@@ -5681,7 +5681,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-2 rounded-lg font-mono font-bold text-base ' + (sel ? 'bg-green-700 text-white ring-2 ring-green-800' : 'transition-colors bg-white text-green-700 border-2 border-green-300 hover:bg-green-50') }, c);
             })
           ),
-          (g.lastResult === 'ok' ? h('p', { className: 'text-[11px] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
+          (g.lastResult === 'ok' ? h('p', { className: 'text-[0.6875rem] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
         );
       } else {
         shareUI = h('div', { className: 'text-center space-y-1' },
@@ -5689,8 +5689,8 @@ window.StemLab = window.StemLab || {
           h('input', { type: 'text', value: g.typed || '', 'aria-label': __alloT('stem.fractions.each_guest_gets_4', 'Each guest gets'), placeholder: a.kind === 'mixed' ? 'e.g. 1 1/4' : 'e.g. 1/' + a.table,
             onChange: function(e) { setTyped(e.target.value); },
             className: 'w-32 px-2 py-1.5 rounded-lg border-2 border-green-300 text-center text-base font-mono font-bold' }),
-          h('p', { className: 'text-[10px] text-slate-400' }, __alloT('stem.fractions.any_equal_form_counts_2_8_is_the_same_', 'Any equal form counts - 2/8 is the same as 1/4.')),
-          (g.lastResult === 'ok' ? h('p', { className: 'text-[11px] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
+          h('p', { className: 'text-[0.625rem] text-slate-400' }, __alloT('stem.fractions.any_equal_form_counts_2_8_is_the_same_', 'Any equal form counts - 2/8 is the same as 1/4.')),
+          (g.lastResult === 'ok' ? h('p', { className: 'text-[0.6875rem] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
         );
       }
 
@@ -5770,12 +5770,12 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-green-300' }, '·'),
           h('span', { className: 'font-bold text-amber-700' }, '🔥 Combo: ' + g.combo + (g.combo >= 3 ? ' (x' + (g.combo >= 6 ? 3 : 2) + ')' : '') + (g.comboPaused ? ' (paused)' : '')),
           h('span', { className: 'text-green-300' }, '·'),
-          h('span', { className: 'text-[11px] text-green-700' }, 'Level ' + g.level + ' · ' + (g.timed ? 'Timed' : 'Zen')),
+          h('span', { className: 'text-[0.6875rem] text-green-700' }, 'Level ' + g.level + ' · ' + (g.timed ? 'Timed' : 'Zen')),
           h('div', { className: 'ml-auto flex gap-1' },
             g.timed && h('button', { onClick: function() { toggle('holdFrozen'); }, 'aria-pressed': !!g.holdFrozen,
-              className: 'px-2 py-1 rounded text-[11px] font-bold ' + (g.holdFrozen ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-300') }, g.holdFrozen ? '▶ Resume' : '⏸ Hold'),
-            g.timed && h('button', { onClick: toZen, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.to_zen', 'To Zen')),
-            h('button', { onClick: toMenu, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.menu', '↺ Menu'))
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold ' + (g.holdFrozen ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-300') }, g.holdFrozen ? '▶ Resume' : '⏸ Hold'),
+            g.timed && h('button', { onClick: toZen, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.to_zen', 'To Zen')),
+            h('button', { onClick: toMenu, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.menu', '↺ Menu'))
           )
         ),
         belt,
@@ -5789,7 +5789,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex justify-center' }, dishVisual),
           // cuts stepper
           h('div', { className: 'flex items-center justify-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.fractions.equal_shares', 'Equal shares:')),
+            h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, __alloT('stem.fractions.equal_shares', 'Equal shares:')),
             h('button', { onClick: function() { adjust(-1); }, 'aria-label': __alloT('stem.fractions.fewer_shares', 'Fewer shares'),
               className: 'transition-colors w-9 h-9 rounded-lg text-xl font-black bg-slate-100 text-slate-700 hover:bg-slate-200' }, '−'),
             h('span', { className: 'w-10 text-center text-2xl font-black text-green-700', 'aria-live': 'polite' }, g.input),
@@ -5802,7 +5802,7 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: serve, disabled: a.kind === 'tray' && !divides,
               className: 'px-8 py-2.5 rounded-xl text-base font-black bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-700 hover:to-emerald-700 shadow-md disabled:opacity-40' }, __alloT('stem.fractions.serve', 'SERVE 🍽️'))
           ),
-          g.lastCoach && h('div', { className: 'text-[12px] text-center rounded-lg p-2 ' + (g.lastResult === 'wrong' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-green-50 text-green-800') }, '💬 ' + g.lastCoach)
+          g.lastCoach && h('div', { className: 'text-[0.75rem] text-center rounded-lg p-2 ' + (g.lastResult === 'wrong' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-green-50 text-green-800') }, '💬 ' + g.lastCoach)
         ),
         // compact comfort row
         h('div', { className: 'flex flex-wrap gap-1.5 items-center justify-center' },
@@ -5874,7 +5874,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200' },
           h('h4', { className: 'text-sm font-bold text-violet-800 mb-1' }, __alloT('stem.fractions.fraction_games', '🎮 Fraction games')),
-          h('p', { className: 'text-[11px] text-violet-700' },
+          h('p', { className: 'text-[0.6875rem] text-violet-700' },
             __alloT('stem.fractions.four_games_practice_different_fraction', 'Four games practice different fraction skills. Pizza Shop drills part-of-whole intuition. Race drills speed. Match drills equivalence. Fish drills magnitude comparison.')
           )
         ),
@@ -5889,7 +5889,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-3xl' }, g.icon),
                 h('div', null,
                   h('h5', { className: 'font-black text-' + g.color + '-800' }, g.label),
-                  h('p', { className: 'text-[11px] text-' + g.color + '-700 mt-0.5' }, g.desc)
+                  h('p', { className: 'text-[0.6875rem] text-' + g.color + '-700 mt-0.5' }, g.desc)
                 )
               )
             );
@@ -6013,7 +6013,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
           h('h4', { className: 'text-sm font-bold text-emerald-800 mb-1' }, __alloT('stem.fractions.worksheet_generator_teacher_tool', '📝 Worksheet generator (teacher tool)')),
-          h('p', { className: 'text-[11px] text-emerald-700' },
+          h('p', { className: 'text-[0.6875rem] text-emerald-700' },
             __alloT('stem.fractions.generate_printable_practice_worksheets', 'Generate printable practice worksheets with answer keys. Pick a topic, number of problems, and print.')
           )
         ),
@@ -6067,7 +6067,7 @@ window.StemLab = window.StemLab || {
                       h('span', { style: { display: 'inline-block', width: 40, verticalAlign: 'middle' } }, drawPie(p.display.n, p.display.d, 40, palMain))
                     )
                   : p.q,
-                ws.includeAnswers && h('span', { className: 'ml-2 text-[11px] text-emerald-700 font-mono' }, '(answer: ' + p.answer + ')')
+                ws.includeAnswers && h('span', { className: 'ml-2 text-[0.6875rem] text-emerald-700 font-mono' }, '(answer: ' + p.answer + ')')
               );
             })
           )
@@ -6154,31 +6154,31 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
           h('h4', { className: 'text-sm font-bold text-teal-800 mb-1' }, __alloT('stem.fractions.progress_report_teacher_tool', '📊 Progress report (teacher tool)')),
-          h('p', { className: 'text-[11px] text-teal-700' },
+          h('p', { className: 'text-[0.6875rem] text-teal-700' },
             __alloT('stem.fractions.snapshot_of_student_practice_in_this_s', 'Snapshot of student practice in this session. Useful as supplementary evidence for IEP/RTI documentation. '),
             __alloT('stem.fractions.not_a_standardized_assessment', 'Not a standardized assessment.')
           )
         ),
         h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
           h('div', { className: 'bg-white rounded-lg p-3 border border-teal-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-teal-700' }, __alloT('stem.fractions.attempted', 'Attempted')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, __alloT('stem.fractions.attempted', 'Attempted')),
             h('p', { className: 'text-2xl font-black text-teal-900' }, score.total)
           ),
           h('div', { className: 'bg-white rounded-lg p-3 border border-teal-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-teal-700' }, __alloT('stem.fractions.correct', 'Correct')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, __alloT('stem.fractions.correct', 'Correct')),
             h('p', { className: 'text-2xl font-black text-emerald-700' }, score.correct)
           ),
           h('div', { className: 'bg-white rounded-lg p-3 border border-teal-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-teal-700' }, __alloT('stem.fractions.accuracy', 'Accuracy')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, __alloT('stem.fractions.accuracy', 'Accuracy')),
             h('p', { className: 'text-2xl font-black text-teal-900' }, (score.total > 0 ? Math.round(score.correct / score.total * 100) + '%' : '—'))
           ),
           h('div', { className: 'bg-white rounded-lg p-3 border border-teal-200 text-center' },
-            h('p', { className: 'text-[11px] font-bold text-teal-700' }, __alloT('stem.fractions.best_streak', 'Best streak')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, __alloT('stem.fractions.best_streak', 'Best streak')),
             h('p', { className: 'text-2xl font-black text-orange-600' }, bestStreak)
           )
         ),
         h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 space-y-1.5' },
-          h('p', { className: 'text-[11px] font-bold text-teal-700 mb-1' }, __alloT('stem.fractions.skill_breakdown', 'Skill breakdown')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-teal-700 mb-1' }, __alloT('stem.fractions.skill_breakdown', 'Skill breakdown')),
           [
             { label: __alloT('stem.fractions.equivalent_fractions_2', 'Equivalent fractions'), val: totalEquiv },
             { label: __alloT('stem.fractions.simplifications', 'Simplifications'), val: totalSimplify },
@@ -6205,7 +6205,7 @@ window.StemLab = window.StemLab || {
         ),
         h('details', { className: 'bg-slate-50 rounded-lg p-2 border border-slate-200' },
           h('summary', { style: { color: isContrast ? '#ffffff' : undefined }, className: 'text-xs font-bold text-slate-700 cursor-pointer' }, __alloT('stem.fractions.preview_report', '👀 Preview report')),
-          h('pre', { className: 'mt-2 text-[10px] text-slate-800 whitespace-pre-wrap font-mono leading-relaxed' }, generateReport())
+          h('pre', { className: 'mt-2 text-[0.625rem] text-slate-800 whitespace-pre-wrap font-mono leading-relaxed' }, generateReport())
         )
       );
     };
@@ -6253,7 +6253,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-sky-50 rounded-xl p-3 border border-sky-200' },
           h('h4', { className: 'text-sm font-bold text-sky-800 mb-1' }, __alloT('stem.fractions.fraction_vocabulary', '📖 Fraction vocabulary')),
-          h('p', { className: 'text-[11px] text-sky-700' },
+          h('p', { className: 'text-[0.6875rem] text-sky-700' },
             __alloT('stem.fractions.definitions_of_every_fraction_term_use', 'Definitions of every fraction term used in K-8 math instruction, with examples. Searchable.')
           )
         ),
@@ -6271,7 +6271,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: 'vc-' + v.term, className: 'bg-white rounded-lg p-3 border border-sky-200' },
                   h('p', { className: 'text-sm font-bold text-sky-900' }, '📘 ' + v.term),
                   h('p', { className: 'text-xs text-slate-700 mt-1' }, v.def),
-                  h('p', { className: 'text-[11px] text-sky-700 italic mt-1' }, '✏ ' + v.example)
+                  h('p', { className: 'text-[0.6875rem] text-sky-700 italic mt-1' }, '✏ ' + v.example)
                 );
               })
         )
@@ -6363,7 +6363,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
           h('h4', { className: 'text-sm font-bold text-emerald-800 mb-1' }, __alloT('stem.fractions.iep_goal_bank_fraction_specific', '🎯 IEP Goal Bank — fraction-specific')),
-          h('p', { className: 'text-[11px] text-emerald-700' },
+          h('p', { className: 'text-[0.6875rem] text-emerald-700' },
             __alloT('stem.fractions.pre_formatted_smart_goals_for_iep_team', 'Pre-formatted SMART goals for IEP teams. Each goal links to a CCSS standard, suggests progress-monitoring data sources within AlloFlow, and lists common accommodations. Copy and adapt for your student.')
           )
         ),
@@ -6373,7 +6373,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'ig-' + g,
               onClick: function() { upd({ iepGrade: g }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100')
             }, g === 'all' ? 'All grades' : 'Grade ' + g);
           })
@@ -6382,12 +6382,12 @@ window.StemLab = window.StemLab || {
           filtered.map(function(g) {
             return h('div', { key: 'iep-' + g.id, className: 'bg-white rounded-lg p-3 border border-emerald-200 space-y-2' },
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                h('span', { className: 'text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded' }, 'Grade ' + g.grade),
-                h('span', { className: 'text-[11px] font-bold text-emerald-700' }, g.topic),
-                h('span', { className: 'text-[10px] text-emerald-700' }, g.ccss)
+                h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded' }, 'Grade ' + g.grade),
+                h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700' }, g.topic),
+                h('span', { className: 'text-[0.625rem] text-emerald-700' }, g.ccss)
               ),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, '🎯 ', h('b', null, g.goal)),
-              h('details', { className: 'text-[11px]' },
+              h('details', { className: 'text-[0.6875rem]' },
                 h('summary', { style: { color: isContrast ? '#ffffff' : undefined }, className: 'cursor-pointer font-bold text-emerald-700' }, __alloT('stem.fractions.show_accommodations_and_progress_monit', 'Show accommodations and progress monitoring')),
                 h('div', { className: 'mt-2 space-y-1' },
                   h('p', { className: 'text-emerald-800' }, h('b', null, __alloT('stem.fractions.progress_monitoring', 'Progress monitoring: ')), g.progress),
@@ -6405,7 +6405,7 @@ window.StemLab = window.StemLab || {
                     navigator.clipboard.writeText(g.goal).then(function() { addToast('📋 Goal copied', 'success'); });
                   }
                 },
-                className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                className: 'transition-colors px-2 py-1 rounded text-[0.625rem] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
               }, __alloT('stem.fractions.copy_goal_to_clipboard', '📋 Copy goal to clipboard'))
             );
           })
@@ -6425,20 +6425,20 @@ window.StemLab = window.StemLab || {
           }, __alloT('stem.fractions.all_lesson_plans', '← All lesson plans')),
           h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
             h('h4', { className: 'text-base font-black text-indigo-900' }, lp.title),
-            h('p', { className: 'text-[11px] text-indigo-700' },
+            h('p', { className: 'text-[0.6875rem] text-indigo-700' },
               'Grade ' + lp.grade + ' · ' + lp.ccss + ' · ' + lp.duration
             )
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-indigo-200' },
-            h('p', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, __alloT('stem.fractions.learning_objectives', '🎯 Learning objectives')),
-            h('ul', { className: 'text-[11px] list-disc pl-5 text-slate-800 space-y-0.5' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-indigo-700 mb-1' }, __alloT('stem.fractions.learning_objectives', '🎯 Learning objectives')),
+            h('ul', { className: 'text-[0.6875rem] list-disc pl-5 text-slate-800 space-y-0.5' },
               lp.objectives.map(function(o, i) { return h('li', { key: 'obj-' + i }, o); })
             )
           ),
           lp.days.map(function(d) {
             return h('div', { key: 'd-' + d.day, className: 'bg-white rounded-xl p-3 border border-indigo-200' },
               h('p', { className: 'text-xs font-bold text-indigo-700' }, 'Day ' + d.day + ': ' + d.focus),
-              h('ul', { className: 'text-[11px] list-disc pl-5 text-slate-800 space-y-0.5 mt-1' },
+              h('ul', { className: 'text-[0.6875rem] list-disc pl-5 text-slate-800 space-y-0.5 mt-1' },
                 d.activities.map(function(a, i) { return h('li', { key: 'act-' + d.day + '-' + i }, a); })
               )
             );
@@ -6448,7 +6448,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
           h('h4', { className: 'text-sm font-bold text-indigo-800 mb-1' }, __alloT('stem.fractions.lesson_plan_templates', '📚 Lesson plan templates')),
-          h('p', { className: 'text-[11px] text-indigo-700' },
+          h('p', { className: 'text-[0.6875rem] text-indigo-700' },
             __alloT('stem.fractions.ready_to_use_micro_units_3_5_days_each', 'Ready-to-use micro-units (3-5 days each) for common fraction topics. Each plan ties activities to specific Fraction Lab tabs so you can demo or assign directly.')
           )
         ),
@@ -6460,8 +6460,8 @@ window.StemLab = window.StemLab || {
               className: 'text-left p-4 rounded-xl border-2 border-indigo-200 bg-white hover:border-indigo-400 hover:shadow-md transition-all'
             },
               h('h5', { className: 'text-sm font-black text-indigo-900' }, lp2.title),
-              h('p', { className: 'text-[11px] text-indigo-600 mt-1' }, 'Grade ' + lp2.grade + ' · ' + lp2.ccss + ' · ' + lp2.duration),
-              h('p', { className: 'text-[10px] text-slate-700 italic mt-1' }, lp2.objectives[0])
+              h('p', { className: 'text-[0.6875rem] text-indigo-600 mt-1' }, 'Grade ' + lp2.grade + ' · ' + lp2.ccss + ' · ' + lp2.duration),
+              h('p', { className: 'text-[0.625rem] text-slate-700 italic mt-1' }, lp2.objectives[0])
             );
           })
         )
@@ -6525,7 +6525,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-green-50 rounded-xl p-3 border border-green-200' },
           h('h4', { className: 'text-sm font-bold text-green-800 mb-1' }, __alloT('stem.fractions.animal_fractions', '🐾 Animal fractions')),
-          h('p', { className: 'text-[11px] text-green-700' },
+          h('p', { className: 'text-[0.6875rem] text-green-700' },
             __alloT('stem.fractions.real_world_fraction_facts_from_the_ani', 'Real-world fraction facts from the animal kingdom. Use as journal prompts, attention-grabbers, or cross-curricular tie-ins to science.')
           )
         ),
@@ -6545,7 +6545,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-1' }, __alloT('stem.fractions.acknowledgments', '🙏 Acknowledgments')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.alloflow_fraction_lab_stands_on_the_sh', 'AlloFlow Fraction Lab stands on the shoulders of decades of mathematics education research and practice.')
           )
         ),
@@ -6619,7 +6619,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-stone-50 rounded-xl p-3 border border-stone-200' },
           h('h4', { className: 'text-sm font-bold text-stone-800 mb-1' }, __alloT('stem.fractions.changelog', '📜 Changelog')),
-          h('p', { className: 'text-[11px] text-stone-700' },
+          h('p', { className: 'text-[0.6875rem] text-stone-700' },
             __alloT('stem.fractions.version_history_of_alloflow_fraction_l', 'Version history of AlloFlow Fraction Lab. The v3.0 expansion brought it to its current size.')
           )
         ),
@@ -6627,7 +6627,7 @@ window.StemLab = window.StemLab || {
           return h('div', { key: 'cl-' + v.version, className: 'bg-white rounded-xl border-2 border-stone-200 p-3' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-base font-black text-stone-900' }, v.version),
-              h('span', { className: 'text-[10px] text-stone-600 font-mono' }, v.date)
+              h('span', { className: 'text-[0.625rem] text-stone-600 font-mono' }, v.date)
             ),
             h('ul', { className: 'text-xs list-disc pl-5 text-slate-700 space-y-0.5' },
               v.changes.map(function(c, i) { return h('li', { key: 'ch-' + v.version + '-' + i }, c); })
@@ -6681,7 +6681,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '⚪'),
           h('span', { className: 'font-bold text-cyan-800' }, 'Player ' + cf.currentPlayer + '\'s turn'),
           h('button', { onClick: startCf,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300' }, __alloT('stem.fractions.restart_7', '↺ Restart'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300' }, __alloT('stem.fractions.restart_7', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
           h('div', { className: 'grid gap-1', style: { gridTemplateColumns: 'repeat(7, 1fr)' } },
@@ -6759,7 +6759,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
           h('h4', { className: 'text-sm font-bold text-emerald-800 mb-1' }, __alloT('stem.fractions.daily_routine_templates', '⏱ Daily routine templates')),
-          h('p', { className: 'text-[11px] text-emerald-700' },
+          h('p', { className: 'text-[0.6875rem] text-emerald-700' },
             __alloT('stem.fractions.pre_built_sequences_of_activities_that', 'Pre-built sequences of activities that fit common time blocks (10 min, 30 min, 45 min). Pick one and follow it.')
           )
         ),
@@ -6769,7 +6769,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'dr-' + r.id,
               onClick: function() { upd({ routId: r.id }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100')
             }, r.title);
           })
@@ -6779,9 +6779,9 @@ window.StemLab = window.StemLab || {
           routine.sequence.map(function(s, i) {
             return h('div', { key: 'rs-' + i, className: 'border-l-4 border-emerald-300 pl-3 py-2 bg-emerald-50 rounded-r' },
               h('p', { className: 'text-xs font-bold text-emerald-800' }, s.time + ' · ' + s.activity),
-              h('p', { className: 'text-[11px] text-slate-700 mt-1' }, s.description),
+              h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, s.description),
               h('button', { onClick: function() { upd({ tab: s.tab }); },
-                className: 'mt-1 text-[10px] font-bold text-emerald-700 hover:underline' }, '→ Go to ' + s.tab + ' tab')
+                className: 'mt-1 text-[0.625rem] font-bold text-emerald-700 hover:underline' }, '→ Go to ' + s.tab + ' tab')
             );
           })
         )
@@ -6854,7 +6854,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-1' }, __alloT('stem.fractions.exit_ticket_generator', '🎫 Exit ticket generator')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.generate_a_3_question_exit_ticket_on_t', 'Generate a 3-question exit ticket on the topic just taught. Print and hand out at the end of the lesson.')
           )
         ),
@@ -6934,7 +6934,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
           h('h4', { className: 'text-sm font-bold text-indigo-800 mb-1' }, __alloT('stem.fractions.assessment_checklist', '☑ Assessment checklist')),
-          h('p', { className: 'text-[11px] text-indigo-700' },
+          h('p', { className: 'text-[0.6875rem] text-indigo-700' },
             __alloT('stem.fractions.per_grade_skills_checklists_use_during', 'Per-grade skills checklists. Use during one-on-one assessment or to plan instruction.')
           )
         ),
@@ -6999,7 +6999,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
           h('h4', { className: 'text-sm font-bold text-pink-800 mb-1' }, __alloT('stem.fractions.parent_guide', '👨‍👩‍👧 Parent guide')),
-          h('p', { className: 'text-[11px] text-pink-700' },
+          h('p', { className: 'text-[0.6875rem] text-pink-700' },
             __alloT('stem.fractions.guidance_for_parents_helping_kids_with', 'Guidance for parents helping kids with fractions at home. Common challenges, practical tips, and what to ask.')
           )
         ),
@@ -7061,7 +7061,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200' },
           h('h4', { className: 'text-sm font-bold text-purple-800 mb-1' }, __alloT('stem.fractions.udl_alignment_cast_guidelines', '🎨 UDL alignment — CAST guidelines')),
-          h('p', { className: 'text-[11px] text-purple-700' },
+          h('p', { className: 'text-[0.6875rem] text-purple-700' },
             __alloT('stem.fractions.every_fraction_lab_feature_mapped_to_a', 'Every Fraction Lab feature mapped to a Universal Design for Learning (UDL) guideline from CAST. '),
             __alloT('stem.fractions.use_this_to_articulate_to_administrato', 'Use this to articulate to administrators or grant reviewers how AlloFlow operationalizes UDL.')
           )
@@ -7069,7 +7069,7 @@ window.StemLab = window.StemLab || {
         UDL_GUIDELINES.map(function(g, i) {
           return h('div', { key: 'udl-' + i, className: 'bg-white rounded-xl border-2 border-purple-200 p-3' },
             h('h5', { className: 'text-sm font-black text-purple-900 mb-1' }, g.principle),
-            h('p', { className: 'text-[11px] text-purple-700 italic mb-2' }, g.subtitle),
+            h('p', { className: 'text-[0.6875rem] text-purple-700 italic mb-2' }, g.subtitle),
             h('table', { className: 'w-full text-xs' },
               h('thead', null,
                 h('tr', { className: 'border-b-2 border-purple-300' },
@@ -7142,7 +7142,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-stone-50 rounded-xl p-3 border border-stone-200' },
           h('h4', { className: 'text-sm font-bold text-stone-800 mb-1' }, __alloT('stem.fractions.research_citations', '📚 Research citations')),
-          h('p', { className: 'text-[11px] text-stone-700' },
+          h('p', { className: 'text-[0.6875rem] text-stone-700' },
             __alloT('stem.fractions.the_research_base_for_alloflow_fractio', 'The research base for AlloFlow Fraction Lab. Use these citations when justifying tool use to administrators, in IEP documentation, or in grant applications.')
           )
         ),
@@ -7152,7 +7152,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'space-y-2' },
               cat.items.map(function(item, i) {
                 return h('div', { key: 'ci-' + cat.category + '-' + i, className: 'border-l-4 border-stone-300 pl-3 py-1' },
-                  h('p', { className: 'text-[11px] text-slate-700 italic' }, item.citation),
+                  h('p', { className: 'text-[0.6875rem] text-slate-700 italic' }, item.citation),
                   h('p', { className: 'text-xs text-stone-700 mt-1' }, '→ ' + item.summary)
                 );
               })
@@ -7258,7 +7258,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
           h('h4', { className: 'text-sm font-bold text-slate-800 mb-1' }, __alloT('stem.fractions.tab_guide_every_feature_explained', '📚 Tab guide — every feature explained')),
-          h('p', { className: 'text-[11px] text-slate-700' },
+          h('p', { className: 'text-[0.6875rem] text-slate-700' },
             'A comprehensive guide to all ' + tabs.length + ' tabs in Fraction Lab. ',
             __alloT('stem.fractions.each_tab_includes_its_purpose_when_to_', 'Each tab includes its purpose, when to use it, and a pro tip. '),
             __alloT('stem.fractions.useful_for_new_teachers_substitute_tea', 'Useful for new teachers, substitute teachers, or anyone evaluating the tool.')
@@ -7271,9 +7271,9 @@ window.StemLab = window.StemLab || {
               section.tabs.map(function(t, i) {
                 return h('div', { key: 'tgr-' + section.section + '-' + i, className: 'border-l-4 border-slate-200 pl-3 py-1' },
                   h('p', { className: 'text-sm font-bold text-slate-800' }, t.title),
-                  h('p', { className: 'text-[11px] text-slate-700' }, h('b', null, 'Purpose: '), t.purpose),
-                  h('p', { className: 'text-[11px] text-slate-700' }, h('b', null, 'When: '), t.when),
-                  h('p', { className: 'text-[11px] text-slate-600 italic' }, '💡 ' + t.tip)
+                  h('p', { className: 'text-[0.6875rem] text-slate-700' }, h('b', null, 'Purpose: '), t.purpose),
+                  h('p', { className: 'text-[0.6875rem] text-slate-700' }, h('b', null, 'When: '), t.when),
+                  h('p', { className: 'text-[0.6875rem] text-slate-600 italic' }, '💡 ' + t.tip)
                 );
               })
             )
@@ -7306,7 +7306,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-stone-50 rounded-xl p-3 border border-stone-200' },
           h('h4', { className: 'text-sm font-bold text-stone-800 mb-1' }, __alloT('stem.fractions.fraction_history_timeline', '⏰ Fraction history timeline')),
-          h('p', { className: 'text-[11px] text-stone-700' },
+          h('p', { className: 'text-[0.6875rem] text-stone-700' },
             __alloT('stem.fractions.4_000_years_of_fraction_history_from_e', '4,000 years of fraction history, from Egyptian unit fractions to modern computational tools.')
           )
         ),
@@ -7314,8 +7314,8 @@ window.StemLab = window.StemLab || {
           FRACTION_TIMELINE.map(function(t, i) {
             return h('div', { key: 'tl-' + i, className: 'bg-white rounded-lg p-3 border-l-4 border-stone-500' },
               h('div', { className: 'flex items-start gap-2 flex-wrap' },
-                h('span', { className: 'text-[10px] font-bold text-stone-700 bg-stone-200 px-2 py-0.5 rounded font-mono' }, t.period),
-                h('span', { className: 'text-[10px] font-bold text-stone-600' }, t.civilization)
+                h('span', { className: 'text-[0.625rem] font-bold text-stone-700 bg-stone-200 px-2 py-0.5 rounded font-mono' }, t.period),
+                h('span', { className: 'text-[0.625rem] font-bold text-stone-600' }, t.civilization)
               ),
               h('p', { className: 'text-sm font-bold text-stone-900 mt-1' }, t.event),
               h('p', { className: 'text-xs text-slate-700 mt-1' }, t.detail)
@@ -7371,7 +7371,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
           h('h4', { className: 'text-sm font-bold text-emerald-800 mb-1' }, __alloT('stem.fractions.differentiation_tool', '🎯 Differentiation tool')),
-          h('p', { className: 'text-[11px] text-emerald-700' },
+          h('p', { className: 'text-[0.6875rem] text-emerald-700' },
             __alloT('stem.fractions.pick_a_learning_profile_to_see_which_f', 'Pick a learning profile to see which Fraction Lab tabs and accommodations are most helpful. '),
             __alloT('stem.fractions.these_are_suggestions_not_prescription', 'These are suggestions, not prescriptions — every student is unique.')
           )
@@ -7382,7 +7382,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'df-' + p.id,
               onClick: function() { upd({ profId: p.id }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100')
             }, p.label);
           })
@@ -7390,19 +7390,19 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4 space-y-3' },
           h('h5', { className: 'text-base font-black text-emerald-900' }, profile.label),
           h('div', { className: 'bg-emerald-50 rounded p-2 border border-emerald-200' },
-            h('p', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.fractions.recommended_fraction_lab_features', '👍 Recommended Fraction Lab features')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700' }, __alloT('stem.fractions.recommended_fraction_lab_features', '👍 Recommended Fraction Lab features')),
             h('ul', { className: 'text-xs list-disc pl-5 text-slate-800 mt-1 space-y-0.5' },
               profile.recommended.map(function(r, i) { return h('li', { key: 'rec-' + i }, r); })
             )
           ),
           (profile.avoid && profile.avoid.length) ? h('div', { className: 'bg-rose-50 rounded p-2 border border-rose-200' },
-            h('p', { className: 'text-[11px] font-bold text-rose-700' }, __alloT('stem.fractions.avoid', '⚠ Avoid')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-rose-700' }, __alloT('stem.fractions.avoid', '⚠ Avoid')),
             h('ul', { className: 'text-xs list-disc pl-5 text-slate-800 mt-1 space-y-0.5' },
               profile.avoid.map(function(a, i) { return h('li', { key: 'av-' + i }, a); })
             )
           ) : null,
           h('div', { className: 'bg-amber-50 rounded p-2 border border-amber-200' },
-            h('p', { className: 'text-[11px] font-bold text-amber-700' }, __alloT('stem.fractions.tip', '💡 Tip')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-amber-700' }, __alloT('stem.fractions.tip', '💡 Tip')),
             h('p', { className: 'text-xs text-slate-800 mt-1' }, profile.tip)
           )
         )
@@ -7417,7 +7417,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200' },
           h('h4', { className: 'text-sm font-bold text-violet-800 mb-1' }, __alloT('stem.fractions.goal_setter_2', '🎯 Goal setter')),
-          h('p', { className: 'text-[11px] text-violet-700' },
+          h('p', { className: 'text-[0.6875rem] text-violet-700' },
             __alloT('stem.fractions.set_a_personal_daily_and_weekly_target', 'Set a personal daily and weekly target. Track your progress. Sustained practice beats intensity for retention.')
           )
         ),
@@ -7485,7 +7485,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-1' }, __alloT('stem.fractions.math_quotes', '💭 Math quotes')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.quotes_about_mathematics_learning_and_', 'Quotes about mathematics, learning, and the beauty of numbers. Use as classroom posters, journal prompts, or just for inspiration.')
           )
         ),
@@ -7571,7 +7571,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-cyan-50 rounded-xl p-3 border border-cyan-200' },
           h('h4', { className: 'text-sm font-bold text-cyan-800 mb-1' }, __alloT('stem.fractions.data_analysis_with_fractions', '📊 Data analysis with fractions')),
-          h('p', { className: 'text-[11px] text-cyan-700' },
+          h('p', { className: 'text-[0.6875rem] text-cyan-700' },
             __alloT('stem.fractions.fractions_are_how_we_describe_parts_of', 'Fractions are how we describe parts of a data set. Each survey shows real-looking data and asks fraction questions about it.')
           )
         ),
@@ -7581,7 +7581,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'da-' + d.id,
               onClick: function() { upd({ dataId: d.id }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
             }, d.title);
           })
@@ -7612,11 +7612,11 @@ window.StemLab = window.StemLab || {
           ),
           // Questions
           h('div', { className: 'bg-cyan-50 rounded p-3 border border-cyan-200 mt-3' },
-            h('p', { className: 'text-[11px] font-bold text-cyan-700 mb-2' }, __alloT('stem.fractions.practice_questions', '🤔 Practice questions')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-cyan-700 mb-2' }, __alloT('stem.fractions.practice_questions', '🤔 Practice questions')),
             data.questions.map(function(q, i) {
               return h('details', { key: 'dq-' + i, className: 'border-b border-cyan-100 last:border-b-0 py-1' },
                 h('summary', { style: { color: isContrast ? '#ffffff' : undefined }, className: 'text-xs font-bold text-cyan-800 cursor-pointer' }, 'Q' + (i + 1) + ': ' + q.split(' Answer:')[0]),
-                h('p', { className: 'text-[11px] text-emerald-700 font-mono mt-1' }, '✓ ' + q.split(' Answer:')[1])
+                h('p', { className: 'text-[0.6875rem] text-emerald-700 font-mono mt-1' }, '✓ ' + q.split(' Answer:')[1])
               );
             })
           )
@@ -7633,7 +7633,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
           h('h4', { className: 'text-sm font-bold text-rose-800 mb-1' }, __alloT('stem.fractions.misconception_remediation_flow', '🛠 Misconception remediation flow')),
-          h('p', { className: 'text-[11px] text-rose-700' },
+          h('p', { className: 'text-[0.6875rem] text-rose-700' },
             __alloT('stem.fractions.pick_a_misconception_walk_through_its_', 'Pick a misconception. Walk through its remediation strategies step by step. Use this when a student is consistently making a specific error.')
           )
         ),
@@ -7648,17 +7648,17 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center gap-2 flex-wrap' },
             h('h5', { className: 'text-base font-black text-rose-900' }, mc.label),
-            h('span', { className: 'text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded uppercase' }, mc.severity),
-            h('span', { className: 'text-[10px] text-rose-700' }, 'Grade ' + mc.grade)
+            h('span', { className: 'text-[0.625rem] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded uppercase' }, mc.severity),
+            h('span', { className: 'text-[0.625rem] text-rose-700' }, 'Grade ' + mc.grade)
           ),
           h('p', { className: 'text-sm text-slate-800' }, '📝 ' + mc.description),
           h('div', { className: 'bg-rose-50 rounded p-2 border border-rose-200' },
-            h('p', { className: 'text-[11px] font-bold text-rose-700' }, __alloT('stem.fractions.why_this_happens', '🤔 Why this happens')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-rose-700' }, __alloT('stem.fractions.why_this_happens', '🤔 Why this happens')),
             h('p', { className: 'text-xs text-slate-800 mt-1' }, mc.whyItHappens)
           ),
           // Stepwise remediation
           h('div', { className: 'bg-white rounded p-2 border border-rose-200 space-y-2' },
-            h('p', { className: 'text-[11px] font-bold text-rose-700' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-rose-700' },
               '🛠 Remediation step ' + (mcfStep + 1) + ' of ' + mc.remediation.length
             ),
             // Progress dots
@@ -7737,7 +7737,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-stone-50 rounded-xl p-3 border border-stone-200' },
           h('h4', { className: 'text-sm font-bold text-stone-800 mb-1' }, __alloT('stem.fractions.print_lab_everything_printable_in_one_', '🖨 Print lab — everything printable in one place')),
-          h('p', { className: 'text-[11px] text-stone-700' },
+          h('p', { className: 'text-[0.6875rem] text-stone-700' },
             __alloT('stem.fractions.quick_access_to_every_printable_artifa', 'Quick access to every printable artifact in Fraction Lab. Use for offline practice, classroom posters, or take-home materials.')
           )
         ),
@@ -7752,7 +7752,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-3xl' }, p.icon),
                 h('div', null,
                   h('h5', { className: 'font-black text-stone-900' }, p.label),
-                  h('p', { className: 'text-[11px] text-stone-700' }, p.desc)
+                  h('p', { className: 'text-[0.6875rem] text-stone-700' }, p.desc)
                 )
               )
             );
@@ -7760,7 +7760,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-stone-200 p-4' },
           h('p', { className: 'text-xs font-bold text-stone-700 mb-2' }, __alloT('stem.fractions.quick_print_fraction_strips_template', '✂ Quick print: Fraction strips template')),
-          h('p', { className: 'text-[11px] text-stone-700 mb-3' },
+          h('p', { className: 'text-[0.6875rem] text-stone-700 mb-3' },
             __alloT('stem.fractions.a_page_of_fraction_strips_from_1_whole', 'A page of fraction strips from 1 whole to 1/12. Cut out and use for any concrete-representational activity.')
           ),
           h('button', { onClick: printFractionStripsTemplate,
@@ -7781,7 +7781,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'bg-white rounded-xl p-3 border border-rose-200' },
           h('h5', { className: 'text-sm font-black text-rose-800 mb-2' }, __alloT('stem.fractions.pedagogical_foundations_2', '📚 Pedagogical foundations')),
-          h('ul', { className: 'text-[11px] list-disc pl-5 text-slate-700 space-y-1' },
+          h('ul', { className: 'text-[0.6875rem] list-disc pl-5 text-slate-700 space-y-1' },
             h('li', null, h('b', null, __alloT('stem.fractions.ies_practice_guide_siegler_et_al_2010', 'IES Practice Guide (Siegler et al., 2010): ')), __alloT('stem.fractions.developing_effective_fractions_instruc', '"Developing Effective Fractions Instruction for Kindergarten Through 8th Grade." 5 evidence-based recommendations.')),
             h('li', null, h('b', null, __alloT('stem.fractions.cra_framework_bruner_1966_sealander_20', 'CRA framework (Bruner, 1966; Sealander, 2012): ')), __alloT('stem.fractions.concrete_representational_abstract_pro', 'Concrete → Representational → Abstract progression.')),
             h('li', null, h('b', null, __alloT('stem.fractions.number_talks_parrish_2010', 'Number Talks (Parrish, 2010): ')), __alloT('stem.fractions.daily_mental_math_discussion_routines', 'Daily mental math discussion routines.')),
@@ -7791,14 +7791,14 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'bg-white rounded-xl p-3 border border-rose-200' },
           h('h5', { className: 'text-sm font-black text-rose-800 mb-2' }, __alloT('stem.fractions.standards_covered', '📋 Standards covered')),
-          h('p', { className: 'text-[11px] text-slate-700' },
+          h('p', { className: 'text-[0.6875rem] text-slate-700' },
             __alloT('stem.fractions.ccss_k_8', 'CCSS K-8: '), h('span', { className: 'font-mono' }, __alloT('stem.fractions.1_g_a_3_2_g_a_3_3_nf_a_1_3_nf_a_2_3_nf', '1.G.A.3, 2.G.A.3, 3.NF.A.1, 3.NF.A.2, 3.NF.A.3, 4.NF.A.1-2, 4.NF.B.3-4, 4.NF.C.5-7, 5.NF.A.1-2, 5.NF.B.3-7, 6.NS.A.1, 6.RP.A.1,3, 7.NS.A.2, 8.NS.A.1.'))
           ),
-          h('p', { className: 'text-[11px] text-slate-700 mt-1' }, __alloT('stem.fractions.visit_the_standards_tab_for_the_comple', 'Visit the Standards tab for the complete cross-reference.'))
+          h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, __alloT('stem.fractions.visit_the_standards_tab_for_the_comple', 'Visit the Standards tab for the complete cross-reference.'))
         ),
         h('div', { className: 'bg-white rounded-xl p-3 border border-rose-200' },
           h('h5', { className: 'text-sm font-black text-rose-800 mb-2' }, __alloT('stem.fractions.features_summary', '✨ Features summary')),
-          h('div', { className: 'grid grid-cols-2 gap-2 text-[11px] text-slate-700' },
+          h('div', { className: 'grid grid-cols-2 gap-2 text-[0.6875rem] text-slate-700' },
             h('div', null, __alloT('stem.fractions.7_visual_models', '🎨 7 visual models')),
             h('div', null, __alloT('stem.fractions.9_mini_games', '🎮 9 mini-games')),
             h('div', null, __alloT('stem.fractions.80_word_problems', '📚 80+ word problems')),
@@ -7814,7 +7814,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
-          h('p', { className: 'text-[11px] text-rose-700' },
+          h('p', { className: 'text-[0.6875rem] text-rose-700' },
             __alloT('stem.fractions.alloflow_is_open_source_agpl_v3_develo', 'AlloFlow is open-source (AGPL v3). Developed by Aaron Pomeranz, PsyD. Built with AI-assisted development.')
           )
         )
@@ -7854,7 +7854,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-orange-50 rounded-xl p-3 border border-orange-200' },
           h('h4', { className: 'text-sm font-bold text-orange-800 mb-1' }, __alloT('stem.fractions.virtual_manipulatives', '🧩 Virtual manipulatives')),
-          h('p', { className: 'text-[11px] text-orange-700' },
+          h('p', { className: 'text-[0.6875rem] text-orange-700' },
             __alloT('stem.fractions.click_pieces_to_add_them_to_your_works', 'Click pieces to add them to your workspace. Try to make patterns, build wholes, or explore equivalence visually.')
           )
         ),
@@ -7872,7 +7872,7 @@ window.StemLab = window.StemLab || {
           })
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-3' },
-          h('p', { className: 'text-[11px] font-bold text-orange-700 mb-2' }, __alloT('stem.fractions.add_a_piece', 'Add a piece:')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-orange-700 mb-2' }, __alloT('stem.fractions.add_a_piece', 'Add a piece:')),
           h('div', { className: 'grid grid-cols-4 gap-2' },
             [2, 3, 4, 5, 6, 8, 10, 12].map(function(d) {
               return h('button', {
@@ -7886,20 +7886,20 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('p', { className: 'text-[11px] font-bold text-orange-700' }, 'Workspace (' + manipPieces.length + ' pieces, total = ' + totalVal.toFixed(3) + '):'),
+            h('p', { className: 'text-[0.6875rem] font-bold text-orange-700' }, 'Workspace (' + manipPieces.length + ' pieces, total = ' + totalVal.toFixed(3) + '):'),
             h('button', { onClick: clearPieces, 'aria-label': __alloT('stem.fractions.clear_workspace', 'Clear workspace'),
               disabled: manipPieces.length === 0,
-              className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:opacity-40' },
+              className: 'transition-colors px-2 py-1 rounded text-[0.625rem] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:opacity-40' },
               __alloT('stem.fractions.clear_2', '↺ Clear')
             )
           ),
           manipPieces.length === 0
-            ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, __alloT('stem.fractions.no_pieces_yet_add_some_from_above', 'No pieces yet. Add some from above.'))
+            ? h('p', { className: 'text-[0.6875rem] italic text-slate-500 text-center py-4' }, __alloT('stem.fractions.no_pieces_yet_add_some_from_above', 'No pieces yet. Add some from above.'))
             : h('div', { className: 'space-y-2' },
                 Object.keys(grouped).sort(function(a, b) { return parseInt(a) - parseInt(b); }).map(function(d) {
                   var pieces = grouped[d];
                   return h('div', { key: 'mg-' + d, className: 'bg-orange-50 rounded p-2 border border-orange-200' },
-                    h('p', { className: 'text-[11px] font-bold text-orange-700 mb-1' }, pieces.length + ' × 1/' + d + ' = ' + pieces.length + '/' + d + ' (' + (pieces.length / parseInt(d)).toFixed(3) + ')'),
+                    h('p', { className: 'text-[0.6875rem] font-bold text-orange-700 mb-1' }, pieces.length + ' × 1/' + d + ' = ' + pieces.length + '/' + d + ' (' + (pieces.length / parseInt(d)).toFixed(3) + ')'),
                     h('div', { className: 'flex gap-1 flex-wrap' },
                       pieces.map(function(p) {
                         if (manipType === 'circles') {
@@ -7941,7 +7941,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200' },
           h('h4', { className: 'text-sm font-bold text-violet-800 mb-1' }, __alloT('stem.fractions.mastery_dashboard', '⭐ Mastery dashboard')),
-          h('p', { className: 'text-[11px] text-violet-700' },
+          h('p', { className: 'text-[0.6875rem] text-violet-700' },
             __alloT('stem.fractions.track_your_progress_on_each_fraction_s', 'Track your progress on each fraction skill. Each skill has a target — keep practicing until you hit 100%.')
           )
         ),
@@ -7952,7 +7952,7 @@ window.StemLab = window.StemLab || {
             return h('div', { key: 'sk-' + s.id, className: 'bg-white rounded-lg p-3 border border-violet-200' },
               h('div', { className: 'flex items-center justify-between mb-1' },
                 h('span', { className: 'text-xs font-bold text-violet-900' }, (mastered ? '⭐ ' : '') + s.label),
-                h('span', { className: 'text-[11px] font-mono text-violet-700' }, s.count + ' / ' + s.target)
+                h('span', { className: 'text-[0.6875rem] font-mono text-violet-700' }, s.count + ' / ' + s.target)
               ),
               h('div', { className: 'h-3 bg-slate-200 rounded-full overflow-hidden' },
                 h('div', { style: {
@@ -8060,7 +8060,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-yellow-50 rounded-xl p-3 border border-yellow-200' },
           h('h4', { className: 'text-sm font-bold text-yellow-800 mb-1' }, __alloT('stem.fractions.brain_teasers_2', '🧠 Brain teasers')),
-          h('p', { className: 'text-[11px] text-yellow-700' },
+          h('p', { className: 'text-[0.6875rem] text-yellow-700' },
             __alloT('stem.fractions.10_fraction_puzzles_ranging_from_easy_', '10 fraction puzzles ranging from easy to hard. Each has a hint and a worked solution.')
           )
         ),
@@ -8071,7 +8071,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'bt-' + b.id,
               onClick: function() { upd({ btId: b.id, btShowSolution: false, btHintLevel: 0 }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-yellow-700 text-white' : 'bg-white text-yellow-700 border border-yellow-300 hover:bg-yellow-100')
             }, (b.difficulty === 'easy' ? '🟢' : b.difficulty === 'medium' ? '🟡' : '🔴') + ' ' + b.title);
           })
@@ -8079,15 +8079,15 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-yellow-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center gap-2' },
             h('h5', { className: 'text-base font-black text-yellow-900' }, '🧠 ' + bt.title),
-            h('span', { className: 'text-[10px] font-bold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded uppercase' }, bt.difficulty)
+            h('span', { className: 'text-[0.625rem] font-bold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded uppercase' }, bt.difficulty)
           ),
           h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, bt.question),
           btHintLevel >= 1 && h('div', { className: 'bg-yellow-50 rounded p-2 border border-yellow-200' },
-            h('p', { className: 'text-[11px] font-bold text-yellow-700' }, __alloT('stem.fractions.hint', '💡 Hint')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-yellow-700' }, __alloT('stem.fractions.hint', '💡 Hint')),
             h('p', { className: 'text-xs text-slate-800 mt-1' }, bt.hint)
           ),
           btShowSolution && h('div', { className: 'bg-emerald-50 rounded p-2 border border-emerald-200' },
-            h('p', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.fractions.solution', '🎓 Solution')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700' }, __alloT('stem.fractions.solution', '🎓 Solution')),
             h('p', { className: 'text-xs text-slate-800 mt-1' }, bt.solution)
           ),
           h('div', { className: 'flex gap-2' },
@@ -8105,7 +8105,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
           h('h4', { className: 'text-sm font-bold text-slate-800 mb-1' }, __alloT('stem.fractions.help_2', '❓ Help')),
-          h('p', { className: 'text-[11px] text-slate-700' },
+          h('p', { className: 'text-[0.6875rem] text-slate-700' },
             __alloT('stem.fractions.quick_guide_to_using_alloflow_fraction', 'Quick guide to using AlloFlow Fraction Lab.')
           )
         ),
@@ -8159,7 +8159,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h5', { className: 'text-sm font-black text-amber-800 mb-1' }, __alloT('stem.fractions.credits', '📜 Credits')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.alloflow_fraction_lab_is_open_source_s', 'AlloFlow Fraction Lab is open-source software (AGPL v3) built by Aaron Pomeranz, PsyD. '),
             __alloT('stem.fractions.pedagogical_framework_drawn_from_the_i', 'Pedagogical framework drawn from the IES Practice Guide (Siegler et al., 2010), Bruner\'s CRA framework, and Cuisenaire\'s fraction strip model (1950s). '),
             __alloT('stem.fractions.ccss_standards_from_corestandards_org_', 'CCSS standards from corestandards.org. Misconception library compiled from research by Vamvakoussi & Vosniadou, Stafylidou, Lortie-Forgues et al., and others.')
@@ -8200,7 +8200,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-cyan-50 rounded-xl p-3 border border-cyan-200' },
           h('h4', { className: 'text-sm font-bold text-cyan-800 mb-1' }, __alloT('stem.fractions.conversion_tables_2', '📊 Conversion tables')),
-          h('p', { className: 'text-[11px] text-cyan-700' },
+          h('p', { className: 'text-[0.6875rem] text-cyan-700' },
             __alloT('stem.fractions.reference_tables_showing_all_common_fr', 'Reference tables showing all common fractions with their decimal and percent equivalents. Use to look up exact values or to spot patterns.')
           )
         ),
@@ -8210,7 +8210,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'tt-' + t,
               onClick: function() { upd({ tableType: t }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
             }, tables[t].label.split(' ')[0]);
           })
@@ -8270,7 +8270,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
           h('h4', { className: 'text-sm font-bold text-indigo-800 mb-1' }, __alloT('stem.fractions.extended_glossary', '📔 Extended glossary')),
-          h('p', { className: 'text-[11px] text-indigo-700' },
+          h('p', { className: 'text-[0.6875rem] text-indigo-700' },
             __alloT('stem.fractions.comprehensive_fraction_glossary_with_e', 'Comprehensive fraction glossary with examples. Covers vocabulary from K-8 fraction instruction.')
           )
         ),
@@ -8280,7 +8280,7 @@ window.StemLab = window.StemLab || {
           placeholder: __alloT('stem.fractions.search_glossary', 'Search glossary...'),
           className: 'w-full px-3 py-2 rounded-lg border border-indigo-300 text-sm'
         }),
-        h('p', { className: 'text-[11px] text-indigo-700' }, filtered.length + ' term' + (filtered.length === 1 ? '' : 's')),
+        h('p', { className: 'text-[0.6875rem] text-indigo-700' }, filtered.length + ' term' + (filtered.length === 1 ? '' : 's')),
         h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-600', role: 'region', tabIndex: 0, 'aria-label': 'Fraction glossary terms' },
           filtered.length === 0
             ? h('p', { className: 'text-xs italic text-slate-500 text-center py-4' }, __alloT('stem.fractions.no_matches_2', 'No matches.'))
@@ -8288,7 +8288,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: 'gl-' + i, className: 'bg-white rounded-lg p-3 border border-indigo-200' },
                   h('p', { className: 'text-sm font-bold text-indigo-900' }, '📔 ' + v.term),
                   h('p', { className: 'text-xs text-slate-700 mt-1' }, v.def),
-                  h('p', { className: 'text-[11px] text-indigo-700 italic mt-1' }, '✏ ' + v.example)
+                  h('p', { className: 'text-[0.6875rem] text-indigo-700 italic mt-1' }, '✏ ' + v.example)
                 );
               })
         )
@@ -8340,7 +8340,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200' },
           h('h4', { className: 'text-sm font-bold text-purple-800 mb-1' }, __alloT('stem.fractions.math_talks_for_fractions', '🗣 Math Talks for fractions')),
-          h('p', { className: 'text-[11px] text-purple-700' },
+          h('p', { className: 'text-[0.6875rem] text-purple-700' },
             __alloT('stem.fractions.number_talk_strings_parrish_2010_numbe', 'Number-talk strings (Parrish, 2010 — "Number Talks") for fraction reasoning. 5 prompts in a sequence with a common pattern. '),
             __alloT('stem.fractions.15_minute_teacher_led_discussion_focus', '15-minute teacher-led discussion focused on mental math and student explanation.')
           )
@@ -8351,7 +8351,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'mt-' + m.id,
               onClick: function() { upd({ mtId: m.id }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-purple-700 text-white' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')
             }, m.title);
           })
@@ -8359,7 +8359,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3' },
           h('h5', { className: 'text-base font-black text-purple-900' }, mt.title),
           h('div', { className: 'bg-purple-50 rounded p-3 border border-purple-200' },
-            h('p', { className: 'text-[11px] font-bold text-purple-700 mb-2' }, __alloT('stem.fractions.prompt_string_do_in_order', '📋 Prompt string (do in order):')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-purple-700 mb-2' }, __alloT('stem.fractions.prompt_string_do_in_order', '📋 Prompt string (do in order):')),
             h('ol', { className: 'space-y-1.5' },
               mt.prompts.map(function(p, i) {
                 return h('li', { key: 'mp-' + i, className: 'text-base font-mono font-bold text-purple-900 bg-white rounded px-3 py-1.5 border border-purple-200' },
@@ -8369,11 +8369,11 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'bg-amber-50 rounded p-3 border border-amber-200' },
-            h('p', { className: 'text-[11px] font-bold text-amber-700' }, __alloT('stem.fractions.focus', '🎯 Focus:')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-amber-700' }, __alloT('stem.fractions.focus', '🎯 Focus:')),
             h('p', { className: 'text-xs text-slate-800 mt-1' }, mt.focus)
           ),
           h('div', { className: 'bg-emerald-50 rounded p-3 border border-emerald-200' },
-            h('p', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.fractions.teaching_notes', '👩‍🏫 Teaching notes')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700' }, __alloT('stem.fractions.teaching_notes', '👩‍🏫 Teaching notes')),
             h('p', { className: 'text-xs text-slate-800 mt-1' }, mt.teachingNotes)
           )
         )
@@ -8436,7 +8436,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '📖'),
           h('span', { className: 'font-bold text-sky-800' }, 'Score: ' + vqScore.correct + '/' + vqScore.total),
           h('button', { onClick: startVq,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-sky-200 text-sky-800 hover:bg-sky-300' }, __alloT('stem.fractions.restart_8', '↺ Restart'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-sky-200 text-sky-800 hover:bg-sky-300' }, __alloT('stem.fractions.restart_8', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
           h('p', { className: 'text-sm font-bold text-sky-800 text-center' }, __alloT('stem.fractions.which_term_matches_this_definition', 'Which term matches this definition?')),
@@ -8481,7 +8481,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-cyan-50 rounded-xl p-3 border border-cyan-200' },
           h('h4', { className: 'text-sm font-bold text-cyan-800 mb-1' }, __alloT('stem.fractions.reference_card_maker', '🖨 Reference card maker')),
-          h('p', { className: 'text-[11px] text-cyan-700' },
+          h('p', { className: 'text-[0.6875rem] text-cyan-700' },
             __alloT('stem.fractions.generate_a_printable_reference_card_wi', 'Generate a printable reference card with fractions, decimals, and percents. Tape it to a binder or desk for quick lookup.')
           )
         ),
@@ -8628,7 +8628,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-1' }, __alloT('stem.fractions.hands_on_activities_library', '✂️ Hands-on activities library')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.physical_off_screen_activities_to_teac', 'Physical, off-screen activities to teach fractions concretely. Print-friendly. Each activity has materials, steps, an extension, and CCSS alignment.')
           )
         ),
@@ -8638,7 +8638,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'a-' + a.id,
               onClick: function() { upd({ actId: a.id }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-100')
             }, a.title);
           })
@@ -8646,22 +8646,22 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center gap-2 flex-wrap' },
             h('h5', { className: 'text-base font-black text-amber-900' }, act.title),
-            h('span', { className: 'text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded' }, 'Grade ' + act.grade),
-            h('span', { className: 'text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded' }, '⏱ ' + act.time),
-            act.ccss && h('span', { className: 'text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded' }, act.ccss)
+            h('span', { className: 'text-[0.625rem] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded' }, 'Grade ' + act.grade),
+            h('span', { className: 'text-[0.625rem] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded' }, '⏱ ' + act.time),
+            act.ccss && h('span', { className: 'text-[0.625rem] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded' }, act.ccss)
           ),
           h('div', { className: 'bg-amber-50 rounded p-2 border border-amber-200' },
-            h('p', { className: 'text-[11px] font-bold text-amber-700 mb-0.5' }, __alloT('stem.fractions.materials', '📦 Materials')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-0.5' }, __alloT('stem.fractions.materials', '📦 Materials')),
             h('p', { className: 'text-xs text-slate-800' }, act.materials)
           ),
           h('div', { className: 'bg-white rounded p-2 border border-amber-200' },
-            h('p', { className: 'text-[11px] font-bold text-amber-700 mb-0.5' }, __alloT('stem.fractions.steps', '📋 Steps')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-0.5' }, __alloT('stem.fractions.steps', '📋 Steps')),
             h('ol', { className: 'text-xs list-decimal pl-5 space-y-0.5 text-slate-800' },
               act.steps.map(function(s, i) { return h('li', { key: 's-' + i }, s); })
             )
           ),
           h('div', { className: 'bg-amber-50 rounded p-2 border border-amber-200' },
-            h('p', { className: 'text-[11px] font-bold text-amber-700 mb-0.5' }, __alloT('stem.fractions.extension', '🚀 Extension')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-0.5' }, __alloT('stem.fractions.extension', '🚀 Extension')),
             h('p', { className: 'text-xs text-slate-800' }, act.extension)
           )
         )
@@ -8724,7 +8724,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
           h('h4', { className: 'text-sm font-bold text-indigo-800 mb-1' }, __alloT('stem.fractions.scope_sequence_k_8_fraction_trajectory', '📅 Scope & sequence — K-8 fraction trajectory')),
-          h('p', { className: 'text-[11px] text-indigo-700' },
+          h('p', { className: 'text-[0.6875rem] text-indigo-700' },
             __alloT('stem.fractions.suggested_month_by_month_pacing_for_fr', 'Suggested month-by-month pacing for fraction instruction at each grade level. Use this to map AlloFlow tools to your curriculum calendar.')
           )
         ),
@@ -8744,11 +8744,11 @@ window.StemLab = window.StemLab || {
           grade.units.map(function(u, i) {
             return h('div', { key: 'su-' + i, className: 'flex items-start gap-2 border-t border-indigo-100 pt-2' },
               h('div', { className: 'w-12 text-center bg-indigo-100 rounded p-1 flex-shrink-0' },
-                h('p', { className: 'text-[10px] font-bold text-indigo-800' }, u.month)
+                h('p', { className: 'text-[0.625rem] font-bold text-indigo-800' }, u.month)
               ),
               h('div', { className: 'flex-1' },
                 h('p', { className: 'text-sm font-bold text-indigo-900' }, u.topic),
-                h('p', { className: 'text-[10px] text-indigo-600 mt-0.5' }, u.ccss),
+                h('p', { className: 'text-[0.625rem] text-indigo-600 mt-0.5' }, u.ccss),
                 h('p', { className: 'text-xs text-slate-700 mt-1' }, '🎯 ' + u.focus)
               )
             );
@@ -8785,7 +8785,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
           h('h4', { className: 'text-sm font-bold text-slate-800 mb-1' }, __alloT('stem.fractions.assessment_rubric_4_levels', '📊 Assessment rubric — 4 levels')),
-          h('p', { className: 'text-[11px] text-slate-700' },
+          h('p', { className: 'text-[0.6875rem] text-slate-700' },
             __alloT('stem.fractions.a_4_point_holistic_rubric_for_evaluati', 'A 4-point holistic rubric for evaluating student work on fraction problems. Each level has criteria and an example response. Useful for portfolio assessment and conferencing.')
           )
         ),
@@ -8794,10 +8794,10 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-2xl' }, r.level),
               h('h5', { className: 'text-sm font-black text-' + r.color + '-800' }, r.label),
-              h('span', { className: 'ml-auto text-[10px] font-bold text-' + r.color + '-800 bg-' + r.color + '-100 px-2 py-0.5 rounded' }, 'Level ' + r.level)
+              h('span', { className: 'ml-auto text-[0.625rem] font-bold text-' + r.color + '-800 bg-' + r.color + '-100 px-2 py-0.5 rounded' }, 'Level ' + r.level)
             ),
             h('p', { className: 'text-xs text-slate-700' }, h('b', null, 'Criteria: '), r.criteria),
-            h('p', { className: 'text-[11px] text-' + r.color + '-700 italic mt-1' }, h('b', null, 'Example: '), r.example)
+            h('p', { className: 'text-[0.6875rem] text-' + r.color + '-700 italic mt-1' }, h('b', null, 'Example: '), r.example)
           );
         })
       );
@@ -8879,7 +8879,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-orange-50 rounded-xl p-3 border border-orange-200' },
           h('h4', { className: 'text-sm font-bold text-orange-800 mb-1' }, __alloT('stem.fractions.story_mode_the_bakery', '📖 Story Mode: The Bakery')),
-          h('p', { className: 'text-[11px] text-orange-700' },
+          h('p', { className: 'text-[0.6875rem] text-orange-700' },
             __alloT('stem.fractions.a_5_chapter_story_where_each_chapter_i', 'A 5-chapter story where each chapter is a fraction problem in context. Work through the bakery day to apply your skills.')
           )
         ),
@@ -8889,7 +8889,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'sch-' + c.chapter,
               onClick: function() { upd({ storyCh: c.chapter, storyAnswer: '', storyFeedback: null }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-orange-700 text-white' : 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100')
             }, 'Ch.' + c.chapter);
           })
@@ -9012,7 +9012,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-blue-50 rounded-xl p-3 border border-blue-200' },
           h('h4', { className: 'text-sm font-bold text-blue-800 mb-1' }, __alloT('stem.fractions.exam_prep_practice_tests', '📝 Exam prep — practice tests')),
-          h('p', { className: 'text-[11px] text-blue-700' },
+          h('p', { className: 'text-[0.6875rem] text-blue-700' },
             __alloT('stem.fractions.multiple_choice_quizzes_that_mirror_st', 'Multiple-choice quizzes that mirror standardized test format. Pick a grade level, take a 10-question test, see your score.')
           )
         ),
@@ -9029,7 +9029,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         examQs && h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-4 space-y-3' },
-          h('p', { className: 'text-[11px] font-bold text-blue-700' }, __alloT('stem.fractions.10_question_practice_test', '10-question practice test')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-blue-700' }, __alloT('stem.fractions.10_question_practice_test', '10-question practice test')),
           examQs.map(function(q, i) {
             var answered = examAnswers[i];
             return h('div', { key: 'eq-' + i, className: 'border-t border-blue-100 pt-2' },
@@ -9093,21 +9093,21 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
           h('h4', { className: 'text-sm font-bold text-emerald-800 mb-1' }, __alloT('stem.fractions.daily_practice', '📅 Daily practice')),
-          h('p', { className: 'text-[11px] text-emerald-700' },
+          h('p', { className: 'text-[0.6875rem] text-emerald-700' },
             __alloT('stem.fractions.a_short_daily_ritual_5_problems_per_da', 'A short daily ritual: 5 problems per day. Build a streak. Practice schedules beat practice intensity for retention.')
           )
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4 text-center space-y-2' },
           h('p', { className: 'text-sm text-emerald-700' }, 'Today: ', h('b', null, today)),
           h('p', { className: 'text-3xl font-black text-emerald-800' }, dpDays.length + ' 🔥 day' + (dpDays.length === 1 ? '' : 's')),
-          h('p', { className: 'text-[11px] text-emerald-700' }, __alloT('stem.fractions.practice_streak', 'Practice streak')),
+          h('p', { className: 'text-[0.6875rem] text-emerald-700' }, __alloT('stem.fractions.practice_streak', 'Practice streak')),
           !dpTodayDone && h('button', { onClick: markComplete,
             className: 'transition-colors px-6 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800' }, __alloT('stem.fractions.mark_today_complete', '✓ Mark today complete')),
           dpTodayDone && h('p', { className: 'text-base font-bold text-emerald-900' }, __alloT('stem.fractions.today_done_come_back_tomorrow', '✓ Today done! Come back tomorrow.'))
         ),
         // Last 14 days
         h('div', { className: 'bg-white rounded-xl border border-emerald-200 p-3' },
-          h('p', { className: 'text-[11px] font-bold text-emerald-700 mb-2' }, __alloT('stem.fractions.last_14_days', 'Last 14 days:')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-emerald-700 mb-2' }, __alloT('stem.fractions.last_14_days', 'Last 14 days:')),
           h('div', { className: 'grid grid-cols-7 gap-1' },
             Array.from({ length: 14 }, function(_, i) {
               var d = new Date();
@@ -9116,7 +9116,7 @@ window.StemLab = window.StemLab || {
               var done = dpDays.indexOf(ds) >= 0;
               return h('div', { key: 'dp-' + i,
                 title: ds,
-                className: 'aspect-square rounded text-center text-[10px] flex flex-col items-center justify-center ' +
+                className: 'aspect-square rounded text-center text-[0.625rem] flex flex-col items-center justify-center ' +
                   (done ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700')
               },
                 h('span', null, d.getDate()),
@@ -9169,7 +9169,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200' },
           h('h4', { className: 'text-sm font-bold text-purple-800 mb-1' }, __alloT('stem.fractions.fraction_magic_tricks', '🎩 Fraction magic tricks')),
-          h('p', { className: 'text-[11px] text-purple-700' },
+          h('p', { className: 'text-[0.6875rem] text-purple-700' },
             __alloT('stem.fractions.mathematical_tricks_that_are_really_el', 'Mathematical "tricks" that are really elegant fraction identities. Pick one to see the setup, the reveal, and the mathematical explanation.')
           )
         ),
@@ -9179,7 +9179,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'mt-' + m.id,
               onClick: function() { upd({ magicTrick: m.id }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-purple-700 text-white' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')
             }, '✨ ' + m.title);
           })
@@ -9270,7 +9270,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-stone-50 rounded-xl p-3 border border-stone-200' },
           h('h4', { className: 'text-sm font-bold text-stone-800 mb-1' }, __alloT('stem.fractions.real_world_fraction_tools', '🛠 Real-world fraction tools')),
-          h('p', { className: 'text-[11px] text-stone-700' },
+          h('p', { className: 'text-[0.6875rem] text-stone-700' },
             __alloT('stem.fractions.where_you_actually_encounter_fractions', 'Where you actually encounter fractions in daily life. Browse tools, read them, and practice with realistic prompts.')
           )
         ),
@@ -9280,7 +9280,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'rwt-' + t2.id,
               onClick: function() { upd({ rwt: t2.id }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-stone-700 text-white' : 'bg-white text-stone-700 border border-stone-300 hover:bg-stone-100')
             }, t2.icon + ' ' + t2.title);
           })
@@ -9299,7 +9299,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-sm font-mono text-stone-900 mt-1' }, '✓ ' + tool.answer)
             )
           ),
-          h('p', { className: 'text-[11px] text-stone-700 italic' }, '💡 ' + tool.tip)
+          h('p', { className: 'text-[0.6875rem] text-stone-700 italic' }, '💡 ' + tool.tip)
         )
       );
     };
@@ -9388,7 +9388,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
           h('h4', { className: 'text-sm font-bold text-teal-800 mb-1' }, __alloT('stem.fractions.rti_cbm_probe_generator', '📊 RTI/CBM probe generator')),
-          h('p', { className: 'text-[11px] text-teal-700' },
+          h('p', { className: 'text-[0.6875rem] text-teal-700' },
             __alloT('stem.fractions.generate_curriculum_based_measurement_', 'Generate curriculum-based measurement probes for tracking student progress over time. Print, time, score, and graph the results to monitor RTI Tier 2 or Tier 3 students.')
           )
         ),
@@ -9421,8 +9421,8 @@ window.StemLab = window.StemLab || {
             className: 'transition-colors flex-1 px-4 py-2 bg-teal-800 text-white font-bold rounded-xl hover:bg-teal-900' }, __alloT('stem.fractions.print_probe', '🖨 Print probe'))
         ),
         generatedProbe && h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-3 space-y-2' },
-          h('p', { className: 'text-[11px] font-bold text-teal-700' }, '👀 Preview (' + generatedProbe.length + ' items):'),
-          h('div', { className: 'grid grid-cols-3 gap-1 text-[11px] font-mono' },
+          h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, '👀 Preview (' + generatedProbe.length + ' items):'),
+          h('div', { className: 'grid grid-cols-3 gap-1 text-[0.6875rem] font-mono' },
             generatedProbe.slice(0, 30).map(function(item, i) {
               return h('div', { key: 'pi-' + i, className: 'bg-teal-50 rounded px-2 py-1 text-teal-900 border border-teal-100' },
                 (i + 1) + '. ' + (item.q || '')
@@ -9431,7 +9431,7 @@ window.StemLab = window.StemLab || {
           ),
           h('details', { className: 'mt-2' },
             h('summary', { style: { color: isContrast ? '#ffffff' : undefined }, className: 'text-xs font-bold text-teal-700 cursor-pointer' }, __alloT('stem.fractions.show_answer_key', 'Show answer key')),
-            h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[11px] font-mono' },
+            h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[0.6875rem] font-mono' },
               generatedProbe.map(function(item, i) {
                 return h('div', { key: 'pa-' + i, className: 'bg-emerald-50 rounded px-2 py-1 text-emerald-900 border border-emerald-100' },
                   (i + 1) + '. ' + (item.answer || '')
@@ -9469,7 +9469,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200' },
           h('h4', { className: 'text-sm font-bold text-violet-800 mb-1' }, __alloT('stem.fractions.achievement_levels', '🏆 Achievement levels')),
-          h('p', { className: 'text-[11px] text-violet-700' },
+          h('p', { className: 'text-[0.6875rem] text-violet-700' },
             __alloT('stem.fractions.earn_xp_from_correct_answers_and_badge', 'Earn XP from correct answers and badges to level up. Each level unlocks a new title.')
           )
         ),
@@ -9487,12 +9487,12 @@ window.StemLab = window.StemLab || {
                 transition: 'width 0.5s'
               } })
             ),
-            h('p', { className: 'text-[11px] text-violet-600 mt-1' }, totalXp + ' XP / ' + nextLevel.xp + ' XP' + (nextLevel === currentLevel ? ' (max)' : ''))
+            h('p', { className: 'text-[0.6875rem] text-violet-600 mt-1' }, totalXp + ' XP / ' + nextLevel.xp + ' XP' + (nextLevel === currentLevel ? ' (max)' : ''))
           )
         ),
         // All levels
         h('div', { className: 'bg-white rounded-xl border border-violet-200 p-3 space-y-2' },
-          h('p', { className: 'text-[11px] font-bold text-violet-700' }, __alloT('stem.fractions.all_levels', 'All levels:')),
+          h('p', { className: 'text-[0.6875rem] font-bold text-violet-700' }, __alloT('stem.fractions.all_levels', 'All levels:')),
           ACHIEVEMENT_LEVELS.map(function(lvl) {
             var reached = totalXp >= lvl.xp;
             return h('div', { key: 'lvl-' + lvl.level,
@@ -9504,7 +9504,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-sm font-bold text-' + (reached ? lvl.color : 'slate') + '-800' },
                   'Level ' + lvl.level + ' · ' + lvl.title
                 ),
-                h('p', { className: 'text-[11px] text-slate-600' }, lvl.xp + ' XP required · ' + lvl.description)
+                h('p', { className: 'text-[0.6875rem] text-slate-600' }, lvl.xp + ' XP required · ' + lvl.description)
               )
             );
           })
@@ -9631,7 +9631,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200' },
           h('h4', { className: 'text-sm font-bold text-violet-800 mb-1' }, __alloT('stem.fractions.worked_examples_library', '🎓 Worked examples library')),
-          h('p', { className: 'text-[11px] text-violet-700' },
+          h('p', { className: 'text-[0.6875rem] text-violet-700' },
             __alloT('stem.fractions.walk_through_each_procedure_one_step_a', 'Walk through each procedure one step at a time. Click through to see the reasoning behind each move. Research (Sweller) shows worked examples are more effective than practice problems alone for novice learners.')
           )
         ),
@@ -9712,7 +9712,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-sky-50 rounded-xl p-3 border border-sky-200' },
           h('h4', { className: 'text-sm font-bold text-sky-800 mb-1' }, __alloT('stem.fractions.frequently_asked_questions', '❓ Frequently asked questions')),
-          h('p', { className: 'text-[11px] text-sky-700' },
+          h('p', { className: 'text-[0.6875rem] text-sky-700' },
             __alloT('stem.fractions.common_questions_about_fractions_answe', 'Common questions about fractions, answered. Use this to settle confusion or as a starting point for student discussions.')
           )
         ),
@@ -9774,21 +9774,21 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-1' }, __alloT('stem.fractions.five_ways_to_compare_fractions', '⚖ Five ways to compare fractions')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.there_is_more_than_one_way_to_compare_', 'There is more than one way to compare fractions. Knowing all five lets you pick the fastest method for each problem.')
           )
         ),
         strategies.map(function(s, i) {
           return h('div', { key: 'cs-' + s.id, className: 'bg-white rounded-xl p-3 border-2 border-amber-200 space-y-2' },
             h('h5', { className: 'text-sm font-black text-amber-900' }, (i + 1) + '. ' + s.title),
-            h('p', { className: 'text-[11px] text-amber-700 italic' }, '⏱ ' + s.when),
+            h('p', { className: 'text-[0.6875rem] text-amber-700 italic' }, '⏱ ' + s.when),
             h('div', { className: 'bg-amber-50 rounded p-2 border border-amber-200' },
-              h('p', { className: 'text-[11px] font-bold text-amber-700 mb-1' }, __alloT('stem.fractions.example', '✏ Example')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-1' }, __alloT('stem.fractions.example', '✏ Example')),
               h('p', { className: 'text-xs text-amber-900' }, s.example)
             ),
             h('div', null,
-              h('p', { className: 'text-[11px] font-bold text-amber-700 mb-1' }, __alloT('stem.fractions.steps_2', '📋 Steps')),
-              h('ol', { className: 'text-[11px] text-slate-800 list-decimal pl-5 space-y-0.5' },
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-1' }, __alloT('stem.fractions.steps_2', '📋 Steps')),
+              h('ol', { className: 'text-[0.6875rem] text-slate-800 list-decimal pl-5 space-y-0.5' },
                 s.steps.map(function(st, si) { return h('li', { key: 'st-' + s.id + '-' + si }, st); })
               )
             )
@@ -9802,7 +9802,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-blue-50 rounded-xl p-3 border border-blue-200' },
           h('h4', { className: 'text-sm font-bold text-blue-800 mb-1' }, __alloT('stem.fractions.fraction_cheat_sheet', '📋 Fraction cheat sheet')),
-          h('p', { className: 'text-[11px] text-blue-700' },
+          h('p', { className: 'text-[0.6875rem] text-blue-700' },
             __alloT('stem.fractions.quick_reference_card_for_fraction_oper', 'Quick-reference card for fraction operations and procedures. Save or print this for students.')
           )
         ),
@@ -9894,7 +9894,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
           h('h4', { className: 'text-sm font-bold text-indigo-800 mb-1' }, __alloT('stem.fractions.fraction_fact_families', '👨‍👩‍👧 Fraction fact families')),
-          h('p', { className: 'text-[11px] text-indigo-700' },
+          h('p', { className: 'text-[0.6875rem] text-indigo-700' },
             __alloT('stem.fractions.just_like_whole_number_fact_families_3', 'Just like whole-number fact families (3 + 4 = 7, 7 - 3 = 4, 7 - 4 = 3), fractions have fact families too. '),
             __alloT('stem.fractions.a_single_triple_generates_four_related', 'A single triple generates four related equations.')
           )
@@ -10036,7 +10036,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '🎯'),
           h('span', { className: 'font-bold text-emerald-800' }, 'Score: ' + estScore.correct + '/' + estScore.total),
           h('button', { onClick: startEst,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-emerald-200 text-emerald-800 hover:bg-emerald-300' }, __alloT('stem.fractions.restart_9', '↺ Restart'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-emerald-200 text-emerald-800 hover:bg-emerald-300' }, __alloT('stem.fractions.restart_9', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4 space-y-3' },
           h('p', { className: 'text-sm font-bold text-emerald-800 text-center' }, __alloT('stem.fractions.which_is_closest_to', 'Which is closest to '),
@@ -10068,7 +10068,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
           h('h4', { className: 'text-sm font-bold text-pink-800 mb-1' }, __alloT('stem.fractions.probability_as_a_fraction', '🎲 Probability as a fraction')),
-          h('p', { className: 'text-[11px] text-pink-700' },
+          h('p', { className: 'text-[0.6875rem] text-pink-700' },
             __alloT('stem.fractions.probability_is_favorable_outcomes_tota', 'Probability is favorable outcomes / total outcomes. Move the sliders to see how probability and fractions are the same thing.')
           )
         ),
@@ -10137,7 +10137,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-cyan-50 rounded-xl p-3 border border-cyan-200' },
           h('h4', { className: 'text-sm font-bold text-cyan-800 mb-1' }, __alloT('stem.fractions.fraction_vocabulary_in_12_languages', '🌍 Fraction vocabulary in 12 languages')),
-          h('p', { className: 'text-[11px] text-cyan-700' },
+          h('p', { className: 'text-[0.6875rem] text-cyan-700' },
             __alloT('stem.fractions.for_english_language_learners_see_frac', 'For English Language Learners: see fraction vocabulary in your home language alongside English. '),
             __alloT('stem.fractions.bilingual_instruction_speeds_math_acqu', 'Bilingual instruction speeds math acquisition because the mathematical concept is universal — only the words change.')
           )
@@ -10148,7 +10148,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: 'ml-' + lang,
               onClick: function() { upd({ mlLang: lang }); },
-              className: 'px-2 py-1 rounded text-[11px] font-bold transition-all capitalize ' +
+              className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all capitalize ' +
                 (active ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
             }, lang);
           })
@@ -10183,7 +10183,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
           h('h4', { className: 'text-sm font-bold text-rose-800 mb-1' }, __alloT('stem.fractions.curated_practice_bank', '📚 Curated practice bank')),
-          h('p', { className: 'text-[11px] text-rose-700' },
+          h('p', { className: 'text-[0.6875rem] text-rose-700' },
             __alloT('stem.fractions.a_hand_curated_set_of_practice_items_o', 'A hand-curated set of practice items organized by skill. Browse by category, or use them as a quick warmup before challenges.')
           )
         ),
@@ -10199,7 +10199,7 @@ window.StemLab = window.StemLab || {
           })
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4' },
-          h('p', { className: 'text-[11px] text-rose-600' }, 'Item ' + (pbIdx % items.length + 1) + ' of ' + items.length),
+          h('p', { className: 'text-[0.6875rem] text-rose-600' }, 'Item ' + (pbIdx % items.length + 1) + ' of ' + items.length),
           // Display the item based on skill type
           pbSkill === 'identify' && h('div', null,
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, __alloT('stem.fractions.what_fraction_is_shown', 'What fraction is shown?')),
@@ -10307,7 +10307,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
           h('h4', { className: 'text-sm font-bold text-slate-800 mb-1' }, __alloT('stem.fractions.fraction_calculator_show_your_work', '🧮 Fraction calculator (show your work)')),
-          h('p', { className: 'text-[11px] text-slate-700' },
+          h('p', { className: 'text-[0.6875rem] text-slate-700' },
             __alloT('stem.fractions.enter_two_fractions_and_an_operation_t', 'Enter two fractions and an operation. This calculator shows every step, not just the answer.')
           )
         ),
@@ -10351,7 +10351,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-center text-2xl font-mono font-bold text-emerald-900' }, calcSimp[0] + '/' + calcSimp[1])
             )
           ),
-          h('p', { className: 'text-center text-[11px] text-slate-600 italic' }, opLabel + ' shown step-by-step below.')
+          h('p', { className: 'text-center text-[0.6875rem] text-slate-600 italic' }, opLabel + ' shown step-by-step below.')
         ),
         // Step-by-step workflow
         h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-4' },
@@ -10416,7 +10416,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
           h('h4', { className: 'text-sm font-bold text-fuchsia-800 mb-1' }, __alloT('stem.fractions.fraction_art_gallery', '🎨 Fraction art gallery')),
-          h('p', { className: 'text-[11px] text-fuchsia-700' },
+          h('p', { className: 'text-[0.6875rem] text-fuchsia-700' },
             __alloT('stem.fractions.fractions_make_patterns_build_a_color_', 'Fractions make patterns. Build a color wheel, a fraction grid, or a kaleidoscope.')
           )
         ),
@@ -10454,7 +10454,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-center text-sm font-bold text-fuchsia-800' }, wheelD)
             )
           ),
-          h('p', { className: 'text-[11px] text-fuchsia-600 italic mt-2 text-center' },
+          h('p', { className: 'text-[0.6875rem] text-fuchsia-600 italic mt-2 text-center' },
             'Currently showing: ' + wheelN + '/' + wheelD + ' ' + fractionMeasure(wheelD > 0 ? wheelN / wheelD * 100 : 0, 3, true) + '%'
           )
         )
@@ -10477,7 +10477,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
           h('h4', { className: 'text-sm font-bold text-teal-800 mb-1' }, __alloT('stem.fractions.density_of_fractions', '∞ Density of fractions')),
-          h('p', { className: 'text-[11px] text-teal-700' },
+          h('p', { className: 'text-[0.6875rem] text-teal-700' },
             __alloT('stem.fractions.between_any_two_fractions_there_is_alw', 'Between any two fractions, there is always another fraction. Then another. And another, forever. This is called "density." Pick two fractions and find ones between them.')
           )
         ),
@@ -10495,7 +10495,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': __alloT('stem.fractions.first_denominator_2', 'First denominator'),
                 className: 'w-16 px-2 py-1 rounded border border-teal-300 text-center' })
             ),
-            h('p', { className: 'text-[11px] text-center mt-1 text-teal-700 font-mono' }, '= ' + (dA.d > 0 ? (dA.n / dA.d).toFixed(4) : '—'))
+            h('p', { className: 'text-[0.6875rem] text-center mt-1 text-teal-700 font-mono' }, '= ' + (dA.d > 0 ? (dA.n / dA.d).toFixed(4) : '—'))
           ),
           h('div', { className: 'bg-white rounded-lg p-3 border border-teal-200' },
             h('p', { className: 'text-xs font-bold text-teal-700 mb-2' }, __alloT('stem.fractions.second_fraction', 'Second fraction')),
@@ -10510,7 +10510,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': __alloT('stem.fractions.second_denominator_2', 'Second denominator'),
                 className: 'w-16 px-2 py-1 rounded border border-teal-300 text-center' })
             ),
-            h('p', { className: 'text-[11px] text-center mt-1 text-teal-700 font-mono' }, '= ' + (dB.d > 0 ? (dB.n / dB.d).toFixed(4) : '—'))
+            h('p', { className: 'text-[0.6875rem] text-center mt-1 text-teal-700 font-mono' }, '= ' + (dB.d > 0 ? (dB.n / dB.d).toFixed(4) : '—'))
           )
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-2' },
@@ -10518,15 +10518,15 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-teal-50 rounded p-2 border border-teal-200' },
             h('p', { className: 'text-xs font-bold text-teal-800' }, __alloT('stem.fractions.average_arithmetic_mean', '⚖ Average (arithmetic mean):')),
             h('p', { className: 'text-base font-mono text-teal-900 font-bold' }, avgSimp[0] + '/' + avgSimp[1] + ' = ' + (avgSimp[1] > 0 ? (avgSimp[0] / avgSimp[1]).toFixed(4) : '—')),
-            h('p', { className: 'text-[10px] text-teal-700 italic' }, __alloT('stem.fractions.add_the_fractions_and_divide_by_2', 'Add the fractions and divide by 2.'))
+            h('p', { className: 'text-[0.625rem] text-teal-700 italic' }, __alloT('stem.fractions.add_the_fractions_and_divide_by_2', 'Add the fractions and divide by 2.'))
           ),
           h('div', { className: 'bg-teal-50 rounded p-2 border border-teal-200' },
             h('p', { className: 'text-xs font-bold text-teal-800' }, __alloT('stem.fractions.mediant_stern_brocot_tree', '🌳 Mediant (Stern-Brocot tree):')),
             h('p', { className: 'text-base font-mono text-teal-900 font-bold' }, medSimp[0] + '/' + medSimp[1] + ' = ' + (medSimp[1] > 0 ? (medSimp[0] / medSimp[1]).toFixed(4) : '—')),
-            h('p', { className: 'text-[10px] text-teal-700 italic' }, __alloT('stem.fractions.add_the_tops_add_the_bottoms_this_is_n', 'Add the tops, add the bottoms. (This is NOT addition — it\'s the mediant.) Always between the two fractions.'))
+            h('p', { className: 'text-[0.625rem] text-teal-700 italic' }, __alloT('stem.fractions.add_the_tops_add_the_bottoms_this_is_n', 'Add the tops, add the bottoms. (This is NOT addition — it\'s the mediant.) Always between the two fractions.'))
           ),
           h('div', { className: 'bg-teal-50 rounded p-2 border border-teal-200' },
-            h('p', { className: 'text-[11px] text-teal-800 italic' },
+            h('p', { className: 'text-[0.6875rem] text-teal-800 italic' },
               '💡 ',
               h('b', null, 'Density: '),
               __alloT('stem.fractions.you_could_repeat_this_process_forever_', 'You could repeat this process forever, finding new fractions between every pair. There are infinitely many fractions between any two fractions.')
@@ -10567,7 +10567,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
           h('h4', { className: 'text-sm font-bold text-amber-800 mb-1' }, __alloT('stem.fractions.recipe_scaler_2', '🍳 Recipe scaler')),
-          h('p', { className: 'text-[11px] text-amber-700' },
+          h('p', { className: 'text-[0.6875rem] text-amber-700' },
             __alloT('stem.fractions.pick_a_recipe_and_scale_it_up_or_down_', 'Pick a recipe and scale it up or down using fraction multiplication. Every cooking decision becomes a fraction multiplication problem.')
           )
         ),
@@ -10601,7 +10601,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('h5', { className: 'text-sm font-black text-amber-900' }, recipe.title),
-            h('p', { className: 'text-[11px] text-amber-700' },
+            h('p', { className: 'text-[0.6875rem] text-amber-700' },
               __alloT('stem.fractions.yields', 'Yields '), h('b', null, recipe.baseServings + ' × ' + scaler.n + '/' + scaler.d + ' = ' + (recipe.baseServings * scalerVal).toFixed(scalerVal === Math.floor(scalerVal) ? 0 : 1) + ' servings')
             )
           ),
@@ -10626,7 +10626,7 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          recipe.notes && h('p', { className: 'text-[11px] text-amber-700 italic mt-2' }, '📝 ' + recipe.notes)
+          recipe.notes && h('p', { className: 'text-[0.6875rem] text-amber-700 italic mt-2' }, '📝 ' + recipe.notes)
         )
       );
     };
@@ -10676,14 +10676,14 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200' },
           h('h4', { className: 'text-sm font-bold text-violet-800 mb-1' }, __alloT('stem.fractions.multi_step_problems', '🧩 Multi-step problems')),
-          h('p', { className: 'text-[11px] text-violet-700' },
+          h('p', { className: 'text-[0.6875rem] text-violet-700' },
             __alloT('stem.fractions.real_problems_usually_take_multiple_st', 'Real problems usually take multiple steps. These chains walk you through 2-4 sub-questions building toward a final answer.')
           )
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-violet-200 p-4' },
           h('div', { className: 'flex items-center gap-2 flex-wrap mb-2' },
             h('h5', { className: 'text-base font-black text-violet-900' }, problem.title),
-            h('span', { className: 'text-[10px] text-violet-600' }, 'Grade ' + problem.grade + ' · ' + (problem.ccss || []).join(', '))
+            h('span', { className: 'text-[0.625rem] text-violet-600' }, 'Grade ' + problem.grade + ' · ' + (problem.ccss || []).join(', '))
           ),
           h('p', { className: 'text-sm text-slate-800 italic mb-3' }, '📖 ' + problem.story),
           // Step progress
@@ -10697,7 +10697,7 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200 space-y-2' },
-            h('p', { className: 'text-[11px] font-bold text-violet-700' }, 'Step ' + (msStep + 1) + ' of ' + problem.steps.length),
+            h('p', { className: 'text-[0.6875rem] font-bold text-violet-700' }, 'Step ' + (msStep + 1) + ' of ' + problem.steps.length),
             h('p', { className: 'text-sm font-bold text-violet-900' }, '🧮 ' + step.q),
             msStep < problem.steps.length ? h('div', { className: 'flex gap-2' },
               h('input', {
@@ -10712,13 +10712,13 @@ window.StemLab = window.StemLab || {
                 className: 'transition-colors px-4 py-2 bg-violet-600 text-white font-bold rounded-lg hover:bg-violet-700' }, __alloT('stem.fractions.check_2', 'Check'))
             ) : null,
             msFeedback && h('p', { className: 'text-sm font-bold ' + (msFeedback.correct ? 'text-green-700' : 'text-red-700') }, msFeedback.msg),
-            step.hint && h('p', { className: 'text-[11px] text-violet-600 italic' }, '💡 Hint: ' + step.hint)
+            step.hint && h('p', { className: 'text-[0.6875rem] text-violet-600 italic' }, '💡 Hint: ' + step.hint)
           ),
           // Answers so far
           msAnswers.length > 0 && h('div', { className: 'mt-2 bg-slate-50 rounded p-2 border border-slate-200 space-y-0.5' },
-            h('p', { className: 'text-[11px] font-bold text-slate-700' }, __alloT('stem.fractions.your_answers', 'Your answers:')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-slate-700' }, __alloT('stem.fractions.your_answers', 'Your answers:')),
             msAnswers.map(function(a, i) {
-              return h('p', { key: 'ans-' + i, className: 'text-[11px] text-slate-700' },
+              return h('p', { key: 'ans-' + i, className: 'text-[0.6875rem] text-slate-700' },
                 h('b', null, 'Step ' + (i + 1) + ': '), a.answer
               );
             })
@@ -10738,7 +10738,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
           h('h4', { className: 'text-sm font-bold text-fuchsia-800 mb-1' }, __alloT('stem.fractions.fraction_trivia_history', '💡 Fraction trivia & history')),
-          h('p', { className: 'text-[11px] text-fuchsia-700' },
+          h('p', { className: 'text-[0.6875rem] text-fuchsia-700' },
             __alloT('stem.fractions.where_fractions_come_from_surprising_c', 'Where fractions come from, surprising connections, and why mathematics is full of stories. Click any title to expand.')
           )
         ),
@@ -10770,7 +10770,7 @@ window.StemLab = window.StemLab || {
             key: 'sub-' + s.id,
             'aria-pressed': active,
             onClick: function() { sfxClick(); onSelect(s.id); },
-            className: 'px-2.5 py-1 rounded text-[11px] font-bold transition-all whitespace-nowrap ' +
+            className: 'px-2.5 py-1 rounded text-[0.6875rem] font-bold transition-all whitespace-nowrap ' +
               (active ? 'bg-white text-' + accentColor + '-800 shadow-sm border border-' + accentColor + '-200' : 'text-' + accentColor + '-700 hover:text-' + accentColor + '-900 hover:bg-' + accentColor + '-100')
           }, (s.icon ? s.icon + ' ' : '') + s.label);
         })
@@ -10790,7 +10790,7 @@ window.StemLab = window.StemLab || {
         { id: 'tabguide', icon: '📚', label: __alloT('stem.fractions.tab_guide', 'Tab guide') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-rose-700 mb-2 italic' }, __alloT('stem.fractions.look_up_materials_definitions_and_refe', 'Look-up materials, definitions, and reference guides.')),
+        h('p', { className: 'text-[0.6875rem] text-rose-700 mb-2 italic' }, __alloT('stem.fractions.look_up_materials_definitions_and_refe', 'Look-up materials, definitions, and reference guides.')),
         renderSubTabStrip(items, sub, function(id) { upd({ refSub: id }); }, 'rose'),
         sub === 'vocab' && renderVocabTab(),
         sub === 'glossary' && renderGlossaryExpansionTab(),
@@ -10815,7 +10815,7 @@ window.StemLab = window.StemLab || {
         { id: 'density', icon: '∞', label: __alloT('stem.fractions.density_2', 'Density') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-fuchsia-700 mb-2 italic' }, __alloT('stem.fractions.fun_extras_trivia_history_and_surprisi', 'Fun extras: trivia, history, and surprising math.')),
+        h('p', { className: 'text-[0.6875rem] text-fuchsia-700 mb-2 italic' }, __alloT('stem.fractions.fun_extras_trivia_history_and_surprisi', 'Fun extras: trivia, history, and surprising math.')),
         renderSubTabStrip(items, sub, function(id) { upd({ curSub: id }); }, 'fuchsia'),
         sub === 'facts' && renderFactsTab(),
         sub === 'magic' && renderMagicTricksTab(),
@@ -10836,7 +10836,7 @@ window.StemLab = window.StemLab || {
         { id: 'thanks', icon: '🙏', label: __alloT('stem.fractions.thanks', 'Thanks') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-slate-700 mb-2 italic' + onHostInk }, __alloT('stem.fractions.information_about_fraction_lab_itself', 'Information about Fraction Lab itself.')),
+        h('p', { className: 'text-[0.6875rem] text-slate-700 mb-2 italic' + onHostInk }, __alloT('stem.fractions.information_about_fraction_lab_itself', 'Information about Fraction Lab itself.')),
         renderSubTabStrip(items, sub, function(id) { upd({ aboutSub: id }); }, 'slate'),
         sub === 'help' && renderHelpTab(),
         sub === 'about' && renderAboutTab(),
@@ -10852,7 +10852,7 @@ window.StemLab = window.StemLab || {
         { id: 'factfam', icon: '👨', label: __alloT('stem.fractions.fact_families_2', 'Fact families') },
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-violet-700 mb-2 italic' }, __alloT('stem.fractions.play_with_the_math_without_a_quiz_form', 'Play with the math without a quiz format.')),
+        h('p', { className: 'text-[0.6875rem] text-violet-700 mb-2 italic' }, __alloT('stem.fractions.play_with_the_math_without_a_quiz_form', 'Play with the math without a quiz format.')),
         renderSubTabStrip(items, sub, function(id) { upd({ expSub: id }); }, 'violet'),
         sub === 'calc' && renderCalculatorTab(),
         sub === 'factfam' && renderFactFamiliesTab(),
@@ -10868,7 +10868,7 @@ window.StemLab = window.StemLab || {
         { id: 'estimation', icon: '🎯', label: __alloT('stem.fractions.estimation_2', 'Estimation') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-rose-700 mb-2 italic' }, __alloT('stem.fractions.timed_and_scored_practice_for_fluency', 'Timed and scored practice for fluency.')),
+        h('p', { className: 'text-[0.6875rem] text-rose-700 mb-2 italic' }, __alloT('stem.fractions.timed_and_scored_practice_for_fluency', 'Timed and scored practice for fluency.')),
         renderSubTabStrip(items, sub, function(id) { upd({ drillSub: id }); }, 'rose'),
         sub === 'pbank' && renderPracticeBankTab(),
         sub === 'vocabquiz' && renderVocabQuizTab(),
@@ -10890,7 +10890,7 @@ window.StemLab = window.StemLab || {
         { id: 'checklist', icon: '☑', label: __alloT('stem.fractions.assessment_checklist_2', 'Assessment checklist') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-indigo-700 mb-2 italic' + onHostInk }, __alloT('stem.fractions.curriculum_planning_standards_alignmen', 'Curriculum planning, standards alignment, and student goal-setting.')),
+        h('p', { className: 'text-[0.6875rem] text-indigo-700 mb-2 italic' + onHostInk }, __alloT('stem.fractions.curriculum_planning_standards_alignmen', 'Curriculum planning, standards alignment, and student goal-setting.')),
         renderSubTabStrip(items, sub, function(id) { upd({ spSub: id }); }, 'indigo'),
         sub === 'standards' && renderStandardsTab(),
         sub === 'scope' && renderScopeSequenceTab(),
@@ -10914,7 +10914,7 @@ window.StemLab = window.StemLab || {
         { id: 'printlab', icon: '🖨', label: __alloT('stem.fractions.print_lab_hub', 'Print lab hub') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-emerald-700 mb-2 italic' }, __alloT('stem.fractions.generate_printable_assessments_and_ref', 'Generate printable assessments and references.')),
+        h('p', { className: 'text-[0.6875rem] text-emerald-700 mb-2 italic' }, __alloT('stem.fractions.generate_printable_assessments_and_ref', 'Generate printable assessments and references.')),
         renderSubTabStrip(items, sub, function(id) { upd({ paSub: id }); }, 'emerald'),
         sub === 'worksheets' && renderWorksheetTab(),
         sub === 'reports' && renderReportsTab(),
@@ -10937,7 +10937,7 @@ window.StemLab = window.StemLab || {
         { id: 'citations', icon: '📚', label: __alloT('stem.fractions.research_citations_2', 'Research citations') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-purple-700 mb-2 italic' }, __alloT('stem.fractions.pedagogical_resources_for_teaching_fra', 'Pedagogical resources for teaching fractions effectively.')),
+        h('p', { className: 'text-[0.6875rem] text-purple-700 mb-2 italic' }, __alloT('stem.fractions.pedagogical_resources_for_teaching_fra', 'Pedagogical resources for teaching fractions effectively.')),
         renderSubTabStrip(items, sub, function(id) { upd({ pedSub: id }); }, 'purple'),
         sub === 'misconceptions' && renderMisconceptionsTab(),
         sub === 'mcflow' && renderMisconceptionFlowTab(),
@@ -10958,7 +10958,7 @@ window.StemLab = window.StemLab || {
         { id: 'levels', icon: '🏆', label: __alloT('stem.fractions.levels_xp', 'Levels & XP') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-slate-700 mb-2 italic' }, __alloT('stem.fractions.your_settings_progress_and_saved_work', 'Your settings, progress, and saved work.')),
+        h('p', { className: 'text-[0.6875rem] text-slate-700 mb-2 italic' }, __alloT('stem.fractions.your_settings_progress_and_saved_work', 'Your settings, progress, and saved work.')),
         renderSubTabStrip(items, sub, function(id) { upd({ maSub: id }); }, 'slate'),
         sub === 'goals' && renderGoalSetterTab(),
         sub === 'daily' && renderDailyPracticeTab(),
@@ -11108,8 +11108,8 @@ window.StemLab = window.StemLab || {
           ),
           stripLabels && h('div', { className: 'text-xs font-mono whitespace-nowrap ' + (isEq ? 'text-emerald-700 font-bold' : 'text-slate-700'), style: { flex: '1 1 auto', minWidth: 80 } },
             labelText,
-            improper ? h('span', { className: 'ml-1 px-1 rounded bg-amber-100 text-amber-800 text-[10px] font-bold' }, __alloT('stem.fractions.1_whole_2', '> 1 whole')) : null,
-            isEq ? h('span', { className: 'ml-1 px-1 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold' }, __alloT('stem.fractions.equivalent', '= equivalent')) : null
+            improper ? h('span', { className: 'ml-1 px-1 rounded bg-amber-100 text-amber-800 text-[0.625rem] font-bold' }, __alloT('stem.fractions.1_whole_2', '> 1 whole')) : null,
+            isEq ? h('span', { className: 'ml-1 px-1 rounded bg-emerald-100 text-emerald-800 text-[0.625rem] font-bold' }, __alloT('stem.fractions.equivalent', '= equivalent')) : null
           )
         );
       });
@@ -11122,7 +11122,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
           h('h4', { className: 'text-sm font-bold text-indigo-800 mb-1' }, __alloT('stem.fractions.compare_fractions_as_sizes', '📊 Compare fractions as sizes')),
-          h('p', { className: 'text-[11px] text-indigo-700' },
+          h('p', { className: 'text-[0.6875rem] text-indigo-700' },
             __alloT('stem.fractions.a_fraction_is_a_number_with_a_size_eac', 'A fraction is a number with a size. Each strip is one whole wide, so how far the color reaches is the value. Turn on the common-denominator grid to see equivalent fractions line up on the same line.'))
         ),
         h('div', { className: 'flex flex-wrap gap-2 items-center' },
@@ -11134,18 +11134,18 @@ window.StemLab = window.StemLab || {
             className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 disabled:opacity-40' }, __alloT('stem.fractions.clear_3', 'Clear')),
           toggleBtn(stripGrid, toggleGrid, (stripGrid ? '▣' : '□') + ' Common-denominator grid'),
           toggleBtn(stripLabels, toggleLabels, (stripLabels ? '▣' : '□') + ' Labels'),
-          strips.length >= MAX_STRIPS && h('span', { className: 'text-[11px] text-slate-500' }, 'Max ' + MAX_STRIPS + ' strips')
+          strips.length >= MAX_STRIPS && h('span', { className: 'text-[0.6875rem] text-slate-500' }, 'Max ' + MAX_STRIPS + ' strips')
         ),
         strips.length === 0
           ? h('div', { className: 'bg-white rounded-xl border-2 border-dashed border-slate-200 p-6 text-center text-slate-500 text-sm' }, __alloT('stem.fractions.no_strips_yet_add_one_above_or_tap_exa', 'No strips yet. Add one above, or tap Example to watch equivalent fractions line up.'))
           : h('div', { role: 'group', 'aria-label': __alloT('stem.fractions.fraction_comparison_strips', 'Fraction comparison strips'), className: 'bg-white rounded-xl border-2 border-indigo-100 p-3 space-y-2 overflow-x-auto' }, rows),
-        (stripGrid && lcd > MAX_GRID_LCD) && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-2 text-[11px] text-amber-800' },
+        (stripGrid && lcd > MAX_GRID_LCD) && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-2 text-[0.6875rem] text-amber-800' },
           'The common denominator (' + lcd + ') is too large to draw a clean grid. Try denominators that share factors, or compare fewer strips.'),
-        hasDiffDenomEquiv && h('div', { className: 'bg-violet-50 border border-violet-200 rounded-lg p-2 text-[11px] text-violet-800' },
+        hasDiffDenomEquiv && h('div', { className: 'bg-violet-50 border border-violet-200 rounded-lg p-2 text-[0.6875rem] text-violet-800' },
           __alloT('stem.fractions.some_strips_show_a_different_number_of', '⚠ Some strips show a different number of parts but the SAME size. Equivalence means equal magnitude, not an equal count of pieces.')),
         (stripGrid && lcd > 1) && h('div', { className: 'bg-violet-100 rounded-lg p-2 text-center', role: 'status', 'aria-live': 'polite' },
           h('p', { className: 'text-sm font-bold text-violet-900' }, '🎯 Common denominator: ' + lcd),
-          h('p', { className: 'text-[11px] text-violet-700 font-mono' }, strips.map(function(s) { return (s.n * (lcd / Math.max(1, s.d))) + '/' + lcd; }).join(',  '))
+          h('p', { className: 'text-[0.6875rem] text-violet-700 font-mono' }, strips.map(function(s) { return (s.n * (lcd / Math.max(1, s.d))) + '/' + lcd; }).join(',  '))
         ),
         h('div', { className: 'text-center pt-1' },
           h('button', { onClick: function() { sfxClick(); if (typeof setStemLabTool === 'function') setStemLabTool('numberline'); },
@@ -11305,7 +11305,7 @@ window.StemLab = window.StemLab || {
         // Stats
         h('div', { className: 'ml-auto flex items-center gap-3' },
           streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-          bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
+          bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Best: ' + bestStreak),
           h('span', { className: 'text-xs font-bold text-rose-700', style: { color: ctx.isContrast ? '#ffff00' : undefined } }, score.correct + '/' + score.total)
         )
       ),
@@ -11370,7 +11370,7 @@ window.StemLab = window.StemLab || {
               if (sectionTabs[next]) { sectionTabs[next].focus(); sectionTabs[next].click(); }
             },
             role: 'tab', 'aria-selected': tab === t2.id, 'aria-controls': 'fraction-section-panel', tabIndex: (tab === t2.id) ? 0 : -1,
-            className: 'py-1.5 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap ' +
+            className: 'py-1.5 px-2.5 rounded-lg text-[0.6875rem] sm:text-xs font-bold transition-all whitespace-nowrap ' +
               (tab === t2.id ? 'bg-white text-rose-800 shadow-sm border border-rose-200' : 'text-rose-700 hover:text-rose-900 hover:bg-rose-100')
           }, t2.icon + ' ' + t2.label);
         })
@@ -11499,39 +11499,39 @@ window.StemLab = window.StemLab || {
         }[state];
         return h('div', { className: 'p-4 rounded-xl bg-white border border-rose-200' },
           h('h3', { className: 'text-sm font-black text-rose-700 mb-1' }, __alloT('stem.fractions.slider_mixer_discovery', '🎚 Slider Mixer discovery')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.fractions.mix_n_copies_of_a_fraction_discover_wh', 'Mix N copies of a fraction. Discover when they sum to a whole. No score, no reveal.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.fractions.mix_n_copies_of_a_fraction_discover_wh', 'Mix N copies of a fraction. Discover when they sum to a whole. No score, no reveal.')),
           h('div', { className: 'mb-3 p-3 rounded text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-            h('div', { className: 'text-[11px] text-slate-700 font-mono mt-1' }, iq.count + ' × ' + iq.num + '/' + iq.den + ' = ' + total.toFixed(2))
+            h('div', { className: 'text-[0.6875rem] text-slate-700 font-mono mt-1' }, iq.count + ' × ' + iq.num + '/' + iq.den + ' = ' + total.toFixed(2))
           ),
           h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
             [{ k: 'num', l: 'numerator', mn: 1, mx: 12 },
              { k: 'den', l: 'denominator', mn: 2, mx: 12 },
              { k: 'count', l: 'count', mn: 1, mx: 8 }].map(function(s) {
               return h('div', { key: s.k },
-                h('label', { htmlFor: 'sm-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-rose-700' }, iq[s.k])),
+                h('label', { htmlFor: 'sm-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-rose-700' }, iq[s.k])),
                 h('input', { id: 'sm-' + s.k, type: 'range', min: s.mn, max: s.mx, step: 1, value: iq[s.k],
                   onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                   className: 'w-full', 'aria-label': s.l }));
             })
           ),
           h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ n: iq.num, d: iq.den, c: iq.count, t: total.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.fractions.log', '📋 Log')),
-            h('button', { onClick: function() { setIQ({ num: 1, den: 4, count: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.fractions.reset', '↺ Reset'))
+            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ n: iq.num, d: iq.den, c: iq.count, t: total.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.fractions.log', '📋 Log')),
+            h('button', { onClick: function() { setIQ({ num: 1, den: 4, count: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.fractions.reset', '↺ Reset'))
           ),
           h('textarea', { 'aria-label': __alloT('stem.fractions.hypothesis_input', 'Fraction equivalence hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.fractions.hypothesis_when_do_n_copies_of_a_fract', 'Hypothesis: When do N copies of a fraction equal exactly 1?'),
-            className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, __alloT('stem.fractions.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
+            className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300 mb-3' }, __alloT('stem.fractions.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed mb-3' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
               h('li', null, __alloT('stem.fractions.what_relationship_between_count_and_de', 'What relationship between count and denominator gives exactly 1?')),
               h('li', null, __alloT('stem.fractions.find_two_combinations_that_produce_und', 'Find two combinations that produce "under". What do they share?')))),
-          h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+          h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             __alloT('stem.fractions.i_understand_explain_in_own_words', 'I understand — explain in own words')),
           iq.understood && h('textarea', { 'aria-label': __alloT('stem.fractions.explanation_input', 'Fraction equivalence explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.fractions.explain_how_count_num_den_determines_w', 'Explain how count × (num/den) determines whether you reach 1.'),
-            className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
-          h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.fractions.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-match score; no reveal — by design.'))
+            className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
+          h('div', { className: 'mt-2 text-[0.625rem] italic text-slate-500' }, __alloT('stem.fractions.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-match score; no reveal — by design.'))
         );
       })(),
       tab === 'art' && renderFractionArtTab(),
@@ -11549,7 +11549,7 @@ window.StemLab = window.StemLab || {
               ['easy', 'medium', 'hard'].map(function(d) {
                 return h('button', { key: d,
                   onClick: function() { sfxClick(); upd({ difficulty: d }); },
-                  className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
+                  className: 'text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                     (difficulty === d
                       ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-rose-700 text-white')
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
@@ -11558,7 +11558,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Challenge type counter
-          h('span', { className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/7 types')
+          h('span', { className: 'text-[0.6875rem] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/7 types')
         ),
         !challenge
           ? h('button', { 'aria-label': __alloT('stem.fractions.generate_challenge', 'Generate Challenge'),
@@ -11567,8 +11567,8 @@ window.StemLab = window.StemLab || {
             }, __alloT('stem.fractions.generate_challenge_2', '\uD83C\uDFB2 Generate Challenge'))
           : h('div', { className: 'space-y-2' },
               h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] font-bold uppercase text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full' }, challenge.type),
-                streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-700' }, '\uD83D\uDD25 ' + streak)
+                h('span', { className: 'text-[0.6875rem] font-bold uppercase text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full' }, challenge.type),
+                streak > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-orange-700' }, '\uD83D\uDD25 ' + streak)
               ),
               h('p', { className: 'text-sm font-bold text-rose-800' }, challenge.question),
               h('div', { className: 'flex gap-2' },
@@ -11614,8 +11614,8 @@ window.StemLab = window.StemLab || {
 
       // Benchmarks panel (when not on converter tab where it's inline)
       showBenchmarks && tab !== 'converter' && h('div', { className: 'bg-white rounded-xl border p-3' },
-        h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.benchmark_fractions', '\uD83D\uDCCB Benchmark Fractions')),
-        h('div', { className: 'grid grid-cols-4 gap-1 text-[11px] font-bold mb-1' },
+        h('p', { className: 'text-[0.6875rem] font-bold text-teal-600 uppercase tracking-wider mb-2' }, __alloT('stem.fractions.benchmark_fractions', '\uD83D\uDCCB Benchmark Fractions')),
+        h('div', { className: 'grid grid-cols-4 gap-1 text-[0.6875rem] font-bold mb-1' },
           h('span', { className: 'text-slate-600' }, __alloT('stem.fractions.fraction_6', 'Fraction')),
           h('span', { className: 'text-slate-600' }, __alloT('stem.fractions.decimal_5', 'Decimal')),
           h('span', { className: 'text-slate-600' }, __alloT('stem.fractions.percent_6', 'Percent')),
@@ -11636,7 +11636,7 @@ window.StemLab = window.StemLab || {
       ),
 
       // Keyboard shortcuts hint
-      h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' + onHostInk },
+      h('div', { className: 'text-center text-[0.6875rem] text-slate-600 mt-2' + onHostInk },
         __alloT('stem.fractions.1_6_tabs_n_new_challenge_b_benchmarks_', '\u2328\uFE0F 1-6: tabs | N: new challenge | B: benchmarks | P: pie/bar | ?: AI tutor')
       ),
 

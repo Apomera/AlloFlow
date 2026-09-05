@@ -514,7 +514,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold text-white"
+                  className: "text-[0.6875rem] font-bold text-white"
                 }, term.formula || '')
               ))
             );
@@ -2411,22 +2411,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       "aria-hidden": "true"
                     }, selectedRoute.icon),
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase text-cyan-700", style: { letterSpacing: '0.06em' } }, __alloT('stem.molecule.molecular_workbench', 'Molecular workbench') + ' · ' + __alloT('stem.molecule.selected_lens', 'Selected lens')),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-cyan-700", style: { letterSpacing: '0.06em' } }, __alloT('stem.molecule.molecular_workbench', 'Molecular workbench') + ' · ' + __alloT('stem.molecule.selected_lens', 'Selected lens')),
                       React.createElement("h4", { className: "mt-0.5 text-sm font-black leading-tight text-slate-900", style: { color: selectedTone } }, selectedRoute.title),
-                      React.createElement("p", { className: "mt-0.5 text-[11px] leading-snug text-slate-600" }, selectedRoute.body)
+                      React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-snug text-slate-600" }, selectedRoute.body)
                     )
                   ),
                   React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 sm:justify-end" },
                     React.createElement("button", {
                       type: "button",
                       onClick: openRealStructures,
-                      className: "min-h-9 rounded-lg border border-cyan-300 bg-white px-2.5 py-1.5 text-[11px] font-black text-cyan-800 shadow-sm transition-colors hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600",
+                      className: "min-h-9 rounded-lg border border-cyan-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-black text-cyan-800 shadow-sm transition-colors hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600",
                       "aria-label": "Open Molecule Shelf real structures viewer"
                     }, "\uD83E\uDDEC " + __alloT('stem.molecule.real_structures', 'Real structures')),
                     React.createElement("button", {
                       type: "button",
                       onClick: function() { upd('modeDeckOpen', !modeDeckOpen); },
-                      className: "min-h-9 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[11px] font-black text-white shadow-sm transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
+                      className: "min-h-9 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[0.6875rem] font-black text-white shadow-sm transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
                       "aria-expanded": modeDeckOpen ? "true" : "false",
                       "aria-controls": "molecule-mode-discovery",
                       "data-molecule-mode-guide-toggle": "true"
@@ -2435,7 +2435,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 ),
                 React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-2", "aria-label": "Molecule Lab progress summary" },
                   summaryStats.map(function(stat) {
-                    return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 shadow-sm" },
+                    return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[0.625rem] text-slate-600 shadow-sm" },
                       React.createElement("span", { className: "font-bold" }, stat[0]),
                       React.createElement("strong", { style: { color: isContrast ? '#ffff00' : stat[2], wordBreak: 'break-word' } }, stat[1])
                     );
@@ -2449,10 +2449,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   modeDeckOpen && React.createElement(React.Fragment, null,
                     React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1.5" },
                       React.createElement("div", null,
-                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-cyan-700" }, __alloT('stem.molecule.choose_a_chemistry_task', 'Choose a chemistry task')),
-                        React.createElement("p", { className: "mt-0.5 text-[11px] text-slate-600" }, __alloT('stem.molecule.mode_guide_hint', 'Inspect, combine, build, research, or balance without losing your current work.'))
+                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-cyan-700" }, __alloT('stem.molecule.choose_a_chemistry_task', 'Choose a chemistry task')),
+                        React.createElement("p", { className: "mt-0.5 text-[0.6875rem] text-slate-600" }, __alloT('stem.molecule.mode_guide_hint', 'Inspect, combine, build, research, or balance without losing your current work.'))
                       ),
-                      React.createElement("span", { className: "rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800" }, routes.length + " pathways")
+                      React.createElement("span", { className: "rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[0.625rem] font-bold text-cyan-800" }, routes.length + " pathways")
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-6", "data-molecule-mode-grid": "true" },
                       routes.map(function(route) {
@@ -2478,8 +2478,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             React.createElement("span", { className: "text-base", "aria-hidden": "true" }, route.icon),
                             React.createElement("span", { className: "text-xs font-black", style: { color: routeTone } }, route.cardTitle)
                           ),
-                          React.createElement("div", { className: "mt-1 text-[10px] leading-snug text-slate-600" }, route.body),
-                          React.createElement("div", { className: "mt-1.5 text-[10px] font-black", style: { color: routeTone } }, launchesShelf ? __alloT('stem.molecule.launch', 'Launch') : (active ? __alloT('stem.molecule.selected', 'Selected') : __alloT('stem.molecule.open', 'Open')))
+                          React.createElement("div", { className: "mt-1 text-[0.625rem] leading-snug text-slate-600" }, route.body),
+                          React.createElement("div", { className: "mt-1.5 text-[0.625rem] font-black", style: { color: routeTone } }, launchesShelf ? __alloT('stem.molecule.launch', 'Launch') : (active ? __alloT('stem.molecule.selected', 'Selected') : __alloT('stem.molecule.open', 'Open')))
                         );
                       })
                     )
@@ -2510,7 +2510,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     upd('moleculeMode', m);
                     if (typeof canvasNarrate === 'function') canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + fullLabel + ' mode.', repeat: fullLabel + ' mode.', terse: fullLabel + '.' }, { debounce: 500 });
                   },
-                  className: "min-w-[62px] flex-1 rounded-lg px-2 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " + (mode === m ? 'bg-white text-slate-900 shadow-sm ring-1 ring-indigo-200' : 'text-slate-600 hover:bg-white/70 hover:text-slate-800')
+                  className: "min-w-[62px] flex-1 rounded-lg px-2 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " + (mode === m ? 'bg-white text-slate-900 shadow-sm ring-1 ring-indigo-200' : 'text-slate-600 hover:bg-white/70 hover:text-slate-800')
                 },
                   React.createElement("span", { className: "sm:hidden" }, icon + ' ' + shortLabel),
                   React.createElement("span", { className: "hidden sm:inline" }, icon + ' ' + fullLabel)
@@ -2577,7 +2577,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     ),
                     xrSupported && React.createElement("button", {
                       onClick: function() { if (vrRef.current && vrRef.current.enterVR) vrRef.current.enterVR(); },
-                      className: "absolute bottom-3 left-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
+                      className: "absolute bottom-3 left-3 px-2.5 py-1.5 rounded-md text-[0.625rem] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
                       style: { background: "#4f46e5", color: "#fff", borderColor: "rgba(79,70,229,0.8)" },
                       'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
                       title: __alloT('vr.enter_title', 'Enter VR (needs a headset)')
@@ -2661,27 +2661,27 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                     React.createElement("h4", { id: "molecule-shape-polarity-title", className: "text-sm font-black text-slate-800" }, "Shape & Polarity Lens"),
-                    React.createElement("span", { className: "px-2 py-1 text-[11px] font-bold bg-white border border-cyan-200 text-cyan-800", style: { borderRadius: 6 } }, teaching.modelNote)
+                    React.createElement("span", { className: "px-2 py-1 text-[0.6875rem] font-bold bg-white border border-cyan-200 text-cyan-800", style: { borderRadius: 6 } }, teaching.modelNote)
                   ),
                   React.createElement("dl", { className: "mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2" },
                     React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
-                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Molecular shape"),
+                      React.createElement("dt", { className: "text-[0.6875rem] font-bold uppercase text-slate-500" }, "Molecular shape"),
                       React.createElement("dd", { className: "mt-1 text-sm font-black text-slate-800" }, teaching.shape),
                       React.createElement("dd", { className: "text-xs text-slate-600" }, "Bond angle: " + teaching.angle)
                     ),
                     React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
-                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Electron geometry evidence"),
+                      React.createElement("dt", { className: "text-[0.6875rem] font-bold uppercase text-slate-500" }, "Electron geometry evidence"),
                       React.createElement("dd", { className: "mt-1 text-xs font-semibold text-slate-700" }, teaching.domains)
                     ),
                     React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
-                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Whole-particle polarity"),
+                      React.createElement("dt", { className: "text-[0.6875rem] font-bold uppercase text-slate-500" }, "Whole-particle polarity"),
                       React.createElement("dd", { className: "mt-1 text-sm font-black text-slate-800" }, teaching.polarity)
                     )
                   ),
                   React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-700" },
                     React.createElement("strong", null, "Why: "), teaching.dipoles
                   ),
-                  React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-slate-600" },
+                  React.createElement("p", { className: "mt-2 text-[0.6875rem] leading-relaxed text-slate-600" },
                     "Ball-and-stick models show connectivity and approximate geometry. Atom sizes and bond lengths are not on one common scale, and electron density is continuous."
                   )
                 );
@@ -2707,7 +2707,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     React.createElement("span", { className: "text-sm font-black" }, sym),
 
-                    React.createElement("span", { className: "text-[11px]" }, el?.n || '')
+                    React.createElement("span", { className: "text-[0.6875rem]" }, el?.n || '')
 
                   );
 
@@ -3164,7 +3164,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   id: 'molecule-builder-keyboard-controls-title',
                   className: 'text-xs font-black text-slate-800'
                 }, __alloT('stem.molecule.atom_and_bond_controls', 'Atom and bond controls')),
-                React.createElement('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-600' },
+                React.createElement('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-600' },
                   __alloT('stem.molecule.controls_equivalent_help', 'These keyboard-accessible controls provide the same actions as the small controls inside the workspace.')),
                 React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' },
                   (d.buildAtoms || []).map((atom, atomIndex) => React.createElement('button', {
@@ -3237,7 +3237,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     onClick: () => { upd('buildBondFrom', i); },
 
-                    className: "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
+                    className: "w-7 h-7 rounded-full flex items-center justify-center text-[0.6875rem] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
 
                     style: { backgroundColor: a.color, color: getReadableSwatchTextColor(a.color) },
 
@@ -3281,13 +3281,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   React.createElement("div", null,
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "Formula: "),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider" }, "Formula: "),
 
                     React.createElement("span", { className: "text-lg font-black text-slate-800 font-mono tracking-tight" }, formulaStr)
 
                   ),
 
-                  React.createElement("div", { className: "flex items-center gap-1 text-[11px] text-slate-600" },
+                  React.createElement("div", { className: "flex items-center gap-1 text-[0.6875rem] text-slate-600" },
 
                     React.createElement("span", null, (d.buildAtoms || []).length + " atoms"),
 
@@ -3389,7 +3389,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   React.createElement("p", { className: "text-xs text-amber-600" }, d.buildTarget.formula + " - " + d.buildTarget.desc),
 
-                  React.createElement("p", { className: "text-[11px] text-amber-500 mt-0.5" }, "Recipe: " + Object.entries(d.buildTarget.recipe).map(([el, n]) => el + (n > 1 ? '\u00D7' + n : '')).join(' + '))
+                  React.createElement("p", { className: "text-[0.6875rem] text-amber-500 mt-0.5" }, "Recipe: " + Object.entries(d.buildTarget.recipe).map(([el, n]) => el + (n > 1 ? '\u00D7' + n : '')).join(' + '))
 
                 )
 
@@ -3415,7 +3415,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     React.createElement("p", { className: "text-sm font-bold text-amber-700" }, __alloT('stem.molecule.no_known_compound_matches_keep_experim', "\u{1F914} No known compound matches. Keep experimenting!")),
 
-                    React.createElement("p", { className: "text-[11px] text-amber-500 mt-1" }, __alloT('stem.molecule.tip_click_bonds_to_cycle_between_singl', "Tip: Click bonds to cycle between single, double, and triple bonds"))
+                    React.createElement("p", { className: "text-[0.6875rem] text-amber-500 mt-1" }, __alloT('stem.molecule.tip_click_bonds_to_cycle_between_singl', "Tip: Click bonds to cycle between single, double, and triple bonds"))
 
                   )
 
@@ -3465,15 +3465,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               },
                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                   React.createElement("div", { className: "min-w-0", style: { flex: '1 1 320px' } },
-                    React.createElement("p", { className: "text-[10px] font-black uppercase text-sky-700", style: { letterSpacing: '0.08em' } }, "Element explorer"),
+                    React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-sky-700", style: { letterSpacing: '0.08em' } }, "Element explorer"),
                     React.createElement("h4", { id: "molecule-element-explorer-title", className: "mt-0.5 text-base font-black text-slate-900 tracking-tight" }, "Find an element without losing its place"),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, "Search all 118 entries. Filtered tiles stay in their true periodic positions, so the map never jumps.")
+                    React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-600" }, "Search all 118 entries. Filtered tiles stay in their true periodic positions, so the map never jumps.")
                   ),
-                  React.createElement("span", { className: "rounded-full border border-sky-200 bg-white px-2.5 py-1 text-[11px] font-black text-sky-800", "aria-hidden": "true" }, filteredElements.length + "/118 visible")
+                  React.createElement("span", { className: "rounded-full border border-sky-200 bg-white px-2.5 py-1 text-[0.6875rem] font-black text-sky-800", "aria-hidden": "true" }, filteredElements.length + "/118 visible")
                 ),
                 React.createElement("div", { className: "mt-3 flex flex-wrap gap-2 items-end", role: "search", "aria-label": "Filter the periodic table" },
                   React.createElement("label", { className: "block min-w-0", style: { flex: '2 1 280px' }, htmlFor: "molecule-element-search" },
-                    React.createElement("span", { className: "mb-1 block text-[10px] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Search"),
+                    React.createElement("span", { className: "mb-1 block text-[0.625rem] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Search"),
                     React.createElement("input", {
                       id: "molecule-element-search",
                       type: "search",
@@ -3485,7 +3485,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     })
                   ),
                   React.createElement("label", { className: "block min-w-0", style: { flex: '1 1 130px' }, htmlFor: "molecule-element-category" },
-                    React.createElement("span", { className: "mb-1 block text-[10px] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Category"),
+                    React.createElement("span", { className: "mb-1 block text-[0.625rem] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Category"),
                     React.createElement("select", {
                       id: "molecule-element-category",
                       value: elementCategoryFilter,
@@ -3497,7 +3497,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }))
                   ),
                   React.createElement("label", { className: "block min-w-0", style: { flex: '1 1 110px' }, htmlFor: "molecule-element-period" },
-                    React.createElement("span", { className: "mb-1 block text-[10px] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Period"),
+                    React.createElement("span", { className: "mb-1 block text-[0.625rem] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Period"),
                     React.createElement("select", {
                       id: "molecule-element-period",
                       value: elementPeriodFilter,
@@ -3509,7 +3509,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }))
                   ),
                   React.createElement("label", { className: "block min-w-0", style: { flex: '1 1 110px' }, htmlFor: "molecule-element-block" },
-                    React.createElement("span", { className: "mb-1 block text-[10px] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Block"),
+                    React.createElement("span", { className: "mb-1 block text-[0.625rem] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Block"),
                     React.createElement("select", {
                       id: "molecule-element-block",
                       value: elementBlockFilter,
@@ -3529,22 +3529,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   }, "Clear filters")
                 ),
                 React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-sky-100 pt-2" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600", "aria-live": "polite" },
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600", "aria-live": "polite" },
                     filteredElements.length === 118 ? "Showing all 118 elements" : "Showing " + filteredElements.length + " of 118 elements"
                   ),
-                  elementFiltersActive && React.createElement("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700" }, "Layout preserved while filtering")
+                  elementFiltersActive && React.createElement("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[0.625rem] font-bold text-indigo-700" }, "Layout preserved while filtering")
                 ),
                 activeElementFilterChips.length > 0 && React.createElement("div", {
                   className: "mt-2 flex flex-wrap items-center gap-1.5",
                   "aria-label": "Active element filters"
                 },
-                  React.createElement("span", { className: "mr-0.5 text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Active"),
+                  React.createElement("span", { className: "mr-0.5 text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, "Active"),
                   activeElementFilterChips.map(function(chip) {
                     return React.createElement("button", {
                       key: chip.key,
                       type: "button",
                       onClick: () => updateElementFilters(chip.changes),
-                      className: "inline-flex min-h-8 items-center gap-1 rounded-full border border-indigo-300 bg-white px-2.5 py-1 text-[11px] font-bold text-indigo-800 shadow-sm hover:bg-indigo-50",
+                      className: "inline-flex min-h-8 items-center gap-1 rounded-full border border-indigo-300 bg-white px-2.5 py-1 text-[0.6875rem] font-bold text-indigo-800 shadow-sm hover:bg-indigo-50",
                       "aria-label": "Remove filter: " + chip.label
                     },
                       React.createElement("span", null, chip.label),
@@ -3553,7 +3553,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   })
                 ),
                 selectedElementHiddenByFilter && React.createElement("div", {
-                  className: "mt-2 flex flex-wrap items-center gap-2 p-2 rounded-lg border border-indigo-200 bg-indigo-50 text-[11px] text-indigo-800",
+                  className: "mt-2 flex flex-wrap items-center gap-2 p-2 rounded-lg border border-indigo-200 bg-indigo-50 text-[0.6875rem] text-indigo-800",
                   role: "status",
                   "aria-live": "polite"
                 },
@@ -3573,12 +3573,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               },
                 React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-2" },
                   React.createElement("div", null,
-                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-indigo-600" }, "Filtered collection"),
+                    React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-indigo-600" }, "Filtered collection"),
                     React.createElement("h4", { id: "molecule-matching-elements-title", className: "text-sm font-black text-slate-900" }, "Matching elements")
                   ),
-                  React.createElement("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700" }, filteredElements.length + " result" + (filteredElements.length === 1 ? "" : "s"))
+                  React.createElement("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[0.625rem] font-bold text-indigo-700" }, filteredElements.length + " result" + (filteredElements.length === 1 ? "" : "s"))
                 ),
-                React.createElement("p", { className: "mb-2 text-[11px] leading-relaxed text-slate-600" }, "Choose a result to inspect it and center its periodic-table column. The map itself keeps every element in its true position."),
+                React.createElement("p", { className: "mb-2 text-[0.6875rem] leading-relaxed text-slate-600" }, "Choose a result to inspect it and center its periodic-table column. The map itself keeps every element in its true position."),
                 React.createElement("div", {
                   className: "overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-2",
                   role: "region",
@@ -3600,11 +3600,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       },
                         React.createElement("span", { className: "flex h-9 w-9 flex-shrink-0 flex-col items-center justify-center rounded-lg shadow-sm", style: { backgroundColor: el.c, color: getReadableSwatchTextColor(el.c) }, "aria-hidden": "true" },
                           React.createElement("strong", { className: "text-sm leading-none" }, el.s),
-                          React.createElement("span", { className: "mt-0.5 text-[9px] leading-none" }, el.n)
+                          React.createElement("span", { className: "mt-0.5 text-[0.5625rem] leading-none" }, el.n)
                         ),
                         React.createElement("span", { className: "min-w-0" },
-                          React.createElement("strong", { className: "block truncate text-[11px] text-slate-900" }, el.name),
-                          React.createElement("span", { className: "block text-[9px] font-bold uppercase tracking-wide text-slate-500" }, "Period " + el.period)
+                          React.createElement("strong", { className: "block truncate text-[0.6875rem] text-slate-900" }, el.name),
+                          React.createElement("span", { className: "block text-[0.5625rem] font-bold uppercase tracking-wide text-slate-500" }, "Period " + el.period)
                         )
                       );
                     })
@@ -3630,9 +3630,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement("div", { className: "flex min-w-0 items-start gap-2", style: { flex: '1 1 320px' } },
                     React.createElement("span", { className: "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-violet-200 bg-white text-lg shadow-sm", "aria-hidden": "true" }, "⇄"),
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("p", { className: "text-[10px] font-black uppercase text-violet-600", style: { letterSpacing: '0.08em' } }, "Evidence comparison"),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-violet-600", style: { letterSpacing: '0.08em' } }, "Evidence comparison"),
                       React.createElement("h4", { id: "molecule-element-compare-title", className: "text-sm font-black text-violet-950" }, "Compare two elements"),
-                      React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-violet-700" }, "Contrast periodic position, isotope stability, shell structure, atomic mass, category, and electronegativity across all 118 entries.")
+                      React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-relaxed text-violet-700" }, "Contrast periodic position, isotope stability, shell structure, atomic mass, category, and electronegativity across all 118 entries.")
                     )
                   ),
                   React.createElement("button", {
@@ -3661,15 +3661,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     return React.createElement("article", { className: "rounded-xl border border-slate-300 bg-white p-3 shadow-sm", "aria-label": heading + ": " + el.name },
                       React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                         React.createElement("div", { className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center shadow-sm", style: { backgroundColor: el.c, color: getReadableSwatchTextColor(el.c) } },
-                          React.createElement("span", { className: "text-[10px] leading-none" }, el.n),
+                          React.createElement("span", { className: "text-[0.625rem] leading-none" }, el.n),
                           React.createElement("span", { className: "text-lg font-black leading-none" }, el.s)
                         ),
                         React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-black uppercase text-violet-600" }, heading),
+                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-violet-600" }, heading),
                           React.createElement("h5", { className: "text-base font-black text-slate-900" }, el.name)
                         )
                       ),
-                      React.createElement("dl", { className: "grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]" },
+                      React.createElement("dl", { className: "grid grid-cols-2 gap-x-3 gap-y-1 text-[0.6875rem]" },
                         rows.map(function(row) {
                           return React.createElement(React.Fragment, { key: row[0] },
                             React.createElement("dt", { className: "font-bold text-slate-600" }, row[0]),
@@ -3677,7 +3677,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                           );
                         })
                       ),
-                      React.createElement("p", { className: "mt-2 border-t border-slate-200 pt-2 text-[10px] text-slate-600 break-words" },
+                      React.createElement("p", { className: "mt-2 border-t border-slate-200 pt-2 text-[0.625rem] text-slate-600 break-words" },
                         React.createElement("strong", null, "Aufbau configuration: "), metrics.configuration
                       )
                     );
@@ -3686,7 +3686,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return React.createElement("div", { id: "molecule-element-compare-panel", className: "mt-3" },
                     React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-2 items-end" },
                       React.createElement("div", null,
-                        React.createElement("label", { htmlFor: "molecule-element-compare-a", className: "block mb-1 text-[11px] font-bold text-slate-700" }, "First element"),
+                        React.createElement("label", { htmlFor: "molecule-element-compare-a", className: "block mb-1 text-[0.6875rem] font-bold text-slate-700" }, "First element"),
                         React.createElement("select", {
                           id: "molecule-element-compare-a",
                           value: comparisonA.s,
@@ -3703,7 +3703,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         className: "px-3 py-2 rounded-lg border border-violet-300 bg-white text-xs font-bold text-violet-800 hover:bg-violet-100"
                       }, "⇄ Swap"),
                       React.createElement("div", null,
-                        React.createElement("label", { htmlFor: "molecule-element-compare-b", className: "block mb-1 text-[11px] font-bold text-slate-700" }, "Second element"),
+                        React.createElement("label", { htmlFor: "molecule-element-compare-b", className: "block mb-1 text-[0.6875rem] font-bold text-slate-700" }, "Second element"),
                         React.createElement("select", {
                           id: "molecule-element-compare-b",
                           value: comparisonB.s,
@@ -3717,7 +3717,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     d.selectedElement && React.createElement("button", {
                       type: "button",
                       onClick: () => upd('elementCompareA', d.selectedElement.s),
-                      className: "mt-2 px-2 py-1 rounded-md border border-slate-300 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-100"
+                      className: "mt-2 px-2 py-1 rounded-md border border-slate-300 bg-white text-[0.6875rem] font-bold text-slate-700 hover:bg-slate-100"
                     }, "Use selected element (" + d.selectedElement.s + ")"),
                     React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3 mt-3" },
                       renderComparisonCard(elementComparison.a, elementComparison.metricsA, "First element"),
@@ -3725,7 +3725,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     ),
                     React.createElement("div", { className: "mt-3 rounded-xl border border-violet-200 bg-white p-3 shadow-sm", "aria-live": "polite" },
                       React.createElement("h5", { className: "text-xs font-black text-violet-900 mb-1" }, "What the evidence suggests"),
-                      React.createElement("ul", { className: "list-disc pl-5 space-y-1 text-[11px] leading-relaxed text-slate-700" },
+                      React.createElement("ul", { className: "list-disc pl-5 space-y-1 text-[0.6875rem] leading-relaxed text-slate-700" },
                         elementComparison.insights.map(function(insight, index) {
                           return React.createElement("li", { key: index }, insight);
                         })
@@ -3749,22 +3749,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               },
                 React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-2" },
                   React.createElement("div", null,
-                    React.createElement("p", { className: "text-[10px] font-black uppercase text-blue-600", style: { letterSpacing: '0.08em' } }, "Periodic map"),
+                    React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-blue-600", style: { letterSpacing: '0.08em' } }, "Periodic map"),
                     React.createElement("h4", { id: "molecule-periodic-map-title", className: "text-sm font-black text-slate-900" }, "118 elements in fixed positions")
                   ),
-                  React.createElement("span", { className: "rounded-full border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-600" }, "18 groups • 7 periods")
+                  React.createElement("span", { className: "rounded-full border border-slate-300 bg-white px-2 py-1 text-[0.625rem] font-bold text-slate-600" }, "18 groups • 7 periods")
                 ),
-                React.createElement("p", { id: "molecule-periodic-map-instructions", className: "mb-2 text-[11px] leading-relaxed text-slate-600" }, elementFiltersActive ? "Filtered results remain in their original coordinates. Blank spaces show where hidden elements belong." : "Group numbers run left to right. On narrow screens, scroll the map horizontally to explore every group."),
+                React.createElement("p", { id: "molecule-periodic-map-instructions", className: "mb-2 text-[0.6875rem] leading-relaxed text-slate-600" }, elementFiltersActive ? "Filtered results remain in their original coordinates. Blank spaces show where hidden elements belong." : "Group numbers run left to right. On narrow screens, scroll the map horizontally to explore every group."),
 
                 React.createElement("div", {
                   className: "mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 xl:hidden",
                   "data-periodic-map-viewport-controls": "true"
                 },
                   React.createElement("div", { className: "min-w-0" },
-                    React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-blue-700" }, "Map viewport"),
+                    React.createElement("p", { className: "text-[0.5625rem] font-black uppercase tracking-wider text-blue-700" }, "Map viewport"),
                     React.createElement("p", {
                       id: "molecule-periodic-map-viewport-status",
-                      className: "text-[11px] font-bold text-slate-700",
+                      className: "text-[0.6875rem] font-bold text-slate-700",
                       role: "status",
                       "aria-live": "polite",
                       "data-periodic-map-visible-groups": periodicMapViewport.firstGroup + "-" + periodicMapViewport.lastGroup,
@@ -3806,7 +3806,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement("div", { "data-periodic-map-track": "true", style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(32px, 1fr))', gap: '2px', minWidth: '640px' } },
 
                   Array.from({ length: 18 }, function(_, groupIndex) {
-                    return React.createElement("span", { key: 'group-' + groupIndex, className: "pb-1 text-center text-[9px] font-black text-slate-600", "aria-hidden": "true", "data-periodic-group": String(groupIndex + 1) }, groupIndex + 1);
+                    return React.createElement("span", { key: 'group-' + groupIndex, className: "pb-1 text-center text-[0.5625rem] font-black text-slate-600", "aria-hidden": "true", "data-periodic-group": String(groupIndex + 1) }, groupIndex + 1);
                   }),
 
                   PT_LAYOUT.flatMap((row, ri) => {
@@ -3835,12 +3835,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         "data-element-symbol": el.s,
                         key: el.s,
                         onClick: () => selectPeriodicElement(el, false),
-                        className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[11px] font-bold border transition-colors hover:border-slate-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 " + (catColors[el.cat] || 'bg-slate-50 border-slate-200') + (isSelected ? " ring-2 ring-indigo-600 ring-offset-1" : ""),
+                        className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[0.6875rem] font-bold border transition-colors hover:border-slate-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 " + (catColors[el.cat] || 'bg-slate-50 border-slate-200') + (isSelected ? " ring-2 ring-indigo-600 ring-offset-1" : ""),
                         title: el.name,
                         style: { minWidth: '28px' }
                       },
 
-                        React.createElement("span", { className: "font-black text-[11px] leading-none" }, el.s),
+                        React.createElement("span", { className: "font-black text-[0.6875rem] leading-none" }, el.s),
 
                         React.createElement("span", { className: "leading-none" }, el.n)
 
@@ -3875,7 +3875,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     onClick: () => updateElementFilters({ elementCategory: elementCategoryFilter === cat ? 'all' : cat }),
                     "aria-pressed": elementCategoryFilter === cat ? "true" : "false",
                     "aria-label": (elementCategoryFilter === cat ? "Remove category filter: " : "Filter by category: ") + label,
-                    className: "min-h-8 px-2 py-1 rounded text-[11px] font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (catColors[cat] || '') + (elementCategoryFilter === cat ? " ring-2 ring-indigo-500 ring-offset-1" : "")
+                    className: "min-h-8 px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (catColors[cat] || '') + (elementCategoryFilter === cat ? " ring-2 ring-indigo-500 ring-offset-1" : "")
                   }, label)
 
                 )
@@ -3925,7 +3925,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     React.createElement("div", { className: "w-16 h-16 rounded-2xl flex flex-col items-center justify-center font-bold shadow-md flex-shrink-0", style: { backgroundColor: d.selectedElement.c, color: getReadableSwatchTextColor(d.selectedElement.c) } },
 
-                      React.createElement("span", { className: "text-[11px] opacity-80" }, d.selectedElement.n),
+                      React.createElement("span", { className: "text-[0.6875rem] opacity-80" }, d.selectedElement.n),
 
                       React.createElement("span", { className: "text-xl font-black tracking-tight" }, d.selectedElement.s)
 
@@ -3933,21 +3933,21 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     React.createElement("div", { className: "flex-1 min-w-0" },
 
-                      React.createElement("p", { className: "text-[10px] font-black uppercase text-slate-600", style: { letterSpacing: '0.08em' } }, "Selected element"),
+                      React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-slate-600", style: { letterSpacing: '0.08em' } }, "Selected element"),
 
                       React.createElement("h4", { id: "molecule-selected-element-title", className: "text-xl font-black text-slate-900 tracking-tight" }, selectedElementRecord.name),
 
                       React.createElement("div", { className: "mt-1 flex flex-wrap gap-1.5" },
-                        React.createElement("span", { className: "rounded-full border border-slate-300 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-slate-700" }, "Atomic #" + d.selectedElement.n),
-                        React.createElement("span", { className: "rounded-full border border-slate-300 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-slate-700" }, selectedMetrics ? selectedMetrics.category : (d.selectedElement.cat || 'element').replace(/^\w/, c => c.toUpperCase())),
-                        selectedMetrics && React.createElement("span", { className: "rounded-full border border-slate-300 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-slate-700" }, selectedMetrics.positionLabel)
+                        React.createElement("span", { className: "rounded-full border border-slate-300 bg-white/80 px-2 py-0.5 text-[0.625rem] font-bold text-slate-700" }, "Atomic #" + d.selectedElement.n),
+                        React.createElement("span", { className: "rounded-full border border-slate-300 bg-white/80 px-2 py-0.5 text-[0.625rem] font-bold text-slate-700" }, selectedMetrics ? selectedMetrics.category : (d.selectedElement.cat || 'element').replace(/^\w/, c => c.toUpperCase())),
+                        selectedMetrics && React.createElement("span", { className: "rounded-full border border-slate-300 bg-white/80 px-2 py-0.5 text-[0.625rem] font-bold text-slate-700" }, selectedMetrics.positionLabel)
                       ),
 
                       detail && React.createElement("p", { className: "text-xs text-slate-700 mt-2 leading-relaxed italic" }, detail.desc),
 
                       detail && React.createElement("button", { "aria-label": __alloT('stem.molecule.speak_text', "Speak Text"),
                         onClick: () => speakText(selectedElementRecord.name + '. ' + detail.desc),
-                        className: "transition-colors mt-2 px-2 py-1 rounded-md border border-slate-300 bg-white/80 text-[10px] font-bold text-slate-700 hover:bg-white inline-flex items-center active:scale-[0.97]"
+                        className: "transition-colors mt-2 px-2 py-1 rounded-md border border-slate-300 bg-white/80 text-[0.625rem] font-bold text-slate-700 hover:bg-white inline-flex items-center active:scale-[0.97]"
                       }, "🔊 Hear summary"),
 
                     ),
@@ -3962,14 +3962,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       disabled: !previousElement,
                       onClick: () => previousElement && selectPeriodicElement(previousElement, false),
                       "aria-label": previousElement ? "Previous element: " + previousElement.name : "No previous element",
-                      className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[0.6875rem] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                     }, previousElement ? "← " + previousElement.s : "← Start"),
-                    React.createElement("span", { className: "text-center text-[11px] font-bold text-slate-600", "aria-live": "polite" },
+                    React.createElement("span", { className: "text-center text-[0.6875rem] font-bold text-slate-600", "aria-live": "polite" },
                       React.createElement("span", { className: "block" }, (selectedElementIndex + 1) + " of " + selectedBrowsePool.length),
                       elementFiltersActive && filteredElements.length > 0 && selectedElementMatchesFilters && React.createElement("button", {
                         type: "button",
                         onClick: () => upd('elementBrowseScope', browsingFilteredElements ? 'all' : 'filtered'),
-                        className: "mt-0.5 rounded-full border border-indigo-200 bg-white px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-indigo-700 hover:bg-indigo-50",
+                        className: "mt-0.5 rounded-full border border-indigo-200 bg-white px-2 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide text-indigo-700 hover:bg-indigo-50",
                         "aria-label": browsingFilteredElements ? "Browse all 118 elements" : "Browse only the " + filteredElements.length + " matching elements"
                       }, browsingFilteredElements ? "Matches" : "All elements")
                     ),
@@ -3978,7 +3978,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       disabled: !nextElement,
                       onClick: () => nextElement && selectPeriodicElement(nextElement, false),
                       "aria-label": nextElement ? "Next element: " + nextElement.name : "No next element",
-                      className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[0.6875rem] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                     }, nextElement ? nextElement.s + " →" : "End →")
                   ),
 
@@ -3992,7 +3992,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     },
                       React.createElement("span", null,
                         React.createElement("span", { className: "block" }, elementDetailsOpen ? "Hide deeper details" : "Explore complete facts"),
-                        React.createElement("span", { className: "mt-0.5 block text-[10px] font-medium text-slate-500" }, "Reference fields, uses, compounds, and the stable Bohr diagram")
+                        React.createElement("span", { className: "mt-0.5 block text-[0.625rem] font-medium text-slate-500" }, "Reference fields, uses, compounds, and the stable Bohr diagram")
                       ),
                       React.createElement("span", { "aria-hidden": "true", className: "text-lg text-indigo-600" }, elementDetailsOpen ? "−" : "+")
                     )
@@ -4005,18 +4005,18 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   selectedMetrics && React.createElement("div", { className: "border-t border-slate-200/50 bg-white/90 px-3 py-3" },
                     React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1" },
-                      React.createElement("h5", { className: "text-[11px] font-black uppercase tracking-wider text-slate-700" }, "Complete element facts"),
-                      React.createElement("span", { className: "text-[10px] font-medium text-slate-500" }, "8 reference fields")
+                      React.createElement("h5", { className: "text-[0.6875rem] font-black uppercase tracking-wider text-slate-700" }, "Complete element facts"),
+                      React.createElement("span", { className: "text-[0.625rem] font-medium text-slate-500" }, "8 reference fields")
                     ),
-                    React.createElement("dl", { className: "gap-2 text-[11px]", style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }, "aria-label": "Complete facts for " + selectedElementRecord.name },
+                    React.createElement("dl", { className: "gap-2 text-[0.6875rem]", style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }, "aria-label": "Complete facts for " + selectedElementRecord.name },
                       selectedFactRows.map(function(row) {
                         return React.createElement("div", { key: row[0], className: "rounded-lg border border-slate-200 bg-white p-2 shadow-sm" },
-                          React.createElement("dt", { className: "text-[9px] font-black uppercase text-slate-500", style: { letterSpacing: '0.05em' } }, row[0]),
+                          React.createElement("dt", { className: "text-[0.5625rem] font-black uppercase text-slate-500", style: { letterSpacing: '0.05em' } }, row[0]),
                           React.createElement("dd", { className: "mt-1 font-bold leading-snug text-slate-900" }, row[1])
                         );
                       })
                     ),
-                    React.createElement("p", { className: "mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2 text-[10px] leading-relaxed text-slate-600 break-words" },
+                    React.createElement("p", { className: "mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2 text-[0.625rem] leading-relaxed text-slate-600 break-words" },
                       React.createElement("strong", { className: "text-slate-700" }, "Simplified Aufbau configuration: "), selectedMetrics.configuration
                     )
                   ),
@@ -4027,11 +4027,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm" },
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, __alloT('stem.molecule.common_uses', "\uD83D\uDD27 Common Uses")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1" }, __alloT('stem.molecule.common_uses', "\uD83D\uDD27 Common Uses")),
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[11px] font-medium text-slate-700 border border-slate-400" }, use))
+                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[0.6875rem] font-medium text-slate-700 border border-slate-400" }, use))
 
                         )
 
@@ -4039,11 +4039,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm" },
 
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, __alloT('stem.molecule.key_compounds', "\uD83E\uDDEA Key Compounds")),
+                        React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1" }, __alloT('stem.molecule.key_compounds', "\uD83E\uDDEA Key Compounds")),
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[11px] font-medium text-slate-700 border border-slate-400" }, comp))
+                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[0.6875rem] font-medium text-slate-700 border border-slate-400" }, comp))
 
                         )
 
@@ -4053,17 +4053,17 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     relatedCompounds.length > 0 && React.createElement("div", { className: "mt-2 rounded-xl border border-emerald-200 bg-white p-2.5 shadow-sm" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
+                      React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        visibleRelatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")")),
+                        visibleRelatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[0.6875rem] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")")),
 
                         relatedCompounds.length > 4 && React.createElement("button", {
                           type: "button",
                           onClick: () => upd('showAllElementCompounds', !d.showAllElementCompounds),
                           "aria-expanded": d.showAllElementCompounds ? "true" : "false",
-                          className: "rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[11px] font-black text-emerald-800 hover:bg-emerald-50"
+                          className: "rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[0.6875rem] font-black text-emerald-800 hover:bg-emerald-50"
                         }, d.showAllElementCompounds ? "Show fewer" : "Show " + (relatedCompounds.length - 4) + " more")
 
                       )
@@ -4076,7 +4076,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
                         React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-black uppercase text-indigo-600", style: { letterSpacing: '0.08em' } }, "Stable diagram"),
+                          React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-indigo-600", style: { letterSpacing: '0.08em' } }, "Stable diagram"),
                           React.createElement("p", { className: "text-sm font-black text-slate-800" }, __alloT('stem.molecule.bohr_model', "\u269B\uFE0F Bohr Model"))
                         ),
                         React.createElement("button", {
@@ -4084,11 +4084,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                           onClick: () => upd('calmDiagrams', !calmDiagrams),
                           "aria-pressed": calmDiagrams ? "true" : "false",
                           "aria-label": calmDiagrams ? "Enable Bohr electron motion" : "Pause Bohr electron motion",
-                          className: "px-2 py-1 rounded-md text-[10px] font-bold border transition-colors " + (calmDiagrams ? "bg-slate-100 text-slate-700 border-slate-300" : "bg-indigo-600 text-white border-indigo-600")
+                          className: "px-2 py-1 rounded-md text-[0.625rem] font-bold border transition-colors " + (calmDiagrams ? "bg-slate-100 text-slate-700 border-slate-300" : "bg-indigo-600 text-white border-indigo-600")
                         }, calmDiagrams ? "▶ Animate" : "⏸ Motion on")
                       ),
 
-                      React.createElement("span", { className: "mb-3 block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-[10px] leading-relaxed text-slate-600" },
+                      React.createElement("span", { className: "mb-3 block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-[0.625rem] leading-relaxed text-slate-600" },
                         "Config: " + getElectronConfig(d.selectedElement.n) +
                         " | Valence: " + getValenceElectrons(d.selectedElement.n) + "e⁻" +
                         (ELECTRONEGATIVITY[d.selectedElement.s] ? " | EN: " + ELECTRONEGATIVITY[d.selectedElement.s] : "")
@@ -4479,24 +4479,24 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                         }),
 
-                        React.createElement("div", { className: "min-w-0 text-[11px] text-slate-600", style: { flex: '1 1 220px' } },
+                        React.createElement("div", { className: "min-w-0 text-[0.6875rem] text-slate-600", style: { flex: '1 1 220px' } },
 
                           React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                             React.createElement("p", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2" },
-                              React.createElement("span", { className: "block text-[9px] font-black uppercase text-slate-500" }, "Protons"),
+                              React.createElement("span", { className: "block text-[0.5625rem] font-black uppercase text-slate-500" }, "Protons"),
                               React.createElement("strong", { className: "mt-1 block text-sm text-slate-800" }, "" + d.selectedElement.n)
                             ),
                             React.createElement("p", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2" },
-                              React.createElement("span", { className: "block text-[9px] font-black uppercase text-slate-500" }, "Electrons"),
+                              React.createElement("span", { className: "block text-[0.5625rem] font-black uppercase text-slate-500" }, "Electrons"),
                               React.createElement("strong", { className: "mt-1 block text-sm text-slate-800" }, "" + d.selectedElement.n)
                             ),
                             React.createElement("p", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2" },
-                              React.createElement("span", { className: "block text-[9px] font-black uppercase text-slate-500" }, "Shells"),
+                              React.createElement("span", { className: "block text-[0.5625rem] font-black uppercase text-slate-500" }, "Shells"),
                               React.createElement("strong", { className: "mt-1 block text-sm text-slate-800" }, getElectronShellDistribution(d.selectedElement.n).join('-'))
                             )
                           ),
 
-                          React.createElement("p", { className: "mt-2 rounded-lg border border-indigo-100 bg-indigo-50 p-2.5 text-[11px] leading-relaxed text-slate-600 italic" }, __alloT('stem.molecule.bohr_model_caption_honest', "\u26A1 The Bohr model draws electrons on tidy \u201Cshells\u201D that fill inside-out \u2014 a useful first picture, but electrons don\u2019t actually circle like planets. See the \u2630 Orbital clouds tab for where they really are (probability clouds, not orbits)."))
+                          React.createElement("p", { className: "mt-2 rounded-lg border border-indigo-100 bg-indigo-50 p-2.5 text-[0.6875rem] leading-relaxed text-slate-600 italic" }, __alloT('stem.molecule.bohr_model_caption_honest', "\u26A1 The Bohr model draws electrons on tidy \u201Cshells\u201D that fill inside-out \u2014 a useful first picture, but electrons don\u2019t actually circle like planets. See the \u2630 Orbital clouds tab for where they really are (probability clouds, not orbits)."))
 
                         )
 
@@ -4694,9 +4694,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     React.createElement("div", { className: "flex min-w-0 items-start gap-2", style: { flex: '1 1 280px' } },
                       React.createElement("span", { className: "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-cyan-200 bg-white text-xl shadow-sm", "aria-hidden": "true" }, "🔬"),
                       React.createElement("div", { className: "min-w-0" },
-                        React.createElement("p", { className: "text-[10px] font-black uppercase text-cyan-700", style: { letterSpacing: '0.08em' } }, "Element practice"),
+                        React.createElement("p", { className: "text-[0.625rem] font-black uppercase text-cyan-700", style: { letterSpacing: '0.08em' } }, "Element practice"),
                         React.createElement("h4", { id: "molecule-element-practice-title", className: "text-sm font-black text-slate-900" }, "Test the patterns you can see"),
-                        React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-600" }, "Six question types connect symbols, position, category, block, and electron shells.")
+                        React.createElement("p", { className: "mt-0.5 text-[0.6875rem] leading-relaxed text-slate-600" }, "Six question types connect symbols, position, category, block, and electron shells.")
                       )
                     ),
 
@@ -4705,14 +4705,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       elAttempts > 0 && React.createElement("span", { className: "rounded-full border border-emerald-200 bg-white px-2 py-1 text-xs font-bold text-emerald-700 shadow-sm", "aria-label": elScore + ' correct out of ' + elAttempts + ' attempts, ' + elAccuracy + ' percent accuracy, streak ' + elStreak }, '⭐ ' + elScore + '/' + elAttempts + ' • ' + elAccuracy + '% | 🔥 ' + elStreak),
 
-                      elAttempts > 0 && React.createElement("button", { type: "button", onClick: function () { updMulti({ elQuiz: null, elScore: 0, elAttempts: 0, elStreak: 0 }); }, className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[11px] font-bold text-slate-600 shadow-sm hover:bg-slate-50", "aria-label": "Reset element quiz session" }, "Reset")
+                      elAttempts > 0 && React.createElement("button", { type: "button", onClick: function () { updMulti({ elQuiz: null, elScore: 0, elAttempts: 0, elStreak: 0 }); }, className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[0.6875rem] font-bold text-slate-600 shadow-sm hover:bg-slate-50", "aria-label": "Reset element quiz session" }, "Reset")
                     )
 
                   ),
 
                   React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2 rounded-xl border border-cyan-100 bg-white/80 p-2" },
 
-                    React.createElement("label", { htmlFor: "molecule-element-quiz-scope", className: "block min-w-0 text-[11px] font-bold text-slate-600", style: { flex: '1 1 230px' } },
+                    React.createElement("label", { htmlFor: "molecule-element-quiz-scope", className: "block min-w-0 text-[0.6875rem] font-bold text-slate-600", style: { flex: '1 1 230px' } },
                       React.createElement("span", { className: "mb-1 block" }, "Question pool"),
                       React.createElement("select", { id: "molecule-element-quiz-scope", value: elQuizScope, onChange: function (e) { updMulti({ elQuizScope: e.target.value, elQuiz: null, elScore: 0, elAttempts: 0, elStreak: 0 }); }, className: "w-full min-w-0 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200", style: { maxWidth: '100%' } },
                         React.createElement("option", { value: "all" }, "All 118 elements"),
@@ -4720,7 +4720,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       )
                     ),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500", role: "status" }, quizScopeSummary)
+                    React.createElement("span", { className: "text-[0.6875rem] text-slate-500", role: "status" }, quizScopeSummary)
 
                   ),
 
@@ -4798,10 +4798,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-xl" }, r.emoji),
                       React.createElement("span", { className: "text-sm font-bold text-indigo-800" }, r.name),
-                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[11px] font-bold " +
+                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold " +
                         (r.difficulty === 1 ? 'bg-green-100 text-green-700' : r.difficulty === 2 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') },
                         r.difficulty === 1 ? 'Easy' : r.difficulty === 2 ? 'Medium' : 'Hard'),
-                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600" }, r.type)
+                      React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-600" }, r.type)
                     ),
                     React.createElement("p", { className: "text-xs text-indigo-600" }, r.desc)
                   ),
@@ -4891,7 +4891,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   // Atom count table
                   React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border mb-3" },
-                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, __alloT('stem.molecule.atom_count', "Atom Count")),
+                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2" }, __alloT('stem.molecule.atom_count', "Atom Count")),
                     React.createElement("div", { className: "grid grid-cols-3 gap-1 text-xs" },
                       React.createElement("span", { className: "font-bold text-slate-600 text-center" }, __alloT('stem.molecule.element', "Element")),
                       React.createElement("span", { className: "font-bold text-slate-600 text-center" }, __alloT('stem.molecule.left', "Left")),
@@ -4927,7 +4927,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ),
 
                   // Progress
-                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[11px] text-slate-600" + (isContrast ? " text-white" : "") },
+                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[0.6875rem] text-slate-600" + (isContrast ? " text-white" : "") },
                     React.createElement("span", null, "⚖️ " + reactionsBalanced + " balanced"),
                     React.createElement("span", null, "Reaction " + (currentReactionIdx + 1) + "/" + REACTIONS.length)
                   )
@@ -4951,9 +4951,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg" }, done ? '✅' : ch.emoji),
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("p", { className: "text-xs font-bold " + (done ? 'text-emerald-700 line-through' : 'text-slate-700') }, ch.name),
-                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-600') }, ch.desc)
+                        React.createElement("p", { className: "text-[0.6875rem] " + (done ? 'text-emerald-500' : 'text-slate-600') }, ch.desc)
                       ),
-                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
                     );
                   })
                 )
@@ -4989,7 +4989,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("button", { "aria-label": "Ask: " + q,
                         key: q,
                         onClick: () => { upd('aiQuestion', q); askChemTutor(q); },
-                        className: "px-2 py-1 rounded text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors active:scale-[0.97]"
+                        className: "px-2 py-1 rounded text-[0.6875rem] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors active:scale-[0.97]"
                       }, q)
                     )
                   ),
@@ -5000,7 +5000,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         React.createElement("p", { className: "text-xs text-indigo-700 leading-relaxed" }, aiAnswer),
                         React.createElement("button", { "aria-label": __alloT('stem.molecule.read_aloud', "Read Aloud"),
                           onClick: () => speakText(aiAnswer),
-                          className: "transition-colors mt-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 active:scale-[0.97]"
+                          className: "transition-colors mt-1 px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 active:scale-[0.97]"
                         }, __alloT('stem.molecule.read_aloud_2', "🔊 Read Aloud"))
                       )
                     )
@@ -5159,13 +5159,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         },
           React.createElement('div', { className: 'min-w-0', style: { flex: '1 1 280px' } },
             React.createElement('h3', { id: 'molecule-reference-library-title', className: 'text-base font-black text-indigo-900' }, __alloT('stem.molecule.chemistry_reference_library', '🧪 Chemistry Reference Library')),
-            React.createElement('div', { className: 'text-[11px] text-indigo-700 mt-0.5' }, referenceLibraryOpen
+            React.createElement('div', { className: 'text-[0.6875rem] text-indigo-700 mt-0.5' }, referenceLibraryOpen
               ? __alloT('stem.molecule.reference_browser_open_hint', 'Search the complete library or choose one chemistry domain.')
               : __alloT('stem.molecule.reference_browser_closed_hint', 'Open the searchable catalog only when you need a reference.'))
           ),
           React.createElement('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
-            React.createElement('span', { className: 'rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-black text-indigo-700' }, __alloT('stem.molecule.reference_topic_count', '53 topics')),
-            expSection && React.createElement('span', { className: 'rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-800', role: 'status' }, __alloT('stem.molecule.reference_topic_open', 'Topic open')),
+            React.createElement('span', { className: 'rounded-full border border-indigo-200 bg-white px-2 py-1 text-[0.625rem] font-black text-indigo-700' }, __alloT('stem.molecule.reference_topic_count', '53 topics')),
+            expSection && React.createElement('span', { className: 'rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[0.625rem] font-black text-emerald-800', role: 'status' }, __alloT('stem.molecule.reference_topic_open', 'Topic open')),
             React.createElement('button', {
               type: 'button',
               onClick: function() { setExp({ referenceLibraryOpen: !referenceLibraryOpen }); },
@@ -5307,7 +5307,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             },
             'aria-pressed': active ? 'true' : 'false',
             'data-reference-topic': s.id,
-            className: 'min-h-9 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' +
+            className: 'min-h-9 rounded-lg border px-2.5 py-1.5 text-[0.6875rem] font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' +
               (active ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50')
           }, s.icon + ' ' + s.label);
         }
@@ -5320,7 +5320,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         },
           React.createElement('div', { className: 'flex flex-wrap items-end gap-2' },
             React.createElement('label', { className: 'block min-w-0', style: { flex: '1 1 260px' }, htmlFor: 'molecule-reference-library-search' },
-              React.createElement('span', { className: 'mb-1 block text-[10px] font-black uppercase tracking-wider text-slate-600' }, __alloT('stem.molecule.search_reference_topics', 'Search reference topics')),
+              React.createElement('span', { className: 'mb-1 block text-[0.625rem] font-black uppercase tracking-wider text-slate-600' }, __alloT('stem.molecule.search_reference_topics', 'Search reference topics')),
               React.createElement('input', {
                 id: 'molecule-reference-library-search',
                 type: 'search',
@@ -5341,7 +5341,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             className: 'mt-3 block sm:hidden',
             htmlFor: 'molecule-reference-library-domain'
           },
-            React.createElement('span', { className: 'mb-1 block text-[10px] font-black uppercase tracking-wider text-slate-600' }, __alloT('stem.molecule.reference_domain', 'Reference domain')),
+            React.createElement('span', { className: 'mb-1 block text-[0.625rem] font-black uppercase tracking-wider text-slate-600' }, __alloT('stem.molecule.reference_domain', 'Reference domain')),
             React.createElement('select', {
               id: 'molecule-reference-library-domain',
               value: activeReferenceGroup,
@@ -5368,7 +5368,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 'aria-pressed': selected ? 'true' : 'false',
                 'data-reference-group': group.id,
                 onClick: function() { setExp({ referenceLibraryGroup: group.id, referenceLibraryQuery: '' }); },
-                className: 'flex min-h-10 flex-shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-black shadow-sm transition-colors ' +
+                className: 'flex min-h-10 flex-shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[0.6875rem] font-black shadow-sm transition-colors ' +
                   (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50')
               },
                 React.createElement('span', { className: 'h-2.5 w-2.5 rounded-full', style: { backgroundColor: referenceGroupColors[group.id] }, 'aria-hidden': 'true' }),
@@ -5379,12 +5379,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           ),
 
           React.createElement('div', { className: 'mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2' },
-            React.createElement('p', { className: 'text-[11px] font-bold text-slate-600', role: 'status', 'aria-live': 'polite' },
+            React.createElement('p', { className: 'text-[0.6875rem] font-bold text-slate-600', role: 'status', 'aria-live': 'polite' },
               normalizedReferenceQuery
                 ? visibleReferenceTopicCount + ' search result' + (visibleReferenceTopicCount === 1 ? '' : 's')
                 : visibleReferenceTopicCount + ' topics in ' + (visibleReferenceGroups[0] ? visibleReferenceGroups[0].label : '')
             ),
-            React.createElement('span', { className: 'text-[10px] font-medium text-slate-500' }, totalReferenceTopics + ' total topics')
+            React.createElement('span', { className: 'text-[0.625rem] font-medium text-slate-500' }, totalReferenceTopics + ' total topics')
           ),
 
           visibleReferenceGroups.length === 0
@@ -5398,7 +5398,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return React.createElement('section', { key: g.id, role: 'region', 'aria-labelledby': headingId, className: 'rounded-lg border border-slate-200 bg-white p-3' },
                     React.createElement('div', { className: 'mb-2 flex items-center gap-2' },
                       React.createElement('span', { className: 'h-3 w-3 rounded-full', style: { backgroundColor: referenceGroupColors[g.id] }, 'aria-hidden': 'true' }),
-                      React.createElement('h4', { id: headingId, className: 'text-[11px] font-black uppercase tracking-wider text-slate-700' }, g.label)
+                      React.createElement('h4', { id: headingId, className: 'text-[0.6875rem] font-black uppercase tracking-wider text-slate-700' }, g.label)
                     ),
                     React.createElement('div', { className: 'flex flex-wrap gap-2' },
                       g.tabs.map(function(s) { return renderBtn(s, g.color, g.id); })
@@ -5459,7 +5459,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.vsepr_molecular_geometry', '🔺 VSEPR — molecular geometry')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.valence_shell_electron_pair_repulsion_', 'Valence Shell Electron Pair Repulsion theory predicts molecular shape from steric number (bonded + lone pairs around central atom). Lone pairs repel more strongly than bonded pairs, so they push bonds closer.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.valence_shell_electron_pair_repulsion_', 'Valence Shell Electron Pair Repulsion theory predicts molecular shape from steric number (bonded + lone pairs around central atom). Lone pairs repel more strongly than bonded pairs, so they push bonds closer.')),
           React.createElement('div', { className: 'grid gap-3 grid-cols-1 md:grid-cols-3 mb-3' },
             React.createElement('div', { className: 'flex flex-col gap-1 md:col-span-1' },
               VSEPR_GEOMETRIES.map(function(g) {
@@ -5467,7 +5467,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 return React.createElement('button', {
                   key: g.id,
                   onClick: function() { setExp({ vseprPicked: g.id }); },
-                  className: 'text-left px-2.5 py-1.5 rounded-md text-[11px] font-bold border ' + (sel ? 'bg-indigo-100 border-indigo-400 text-indigo-900' : 'transition-colors bg-white border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.97]'),
+                  className: 'text-left px-2.5 py-1.5 rounded-md text-[0.6875rem] font-bold border ' + (sel ? 'bg-indigo-100 border-indigo-400 text-indigo-900' : 'transition-colors bg-white border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.97]'),
                   style: { borderLeftWidth: 4, borderLeftColor: g.color }
                 }, g.name);
               })
@@ -5476,9 +5476,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               svgGeometry(picked),
               React.createElement('div', { className: 'mt-2 text-center' },
                 React.createElement('div', { className: 'text-sm font-black text-slate-800' }, picked.name),
-                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Steric ' + picked.steric + ' · ' + picked.lone + ' lone pair' + (picked.lone === 1 ? '' : 's') + ' · ' + picked.angle),
-                React.createElement('div', { className: 'text-[12px] mt-2 text-slate-700' }, picked.desc),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1.5' }, 'Examples: ', picked.examples.join(', '))
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Steric ' + picked.steric + ' · ' + picked.lone + ' lone pair' + (picked.lone === 1 ? '' : 's') + ' · ' + picked.angle),
+                React.createElement('div', { className: 'text-[0.75rem] mt-2 text-slate-700' }, picked.desc),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mt-1.5' }, 'Examples: ', picked.examples.join(', '))
               )
             )
           )
@@ -5537,24 +5537,24 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   var nd = Math.abs(EN[oA] - EN[oB]);
                   announce(oA + ' and ' + oB + ': electronegativity difference ' + nd.toFixed(2) + ', ' + bondClass(nd).label + ', about ' + Math.round(pctIonic(nd)) + ' percent ionic character.');
                 },
-                className: 'px-1.5 py-0.5 rounded text-[11px] font-bold border transition-colors ' + (on ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                className: 'px-1.5 py-0.5 rounded text-[0.6875rem] font-bold border transition-colors ' + (on ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
               }, s);
             }));
         }
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.bond_types_electronegativity_differenc', '⚛︎ Bond types — electronegativity difference')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.bond_character_ranges_from_purely_cova', 'Bond character ranges from purely covalent (equal sharing) to ionic (full electron transfer). The boundary is fuzzy — most real bonds have partial ionic character.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.bond_character_ranges_from_purely_cova', 'Bond character ranges from purely covalent (equal sharing) to ionic (full electron transfer). The boundary is fuzzy — most real bonds have partial ionic character.')),
 
           // ── Interactive electronegativity spectrum ──
           h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
             h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-2' }, __alloT('stem.molecule.en_spectrum_title', '🎚 Build a bond: the character is a slider, not a switch')),
             h('div', { className: 'grid gap-2 mb-2', style: { gridTemplateColumns: 'minmax(0,1fr)' } },
               h('div', null,
-                h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.en_atom_a', 'Atom A')),
+                h('div', { className: 'text-[0.625rem] font-bold text-slate-500 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.en_atom_a', 'Atom A')),
                 pickRow('enA', aSym)),
               h('div', null,
-                h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.en_atom_b', 'Atom B')),
+                h('div', { className: 'text-[0.625rem] font-bold text-slate-500 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.en_atom_b', 'Atom B')),
                 pickRow('enB', bSym))),
 
             h('svg', {
@@ -5619,7 +5619,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ];
                 })()),
               h('div', { className: 'flex-1 min-w-[200px]' },
-                h('div', { className: 'text-[13px] font-black', style: { color: cls.color } }, aSym + '–' + bSym + ' · ' + cls.label),
+                h('div', { className: 'text-[0.8125rem] font-black', style: { color: cls.color } }, aSym + '–' + bSym + ' · ' + cls.label),
                 h('div', { className: 'text-[11.5px] text-slate-700 mt-0.5' },
                   'EN ' + EN[aSym].toFixed(2) + ' vs ' + EN[bSym].toFixed(2) + '  →  ΔEN = ', h('strong', null, dEN.toFixed(2))),
                 h('div', { className: 'text-[11.5px] text-slate-700' },
@@ -5628,7 +5628,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 h('div', { className: 'mt-1 h-2 rounded-full bg-slate-200 overflow-hidden', role: 'presentation' },
                   h('div', { style: { width: Math.max(1, ionic).toFixed(0) + '%', height: '100%', background: cls.color } })))),
 
-            h('div', { className: 'mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-snug' },
+            h('div', { className: 'mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900 leading-snug' },
               h('strong', null, __alloT('stem.molecule.en_why_17', 'Why 1.7? ')),
               __alloT('stem.molecule.en_why_17_body', 'Put ΔEN = 1.7 into Pauling\'s formula and you get 51% ionic character. The famous cutoff is just the halfway mark, picked for convenience. Nothing snaps at 1.7: Al–Cl (1.55) and C–F (1.43) sit right below it and behave like strongly polar covalent bonds, not salts.'))),
 
@@ -5638,10 +5638,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
                   h('span', { className: 'text-lg' }, b.icon),
                   h('span', { className: 'text-sm font-black text-slate-800' }, b.name),
-                  h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-700 ml-auto' }, 'ΔEN ' + b.diff)
+                  h('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-700 ml-auto' }, 'ΔEN ' + b.diff)
                 ),
-                h('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, b.desc),
-                h('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', b.examples.join(', '))
+                h('div', { className: 'text-[0.75rem] text-slate-700 leading-relaxed mb-1' }, b.desc),
+                h('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Examples: ', b.examples.join(', '))
               );
             })
           )
@@ -5651,22 +5651,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderImfSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.intermolecular_forces_imf', '↔ Intermolecular forces (IMF)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.forces_between_molecules_determine_mel', 'Forces BETWEEN molecules determine melting/boiling points, viscosity, solubility, and surface tension. Stronger IMF = higher BP.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.forces_between_molecules_determine_mel', 'Forces BETWEEN molecules determine melting/boiling points, viscosity, solubility, and surface tension. Stronger IMF = higher BP.')),
           React.createElement('div', { className: 'space-y-2' },
             IMF_TYPES.map(function(f, i) {
               return React.createElement('div', { key: 'i'+i, className: 'p-3 rounded-lg bg-gradient-to-r from-slate-50 to-white border border-slate-200' },
                 React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                   React.createElement('span', { className: 'text-xl text-indigo-600' }, f.symbol),
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, f.name),
-                  React.createElement('span', { className: 'text-[10px] font-bold ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800' }, f.strength)
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800' }, f.strength)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, __alloT('stem.molecule.present_in', 'Present in: '), f.present),
-                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed mb-1' }, f.desc),
-                React.createElement('div', { className: 'text-[11px] text-slate-600' }, 'Examples: ', f.examples.join(', '))
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' }, __alloT('stem.molecule.present_in', 'Present in: '), f.present),
+                React.createElement('div', { className: 'text-[0.75rem] text-slate-700 leading-relaxed mb-1' }, f.desc),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Examples: ', f.examples.join(', '))
               );
             })
           ),
-          React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+          React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900' },
             React.createElement('strong', null, __alloT('stem.molecule.tip', '💡 Tip: ')), __alloT('stem.molecule.for_polar_molecules_all_applicable_imf', 'For polar molecules, ALL applicable IMFs add up. Water has dispersion + dipole + H-bonding — that\'s why its BP is so high (100°C) compared to similar-mass H₂S (−60°C).')
           )
         );
@@ -5675,7 +5675,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderReactionsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.reaction_types_2', '🔄 Reaction types')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.reactions_fall_into_recognizable_patte', 'Reactions fall into recognizable patterns. Knowing the type helps predict products + balance equations.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.reactions_fall_into_recognizable_patte', 'Reactions fall into recognizable patterns. Knowing the type helps predict products + balance equations.')),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2' },
             COMMON_REACTIONS.map(function(r, i) {
               return React.createElement('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -5683,10 +5683,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement('span', { className: 'text-xl' }, r.icon),
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, r.type)
                 ),
-                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-800 bg-indigo-50 px-2 py-1 rounded mb-1' }, r.general),
-                React.createElement('div', { className: 'text-[11px] font-mono text-slate-700 bg-white px-2 py-1 rounded mb-1 border border-slate-200' }, r.example),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'ΔH: ', r.enthalpy),
-                React.createElement('div', { className: 'text-[12px] text-slate-700' }, r.desc)
+                React.createElement('div', { className: 'text-[0.6875rem] font-mono text-indigo-800 bg-indigo-50 px-2 py-1 rounded mb-1' }, r.general),
+                React.createElement('div', { className: 'text-[0.6875rem] font-mono text-slate-700 bg-white px-2 py-1 rounded mb-1 border border-slate-200' }, r.example),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' }, 'ΔH: ', r.enthalpy),
+                React.createElement('div', { className: 'text-[0.75rem] text-slate-700' }, r.desc)
               );
             })
           )
@@ -5709,31 +5709,31 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             value: d2.libSearch || '',
             onChange: function(e) { setExp({ libSearch: e.target.value }); },
             placeholder: __alloT('stem.molecule.search_formula_name_use', 'Search formula / name / use...'),
-            className: 'w-full px-3 py-1.5 rounded-md border border-slate-300 text-[12px] mb-3'
+            className: 'w-full px-3 py-1.5 rounded-md border border-slate-300 text-[0.75rem] mb-3'
           }),
           React.createElement('div', { className: 'grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3' },
             filtered.map(function(m, i) {
               return React.createElement('div', { key: 'm'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline justify-between mb-1' },
                   React.createElement('span', { className: 'text-base font-black text-indigo-800 font-mono' }, m.f),
-                  React.createElement('span', { className: 'text-[10px] text-slate-500' }, m.m + ' g/mol')
+                  React.createElement('span', { className: 'text-[0.625rem] text-slate-500' }, m.m + ' g/mol')
                 ),
-                React.createElement('div', { className: 'text-[12px] font-bold text-slate-800 mb-1' }, m.name),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'Shape: ', m.shape),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-snug' }, m.uses)
+                React.createElement('div', { className: 'text-[0.75rem] font-bold text-slate-800 mb-1' }, m.name),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 mb-1' }, 'Shape: ', m.shape),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-snug' }, m.uses)
               );
             })
           ),
-          filtered.length === 0 && React.createElement('div', { className: 'text-center text-[11px] text-slate-500 py-4' }, __alloT('stem.molecule.no_molecules_match', 'No molecules match "'), search, '"')
+          filtered.length === 0 && React.createElement('div', { className: 'text-center text-[0.6875rem] text-slate-500 py-4' }, __alloT('stem.molecule.no_molecules_match', 'No molecules match "'), search, '"')
         );
       }
 
       function renderAcidBaseSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.acid_base_reference', '⚖ Acid / base reference')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.strength_how_completely_an_acid_base_d', 'Strength = how completely an acid/base dissociates in water. Strong = ~100% (Ka >> 1). Weak = partial (Ka < 1). pH = −log[H⁺].')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.strength_how_completely_an_acid_base_d', 'Strength = how completely an acid/base dissociates in water. Strong = ~100% (Ka >> 1). Weak = partial (Ka < 1). pH = −log[H⁺].')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   React.createElement('th', { scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, __alloT('stem.molecule.name', 'Name')),
@@ -5756,7 +5756,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               )
             )
           ),
-          React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+          React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-blue-50 border border-blue-200 text-[0.6875rem] text-blue-900' },
             React.createElement('strong', null, __alloT('stem.molecule.ph_scale_2', '💡 pH scale: ')), __alloT('stem.molecule.ph_0_6_acidic_ph_7_neutral_ph_8_14_bas', 'pH 0-6 acidic · pH 7 neutral · pH 8-14 basic. Each unit = 10× change in [H⁺]. Stomach acid pH 1.5, blood pH 7.4, bleach pH 12.')
           )
         );
@@ -5765,15 +5765,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderQuantumSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.quantum_numbers_orbital_identity', '⚛︎ Quantum numbers — orbital identity')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.each_electron_in_an_atom_is_described_', 'Each electron in an atom is described by 4 quantum numbers (n, ℓ, mₗ, mₛ). The Pauli exclusion principle: no two electrons in an atom share all 4.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.each_electron_in_an_atom_is_described_', 'Each electron in an atom is described by 4 quantum numbers (n, ℓ, mₗ, mₛ). The Pauli exclusion principle: no two electrons in an atom share all 4.')),
           React.createElement('div', { className: 'grid gap-2' },
             QUANTUM_REF.map(function(q, i) {
               return React.createElement('div', { key: 'q'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                   React.createElement('span', { className: 'text-sm font-black text-slate-800' }, q.n),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 ml-auto font-mono' }, q.range)
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 ml-auto font-mono' }, q.range)
                 ),
-                React.createElement('div', { className: 'text-[12px] text-slate-700 leading-relaxed' }, q.means)
+                React.createElement('div', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, q.means)
               );
             })
           ),
@@ -5783,8 +5783,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               var electrons = orbitals * 2;
               return React.createElement('div', { key: 'o'+i, className: 'p-2 rounded-md bg-indigo-50 border border-indigo-200' },
                 React.createElement('div', { className: 'text-xs font-black text-indigo-900' }, sub),
-                React.createElement('div', { className: 'text-[10px] text-indigo-700 mt-0.5' }, orbitals + ' orbital' + (orbitals > 1 ? 's' : '')),
-                React.createElement('div', { className: 'text-[10px] text-indigo-700' }, 'up to ' + electrons + ' e⁻')
+                React.createElement('div', { className: 'text-[0.625rem] text-indigo-700 mt-0.5' }, orbitals + ' orbital' + (orbitals > 1 ? 's' : '')),
+                React.createElement('div', { className: 'text-[0.625rem] text-indigo-700' }, 'up to ' + electrons + ' e⁻')
               );
             })
           )
@@ -5815,7 +5815,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         ];
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.orbital_clouds_title', '☁️ Orbital clouds — where electrons really are')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.orbital_clouds_intro', 'An atom is not a tiny solar system. Electrons don’t orbit the nucleus on tracks — they exist as a fuzzy cloud of probability (|ψ|²). The two colours are the wavefunction’s + and − phases; where they meet, the electron is never found (a node).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.orbital_clouds_intro', 'An atom is not a tiny solar system. Electrons don’t orbit the nucleus on tracks — they exist as a fuzzy cloud of probability (|ψ|²). The two colours are the wavefunction’s + and − phases; where they meet, the electron is never found (a node).')),
           // orbital picker
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3', role: 'group', 'aria-label': 'Choose an orbital' },
             ORBITAL_ORDER.map(function (k) {
@@ -5882,29 +5882,29 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   frame();
                 }
               }),
-              h('div', { className: 'flex items-center justify-center gap-3 mt-1 text-[10px] text-slate-600' },
+              h('div', { className: 'flex items-center justify-center gap-3 mt-1 text-[0.625rem] text-slate-600' },
                 h('span', null, h('span', { 'aria-hidden': 'true', style: { color: subColor } }, '● '), __alloT('stem.molecule.phase_plus', 'ψ > 0 (one phase)')),
                 h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#fb7185' } }, '● '), __alloT('stem.molecule.phase_minus', 'ψ < 0 (other phase)')),
                 h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#fbbf24' } }, '● '), __alloT('stem.molecule.nucleus', 'nucleus')))),
             // info + radial distribution
             h('div', null,
-              h('div', { className: 'grid grid-cols-2 gap-1.5 text-[11px] mb-2' },
+              h('div', { className: 'grid grid-cols-2 gap-1.5 text-[0.6875rem] mb-2' },
                 h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.shape', 'Shape')), h('div', { className: 'font-bold text-slate-800' }, o.shape)),
                 h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.most_likely_radius', 'Most-likely radius')), h('div', { className: 'font-bold text-slate-800' }, '≈ ' + peak.toFixed(1) + ' a₀')),
                 h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.radial_nodes', 'Radial nodes')), h('div', { className: 'font-bold text-slate-800' }, String(nodes.radial))),
                 h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' }, h('div', { className: 'text-slate-500' }, __alloT('stem.molecule.angular_nodes', 'Angular nodes')), h('div', { className: 'font-bold text-slate-800' }, String(nodes.angular)))),
-              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.radial_distribution', 'Radial distribution P(r) = r²R²')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.radial_distribution', 'Radial distribution P(r) = r²R²')),
               h('svg', { viewBox: '0 0 ' + PW + ' ' + PH, width: '100%', height: PH, role: 'img', 'aria-label': 'Radial probability for the ' + o.label + ' orbital: most likely near ' + peak.toFixed(1) + ' Bohr radii, with ' + nodes.radial + ' radial node' + (nodes.radial === 1 ? '' : 's') + '.', className: 'rounded-lg bg-slate-50 border border-slate-200' },
                 radialNodes.map(function (rn, ri) { var xx = 4 + (PW - 8) * (rn / rmax); return h('line', { key: 'rn' + ri, x1: xx, y1: 4, x2: xx, y2: PH - 6, stroke: '#ef4444', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }); }),
                 h('line', { x1: 4 + (PW - 8) * (peak / rmax), y1: 4, x2: 4 + (PW - 8) * (peak / rmax), y2: PH - 6, stroke: '#10b981', strokeWidth: 1.5, opacity: 0.8 }),
                 h('polyline', { points: poly, fill: 'none', stroke: subColor, strokeWidth: 2 })),
-              h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, h('span', { style: { color: '#10b981' } }, '— ' + __alloT('stem.molecule.peak', 'most likely')), '   ', (radialNodes.length ? h('span', { style: { color: '#ef4444' } }, '┊ ' + __alloT('stem.molecule.node', 'node (P = 0)')) : null)))),
+              h('div', { className: 'text-[0.625rem] text-slate-500 mt-0.5' }, h('span', { style: { color: '#10b981' } }, '— ' + __alloT('stem.molecule.peak', 'most likely')), '   ', (radialNodes.length ? h('span', { style: { color: '#ef4444' } }, '┊ ' + __alloT('stem.molecule.node', 'node (P = 0)')) : null)))),
           // misconception busts
           h('div', { className: 'grid sm:grid-cols-2 gap-2 mt-3' },
             BUSTS.map(function (b, bi) {
               return h('div', { key: 'b' + bi, className: 'p-2.5 rounded-lg border border-amber-200 bg-amber-50' },
                 h('div', { className: 'text-[11.5px] font-black text-amber-900 mb-0.5' }, '⚠ ' + b.t),
-                h('div', { className: 'text-[11px] text-amber-900/90 leading-snug' }, b.d));
+                h('div', { className: 'text-[0.6875rem] text-amber-900/90 leading-snug' }, b.d));
             }))
         );
       }
@@ -6018,23 +6018,23 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderPeriodicSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.periodic_trends_2', '📊 Periodic trends')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.patterns_in_element_properties_that_fo', 'Patterns in element properties that follow position on the periodic table. Driven by effective nuclear charge (Zeff) — the net pull on outermost electrons after inner electrons shield them.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.patterns_in_element_properties_that_fo', 'Patterns in element properties that follow position on the periodic table. Driven by effective nuclear charge (Zeff) — the net pull on outermost electrons after inner electrons shield them.')),
           React.createElement('div', { className: 'space-y-2 mb-3' },
             PERIODIC_TRENDS.map(function(t, i) {
               return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'text-sm font-black text-slate-800 mb-1' }, t.trend),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-1' },
-                  React.createElement('div', { className: 'text-[11px] px-2 py-1 rounded bg-blue-50 border border-blue-200 text-blue-900' },
+                  React.createElement('div', { className: 'text-[0.6875rem] px-2 py-1 rounded bg-blue-50 border border-blue-200 text-blue-900' },
                     React.createElement('strong', null, __alloT('stem.molecule.across_period', 'Across period: ')), t.across),
-                  React.createElement('div', { className: 'text-[11px] px-2 py-1 rounded bg-purple-50 border border-purple-200 text-purple-900' },
+                  React.createElement('div', { className: 'text-[0.6875rem] px-2 py-1 rounded bg-purple-50 border border-purple-200 text-purple-900' },
                     React.createElement('strong', null, __alloT('stem.molecule.down_group', 'Down group: ')), t.down)
                 ),
-                React.createElement('div', { className: 'text-[12px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Why: '), t.why),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 italic' }, 'Example: ', t.example)
+                React.createElement('div', { className: 'text-[0.75rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Why: '), t.why),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 italic' }, 'Example: ', t.example)
               );
             })
           ),
-          React.createElement('div', { className: 'p-2 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
+          React.createElement('div', { className: 'p-2 rounded-md bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900' },
             React.createElement('strong', null, __alloT('stem.molecule.diagonal_relationship', '💡 Diagonal relationship: ')), __alloT('stem.molecule.li_mg_be_al_b_si_pairs_across_a_diagon', 'Li-Mg, Be-Al, B-Si — pairs across a diagonal share similar properties because the increases in size + charge offset.')
           )
         );
@@ -6047,26 +6047,26 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         var grams = (parseFloat(c) || 0) * (parseFloat(v) || 0) * (parseFloat(mw) || 0);
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.molarity_dilution_calculator', '🧮 Molarity + dilution calculator')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molarity_m_moles_of_solute_per_liter_o', 'Molarity (M) = moles of solute per liter of solution. To prepare a target molarity: weigh out (M × V × MW) grams of solute, dissolve in less than the final volume, then dilute to the mark.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molarity_m_moles_of_solute_per_liter_o', 'Molarity (M) = moles of solute per liter of solution. To prepare a target molarity: weigh out (M × V × MW) grams of solute, dissolve in less than the final volume, then dilute to the mark.')),
           React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
             React.createElement('div', null,
-              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molarity_m_mol_l', 'Molarity (M, mol/L)')),
-              React.createElement('input', { type: 'number', step: 0.01, value: c, onChange: function(e) { setExp({ molM: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '0.1', 'aria-label': __alloT('stem.molecule.molarity_m_mol_l', 'Molarity (M, mol/L)') })
+              React.createElement('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molarity_m_mol_l', 'Molarity (M, mol/L)')),
+              React.createElement('input', { type: 'number', step: 0.01, value: c, onChange: function(e) { setExp({ molM: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[0.75rem]', placeholder: '0.1', 'aria-label': __alloT('stem.molecule.molarity_m_mol_l', 'Molarity (M, mol/L)') })
             ),
             React.createElement('div', null,
-              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.volume_l', 'Volume (L)')),
-              React.createElement('input', { type: 'number', step: 0.01, value: v, onChange: function(e) { setExp({ molV: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '1.0', 'aria-label': __alloT('stem.molecule.volume_l', 'Volume (L)') })
+              React.createElement('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.volume_l', 'Volume (L)')),
+              React.createElement('input', { type: 'number', step: 0.01, value: v, onChange: function(e) { setExp({ molV: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[0.75rem]', placeholder: '1.0', 'aria-label': __alloT('stem.molecule.volume_l', 'Volume (L)') })
             ),
             React.createElement('div', null,
-              React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molecular_weight_g_mol', 'Molecular weight (g/mol)')),
-              React.createElement('input', { type: 'number', step: 0.01, value: mw, onChange: function(e) { setExp({ molMW: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: __alloT('stem.molecule.58_44_nacl', '58.44 (NaCl)'), 'aria-label': __alloT('stem.molecule.molecular_weight_g_mol', 'Molecular weight (g/mol)') })
+              React.createElement('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molecular_weight_g_mol', 'Molecular weight (g/mol)')),
+              React.createElement('input', { type: 'number', step: 0.01, value: mw, onChange: function(e) { setExp({ molMW: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[0.75rem]', placeholder: __alloT('stem.molecule.58_44_nacl', '58.44 (NaCl)'), 'aria-label': __alloT('stem.molecule.molecular_weight_g_mol', 'Molecular weight (g/mol)') })
             )
           ),
           React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border-2 border-indigo-300 text-center mb-3' },
-            React.createElement('div', { className: 'text-[10px] font-bold text-indigo-700 uppercase tracking-wide' }, __alloT('stem.molecule.grams_of_solute_needed', 'Grams of solute needed')),
+            React.createElement('div', { className: 'text-[0.625rem] font-bold text-indigo-700 uppercase tracking-wide' }, __alloT('stem.molecule.grams_of_solute_needed', 'Grams of solute needed')),
             React.createElement('div', { className: 'text-2xl font-black text-indigo-900 mt-1 font-mono tracking-tight' }, grams.toFixed(4) + ' g')
           ),
-          React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed space-y-1' },
+          React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed space-y-1' },
             React.createElement('div', null, React.createElement('strong', null, 'Dilution: '), __alloT('stem.molecule.m_v_m_v_solve_for_whichever_is_unknown', 'M₁V₁ = M₂V₂. Solve for whichever is unknown.')),
             React.createElement('div', null, React.createElement('strong', null, __alloT('stem.molecule.serial_dilution', 'Serial dilution: ')), __alloT('stem.molecule.for_very_low_concentrations_dilute_1_1', 'For very low concentrations, dilute 1:10 (or 1:100) repeatedly. Each step is precise; cumulative error stays small.')),
             React.createElement('div', null, React.createElement('strong', null, __alloT('stem.molecule.watch_out', 'Watch out: ')), __alloT('stem.molecule.add_half_the_water_first_then_add_solu', 'Add ~half the water FIRST, then add solute + stir until dissolved, THEN top up to the mark. Adding solute to full-volume water often gives wrong final volume due to volume changes during dissolution.'))
@@ -6077,7 +6077,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderStoichSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.stoichiometry_recipe_math', '⚖ Stoichiometry — recipe math')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.balanced_equation_mole_ratio_like_a_co', 'Balanced equation → mole ratio. Like a cooking recipe, but for atoms. Coefficients tell you the ratio of reactant moles to product moles.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.balanced_equation_mole_ratio_like_a_co', 'Balanced equation → mole ratio. Like a cooking recipe, but for atoms. Coefficients tell you the ratio of reactant moles to product moles.')),
           React.createElement('div', { className: 'space-y-2' },
             [
               { step: '1. Balance the equation', detail: __alloT('stem.molecule.atoms_in_atoms_out_on_each_side_balanc', 'Atoms in = atoms out, on each side. Balance metals first, then non-O/H atoms, then O and H last. Charge balanced for ionic equations.') },
@@ -6090,15 +6090,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               return React.createElement('div', { key: 's'+i, className: 'flex gap-3 p-2 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'text-sm font-black text-indigo-700 min-w-[18px]' }, (i + 1)),
                 React.createElement('div', null,
-                  React.createElement('div', { className: 'text-[12px] font-bold text-slate-800' }, s.step),
-                  React.createElement('div', { className: 'text-[11px] text-slate-700 mt-0.5' }, s.detail)
+                  React.createElement('div', { className: 'text-[0.75rem] font-bold text-slate-800' }, s.step),
+                  React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mt-0.5' }, s.detail)
                 )
               );
             })
           ),
           React.createElement('div', { className: 'mt-3 p-3 rounded-md bg-emerald-50 border border-emerald-200' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.worked_example', '🔢 Worked example')),
-            React.createElement('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed' },
+            React.createElement('div', { className: 'text-[0.6875rem] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.worked_example', '🔢 Worked example')),
+            React.createElement('div', { className: 'text-[0.75rem] text-emerald-900 font-mono leading-relaxed' },
               __alloT('stem.molecule.n_3_h_2_nh', 'N₂ + 3 H₂ → 2 NH₃'), React.createElement('br'),
               __alloT('stem.molecule.28_g_n_6_g_h_g_nh', '28 g N₂ + 6 g H₂ → ? g NH₃'), React.createElement('br'),
               __alloT('stem.molecule.1_00_mol_n_3_00_mol_h', '1.00 mol N₂ + 3.00 mol H₂'), React.createElement('br'),
@@ -6285,7 +6285,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.phases_of_matter_phase_diagrams', '🧊 Phases of matter + phase diagrams')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.a_phase_diagram_plots_phase_boundaries', 'A phase diagram plots phase boundaries on a P (pressure) vs T (temperature) graph. Lines = phase transitions. Triple point: all three phases coexist. Critical point: liquid + gas become indistinguishable (supercritical fluid).')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.a_phase_diagram_plots_phase_boundaries', 'A phase diagram plots phase boundaries on a P (pressure) vs T (temperature) graph. Lines = phase transitions. Triple point: all three phases coexist. Critical point: liquid + gas become indistinguishable (supercritical fluid).')),
 
           // ── the diagram the paragraph above promises ──
           h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
@@ -6297,7 +6297,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return h('button', {
                     key: sid, type: 'button', 'aria-pressed': on ? 'true' : 'false',
                     onClick: function () { try { setExp({ phaseSub: sid, phasePick: null }); } catch (e) {} announce(SUBSTANCES[sid].name + ' phase diagram loaded.'); },
-                    className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (on ? 'bg-sky-700 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                    className: 'px-2.5 py-1 rounded-md text-[0.6875rem] font-bold border transition-colors ' + (on ? 'bg-sky-700 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
                   }, SUBSTANCES[sid].formula);
                 }))),
 
@@ -6382,14 +6382,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     var ph = phaseAt(p.T, p.P);
                     announce(p.n + ': ' + fmtT(p.T) + ', ' + fmtP(p.P) + '. ' + PHASE_STYLE[ph].label + '. ' + p.note);
                   },
-                  className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (on ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                  className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border transition-colors ' + (on ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
                 }, p.n);
               })),
 
             picked ? h('div', { className: 'mt-2 p-2.5 rounded-lg border', style: { background: PHASE_STYLE[markerPhase].fill + '55', borderColor: PHASE_STYLE[markerPhase].text + '44' } },
-              h('div', { className: 'text-[12px] font-black', style: { color: PHASE_STYLE[markerPhase].text } },
+              h('div', { className: 'text-[0.75rem] font-black', style: { color: PHASE_STYLE[markerPhase].text } },
                 picked.n + ' → ' + (onLine ? __alloT('stem.molecule.phase_on_boundary', 'right on the boundary') : PHASE_STYLE[markerPhase].label)),
-              h('div', { className: 'text-[11px] text-slate-700 mt-0.5' }, fmtT(picked.T) + '  ·  ' + fmtP(picked.P)),
+              h('div', { className: 'text-[0.6875rem] text-slate-700 mt-0.5' }, fmtT(picked.T) + '  ·  ' + fmtP(picked.P)),
               h('div', { className: 'text-[11.5px] text-slate-700 leading-snug mt-1' }, picked.note)
             ) : h('div', { className: 'mt-2 p-2.5 rounded-lg bg-white border border-slate-200 text-[11.5px] text-slate-600' },
               __alloT('stem.molecule.phase_prompt', 'Pick a condition above and watch where it lands. Try the same substance at the same temperature but two different pressures.')),
@@ -6397,11 +6397,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-100 border border-slate-200 text-[10.5px] text-slate-600 leading-snug' },
               h('strong', null, __alloT('stem.molecule.phase_provenance_label', 'Where these lines come from: ')),
               __alloT('stem.molecule.phase_provenance', 'Triple and critical points are measured values. The vaporisation curve is a Clausius–Clapeyron fit forced through three measured points (triple, a mid-range reference, critical), so it is exact at those three and within a few percent between them. The sublimation curve is a two-point fit. The melting line is drawn straight between two measured points, and the real one curves.')),
-            h('div', { className: 'mt-1.5 p-2 rounded-lg bg-blue-50 border border-blue-200 text-[11px] text-blue-900 leading-snug' },
+            h('div', { className: 'mt-1.5 p-2 rounded-lg bg-blue-50 border border-blue-200 text-[0.6875rem] text-blue-900 leading-snug' },
               h('strong', null, '↯ '), S.fusNote)),
 
           h('div', { className: 'overflow-x-auto mb-3' },
-            h('table', { className: 'min-w-full text-[11px] border-collapse' },
+            h('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Phase', 'Shape', 'Volume', 'Density', 'Particles', 'Examples'].map(function(hd, i) {
@@ -6424,10 +6424,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             )
           ),
           h('div', { className: 'grid grid-cols-2 gap-2' },
-            h('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+            h('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[0.6875rem] text-blue-900' },
               h('strong', null, __alloT('stem.molecule.water_is_unusual', '💧 Water is unusual: ')), __alloT('stem.molecule.ice_is_less_dense_than_liquid_water_ic', 'Ice is LESS dense than liquid water (ice floats). Most substances: solid denser than liquid. Hydrogen bonding gives ice its open crystal structure.')
             ),
-            h('div', { className: 'p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[11px] text-purple-900' },
+            h('div', { className: 'p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[0.6875rem] text-purple-900' },
               h('strong', null, __alloT('stem.molecule.sublimation', '🌬 Sublimation: ')), __alloT('stem.molecule.solid_gas_without_going_through_liquid', 'Solid → gas without going through liquid (CO₂ dry ice; iodine at room temp). Reverse: deposition.')
             )
           )
@@ -6565,14 +6565,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm', 'data-testid': 'mol-equilibrium-sim' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.chemical_equilibrium_le_chatelier', '⇌ Chemical equilibrium + Le Chatelier')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.reversible_reactions_reach_dynamic_equ', 'Reversible reactions reach dynamic equilibrium when forward rate = reverse rate. Concentrations stop changing (but reactions keep going both ways). Keq = product of [products]^coefficients / product of [reactants]^coefficients.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.reversible_reactions_reach_dynamic_equ', 'Reversible reactions reach dynamic equilibrium when forward rate = reverse rate. Concentrations stop changing (but reactions keep going both ways). Keq = product of [products]^coefficients / product of [reactants]^coefficients.')),
 
           // ── the live simulator ──
           h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/40 p-3 mb-3' },
             h('div', { className: 'flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2' },
               h('div', { className: 'text-[11.5px] font-black text-slate-800' }, __alloT('stem.molecule.eq_sim_title', '🧪 Stress the Haber process and watch it answer')),
-              h('div', { className: 'font-mono text-[12px] font-bold text-indigo-800' }, 'N₂(g) + 3 H₂(g) ⇌ 2 NH₃(g)'),
-              h('div', { className: 'text-[11px] font-bold text-orange-800' }, 'ΔH° ≈ −92 kJ/mol (' + __alloT('stem.molecule.eq_exothermic', 'exothermic') + ')')
+              h('div', { className: 'font-mono text-[0.75rem] font-bold text-indigo-800' }, 'N₂(g) + 3 H₂(g) ⇌ 2 NH₃(g)'),
+              h('div', { className: 'text-[0.6875rem] font-bold text-orange-800' }, 'ΔH° ≈ −92 kJ/mol (' + __alloT('stem.molecule.eq_exothermic', 'exothermic') + ')')
             ),
             h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' } },
               // particle box
@@ -6597,23 +6597,23 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 h('div', { className: 'space-y-1.5', role: 'list' },
                   bars.map(function (b) {
                     return h('div', { key: b.id, role: 'listitem', className: 'flex items-center gap-2' },
-                      h('span', { className: 'w-9 text-[11px] font-black text-slate-800 text-right' }, b.label),
+                      h('span', { className: 'w-9 text-[0.6875rem] font-black text-slate-800 text-right' }, b.label),
                       h('div', { className: 'flex-1 h-4 rounded bg-slate-100 overflow-hidden', 'aria-hidden': 'true' },
                         h('div', { style: { width: Math.max(1, 100 * b.c / cMax) + '%', height: '100%', background: b.fill, transition: 'width 0.6s ease' } })),
-                      h('span', { className: 'w-16 text-[11px] font-mono font-bold text-slate-800' }, num(b.c, 3))
+                      h('span', { className: 'w-16 text-[0.6875rem] font-mono font-bold text-slate-800' }, num(b.c, 3))
                     );
                   })
                 ),
                 h('div', { className: 'grid grid-cols-3 gap-1.5 mt-2 text-center' },
                   h('div', { className: 'rounded-lg bg-white border border-slate-200 p-1.5' },
                     h('div', { className: 'text-[9.5px] font-bold uppercase tracking-wide text-slate-600' }, 'Kc(T)'),
-                    h('div', { className: 'text-[12px] font-mono font-black text-indigo-800' }, sciK(cur.Kc))),
+                    h('div', { className: 'text-[0.75rem] font-mono font-black text-indigo-800' }, sciK(cur.Kc))),
                   h('div', { className: 'rounded-lg bg-white border border-slate-200 p-1.5' },
                     h('div', { className: 'text-[9.5px] font-bold uppercase tracking-wide text-slate-600' }, 'Q ' + __alloT('stem.molecule.eq_now', 'now')),
-                    h('div', { className: 'text-[12px] font-mono font-black text-emerald-700' }, '= K')),
+                    h('div', { className: 'text-[0.75rem] font-mono font-black text-emerald-700' }, '= K')),
                   h('div', { className: 'rounded-lg bg-white border border-slate-200 p-1.5' },
                     h('div', { className: 'text-[9.5px] font-bold uppercase tracking-wide text-slate-600' }, __alloT('stem.molecule.eq_nh3_share', 'NH₃ share')),
-                    h('div', { className: 'text-[12px] font-mono font-black text-teal-700' }, pct(cur.fracNH3)))
+                    h('div', { className: 'text-[0.75rem] font-mono font-black text-teal-700' }, pct(cur.fracNH3)))
                 )
               )
             ),
@@ -6622,13 +6622,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               ['conc', 'vol', 'temp', 'trap'].map(function (gid) {
                 var meta = GROUP_META[gid];
                 return h('div', { key: gid, role: 'group', 'aria-label': meta.title },
-                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1' }, meta.title),
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-slate-600 mb-1' }, meta.title),
                   h('div', { className: 'flex flex-wrap gap-1.5' },
                     STRESSES.filter(function (s) { return s.group === gid; }).map(function (s) {
                       return h('button', {
                         key: s.id, type: 'button', 'data-eq-stress': s.id,
                         onClick: function () { applyStress(s); },
-                        className: 'min-h-[36px] px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + meta.cls
+                        className: 'min-h-[36px] px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + meta.cls
                       }, s.label);
                     })
                   )
@@ -6639,7 +6639,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               h('button', {
                 type: 'button', 'data-eq-stress': 'reset',
                 onClick: function () { try { setExp({ eqN2: undefined, eqH2: undefined, eqNH3: undefined, eqV: undefined, eqT: undefined, eqLast: null }); } catch (e) {} },
-                className: 'min-h-[36px] px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'
+                className: 'min-h-[36px] px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'
               }, '↺ ' + __alloT('stem.molecule.eq_reset', 'Reset: 1 mol N₂ + 3 mol H₂, 10 L, 700 K'))
             ),
             // what just happened
@@ -6659,20 +6659,20 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               { t: __alloT('stem.molecule.eq_idea4_t', 'Why Haber runs hot anyway'), b: __alloT('stem.molecule.eq_idea4_b', 'Cooling raises the yield here, but near 300 K the reaction is far too slow to be useful. Industry accepts a smaller K at ~700 K, then adds a catalyst for speed and pressure for yield.') }
             ].map(function (c, i) {
               return h('div', { key: 'idea' + i, className: 'rounded-lg border border-slate-200 bg-slate-50 p-2.5' },
-                h('div', { className: 'text-[11px] font-black text-slate-800 mb-0.5' }, c.t),
-                h('div', { className: 'text-[11px] text-slate-700 leading-snug' }, c.b));
+                h('div', { className: 'text-[0.6875rem] font-black text-slate-800 mb-0.5' }, c.t),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-snug' }, c.b));
             })
           ),
           React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-300 mb-3' },
-            React.createElement('div', { className: 'text-[11px] font-bold text-indigo-800 mb-1' }, __alloT('stem.molecule.le_chatelier_s_principle', 'Le Chatelier\'s principle')),
-            React.createElement('div', { className: 'text-[12px] text-indigo-900 leading-relaxed' }, __alloT('stem.molecule.if_a_stress_is_applied_to_a_system_at_', 'If a stress is applied to a system at equilibrium, the system shifts to relieve that stress. Predict the direction of shift to make sense of how rxns respond to changes.'))
+            React.createElement('div', { className: 'text-[0.6875rem] font-bold text-indigo-800 mb-1' }, __alloT('stem.molecule.le_chatelier_s_principle', 'Le Chatelier\'s principle')),
+            React.createElement('div', { className: 'text-[0.75rem] text-indigo-900 leading-relaxed' }, __alloT('stem.molecule.if_a_stress_is_applied_to_a_system_at_', 'If a stress is applied to a system at equilibrium, the system shifts to relieve that stress. Predict the direction of shift to make sense of how rxns respond to changes.'))
           ),
           React.createElement('div', { className: 'space-y-1.5' },
             EQUILIBRIUM_FACTORS.map(function(f, i) {
               return React.createElement('div', { key: 'eq'+i, className: 'flex items-center gap-2 p-2 rounded-md bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 min-w-[200px]' }, f.factor),
-                React.createElement('div', { className: 'text-[11px] font-black text-indigo-700 min-w-[110px] font-mono' }, f.shift),
-                React.createElement('div', { className: 'text-[11px] text-slate-600 flex-1' }, f.why)
+                React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-700 min-w-[200px]' }, f.factor),
+                React.createElement('div', { className: 'text-[0.6875rem] font-black text-indigo-700 min-w-[110px] font-mono' }, f.shift),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-600 flex-1' }, f.why)
               );
             })
           )
@@ -6742,7 +6742,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
         function slider(key, label, min, max, step, val, unit, fallback) {
           return h('div', { className: 'mb-1.5' },
-            h('label', { className: 'flex items-baseline justify-between text-[11px] font-bold text-slate-700', htmlFor: 'allo-mol-' + key },
+            h('label', { className: 'flex items-baseline justify-between text-[0.6875rem] font-bold text-slate-700', htmlFor: 'allo-mol-' + key },
               h('span', null, label),
               h('span', { className: 'font-mono text-slate-900' }, val + ' ' + unit)),
             h('input', {
@@ -6764,7 +6764,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.reaction_kinetics_what_controls_speed', '⏱ Reaction kinetics — what controls speed')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.kinetics_how_fast_thermodynamics_wheth', 'Kinetics = how fast. Thermodynamics = whether possible. A reaction can be very favorable (large negative ΔG) but slow (high Ea). Catalysts and conditions tune kinetics.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.kinetics_how_fast_thermodynamics_wheth', 'Kinetics = how fast. Thermodynamics = whether possible. A reaction can be very favorable (large negative ΔG) but slow (high Ea). Catalysts and conditions tune kinetics.')),
 
           // ── the hill every kinetics problem is secretly about ──
           h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
@@ -6796,7 +6796,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 h('text', { x: PADL + plotW / 2, y: Hh - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155' }, __alloT('stem.molecule.kin_axis_x', 'reaction coordinate →')),
                 h('text', { x: 13, y: PADT + plotH / 2, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155', transform: 'rotate(-90 13 ' + (PADT + plotH / 2) + ')' }, __alloT('stem.molecule.kin_axis_y', 'potential energy (kJ/mol)'))),
 
-              h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-bold -mt-1' },
+              h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.6875rem] font-bold -mt-1' },
                 h('span', { style: { color: '#c2410c' } },
                   h('span', { 'aria-hidden': 'true' }, '━ '), __alloT('stem.molecule.kin_leg_plain', 'no catalyst'), ': Ea = ' + Ea + ' kJ/mol'),
                 showCat ? h('span', { style: { color: '#047857' } },
@@ -6809,30 +6809,30 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   slider('kinDH', __alloT('stem.molecule.kin_dh', 'Reaction enthalpy ΔH'), -150, 150, 10, dH, 'kJ/mol', -50),
                   slider('kinT', __alloT('stem.molecule.kin_temp', 'Temperature'), 250, 700, 5, T, 'K', 298),
                   h('div', { className: 'flex items-center gap-3 mt-2' },
-                    h('label', { className: 'flex items-center gap-1.5 text-[11px] font-bold text-slate-700 cursor-pointer' },
+                    h('label', { className: 'flex items-center gap-1.5 text-[0.6875rem] font-bold text-slate-700 cursor-pointer' },
                       h('input', { type: 'checkbox', checked: showCat, onChange: function () { try { setExp({ kinCat: !showCat }); } catch (e) {} } }),
                       __alloT('stem.molecule.kin_show_cat', 'Show catalysed path')),
                     showCat ? h('div', { className: 'flex-1' }, slider('kinDrop', __alloT('stem.molecule.kin_drop', 'Catalyst removes'), 5, 90, 5, drop, 'kJ/mol', 30)) : null)),
 
                 h('div', { className: 'space-y-1.5' },
                   h('div', { className: 'p-2 rounded-lg bg-white border border-slate-200' },
-                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_boltz', 'Share of collisions with enough energy')),
-                    h('div', { className: 'text-[13px] font-black text-orange-700 font-mono' }, fmtTiny(boltz(Ea))),
-                    h('div', { className: 'text-[10px] text-slate-500' }, 'exp(−Ea / RT) at ' + T + ' K')),
+                    h('div', { className: 'text-[0.625rem] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_boltz', 'Share of collisions with enough energy')),
+                    h('div', { className: 'text-[0.8125rem] font-black text-orange-700 font-mono' }, fmtTiny(boltz(Ea))),
+                    h('div', { className: 'text-[0.625rem] text-slate-500' }, 'exp(−Ea / RT) at ' + T + ' K')),
                   showCat ? h('div', { className: 'p-2 rounded-lg bg-emerald-50 border border-emerald-200' },
-                    h('div', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wide' }, __alloT('stem.molecule.kin_speedup', 'Catalyst speed-up')),
-                    h('div', { className: 'text-[13px] font-black text-emerald-800 font-mono' }, '× ' + fmtBig(speedUp)),
-                    h('div', { className: 'text-[10px] text-emerald-700' }, __alloT('stem.molecule.kin_speedup_note', 'same reactants, same products, same ΔH'))) : null,
+                    h('div', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase tracking-wide' }, __alloT('stem.molecule.kin_speedup', 'Catalyst speed-up')),
+                    h('div', { className: 'text-[0.8125rem] font-black text-emerald-800 font-mono' }, '× ' + fmtBig(speedUp)),
+                    h('div', { className: 'text-[0.625rem] text-emerald-700' }, __alloT('stem.molecule.kin_speedup_note', 'same reactants, same products, same ΔH'))) : null,
                   h('div', { className: 'p-2 rounded-lg bg-white border border-slate-200' },
-                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_per10', 'Effect of +10 K')),
-                    h('div', { className: 'text-[13px] font-black text-slate-800 font-mono' }, '× ' + per10K.toFixed(2)),
-                    h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.molecule.kin_per10_note', 'the "rate doubles per 10 °C" rule of thumb only holds near Ea ≈ 50 kJ/mol'))),
+                    h('div', { className: 'text-[0.625rem] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_per10', 'Effect of +10 K')),
+                    h('div', { className: 'text-[0.8125rem] font-black text-slate-800 font-mono' }, '× ' + per10K.toFixed(2)),
+                    h('div', { className: 'text-[0.625rem] text-slate-500' }, __alloT('stem.molecule.kin_per10_note', 'the "rate doubles per 10 °C" rule of thumb only holds near Ea ≈ 50 kJ/mol'))),
                   h('div', { className: 'p-2 rounded-lg bg-white border border-slate-200' },
-                    h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_reverse', 'Reverse barrier')),
-                    h('div', { className: 'text-[13px] font-black text-slate-800 font-mono' }, EaRev.toFixed(0) + ' kJ/mol'),
-                    h('div', { className: 'text-[10px] text-slate-500' }, 'Ea(reverse) = Ea − ΔH'))))),
+                    h('div', { className: 'text-[0.625rem] font-bold text-slate-500 uppercase tracking-wide' }, __alloT('stem.molecule.kin_reverse', 'Reverse barrier')),
+                    h('div', { className: 'text-[0.8125rem] font-black text-slate-800 font-mono' }, EaRev.toFixed(0) + ' kJ/mol'),
+                    h('div', { className: 'text-[0.625rem] text-slate-500' }, 'Ea(reverse) = Ea − ΔH'))))),
 
-            h('div', { className: 'mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-snug' },
+            h('div', { className: 'mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900 leading-snug' },
               h('strong', null, __alloT('stem.molecule.kin_bust_label', '⚠ The one to watch: ')),
               __alloT('stem.molecule.kin_bust', 'Drag the catalyst slider as far as it goes. The hill collapses, the rate jumps by orders of magnitude, and the two ends of the curve do not budge. A catalyst changes how fast you get there, never where you end up, and never the equilibrium position.'))),
 
@@ -6841,16 +6841,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               return h('div', { key: 'k'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline justify-between mb-1' },
                   h('span', { className: 'text-sm font-black text-slate-800' }, k.factor),
-                  h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-800' }, k.effect)
+                  h('span', { className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-800' }, k.effect)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, k.detail)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, k.detail)
               );
             })
           ),
           h('div', { className: 'p-3 rounded-md bg-emerald-50 border border-emerald-200' },
-            h('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.arrhenius_equation', '📐 Arrhenius equation')),
-            h('div', { className: 'text-[12px] text-emerald-900 font-mono leading-relaxed mb-1' }, __alloT('stem.molecule.k_a_exp_ea_rt', 'k = A · exp(−Ea / RT)')),
-            h('div', { className: 'text-[11px] text-emerald-800 leading-relaxed' },
+            h('div', { className: 'text-[0.6875rem] font-bold text-emerald-800 mb-1' }, __alloT('stem.molecule.arrhenius_equation', '📐 Arrhenius equation')),
+            h('div', { className: 'text-[0.75rem] text-emerald-900 font-mono leading-relaxed mb-1' }, __alloT('stem.molecule.k_a_exp_ea_rt', 'k = A · exp(−Ea / RT)')),
+            h('div', { className: 'text-[0.6875rem] text-emerald-800 leading-relaxed' },
               __alloT('stem.molecule.k_rate_constant_a_collision_frequency_', 'k = rate constant · A = collision frequency factor · Ea = activation energy · R = 8.314 J/(mol·K) · T = absolute temperature (K). Plot ln(k) vs 1/T; slope = −Ea/R.')
             )
           )
@@ -6906,15 +6906,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.thermodynamics_what_s_spontaneous', '🔥 Thermodynamics — what\'s spontaneous')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.spontaneity_whether_a_reaction_proceed', 'Spontaneity = whether a reaction proceeds on its own (regardless of speed). Gibbs free energy ΔG tells us: negative = spontaneous; positive = not; zero = at equilibrium.')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.spontaneity_whether_a_reaction_proceed', 'Spontaneity = whether a reaction proceeds on its own (regardless of speed). Gibbs free energy ΔG tells us: negative = spontaneous; positive = not; zero = at equilibrium.')),
           h('div', { className: 'p-3 rounded-lg bg-orange-50 border-2 border-orange-300 mb-3 text-center' },
-            h('div', { className: 'text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.master_equation', 'Master equation')),
+            h('div', { className: 'text-[0.625rem] font-bold text-orange-700 uppercase tracking-wide mb-1' }, __alloT('stem.molecule.master_equation', 'Master equation')),
             h('div', { className: 'text-2xl font-black text-orange-900 font-mono tracking-tight' }, __alloT('stem.molecule.g_h_t_s', 'ΔG = ΔH − TΔS'))),
 
           // ── four sign combinations, four straight lines, two of them crossing zero ──
           h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 mb-3' },
             h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-1' }, __alloT('stem.molecule.th_map_title', '🌡 Temperature decides. Drag it and watch two of the four lines change their mind.')),
-            h('div', { className: 'text-[11px] text-slate-600 mb-2 leading-snug' }, __alloT('stem.molecule.th_map_intro', 'ΔG = ΔH − TΔS is a straight line in T whose slope is −ΔS. Below the axis means it happens on its own. Two sign combinations never cross the axis; the other two always do, and the crossing point is just T = ΔH / ΔS.')),
+            h('div', { className: 'text-[0.6875rem] text-slate-600 mb-2 leading-snug' }, __alloT('stem.molecule.th_map_intro', 'ΔG = ΔH − TΔS is a straight line in T whose slope is −ΔS. Below the axis means it happens on its own. Two sign combinations never cross the axis; the other two always do, and the crossing point is just T = ΔH / ΔS.')),
 
             h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', style: { display: 'block' }, role: 'img', 'aria-label': plotLabel },
               h('rect', { x: PADL, y: PADT, width: plotW, height: yOf(0) - PADT, fill: '#fef2f2' }),
@@ -6974,7 +6974,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               })),
 
             h('div', { className: 'mt-2' },
-              h('label', { className: 'flex items-baseline justify-between text-[11px] font-bold text-slate-700', htmlFor: 'allo-mol-thermoT' },
+              h('label', { className: 'flex items-baseline justify-between text-[0.6875rem] font-bold text-slate-700', htmlFor: 'allo-mol-thermoT' },
                 h('span', null, __alloT('stem.molecule.th_temp_label', 'Temperature')),
                 h('span', { className: 'font-mono text-slate-900' }, Math.round(T) + ' K  (' + Math.round(T - 273.15) + ' °C)')),
               h('input', {
@@ -7007,16 +7007,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 var g = dGof(c, T), ok = g < 0, tc = crossover(c);
                 return h('div', { key: 'card' + c.id, className: 'p-2.5 rounded-lg border-2 bg-white', style: { borderColor: ok ? '#86efac' : '#fecaca' } },
                   h('div', { className: 'flex items-baseline gap-2 mb-0.5' },
-                    h('span', { className: 'text-[12px] font-black', style: { color: c.color } }, c.name),
-                    h('span', { className: 'ml-auto text-[10px] font-black px-1.5 py-0.5 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') },
+                    h('span', { className: 'text-[0.75rem] font-black', style: { color: c.color } }, c.name),
+                    h('span', { className: 'ml-auto text-[0.625rem] font-black px-1.5 py-0.5 rounded ' + (ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') },
                       ok ? __alloT('stem.molecule.th_badge_yes', 'spontaneous') : __alloT('stem.molecule.th_badge_no', 'not spontaneous'))),
-                  h('div', { className: 'text-[11px] font-mono text-slate-700' }, c.rxn),
+                  h('div', { className: 'text-[0.6875rem] font-mono text-slate-700' }, c.rxn),
                   h('div', { className: 'text-[10.5px] text-slate-500 mt-0.5' }, c.quad),
-                  h('div', { className: 'text-[11px] text-slate-800 mt-1 font-mono' },
+                  h('div', { className: 'text-[0.6875rem] text-slate-800 mt-1 font-mono' },
                     'ΔG = ' + c.dH.toFixed(1) + ' − (' + Math.round(T) + ')(' + (c.dS / 1000).toFixed(4) + ') = ',
                     h('strong', { style: { color: ok ? '#15803d' : '#b91c1c' } }, g.toFixed(1) + ' kJ/mol')),
                   (tc !== null && tc > 0) ? h('div', { className: 'text-[10.5px] text-slate-600 mt-0.5' }, __alloT('stem.molecule.th_flips_at', 'Flips at T = ΔH/ΔS = ') + Math.round(tc) + ' K') : h('div', { className: 'text-[10.5px] text-slate-600 mt-0.5' }, __alloT('stem.molecule.th_never_flips', 'Never flips: both terms point the same way.')),
-                  h('div', { className: 'text-[11px] text-slate-700 leading-snug mt-1' }, c.why));
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 leading-snug mt-1' }, c.why));
               })),
 
             h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-100 border border-slate-200 text-[10.5px] text-slate-600 leading-snug' },
@@ -7028,18 +7028,18 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               return h('div', { key: 'th'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
                   h('span', { className: 'text-sm font-black text-slate-800 font-mono' }, t.sym),
-                  h('span', { className: 'text-[12px] font-bold text-slate-700' }, t.name),
-                  h('span', { className: 'text-[10px] text-slate-500 ml-auto' }, t.units)
+                  h('span', { className: 'text-[0.75rem] font-bold text-slate-700' }, t.name),
+                  h('span', { className: 'text-[0.625rem] text-slate-500 ml-auto' }, t.units)
                 ),
-                h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.sign)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.sign)
               );
             })
           ),
           h('div', { className: 'grid grid-cols-2 gap-2' },
-            h('div', { className: 'p-2.5 rounded-md bg-red-50 border border-red-200 text-[11px] text-red-900' },
+            h('div', { className: 'p-2.5 rounded-md bg-red-50 border border-red-200 text-[0.6875rem] text-red-900' },
               h('strong', null, __alloT('stem.molecule.exothermic_h_0', '🔥 Exothermic (ΔH < 0): ')), __alloT('stem.molecule.combustion_neutralization_condensation', 'Combustion, neutralization, condensation. Heat released to surroundings.')
             ),
-            h('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[11px] text-blue-900' },
+            h('div', { className: 'p-2.5 rounded-md bg-blue-50 border border-blue-200 text-[0.6875rem] text-blue-900' },
               h('strong', null, __alloT('stem.molecule.endothermic_h_0', '🧊 Endothermic (ΔH > 0): ')), __alloT('stem.molecule.photosynthesis_melting_evaporation_col', 'Photosynthesis, melting, evaporation, cold packs. Heat absorbed from surroundings.')
             )
           )
@@ -7049,31 +7049,31 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderPolymersSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.polymers_biopolymers', '🧬 Polymers + biopolymers')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.long_chains_of_repeating_units_monomer', 'Long chains of repeating units (monomers). Addition polymers form by C=C double bonds opening up. Condensation polymers form by losing water (or other small molecule) at each link.')),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-2 mb-1' }, __alloT('stem.molecule.synthetic_polymers', 'Synthetic polymers')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.long_chains_of_repeating_units_monomer', 'Long chains of repeating units (monomers). Addition polymers form by C=C double bonds opening up. Condensation polymers form by losing water (or other small molecule) at each link.')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-800 mt-2 mb-1' }, __alloT('stem.molecule.synthetic_polymers', 'Synthetic polymers')),
           React.createElement('div', { className: 'space-y-1.5 mb-3' },
             POLYMER_TYPES.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-2 rounded-md bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, p.name),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800' }, p.type),
-                  React.createElement('span', { className: 'text-[10px] font-mono text-slate-600 ml-auto' }, p.monomer)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, p.name),
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800' }, p.type),
+                  React.createElement('span', { className: 'text-[0.625rem] font-mono text-slate-600 ml-auto' }, p.monomer)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-0.5' }, p.uses),
-                React.createElement('div', { className: 'text-[10px] text-slate-500 italic' }, p.notes)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-0.5' }, p.uses),
+                React.createElement('div', { className: 'text-[0.625rem] text-slate-500 italic' }, p.notes)
               );
             })
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-800 mt-3 mb-1' }, __alloT('stem.molecule.biopolymers_biological_macromolecules', 'Biopolymers (biological macromolecules)')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-800 mt-3 mb-1' }, __alloT('stem.molecule.biopolymers_biological_macromolecules', 'Biopolymers (biological macromolecules)')),
           React.createElement('div', { className: 'space-y-1.5' },
             BIOPOLYMER_TYPES.map(function(p, i) {
               return React.createElement('div', { key: 'b'+i, className: 'p-2 rounded-md bg-emerald-50 border border-emerald-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-emerald-900' }, p.name),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-emerald-300 text-emerald-800 ml-auto' }, p.bond)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-emerald-900' }, p.name),
+                  React.createElement('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-white border border-emerald-300 text-emerald-800 ml-auto' }, p.bond)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-emerald-800 mb-0.5' }, React.createElement('strong', null, 'Monomer: '), p.monomer),
-                React.createElement('div', { className: 'text-[11px] text-emerald-900' }, p.role)
+                React.createElement('div', { className: 'text-[0.6875rem] text-emerald-800 mb-0.5' }, React.createElement('strong', null, 'Monomer: '), p.monomer),
+                React.createElement('div', { className: 'text-[0.6875rem] text-emerald-900' }, p.role)
               );
             })
           )
@@ -7083,12 +7083,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderSafetySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.lab_safety_basics', '🦺 Lab safety basics')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.most_lab_accidents_are_preventable_the', 'Most lab accidents are preventable. The biggest factors: PPE, attention, and not mixing things that shouldn\'t mix. Always read the SDS (Safety Data Sheet) for each chemical before using it.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.most_lab_accidents_are_preventable_the', 'Most lab accidents are preventable. The biggest factors: PPE, attention, and not mixing things that shouldn\'t mix. Always read the SDS (Safety Data Sheet) for each chemical before using it.')),
           React.createElement('div', { className: 'space-y-2' },
             LAB_SAFETY.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-amber-50 border border-amber-300' },
-                React.createElement('div', { className: 'text-[12px] font-black text-amber-900 mb-1.5' }, s.cat),
-                React.createElement('ul', { className: 'text-[11px] text-amber-900 leading-relaxed space-y-0.5 list-disc pl-4' },
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-1.5' }, s.cat),
+                React.createElement('ul', { className: 'text-[0.6875rem] text-amber-900 leading-relaxed space-y-0.5 list-disc pl-4' },
                   s.items.map(function(item, j) {
                     return React.createElement('li', { key: 'i'+j }, item);
                   })
@@ -7157,7 +7157,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         }
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.bond_detective_2', '🔬 Bond detective')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             __alloT('stem.molecule.three_unknown_compounds_study_the_data', 'Three unknown compounds. Study the data, pick the most likely bond type, AND check which pieces of evidence convinced you. The "Reveal" button only enables once you\'ve committed to both — no peeking, no hedging.')),
           BOND_CASES.map(function(c, idx) {
             var st = state.cases[c.id] || { pick: null, evidence: {}, revealed: false };
@@ -7166,10 +7166,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             var isCorrect = st.revealed && st.pick === c.correct;
             return React.createElement('div', { key: c.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               React.createElement('div', { className: 'flex items-baseline gap-2 mb-2' },
-                React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 font-bold' }, '#' + (idx + 1)),
-                React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.alias)
+                React.createElement('span', { className: 'text-[0.625rem] font-mono text-indigo-700 font-bold' }, '#' + (idx + 1)),
+                React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.alias)
               ),
-              React.createElement('table', { className: 'text-[11px] w-full border-collapse mb-2' },
+              React.createElement('table', { className: 'text-[0.6875rem] w-full border-collapse mb-2' },
                 React.createElement('tbody', null,
                   Object.keys(c.data).map(function(k) {
                     return React.createElement('tr', { key: k, className: 'border-b border-slate-200' },
@@ -7180,7 +7180,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 )
               ),
               // Bond-type picker
-              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.your_hypothesis_bond_type', 'Your hypothesis (bond type):')),
+              React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.your_hypothesis_bond_type', 'Your hypothesis (bond type):')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                 BOND_OPTIONS.map(function(opt) {
                   var picked = st.pick === opt.id;
@@ -7198,18 +7198,18 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       setBM({ cases: newCases });
                     },
                     'aria-pressed': picked ? 'true' : 'false',
-                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
+                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
                   }, opt.label);
                 })
               ),
               // Evidence picker
-              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.which_evidence_convinced_you_at_least_', 'Which evidence convinced you? (at least 1)')),
+              React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.which_evidence_convinced_you_at_least_', 'Which evidence convinced you? (at least 1)')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                 c.evidenceKeys.map(function(ek) {
                   var checked = !!(st.evidence || {})[ek];
                   return React.createElement('label', {
                     key: ek,
-                    className: 'inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] border cursor-pointer transition-colors ' +
+                    className: 'inline-flex items-center gap-1 px-2 py-1 rounded text-[0.6875rem] border cursor-pointer transition-colors ' +
                       (checked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-300 hover:bg-amber-50 active:scale-[0.97]')
                   },
                     React.createElement('input', {
@@ -7240,21 +7240,21 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     var bonus = st.pick === c.correct ? 1 : 0;
                     setBM({ cases: newCases, score: (state.score || 0) + bonus });
                   },
-                  className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
+                  className: 'transition-colors px-3 py-1 rounded text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Revealed' : 'Reveal answer'),
-                !canReveal && !st.revealed && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' },
+                !canReveal && !st.revealed && React.createElement('span', { className: 'text-[0.625rem] text-slate-500 italic' },
                   st.pick == null ? 'Pick a bond type first' : 'Tick at least one evidence checkbox'
                 ),
-                st.revealed && React.createElement('span', { className: 'text-[11px] font-bold ' + (isCorrect ? 'text-green-700' : 'text-rose-700') },
+                st.revealed && React.createElement('span', { className: 'text-[0.6875rem] font-bold ' + (isCorrect ? 'text-green-700' : 'text-rose-700') },
                   isCorrect ? '✓ Correct!' : '✗ Re-read the principles below'
                 )
               ),
-              st.revealed && React.createElement('div', { className: 'mt-2 p-2 rounded bg-indigo-50 border-l-4 border-l-indigo-400 text-[11px] text-slate-700 leading-relaxed' },
+              st.revealed && React.createElement('div', { className: 'mt-2 p-2 rounded bg-indigo-50 border-l-4 border-l-indigo-400 text-[0.6875rem] text-slate-700 leading-relaxed' },
                 React.createElement('strong', { className: 'text-indigo-900' }, 'Principles: '), c.principles
               )
             );
           }),
-          React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2' },
+          React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex items-center gap-2' },
             React.createElement('span', null, '🎯'),
             React.createElement('strong', null, 'Score: ' + (state.score || 0) + ' / ' + BOND_CASES.length),
             React.createElement('span', { className: 'text-slate-500 ml-2 italic' }, __alloT('stem.molecule.the_reveal_is_locked_behind_your_commi', 'The reveal is locked behind your commitment — it\'s the prediction, not the answer, that builds intuition.'))
@@ -7323,7 +7323,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         function solventDiagramSvg(optId) {
           var opt = SOLVENT_OPTS.find(function(o) { return o.id === optId; });
           if (!opt) {
-            return React.createElement('div', { className: 'h-20 flex items-center justify-center text-[10px] text-slate-400 italic border border-dashed border-slate-300 rounded' }, __alloT('stem.molecule.pick_a_solvent_to_see_its_polarity_dia', '(pick a solvent to see its polarity diagram)'));
+            return React.createElement('div', { className: 'h-20 flex items-center justify-center text-[0.625rem] text-slate-400 italic border border-dashed border-slate-300 rounded' }, __alloT('stem.molecule.pick_a_solvent_to_see_its_polarity_dia', '(pick a solvent to see its polarity diagram)'));
           }
           var isPolar = opt.polarity === 'polar';
           var isInt = opt.polarity === 'intermediate';
@@ -7361,7 +7361,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           else if (kase.soluteKind === 'nonpolar-molecular' && opt.polarity === 'polar') score = 8;
           var color = score >= 70 ? 'bg-emerald-500' : (score >= 35 ? 'bg-amber-400' : 'bg-rose-400');
           return React.createElement('div', { className: 'mt-1' },
-            React.createElement('div', { className: 'flex items-baseline gap-2 text-[10px] text-slate-600' },
+            React.createElement('div', { className: 'flex items-baseline gap-2 text-[0.625rem] text-slate-600' },
               React.createElement('span', null, __alloT('stem.molecule.predicted_imf_match_strength', 'Predicted IMF match strength:')),
               React.createElement('span', { className: 'font-mono font-bold text-slate-800' }, score + '%')
             ),
@@ -7380,11 +7380,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             (kase.soluteKind === 'polar-covalent' && opt.polarity === 'polar') ||
             (kase.soluteKind === 'nonpolar-molecular' && opt.polarity === 'nonpolar')
           ) ? '→ dissolves readily' : ((opt.polarity === 'intermediate') ? '→ partially soluble' : '→ does NOT dissolve');
-          return React.createElement('div', { className: 'text-[10px] italic text-slate-700 mt-1' }, label + ' ' + verdict);
+          return React.createElement('div', { className: 'text-[0.625rem] italic text-slate-700 mt-1' }, label + ' ' + verdict);
         }
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.mystery_solvent_2', '🧪 Mystery solvent')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             __alloT('stem.molecule.three_unknown_solutes_for_each_1_pick_', 'Three unknown solutes. For each: (1) pick the best solvent, (2) rank the chemistry reasoning that justifies your pick, (3) live diagrams update with each click, and (4) wrong answers walk you through the polarity logic step by step — no answer dump.')),
           SOLVENT_CASES.map(function(kase, idx) {
             var st = state.cases[kase.id] || { pick: null, ranking: [], revealed: false, socraticStep: 0 };
@@ -7405,12 +7405,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             }
             return React.createElement('div', { key: kase.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 font-bold' }, '#' + (idx + 1)),
-                React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, kase.solute)
+                React.createElement('span', { className: 'text-[0.625rem] font-mono text-indigo-700 font-bold' }, '#' + (idx + 1)),
+                React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, kase.solute)
               ),
-              React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2' }, kase.desc),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-600 mb-2' }, kase.desc),
               // (1) Solvent picker
-              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.1_pick_a_solvent', '1. Pick a solvent:')),
+              React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.1_pick_a_solvent', '1. Pick a solvent:')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                 SOLVENT_OPTS.map(function(opt) {
                   var picked = st.pick === opt.id;
@@ -7424,7 +7424,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     disabled: revealed,
                     'aria-pressed': picked ? 'true' : 'false',
                     onClick: function() { updateCase(kase.id, { pick: opt.id, socraticStep: 0 }); },
-                    className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
+                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
                   }, opt.label);
                 })
               ),
@@ -7433,7 +7433,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               imfStrengthBar(st.pick, kase),
               livePrediction(st.pick, kase),
               // (2) Reasoning ranker
-              React.createElement('div', { className: 'text-[11px] font-bold text-slate-700 mt-3 mb-1' },
+              React.createElement('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mt-3 mb-1' },
                 __alloT('stem.molecule.2_rank_the_reasoning_click_in_priority', '2. Rank the reasoning (click in priority order, top → bottom; need ≥2):')),
               React.createElement('div', { className: 'flex flex-wrap gap-1 mb-1' },
                 chipPool.map(function(chip) {
@@ -7443,7 +7443,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     key: chip,
                     disabled: st.revealed,
                     onClick: function() { toggleRank(chip); },
-                    className: 'px-2 py-1 rounded text-[10px] font-semibold border transition-colors ' +
+                    className: 'px-2 py-1 rounded text-[0.625rem] font-semibold border transition-colors ' +
                       (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-300 hover:bg-amber-50 active:scale-[0.97]')
                   }, (picked ? '#' + (pos + 1) + ' ' : '') + RATIONALE_CHIPS[chip]);
                 })
@@ -7453,15 +7453,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('button', {
                   disabled: !canReveal,
                   onClick: function() { updateCase(kase.id, { revealed: true }); var bonus = (st.pick === kase.correct ? 1 : 0) + (rankCorrect ? 1 : 0); setSM({ score: (state.score || 0) + bonus }); },
-                  className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
+                  className: 'transition-colors px-3 py-1 rounded text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Checked' : 'Check answer'),
-                !canReveal && !st.revealed && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' },
+                !canReveal && !st.revealed && React.createElement('span', { className: 'text-[0.625rem] text-slate-500 italic' },
                   st.pick == null ? 'Pick a solvent first' : 'Rank at least 2 reasoning chips'),
-                st.revealed && React.createElement('span', { className: 'text-[11px] font-bold ' + (isCorrect ? 'text-green-700' : 'text-rose-700') },
+                st.revealed && React.createElement('span', { className: 'text-[0.6875rem] font-bold ' + (isCorrect ? 'text-green-700' : 'text-rose-700') },
                   isCorrect ? (rankCorrect ? '✓✓ Solvent + reasoning both correct' : '✓ Solvent correct; reasoning order off') : '✗ Wrong solvent — walk through the questions below')
               ),
               // MULTI-STEP SOCRATIC: only when revealed AND wrong solvent picked
-              (st.revealed && !isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-rose-50 border-l-4 border-l-rose-400 text-[11px] text-slate-700 space-y-1' },
+              (st.revealed && !isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-rose-50 border-l-4 border-l-rose-400 text-[0.6875rem] text-slate-700 space-y-1' },
                 React.createElement('div', { className: 'font-bold text-rose-800' }, __alloT('stem.molecule.let_s_walk_through_it_step_by_step_no_', 'Let’s walk through it step by step (no answer dump):')),
                 React.createElement('div', null,
                   React.createElement('strong', null, 'Q1. '), 'Is ' + kase.solute + ' polar or nonpolar?'),
@@ -7478,18 +7478,18 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('button', {
                   onClick: function() { updateCase(kase.id, { socraticStep: Math.min((st.socraticStep || 0) + 1, 3) }); },
                   disabled: (st.socraticStep || 0) >= 3,
-                  className: 'transition-colors mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 active:scale-[0.97]'
+                  className: 'transition-colors mt-1 px-2 py-0.5 rounded text-[0.625rem] font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 active:scale-[0.97]'
                 }, (st.socraticStep || 0) >= 3 ? 'Walkthrough complete' : 'Show next step →')
               ),
               // CORRECT-PATH explanation
-              (st.revealed && isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-emerald-50 border-l-4 border-l-emerald-400 text-[11px] text-slate-700' },
+              (st.revealed && isCorrect) && React.createElement('div', { className: 'mt-2 p-2 rounded bg-emerald-50 border-l-4 border-l-emerald-400 text-[0.6875rem] text-slate-700' },
                 React.createElement('strong', { className: 'text-emerald-800' }, __alloT('stem.molecule.why_this_works', 'Why this works: ')), kase.explanation,
                 !rankCorrect && React.createElement('div', { className: 'mt-1 text-amber-700' },
                   '☕ Expert reasoning order: ' + expertOrder.map(function(c) { return RATIONALE_CHIPS[c]; }).join(' → '))
               )
             );
           }),
-          React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap' },
+          React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex items-center gap-2 flex-wrap' },
             React.createElement('span', null, '🎯'),
             React.createElement('strong', null, 'Score: ' + (state.score || 0) + ' / ' + (SOLVENT_CASES.length * 2)),
             React.createElement('span', { className: 'text-slate-500 italic' },
@@ -7501,12 +7501,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderGlossarySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.chemistry_glossary', '📖 Chemistry glossary')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.common_chemistry_terms_students_mix_up', 'Common chemistry terms students mix up. Bookmarkable reference for vocabulary.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.common_chemistry_terms_students_mix_up', 'Common chemistry terms students mix up. Bookmarkable reference for vocabulary.')),
           React.createElement('div', { className: 'space-y-1' },
             GLOSSARY.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-indigo-900' }, g.term),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, g.def)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-indigo-900' }, g.term),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.def)
               );
             })
           )
@@ -7779,12 +7779,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm', 'data-testid': 'mol-gaslaws' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.gas_laws_2', '💨 Gas laws')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.quantitative_relationships_between_p_v', 'Quantitative relationships between P, V, T, and n (moles) for gases. Use Kelvin for temperature.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.quantitative_relationships_between_p_v', 'Quantitative relationships between P, V, T, and n (moles) for gases. Use Kelvin for temperature.')),
 
           // ── the sandbox ──
           h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/40 p-3 mb-3' },
             h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-1' }, __alloT('stem.molecule.gl_sim_title', '💨 Set any three. The fourth is not yours to choose.')),
-            h('div', { className: 'font-mono text-[13px] font-black text-indigo-800 mb-2' }, 'PV = nRT'),
+            h('div', { className: 'font-mono text-[0.8125rem] font-black text-indigo-800 mb-2' }, 'PV = nRT'),
 
             h('div', { role: 'group', 'aria-label': __alloT('stem.molecule.gl_solve_for', 'Solve for'), className: 'flex flex-wrap items-center gap-1.5 mb-3' },
               h('span', { className: 'text-[10.5px] font-bold uppercase tracking-wide text-slate-600 mr-1' }, __alloT('stem.molecule.gl_solve_for', 'Solve for')),
@@ -7793,7 +7793,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 return h('button', {
                   key: k, type: 'button', 'data-gl-solve': k, 'aria-pressed': on,
                   onClick: function () { set({ glSolve: k }); },
-                  className: 'min-h-[36px] px-3 py-1.5 rounded-lg text-[11px] font-black border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 '
+                  className: 'min-h-[36px] px-3 py-1.5 rounded-lg text-[0.6875rem] font-black border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 '
                     + (on ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
                 }, VARS[k].label + ' (' + k + ')');
               })
@@ -7810,10 +7810,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     return h('div', { key: k, 'data-gl-result': k, className: 'mb-2 rounded-lg border-2 border-indigo-400 bg-white p-2' },
                       h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
                         h('span', { className: 'text-[10.5px] font-bold uppercase tracking-wide text-indigo-700' }, meta.label + ' — ' + __alloT('stem.molecule.gl_calculated', 'calculated')),
-                        h('span', { className: 'ml-auto font-mono text-[15px] font-black', style: { color: meta.color } }, fmt(val, meta.dp) + ' ' + meta.unit)
+                        h('span', { className: 'ml-auto font-mono text-[0.9375rem] font-black', style: { color: meta.color } }, fmt(val, meta.dp) + ' ' + meta.unit)
                       ),
-                      k === 'P' ? h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, '= ' + fmt(val * ATM_PER_BAR, 3) + ' atm') : null,
-                      k === 'T' ? h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, '= ' + fmt(val - 273.15, 1) + ' °C') : null
+                      k === 'P' ? h('div', { className: 'text-[0.625rem] text-slate-600 mt-0.5' }, '= ' + fmt(val * ATM_PER_BAR, 3) + ' atm') : null,
+                      k === 'T' ? h('div', { className: 'text-[0.625rem] text-slate-600 mt-0.5' }, '= ' + fmt(val - 273.15, 1) + ' °C') : null
                     );
                   }
                   var inputId = 'gl-' + k;
@@ -7821,7 +7821,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     h('label', { htmlFor: inputId, className: 'flex items-baseline gap-2 text-[10.5px] font-bold text-slate-700 flex-wrap' },
                       h('span', null, meta.label),
                       h('span', { className: 'ml-auto font-mono text-[11.5px] font-black', style: { color: meta.color } }, fmt(val, meta.dp) + ' ' + meta.unit),
-                      k === 'T' ? h('span', { className: 'text-[10px] font-medium text-slate-500 w-full' }, '(' + fmt(val - 273.15, 1) + ' °C)') : null
+                      k === 'T' ? h('span', { className: 'text-[0.625rem] font-medium text-slate-500 w-full' }, '(' + fmt(val - 273.15, 1) + ' °C)') : null
                     ),
                     h('input', {
                       id: inputId, type: 'range', min: meta.min, max: meta.max, step: meta.step, value: val,
@@ -7862,7 +7862,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 h('div', { className: 'mt-1 rounded-lg bg-white border border-slate-200 p-2' },
                   h('div', { className: 'text-[10.5px] font-bold text-slate-800' },
                     gas.name + ' — ' + __alloT('stem.molecule.gl_rms', 'average molecular speed') + ': ' + Math.round(rms) + ' m/s'),
-                  h('div', { className: 'text-[10px] text-slate-600 leading-snug mt-0.5' },
+                  h('div', { className: 'text-[0.625rem] text-slate-600 leading-snug mt-0.5' },
                     __alloT('stem.molecule.gl_pressure_is', 'Pressure is not molecules shoving each other apart. It is how often, and how hard, they strike the walls. Squeeze the box and each molecule simply reaches a wall sooner — it never speeds up. Only temperature changes speed.'))
                 )
               )
@@ -7872,17 +7872,17 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           // ── the Kelvin trap ──
           h('div', { 'data-testid': 'mol-gl-kelvin', className: 'rounded-xl border border-orange-300 bg-orange-50 p-3 mb-3' },
             h('div', { className: 'text-[11.5px] font-black text-orange-900 mb-1' }, __alloT('stem.molecule.gl_kelvin_title', '🌡 The mistake that eats the most exam marks')),
-            h('p', { className: 'text-[11px] text-orange-900 leading-relaxed mb-2' },
+            h('p', { className: 'text-[0.6875rem] text-orange-900 leading-relaxed mb-2' },
               __alloT('stem.molecule.gl_kelvin_body', 'Heat a balloon from 25 °C to 50 °C. You doubled the number on the thermometer, so the balloon doubles in size?')),
             h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' } },
               h('div', { className: 'rounded-lg bg-white border-2 border-rose-300 p-2' },
-                h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700 mb-0.5' }, '✗ ' + __alloT('stem.molecule.gl_kelvin_wrong', 'Using °C')),
-                h('div', { className: 'font-mono text-[11px] text-slate-800' }, '50 / 25 = ×' + fmt(celsiusFactor, 2)),
-                h('div', { className: 'text-[10px] text-rose-700 mt-0.5' }, __alloT('stem.molecule.gl_kelvin_wrong_note', 'Predicts the balloon doubles.'))),
+                h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-rose-700 mb-0.5' }, '✗ ' + __alloT('stem.molecule.gl_kelvin_wrong', 'Using °C')),
+                h('div', { className: 'font-mono text-[0.6875rem] text-slate-800' }, '50 / 25 = ×' + fmt(celsiusFactor, 2)),
+                h('div', { className: 'text-[0.625rem] text-rose-700 mt-0.5' }, __alloT('stem.molecule.gl_kelvin_wrong_note', 'Predicts the balloon doubles.'))),
               h('div', { className: 'rounded-lg bg-white border-2 border-emerald-400 p-2' },
-                h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-emerald-700 mb-0.5' }, '✓ ' + __alloT('stem.molecule.gl_kelvin_right', 'Using K')),
-                h('div', { className: 'font-mono text-[11px] text-slate-800' }, '323.15 / 298.15 = ×' + fmt(kelvinFactor, 3)),
-                h('div', { className: 'text-[10px] text-emerald-700 mt-0.5' }, __alloT('stem.molecule.gl_kelvin_right_note', 'The real answer: about 8% bigger.')))
+                h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-emerald-700 mb-0.5' }, '✓ ' + __alloT('stem.molecule.gl_kelvin_right', 'Using K')),
+                h('div', { className: 'font-mono text-[0.6875rem] text-slate-800' }, '323.15 / 298.15 = ×' + fmt(kelvinFactor, 3)),
+                h('div', { className: 'text-[0.625rem] text-emerald-700 mt-0.5' }, __alloT('stem.molecule.gl_kelvin_right_note', 'The real answer: about 8% bigger.')))
             ),
             h('p', { className: 'text-[10.5px] text-orange-900 leading-snug mt-2' },
               __alloT('stem.molecule.gl_kelvin_why', 'Celsius has its zero in the wrong place. Doubling a Celsius reading does not double anything physical, because 0 °C is not "no thermal energy" — it is just where water freezes. Kelvin starts at true zero, so in Kelvin the ratios mean what they say. Every gas law wants Kelvin.'))
@@ -7891,7 +7891,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           // ── real vs ideal, at the student's own numbers ──
           h('div', { 'data-testid': 'mol-gl-real', className: 'rounded-xl border border-slate-300 bg-slate-50 p-3 mb-3' },
             h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-1' }, __alloT('stem.molecule.gl_real_title', '⚠ Where the ideal gas law stops telling the truth')),
-            h('div', { className: 'flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[11px] font-bold mb-1' },
+            h('div', { className: 'flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[0.6875rem] font-bold mb-1' },
               h('span', { className: 'text-slate-700' }, __alloT('stem.molecule.gl_real_ideal', 'Ideal') + ': ' + fmt(pIdeal, 3) + ' bar'),
               h('span', { className: 'text-slate-700' }, __alloT('stem.molecule.gl_real_vdw', 'Van der Waals') + ' (' + gas.sym + '): ' + fmt(pReal, 3) + ' bar'),
               h('span', { style: { color: Math.abs(deviation) > 1 ? '#b45309' : '#047857' } }, __alloT('stem.molecule.gl_real_gap', 'gap') + ': ' + (deviation > 0 ? '+' : '') + fmt(deviation, 2) + '%')
@@ -7908,7 +7908,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 var ratio = gasEffusionRatio(g.M, GASES[1].M);   // versus N₂
                 var speed = gasRmsSpeed(g.M, st.T);
                 return h('div', { key: 'gr' + g.id, className: 'flex items-center gap-2' },
-                  h('span', { className: 'w-12 text-[11px] font-black text-slate-800' }, g.sym),
+                  h('span', { className: 'w-12 text-[0.6875rem] font-black text-slate-800' }, g.sym),
                   h('div', { className: 'flex-1 h-3 rounded bg-slate-100 overflow-hidden', 'aria-hidden': 'true' },
                     h('div', { style: { width: Math.max(2, Math.min(100, speed / 20)) + '%', height: '100%', background: g.fill } })),
                   h('span', { className: 'w-40 text-right text-[10.5px] font-mono font-bold text-slate-700' },
@@ -7923,12 +7923,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             GAS_LAWS.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, g.name),
-                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto' }, g.year)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, g.name),
+                  React.createElement('span', { className: 'text-[0.625rem] text-slate-500 ml-auto' }, g.year)
                 ),
-                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-700 font-bold mb-1' }, g.formula),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed mb-1' }, g.plain),
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic bg-white p-1.5 rounded border border-slate-100' }, '🧪 ' + g.example)
+                React.createElement('div', { className: 'text-[0.6875rem] font-mono text-indigo-700 font-bold mb-1' }, g.formula),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed mb-1' }, g.plain),
+                React.createElement('div', { className: 'text-[0.625rem] text-slate-600 italic bg-white p-1.5 rounded border border-slate-100' }, '🧪 ' + g.example)
               );
             })
           )
@@ -7938,14 +7938,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderColligativeSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.colligative_properties', '🧂 Colligative properties')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.properties_that_depend_on_the_number_o', 'Properties that depend on the NUMBER of solute particles, not their identity. i = van\'t Hoff factor (1 for non-electrolyte, ~2 for NaCl, ~3 for CaCl₂).')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.properties_that_depend_on_the_number_o', 'Properties that depend on the NUMBER of solute particles, not their identity. i = van\'t Hoff factor (1 for non-electrolyte, ~2 for NaCl, ~3 for CaCl₂).')),
           React.createElement('div', { className: 'space-y-2' },
             COLLIGATIVE_PROPS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, p.prop),
-                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-700 font-bold mb-1' }, p.formula),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed mb-1' }, p.plain),
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic' }, '🌡 ' + p.example)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, p.prop),
+                React.createElement('div', { className: 'text-[0.6875rem] font-mono text-indigo-700 font-bold mb-1' }, p.formula),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed mb-1' }, p.plain),
+                React.createElement('div', { className: 'text-[0.625rem] text-slate-600 italic' }, '🌡 ' + p.example)
               );
             })
           )
@@ -7955,9 +7955,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderRedoxSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.standard_reduction_potentials_e', '🔋 Standard reduction potentials (E°)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.higher_e_stronger_oxidizer_more_eager_', 'Higher E° = stronger oxidizer (more eager to GAIN electrons). To predict a redox reaction: cell potential = E°(cathode) − E°(anode). Positive → spontaneous.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.higher_e_stronger_oxidizer_more_eager_', 'Higher E° = stronger oxidizer (more eager to GAIN electrons). To predict a redox reaction: cell potential = E°(cathode) − E°(anode). Positive → spontaneous.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Half-reaction', 'E° (V)', 'Notes'].map(function(hh, i) {
@@ -7970,7 +7970,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return React.createElement('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, r.half),
                     React.createElement('td', { className: 'px-2 py-1 font-mono font-bold text-indigo-700' }, r.e0),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, r.notes)
                   );
                 })
               )
@@ -7982,16 +7982,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderOrganicSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.organic_functional_groups', '🧪 Organic functional groups')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.recognize_functional_groups_to_predict', 'Recognize functional groups to predict chemical behavior. R = "rest of molecule" (any carbon chain).')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.recognize_functional_groups_to_predict', 'Recognize functional groups to predict chemical behavior. R = "rest of molecule" (any carbon chain).')),
           React.createElement('div', { className: 'space-y-2' },
             ORGANIC_GROUPS.map(function(o, i) {
               return React.createElement('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, o.name),
-                  React.createElement('span', { className: 'text-[11px] font-mono ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold' }, o.formula)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, o.name),
+                  React.createElement('span', { className: 'text-[0.6875rem] font-mono ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold' }, o.formula)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Example: '), o.example),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, o.notes)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Example: '), o.example),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, o.notes)
               );
             })
           )
@@ -8001,16 +8001,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderSpectroSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.spectroscopy_methods', '📡 Spectroscopy methods')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.different_wavelengths_probe_different_', 'Different wavelengths probe different molecular properties. Chemists combine multiple methods to determine structure of unknown compounds.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.different_wavelengths_probe_different_', 'Different wavelengths probe different molecular properties. Chemists combine multiple methods to determine structure of unknown compounds.')),
           React.createElement('div', { className: 'space-y-2' },
             SPECTRO_METHODS.map(function(s, i) {
               return React.createElement('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, s.name),
-                  React.createElement('span', { className: 'text-[10px] text-slate-600 font-mono ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800' }, s.range)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, s.name),
+                  React.createElement('span', { className: 'text-[0.625rem] text-slate-600 font-mono ml-auto px-2 py-0.5 rounded bg-indigo-100 text-indigo-800' }, s.range)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Detects: '), s.detects),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), s.use)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Detects: '), s.detects),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), s.use)
               );
             })
           )
@@ -8020,9 +8020,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderCrystalSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.crystal_structures_2', '💎 Crystal structures')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.how_atoms_ions_pack_in_solids_determin', 'How atoms/ions pack in solids determines material properties (hardness, conductivity, melting point, optical behavior).')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.how_atoms_ions_pack_in_solids_determin', 'How atoms/ions pack in solids determines material properties (hardness, conductivity, melting point, optical behavior).')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Structure', 'Coord #', 'Packing %', 'Example', 'Notes'].map(function(hh, i) {
@@ -8036,8 +8036,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.coord),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.packing),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, c.example),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, c.example),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -8053,11 +8053,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             BIOCHEM_MOLECULES.map(function(b, i) {
               return React.createElement('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, b.class),
-                  React.createElement('span', { className: 'text-[10px] text-slate-600 ml-auto italic' }, b.example)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, b.class),
+                  React.createElement('span', { className: 'text-[0.625rem] text-slate-600 ml-auto italic' }, b.example)
                 ),
-                React.createElement('div', { className: 'text-[11px] font-mono text-indigo-700 font-bold mb-1' }, b.formula),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, b.notes)
+                React.createElement('div', { className: 'text-[0.6875rem] font-mono text-indigo-700 font-bold mb-1' }, b.formula),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, b.notes)
               );
             })
           )
@@ -8068,23 +8068,23 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.atmospheric_chemistry', '🌫 Atmospheric chemistry')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.atmospheric_layers_bottom_to_top', 'Atmospheric layers (bottom to top)')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.atmospheric_layers_bottom_to_top', 'Atmospheric layers (bottom to top)')),
             React.createElement('div', { className: 'space-y-1' },
               ATMOSPHERE_LAYERS.map(function(L, i) {
                 return React.createElement('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, L.name),
-                    React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700' }, L.altitude),
-                    React.createElement('span', { className: 'text-[10px] font-mono text-slate-600' }, L.temp)
+                    React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, L.name),
+                    React.createElement('span', { className: 'text-[0.625rem] font-mono text-indigo-700' }, L.altitude),
+                    React.createElement('span', { className: 'text-[0.625rem] font-mono text-slate-600' }, L.temp)
                   ),
-                  React.createElement('div', { className: 'text-[10px] text-slate-600 italic' }, L.notes)
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-600 italic' }, L.notes)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.atmospheric_composition_dry_air_by_vol', 'Atmospheric composition (dry air, by volume)')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.atmospheric_composition_dry_air_by_vol', 'Atmospheric composition (dry air, by volume)')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Gas', '%', 'Notes'].map(function(hh, i) {
@@ -8097,7 +8097,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return React.createElement('tr', { key: 'a'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-mono font-bold text-indigo-700' }, a.gas),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, a.pct),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, a.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, a.notes)
                   );
                 })
               )
@@ -8110,22 +8110,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.nuclear_chemistry', '☢ Nuclear chemistry')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.decay_and_nuclear_processes', 'Decay and nuclear processes')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.decay_and_nuclear_processes', 'Decay and nuclear processes')),
             React.createElement('div', { className: 'space-y-1' },
               NUCLEAR_PROCESSES.map(function(n, i) {
                 return React.createElement('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, n.name),
-                    React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 ml-auto' }, n.particle)
+                    React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, n.name),
+                    React.createElement('span', { className: 'text-[0.625rem] font-mono text-indigo-700 ml-auto' }, n.particle)
                   ),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, n.notes)
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, n.notes)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.notable_isotopes', 'Notable isotopes')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.notable_isotopes', 'Notable isotopes')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Isotope', 'Half-life (decay)', 'Use'].map(function(hh, i) {
@@ -8138,7 +8138,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-mono font-bold text-indigo-700' }, c.iso),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, c.halfLife),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, c.use)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem]' }, c.use)
                   );
                 })
               )
@@ -8153,10 +8153,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           React.createElement('div', { className: 'space-y-2' },
             ELECTROCHEM_CELLS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, c.type),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Operation: '), c.operation),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Example: '), c.example),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, c.type),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Operation: '), c.operation),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Example: '), c.example),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.notes)
               );
             })
           )
@@ -8170,11 +8170,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             FAMOUS_CHEMISTS.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-indigo-900' }, c.name),
-                  React.createElement('span', { className: 'text-[10px] text-slate-500 ml-auto font-mono' }, c.year)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-indigo-900' }, c.name),
+                  React.createElement('span', { className: 'text-[0.625rem] text-slate-500 ml-auto font-mono' }, c.year)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-800 mb-1' }, c.contrib),
-                React.createElement('div', { className: 'text-[10px] text-slate-600 italic' }, c.notes)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-800 mb-1' }, c.contrib),
+                React.createElement('div', { className: 'text-[0.625rem] text-slate-600 italic' }, c.notes)
               );
             })
           )
@@ -8262,9 +8262,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderIndustrialSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.industrial_scale_chemicals', '🏗 Industrial-scale chemicals')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.volumes_are_approximate_annual_world_p', 'Volumes are approximate annual world production. Chemistry at industrial scale underlies modern civilization.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.volumes_are_approximate_annual_world_p', 'Volumes are approximate annual world production. Chemistry at industrial scale underlies modern civilization.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Product', 'Annual volume', 'Use', 'Notes'].map(function(hh, i) {
@@ -8276,9 +8276,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 INDUSTRIAL_CHEMS.map(function(I, i) {
                   return React.createElement('tr', { key: 'I'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, I.product),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, I.volume),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, I.use),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, I.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[0.625rem]' }, I.volume),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, I.use),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, I.notes)
                   );
                 })
               )
@@ -8315,9 +8315,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderColorsChemSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.color_chemistry_pigments_dyes', '🎨 Color chemistry — pigments + dyes')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.color_in_chemistry_usually_comes_from_', 'Color in chemistry usually comes from absorption of specific visible wavelengths. Conjugated double-bond systems (like in chlorophyll, beta-carotene) absorb in the visible.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.color_in_chemistry_usually_comes_from_', 'Color in chemistry usually comes from absorption of specific visible wavelengths. Conjugated double-bond systems (like in chlorophyll, beta-carotene) absorb in the visible.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Color', 'Compound', 'Source', 'Notes'].map(function(hh, i) {
@@ -8329,9 +8329,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 COLOR_CHEMISTRY.map(function(c, i) {
                   return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.color),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, c.compound),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, c.source),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[0.625rem]' }, c.compound),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, c.source),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -8378,9 +8378,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderFlavorChemSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.flavor_scent_molecules', '👃 Flavor + scent molecules')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.olfactory_receptors_detect_specific_mo', 'Olfactory receptors detect specific molecules. Humans have ~400 different olfactory receptors and can distinguish ~10,000 distinct smells (some claim trillions).')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.olfactory_receptors_detect_specific_mo', 'Olfactory receptors detect specific molecules. Humans have ~400 different olfactory receptors and can distinguish ~10,000 distinct smells (some claim trillions).')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Compound', 'Formula', 'Source', 'Notes'].map(function(hh, i) {
@@ -8392,9 +8392,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 FLAVOR_SCENT.map(function(f, i) {
                   return React.createElement('tr', { key: 'f'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, f.compound),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, f.formula),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, f.source),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, f.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[0.625rem]' }, f.formula),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, f.source),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, f.notes)
                   );
                 })
               )
@@ -8484,11 +8484,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderSolubilitySection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.solubility_rules_data', '◐ Solubility rules + data')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.rules_of_thumb_for_ionic_compound_solu', 'Rules of thumb for ionic compound solubility in water. Helpful for predicting precipitation reactions.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.rules_of_thumb_for_ionic_compound_solu', 'Rules of thumb for ionic compound solubility in water. Helpful for predicting precipitation reactions.')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.general_solubility_rules', 'General solubility rules')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.general_solubility_rules', 'General solubility rules')),
             React.createElement('div', { className: 'overflow-x-auto' },
-              React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+              React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
                     ['Rule', 'Soluble?', 'Exceptions', 'Notes'].map(function(hh, i) {
@@ -8499,19 +8499,19 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('tbody', null,
                   SOLUBILITY_RULES.map(function(r, i) {
                     return React.createElement('tr', { key: 'r'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                      React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[10px]' }, r.rule),
+                      React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800 text-[0.625rem]' }, r.rule),
                       React.createElement('td', { className: 'px-2 py-1 font-bold text-indigo-700' }, r.soluble),
-                      React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, r.exceptions),
-                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, r.notes)
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, r.exceptions),
+                      React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, r.notes)
                     );
                   })
                 )
               )
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.solubility_of_specific_compounds_in_wa', 'Solubility of specific compounds in water')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.solubility_of_specific_compounds_in_wa', 'Solubility of specific compounds in water')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Compound', 'Solubility', 'Notes'].map(function(hh, i) {
@@ -8523,8 +8523,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 SOLUBILITY_DATA.map(function(s, i) {
                   return React.createElement('tr', { key: 's'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, s.compound),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, s.solubility),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, s.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[0.625rem]' }, s.solubility),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, s.notes)
                   );
                 })
               )
@@ -8536,9 +8536,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderCompoundsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_chemical_compounds', '⌬ Common chemical compounds')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molecular_weights_in_g_mol_listed_in_r', 'Molecular weights in g/mol. Listed in rough order of familiarity.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molecular_weights_in_g_mol_listed_in_r', 'Molecular weights in g/mol. Listed in rough order of familiarity.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Compound', 'Formula', 'MW', 'Notes'].map(function(hh, i) {
@@ -8550,9 +8550,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 COMMON_COMPOUNDS.map(function(c, i) {
                   return React.createElement('tr', { key: 'c'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, c.name),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, c.formula),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[10px]' }, c.mw),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, c.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[0.625rem]' }, c.formula),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-[0.625rem]' }, c.mw),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, c.notes)
                   );
                 })
               )
@@ -8644,9 +8644,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderPhScaleSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.h_ph_scale_of_common_substances', 'H⁺ pH scale of common substances')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.ph_log_h_each_unit_10_change_in_h_ph_7', 'pH = −log[H⁺]. Each unit = 10× change in [H⁺]. pH 7 = neutral; <7 = acidic; >7 = basic. Scale theoretically goes beyond 0-14 but rarely encountered.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.ph_log_h_each_unit_10_change_in_h_ph_7', 'pH = −log[H⁺]. Each unit = 10× change in [H⁺]. pH 7 = neutral; <7 = acidic; >7 = basic. Scale theoretically goes beyond 0-14 but rarely encountered.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['pH', 'Substance', 'Notes'].map(function(hh, i) {
@@ -8659,7 +8659,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return React.createElement('tr', { key: 'p'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-mono font-black text-indigo-700 text-center' }, p.ph),
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, p.substance),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, p.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, p.notes)
                   );
                 })
               )
@@ -8671,9 +8671,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderFoodsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.food_nutrition_chemistry_context', '🥦 Food + nutrition (chemistry context)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.macronutrients_carbs_fats_proteins_eac', 'Macronutrients: carbs, fats, proteins. Each gram: carbs ~4 cal, protein ~4 cal, fat ~9 cal, alcohol ~7 cal.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.macronutrients_carbs_fats_proteins_eac', 'Macronutrients: carbs, fats, proteins. Each gram: carbs ~4 cal, protein ~4 cal, fat ~9 cal, alcohol ~7 cal.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Food', 'Calories', 'Protein', 'Notes'].map(function(hh, i) {
@@ -8685,9 +8685,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 FOODS_NUTRITION.map(function(f, i) {
                   return React.createElement('tr', { key: 'f'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, f.food),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, f.cal),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[0.625rem]' }, f.cal),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, f.protein),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, f.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, f.notes)
                   );
                 })
               )
@@ -8699,9 +8699,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderMeltboilSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.melting_boiling_points', '🌡 Melting + boiling points')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.at_1_atm_materials_with_strong_intermo', 'At 1 atm. Materials with strong intermolecular forces (ionic, network covalent) have higher melting/boiling points than those with weak forces (London).')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.at_1_atm_materials_with_strong_intermo', 'At 1 atm. Materials with strong intermolecular forces (ionic, network covalent) have higher melting/boiling points than those with weak forces (London).')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Substance', 'Melting pt', 'Boiling pt', 'Notes'].map(function(hh, i) {
@@ -8713,9 +8713,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 MELT_BOIL.map(function(m, i) {
                   return React.createElement('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.substance),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[10px]' }, m.mp),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[10px]' }, m.bp),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[0.625rem]' }, m.mp),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[0.625rem]' }, m.bp),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, m.notes)
                   );
                 })
               )
@@ -8922,9 +8922,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderAllElementsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🅻 Periodic table (118 elements)'),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'A complete 118-element reference with atomic mass, category, periodic position, isotope stability, and a concise learning note for every entry.'),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, 'A complete 118-element reference with atomic mass, category, periodic position, isotope stability, and a concise learning note for every entry.'),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('caption', { className: 'sr-only' }, 'Complete 118-element periodic table reference'),
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
@@ -8940,12 +8940,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     React.createElement('td', { className: 'px-2 py-1 font-mono font-black text-indigo-700' }, e.sym),
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, e.name),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700' }, e.mass),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px]' }, e.cat),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem]' }, e.cat),
                     React.createElement('td', { className: 'px-2 py-1 text-center text-slate-700' }, e.period || '—'),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] whitespace-nowrap' }, e.position || '—'),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] whitespace-nowrap' }, e.block || '—'),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] whitespace-nowrap' }, e.isotopeStability || '—'),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, e.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] whitespace-nowrap' }, e.position || '—'),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] whitespace-nowrap' }, e.block || '—'),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] whitespace-nowrap' }, e.isotopeStability || '—'),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, e.notes)
                   );
                 })
               )
@@ -8957,9 +8957,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderMineralsSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_minerals', '💎 Common minerals')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.mohs_scale_measures_relative_hardness_', 'Mohs scale measures relative hardness (1 = softest, 10 = hardest). The scale steps are NOT linear: corundum (9) is ~4× harder than topaz (8), and diamond (10) is ~4× harder than corundum.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.mohs_scale_measures_relative_hardness_', 'Mohs scale measures relative hardness (1 = softest, 10 = hardest). The scale steps are NOT linear: corundum (9) is ~4× harder than topaz (8), and diamond (10) is ~4× harder than corundum.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Mineral', 'Formula', 'Mohs', 'Notes'].map(function(hh, i) {
@@ -8971,9 +8971,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 MINERALS.map(function(m, i) {
                   return React.createElement('tr', { key: 'm'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, m.name),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[10px]' }, m.formula),
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold text-[0.625rem]' }, m.formula),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 font-bold text-center' }, m.mohs),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, m.notes)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, m.notes)
                   );
                 })
               )
@@ -8985,9 +8985,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderPharmaSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.common_medications', '💊 Common medications')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.for_chemistry_context_only_not_medical', 'For chemistry context only — NOT medical advice. Always consult a doctor or pharmacist before taking any medication.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.for_chemistry_context_only_not_medical', 'For chemistry context only — NOT medical advice. Always consult a doctor or pharmacist before taking any medication.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Drug', 'Formula', 'Class', 'Use'].map(function(hh, i) {
@@ -8999,9 +8999,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 DRUGS_LIST.map(function(d, i) {
                   return React.createElement('tr', { key: 'd'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, d.name),
-                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[10px]' }, d.formula),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[10px]' }, d.class),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, d.use)
+                    React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 text-[0.625rem]' }, d.formula),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem]' }, d.class),
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, d.use)
                   );
                 })
               )
@@ -9013,17 +9013,17 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderHouseholdSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.household_chemicals', '🧴 Household chemicals')),
-          React.createElement('div', { className: 'p-2.5 rounded bg-rose-50 border border-rose-200 text-[11px] text-rose-900 mb-3' },
+          React.createElement('div', { className: 'p-2.5 rounded bg-rose-50 border border-rose-200 text-[0.6875rem] text-rose-900 mb-3' },
             React.createElement('strong', null, __alloT('stem.molecule.safety', '⚠ Safety: ')), __alloT('stem.molecule.never_mix_bleach_with_ammonia_toxic_ch', 'NEVER mix bleach with ammonia (toxic chloramine vapors) or acids (deadly chlorine gas). Store cleaners separately. Keep away from children.')
           ),
           React.createElement('div', { className: 'space-y-2' },
             HOUSEHOLD_CHEM.map(function(c, i) {
               return React.createElement('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
-                  React.createElement('span', { className: 'text-[12px] font-black text-slate-800' }, c.product),
-                  React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 font-bold ml-auto px-2 py-0.5 rounded bg-indigo-100' }, c.active)
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.product),
+                  React.createElement('span', { className: 'text-[0.625rem] font-mono text-indigo-700 font-bold ml-auto px-2 py-0.5 rounded bg-indigo-100' }, c.active)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, c.notes)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, c.notes)
               );
             })
           )
@@ -9204,9 +9204,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           React.createElement('div', { className: 'space-y-2' },
             LAB_TECHNIQUES.map(function(t, i) {
               return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, t.name),
-                React.createElement('div', { className: 'text-[11px] text-indigo-700 font-bold mb-1' }, t.use),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.notes)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, t.name),
+                React.createElement('div', { className: 'text-[0.6875rem] text-indigo-700 font-bold mb-1' }, t.use),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.notes)
               );
             })
           )
@@ -9217,25 +9217,25 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.drug_discovery_pipeline', '💊 Drug discovery pipeline')),
           React.createElement('div', { className: 'mb-3' },
-            React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.stages', 'Stages')),
+            React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.stages', 'Stages')),
             React.createElement('div', { className: 'space-y-1' },
               DRUG_DISCOVERY.map(function(d, i) {
                 return React.createElement('div', { key: 'd'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    React.createElement('span', { className: 'text-[11px] font-black text-slate-800' }, d.stage),
-                    React.createElement('span', { className: 'text-[10px] font-mono text-indigo-700 ml-auto' }, d.duration)
+                    React.createElement('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, d.stage),
+                    React.createElement('span', { className: 'text-[0.625rem] font-mono text-indigo-700 ml-auto' }, d.duration)
                   ),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700' }, d.notes)
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, d.notes)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.industry_essentials', 'Industry essentials')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.industry_essentials', 'Industry essentials')),
           React.createElement('div', { className: 'space-y-1' },
             DRUG_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-indigo-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[11px] font-black text-indigo-900 mb-0.5' }, f.fact),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                React.createElement('div', { className: 'text-[0.6875rem] font-black text-indigo-900 mb-0.5' }, f.fact),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -9248,8 +9248,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           React.createElement('div', { className: 'space-y-2' },
             FOOD_CHEMISTRY.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-indigo-900 mb-0.5' }, f.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, f.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-indigo-900 mb-0.5' }, f.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
           )
@@ -9263,22 +9263,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             React.createElement('div', { className: 'space-y-2' },
               MATERIALS_CLASSES.map(function(m, i) {
                 return React.createElement('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                  React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.name),
-                  React.createElement('div', { className: 'text-[11px] text-indigo-700 font-bold mb-1' }, m.properties),
-                  React.createElement('div', { className: 'text-[10px] text-slate-700 italic' }, 'Examples: ' + m.examples)
+                  React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, m.name),
+                  React.createElement('div', { className: 'text-[0.6875rem] text-indigo-700 font-bold mb-1' }, m.properties),
+                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700 italic' }, 'Examples: ' + m.examples)
                 );
               })
             )
           ),
-          React.createElement('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.notable_materials', 'Notable materials')),
+          React.createElement('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.notable_materials', 'Notable materials')),
           React.createElement('div', { className: 'space-y-1' },
             MATERIAL_FACTS.map(function(f, i) {
               return React.createElement('div', { key: 'f'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-indigo-400 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                  React.createElement('span', { className: 'text-[11px] font-black text-indigo-900' }, f.material),
-                  React.createElement('span', { className: 'text-[10px] text-indigo-700 font-mono ml-auto' }, f.property)
+                  React.createElement('span', { className: 'text-[0.6875rem] font-black text-indigo-900' }, f.material),
+                  React.createElement('span', { className: 'text-[0.625rem] text-indigo-700 font-mono ml-auto' }, f.property)
                 ),
-                React.createElement('div', { className: 'text-[10px] text-slate-700' }, f.notes)
+                React.createElement('div', { className: 'text-[0.625rem] text-slate-700' }, f.notes)
               );
             })
           )
@@ -9291,8 +9291,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           React.createElement('div', { className: 'space-y-2' },
             INORGANIC_TOPICS.map(function(t, i) {
               return React.createElement('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-indigo-400 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-indigo-900 mb-0.5' }, t.topic),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, t.detail)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-indigo-900 mb-0.5' }, t.topic),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.detail)
               );
             })
           )
@@ -9305,9 +9305,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           React.createElement('div', { className: 'space-y-2' },
             POLLUTANTS.map(function(p, i) {
               return React.createElement('div', { key: 'p'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, p.pollutant),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, React.createElement('strong', null, 'Source: '), p.source),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Impact: '), p.impact)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, p.pollutant),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, React.createElement('strong', null, 'Source: '), p.source),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Impact: '), p.impact)
               );
             })
           )
@@ -9317,15 +9317,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderGreenSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.12_principles_of_green_chemistry', '🌱 12 Principles of Green Chemistry')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.articulated_by_anastas_warner_1998_gui', 'Articulated by Anastas + Warner (1998). Guides chemists toward more sustainable methods.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.articulated_by_anastas_warner_1998_gui', 'Articulated by Anastas + Warner (1998). Guides chemists toward more sustainable methods.')),
           React.createElement('div', { className: 'space-y-1' },
             GREEN_CHEMISTRY.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2' },
-                  React.createElement('span', { className: 'text-[10px] font-mono text-emerald-700 font-bold' }, (i + 1) + '.'),
-                  React.createElement('span', { className: 'text-[12px] font-black text-emerald-900' }, g.principle)
+                  React.createElement('span', { className: 'text-[0.625rem] font-mono text-emerald-700 font-bold' }, (i + 1) + '.'),
+                  React.createElement('span', { className: 'text-[0.75rem] font-black text-emerald-900' }, g.principle)
                 ),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed ml-5' }, g.detail)
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed ml-5' }, g.detail)
               );
             })
           )
@@ -9335,9 +9335,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderMolGeoSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.vsepr_electron_pair_geometries', '∡ VSEPR — electron pair geometries')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.lone_pairs_lp_take_more_space_than_bon', 'Lone pairs (LP) take more space than bonding pairs → compress bond angles. VSEPR predicts molecular shape from total electron pairs.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.lone_pairs_lp_take_more_space_than_bon', 'Lone pairs (LP) take more space than bonding pairs → compress bond angles. VSEPR predicts molecular shape from total electron pairs.')),
           React.createElement('div', { className: 'overflow-x-auto' },
-            React.createElement('table', { className: 'min-w-full text-[11px] border-collapse' },
+            React.createElement('table', { className: 'min-w-full text-[0.6875rem] border-collapse' },
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Total e- pairs', 'Bonding', 'Geometry', 'Angle', 'Example'].map(function(hh, i) {
@@ -9352,7 +9352,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-slate-700 text-center' }, b.bondingPairs),
                     React.createElement('td', { className: 'px-2 py-1 font-bold text-slate-800' }, b.geometry),
                     React.createElement('td', { className: 'px-2 py-1 font-mono text-indigo-700 font-bold' }, b.angle),
-                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[10px] italic' }, b.example)
+                    React.createElement('td', { className: 'px-2 py-1 text-slate-600 text-[0.625rem] italic' }, b.example)
                   );
                 })
               )
@@ -9364,13 +9364,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderIsomersSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.isomers_2', '⇄ Isomers')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molecules_with_the_same_molecular_form', 'Molecules with the same molecular formula but different arrangement. Isomers can have very different properties.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.molecules_with_the_same_molecular_form', 'Molecules with the same molecular formula but different arrangement. Isomers can have very different properties.')),
           React.createElement('div', { className: 'space-y-2' },
             ISOMER_TYPES.map(function(I, i) {
               return React.createElement('div', { key: 'I'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, I.name),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' }, I.description),
-                React.createElement('div', { className: 'text-[10px] text-indigo-700 italic' }, '→ ' + I.example)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, I.name),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, I.description),
+                React.createElement('div', { className: 'text-[0.625rem] text-indigo-700 italic' }, '→ ' + I.example)
               );
             })
           )
@@ -9380,13 +9380,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       function renderNobleSection() {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.he_noble_gases_group_18', 'He Noble gases (Group 18)')),
-          React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.full_outer_electron_shell_very_unreact', 'Full outer electron shell → very unreactive. Discovered late (Ramsay et al., 1894-1898) because they don\'t form compounds easily.')),
+          React.createElement('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.full_outer_electron_shell_very_unreact', 'Full outer electron shell → very unreactive. Discovered late (Ramsay et al., 1894-1898) because they don\'t form compounds easily.')),
           React.createElement('div', { className: 'space-y-2' },
             NOBLE_GASES.map(function(n, i) {
               return React.createElement('div', { key: 'n'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                React.createElement('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, n.gas),
-                React.createElement('div', { className: 'text-[11px] text-indigo-700 font-bold mb-1' }, 'Uses: ' + n.uses),
-                React.createElement('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, n.notes)
+                React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, n.gas),
+                React.createElement('div', { className: 'text-[0.6875rem] text-indigo-700 font-bold mb-1' }, 'Uses: ' + n.uses),
+                React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, n.notes)
               );
             })
           )
