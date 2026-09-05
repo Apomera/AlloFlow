@@ -480,27 +480,27 @@
       "data": [
         {
           "question": "If forecasts are only good for a week, how can anyone predict climate for 50 years? 🤔",
-          "answer": "Great question — it feels backwards! Predicting one specific day is like guessing one coin flip. Predicting climate is like predicting that 1,000 flips will land near half heads. Averages over long times are more predictable than single moments."
+          "answer": "Great question — it feels backwards! Predicting one specific day is like guessing one coin flip. Predicting climate is like saying 1,000 flips will land near half heads. Long averages are easier to predict than single moments."
         },
         {
           "question": "Does climate ever change naturally?",
-          "answer": "Yes. Ice ages and warm periods have come and gone over hundreds of thousands of years from natural causes. Scientists study those natural patterns carefully — it is part of how they identify what is different about recent decades."
+          "answer": "Yes. Ice ages and warm spells have come and gone over hundreds of thousands of years. Natural causes drove them. Scientists study those old patterns closely. It is part of how they work out what is different about recent decades."
         },
         {
           "question": "Why do weather reporters say 'climate' when they mean weather? 📺",
-          "answer": "Usually just habit and casual speech. Now that you know the difference, you will hear it constantly — it is a fun (slightly annoying) superpower."
+          "answer": "Usually just habit and casual speech. Now that you know the difference, you will hear it constantly — a fun (slightly annoying) superpower."
         },
         {
           "question": "Can two places have the same weather but different climates?",
-          "answer": "Absolutely. It might be 70 degrees and sunny in both Seattle and Phoenix today, but their climates — the long-run patterns — are completely different."
+          "answer": "Absolutely. It might be 70 degrees and sunny in both Seattle and Phoenix today. But their climates — the long-run patterns — are nothing alike."
         },
         {
           "question": "What is a microclimate?",
-          "answer": "A small area whose climate differs from the region around it — a shaded valley, a city center that stays warmer than nearby farms, or the sunny side of a hill."
+          "answer": "A small area whose climate differs from the region around it. A shaded valley. A city center that stays warmer than the farms nearby. The sunny side of a hill."
         },
         {
           "question": "How far back do climate records go?",
-          "answer": "Direct thermometer records go back a couple of centuries. Beyond that, scientists read natural records: tree rings, ice cores, coral layers, and lake sediments — nature keeps its own logbooks."
+          "answer": "Direct thermometer records go back a couple of hundred years. Before that, scientists read natural records instead. Tree rings, ice cores, coral layers, and mud from the bottom of lakes. Nature keeps its own logbooks."
         }
       ],
       "meta": "6 questions • includes the chaos/averages puzzle"

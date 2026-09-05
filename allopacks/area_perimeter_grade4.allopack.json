@@ -571,27 +571,27 @@
       "data": [
         {
           "question": "Why do I keep mixing these two up? 😤",
-          "answer": "Because both use the same two numbers. The fix is to stop looking at numbers first and ask what the job needs: something going AROUND, or something COVERING?"
+          "answer": "Because both use the same two numbers. The fix is to stop looking at the numbers first. Ask what the job needs. Something going AROUND, or something COVERING?"
         },
         {
           "question": "Does this work for shapes that are not rectangles?",
-          "answer": "Perimeter always works the same way — add up every side, no matter the shape. Area gets its own formula for each shape, and you will meet triangles and circles in later grades."
+          "answer": "Perimeter always works the same way. Add up every side, whatever the shape. Area gets its own formula for each shape. You will meet triangles and circles in later grades."
         },
         {
           "question": "Can a shape have a big perimeter and a tiny area? 🐍",
-          "answer": "Absolutely. A 1 by 100 rectangle has a perimeter of 202 but an area of only 100. Long skinny shapes waste fence, which is exactly why the shape matters."
+          "answer": "Absolutely. A 1 by 100 rectangle has a perimeter of 202 but an area of only 100. Long skinny shapes waste fence. That is exactly why the shape matters."
         },
         {
           "question": "What is the most area I can get from a fixed perimeter?",
-          "answer": "For rectangles, a square wins every time. If you allow any shape at all, a circle beats even the square — which is one reason so many animal pens and storage tanks are round."
+          "answer": "For rectangles, a square wins every time. If any shape is allowed, a circle beats even the square. That is one reason so many animal pens and storage tanks are round."
         },
         {
           "question": "Why do stores sell carpet by the square foot? 🧶",
-          "answer": "Because carpet covers space, and covering is area. Fencing, ribbon, and trim are sold by the plain foot because those go around things."
+          "answer": "Because carpet covers space, and covering is area. Fencing, ribbon, and trim are sold by the plain foot. Those go around things."
         },
         {
           "question": "Do adults actually use this?",
-          "answer": "Constantly — flooring, paint, fencing, gardens, tiling, roofing, even loading a moving truck. It is one of the most immediately useful things in elementary math."
+          "answer": "All the time. Flooring, paint, fencing, gardens, tiling, roofing, even loading a moving truck. It is one of the most useful things in elementary math."
         }
       ],
       "meta": "6 questions • practical framing"

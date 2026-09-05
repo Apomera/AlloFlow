@@ -77,6 +77,21 @@ for (const f of files) {
   const hi = band && band.hi <= 2 ? 280 : 600;
   if (fk && (fk.words < lo || fk.words > hi)) flags.push(`reading ${fk.words} words (target ${lo + 40}-${hi - 50})`);
 
+  // The reading is not the only thing a student reads. The FAQ especially is where a confused
+  // student goes, so companion prose above the reading's own grade band defeats the point of
+  // levelling the reading at all. Measured with the same estimator, held to the same band + 2.
+  // Short texts make FK wildly noisy, hence the 60-word floor.
+  // NOT the directions body: it is a numbered checklist of resource titles, and long proper
+  // titles ('A Retelling Card for a Reading Buddy') inflate FK without making anything harder
+  // to read. Measuring it produced two false flags before this was narrowed to real prose.
+  if (band && faq) {
+    const answers = faq.data.map((q) => q.answer).join(' ');
+    if (answers.split(/\s+/).filter(Boolean).length >= 60) {
+      const g = fleschKincaid(answers).grade;
+      if (g > band.hi + 2) flags.push(`faq answers read at FK ${g}, above grade band ${band.lo}-${band.hi}`);
+    }
+  }
+
   // Glossary terms bolded on first use in the reading.
   let bolded = 0, missing = [];
   if (reading && glossary) {

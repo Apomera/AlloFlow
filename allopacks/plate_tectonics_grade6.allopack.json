@@ -608,27 +608,27 @@
       "data": [
         {
           "question": "Will the continents crash back together someday? 🌎",
-          "answer": "Probably. Geologists model a future supercontinent forming in roughly 250 million years — it already has proposed names like Pangaea Proxima. Nobody will be around to check the prediction."
+          "answer": "Probably. Geologists model a future supercontinent forming in about 250 million years. It already has proposed names, like Pangaea Proxima. Nobody will be around to check."
         },
         {
           "question": "What plate am I on right now?",
-          "answer": "Most of North America sits on the North American Plate, which extends well into the Atlantic. Parts of coastal California are on the Pacific Plate — which is why they grind past each other along the San Andreas."
+          "answer": "Most of North America sits on the North American Plate, which reaches far into the Atlantic. Parts of coastal California sit on the Pacific Plate instead. That is why the two grind past each other along the San Andreas."
         },
         {
           "question": "Can we predict earthquakes yet?",
-          "answer": "Not the way people want. Scientists can say which areas are at risk and roughly how often big quakes happen, but not the day or hour. Anyone claiming exact prediction is overselling."
+          "answer": "Not the way people want. Scientists can say which areas are at risk. They can say roughly how often big quakes happen. They cannot say the day or the hour. Anyone claiming exact prediction is overselling."
         },
         {
           "question": "Is Mount Everest still growing? 🏔️",
-          "answer": "Yes, a few millimeters a year as India keeps pressing north — though erosion and earthquakes shave some of that back off."
+          "answer": "Yes, by a few millimeters a year, as India keeps pressing north. Erosion and earthquakes shave some of that back off."
         },
         {
           "question": "What is the Ring of Fire?",
-          "answer": "The horseshoe of volcanoes and earthquake zones around the Pacific, where plates converge and dive under each other. About three-quarters of the world's active volcanoes sit along it."
+          "answer": "The horseshoe of volcanoes and earthquake zones around the Pacific. Plates converge there and dive under each other. About three-quarters of the world's active volcanoes sit along it."
         },
         {
           "question": "Was Pangaea the only supercontinent?",
-          "answer": "No — it is just the most recent and best documented. Geologists have evidence for earlier ones like Rodinia. The continents have assembled and broken apart several times."
+          "answer": "No. It is just the most recent, and the best documented. Geologists have evidence for earlier ones, like Rodinia. The continents have come together and broken apart several times."
         }
       ],
       "meta": "6 questions • includes honest prediction limits"
