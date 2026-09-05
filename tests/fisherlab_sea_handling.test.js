@@ -47,6 +47,23 @@ describe('Fisher Lab sea handling', () => {
     }
     expect(sample(23,-47,2.5,'chop').height).toBeCloseTo(sample(23,-47,2.5,'breeze').height*2);
   });
+  it('balances crosswind for a northbound model track and exposes meaningful distractors', () => {
+    const preview=window.__FisherLabCore.getCoreNorthboundExperiment;
+    for(const sea of ['breeze','chop']) {
+      const west=preview(sea,'west'), north=preview(sea,'north'), east=preview(sea,'east');
+      expect(west.correct).toBe(true);expect(west.crossTrack).toBeCloseTo(0,10);
+      expect(Math.min(west.course,360-west.course)).toBeLessThan(0.00001);
+      expect(west.bearing).toBeGreaterThan(350);expect(west.bearing).toBeLessThan(360);
+      expect(north.correct).toBe(false);expect(north.crossTrack).toBeGreaterThan(0);
+      expect(east.correct).toBe(false);expect(east.crossTrack).toBeCloseTo(north.crossTrack*2);
+      expect(west.groundSpeed).toBeLessThan(west.speed);
+    }
+    expect(preview('chop','west').correction).toBeGreaterThan(preview('breeze','west').correction);
+    expect(preview('calm','north')).toMatchObject({correct:true,bearing:0,groundSpeed:4});
+    expect(preview('calm','west')).toMatchObject({correct:false,bearing:353});
+    expect(preview('calm','east').crossTrack).toBeGreaterThan(0);
+    expect(preview('unknown','bad')).toEqual(preview('calm','north'));
+  });
   it('round-trips sea settings in recovery while old checkpoints remain calm', () => {
     const core=window.__FisherLabCore;
     const base={savedAt:1700000000000,region:'maine',mode:'guided',pose:{heading:Math.PI,x:0,z:5.5},environment:{weather:'foggy',timeOfDay:'day',seaState:'chop',cameraView:'chase'}};

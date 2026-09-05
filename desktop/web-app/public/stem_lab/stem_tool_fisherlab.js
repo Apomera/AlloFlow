@@ -5812,6 +5812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreSeaState: getCoreSeaState,
     getCoreSeaMotion: getCoreSeaMotion,
     sampleCoreSeaSurface: sampleCoreSeaSurface,
+    getCoreNorthboundExperiment: getCoreNorthboundExperiment,
     getCoreExplanationPractice: getCoreExplanationPractice,
     getCoreExplanationFeedback: getCoreExplanationFeedback,
     getCoreMeasurementModel: getCoreMeasurementModel,
@@ -13906,6 +13907,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { seaState: sea.id, windKnots: sea.windKnots, driftX: driftX, driftZ: 0, resistance: resistance,
       groundX: groundX, groundZ: groundZ, groundSpeed: groundSpeed, course: course };
   }
+  function getCoreNorthboundExperiment(seaState, choice) {
+    var sea = getCoreSeaState(seaState), speed = 4;
+    var correction = Math.asin(sea.windKnots * 0.03 / speed) * 180 / Math.PI;
+    // Calm still needs meaningful distractors; windy choices use the exact model correction.
+    var angle = correction || 7;
+    var selection = ['west', 'north', 'east'].indexOf(choice) !== -1 ? choice : 'north';
+    var bearing = selection === 'west' ? 360 - angle : selection === 'east' ? angle : 0;
+    var motion = getCoreSeaMotion({ seaState: sea.id, heading: (180 - bearing) * Math.PI / 180, speed: speed });
+    return { seaState: sea.id, speed: speed, correction: correction, bearing: bearing,
+      course: motion.course, groundSpeed: motion.groundSpeed, crossTrack: motion.groundX,
+      correct: selection === (sea.windKnots ? 'west' : 'north') };
+  }
   function sampleCoreSeaSurface(x, z, time, seaState) {
     x = isFinite(x) ? Number(x) : 0; z = isFinite(z) ? Number(z) : 0; time = isFinite(time) ? Number(time) : 0;
     var scale = getCoreSeaState(seaState).waveScale;
@@ -14960,7 +14973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // failure can never break the sim), honors prefers-reduced-motion, and
     // self-throttles on low-power hardware. Kill-switch: window.AlloPostFXEnabled === false.
     // ═══════════════════════════════════════════════════════════════════
-    var AF = { update: function () {}, applyEnv: function () {}, dispose: function () {}, seaChop: 0.15 };
+    var AF = { update: function () {}, applyEnv: function () {}, syncSeaSurface: function () {}, dispose: function () {}, seaChop: 0.15 };
     (function buildAmbientFX() {
       try {
         var lowPower = LOW_POWER;   // see the single definition above
@@ -14982,6 +14995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           effectsDisposed = true;
           AF.update = function () {};
           AF.applyEnv = function () {};
+          AF.syncSeaSurface = function () {};
           ambientScripts.forEach(function (script) {
             try {
               script.onload = null;
@@ -15134,6 +15148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         for (var fi = 0; fi < WAKE_N; fi++) {
           var fm = new THREE.SpriteMaterial({ map: foamTex, color: 0xe4eef4, transparent: true, opacity: 0, depthWrite: false, fog: true });
           var fs = add(new THREE.Sprite(fm)); fs.scale.set(0.3, 0.3, 1); fs.visible = false; fs.renderOrder = 2;
+          fs.name = 'fisherlab-wake-foam';
           fs.userData = { life: 0, max: 1 }; wake.push(fs);
         }
         // ── bow spray (brief additive burst at higher speed) ──
@@ -15142,6 +15157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         for (var pi = 0; pi < SPRAY_N; pi++) {
           var pm = new THREE.SpriteMaterial({ map: sprayTex, color: 0xf0f8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: true });
           var ps = add(new THREE.Sprite(pm)); ps.scale.set(0.2, 0.2, 1); ps.visible = false; ps.renderOrder = 3;
+          ps.name = 'fisherlab-bow-spray';
           ps.userData = { life: 0, max: 1, vy: 0 }; spray.push(ps);
         }
 
@@ -15191,8 +15207,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         function spawnWake() {
           var w = wake[wcur]; wcur = (wcur + 1) % wake.length;
           var offset = (Math.random() - 0.5) * 1.7;
-          boat.localToWorld(effectPositionScratch.set(offset, 0.16, -2.6));
-          w.position.copy(effectPositionScratch); w.position.y = 0.09;
+          boat.localToWorld(effectPositionScratch.set(offset, 0.16, boatState.speed < 0 ? 2.6 : -2.6));
+          w.position.copy(effectPositionScratch);
+          w.position.y = sampleCoreSeaSurface(w.position.x, w.position.z, elapsed, boatState.seaState).height + 0.09;
           w.userData.max = 1.1 + Math.random() * 0.7; w.userData.life = w.userData.max;
           w.material.opacity = 0.5; w.scale.setScalar(0.35); w.visible = true;
           // Foam is dropped in the water and left behind, which the old code
@@ -15213,10 +15230,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var s = spray[scur]; scur = (scur + 1) % spray.length;
           boat.localToWorld(effectPositionScratch.set((Math.random() - 0.5) * 1.1, 0.4, 2.7));
           s.position.copy(effectPositionScratch);
+          var launchMotion = getCoreSeaMotion(boatState);
+          s.userData.vx = launchMotion.groundX; s.userData.vz = launchMotion.groundZ;
           s.userData.max = 0.5 + Math.random() * 0.3; s.userData.life = s.userData.max; s.userData.vy = 1.8 + Math.random() * 1.6;
           s.material.opacity = 0.7; s.scale.setScalar(0.18); s.visible = true;
         }
 
+        AF.syncSeaSurface = function (time) {
+          wake.forEach(function(w) {
+            if (w.visible) w.position.y = sampleCoreSeaSurface(w.position.x, w.position.z, time, boatState.seaState).height + 0.09;
+          });
+        };
         AF.applyEnv = function (o) {
           try {
             var tod = o.tod || 'day', weather = o.weather || 'clear';
@@ -15244,7 +15268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             T_.glitter = (tod === 'night') ? 0 : (weather === 'foggy') ? 0.06 : (weather === 'rainy') ? 0.1 : (tod === 'sunset') ? 0.5 : 0.6;
             T_.rain = (weather === 'rainy') ? 0.8 : 0;
             T_.stars = (tod === 'night' && weather !== 'foggy' && weather !== 'rainy') ? 1 : 0;
-            // sea state responds to weather (rougher in rain) — feeds the wave amplitude
+            // Independent training sea preset feeds the wave amplitude.
             AF.seaChop = getCoreSeaState(boatState && boatState.seaState).waveScale;
           } catch (_) {}
         };
@@ -15284,17 +15308,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   var drift = w.userData.spread * dt * (1 - lr * 0.55);
                   w.position.x += (w.userData.outX || 0) * drift;
                   w.position.z += (w.userData.outZ || 0) * drift;
+                  w.position.y = sampleCoreSeaSurface(w.position.x, w.position.z, elapsed, boatState.seaState).height + 0.09;
                   w.scale.setScalar(0.35 + lr * 1.75); w.material.opacity = Math.max(0, 0.5 * (1 - lr));
                   if (w.userData.life <= 0) w.visible = false;
                 }
               }
-              if (spray.length && sp > 3.2) { sacc += dt * (sp - 2.5) * 1.1; while (sacc >= 1) { sacc -= 1; spawnSpray(); } }
+              if (spray.length && boatState.speed > 3.2) { sacc += dt * (sp - 2.5) * 1.1; while (sacc >= 1) { sacc -= 1; spawnSpray(); } }
               for (var qi = 0; qi < spray.length; qi++) {
                 var s = spray[qi]; if (s.userData.life <= 0) continue;
                 s.userData.life -= dt; s.userData.vy -= dt * 3.2; s.position.y += s.userData.vy * dt;
+                s.position.x += (s.userData.vx || 0) * dt; s.position.z += (s.userData.vz || 0) * dt;
+                var spraySurface = sampleCoreSeaSurface(s.position.x, s.position.z, elapsed, boatState.seaState).height;
                 var sr = 1 - Math.max(0, s.userData.life) / s.userData.max;
                 s.scale.setScalar(0.18 + sr * 0.5); s.material.opacity = Math.max(0, 0.7 * (1 - sr));
-                if (s.userData.life <= 0 || s.position.y < 0.1) s.visible = false;
+                if (s.userData.life <= 0 || s.position.y < spraySurface + 0.1) s.visible = false;
               }
               for (var ui = 0; ui < gulls.length; ui++) {
                 var g = gulls[ui]; g.userData.ang += dt * g.userData.sp;
@@ -15507,6 +15534,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       new THREE.MeshLambertMaterial({ color: 0x8a6c47 })
     );
     dock.position.set(0, 0.1, 8);
+    // A fixed dock pennant shows the preset's true wind, independent of boat heading.
+    var dockWindCue = new THREE.Group(); dockWindCue.name = 'fisherlab-dock-wind';
+    dockWindCue.position.set(-2.65, 0, 8.75);
+    var windPole = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.065, 4, 8), new THREE.MeshLambertMaterial({ color: 0xcbd5e1 }));
+    windPole.position.y = 2.25; dockWindCue.add(windPole);
+    var windClothGeo = new THREE.PlaneGeometry(1, 1, 10, 1);
+    var windClothColors = new Float32Array(windClothGeo.attributes.position.count * 3);
+    for (var wc = 0; wc < windClothGeo.attributes.position.count; wc++) {
+      var stripe = Math.floor((windClothGeo.attributes.position.getX(wc) + 0.5) * 5) % 2;
+      windClothColors.set(stripe ? [1, 0.88, 0.65] : [1, 0.3, 0.06], wc * 3);
+    }
+    windClothGeo.setAttribute('color', new THREE.BufferAttribute(windClothColors, 3));
+    var windCloth = new THREE.Mesh(windClothGeo, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+    windCloth.name = 'fisherlab-wind-pennant'; dockWindCue.add(windCloth); scene.add(dockWindCue);
+    function updateDockWindCue() {
+      var wind = getCoreSeaState(boatState.seaState).windKnots, strength = wind / 16;
+      var time = reducedMotion ? 0 : elapsed;
+      var points = windClothGeo.attributes.position;
+      for (var i = 0; i < points.count; i++) {
+        var u = (i % 11) / 10, edge = i < 11 ? 1 : -1;
+        points.setXYZ(i, u * (0.18 + strength * 1.6),
+          3.9 - u * 0.95 * (1 - strength) + edge * 0.3 * (1 - u * 0.85),
+          Math.sin(u * 9 - time * 5) * 0.12 * u * strength);
+      }
+      points.needsUpdate = true; windClothGeo.computeVertexNormals();
+      // Shape changes with the preset, so keep culling bounds in step with the geometry.
+      windClothGeo.computeBoundingSphere();
+      dockWindCue.userData.windKnots = wind; dockWindCue.userData.sampleTime = time;
+    }
     // The slab stays as the invisible reference the mission logic measures
     // distance-to-dock against; the visible decking sits on top of it.
     dock.visible = false;
@@ -16399,6 +16455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return nextView;
     }
     function applySeaSurfacePose() {
+      updateDockWindCue();
       var surface = sampleCoreSeaSurface(boatState.pos.x, boatState.pos.z, elapsed, boatState.seaState);
       boat.position.y = reducedMotion ? 0 : surface.height;
       if (!reducedMotion) {
@@ -16419,6 +16476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       updateWaterSurface(reducedMotion ? 0 : elapsed, AF.seaChop);
       boat.rotation.x = boatState.pitch; boat.rotation.z = boatState.roll;
       applySeaSurfacePose();
+      AF.syncSeaSurface(reducedMotion ? 0 : elapsed);
       var patch = { seaState: boatState.seaState, seaMotion: getCoreSeaMotion(boatState) };
       if (!repaintHeldScene(patch, true)) publishHudPatch(patch);
       return boatState.seaState;
@@ -17918,6 +17976,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var cameraView = camHook[0], setCameraViewState = camHook[1];
     var seaStateHook = useState('calm');
     var seaState = seaStateHook[0], setSeaState = seaStateHook[1];
+    var seaPredictionHook = useState(null);
+    var seaPrediction = seaPredictionHook[0], setSeaPrediction = seaPredictionHook[1];
     var weatherHook = useState('clear');
     var weather = weatherHook[0], setWeatherState = weatherHook[1];
     var voyageModeHook = useState(stateInit.coreVoyageMode || 'guided');
@@ -19970,6 +20030,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var motion = getCoreSeaMotion({ seaState: seaState, heading: hud.heading, speed: hud.speed });
       var heading = ((180 - (hud.heading == null ? Math.PI : hud.heading) * 180 / Math.PI) % 360 + 360) % 360;
       var textStyle = { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 };
+      var prediction = seaPrediction && seaPrediction.seaState === sea.id ? seaPrediction.choice : null;
+      var experiment = prediction ? getCoreNorthboundExperiment(sea.id, prediction) : null;
       function arrow(bearing, color, dashed, length) {
         if (bearing === null) return null;
         return h('g', { transform: 'rotate(' + bearing + ' 60 60)' },
@@ -19996,6 +20058,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('summary', { style: { color: '#bae6fd', fontSize: 12 } }, 'How this training sea works'),
           h('p', { style: textStyle }, 'Keep the throttle steady and compare heading with track. Turning into the model waves adds resistance. Wind can move an unpowered boat. The compass diagram uses north at the top; the harbor and travel distances use a compressed training scale.'),
           h('p', { style: textStyle }, 'Sea conditions are independent of rain and fog; Guided mode lets you change them. These presets use a fixed west wind and an illustrative 3% downwind drift coefficient; real leeway depends on the vessel. Currents, local shelter, gusts, separate swell, and calibrated hull dynamics are not modeled. Motion reduction freezes decorative wave motion without changing drift or resistance.'),
+          h('p', { style: textStyle }, 'Look for the orange-and-cream pennant on the dock: it hangs in calm air and stretches east in wind. Foam rides the waves; a drifting boat with no through-water speed does not produce a powered wake.'),
+          h('fieldset', { 'data-sea-experiment': true, style: { margin: '14px 0', padding: 14, border: '1px solid #3a647b', borderRadius: 10, background: '#061a29', minWidth: 0 } },
+            h('legend', { style: { color: '#f0fdfa', fontSize: 13, fontWeight: 800, padding: '0 6px' } }, 'Predict a northbound track'),
+            h('p', { style: Object.assign({}, textStyle, { marginTop: 0 }) }, 'With ' + sea.label.toLowerCase() + ' conditions and a steady 4 kt through water, where should the bow point to keep this model boat traveling north?'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              [{ id: 'west', label: 'A little west of north' }, { id: 'north', label: 'Due north' }, { id: 'east', label: 'A little east of north' }].map(function(choice) {
+                return h('button', { key: choice.id, type: 'button', 'aria-pressed': prediction === choice.id,
+                  onClick: function() { setSeaPrediction({ seaState: sea.id, choice: choice.id }); },
+                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (prediction === choice.id ? '#5eead4' : '#3a647b'), background: prediction === choice.id ? '#164e63' : '#0b2637', color: '#e0f2fe', fontSize: 12, cursor: 'pointer' } }, choice.label);
+              })),
+            h('div', { role: 'status', 'data-sea-prediction-result': true, style: Object.assign({}, textStyle, { marginTop: 10 }) }, experiment ?
+              h('div', null,
+                h('b', { style: { color: experiment.correct ? '#99f6e4' : '#fde68a' } }, experiment.correct ? 'Your prediction balances the motion.' : 'Follow the drift and try again.'),
+                h('p', { style: { margin: '6px 0' } }, 'Model preview: bow ' + (Math.round(experiment.bearing) % 360) + '° → track ' + (Math.round(experiment.course) % 360) + '°. ' + (sea.windKnots ? 'A small westward part of the boat’s motion can balance the eastward wind drift.' : 'With no wind drift, pointing due north gives a northbound track.')),
+                h('p', { style: { margin: '6px 0 0' } }, 'Try it in Guided mode: compare heading and track at a steady through-water speed. This preview does not steer the boat; wave resistance can change the speed you achieve.')) : 'Choose a direction to reveal the model preview.')),
           h('p', { style: textStyle }, h('a', { href: 'https://gnome.orr.noaa.gov/doc/faq.html', target: '_blank', rel: 'noopener noreferrer', style: { color: '#99f6e4' } }, 'NOAA: leeway'), ' · ', h('a', { href: 'https://www.weather.gov/marine/wavedetail', target: '_blank', rel: 'noopener noreferrer', style: { color: '#99f6e4' } }, 'NWS: waves and swell'))));
     }
 
