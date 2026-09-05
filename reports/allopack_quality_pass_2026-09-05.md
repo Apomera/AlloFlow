@@ -189,10 +189,25 @@ This found the worst item of the pass. **"Centrioles (used when the cell divides
 The automated version of this check does not work and was not shipped. It flags a card whose content words appear nowhere else in the pack, and it cannot tell an untaught technical term from a deliberately fresh example. It flags every card in the Tell It Back sort — which uses a different story from the reading *on purpose*, so the sort tests story structure rather than memory — and every example sentence in the Figurative Language and Point of View sorts, where fresh examples are the whole point. One true finding against roughly twenty false ones is not a gate.
 
 That is the third check this week to be measured and then dropped, after the directions body and the quiz stems. The pattern is worth naming: a probe that finds a real defect has still earned nothing until its false-positive rate is looked at.
+## Eighth pass (same day): what the packs say to each other
+
+Every pass so far reviewed packs one at a time. But 26 packs share one catalog, and a teacher may well use two of them in the same year, so the packs can quietly disagree with each other in a way no single-pack review would ever surface. Twenty-three terms are defined in more than one pack, and reading them side by side found two real conflicts.
+
+Most of the twenty-three are not conflicts and should not be "fixed". Force is simpler in the grade-3 pack than the grade-6 one, which is correct. Function means the job an organelle does in the Cell Structure pack and a rule with one output per input in Linear Equations, which is just English. Oxygen is defined by what cells do with it in Body Systems and by what plants release in Plant Needs; those are complementary halves of one fact.
+
+### Two that were wrong
+
+**Compare, in Point of View.** Defined as "To show how two things are alike" — while that pack's own reading tells students to "compare what each one knows" and to "see the **contrast**". The glossary contradicted the reading three paragraphs away, and it told a student the opposite of the skill the pack teaches, which is noticing what a narrator *cannot* know. It now reads "To look at two things side by side to see how they are alike and how they differ." The Figurative Language definition was scoped rather than changed, since likeness genuinely is what a simile does: "To show how two things are alike, which is the job a simile or a metaphor does."
+
+**Retell, in Point of View.** Defined as "To tell a story again in a new way, such as from a different narrator." The grade-2 pack teaches retelling as a *faithful* recount — same events, right order, your own words — and that is what RL.2.2 asks for. A student who learns it in grade 2 and meets this in grade 4 has the meaning quietly overwritten. It now keeps the base meaning and adds the twist: "To tell a story again. Here you keep the same events but tell them from a different narrator." That also matches the pack's own challenge criteria, which require every event of the original scene to stay the same.
+
+### The tool
+
+`dev-tools/report_shared_glossary_terms.cjs` prints every shared term with its definitions side by side. It is deliberately **not** part of the audit and has no pass or fail: most differences are correct, and only a human reading them can separate grade-appropriate scoping from a contradiction. Making it a gate would have meant either twenty-one false alarms or a threshold tuned until it caught nothing.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
-- Tools: `dev-tools/audit_allopacks.cjs`, `dev-tools/build_allopack_catalog_entries.cjs`
+- Tools: `dev-tools/audit_allopacks.cjs`, `dev-tools/build_allopack_catalog_entries.cjs`, `dev-tools/report_shared_glossary_terms.cjs`
 - Tests: `tests/allopack_catalog.test.js`, `tests/content_viewer_boundary_key.test.js`
 - Host fix: `AlloFlowANTI.txt` and its two paired copies (content-viewer boundary key)
 - Docs: `docs/ALLOPACK_FORMAT_SPEC.md`, `docs/ALLOPACK_AUTHORING_PROMPT.md`, `docs/COMMUNITY_CATALOG_SEED_PLAN.md`
