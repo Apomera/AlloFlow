@@ -1407,6 +1407,48 @@
     }
     return out;
   }
+  // Rise, transit and set across the night that contains this instant, plus the
+  // darkest moment the object is well placed. `positionAt(utcMs)` returns apparent
+  // alt/az, so fixed stars and moving bodies share one implementation.
+  //
+  // The window runs local noon to local noon so a night is never split in half.
+  function objectVisibility(positionAt, utcMs, lat, lon, timeZone, stepMinutes) {
+    var wall = utcMsToWallTime(utcMs, timeZone);
+    var start = wallTimeToUtcMs(wall.year, wall.month, wall.day, 12, 0, timeZone);
+    if (!Number.isFinite(start)) return null;
+    if (utcMs < start) {
+      var back = utcMsToWallTime(start - 86400000, timeZone);
+      start = wallTimeToUtcMs(back.year, back.month, back.day, 12, 0, timeZone);
+    }
+    var step = Math.max(1, Math.round(stepMinutes) || 10) * 60000, samples = [];
+    for (var t = start; t <= start + 86400000; t += step) {
+      var p = positionAt(t);
+      if (!p) return null;
+      var i = skyInstant(t);
+      var sun = applyRefraction(equToHorizon(sunRaDec(i.d).ra, sunRaDec(i.d).dec, siderealTime(i.Y, i.M, i.D, i.UTh, lon), lat));
+      samples.push({ t: t, alt: p.alt, az: p.az, sunAlt: sun.alt });
+    }
+    function cross(rising) {
+      for (var k = 1; k < samples.length; k++) {
+        var a = samples[k - 1], b = samples[k];
+        if (rising ? (a.alt < 0 && b.alt >= 0) : (a.alt >= 0 && b.alt < 0)) return a.t + (0 - a.alt) / (b.alt - a.alt) * (b.t - a.t);
+      }
+      return null;
+    }
+    var top = samples[0], low = samples[0], best = null;
+    samples.forEach(function(x) {
+      if (x.alt > top.alt) top = x;
+      if (x.alt < low.alt) low = x;
+      if (x.sunAlt < -12 && x.alt > 0 && (!best || x.alt > best.alt)) best = x;
+    });
+    return {
+      windowStart: start, rise: cross(true), set: cross(false),
+      transit: top.t, transitAlt: top.alt, minAlt: low.alt,
+      circumpolar: low.alt > 0, neverRises: top.alt <= 0,
+      best: best ? { t: best.t, alt: best.alt, az: best.az } : null,
+      darkOnly: !!best
+    };
+  }
   // Nearest sky object to a unit direction. Bright things win ties inside the cone.
   function identifyNearest(dir, candidates, coneDeg) {
     var cosCone = Math.cos((coneDeg || 2.5) * D2R), best = null, bestScore = Infinity;
@@ -1422,7 +1464,7 @@
   }
   if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
     refractionDeg: refractionDeg, DEEP_SKY: DEEP_SKY, CONSTELLATION_NAMES: CONSTELLATION_NAMES, starColorClass: starColorClass,
-    skyEvents: skyEvents, identifyNearest: identifyNearest, starMotionAt: starMotionAt, diurnalPath: diurnalPath,
+    skyEvents: skyEvents, identifyNearest: identifyNearest, starMotionAt: starMotionAt, diurnalPath: diurnalPath, objectVisibility: objectVisibility,
     OBSERVATORY_TRAIL_HOURS: OBSERVATORY_TRAIL_HOURS, SIDEREAL_RATE: SIDEREAL_RATE
   });
 
@@ -2078,14 +2120,14 @@
         if (horizon.alts[i] <= 0 || (current.mags ? current.mags[i] : catalog.mag[i]) > current.limit + 0.3) continue;
         var dot = (horizon.positions[i * 3] * dir.x + horizon.positions[i * 3 + 1] * dir.y + horizon.positions[i * 3 + 2] * dir.z) / 600;
         if (dot < 0.998) continue; // ~3.6° prefilter
-        candidates.push({ kind: 'star', index: i, hip: catalog.hip[i], name: catalog.names[catalog.hip[i]] || ('HIP ' + catalog.hip[i]), mag: current.mags ? current.mags[i] : catalog.mag[i], ci: catalog.ci[i], con: catalog.codes[catalog.con[i]] || '', x: horizon.positions[i * 3], y: horizon.positions[i * 3 + 1], z: horizon.positions[i * 3 + 2], alt: horizon.alts[i], az: horizon.azs[i] });
+        candidates.push({ kind: 'star', index: i, hip: catalog.hip[i], ra: catalog.ra[i], dec: catalog.dec[i], name: catalog.names[catalog.hip[i]] || ('HIP ' + catalog.hip[i]), mag: current.mags ? current.mags[i] : catalog.mag[i], ci: catalog.ci[i], con: catalog.codes[catalog.con[i]] || '', x: horizon.positions[i * 3], y: horizon.positions[i * 3 + 1], z: horizon.positions[i * 3 + 2], alt: horizon.alts[i], az: horizon.azs[i] });
       }
       if (res.layers.planets) current.planets.forEach(function(p) { var sp = planetSprites[p.id]; if (sp.visible) candidates.push({ kind: 'planet', id: p.id, name: (model.text && model.text.planets && model.text.planets[p.id]) || p.name, mag: -2, priority: 0.4, x: sp.position.x, y: sp.position.y, z: sp.position.z, alt: p.alt, az: p.az }); });
       if (res.layers.sunMoon && moonSprite.visible) candidates.push({ kind: 'moon', id: 'moon', name: (model.text && model.text.moon) || 'Moon', mag: -12, priority: 0.6, x: moonSprite.position.x, y: moonSprite.position.y, z: moonSprite.position.z, alt: current.moon.alt, az: current.moon.az, illum: current.moon.phase.illum, phase: current.moon.phase.name });
-      if (res.layers.deepSky) deepSprites.forEach(function(sp, i) { if (sp.visible) candidates.push({ kind: 'deepsky', id: DEEP_SKY[i].id, name: DEEP_SKY[i].name, type: DEEP_SKY[i].type, size: DEEP_SKY[i].size, mag: DEEP_SKY[i].mag, priority: 0.3, x: sp.position.x, y: sp.position.y, z: sp.position.z, alt: sp.userData.alt, az: sp.userData.az }); });
+      if (res.layers.deepSky) deepSprites.forEach(function(sp, i) { if (sp.visible) candidates.push({ kind: 'deepsky', id: DEEP_SKY[i].id, name: DEEP_SKY[i].name, ra: DEEP_SKY[i].ra, dec: DEEP_SKY[i].dec, type: DEEP_SKY[i].type, size: DEEP_SKY[i].size, mag: DEEP_SKY[i].mag, priority: 0.3, x: sp.position.x, y: sp.position.y, z: sp.position.z, alt: sp.userData.alt, az: sp.userData.az }); });
       var hit = identifyNearest(dir, candidates, 2.5);
       picked = hit ? { kind: hit.kind, id: hit.id, index: hit.index, name: hit.name, position: { x: hit.x, y: hit.y, z: hit.z } } : null;
-      var info = hit ? { kind: hit.kind, id: hit.id, hip: hit.hip, name: hit.name, mag: hit.mag, ci: hit.ci, pattern: hit.hip ? (HIP_TO_PATTERN[hit.hip] || undefined) : undefined, colorClass: hit.kind === 'star' ? starColorClass(hit.ci) : undefined, constellation: hit.con ? (CONSTELLATION_NAMES[hit.con] || hit.con) : undefined, type: hit.type, size: hit.size, illum: hit.illum, phase: hit.phase, alt: hit.alt, az: hit.az, angleDeg: hit.angleDeg } : null;
+      var info = hit ? { kind: hit.kind, id: hit.id, hip: hit.hip, name: hit.name, mag: hit.mag, ci: hit.ci, ra: hit.ra, dec: hit.dec, pattern: hit.hip ? (HIP_TO_PATTERN[hit.hip] || undefined) : undefined, colorClass: hit.kind === 'star' ? starColorClass(hit.ci) : undefined, constellation: hit.con ? (CONSTELLATION_NAMES[hit.con] || hit.con) : undefined, type: hit.type, size: hit.size, illum: hit.illum, phase: hit.phase, alt: hit.alt, az: hit.az, angleDeg: hit.angleDeg } : null;
       if (hooks && hooks.onPick) hooks.onPick(info);
       draw();
       return info;
@@ -9259,6 +9301,27 @@
         }
         var picked = d.obsPicked && typeof d.obsPicked === 'object' && typeof d.obsPicked.name === 'string' ? d.obsPicked : null;
         var tourCatalog = observatoryCatalogCache;
+        function clockAt(ms) { return utcMsToWallTime(ms, resolved.timeZone).timeText; }
+        // One ephemeris per sample keeps this cheap enough to run on every render.
+        function pickedPositionAt(target) {
+          if (!target) return null;
+          if ((target.kind === 'star' || target.kind === 'deepsky') && Number.isFinite(target.ra) && Number.isFinite(target.dec)) {
+            return function(t) { var i = skyInstant(t); return horizonPoint(target.ra, target.dec, siderealTime(i.Y, i.M, i.D, i.UTh, resolved.lon), resolved.lat, i.d, 1); };
+          }
+          if (target.kind === 'moon' || target.kind === 'sun' || target.kind === 'planet') {
+            return function(t) {
+              var i = skyInstant(t), lst = siderealTime(i.Y, i.M, i.D, i.UTh, resolved.lon);
+              var eq = target.kind === 'moon' ? moonRaDec(i.d) : target.kind === 'sun' ? sunRaDec(i.d) : planetRaDec(target.id, i.d);
+              return eq ? applyRefraction(equToHorizon(eq.ra, eq.dec, lst, resolved.lat)) : null;
+            };
+          }
+          return null;
+        }
+        var pickedWhen = null;
+        if (picked && !deepTime) {
+          var pickedAt = pickedPositionAt(picked);
+          if (pickedAt) pickedWhen = objectVisibility(pickedAt, resolved.utcMs, resolved.lat, resolved.lon, resolved.timeZone, 10);
+        }
         var deepUp = DEEP_SKY.map(function(obj) { var p = horizonPoint(obj.ra, obj.dec, bodies.lst, resolved.lat, bodies.d, 1); return { obj: obj, alt: p.alt, az: p.az }; }).filter(function(x) { return !deepTime && x.alt > 5 && x.obj.mag < limit + 1; }).sort(function(a, b) { return a.obj.mag - b.obj.mag; });
         var zoneOptions = [];
         [resolved.timeZone].concat(OBSERVATORY_SITES.map(function(s) { return s.timeZone; }), [browserTimeZone(), 'UTC']).forEach(function(z) { if (z && zoneOptions.indexOf(z) === -1 && validTimeZone(z)) zoneOptions.push(z); });
@@ -9432,7 +9495,16 @@
                     : '',
                     Number.isFinite(picked.alt) ? ' · ' + Math.round(picked.alt) + '° ' + compass(picked.az) : '',
                     picked.pattern && textPack.constellations[picked.pattern] ? h('span', { style: { color: '#a5f3fc' } }, ' · ' + __alloT('stem.astronomy.obs_part_of', 'Part of') + ' ' + textPack.constellations[picked.pattern] + ' (' + __alloT('stem.astronomy.obs_now_highlighted', 'now highlighted') + ')') : null),
-                  a11yButton({ type: 'button', onClick: function() { upd({ obsPicked: null }); }, style: { padding: '5px 9px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5 } }, __alloT('stem.astronomy.obs_clear_pick', 'Clear')))
+                  a11yButton({ type: 'button', onClick: function() { upd({ obsPicked: null }); }, style: { padding: '5px 9px', borderRadius: 6, border: '1px solid ' + obsBorder('#475569'), background: obsBg('#0f172a'), color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5 } }, __alloT('stem.astronomy.obs_clear_pick', 'Clear')),
+                  pickedWhen ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
+                    h('strong', { style: { color: '#a5f3fc' } }, __alloT('stem.astronomy.obs_when_title', 'Tonight') + ': '),
+                    pickedWhen.neverRises ? __alloT('stem.astronomy.obs_when_never', 'never rises at this site.')
+                      : pickedWhen.circumpolar ? __alloT('stem.astronomy.obs_when_circumpolar', 'circumpolar, so it never sets.') + ' ' + __alloT('stem.astronomy.obs_when_highest', 'Highest') + ' ' + Math.round(pickedWhen.transitAlt) + '° ' + __alloT('stem.astronomy.obs_when_at', 'at') + ' ' + clockAt(pickedWhen.transit) + '.'
+                      : [Number.isFinite(pickedWhen.rise) ? __alloT('stem.astronomy.obs_when_rises', 'rises') + ' ' + clockAt(pickedWhen.rise) : null,
+                         __alloT('stem.astronomy.obs_when_highest', 'Highest') + ' ' + Math.round(pickedWhen.transitAlt) + '° ' + __alloT('stem.astronomy.obs_when_at', 'at') + ' ' + clockAt(pickedWhen.transit),
+                         Number.isFinite(pickedWhen.set) ? __alloT('stem.astronomy.obs_when_sets', 'sets') + ' ' + clockAt(pickedWhen.set) : null].filter(Boolean).join(' · ') + '.',
+                    pickedWhen.best ? ' ' + __alloT('stem.astronomy.obs_when_best', 'Best in full darkness around') + ' ' + clockAt(pickedWhen.best.t) + ' ' + __alloT('stem.astronomy.obs_when_at_alt', 'at') + ' ' + Math.round(pickedWhen.best.alt) + '°.'
+                      : (pickedWhen.neverRises ? '' : ' ' + __alloT('stem.astronomy.obs_when_twilight_only', 'It is only above the horizon in daylight or twilight tonight.'))) : null)
                 : h('span', { style: { color: '#94a3b8' } }, __alloT('stem.astronomy.obs_pick_hint', 'Click a star, planet, the Moon or a deep-sky glow in the scene to identify it.'))),
               // Guided tour: the best few things to look at in this exact sky.
               h('div', { id: 'astronomy-observatory-tour', role: 'region', 'aria-label': __alloT('stem.astronomy.obs_tour_title', 'Tonight\'s tour'), style: { marginTop: 12, padding: 12, borderRadius: 10, background: obsBg('#111a2e'), border: '1px solid ' + obsBorder('#67e8f9'), fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },

@@ -506,6 +506,80 @@ describe('Theme surfaces and contrast', () => {
   });
 });
 
+describe('When to look tonight', () => {
+  // A fixed star, positioned the same way the tool does but without refraction,
+  // so the expected altitudes are exactly 90 - |latitude - declination|.
+  const starAt = (ra, dec, lat, lon) => t => {
+    const d = new Date(t);
+    const UTh = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600;
+    const lst = sky.siderealTime(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), UTh, lon);
+    return sky.equToHorizon(ra, dec, lst, lat);
+  };
+  const PORTLAND = { lat: 43.66, lon: -70.26, tz: 'America/New_York' };
+  const NIGHT = Date.UTC(2026, 11, 22, 3, 0);   // 2026-12-21 22:00 local
+
+  it('calls Polaris circumpolar and a far southern star one that never rises', () => {
+    const polaris = sky.objectVisibility(starAt(37.946, 89.264, PORTLAND.lat, PORTLAND.lon), NIGHT, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 10);
+    expect(polaris.circumpolar).toBe(true);
+    expect(polaris.neverRises).toBe(false);
+    expect(polaris.rise).toBeNull();
+    expect(polaris.set).toBeNull();
+    expect(polaris.minAlt).toBeGreaterThan(42.5);
+    expect(polaris.transitAlt).toBeLessThan(44.8);
+    // Acrux sits far enough south that Portland never sees it.
+    const acrux = sky.objectVisibility(starAt(186.65, -63.099, PORTLAND.lat, PORTLAND.lon), NIGHT, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 10);
+    expect(acrux.neverRises).toBe(true);
+    expect(acrux.circumpolar).toBe(false);
+    expect(acrux.transitAlt).toBeLessThan(-15);
+    expect(acrux.best).toBeNull();
+  });
+
+  it('puts a rising star at the altitude its declination allows, from two latitudes', () => {
+    // Sirius transits at 90 - |lat - dec|: 29.6 degrees from Portland.
+    const sirius = sky.objectVisibility(starAt(101.287, -16.716, PORTLAND.lat, PORTLAND.lon), NIGHT, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 5);
+    expect(sirius.circumpolar).toBe(false);
+    expect(sirius.neverRises).toBe(false);
+    expect(sirius.transitAlt).toBeCloseTo(29.62, 0);
+    expect(sirius.rise).toBeLessThan(sirius.transit);
+    expect(sirius.set).toBeGreaterThan(sirius.transit);
+    // The same star barely clears the horizon from Tromso: 90 - (69.65 + 16.716).
+    const arctic = sky.objectVisibility(starAt(101.287, -16.716, 69.65, 18.96), NIGHT, 69.65, 18.96, 'Europe/Oslo', 5);
+    expect(arctic.neverRises).toBe(false);
+    expect(arctic.transitAlt).toBeCloseTo(3.63, 0);
+  });
+
+  it('reports the darkest moment the object is well placed, and none for the Sun', () => {
+    const sirius = sky.objectVisibility(starAt(101.287, -16.716, PORTLAND.lat, PORTLAND.lon), NIGHT, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 10);
+    expect(sirius.best).not.toBeNull();
+    expect(sirius.best.alt).toBeGreaterThan(0);
+    expect(sirius.best.alt).toBeLessThanOrEqual(sirius.transitAlt + 0.001);
+    // The Sun is never up in full darkness, so there is no such moment for it.
+    const sunAt = t => {
+      const d = new Date(t);
+      const UTh = d.getUTCHours() + d.getUTCMinutes() / 60;
+      const day = sky.astroDayNumber(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), UTh);
+      const eq = sky.sunRaDec(day);
+      return sky.equToHorizon(eq.ra, eq.dec, sky.siderealTime(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), UTh, PORTLAND.lon), PORTLAND.lat);
+    };
+    const sun = sky.objectVisibility(sunAt, NIGHT, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 10);
+    expect(sun.best).toBeNull();
+    expect(sun.neverRises).toBe(false);
+    expect(sun.circumpolar).toBe(false);
+  });
+
+  it('anchors the window on local noon so a night is never split in half', () => {
+    const evening = sky.objectVisibility(starAt(101.287, -16.716, PORTLAND.lat, PORTLAND.lon), NIGHT, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 30);
+    // 03:00 UTC is 22:00 the previous local day, so the window opens that noon.
+    expect(sky.utcMsToWallTime(evening.windowStart, PORTLAND.tz).timeText).toBe('12:00');
+    expect(sky.utcMsToWallTime(evening.windowStart, PORTLAND.tz).dateText).toBe('2026-12-21');
+    // An early-morning instant belongs to the night that began the day before.
+    const beforeDawn = Date.UTC(2026, 11, 22, 9, 0);   // 04:00 local on the 22nd
+    const morning = sky.objectVisibility(starAt(101.287, -16.716, PORTLAND.lat, PORTLAND.lon), beforeDawn, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 30);
+    expect(sky.utcMsToWallTime(morning.windowStart, PORTLAND.tz).dateText).toBe('2026-12-21');
+    expect(morning.windowStart).toBe(evening.windowStart);
+  });
+});
+
 describe('Tour planning and pattern lookup', () => {
   it('maps pattern stars to their figure and plans a prioritised tour for a dark sky', () => {
     expect(sky.HIP_TO_PATTERN[27989]).toBe('orion');
@@ -608,6 +682,27 @@ describe('Observatory tab rendering', () => {
     expect(on.body.textContent).toContain('covering the next 8 hours');
     expect(on.body.textContent).toContain('celestial pole trace short circles');
     expect(on.body.textContent).not.toContain('NaN');
+  });
+
+  it('tells the observer when the identified object rises, peaks and sets', () => {
+    const sirius = { kind: 'star', name: 'Sirius', hip: 32349, mag: -1.44, ci: 0.01, colorClass: 'blue-white', constellation: 'Canis Major', ra: 101.287, dec: -16.716, alt: 20, az: 150 };
+    const doc = new DOMParser().parseFromString(render({ obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsPicked: sirius }), 'text/html');
+    const panel = doc.getElementById('astronomy-observatory-picked').textContent;
+    expect(panel).toContain('Tonight:');
+    expect(panel).toMatch(/rises \d\d:\d\d/);
+    expect(panel).toMatch(/Highest (29|30)°/);
+    expect(panel).toMatch(/sets \d\d:\d\d/);
+    expect(panel).toContain('Best in full darkness around');
+    expect(panel).not.toContain('NaN');
+
+    // Polaris never sets from Maine, and the panel says so instead of inventing times.
+    const polaris = Object.assign({}, sirius, { name: 'Polaris', hip: 11767, ra: 37.946, dec: 89.264 });
+    const circum = new DOMParser().parseFromString(render({ obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsPicked: polaris }), 'text/html');
+    expect(circum.getElementById('astronomy-observatory-picked').textContent).toContain('never sets');
+
+    // Deep time hides the solar system, so it withholds a night plan too.
+    const drifted = new DOMParser().parseFromString(render({ obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsPicked: sirius, obsDrift: 50000 }), 'text/html');
+    expect(drifted.getElementById('astronomy-observatory-picked').textContent).not.toContain('Tonight:');
   });
 
   it('shows the polar-day note instead of missing events, and ignores malformed picks', () => {

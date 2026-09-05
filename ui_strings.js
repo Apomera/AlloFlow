@@ -19842,7 +19842,17 @@
       "obs_hours_word": "hours",
       "obs_trail_note": "Each arc is where that star will be over the next few hours as Earth turns, computed the same way as its position now. Stars near the celestial pole trace short circles; stars near the celestial equator sweep the longest arcs. Play the time-lapse and watch them follow their own trails.",
       "obs_trails_summary": "Star trails",
-      "obs_trails_summary_note": "drawn for the brightest stars above the horizon, covering the next"
+      "obs_trails_summary_note": "drawn for the brightest stars above the horizon, covering the next",
+      "obs_when_title": "Tonight",
+      "obs_when_never": "never rises at this site.",
+      "obs_when_circumpolar": "circumpolar, so it never sets.",
+      "obs_when_highest": "Highest",
+      "obs_when_at": "at",
+      "obs_when_rises": "rises",
+      "obs_when_sets": "sets",
+      "obs_when_best": "Best in full darkness around",
+      "obs_when_at_alt": "at",
+      "obs_when_twilight_only": "It is only above the horizon in daylight or twilight tonight."
     },
     "atctower": {
       "first_landing": "First Landing",

@@ -111,6 +111,16 @@ This slice fixed a defect I introduced across slices 1 to 5 rather than adding a
 - **The test is a probe, not a spelling pin.** `probeContrast()` walks the rendered Observatory, resolves each text colour against the nearest ancestor that actually paints a background, and measures. It runs over a deliberately busy state (trails, guides, a pick, a shower, a NOAA reading) in **both** themes, and asserts the panels carry no night navy once contrast is on. A fourth test feeds the probe a known-bad pair and a known-good pair, so a clean run cannot be vacuous.
 - Unit suite 42.
 
+## Enhancement slice 7 (2026-09-05): when to look tonight
+Identification answered "what is that"; this answers the observer's next question.
+
+- **`objectVisibility(positionAt, utcMs, lat, lon, timeZone, stepMinutes)`** is pure and exposed. It samples a night and returns rise, transit (with altitude), set, whether the object is circumpolar or never rises, and the darkest moment it is well placed. `positionAt` is a callback returning apparent alt/az, so fixed stars and moving bodies share one implementation.
+- **The window runs local noon to local noon**, so a night is never split across the date boundary. An instant at 04:00 resolves to the window that opened at noon the previous day; both give the same `windowStart`.
+- The identification panel now adds a line such as "rises 17:12 · Highest 30° at 00:24 · sets 07:35. Best in full darkness around 00:24 at 30°." Circumpolar objects say they never set rather than inventing times; objects below the horizon all night say so; the Sun correctly reports no dark-sky window at all.
+- Solar-system bodies get one ephemeris per sample rather than a full `skyNow`, keeping the panel cheap enough to compute on every render. Deep time withholds the plan along with the rest of the solar system.
+- 10 more `ui_strings` keys. Unit suite 47.
+- Assertions are anchored on facts checkable by hand: a star transits at 90 − |latitude − declination|, which puts Sirius at 29.6° from Portland and 3.6° from Tromsø, and Acrux below Portland's horizon at every hour.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
