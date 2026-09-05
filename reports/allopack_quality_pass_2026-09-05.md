@@ -106,6 +106,28 @@ Photosynthesis needed care, because that pack already had an inputs-and-outputs 
 The Simple Machines map is the one that adds something the reading does not state: the six machines are grouped into the two families engineers actually use, with the wheel and axle presented as a lever that turns in a full circle and the pulley as a wheel and axle with a rope in its groove. Every pack that gained a resource also gained a numbered directions step naming it, so the audit's "directions body names its resources" check still passes against the higher resource count.
 
 Anchor charts now stand at 26 of 26, and the audit gained a flag for a pack without one, calibrated against a deliberately stripped copy. Concept maps stand at 6 of 26. Verified live: the Cell Structure map renders in the deployed app as a Visual Organizer with its six branches and lettered items, no page errors.
+## Fifth pass (same day): the FAQ was the hardest text in the pack
+
+The audit estimates the reading level of the `simplified` reading and nothing else. Every other thing a student reads went unmeasured. Running the same estimator across the FAQ answers found a pattern that held across the whole catalog: **the FAQ was routinely the hardest prose in the pack**, often two to four grades above the reading it supports. That is backwards. The FAQ is where a student goes when the reading already lost them.
+
+Eight packs were above their own stated grade band. All eight are now within it, edited by splitting long sentences rather than by cutting content — every fact survives, spot-checked afterwards against a list of the specific claims each answer had to keep.
+
+| Pack | Band | FAQ before | FAQ after |
+| --- | --- | --- | --- |
+| American Revolution | 5 | 9.8 | 4.6 |
+| Weather vs. Climate | 5-6 | 8.8 | 5.4 |
+| Plate Tectonics | 6 | 8.3 | 6.6 |
+| Area and Perimeter | 3-4 | 7.4 | 4.8 |
+| Figurative Language | 5 | 7.1 | 6.1 |
+| Main Idea | 4-5 | 7.1 | 5.4 |
+| Forces and Motion | 3 | 5.3 | 3.3 |
+| Day Sky, Night Sky | 1 | 3.4 | 1.3 |
+
+The nuance stayed. The American Revolution FAQ still says that Crispus Attucks became a symbol for the colonial cause while slavery continued in every colony, that Native nations made their own strategic choices and that a colonial victory usually meant more pressure on Native land, and that nobody knows who fired first at Lexington. Those answers are now four to five grades easier to read.
+
+**One half of the check was wrong and was removed.** The first version also measured the directions body, and flagged two packs. Reading them showed the flag was an artifact: a directions body is a numbered checklist of resource titles, and long proper titles like "A Retelling Card for a Reading Buddy" push the score up without making anything harder to read. The check now covers FAQ prose only, with the reason recorded in the source so it does not get re-added.
+
+Quiz stems were considered and deliberately left unmeasured: they are short, which makes the estimate noisy, and a question that quotes a figurative sentence scores high for reasons that have nothing to do with difficulty.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
