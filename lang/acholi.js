@@ -23947,7 +23947,7 @@
       "pressure": "💨 Pressure",
       "energy": "⚡ Teko",
       "badge_toast": " Badge: ",
-      "back": "Dok cen bot jami tic",
+      "back": "Dok cen i jami tic",
       "unit_converter": "📏 Unit Converter",
       "view_badges_b": "Nen badges (B)",
       "ai_tutor": "AI Tutor (?)",

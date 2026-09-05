@@ -50523,7 +50523,7 @@
       "design_note_discrete_4_state_outcome_n": "ဒီဇိုင်းမှတ်ချက်: အခြေအနေ ၄ မျိုးရလဒ်၊ အပိုင်းကိန်းနှိုင်းယှဉ်အမှတ်မရှိ၊ အဖြေမဖော်ပြ — ဒီဇိုင်းအတိုင်း။",
       "ai_tutor": "AI Tutor",
       "ai_tutor_2": "🤖 AI Tutor",
-      "1_4_tabs_n_new_challenge_ai_tutor_on_m": "⌨️ 1-4: tabs | N: စိန်ခေါ်မှုအသစ် | ?: AI tutor | marker ပေါ် ← →: နည်းနည်းရွှေ့ | Home/End: အစွန်းများ",
+      "1_4_tabs_n_new_challenge_ai_tutor_on_m": "⌨️ 1-5: tabs | N: စိန်ခေါ်မှုအသစ် | ?: AI tutor | marker ပေါ် ← →: နည်းနည်းရွှေ့ | Home/End: အစွန်းများ",
       "integers_absolute_value_distance_from_": "ကိန်းပြည့်များ — Absolute value = သုညမှ အကွာအဝေး",
       "integer_lab_summary": "အနုတ်ကိန်းများကို အာရုံစိုက်သည့်အခါ mini lab ကိုဖွင့်ပါ။",
       "hide_integer_lab": "mini lab ကို ဖျောက်ပါ",
