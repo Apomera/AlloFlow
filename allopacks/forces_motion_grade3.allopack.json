@@ -459,11 +459,11 @@
         "scope": "compact",
         "brief": {
           "family": "investigate",
-          "context": "Your class has a board for a ramp, some books to prop it up, a tennis ball, a measuring tape, and three floors to try: tile, carpet, and a rubber mat.",
+          "context": "Your class has a board for a ramp, some books to prop it up, a tennis ball, and a measuring tape. There are three floors to try: tile, carpet, and a rubber mat.",
           "role": "Force detectives",
           "audience": "Your class, and the class next door who will try to beat your prediction",
-          "drivingQuestion": "When we change one thing about the ramp or the floor, how does the distance the ball rolls change, and can we predict a roll before we make it?",
-          "seedDirection": "Change only ONE thing at a time: the height of the ramp OR the floor, not both. Then roll three times for each setup so one wobbly roll does not fool you.",
+          "drivingQuestion": "When we change one thing about the ramp or the floor, how does the distance the ball rolls change? Can we predict a roll before we make it?",
+          "seedDirection": "Change only ONE thing at a time. The height of the ramp, OR the floor. Not both. Then roll three times for each setup, so one wobbly roll does not fool you.",
           "lockedLessonFacts": [
             "A force is a push or a pull; you see what it does, not the force itself.",
             "Friction is the rubbing between two surfaces; more friction stops a ball sooner and less friction lets it roll farther.",
@@ -484,7 +484,7 @@
             "Only one thing changes between setups",
             "Three rolls for every setup, measured with the tape and written in a table",
             "A written guess before each new setup",
-            "A prediction for a setup you have not tried, using the pattern, and then a test of it",
+            "A prediction for a setup you have not tried, made from the pattern. Then a test of it.",
             "Uses the words friction and predict correctly"
           ],
           "constraints": [
@@ -493,7 +493,7 @@
             "Everyone stays out of the ball's path",
             "Finish in one class period"
           ],
-          "deliverable": "A data table (setup, roll 1, roll 2, roll 3), your guesses, your prediction for the untested setup and how close it was, and two sentences about what friction did.",
+          "deliverable": "A data table (setup, roll 1, roll 2, roll 3). Your guesses. Your prediction for the setup you did not try, and how close it was. And two sentences about what friction did.",
           "factLocked": true,
           "factVerified": true
         },

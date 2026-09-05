@@ -623,11 +623,11 @@
         "scope": "standard",
         "brief": {
           "family": "investigate",
-          "context": "Your class is making a bulletin board called 'Proportional or Fooled?' Each team picks one everyday relationship people assume is proportional: cost of a ride-share versus distance, calories versus servings on a label, height of a stack of books versus number of books, phone battery versus minutes of video, distance walked versus steps counted.",
+          "context": "Your class is making a bulletin board called 'Proportional or Fooled?' Each team picks one everyday relationship people assume is proportional. Cost of a ride-share versus distance. Calories versus servings on a label. Height of a stack of books versus number of books. Phone battery versus minutes of video. Distance walked versus steps counted.",
           "role": "Student data investigators",
           "audience": "Classmates reading the board, and the math teacher who checks the test",
-          "drivingQuestion": "Is this relationship proportional across the whole range we measured, and if not, exactly where and why does it stop being proportional?",
-          "seedDirection": "Collect real pairs before deciding anything. Then divide output by input for every pair and look at the column of answers, not at the graph's shape.",
+          "drivingQuestion": "Is this relationship proportional across the whole range we measured? If not, where does it stop, and why?",
+          "seedDirection": "Collect real pairs before deciding anything. Then divide output by input for every pair. Look at that column of answers, not at the shape of the graph.",
           "lockedLessonFacts": [
             "Two quantities are proportional when output divided by input is the same for every pair; that number is the constant of proportionality.",
             "The constant equals the unit rate.",
@@ -636,10 +636,10 @@
             "A relationship can rise steadily and still not be proportional, like the pool that started with 10 gallons."
           ],
           "openQuestions": [
-            "Can we get a true zero data point, or do we have to reason about it?",
-            "How far apart should our inputs be to see whether the ratio drifts?",
-            "If the ratio changes slightly, is that measurement error or a real break in proportionality?",
-            "What hidden starting amount might be in our relationship (a base fare, a fixed weight, a standby drain)?"
+            "Can we get a true zero data point, or do we have to reason our way to it?",
+            "How far apart should our inputs be, so we can see whether the ratio drifts?",
+            "If the ratio changes a little, is that measurement error or a real break?",
+            "What hidden starting amount might be in our relationship? A base fare, a fixed weight, a standby drain."
           ],
           "stakeholders": [
             "Classmates who will trust your verdict",
@@ -649,8 +649,8 @@
           "criteria": [
             "At least five real data pairs, including inputs far apart",
             "Output divided by input is computed for every pair and shown in a column",
-            "A clear verdict: proportional, not proportional, or proportional only within a range, with the break point named",
-            "The constant is stated with its units and its meaning in plain words",
+            "A clear verdict: proportional, not proportional, or proportional only within a range. If it breaks, name the break point.",
+            "The constant is stated with its units, and with its meaning in plain words",
             "Uses at least four glossary words correctly"
           ],
           "constraints": [
@@ -658,7 +658,7 @@
             "No data invented to make the test come out clean",
             "One page plus the table and graph"
           ],
-          "deliverable": "A table with an output-over-input column, a graph with the origin marked, a verdict with the reason, and a plain-language sentence saying what the constant means, if there is one.",
+          "deliverable": "A table with an output-over-input column. A graph with the origin marked. A verdict with the reason. And a plain-language sentence saying what the constant means, if there is one.",
           "factLocked": true,
           "factVerified": true
         },

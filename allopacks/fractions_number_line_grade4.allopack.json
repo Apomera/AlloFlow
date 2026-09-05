@@ -206,7 +206,7 @@
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "Denominator = Down = how many pieces. Numerator = Number you counted. D is down; N is the number of steps you took.",
-            "mapping": "Both hooks use the first letter of the word: D for down puts the denominator on the bottom, and N for number reminds you the numerator is the count.",
+            "mapping": "Both hooks use the first letter of the word. D for down puts the denominator on the bottom. N for number reminds you the numerator is the count.",
             "scaffoldStarter": "D is for ____, so the denominator is on the ____. N is for ____, so the numerator tells ____.",
             "scaffoldSteps": [
               "Say each word and listen for its first letter.",
@@ -236,7 +236,7 @@
             "type": "rhyme-rhythm",
             "mode": "scaffolded",
             "aiExample": "Bigger bottom, smaller bite: more pieces means each is slight.",
-            "mapping": "The rhyme puts the trap and the fix in one breath: a bigger denominator (bottom) means a smaller piece (bite), which is the opposite of what your whole-number brain expects.",
+            "mapping": "The rhyme puts the trap and the fix in one breath. A bigger bottom means a smaller piece. That is the opposite of what your whole-number brain expects.",
             "scaffoldStarter": "Bigger ____, smaller ____: more pieces means ____.",
             "scaffoldSteps": [
               "Say the rule in plain words.",
@@ -266,7 +266,7 @@
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Picture one friend standing exactly halfway down a hallway. Her name tag says 1/2 on one side and 2/4 on the other. Two tags, one person, one spot.",
-            "mapping": "The friend is the location, the tags are the names, and the single spot in the hallway is the number line, so equivalent means two tags on one person, not two people.",
+            "mapping": "The friend is the location. The tags are the names. The single spot in the hallway is the number line. So equivalent means two tags on one person, not two people.",
             "scaffoldStarter": "One person stands at ____. Her tags say ____ and ____.",
             "scaffoldSteps": [
               "Draw or picture a hallway from 0 to 1.",

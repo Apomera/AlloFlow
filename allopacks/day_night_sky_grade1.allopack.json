@@ -204,7 +204,7 @@
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Stand up and turn around slowly. Face the lamp and say 'day.' Keep turning until the lamp is behind you and say 'night.' You moved. The lamp never did.",
-            "mapping": "Your body is Earth and the lamp is the Sun, so turning your own body shows that the change comes from you spinning, not from the light going anywhere.",
+            "mapping": "Your body is Earth. The lamp is the Sun. Turning your own body shows that the change comes from you, not from the light going anywhere.",
             "scaffoldStarter": "I turn toward the lamp: ____. I turn away from the lamp: ____.",
             "scaffoldSteps": [
               "Pick something bright to be the Sun.",
@@ -233,8 +233,8 @@
             "factVerified": true,
             "type": "visual-association",
             "mode": "scaffolded",
-            "aiExample": "Picture a mirror on a wall. The mirror is not a lamp, but it can still fill a room with light because the light bounces off it. The Moon is the mirror and the Sun is the lamp.",
-            "mapping": "A mirror is something every kid has watched bounce light, so it carries the one idea that matters: the Moon is bright without being a light of its own.",
+            "aiExample": "Picture a mirror on a wall. A mirror is not a lamp. But it can still fill a room with light, because light bounces off it. The Moon is the mirror. The Sun is the lamp.",
+            "mapping": "Every kid has watched a mirror bounce light. So it carries the one idea that matters. The Moon is bright without being a light of its own.",
             "scaffoldStarter": "The Moon is like a ____, and the Sun is like a ____.",
             "scaffoldSteps": [
               "Think of something shiny that has no light inside it.",
@@ -458,11 +458,11 @@
         "scope": "compact",
         "brief": {
           "family": "investigate",
-          "context": "Your class has sidewalk chalk, a sunny paved spot outside, and three times in the day when you can go out: morning, the middle of the day, and late afternoon.",
+          "context": "Your class has sidewalk chalk and a sunny paved spot outside. You can go out three times in one day: morning, the middle of the day, and late afternoon.",
           "role": "Shadow watchers",
           "audience": "The kindergarten class, who will come outside to look at your chalk marks",
-          "drivingQuestion": "If you stand in the very same spot three times in one day, will your shadow stay in the same place and stay the same size?",
-          "seedDirection": "Stand on the same X every single time. If you move your feet, you will not know whether the shadow moved or you did.",
+          "drivingQuestion": "Stand in the very same spot three times in one day. Will your shadow stay in the same place? Will it stay the same size?",
+          "seedDirection": "Stand on the same X every time. If you move your feet, you will not know if the shadow moved or you did.",
           "lockedLessonFacts": [
             "Earth makes one full spin every day.",
             "Earth turns you toward the Sun at sunrise and away from it at sunset.",
@@ -470,9 +470,9 @@
             "Day and night come in the same order every time, which makes a pattern."
           ],
           "openQuestions": [
-            "Will your shadow be longer in the morning or in the middle of the day?",
+            "Will your shadow be longer in the morning, or in the middle of the day?",
             "Which way will your shadow point when you come back out?",
-            "How will you make sure you stand in exactly the same place each time?"
+            "How will you make sure you stand in the same place each time?"
           ],
           "stakeholders": [
             "The kindergarten class who will visit your marks",
@@ -481,16 +481,16 @@
           ],
           "criteria": [
             "Your feet are on the same chalk X all three times",
-            "A guess is drawn or said out loud before the first tracing",
-            "Each shadow is traced and labeled with the time of day",
-            "You use the word pattern or the word spin when you explain what happened"
+            "You draw or say your guess before the first tracing",
+            "Each shadow is traced, with the time of day on it",
+            "You use the word pattern or the word spin when you tell what happened"
           ],
           "constraints": [
             "One sunny day",
             "Three trips outside",
             "Nobody looks straight at the Sun"
           ],
-          "deliverable": "A chalk drawing on the ground with three traced shadows and the time on each one, plus one sentence you tell the visiting class: what changed, and why it changed.",
+          "deliverable": "A chalk drawing on the ground. Three traced shadows, each with its time. And one sentence you tell the visiting class: what changed, and why.",
           "factLocked": true,
           "factVerified": true
         },

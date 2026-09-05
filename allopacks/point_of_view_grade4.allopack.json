@@ -528,11 +528,11 @@
         "scope": "compact",
         "brief": {
           "family": "design",
-          "context": "Your class is making a 'Same Scene, New Side' wall in the library. Each team picks one scene from a book the class has read together and rewrites it from a character who was there but did not tell it the first time.",
+          "context": "Your class is making a 'Same Scene, New Side' wall in the library. Each team picks one scene from a book the class has read. Then you rewrite it from a character who was there but did not tell it the first time.",
           "role": "Student authors",
           "audience": "Other fourth graders visiting the library wall, and the librarian who hangs the pages",
-          "drivingQuestion": "How can we retell one scene from a new narrator so that readers learn at least one thing the original narrator could not know, while keeping everything that really happened the same?",
-          "seedDirection": "Before you write, list what your new narrator could see and could not see. The scene's facts do not change; only the window does.",
+          "drivingQuestion": "How can we retell one scene from a new narrator, so readers learn something the first narrator could not know? Everything that really happened has to stay the same.",
+          "seedDirection": "Before you write, list what your new narrator could see and could not see. The facts of the scene do not change. Only the window does.",
           "lockedLessonFacts": [
             "The narrator is the voice that tells the story; first person uses I, me, my, we, and third person uses he, she, they, or names.",
             "A first-person narrator cannot tell you what other characters are thinking.",
@@ -552,9 +552,9 @@
           ],
           "criteria": [
             "The retelling keeps every event of the original scene the same",
-            "It includes at least one thought or reason the original narrator could not have known",
-            "The point of view is named and the pronouns match it throughout",
-            "A reader who knows the original can name what they learned that is new",
+            "It includes at least one thought or reason the first narrator could not have known",
+            "The point of view is named, and the pronouns match it throughout",
+            "A reader who knows the original can name the new thing they learned",
             "Uses at least three glossary words correctly in the author's note"
           ],
           "constraints": [
@@ -563,7 +563,7 @@
             "No changing what happened, only who tells it",
             "Include a short author's note naming the narrator and the point of view"
           ],
-          "deliverable": "A retold scene under 200 words, an author's note naming the narrator and point of view, and a test record: one classmate reads it and writes the new thing they learned.",
+          "deliverable": "A retold scene under 200 words. An author's note naming the narrator and the point of view. And a test record: one classmate reads it and writes down the new thing they learned.",
           "factLocked": true,
           "factVerified": true
         },

@@ -613,11 +613,11 @@
         "scope": "compact",
         "brief": {
           "family": "design",
-          "context": "The school garden club received a donation of 24 feet of fencing and a patch of ground along a wall. They want as much growing space as possible, but the garden also needs to fit against the wall and leave a path for a wheelbarrow.",
+          "context": "The school garden club has been given 24 feet of fencing and a patch of ground along a wall. They want as much growing space as they can get. The garden also has to fit against the wall and leave a path for a wheelbarrow.",
           "role": "Student garden designers",
           "audience": "The garden club and the teacher who will approve the build",
-          "drivingQuestion": "Which rectangle made from exactly 24 feet of fence gives the garden the most area, and does the best-area shape still work for the club's needs?",
-          "seedDirection": "List every whole-number rectangle with a perimeter of 24 first. There are only a few. Then compute each area before you argue.",
+          "drivingQuestion": "Which rectangle made from exactly 24 feet of fence gives the most area? And does that shape still work for what the club needs?",
+          "seedDirection": "First list every whole-number rectangle with a perimeter of 24. There are only a few. Work out each area before you argue.",
           "lockedLessonFacts": [
             "Perimeter is the distance around the outside: add all four sides.",
             "Area is the space covered inside: length times width, in square units.",
@@ -625,9 +625,9 @@
             "The more square-like the rectangle, the more area from the same perimeter."
           ],
           "openQuestions": [
-            "Does the wall count as one side, so the fence only needs to cover three sides?",
+            "Does the wall count as one side, so the fence only has to cover three sides?",
             "How wide does the wheelbarrow path need to be?",
-            "Is the biggest area always the best garden, or does shape matter for reaching the plants?"
+            "Is the biggest area always the best garden? Or does shape matter for reaching the plants?"
           ],
           "stakeholders": [
             "The garden club",
@@ -637,8 +637,8 @@
           ],
           "criteria": [
             "A table of every whole-number rectangle with perimeter 24 and its area",
-            "The chosen design is drawn with labeled sides and both measurements in the correct units",
-            "The explanation says why the chosen shape was picked and names any tradeoff",
+            "The chosen design is drawn with labeled sides, and both measurements use the right units",
+            "The explanation says why you picked that shape, and names any tradeoff",
             "Uses at least three glossary words correctly"
           ],
           "constraints": [
@@ -646,7 +646,7 @@
             "Must leave a path at least 3 feet wide beside the garden",
             "One page plus the drawing"
           ],
-          "deliverable": "A labeled drawing of the garden with perimeter and area, the table of all options, and a short recommendation to the club that explains the choice.",
+          "deliverable": "A labeled drawing of the garden with its perimeter and area. The table of all the options. And a short note to the club that explains your choice.",
           "factLocked": true,
           "factVerified": true
         },

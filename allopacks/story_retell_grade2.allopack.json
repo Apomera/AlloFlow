@@ -204,7 +204,7 @@
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Three fingers. Thumb up: WHO and WHERE. Pointer up: WHAT WENT WRONG. Middle finger up: HOW IT GOT FIXED. Count them on your hand while you retell, and you cannot skip the middle.",
-            "mapping": "Your fingers go up in a fixed order that you cannot shuffle, so the hand itself keeps the parts from coming out backwards.",
+            "mapping": "Your fingers go up in a fixed order. You cannot shuffle them. So the hand keeps the parts from coming out backwards.",
             "scaffoldStarter": "One: ____. Two: ____. Three: ____.",
             "scaffoldSteps": [
               "Name the three parts in order.",
@@ -233,8 +233,8 @@
             "factVerified": true,
             "type": "keyword-association",
             "mode": "scaffolded",
-            "aiExample": "BUT is a door. Say the sentence and stop right at the word but, then push the door open: everything after it is the trouble. Ada loved her puppy | BUT | it chewed her things.",
-            "mapping": "A door is a spot where one room ends and another begins, which is exactly what the word but does between the calm beginning and the messy middle.",
+            "aiExample": "BUT is a door. Say the sentence and stop right at the word but. Then push the door open. Everything after it is the trouble. Ada loved her puppy | BUT | it chewed her things.",
+            "mapping": "A door is where one room ends and another begins. That is exactly what the word but does, between the calm beginning and the messy middle.",
             "scaffoldStarter": "____ was going fine, but ____.",
             "scaffoldSteps": [
               "Find a but in the book you are reading.",
@@ -442,7 +442,7 @@
           }
         ],
         "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Storyteller |\n|---|---|---|---|\n| Order | Parts come out jumbled | Beginning and end are in order | All three parts in order, no backing up |\n| The middle | Skipped or one word | Names the problem | Names the problem and at least one try that did not work |\n| Your own words | Copies whole sentences from the book | Mostly own words | All own words, and still true to the book |"
-    }
+      }
     },
     {
       "id": "st-faq",

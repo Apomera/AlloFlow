@@ -66,7 +66,7 @@
       "data": [
         {
           "term": "Simile",
-          "def": "A comparison of two unlike things using the word like or as.",
+          "def": "A comparison of two unlike things, using like or as.",
           "tier": "Domain-Specific"
         },
         {
@@ -76,32 +76,32 @@
         },
         {
           "term": "Personification",
-          "def": "Giving human qualities or actions to something that is not human.",
+          "def": "Giving human actions or feelings to a thing that is not human.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Hyperbole",
-          "def": "Exaggeration so extreme that nobody would take it literally.",
+          "def": "Stretching something so far that nobody would believe it.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Idiom",
-          "def": "A common phrase whose meaning cannot be figured out from the individual words.",
+          "def": "A set phrase you cannot work out from the words in it.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Literal",
-          "def": "Meaning exactly what the words say, with no comparison or exaggeration.",
+          "def": "Meaning exactly what the words say, and nothing more.",
           "tier": "Academic"
         },
         {
           "term": "Figurative",
-          "def": "Meaning something different from the exact words, usually through comparison.",
+          "def": "Meaning something other than the plain words, usually by comparing.",
           "tier": "Academic"
         },
         {
           "term": "Imagery",
-          "def": "Language that creates a picture or a feeling in the reader's mind.",
+          "def": "Words that put a picture or a feeling in the reader's mind.",
           "tier": "Academic"
         },
         {
@@ -615,11 +615,11 @@
         "scope": "compact",
         "brief": {
           "family": "design",
-          "context": "The morning announcements are read aloud and nobody listens. The office has offered to read one student-written version of a real notice: the book fair, a recycling drive, a spirit day, or a reminder to return library books.",
+          "context": "The morning announcements are read aloud and nobody listens. The office has offered to read one student-written version of a real notice. Pick one: the book fair, a recycling drive, a spirit day, or a reminder to return library books.",
           "role": "Student announcement writers",
           "audience": "The whole school, listening over the speaker, and the office staff who will read it",
-          "drivingQuestion": "How can we rewrite one flat announcement so listeners feel it and remember it, using figurative language that lands, without exhausting them?",
-          "seedDirection": "Find the feeling first. What should a listener feel about the book fair? Then choose the tool that delivers that feeling fastest.",
+          "drivingQuestion": "How can we rewrite one flat announcement so listeners feel it and remember it? Use figurative language that lands, without wearing them out.",
+          "seedDirection": "Find the feeling first. What should a listener feel about the book fair? Then pick the tool that delivers that feeling fastest.",
           "lockedLessonFacts": [
             "A simile compares two unlike things using like or as; a metaphor says one thing is another.",
             "Personification gives human actions to non-human things; hyperbole exaggerates so far nobody believes it; an idiom's meaning cannot be built from its words.",
@@ -643,8 +643,8 @@
             "Uses at least three different tools, each labeled in the design notes",
             "Keeps every fact from the original notice (date, place, what to do)",
             "Fits in 30 seconds read aloud",
-            "At least one line is deliberately plain, with a note explaining why",
-            "Tested on at least three listeners with one line revised afterward"
+            "At least one line is deliberately plain, with a note saying why",
+            "Tested on at least three listeners, with one line revised afterward"
           ],
           "constraints": [
             "Nothing that could confuse a listener about the date or place",
@@ -652,7 +652,7 @@
             "Idioms must be ones younger students know, or explained by context",
             "Original notice attached for comparison"
           ],
-          "deliverable": "The original notice, your rewritten version with each tool labeled, a 30-second timing, and a short test report: what three listeners remembered and which line you changed because of them.",
+          "deliverable": "The original notice. Your rewritten version with each tool labeled. A 30-second timing. And a short test report: what three listeners remembered, and which line you changed because of them.",
           "factLocked": true,
           "factVerified": true
         },

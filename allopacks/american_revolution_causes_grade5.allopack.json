@@ -59,22 +59,22 @@
       "data": [
         {
           "term": "Colony",
-          "def": "A place ruled by a country far away — the thirteen colonies were ruled by Britain.",
+          "def": "A place ruled by a country far away. Britain ruled the thirteen colonies.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Parliament",
-          "def": "Britain's lawmaking body, which passed taxes on the colonies.",
+          "def": "The group that makes Britain's laws. It passed the taxes on the colonies.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Tax",
-          "def": "Money a government requires people to pay.",
+          "def": "Money a government makes people pay.",
           "tier": "Academic"
         },
         {
           "term": "Representation",
-          "def": "Having someone elected to speak for you in a government.",
+          "def": "Having someone in the government who was voted in to speak for you.",
           "tier": "Domain-Specific"
         },
         {
@@ -89,7 +89,7 @@
         },
         {
           "term": "Militia",
-          "def": "Ordinary citizens organized to fight when needed.",
+          "def": "Ordinary people who train to fight when they are needed.",
           "tier": "Domain-Specific"
         },
         {
@@ -99,7 +99,7 @@
         },
         {
           "term": "Congress",
-          "def": "A meeting of representatives to make decisions together.",
+          "def": "A meeting where chosen leaders decide things together.",
           "tier": "Domain-Specific"
         },
         {
@@ -114,7 +114,7 @@
         },
         {
           "term": "Patriot",
-          "def": "A colonist who supported independence from Britain.",
+          "def": "A colonist who wanted to break free from Britain.",
           "tier": "Domain-Specific"
         }
       ],
@@ -216,7 +216,7 @@
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Debt, Stamp, Tea-tax, Massacre, Tea Party, Intolerable, Congress, Lexington: D-S-T-M-T-I-C-L. Say it as a drumbeat: 'Debt Stamp Tea, Massacre Party, Intolerable, Congress, Lexington.'",
-            "mapping": "The beat groups the events into three clusters (taxes, Boston violence, the break) in the order they happened, so the rhythm carries the chronology.",
+            "mapping": "The beat groups the events into three clusters: taxes, Boston violence, the break. They come in the order they happened, so the rhythm carries the timeline.",
             "scaffoldStarter": "____, ____, ____ (taxes) — ____, ____ (Boston) — ____, ____, ____ (the break).",
             "scaffoldSteps": [
               "Write the eight events in date order.",
@@ -246,7 +246,7 @@
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "REPRESENTATION = 'no vote, no tax.' BOYCOTT = 'buy-cut' — cut what you buy. The first is the argument; the second is the weapon.",
-            "mapping": "Each keyword compresses the idea into a phrase you can say fast: the slogan becomes a four-word rule, and boycott sounds like what it is.",
+            "mapping": "Each keyword squeezes the idea into a phrase you can say fast. The slogan becomes a four-word rule. And boycott sounds like what it is.",
             "scaffoldStarter": "Representation means ____. A boycott is when ____.",
             "scaffoldSteps": [
               "Say the slogan in your own four words.",
@@ -276,7 +276,7 @@
             "type": "story-chain",
             "mode": "scaffolded",
             "aiExample": "Tea Act → Tea Party → Intolerable Acts → twelve colonies meet in Congress. One tax, one protest, one crackdown, one union. The crackdown did the recruiting.",
-            "mapping": "The four-link chain is the pattern from the reading with real events plugged in, and the last link shows the surprise: Britain's harsh response created the unity it feared.",
+            "mapping": "The four-link chain is the pattern from the reading with real events plugged in. The last link holds the surprise: Britain's harsh answer created the unity it feared.",
             "scaffoldStarter": "Britain ____ → colonists ____ → Britain ____ → more colonists ____.",
             "scaffoldSteps": [
               "Pick one British action from the timeline.",

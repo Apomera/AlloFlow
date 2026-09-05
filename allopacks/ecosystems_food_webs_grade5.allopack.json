@@ -616,10 +616,10 @@
         "scope": "standard",
         "brief": {
           "family": "investigate",
-          "context": "A community group wants to remove a species from the park near your school because it is a nuisance: too many geese on the field, or too many deer eating the gardens, or the coyotes that have started appearing. Before anyone acts, they have asked for a student investigation of what else would change.",
+          "context": "A community group wants to remove a species from the park near your school. It is a nuisance: too many geese on the field, or too many deer eating the gardens, or the coyotes that have started appearing. Before anyone acts, they have asked students to look into what else would change.",
           "role": "Student ecology advisors",
           "audience": "The park's community advisory group",
-          "drivingQuestion": "If this one species were removed from the park's food web, what would most likely happen to at least three other living things there, and how confident can we be about each prediction?",
+          "drivingQuestion": "If this one species were removed from the park's food web, what would happen to at least three other living things there? And how sure can we be about each guess?",
           "seedDirection": "Draw the web first. Every arrow that touches your species is a place something could change.",
           "lockedLessonFacts": [
             "Producers make their own food from sunlight; consumers eat other living things; decomposers return nutrients to the soil.",
@@ -629,7 +629,7 @@
           ],
           "openQuestions": [
             "What does the chosen species eat, and what eats it, in THIS park?",
-            "Is there another species that would take over its role?",
+            "Is there another species that would take over its job?",
             "How would we know a year later whether our prediction was right?"
           ],
           "stakeholders": [
@@ -639,9 +639,9 @@
             "Park staff who would do the removing"
           ],
           "criteria": [
-            "The web diagram shows at least six living things and every arrow is labeled as eats or is eaten by",
-            "At least three predicted changes each trace back through the web with a chain of arrows",
-            "Each prediction is marked as strong, likely, or unsure with a reason",
+            "The web diagram shows at least six living things. Every arrow is labeled eats or is eaten by.",
+            "At least three predicted changes, each traced back through the web with a chain of arrows",
+            "Each prediction is marked strong, likely, or unsure, with a reason",
             "At least four glossary words are used correctly"
           ],
           "constraints": [
@@ -649,7 +649,7 @@
             "No prediction may skip a link: every change needs the arrow that causes it",
             "One page plus the diagram"
           ],
-          "deliverable": "A labeled food-web diagram of the park with the chosen species highlighted, plus a written prediction of three changes, each rated for confidence and each explained through the web.",
+          "deliverable": "A labeled food-web diagram of the park with your species highlighted. Plus three predicted changes, each rated for confidence and each explained through the web.",
           "factLocked": true,
           "factVerified": true
         },
