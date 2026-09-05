@@ -264,6 +264,107 @@ describe('Refraction, deep sky, day events and identification', () => {
   });
 });
 
+describe('Space motion and deep time', () => {
+  const catalog = () => sky.normalizeCatalog(JSON.parse(readFileSync(ASSET, 'utf8')));
+
+  it('carries distance and velocity for stars with a parallax, and none for those without', () => {
+    const json = JSON.parse(readFileSync(ASSET, 'utf8'));
+    expect(json.velocityScale).toBe(1e9);
+    expect(json.fields).toEqual(['hip', 'raDeg', 'decDeg', 'mag', 'ci', 'conIndex', 'distPc', 'vx', 'vy', 'vz']);
+    expect(json.adaptation).toContain('space velocity');
+    const cat = catalog();
+    expect(cat.withMotion).toBe(json.withMotion);
+    expect(cat.withMotion).toBeGreaterThan(8000);
+    expect(cat.withMotion).toBeLessThan(cat.count);
+    expect(cat.dist[cat.byHip[32349]]).toBeGreaterThan(2.5);
+    expect(cat.dist[cat.byHip[32349]]).toBeLessThan(2.8);
+    // A star with no usable parallax is stored at distance zero and never drifts.
+    let still = -1;
+    for (let i = 0; i < cat.count; i++) if (cat.dist[i] === 0) { still = i; break; }
+    expect(still).toBeGreaterThanOrEqual(0);
+    const frozen = sky.starMotionAt(cat, still, 50000);
+    expect(frozen.ra).toBe(cat.ra[still]);
+    expect(frozen.dec).toBe(cat.dec[still]);
+    expect(frozen.dmag).toBe(0);
+  });
+
+  it('reproduces published proper motions from the stored 3D velocities', () => {
+    const cat = catalog();
+    // arcsec per year, from a 1000-year baseline.
+    const rate = hip => {
+      const i = cat.byHip[hip];
+      const a = sky.starMotionAt(cat, i, 0), b = sky.starMotionAt(cat, i, 1000);
+      return sky.angularSep(a.ra, a.dec, b.ra, b.dec) * 3600 / 1000;
+    };
+    expect(rate(69673)).toBeCloseTo(2.279, 2);   // Arcturus
+    expect(rate(32349)).toBeCloseTo(1.343, 2);   // Sirius
+    expect(rate(91262)).toBeCloseTo(0.351, 2);   // Vega
+    expect(rate(11767)).toBeCloseTo(0.046, 2);   // Polaris
+  });
+
+  it('leaves the epoch untouched at zero years and brightens stars that come closer', () => {
+    const cat = catalog();
+    const i = cat.byHip[69673];
+    const now = sky.starMotionAt(cat, i, 0);
+    expect(now.ra).toBe(cat.ra[i]);
+    expect(now.dec).toBe(cat.dec[i]);
+    expect(now.dmag).toBe(0);
+    const later = sky.starMotionAt(cat, i, 20000);
+    expect(later.dmag).toBeCloseTo(5 * Math.log10(later.dist / cat.dist[i]), 9);
+    // Arcturus is approaching, so it brightens (magnitude falls) before it recedes.
+    expect(sky.starMotionAt(cat, i, 1000).dmag).toBeLessThan(0);
+  });
+
+  it('warps the Big Dipper over deep time while a nearby star crosses the sky', () => {
+    const cat = catalog();
+    const dipper = [54061, 53910, 58001, 59774, 62956, 65378, 67301];
+    const widest = years => {
+      const pts = dipper.map(hip => sky.starMotionAt(cat, cat.byHip[hip], years));
+      let max = 0;
+      for (let a = 0; a < pts.length; a++) for (let b = a + 1; b < pts.length; b++) max = Math.max(max, sky.angularSep(pts[a].ra, pts[a].dec, pts[b].ra, pts[b].dec));
+      return max;
+    };
+    const today = widest(0), past = widest(-100000), future = widest(100000);
+    expect(today).toBeGreaterThan(25); expect(today).toBeLessThan(26.5);
+    expect(past - today).toBeGreaterThan(3);        // the figure was distinctly wider
+    expect(future - today).toBeGreaterThan(1);
+    // 61 Cygni is the fastest bright star in the subset: it travels right across the sky.
+    const c61 = cat.byHip[104214];
+    const a = sky.starMotionAt(cat, c61, 0), b = sky.starMotionAt(cat, c61, 100000);
+    expect(sky.angularSep(a.ra, a.dec, b.ra, b.dec)).toBeGreaterThan(90);
+  });
+
+  it('applies proper motion to the present epoch and exposes drifted magnitudes only when drifting', () => {
+    const cat = catalog();
+    const bodies = sky.observatoryBodies(Date.UTC(2026, 6, 5, 3, 30), MOOSEHEAD.lat, MOOSEHEAD.lon);
+    const live = sky.catalogHorizon(cat, bodies.lst, MOOSEHEAD.lat, bodies.d, 600);
+    expect(live.mags).toBeNull();
+    const drifted = sky.catalogHorizon(cat, bodies.lst, MOOSEHEAD.lat, bodies.d, 600, 50000);
+    expect(drifted.mags).not.toBeNull();
+    expect(drifted.mags.length).toBe(cat.count);
+    const i = cat.byHip[69673];
+    expect(Math.abs(drifted.alts[i] - live.alts[i]) + Math.abs(drifted.azs[i] - live.azs[i])).toBeGreaterThan(1);
+    // Alpha Centauri has moved about 1.6 arcmin since J2000; the epoch correction is applied.
+    const toliman = cat.byHip[71681];
+    const j2000 = sky.starMotionAt(cat, toliman, 0), epoch = sky.starMotionAt(cat, toliman, bodies.d / 365.25);
+    const shift = sky.angularSep(j2000.ra, j2000.dec, epoch.ra, epoch.dec) * 60;
+    expect(shift).toBeGreaterThan(1.4);
+    expect(shift).toBeLessThan(1.9);
+  });
+
+  it('normalizes the drift control and turns the tour into a single deep-time card', () => {
+    expect(sky.observatoryResolve({ obsDrift: 51234 }, Date.now()).drift).toBe(50000);
+    expect(sky.observatoryResolve({ obsDrift: 999999 }, Date.now()).drift).toBe(100000);
+    expect(sky.observatoryResolve({ obsDrift: 'soon' }, Date.now()).drift).toBe(0);
+    const bodies = sky.observatoryBodies(Date.UTC(2026, 6, 5, 3, 30), MOOSEHEAD.lat, MOOSEHEAD.lon);
+    const tour = sky.observatoryTour({ driftYears: 50000, bodies, dark: 1, limit: 6, catalog: null, lst: bodies.lst, lat: MOOSEHEAD.lat, d: bodies.d, deepUp: [], radiant: null, rate: 0, aurora: { visible: false } });
+    expect(tour).toHaveLength(1);
+    expect(tour[0].kind).toBe('drift');
+    expect(tour[0].title).toContain('50,000 years');
+    expect(tour[0].note).toContain('61 Cygni');
+  });
+});
+
 describe('Tour planning and pattern lookup', () => {
   it('maps pattern stars to their figure and plans a prioritised tour for a dark sky', () => {
     expect(sky.HIP_TO_PATTERN[27989]).toBe('orion');
@@ -326,6 +427,30 @@ describe('Observatory tab rendering', () => {
     expect(text).toContain('refraction');
     const skymap = new DOMParser().parseFromString(renderTool('astronomy', { astronomy: { tab: 'skymap', observingList: [] } }), 'text/html');
     expect(skymap.body.textContent).toContain('Open in 3D Observatory');
+  });
+
+  it('renders the deep-time control, its caveat and a solar-system-free summary when drifting', () => {
+    const off = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30' }), 'text/html');
+    expect(off.body.textContent).toContain('Deep time: star motion');
+    expect(off.body.textContent).not.toContain('Deep-time view');
+    expect(off.querySelector('input[type="range"][min="-100000"]').getAttribute('value')).toBe('0');
+
+    const on = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30', obsDrift: 50000, obsShower: 'perseids', obsAurora: 6 }), 'text/html');
+    const text = on.body.textContent;
+    expect(text).toContain('Deep-time view');
+    expect(text).toContain('+50,000 years');
+    expect(text).toContain('about 52,000 CE');
+    expect(text).toContain('Back to today');
+    expect(text).toContain('The sky in 50,000 years');
+    // Solar-system content is withheld rather than shown at a meaningless epoch.
+    expect(text).not.toContain('Perseids Radiant');
+    expect(text).toContain('Deep-sky showpieces up: None');
+    expect(text).not.toContain('NaN');
+
+    const past = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30', obsDrift: -100000 }), 'text/html');
+    expect(past.body.textContent).toContain('−100,000 years');
+    expect(past.body.textContent).toContain('BCE');
+    expect(past.body.textContent).toContain('100,000 years ago');
   });
 
   it('shows the polar-day note instead of missing events, and ignores malformed picks', () => {

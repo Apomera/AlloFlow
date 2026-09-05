@@ -399,6 +399,49 @@ test('tour steps aim the camera, describe-view names what is in front of it, and
   expect(errors).toEqual([]);
 });
 
+test('deep time moves the real star field and withholds the solar system', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  await expect.poll(async () => (await debug(sky)).withMotion).toBeGreaterThan(8000);
+  await sky.evaluate((el: any) => el.__observatoryLookAt(180, 40));
+  const before = await debug(sky);
+  expect(before.deepTime).toBe(false);
+  expect(before.drift).toBe(0);
+  const namedBefore = before.spots.byName;
+  expect(Object.keys(namedBefore).length).toBeGreaterThan(2);
+  await page.screenshot({ path: 'scratch/observatory-drift-today.png', clip: (await sky.boundingBox())! });
+
+  await page.getByLabel(/Deep time: star motion/).fill('100000');
+  await expect.poll(async () => (await debug(sky)).drift).toBe(100000);
+  const after = await debug(sky);
+  expect(after.deepTime).toBe(true);
+  // Stars are still there and still bright, but they have moved.
+  expect(after.starsUp).toBeGreaterThan(3000);
+  const shared = Object.keys(namedBefore).filter(n => after.spots.byName[n]);
+  expect(shared.length).toBeGreaterThan(0);
+  const moved = shared.map(n => Math.hypot(after.spots.byName[n].x - namedBefore[n].x, after.spots.byName[n].y - namedBefore[n].y));
+  expect(Math.max(...moved)).toBeGreaterThan(3);
+  // The solar system is withheld at this range rather than drawn wrongly.
+  expect(after.planets.every((p: any) => !p.visible)).toBe(true);
+  expect(after.labels.some((l: string) => /Moon/.test(l))).toBe(false);
+  expect(after.deepSky).toEqual([]);
+  // The Moon's glow is painted by the sky shader, so hiding the sprite is not enough.
+  expect(before.skyMoonGlow).toBeGreaterThan(0);
+  expect(after.skyMoonGlow).toBe(0);
+  expect(after.skySunAlt).toBe(-90);
+  await expect(page.getByText('Deep-time view')).toBeVisible();
+  await expect(page.locator('#astronomy-observatory-tour')).toContainText('The sky in 100,000 years');
+  await page.screenshot({ path: 'scratch/observatory-drift-100k.png', clip: (await sky.boundingBox())! });
+
+  await page.getByRole('button', { name: 'Back to today', exact: true }).click();
+  await expect.poll(async () => (await debug(sky)).drift).toBe(0);
+  const restored = await debug(sky);
+  expect(restored.deepTime).toBe(false);
+  const backAgain = shared.map(n => restored.spots.byName[n] ? Math.hypot(restored.spots.byName[n].x - namedBefore[n].x, restored.spots.byName[n].y - namedBefore[n].y) : 0);
+  expect(Math.max(...backAgain)).toBeLessThan(1.5);
+  expect(errors).toEqual([]);
+});
+
 test('reduced motion keeps the scene still and disables time-lapse', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsShower: 'perseids', obsDate: '2026-08-12' });

@@ -1112,6 +1112,7 @@
       aurora: Math.round(meteorBound(state.obsAurora, 0, 9, 0)),
       bortle: Math.round(meteorBound(state.obsBortle, 1, 9, 3)),
       highlight: Object.prototype.hasOwnProperty.call(CONSTELLATION_PATTERNS, state.obsHighlight) ? state.obsHighlight : '',
+      drift: Math.round(meteorBound(state.obsDrift, -100000, 100000, 0) / 2500) * 2500,
       rate: OBSERVATORY_RATES.some(function(r) { return r.id === state.obsRate; }) ? state.obsRate : '10m',
       playing: state.obsPlaying === true
     };
@@ -1223,10 +1224,15 @@
   }
   function normalizeCatalog(json) {
     var rows = json && Array.isArray(json.stars) ? json.stars : [];
-    var n = rows.length, cat = { count: n, hip: new Int32Array(n), ra: new Float64Array(n), dec: new Float64Array(n), mag: new Float32Array(n), ci: new Float32Array(n), con: new Int16Array(n), names: json && json.names ? json.names : {}, codes: json && Array.isArray(json.constellationCodes) ? json.constellationCodes : [], byHip: {}, source: json && json.source ? json.source : 'built-in bright stars', license: json && json.license ? json.license : '', epoch: 'J2000' };
+    var n = rows.length, scale = Number(json && json.velocityScale) || 1e9;
+    var cat = { count: n, hip: new Int32Array(n), ra: new Float64Array(n), dec: new Float64Array(n), mag: new Float32Array(n), ci: new Float32Array(n), con: new Int16Array(n),
+      dist: new Float64Array(n), vx: new Float64Array(n), vy: new Float64Array(n), vz: new Float64Array(n), withMotion: 0, names: json && json.names ? json.names : {}, codes: json && Array.isArray(json.constellationCodes) ? json.constellationCodes : [], byHip: {}, source: json && json.source ? json.source : 'built-in bright stars', license: json && json.license ? json.license : '', epoch: 'J2000' };
     for (var i = 0; i < n; i++) {
       var r = rows[i];
       cat.hip[i] = r[0] | 0; cat.ra[i] = Number(r[1]); cat.dec[i] = Number(r[2]); cat.mag[i] = Number(r[3]); cat.ci[i] = Number(r[4]); cat.con[i] = r[5] | 0;
+      var dist = Number(r[6]);                       // 0 means no usable parallax: treat as too far to drift
+      cat.dist[i] = Number.isFinite(dist) && dist > 0 ? dist : 0;
+      if (cat.dist[i]) { cat.vx[i] = (Number(r[7]) || 0) / scale; cat.vy[i] = (Number(r[8]) || 0) / scale; cat.vz[i] = (Number(r[9]) || 0) / scale; cat.withMotion++; }
       if (cat.hip[i]) cat.byHip[cat.hip[i]] = i;
     }
     return cat;
@@ -1254,13 +1260,35 @@
     }).catch(function() { observatoryCatalogPromise = null; var fb = fallbackCatalog(); observatoryCatalogCache = observatoryCatalogCache || fb; return fb; });
     return observatoryCatalogPromise;
   }
+  // Linear space motion in the equatorial J2000 frame. `years` is measured from
+  // J2000.0. Stars with no usable parallax carry zero velocity and never move.
+  // Distance changes alter apparent brightness by the inverse-square law.
+  function starMotionAt(catalog, i, years) {
+    var dist = catalog.dist ? catalog.dist[i] : 0;
+    if (!(dist > 0) || !years) return { ra: catalog.ra[i], dec: catalog.dec[i], dist: dist, dmag: 0 };
+    var cd = cosd(catalog.dec[i]), sd = sind(catalog.dec[i]), cr = cosd(catalog.ra[i]), sr = sind(catalog.ra[i]);
+    var x = dist * cd * cr + catalog.vx[i] * years;
+    var y = dist * cd * sr + catalog.vy[i] * years;
+    var z = dist * sd + catalog.vz[i] * years;
+    var nd = Math.sqrt(x * x + y * y + z * z);
+    if (!(nd > 1e-4)) return { ra: catalog.ra[i], dec: catalog.dec[i], dist: dist, dmag: 0 };
+    return { ra: rev(atan2d(y, x)), dec: asind(Math.max(-1, Math.min(1, z / nd))), dist: nd, dmag: 5 * (Math.log(nd / dist) / Math.LN10) };
+  }
   // Horizon-frame positions for every catalog star at one instant. Precession is
   // cached per catalog and refreshed when the date moves more than a month.
-  function catalogHorizon(catalog, lst, lat, d, radius) {
-    var n = catalog.count;
-    if (!catalog._pre || Math.abs(catalog._pre.d - d) > 30) {
-      var pre = { d: d, sinDec: new Float64Array(n), cosDec: new Float64Array(n), ra: new Float64Array(n) };
-      for (var i = 0; i < n; i++) { var p = precessJ2000(catalog.ra[i], catalog.dec[i], d); pre.ra[i] = p.ra; pre.sinDec[i] = sind(p.dec); pre.cosDec[i] = cosd(p.dec); }
+  function catalogHorizon(catalog, lst, lat, d, radius, driftYears) {
+    var n = catalog.count, drift = Number(driftYears) || 0;
+    // Proper motion over a month is far below a pixel, so the epoch cache still
+    // holds for 30 days; the deep-time offset is a separate cache key.
+    if (!catalog._pre || catalog._pre.drift !== drift || Math.abs(catalog._pre.d - d) > 30) {
+      var years = d / 365.25 + drift;
+      var pre = { d: d, drift: drift, sinDec: new Float64Array(n), cosDec: new Float64Array(n), ra: new Float64Array(n), mags: drift ? new Float32Array(n) : null };
+      for (var i = 0; i < n; i++) {
+        var m = starMotionAt(catalog, i, years);
+        var p = precessJ2000(m.ra, m.dec, d);
+        pre.ra[i] = p.ra; pre.sinDec[i] = sind(p.dec); pre.cosDec[i] = cosd(p.dec);
+        if (pre.mags) pre.mags[i] = catalog.mag[i] + m.dmag;
+      }
       catalog._pre = pre;
     }
     var pre2 = catalog._pre, positions = new Float32Array(n * 3), alts = new Float32Array(n), azs = new Float32Array(n);
@@ -1275,7 +1303,7 @@
       positions[k * 3] = Math.sin(az) * cosApp * R; positions[k * 3 + 1] = sinApp * R; positions[k * 3 + 2] = -Math.cos(az) * cosApp * R;
       alts[k] = altApp * R2D; azs[k] = az * R2D; if (altApp > 0) up++;
     }
-    return { positions: positions, alts: alts, azs: azs, up: up };
+    return { positions: positions, alts: alts, azs: azs, up: up, mags: pre2.mags };
   }
   function horizonPoint(raDeg, decDeg, lst, lat, d, radius) {
     var p = precessJ2000(raDeg, decDeg, d), hz = applyRefraction(equToHorizon(p.ra, p.dec, lst, lat));
@@ -1374,7 +1402,7 @@
   }
   if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
     refractionDeg: refractionDeg, DEEP_SKY: DEEP_SKY, CONSTELLATION_NAMES: CONSTELLATION_NAMES, starColorClass: starColorClass,
-    skyEvents: skyEvents, identifyNearest: identifyNearest
+    skyEvents: skyEvents, identifyNearest: identifyNearest, starMotionAt: starMotionAt
   });
 
   // HIP → recognition pattern, so identifying a star can light up its figure.
@@ -1396,6 +1424,11 @@
   // A short, prioritised list of the best things to look at for this sky. Pure, so it is testable.
   function observatoryTour(input) {
     var steps = [], bodies = input.bodies, dark = input.dark, limit = input.limit, catalog = input.catalog || null;
+    if (input.driftYears) {
+      var ky = Math.abs(input.driftYears) / 1000, when = input.driftYears > 0 ? 'in ' + ky + ',000 years' : ky + ',000 years ago';
+      return [{ kind: 'drift', id: 'drift', title: 'The sky ' + when, az: 180, alt: 45,
+        note: 'Every star is moving through the galaxy, and the closest ones sweep across the sky fastest: 61 Cygni covers more than a degree every thousand years, while distant stars barely stir. Familiar figures warp slowly. The Big Dipper stretches by several degrees over 100,000 years, because five of its seven stars travel together as one group while Dubhe and Alkaid do not. Brightness changes here too, as each star\'s distance grows or shrinks.' }];
+    }
     var moon = bodies.moon, planets = bodies.planets.filter(function(p) { return p.alt > 3; });
     if (dark < 0.05) steps.push({ kind: 'daylight', id: 'daylight', title: 'A daytime sky', note: 'Sunlight scattered by the air outshines the stars, but the sky is still turning. Venus and the Moon can be found in daylight. Never look at the Sun without certified solar filters.', az: bodies.sun.az, alt: Math.max(10, bodies.sun.alt - 20) });
     if (moon.alt > 3) steps.push({ kind: 'moon', id: 'moon', title: 'The Moon: ' + moon.phase.name, note: Math.round(moon.phase.illum * 100) + '% lit. The sharpest craters are along the terminator, the line between day and night on the Moon. Binoculars are enough.', az: moon.az, alt: moon.alt });
@@ -1540,7 +1573,7 @@
     }));
 
     // Catalog stars: one Points cloud, plus a stencil-masked mirror for water.
-    var starGeometry = own(new THREE.BufferGeometry()), starCount = 0;
+    var starGeometry = own(new THREE.BufferGeometry()), starCount = 0, baseMags = null, magsDrifted = false;
     function starMaterial(mirror) {
       return own(new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, depthTest: !mirror, blending: THREE.AdditiveBlending,
@@ -1560,6 +1593,7 @@
       starGeometry.setAttribute('aAlt', new THREE.BufferAttribute(new Float32Array(starCount), 1).setUsage(THREE.DynamicDrawUsage));
       starGeometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
       starGeometry.setAttribute('aMag', new THREE.BufferAttribute(mags, 1));
+      baseMags = mags;
     }
     // Constellation lines share one LineSegments with per-vertex colour for the highlight.
     var lineSegments = [];
@@ -1696,7 +1730,7 @@
     }
     function updateAurora() {
       var info = current.aurora;
-      var visible = !!info && info.visible && current.dark > 0.02;
+      var visible = !!info && info.visible && current.dark > 0.02 && !model.resolved.drift;
       auroraGroup.visible = visible;
       if (!visible) return;
       curtains.forEach(function(curtain, i) {
@@ -1776,15 +1810,24 @@
     function updateSky(utcMs) {
       var m = model, res = m.resolved, catalog = m.catalog;
       var bodies = observatoryBodies(utcMs, res.lat, res.lon), d = bodies.d, lst = bodies.lst;
-      var horizon = catalogHorizon(catalog, lst, res.lat, d, 600);
+      var deepTime = res.drift !== 0;
+      var horizon = catalogHorizon(catalog, lst, res.lat, d, 600, res.drift);
+      if (horizon.mags) { starGeometry.attributes.aMag.array.set(horizon.mags); starGeometry.attributes.aMag.needsUpdate = true; magsDrifted = true; }
+      else if (magsDrifted && baseMags) { starGeometry.attributes.aMag.array.set(baseMags); starGeometry.attributes.aMag.needsUpdate = true; magsDrifted = false; }
       starGeometry.attributes.position.array.set(horizon.positions); starGeometry.attributes.position.needsUpdate = true;
       starGeometry.attributes.aAlt.array.set(horizon.alts); starGeometry.attributes.aAlt.needsUpdate = true;
       var sunAlt = bodies.sun.alt, moon = bodies.moon, illum = moon.phase.illum;
       var limit = limitingMagnitude(res.bortle, sunAlt, moon.alt, illum);
       var dark = 1 - Math.max(0, Math.min(1, (sunAlt + 12) / 16));
+      // Deep time: today's Sun, Moon, planets and shower would be meaningless
+      // beside a star field tens of thousands of years away, so the scene
+      // becomes a conceptual night sky and says so.
+      if (deepTime) { limit = limitingMagnitude(res.bortle, -90, -90, 0); dark = 1; sunAlt = -90; }
       var sunDir = meteorDirection(bodies.sun.az, sunAlt, 1), moonDir = meteorDirection(moon.az, moon.alt, 1);
       skyUniforms.sunDir.value.set(sunDir.x, sunDir.y, sunDir.z); skyUniforms.sunAlt.value = sunAlt;
-      skyUniforms.moonDir.value.set(moonDir.x, moonDir.y, moonDir.z); skyUniforms.moonGlow.value = moon.alt > -2 ? illum * Math.min(1, (moon.alt + 2) / 12) : 0;
+      skyUniforms.moonDir.value.set(moonDir.x, moonDir.y, moonDir.z);
+      // The sky's moonlight has to vanish with the Moon itself in deep time.
+      skyUniforms.moonGlow.value = (!deepTime && moon.alt > -2) ? illum * Math.min(1, (moon.alt + 2) / 12) : 0;
       skyUniforms.pollution.value = (res.bortle - 1) / 8; skyUniforms.milky.value = res.layers.milkyWay ? 1 : 0;
       var pole = horizonPoint(GALACTIC_POLE.ra, GALACTIC_POLE.dec, lst, res.lat, d, 1), core = horizonPoint(GALACTIC_CENTER.ra, GALACTIC_CENTER.dec, lst, res.lat, d, 1);
       skyUniforms.galPole.value.set(pole.x, pole.y, pole.z); skyUniforms.galCore.value.set(core.x, core.y, core.z);
@@ -1815,16 +1858,16 @@
       });
       // Named stars bright enough to label.
       var named = [];
-      Object.keys(catalog.names).forEach(function(hip) { var idx = catalog.byHip[hip]; if (idx === undefined || catalog.mag[idx] > 2.6 || catalog.mag[idx] > limit || horizon.alts[idx] < 1) return; named.push({ name: catalog.names[hip], x: horizon.positions[idx * 3], y: horizon.positions[idx * 3 + 1], z: horizon.positions[idx * 3 + 2], mag: catalog.mag[idx], alt: horizon.alts[idx], az: horizon.azs[idx] }); });
+      Object.keys(catalog.names).forEach(function(hip) { var idx = catalog.byHip[hip]; var mg = horizon.mags ? horizon.mags[idx] : catalog.mag[idx]; if (idx === undefined || mg > 2.6 || mg > limit || horizon.alts[idx] < 1) return; named.push({ name: catalog.names[hip], x: horizon.positions[idx * 3], y: horizon.positions[idx * 3 + 1], z: horizon.positions[idx * 3 + 2], mag: mg, alt: horizon.alts[idx], az: horizon.azs[idx] }); });
       named.sort(function(a, b) { return a.mag - b.mag; });
       // Sun, Moon, planets.
       var sunPos = meteorDirection(bodies.sun.az, sunAlt, 560);
       sunSprite.position.set(sunPos.x, sunPos.y, sunPos.z); sunDisc.position.copy(sunSprite.position);
-      sunSprite.visible = sunDisc.visible = res.layers.sunMoon && sunAlt > -1.5;
+      sunSprite.visible = sunDisc.visible = res.layers.sunMoon && !deepTime && sunAlt > -1.5;
       var moonPos = meteorDirection(moon.az, moon.alt, 560);
       moonSprite.position.set(moonPos.x, moonPos.y, moonPos.z); moonHalo.position.copy(moonSprite.position);
       moonMirror.position.set(moonPos.x, -moonPos.y, moonPos.z);
-      moonSprite.visible = res.layers.sunMoon && moon.alt > -1; moonHalo.visible = moonSprite.visible && dark > 0.1; moonMirror.visible = moonSprite.visible && moon.alt > 1;
+      moonSprite.visible = res.layers.sunMoon && !deepTime && moon.alt > -1; moonHalo.visible = moonSprite.visible && dark > 0.1; moonMirror.visible = moonSprite.visible && moon.alt > 1;
       moonHalo.material.opacity = illum * 0.5 * dark; moonMirror.material.opacity = illum * 0.6 * dark;
       if (Math.abs(illum - moonPhaseDrawn) > 0.004) { drawMoon(illum, moon.phase.waxing); moonPhaseDrawn = illum; }
       var planetMag = { mercury: 0.2, venus: -4.1, mars: 0.4, jupiter: -2.3, saturn: 0.7 };
@@ -1832,10 +1875,10 @@
         var s = planetSprites[p.id], pos = meteorDirection(p.az, p.alt, 560);
         s.position.set(pos.x, pos.y, pos.z);
         var vis = Math.max(0, Math.min(1, (limit - planetMag[p.id] + 0.5) * 0.4)) * Math.min(1, Math.max(0, p.alt + 0.5));
-        s.visible = res.layers.planets && vis > 0.02 && p.alt > -0.5; s.material.opacity = vis;
+        s.visible = res.layers.planets && !deepTime && vis > 0.02 && p.alt > -0.5; s.material.opacity = vis;
       });
       // Shower radiant.
-      var shower = res.shower ? METEOR_RADIANTS[res.shower] : null, radiant = null, rate = 0;
+      var shower = res.shower && !deepTime ? METEOR_RADIANTS[res.shower] : null, radiant = null, rate = 0;
       if (shower) {
         radiant = horizonPoint(shower.ra, shower.dec, lst, res.lat, d, 240);
         rate = observatoryShowerRate(m.showerZhr || 0, radiant.alt, limit);
@@ -1848,7 +1891,7 @@
         var sp = deepSprites[i], p = horizonPoint(obj.ra, obj.dec, lst, res.lat, d, 560);
         sp.position.set(p.x, p.y, p.z);
         var vis = Math.max(0, Math.min(1, (limit - obj.mag + 1.2) * 0.35)) * dark;
-        sp.visible = res.layers.deepSky && p.alt > 0.5 && vis > 0.03; sp.material.opacity = vis * 0.9;
+        sp.visible = res.layers.deepSky && !deepTime && p.alt > 0.5 && vis > 0.03; sp.material.opacity = vis * 0.9;
         sp.userData.alt = p.alt; sp.userData.az = p.az; sp.userData.mag = obj.mag; sp.userData.name = obj.name;
         if (sp.visible) deepVisible.push(obj.id);
       });
@@ -1861,7 +1904,7 @@
       eclipticLine.visible = equatorLine.visible = res.layers.guides;
       var poleAlt = Math.abs(res.lat), polePos = meteorDirection(res.lat >= 0 ? 0 : 180, poleAlt, 300);
       poleMarker.position.set(polePos.x, polePos.y, polePos.z); poleMarker.lookAt(0, 0, 0); poleMarker.visible = res.layers.guides && poleAlt > 0.5;
-      current = { deepVisible: deepVisible, eclTop: eclTop, eqTop: eqTop, pole: { az: res.lat >= 0 ? 0 : 180, alt: poleAlt },
+      current = { deepTime: deepTime, mags: horizon.mags, deepVisible: deepVisible, eclTop: eclTop, eqTop: eqTop, pole: { az: res.lat >= 0 ? 0 : 180, alt: poleAlt },
         horizon: horizon, utcMs: utcMs, lst: lst, d: d, sun: bodies.sun, moon: moon, planets: bodies.planets, limit: limit, dark: dark, starsUp: horizon.up, linesDrawn: drawn, centroids: centroids, named: named, radiant: radiant, rate: rate, meteorCount: Math.min(12, Math.round(rate / 6)), aurora: m.auroraOverride || auroraGeometry(res.lat, res.lon, res.aurora) };
       updateAurora();
       clock.textContent = typeof m.formatClock === 'function' ? m.formatClock(utcMs, playing()) : new Date(utcMs).toISOString();
@@ -1915,9 +1958,10 @@
       beginLabels();
       var res = model.resolved, t = model.text || {};
       if (res.layers.compass) [[0, t.n || 'N'], [90, t.e || 'E'], [180, t.s || 'S'], [270, t.w || 'W']].forEach(function(c) { placeLabel(meteorDirection(c[0], 1.5, 500), c[1], '#fca5a5', 'compass'); });
+      // Follow the sprites, not the raw altitudes, so a hidden body is never named.
       if (res.layers.sunMoon) {
-        if (current.sun.alt > -1.5) placeLabel(sunSprite.position, t.sun || 'Sun', '#fde68a', 'body');
-        if (current.moon.alt > -1) placeLabel(moonSprite.position, (t.moon || 'Moon') + ' · ' + Math.round(current.moon.phase.illum * 100) + '%', '#e2e8f0', 'body');
+        if (sunSprite.visible) placeLabel(sunSprite.position, t.sun || 'Sun', '#fde68a', 'body');
+        if (moonSprite.visible) placeLabel(moonSprite.position, (t.moon || 'Moon') + ' · ' + Math.round(current.moon.phase.illum * 100) + '%', '#e2e8f0', 'body');
       }
       if (res.layers.planets) current.planets.forEach(function(p) { var s = planetSprites[p.id]; if (s.visible && s.material.opacity > 0.15) placeLabel(s.position, (t.planets && t.planets[p.id]) || p.name, '#fcd34d', 'planet'); });
       if (res.layers.labels) {
@@ -1970,10 +2014,10 @@
       var ndc = new THREE.Vector3(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1, 0.5).unproject(camera).normalize();
       var dir = { x: ndc.x, y: ndc.y, z: ndc.z }, res = model.resolved, catalog = model.catalog, horizon = current.horizon, candidates = [];
       if (res.layers.stars) for (var i = 0; i < catalog.count; i++) {
-        if (horizon.alts[i] <= 0 || catalog.mag[i] > current.limit + 0.3) continue;
+        if (horizon.alts[i] <= 0 || (current.mags ? current.mags[i] : catalog.mag[i]) > current.limit + 0.3) continue;
         var dot = (horizon.positions[i * 3] * dir.x + horizon.positions[i * 3 + 1] * dir.y + horizon.positions[i * 3 + 2] * dir.z) / 600;
         if (dot < 0.998) continue; // ~3.6° prefilter
-        candidates.push({ kind: 'star', index: i, hip: catalog.hip[i], name: catalog.names[catalog.hip[i]] || ('HIP ' + catalog.hip[i]), mag: catalog.mag[i], ci: catalog.ci[i], con: catalog.codes[catalog.con[i]] || '', x: horizon.positions[i * 3], y: horizon.positions[i * 3 + 1], z: horizon.positions[i * 3 + 2], alt: horizon.alts[i], az: horizon.azs[i] });
+        candidates.push({ kind: 'star', index: i, hip: catalog.hip[i], name: catalog.names[catalog.hip[i]] || ('HIP ' + catalog.hip[i]), mag: current.mags ? current.mags[i] : catalog.mag[i], ci: catalog.ci[i], con: catalog.codes[catalog.con[i]] || '', x: horizon.positions[i * 3], y: horizon.positions[i * 3 + 1], z: horizon.positions[i * 3 + 2], alt: horizon.alts[i], az: horizon.azs[i] });
       }
       if (res.layers.planets) current.planets.forEach(function(p) { var sp = planetSprites[p.id]; if (sp.visible) candidates.push({ kind: 'planet', id: p.id, name: (model.text && model.text.planets && model.text.planets[p.id]) || p.name, mag: -2, priority: 0.4, x: sp.position.x, y: sp.position.y, z: sp.position.z, alt: p.alt, az: p.az }); });
       if (res.layers.sunMoon && moonSprite.visible) candidates.push({ kind: 'moon', id: 'moon', name: (model.text && model.text.moon) || 'Moon', mag: -12, priority: 0.6, x: moonSprite.position.x, y: moonSprite.position.y, z: moonSprite.position.z, alt: current.moon.alt, az: current.moon.az, illum: current.moon.phase.illum, phase: current.moon.phase.name });
@@ -2018,6 +2062,8 @@
         planets: c.planets ? c.planets.map(function(p) { return { id: p.id, alt: p.alt, az: p.az, visible: planetSprites[p.id].visible }; }) : [],
         radiant: c.radiant ? { alt: c.radiant.alt, az: c.radiant.az } : null, rate: c.rate || 0, meteors: c.activeMeteors || 0,
         aurora: c.aurora || null, auroraVisible: auroraGroup.visible, camera: { yaw: yaw, pitch: pitch, zoom: zoom }, env: envSignature, playing: playing(), playMs: playMs,
+        drift: model ? model.resolved.drift : 0, deepTime: !!c.deepTime, withMotion: model ? model.catalog.withMotion : 0,
+        skyMoonGlow: skyUniforms.moonGlow.value, skySunAlt: skyUniforms.sunAlt.value,
         deepSky: c.deepVisible || [], guides: eclipticLine.visible, poleVisible: poleMarker.visible, moonFace: !!moonFace, picked: picked ? { kind: picked.kind, id: picked.id, name: picked.name } : null,
         brightStar: c.named && c.named.length ? { name: c.named[0].name, alt: c.named[0].alt, az: c.named[0].az } : null,
         spots: (function() { // canvas-pixel positions of a few objects, for tests and tooling
@@ -2041,7 +2087,7 @@
         var movedSite = !!prev && (prev.resolved.lat !== res.lat || prev.resolved.lon !== res.lon || prev.resolved.site.id !== res.site.id);
         if (!prev || movedSite) { lastSkyKey = ''; }
         if (wasPlaying && !playing()) commitClock();
-        var skyKey = [res.utcMs, res.lat, res.lon, res.bortle, res.aurora, res.shower, res.highlight, JSON.stringify(res.layers), next.catalog.count, next.auroraOverride ? JSON.stringify(next.auroraOverride) : ''].join('|');
+        var skyKey = [res.utcMs, res.lat, res.lon, res.bortle, res.aurora, res.shower, res.highlight, res.drift, JSON.stringify(res.layers), next.catalog.count, next.auroraOverride ? JSON.stringify(next.auroraOverride) : ''].join('|');
         if (!playing()) { playMs = 0; baseUtc = res.utcMs; if (skyKey !== lastSkyKey) { lastSkyKey = skyKey; updateSky(res.utcMs); } }
         else if (!wasPlaying) { baseUtc = res.utcMs; playMs = 0; lastSkyKey = ''; updateSky(res.utcMs); }
         else if (skyKey !== lastSkyKey) { lastSkyKey = skyKey; updateSky(baseUtc + playMs); }
@@ -9128,18 +9174,27 @@
           coast: __alloT('stem.astronomy.obs_env_coast', 'Rocky coast'), desert: __alloT('stem.astronomy.obs_env_desert', 'High desert'), arctic: __alloT('stem.astronomy.obs_env_arctic', 'Arctic snowfield')
         };
         var sunAlt = bodies.sun.alt, moon = bodies.moon;
+        // Declared before every consumer below: deep time withholds solar-system content.
+        var deepTime = resolved.drift !== 0;
         var limit = limitingMagnitude(resolved.bortle, sunAlt, moon.alt, moon.phase.illum);
         var noaa = d.obsNoaa && typeof d.obsNoaa === 'object' ? d.obsNoaa : null;
         var noaaFresh = !!(noaa && !noaa.error && !noaa.loading && Number.isFinite(Number(noaa.fetchedAt)) && Date.now() - Number(noaa.fetchedAt) < 2 * 3600000);
         var noaaApplied = noaaFresh && resolved.live && d.obsNoaaApply === true;
-        var aurora = noaaApplied ? auroraFromForecast(resolved.lat, resolved.lon, noaa) : auroraGeometry(resolved.lat, resolved.lon, resolved.aurora);
-        var showerMeta = resolved.shower ? SHOWER_META[resolved.shower] : null;
-        var radiant = resolved.shower ? horizonPoint(METEOR_RADIANTS[resolved.shower].ra, METEOR_RADIANTS[resolved.shower].dec, bodies.lst, resolved.lat, bodies.d, 1) : null;
+        var aurora = deepTime ? auroraGeometry(resolved.lat, resolved.lon, 0)
+          : noaaApplied ? auroraFromForecast(resolved.lat, resolved.lon, noaa) : auroraGeometry(resolved.lat, resolved.lon, resolved.aurora);
+        var showerMeta = resolved.shower && !deepTime ? SHOWER_META[resolved.shower] : null;
+        var radiant = resolved.shower && !deepTime ? horizonPoint(METEOR_RADIANTS[resolved.shower].ra, METEOR_RADIANTS[resolved.shower].dec, bodies.lst, resolved.lat, bodies.d, 1) : null;
         var rate = radiant ? observatoryShowerRate(showerMeta.zhr, radiant.alt, limit) : 0;
         var events = skyEvents(resolved.utcMs, resolved.lat, resolved.lon, resolved.timeZone);
+        function driftLabel(years) {
+          if (!years) return __alloT('stem.astronomy.obs_drift_now', 'Today');
+          var thousands = Math.abs(years) / 1000, era = resolved.wall.year + years;
+          var eraText = era > 0 ? Math.round(era / 1000) + ',000 ' + __alloT('stem.astronomy.obs_era_ce', 'CE') : Math.round(-era / 1000) + ',000 ' + __alloT('stem.astronomy.obs_era_bce', 'BCE');
+          return (years > 0 ? '+' : '−') + thousands + ',000 ' + __alloT('stem.astronomy.obs_years_word', 'years') + ' · ' + __alloT('stem.astronomy.obs_about_word', 'about') + ' ' + eraText;
+        }
         var picked = d.obsPicked && typeof d.obsPicked === 'object' && typeof d.obsPicked.name === 'string' ? d.obsPicked : null;
         var tourCatalog = observatoryCatalogCache;
-        var deepUp = DEEP_SKY.map(function(obj) { var p = horizonPoint(obj.ra, obj.dec, bodies.lst, resolved.lat, bodies.d, 1); return { obj: obj, alt: p.alt, az: p.az }; }).filter(function(x) { return x.alt > 5 && x.obj.mag < limit + 1; }).sort(function(a, b) { return a.obj.mag - b.obj.mag; });
+        var deepUp = DEEP_SKY.map(function(obj) { var p = horizonPoint(obj.ra, obj.dec, bodies.lst, resolved.lat, bodies.d, 1); return { obj: obj, alt: p.alt, az: p.az }; }).filter(function(x) { return !deepTime && x.alt > 5 && x.obj.mag < limit + 1; }).sort(function(a, b) { return a.obj.mag - b.obj.mag; });
         var zoneOptions = [];
         [resolved.timeZone].concat(OBSERVATORY_SITES.map(function(s) { return s.timeZone; }), [browserTimeZone(), 'UTC']).forEach(function(z) { if (z && zoneOptions.indexOf(z) === -1 && validTimeZone(z)) zoneOptions.push(z); });
         var reduced = _prefersReducedMotion;
@@ -9178,20 +9233,20 @@
           return { resolved: resolved, catalog: catalog, reduced: reduced, picked: picked, showerZhr: showerMeta ? showerMeta.zhr : 0, showerSpeed: showerMeta ? showerMeta.speed : 50, text: textPack, auroraOverride: noaaApplied ? aurora : null,
             formatClock: function(utcMs, playingNow) { var w = utcMsToWallTime(utcMs, resolved.timeZone); return w.dateText + ' ' + w.timeText + ' ' + w.offsetText + ' · ' + (playingNow ? __alloT('stem.astronomy.obs_timelapse_badge', 'TIME-LAPSE') : resolved.live ? __alloT('stem.astronomy.obs_live_badge', 'LIVE') : __alloT('stem.astronomy.obs_set_badge', 'SET TIME')); } };
         };
-        var tour = observatoryTour({ bodies: bodies, dark: 1 - Math.max(0, Math.min(1, (sunAlt + 12) / 16)), limit: limit, catalog: tourCatalog, lst: bodies.lst, lat: resolved.lat, d: bodies.d, deepUp: deepUp, radiant: radiant, rate: rate, showerName: showerMeta ? showerMeta.name : '', aurora: aurora });
+        var tour = observatoryTour({ driftYears: resolved.drift, bodies: bodies, dark: 1 - Math.max(0, Math.min(1, (sunAlt + 12) / 16)), limit: limit, catalog: tourCatalog, lst: bodies.lst, lat: resolved.lat, d: bodies.d, deepUp: deepUp, radiant: radiant, rate: rate, showerName: showerMeta ? showerMeta.name : '', aurora: aurora });
         var tourIndex = tour.length ? Math.max(0, Math.min(tour.length - 1, Math.round(meteorBound(d.obsTourStep, 0, 99, 0)))) : 0;
         var tourStep = tour[tourIndex] || null;
         var tourKindLabel = { daylight: __alloT('stem.astronomy.obs_tour_kind_daylight', 'Sky'), moon: textPack.moon, planet: __alloT('stem.astronomy.obs_tour_kind_planet', 'Planet'), constellation: __alloT('stem.astronomy.obs_tour_kind_constellation', 'Constellation'), deepsky: __alloT('stem.astronomy.obs_tour_kind_deepsky', 'Deep sky'), radiant: __alloT('stem.astronomy.obs_tour_kind_radiant', 'Meteor shower'), aurora: textPack.aurora, named: __alloT('stem.astronomy.obs_tour_kind_star', 'Bright star') };
         var finders = [];
         if (tourStep && tourStep.kind !== 'daylight') finders.push({ kind: tourStep.kind, id: tourStep.id, label: '★ ' + tourStep.title });
-        if (moon.alt > 0) finders.push({ kind: 'moon', id: 'moon', label: textPack.moon });
-        planetsUp.forEach(function(p) { finders.push({ kind: 'planet', id: p.id, label: textPack.planets[p.id] }); });
+        if (moon.alt > 0 && !deepTime) finders.push({ kind: 'moon', id: 'moon', label: textPack.moon });
+        if (!deepTime) planetsUp.forEach(function(p) { finders.push({ kind: 'planet', id: p.id, label: textPack.planets[p.id] }); });
         if (resolved.highlight) finders.push({ kind: 'constellation', id: resolved.highlight, label: textPack.constellations[resolved.highlight] });
         if (radiant && radiant.alt > 0) finders.push({ kind: 'radiant', id: 'radiant', label: textPack.radiant });
         if (aurora.visible) finders.push({ kind: 'aurora', id: 'aurora', label: textPack.aurora });
         if (resolved.layers.deepSky) deepUp.slice(0, 3).forEach(function(x) { finders.push({ kind: 'deepsky', id: x.obj.id, label: x.obj.name }); });
         if (resolved.layers.guides && Math.abs(resolved.lat) > 0.5) finders.push({ kind: 'pole', id: 'pole', label: textPack.pole });
-        var sceneLabel = __alloT('stem.astronomy.obs_scene', '3D observatory sky') + '. ' + resolved.site.name + ', ' + wallText + '. ' + daylightText + ' ' + textPack.moon + ' ' + moon.phase.name + ', ' + (moon.alt > 0 ? compass(moon.az) + ' ' + Math.round(moon.alt) + '°' : __alloT('stem.astronomy.below_horizon', 'below horizon')) + '.';
+        var sceneLabel = __alloT('stem.astronomy.obs_scene', '3D observatory sky') + '. ' + resolved.site.name + ', ' + (deepTime ? driftLabel(resolved.drift) + '. ' : wallText + '. ') + (deepTime ? __alloT('stem.astronomy.obs_drift_scene', 'Deep-time star field: solar-system objects hidden.') : daylightText) + ' ' + textPack.moon + ' ' + moon.phase.name + ', ' + (moon.alt > 0 ? compass(moon.az) + ' ' + Math.round(moon.alt) + '°' : __alloT('stem.astronomy.below_horizon', 'below horizon')) + '.';
         function checkNoaa() {
           upd({ obsNoaa: { loading: true, fetchedAt: Date.now() } });
           var controller = typeof AbortController === 'function' ? new AbortController() : null;
@@ -9269,8 +9324,16 @@
                   h('select', { 'aria-label': __alloT('stem.astronomy.obs_shower', 'Meteor shower layer (simulated timing)'), value: resolved.shower, className: 'astr-focus', style: inputStyle, onChange: function(e) { upd({ obsShower: e.target.value }); } },
                     [h('option', { key: '', value: '' }, __alloT('stem.astronomy.obs_none', 'None'))].concat(Object.keys(SHOWER_META).map(function(id) { return h('option', { key: id, value: id }, SHOWER_META[id].name); })))),
                 h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_aurora_level', 'Simulated aurora activity (0 off to 9 extreme)'),
-                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_aurora_level', 'Simulated aurora activity (0 off to 9 extreme)'), type: 'range', min: 0, max: 9, step: 1, value: resolved.aurora, className: 'astr-focus', 'aria-valuetext': String(resolved.aurora), disabled: noaaApplied, onChange: function(e) { upd({ obsAurora: e.target.value }); } }))
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_aurora_level', 'Simulated aurora activity (0 off to 9 extreme)'), type: 'range', min: 0, max: 9, step: 1, value: resolved.aurora, className: 'astr-focus', 'aria-valuetext': String(resolved.aurora), disabled: noaaApplied || deepTime, onChange: function(e) { upd({ obsAurora: e.target.value }); } })),
+                h('label', { style: fieldStyle }, __alloT('stem.astronomy.obs_drift_label', 'Deep time: star motion (±100,000 years)'),
+                  h('input', { 'aria-label': __alloT('stem.astronomy.obs_drift_label', 'Deep time: star motion (±100,000 years)'), type: 'range', min: -100000, max: 100000, step: 2500, value: resolved.drift, className: 'astr-focus', 'aria-valuetext': driftLabel(resolved.drift), onChange: function(e) { upd({ obsDrift: e.target.value }); } }),
+                  h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                    h('span', { style: { color: deepTime ? '#fbcfe8' : '#94a3b8', fontWeight: deepTime ? 700 : 400 } }, driftLabel(resolved.drift)),
+                    deepTime ? a11yButton({ type: 'button', onClick: function() { upd({ obsDrift: 0 }); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', cursor: 'pointer', fontSize: 11 } }, __alloT('stem.astronomy.obs_drift_reset', 'Back to today')) : null))
               ),
+              deepTime ? h('p', { role: 'status', style: { margin: '0 0 12px', padding: '9px 11px', borderRadius: 8, background: '#2a1a2e', border: '1px solid #f9a8d4', color: '#fbcfe8', fontSize: 12, lineHeight: 1.6 } },
+                h('strong', null, __alloT('stem.astronomy.obs_drift_banner', 'Deep-time view') + ': '),
+                __alloT('stem.astronomy.obs_drift_caveat', 'Star positions and brightnesses come from each star\'s measured distance and 3D velocity, moved in a straight line. That is a good approximation over tens of thousands of years, not a galactic orbit model. The Sun, Moon, planets, meteors, aurora and deep-sky objects are hidden because they would be meaningless at this range, and Earth\'s slow axis wobble is not extrapolated either, so treat compass directions as approximate. The sky is drawn dark so the change is visible.')) : null,
               h(ObservatoryView, { React: React, t: __alloT, model: modelFactory, sceneLabel: sceneLabel, finders: finders,
                 onClockCommit: function(utcMs) { setInstant(utcMs); },
                 onReducedMotion: function() { upd({ obsPlaying: false }); },
@@ -9329,6 +9392,7 @@
                   h('li', null, h('strong', null, textPack.moon + ': '), moon.phase.name + ', ' + Math.round(moon.phase.illum * 100) + '% ' + __alloT('stem.astronomy.illuminated', 'illuminated') + (moon.alt > 0 ? ', ' + Math.round(moon.alt) + '° ' + compass(moon.az) : ', ' + __alloT('stem.astronomy.below_horizon', 'below horizon'))),
                   h('li', null, h('strong', null, __alloT('stem.astronomy.obs_planets_up', 'Planets above the horizon') + ': '), planetsUp.length ? planetsUp.map(function(p) { return textPack.planets[p.id] + ' (' + Math.round(p.alt) + '° ' + compass(p.az) + ')'; }).join(', ') : __alloT('stem.astronomy.obs_none', 'None')),
                   h('li', null, h('strong', null, __alloT('stem.astronomy.obs_bright_stars_up', 'Bright stars well up') + ': '), starsUp.length ? starsUp.map(function(s) { return s.name + ' (' + Math.round(s.alt) + '° ' + compass(s.az) + ')'; }).join(', ') : __alloT('stem.astronomy.obs_none', 'None')),
+                  deepTime ? h('li', null, h('strong', { style: { color: '#fbcfe8' } }, __alloT('stem.astronomy.obs_drift_summary', 'Deep time') + ': '), driftLabel(resolved.drift) + '. ' + __alloT('stem.astronomy.obs_drift_summary_note', 'Star positions and brightnesses are extrapolated along measured space velocities; everything in the solar system is hidden.')) : null,
                   h('li', null, h('strong', null, __alloT('stem.astronomy.obs_limit', 'Estimated faintest star') + ': '), limit <= 0 ? __alloT('stem.astronomy.obs_limit_none', 'stars hidden') : __alloT('stem.astronomy.magnitude_short', 'Magnitude ') + limit.toFixed(1)),
                   h('li', null, h('strong', null, __alloT('stem.astronomy.obs_deep_sky_up', 'Deep-sky showpieces up') + ': '), deepUp.length ? deepUp.slice(0, 5).map(function(x) { return x.obj.name + ' (' + Math.round(x.alt) + '° ' + compass(x.az) + ')'; }).join(', ') : __alloT('stem.astronomy.obs_none', 'None')),
                   radiant ? h('li', null, h('strong', null, showerMeta.name + ' ' + textPack.radiant + ': '), radiant.alt > 0 ? Math.round(radiant.alt) + '° ' + compass(radiant.az) + ', ' + __alloT('stem.astronomy.obs_est_rate', 'estimated') + ' ' + rate + ' /hr' : __alloT('stem.astronomy.obs_radiant_down', 'below the horizon, so no shower meteors are shown')) : null,
