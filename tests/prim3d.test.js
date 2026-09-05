@@ -119,6 +119,56 @@ describe('Prim3D.buildRefinePrompt (AI edits an existing recipe — canonical ho
   });
 });
 
+describe('Prim3D.renderProfilePad (shared lathe/extrude editor)', () => {
+  const lathe = () => P.normalizeRecipe({ parts: [{ shape: 'lathe', size: [0.5, 1, 0.5], position: [0, 0.5, 0], rotation: [0, 0, 0] }] }).parts[0];
+
+  it('returns null for parts without a profile and an element for drawn parts', async () => {
+    const { React, ReactDOMServer } = await import('./helpers/stem_widgets_smoke_harness.js');
+    expect(P.renderProfilePad(React, { part: { shape: 'box', size: [1, 1, 1] } })).toBeNull();
+    const html = ReactDOMServer.renderToStaticMarkup(P.renderProfilePad(React, { part: lathe(), selectedPoint: 2, idPrefix: 'pl-0', theme: 'dark' }));
+    expect(html).toContain('data-profile-pad="lathe"');
+    expect(html).toContain('id="pl-0-profile-pad"');
+    expect(html).toContain('Lathe profile with 7 points; point 3 selected.');
+    expect(html).toContain('data-profile-axis="x"');
+    expect(html).toContain('aria-label="Radius of point 3"');
+    expect(html).toContain('aria-label="Height of point 3"');
+    expect(html).toContain('bg-slate-900/70'); // dark theme surface
+  });
+
+  it('adds, removes and resets points through normalizeProfile and reports the selection', async () => {
+    const { React, ReactDOMClient } = await import('./helpers/stem_widgets_smoke_harness.js');
+    const { act } = React;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const commits = [], selections = [];
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const render = (part, selectedPoint) => act(async () => {
+      root.render(P.renderProfilePad(React, { part, selectedPoint, idPrefix: 'pl-0',
+        onSelectPoint: (i) => selections.push(i), onCommit: (clean, msg) => commits.push({ clean, msg }) }));
+    });
+    await render(lathe(), 0);
+    await act(async () => { host.querySelector('button[aria-label="Add a shape point after the selected point"]').click(); });
+    expect(selections).toEqual([1]);
+    expect(commits[0].clean.length).toBe(8);
+    expect(commits[0].clean[1]).toEqual([(0.42 + 0.7) / 2, (0 + 0.08) / 2]);
+    await render({ ...lathe(), profile: commits[0].clean }, 1);
+    await act(async () => { host.querySelector('button[aria-label="Remove the selected shape point"]').click(); });
+    expect(commits[1].clean.length).toBe(7);
+    await act(async () => { host.querySelector('button[aria-label="Reset the drawn shape to its starter shape"]').click(); });
+    expect(commits[2].clean).toEqual(P.DEFAULT_PROFILES.lathe);
+    // Sliders commit a clamped coordinate for the selected point.
+    await act(async () => {
+      const x = host.querySelector('input[data-profile-axis="x"]');
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(x, '250');
+      x.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(commits[3].clean[1][0]).toBe(1); // 2.5 clamped to the lathe radius max
+    await act(async () => { root.unmount(); });
+    host.remove();
+  });
+});
+
 describe('Prim3D prompts: drawnShapes opt-in (Art Studio has a profile pad; Print Lab does not)', () => {
   it('keeps the five-primitive whitelist unless a caller opts in', () => {
     expect(P.buildRecipePrompt('a lighthouse')).not.toMatch(/lathe|extrude/);

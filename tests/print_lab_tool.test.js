@@ -145,6 +145,19 @@ describe('Print Lab workflow surface', () => {
     }
   });
 
+  it('shows the shared profile pad under lathe and extrude parts and not under primitives', () => {
+    const recipe = { name: 'Vase set', parts: [
+      { shape: 'lathe', size: [0.5, 1.2, 0.5], position: [0, 0.6, 0], rotation: [0, 0, 0], color: '#22c55e' },
+      { shape: 'box', size: [1, 0.1, 1], position: [0, 0.05, 0], rotation: [0, 0, 0], color: '#64748b' },
+    ] };
+    const html = renderTool('printLab', { printLab: { activeTab: 'Design', recipe, unitMm: 20 } });
+    expect(html).toContain('data-profile-pad="lathe"');
+    expect(html).toContain('id="printlab-part-0-profile-pad"');
+    expect(html).toContain('Lathe profile with 7 points; point 1 selected.');
+    expect(html).not.toContain('id="printlab-part-1-profile-pad"');
+    expect((html.match(/data-profile-pad=/g) || []).length).toBe(1);
+  });
+
   it('keeps preflight advisory and requires the slicer and trained staff review', () => {
     const html = renderTool('printLab', { printLab: { activeTab: 'Preflight', recipe: RECIPE, unitMm: 20, preflight: PREFLIGHT } });
 

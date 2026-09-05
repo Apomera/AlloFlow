@@ -816,6 +816,7 @@
       var initialReport = initialRecipe && persistedReport && stored.preflightBinding === persistedPreflightBinding(initialRecipe, initialUnitMm, initialProfile) ? persistedReport : null;
       var _tab = React.useState(pendingHandoff ? 'Design' : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design')), activeTab = _tab[0], setActiveTab = _tab[1];
       var _ready = React.useState(!!(window.AlloModules && window.AlloModules.PrintableModel && window.AlloModules.Prim3D)), runtimeReady = _ready[0], setRuntimeReady = _ready[1];
+      var _profilePoints = React.useState({}), profilePoints = _profilePoints[0], setProfilePoints = _profilePoints[1];
       var _runtimeError = React.useState(''), runtimeError = _runtimeError[0], setRuntimeError = _runtimeError[1];
       var _format = React.useState(initialFormat), format = _format[0], setFormat = _format[1];
       var _recipe = React.useState(initialRecipe), recipe = _recipe[0], setRecipe = _recipe[1];
@@ -1314,6 +1315,14 @@
             [0, 1, 2].map(function (axis) { return field('Position ' + ['X', 'Y', 'Z'][axis], part.position[axis], function (value) { var next = part.position.slice(); next[axis] = Number(value); patchPart(index, { position: next }); }, { type: 'number', min: axis === 1 ? -4 : -4, max: axis === 1 ? 8 : 4, step: 0.05 }); }),
             h('label', { className: 'text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Color'), h('input', { type: 'color', value: part.color, onChange: function (event) { patchPart(index, { color: event.target.value }); }, className: 'h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 p-1' }))
           ),
+          // Drawn shapes (lathe/extrude) carry a profile; the shared Prim3D pad edits it.
+          P3D && typeof P3D.renderProfilePad === 'function' && P3D.PROFILE_SHAPES.indexOf(part.shape) !== -1 && Array.isArray(part.profile)
+            ? h('div', { className: 'mt-2' }, P3D.renderProfilePad(React, {
+                part: part, selectedPoint: profilePoints[index] || 0, theme: 'dark', idPrefix: 'printlab-part-' + index,
+                onSelectPoint: function (i) { var next = Object.assign({}, profilePoints); next[index] = i; setProfilePoints(next); },
+                onCommit: function (clean, message) { patchPart(index, { profile: clean }); if (message) announce(message); }
+              }))
+            : null,
           h('div', { className: 'mt-2 flex flex-wrap gap-2' },
             h('button', { type: 'button', disabled: !P3D || recipe.parts.length >= P3D.MAX_PARTS, onClick: function () { updateRecipe(P3D.duplicatePart(recipe, index)); }, className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white disabled:opacity-50' }, 'Duplicate'),
             h('button', { type: 'button', onClick: function () { updateRecipe(P3D.removePart(recipe, index)); }, className: 'min-h-[40px] rounded-lg border border-rose-700 px-3 text-xs font-bold text-rose-200' }, 'Remove')
