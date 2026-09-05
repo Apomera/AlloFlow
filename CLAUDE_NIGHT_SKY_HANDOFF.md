@@ -121,6 +121,16 @@ Identification answered "what is that"; this answers the observer's next questio
 - 10 more `ui_strings` keys. Unit suite 47.
 - Assertions are anchored on facts checkable by hand: a star transits at 90 − |latitude − declination|, which puts Sirius at 29.6° from Portland and 3.6° from Tromsø, and Acrux below Portland's horizon at every hour.
 
+## Enhancement slice 8 (2026-09-05): a plan you can take outside
+Everything the Observatory knows lived behind a screen. Observing happens in the dark, away from one.
+
+- The Print tab's observing kit gained a **"Tonight at &lt;site&gt;"** section (`astro-tonight-plan-heading`) built from the Observatory's own settings: the site and coordinates, the night's shape (sunset, full darkness, darkest hour, darkness ends, sunrise) in local clock time, the Moon's phase with whether it is up at the darkest hour and therefore washing out faint targets, the Bortle setting with the estimated faintest star, the planets and deep-sky showpieces above the horizon, and the tour as a numbered "look for these, in this order" list.
+- **A blank field log** (what I looked at / time / what I actually saw) so students record observations rather than only receive them, which is the NGSS practice the rest of the tool is built around.
+- Polar day and night print the plain statement instead of times that do not exist, and a malformed persisted state still yields a valid kit.
+- **Structural change:** the print region's ordered `h3` ids gained `astro-tonight-plan-heading` in second place, so the assertion in `tests/astronomy_functional_regressions.test.js` was updated deliberately. That test pins section order on purpose; it is not noise.
+- **i18n note:** eight of the new labels were originally written as `__alloT('stem.astronomy.' + key, ...)`. Concatenated keys are invisible to the repo's extraction greps, so they would have shipped untranslatable. They are now static literals. The only remaining dynamic key in this tab is `planet_<id>`, whose five values are listed explicitly in the string tooling.
+- 17 more `ui_strings` keys (208 `obs_*` total). Unit suite 51.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.

@@ -371,6 +371,7 @@ describe('Astronomy semantics and reflow source contracts', () => {
     var headingIds = Array.from(kit.querySelectorAll('h3')).map(function(heading) { return heading.id; });
     expect(headingIds).toEqual([
       'astro-observing-list-heading',
+      'astro-tonight-plan-heading',
       'astro-seasonal-heading',
       'astro-meteor-heading',
       'astro-darkness-heading',

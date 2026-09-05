@@ -580,6 +580,62 @@ describe('When to look tonight', () => {
   });
 });
 
+describe('Printable plan for tonight', () => {
+  const printed = state => new DOMParser().parseFromString(
+    renderTool('astronomy', { astronomy: { tab: 'print', observingList: [], ...state } }), 'text/html');
+
+  it('carries the Observatory site, the night and what is up onto paper', () => {
+    const doc = printed({ obsSite: 'moosehead', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00', obsBortle: 2 });
+    const section = doc.getElementById('astro-tonight-plan-heading').parentElement;
+    const text = section.textContent;
+    expect(doc.getElementById('astro-tonight-plan-heading').textContent).toContain('Moosehead Lake, Maine');
+    expect(doc.getElementById('astro-tonight-plan-heading').textContent).toContain('2026-12-21');
+    expect(text).toContain('45.58°, -69.72°');
+    expect(text).toContain('America/New_York');
+    // The night's shape, in local clock time.
+    const times = section.querySelector('table[aria-labelledby="astro-tonight-plan-heading"]');
+    expect(times).toBeTruthy();
+    expect(times.querySelectorAll('th[scope="col"]')).toHaveLength(2);
+    const rows = Array.from(times.querySelectorAll('tbody tr')).map(r => r.textContent);
+    expect(rows.length).toBeGreaterThanOrEqual(4);
+    expect(rows.join(' ')).toMatch(/Sunset\s*\d\d:\d\d/);
+    expect(rows.join(' ')).toMatch(/Darkest hour\s*\d\d:\d\d/);
+    expect(text).toContain('Bortle 2');
+    expect(text).toMatch(/Moon: .*(illuminated)/);
+    expect(text).toMatch(/darkest hour/);
+    expect(text).not.toContain('NaN');
+    expect(text).not.toContain('undefined');
+  });
+
+  it('gives students a blank field log to fill in outside', () => {
+    const doc = printed({ obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+    const log = doc.querySelector('table[aria-label="Field log"]');
+    expect(log).toBeTruthy();
+    const headers = Array.from(log.querySelectorAll('th[scope="col"]')).map(th => th.textContent);
+    expect(headers).toEqual(['What I looked at', 'Time', 'What I actually saw']);
+    const bodyRows = log.querySelectorAll('tbody tr');
+    expect(bodyRows).toHaveLength(4);
+    for (const row of bodyRows) {
+      expect(row.querySelectorAll('td')).toHaveLength(3);
+      expect(row.textContent.trim()).toBe('');
+    }
+  });
+
+  it('states the midnight sun rather than printing times that do not exist', () => {
+    const doc = printed({ obsSite: 'tromso', obsLive: false, obsDate: '2026-06-21', obsTime: '12:00' });
+    const section = doc.getElementById('astro-tonight-plan-heading').parentElement;
+    expect(section.textContent).toContain('Midnight sun');
+    expect(section.textContent).not.toMatch(/Sunset\s*\d\d:\d\d/);
+    expect(section.textContent).not.toContain('NaN');
+  });
+
+  it('survives a malformed observatory state without breaking the printed kit', () => {
+    const doc = printed({ obsSite: '__proto__', obsDate: 42, obsTime: {}, obsBortle: 'dark', obsDrift: 'soon' });
+    expect(doc.getElementById('astro-tonight-plan-heading')).toBeTruthy();
+    expect(doc.getElementById('astro-print-region').textContent).not.toContain('NaN');
+  });
+});
+
 describe('Tour planning and pattern lookup', () => {
   it('maps pattern stars to their figure and plans a prioritised tour for a dark sky', () => {
     expect(sky.HIP_TO_PATTERN[27989]).toBe('orion');

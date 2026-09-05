@@ -12264,6 +12264,26 @@
       function renderPrint() {
         var bortle = BORTLE.find(function(b) { return b.class === bortleClass; }) || BORTLE[4];
         var obsList = observingList.map(function(id) { return CONSTELLATIONS.find(function(c) { return c.id === id; }); }).filter(Boolean);
+        // The Observatory already knows the site, the night and what is above the
+        // horizon; carry that onto paper so it can be used away from a screen.
+        var plan = (function() {
+          var r = observatoryResolve(d, Date.now());
+          var ev = skyEvents(r.utcMs, r.lat, r.lon, r.timeZone);
+          var reference = Number.isFinite(ev.solarMidnight) ? ev.solarMidnight : r.utcMs;
+          var bodies = observatoryBodies(reference, r.lat, r.lon);
+          var limit = limitingMagnitude(r.bortle, bodies.sun.alt, bodies.moon.alt, bodies.moon.phase.illum);
+          var deepUp = DEEP_SKY.map(function(obj) {
+            var p = horizonPoint(obj.ra, obj.dec, bodies.lst, r.lat, bodies.d, 1);
+            return { obj: obj, alt: p.alt, az: p.az };
+          }).filter(function(x) { return x.alt > 15 && x.obj.mag < limit + 1; }).sort(function(a, b) { return a.obj.mag - b.obj.mag; }).slice(0, 5);
+          var tour = observatoryTour({ bodies: bodies, dark: 1, limit: limit, catalog: observatoryCatalogCache, lst: bodies.lst, lat: r.lat, d: bodies.d, deepUp: deepUp, radiant: null, rate: 0, aurora: { visible: false } });
+          function clock(ms) { return Number.isFinite(ms) ? utcMsToWallTime(ms, r.timeZone).timeText : null; }
+          return {
+            resolved: r, events: ev, reference: reference, bodies: bodies, limit: limit, deepUp: deepUp, tour: tour, clock: clock,
+            referenceText: utcMsToWallTime(reference, r.timeZone).timeText,
+            planets: bodies.planets.filter(function(p) { return p.alt > 10; }).sort(function(a, b) { return b.alt - a.alt; })
+          };
+        })();
         return h('div', { style: { padding: 16 } },
           h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.4)', borderRight: '1px solid rgba(99,102,241,0.4)', borderBottom: '1px solid rgba(99,102,241,0.4)', borderLeft: '3px solid ' + INDIGO, marginBottom: 12, fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.65 } },
             h('strong', null, __alloT('stem.astronomy.observing_kit', '🖨 Observing kit. ')),
@@ -12304,6 +12324,75 @@
             ) : h('div', { role: 'status', style: { padding: 12, border: '2px dashed #94a3b8', borderRadius: 10, marginBottom: 12, color: '#334155', fontSize: 12, lineHeight: 1.6 } },
               h('strong', null, 'No observing targets saved yet. '),
               'Open the Constellations section, choose a realistic seasonal target, and save it before printing.'
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('h3', { id: 'astro-tonight-plan-heading', style: { margin: 0, fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } },
+                __alloT('stem.astronomy.obs_print_plan_title', 'Tonight at') + ' ' + plan.resolved.site.name + ' · ' + plan.resolved.wall.dateText),
+              h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#334155', lineHeight: 1.5 } },
+                plan.resolved.lat.toFixed(2) + '°, ' + plan.resolved.lon.toFixed(2) + '° · ' + plan.resolved.timeZone + ' · ' +
+                __alloT('stem.astronomy.obs_print_from_observatory', 'from the settings in the 3D Observatory. Times are local clock time.')),
+              h('table', { 'aria-labelledby': 'astro-tonight-plan-heading', style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, marginBottom: 8 } },
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, __alloT('stem.astronomy.obs_print_moment', 'Moment')),
+                  h('th', { scope: 'col', style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, __alloT('stem.astronomy.obs_print_time', 'Time'))
+                )),
+                h('tbody', null,
+                  plan.events.polar
+                    ? [h('tr', { key: 'polar' }, h('td', { colSpan: 2, style: { padding: 6, border: '1px solid #cbd5e1' } },
+                        plan.events.polar === 'day' ? __alloT('stem.astronomy.obs_polar_day', 'Midnight sun: the Sun never sets on this date here.') : __alloT('stem.astronomy.obs_polar_night', 'Polar night: the Sun never rises on this date here.')))]
+                    : [['sunset', __alloT('stem.astronomy.obs_print_sunset', 'Sunset'), plan.events.sunset],
+                       ['dark', __alloT('stem.astronomy.obs_print_dark', 'Full darkness begins'), plan.events.darkStart],
+                       ['midnight', __alloT('stem.astronomy.obs_print_midnight', 'Darkest hour'), plan.events.solarMidnight],
+                       ['dawn', __alloT('stem.astronomy.obs_print_dawn', 'Darkness ends'), plan.events.darkEnd],
+                       ['sunrise', __alloT('stem.astronomy.obs_print_sunrise', 'Sunrise'), plan.events.sunrise]]
+                        .filter(function(row) { return Number.isFinite(row[2]); })
+                        .map(function(row) {
+                          return h('tr', { key: row[0] },
+                            h('td', { style: { padding: 6, border: '1px solid #cbd5e1' } }, row[1]),
+                            h('td', { style: { padding: 6, border: '1px solid #cbd5e1', fontWeight: 700 } }, plan.clock(row[2])));
+                        })
+                )
+              ),
+              h('ul', { style: { margin: '0 0 8px', padding: '0 0 0 20px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.7 } },
+                h('li', null, h('strong', null, __alloT('stem.astronomy.moon', 'Moon') + ': '),
+                  plan.bodies.moon.phase.name + ', ' + Math.round(plan.bodies.moon.phase.illum * 100) + '% ' + __alloT('stem.astronomy.illuminated', 'illuminated') + '. ' +
+                  (plan.bodies.moon.alt > 0
+                    ? __alloT('stem.astronomy.obs_print_moon_up', 'It is up at the darkest hour, so faint targets will be washed out.')
+                    : __alloT('stem.astronomy.obs_print_moon_down', 'It is below the horizon at the darkest hour, so faint targets are at their best.'))),
+                h('li', null, h('strong', null, __alloT('stem.astronomy.obs_print_darkness', 'Sky darkness') + ': '),
+                  'Bortle ' + plan.resolved.bortle + '. ' + __alloT('stem.astronomy.obs_limit', 'Estimated faintest star') + ': ' +
+                  (plan.limit > 0 ? __alloT('stem.astronomy.magnitude_short', 'Magnitude ') + plan.limit.toFixed(1) : __alloT('stem.astronomy.obs_limit_none', 'stars hidden'))),
+                plan.planets.length ? h('li', null, h('strong', null, __alloT('stem.astronomy.obs_planets_up', 'Planets above the horizon') + ': '),
+                  plan.planets.map(function(p) { return p.name + ' (' + Math.round(p.alt) + '° ' + azCompass(p.az) + ')'; }).join(', ')) : null,
+                plan.deepUp.length ? h('li', null, h('strong', null, __alloT('stem.astronomy.obs_deep_sky_up', 'Deep-sky showpieces up') + ': '),
+                  plan.deepUp.map(function(x) { return x.obj.name + ' (' + Math.round(x.alt) + '° ' + azCompass(x.az) + ')'; }).join(', ')) : null
+              ),
+              plan.tour.length ? h('div', null,
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#0f172a', margin: '4px 0' } }, __alloT('stem.astronomy.obs_print_look_for', 'Look for these, in this order')),
+                h('ol', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.65 } },
+                  plan.tour.map(function(step, i) {
+                    return h('li', { key: i, style: { marginBottom: 3 } },
+                      h('strong', null, step.title + (Number.isFinite(step.alt) && step.kind !== 'daylight' ? ' (' + Math.round(step.alt) + '° ' + azCompass(step.az) + ')' : '') + ': '),
+                      step.note);
+                  }))
+              ) : null,
+              h('div', { style: { marginTop: 10 } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#0f172a', margin: '4px 0' } }, __alloT('stem.astronomy.obs_print_log', 'Field log')),
+                h('table', { 'aria-label': __alloT('stem.astronomy.obs_print_log', 'Field log'), style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5 } },
+                  h('thead', null, h('tr', null,
+                    [__alloT('stem.astronomy.obs_print_log_target', 'What I looked at'),
+                     __alloT('stem.astronomy.obs_print_log_time', 'Time'),
+                     __alloT('stem.astronomy.obs_print_log_saw', 'What I actually saw')].map(function(label, i) {
+                      return h('th', { key: i, scope: 'col', style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, label);
+                    })
+                  )),
+                  h('tbody', null, [0, 1, 2, 3].map(function(row) {
+                    return h('tr', { key: row }, [0, 1, 2].map(function(col) {
+                      return h('td', { key: col, style: { padding: 6, border: '1px solid #cbd5e1', height: 22 } }, '');
+                    }));
+                  }))
+                ))
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
