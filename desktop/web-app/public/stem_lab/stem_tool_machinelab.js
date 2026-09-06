@@ -9168,11 +9168,31 @@ window.StemLab = window.StemLab || {
               key: 'hud', 'aria-hidden': 'true',
               style: { position: 'absolute', top: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', pointerEvents: 'none' }
             }, [
-              h('div', { key: 'title', style: glass }, [
-                h('div', { key: 'ey', style: { fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', color: '#fbbf24' } },
-                  __alloT('stem.machinelab.scene_eyebrow', 'Siege Field') + ' · ' + TIME_LABELS[timeId]),
-                h('div', { key: 'nm', style: { marginTop: 2, fontSize: 18, fontWeight: 850 } }, machineLabel(machineId) + ' → ' + (d.wallPreset === 'imported' ? __alloT('stem.machinelab.wall_imported', 'Your own build') : (WALL_PRESETS.filter(function (w) { return w.id === (d.wallPreset || 'curtain'); })[0] || WALL_PRESETS[0]).label)),
-                h('div', { key: 'ph', ref: sceneHudRef('phase'), style: { marginTop: 3, fontSize: 11, color: '#e2e8f0' } }, labels.cocked)
+              h('div', {
+                key: 'left',
+                style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, minWidth: 0, maxWidth: '100%' }
+              }, [
+                h('div', { key: 'title', style: Object.assign({}, glass, { maxWidth: '100%' }) }, [
+                  h('div', { key: 'ey', style: { fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', color: '#fbbf24' } },
+                    __alloT('stem.machinelab.scene_eyebrow', 'Siege Field') + ' · ' + TIME_LABELS[timeId]),
+                  h('div', { key: 'nm', style: { marginTop: 2, fontSize: 18, fontWeight: 850 } }, machineLabel(machineId) + ' → ' + (d.wallPreset === 'imported' ? __alloT('stem.machinelab.wall_imported', 'Your own build') : (WALL_PRESETS.filter(function (w) { return w.id === (d.wallPreset || 'curtain'); })[0] || WALL_PRESETS[0]).label)),
+                  h('div', { key: 'ph', ref: sceneHudRef('phase'), style: { marginTop: 3, fontSize: 11, color: '#e2e8f0' } }, labels.cocked)
+                ]),
+                h('div', {
+                  key: 'energyhud', ref: sceneHudRef('energy'),
+                  style: Object.assign({}, glass, { fontSize: 11, fontWeight: 700, maxWidth: '100%', fontVariantNumeric: 'tabular-nums' })
+                }, labels.idleEnergy),
+                // Moving versus height energy, as a bar the tick fills. Amber is
+                // the effort colour everywhere in this tool; sky is the load.
+                // Hidden rather than removed, so the column does not jump when a
+                // shot starts.
+                h('div', {
+                  key: 'ebar', ref: sceneHudRef('ebar'),
+                  style: { width: 260, maxWidth: '100%', height: 10, borderRadius: 999, overflow: 'hidden', background: 'rgba(7,17,31,.82)', border: '1px solid rgba(255,255,255,.2)', display: 'flex', visibility: 'hidden' }
+                }, [
+                  h('span', { key: 'ke', ref: sceneHudRef('keBar'), style: { display: 'block', width: '0%', height: '100%', background: '#fbbf24', transition: 'width 120ms linear' } }),
+                  h('span', { key: 'pe', ref: sceneHudRef('peBar'), style: { display: 'block', width: '0%', height: '100%', background: '#7dd3fc', transition: 'width 120ms linear' } })
+                ])
               ]),
               h('div', { key: 'stats', style: Object.assign({}, glass, { display: 'flex', gap: 14, textAlign: 'right' }) }, [
                 hudStat('speed', young ? __alloT('stem.machinelab.hud_speed_y', 'How fast') : __alloT('stem.machinelab.hud_speed', 'Speed')),
@@ -9180,19 +9200,6 @@ window.StemLab = window.StemLab || {
                 hudStat('dist', young ? __alloT('stem.machinelab.hud_dist_y', 'How far') : __alloT('stem.machinelab.hud_dist', 'Downrange')),
                 hudStat('time', __alloT('stem.machinelab.hud_time', 'Time'))
               ])
-            ]),
-            h('div', {
-              key: 'energyhud', 'aria-hidden': 'true', ref: sceneHudRef('energy'),
-              style: Object.assign({}, glass, { position: 'absolute', left: 20, top: 130, fontSize: 11, fontWeight: 700, pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' })
-            }, labels.idleEnergy),
-            // Moving versus height energy, as a bar the tick fills. Amber is
-            // the effort colour everywhere in this tool; sky is the load.
-            h('div', {
-              key: 'ebar', 'aria-hidden': 'true', ref: sceneHudRef('ebar'),
-              style: { position: 'absolute', left: 20, top: 172, width: 260, height: 10, borderRadius: 999, overflow: 'hidden', background: 'rgba(7,17,31,.82)', border: '1px solid rgba(255,255,255,.2)', display: 'flex', pointerEvents: 'none', visibility: 'hidden' }
-            }, [
-              h('span', { key: 'ke', ref: sceneHudRef('keBar'), style: { display: 'block', width: '0%', height: '100%', background: '#fbbf24', transition: 'width 120ms linear' } }),
-              h('span', { key: 'pe', ref: sceneHudRef('peBar'), style: { display: 'block', width: '0%', height: '100%', background: '#7dd3fc', transition: 'width 120ms linear' } })
             ]),
             h('div', { key: 'rows', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 } }, [
               chipRow('cam', __alloT('stem.machinelab.cam_modes', 'Camera'), CAM_MODES, camMode, function (id) {

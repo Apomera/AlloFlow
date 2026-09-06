@@ -892,3 +892,34 @@ describe('Siege Field wave 15: ranging by bracket', () => {
     expect(html).not.toContain('Bracketed');
   });
 });
+
+describe('Siege Field wave 16: the HUD holds together on a narrow bay', () => {
+  it('flows the title, the energy line and the bar in one column instead of pinning them', () => {
+    const src = source();
+    // The old layout pinned the energy chip at top:130 under a HUD row that
+    // WRAPS: on a phone the stats block landed underneath it.
+    expect(src).not.toContain("position: 'absolute', left: 20, top: 130");
+    expect(src).not.toContain("position: 'absolute', left: 20, top: 172");
+    expect(src).toContain("style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, minWidth: 0, maxWidth: '100%' }");
+  });
+
+  it('keeps the energy bar in the layout when hidden, so the column does not jump', () => {
+    const src = source();
+    expect(src).toContain("visibility: 'hidden' }");
+    expect(src).not.toContain("display: 'none' }, [\n                  h('span', { key: 'ke'");
+  });
+
+  it('still renders both HUD panels and their live refs', () => {
+    const html = renderTool('machineLab', state());
+    expect(html).toContain('Stored ');
+    expect(html).toContain('Downrange');
+    expect(html).toContain('Siege Field ·');
+  });
+
+  it('lets every HUD box shrink rather than push the bay wider', () => {
+    const src = source();
+    const hud = src.slice(src.indexOf("key: 'left',"), src.indexOf("key: 'stats',"));
+    expect(hud).toContain("maxWidth: '100%'");
+    expect(hud).toContain('width: 260, maxWidth: \'100%\'');
+  });
+});

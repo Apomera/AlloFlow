@@ -183,6 +183,20 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 16 (2026-09-05) — a phone, high contrast and reduced motion
+
+A review pass rather than an addition: the Siege Field rendered at 390x844, in high contrast,
+and with the OS asking for less motion.
+
+- ★**Found and fixed: the HUD collided with itself on a phone.** The energy line and its bar
+  were pinned at `top: 130` and `top: 172` inside a HUD row that WRAPS. On a narrow bay the
+  readouts wrapped under the title and the energy chip landed on top of them. All three now
+  flow in one column, each able to shrink (`maxWidth: 100%`), and the bar keeps its space when
+  hidden so the column does not jump when a shot starts.
+- Checked and sound: no horizontal page scroll at 390 px; the energy ledger table lays itself
+  out to fit; high contrast still draws only the wall, the arc, the beads and the track, with
+  no dressing; reduced motion stills the field and the shot-animation select says why.
+
 ### Wave 15 (2026-09-05)
 
 - **Ranging by bracket.** One shot short and one shot long fence the wall in between them.
