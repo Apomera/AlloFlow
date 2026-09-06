@@ -7568,7 +7568,9 @@ window.StemLab = window.StemLab || {
           valid: rangeValid,
           reveal: revealMetrics,
           launchElevation: d.launchElevation,
-          apexWord: __alloT('stem.machinelab.scene_apex_mark', 'apex '),
+          apexWord: young
+            ? __alloT('stem.machinelab.scene_apex_mark_y', 'highest ')
+            : __alloT('stem.machinelab.scene_apex_mark', 'apex '),
           metresWord: __alloT('stem.machinelab.scene_metres', ' m'),
           projDiameter: d.projDiameter,
           dark: isDark, contrast: isContrast
@@ -8333,10 +8335,14 @@ window.StemLab = window.StemLab || {
           // fraction is the actionable part: it says how far to move the
           // setting, and it is proportional reasoning rather than a rule.
           var frac = Math.max(0, Math.min(1, (d.standoff - lo) / (hi - lo)));
-          line = ' ' + __alloT('stem.machinelab.bracket_l1', 'Bracketed: one short at ') + fmt(lo, 0) +
-            __alloT('stem.machinelab.bracket_l2', ' m, one long at ') + fmt(hi, 0) +
-            __alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +
-            __alloT('stem.machinelab.bracket_l4', '% of the way between them, so the setting you want is between those two shots.');
+          line = young
+            ? ' ' + __alloT('stem.machinelab.bracket_y1', 'One shot landed short at ') + fmt(lo, 0) +
+              __alloT('stem.machinelab.bracket_y2', ' m and one flew long to ') + fmt(hi, 0) +
+              __alloT('stem.machinelab.bracket_y3', ' m. The wall is caught between them, so try something in between.')
+            : ' ' + __alloT('stem.machinelab.bracket_l1', 'Bracketed: one short at ') + fmt(lo, 0) +
+              __alloT('stem.machinelab.bracket_l2', ' m, one long at ') + fmt(hi, 0) +
+              __alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +
+              __alloT('stem.machinelab.bracket_l4', '% of the way between them, so the setting you want is between those two shots.');
         }
         return { line: line, patch: { bracket: { at: d.standoff, lo: lo, hi: hi } } };
       }
@@ -9416,16 +9422,27 @@ window.StemLab = window.StemLab || {
           outcome: outcomeText,
           // Energy at the wall plane, worded by what happened there: delivered
           // on a hit, carried past on an over or a wide.
+          // Young readers get the same two facts without the unit: how much
+          // the machine saved up, and how much of it the stone got.
           outcomeEnergy: d.lastImpact
             ? (d.lastImpact.outcome === 'hit'
-              ? (__alloT('stem.machinelab.scene_delivered', 'Delivered ') + fmt(d.lastImpact.ke / 1000, 1) + ' kJ ' + __alloT('stem.machinelab.scene_to_wall', 'to the wall'))
-              : (__alloT('stem.machinelab.scene_carried', 'Passed the wall still carrying ') + fmt((d.lastImpact.ke || 0) / 1000, 1) + ' kJ'))
+              ? (young
+                ? __alloT('stem.machinelab.scene_delivered_y', 'It hit the wall hard')
+                : __alloT('stem.machinelab.scene_delivered', 'Delivered ') + fmt(d.lastImpact.ke / 1000, 1) + ' kJ ' + __alloT('stem.machinelab.scene_to_wall', 'to the wall'))
+              : (young
+                ? __alloT('stem.machinelab.scene_carried_y', 'It flew right over the wall')
+                : __alloT('stem.machinelab.scene_carried', 'Passed the wall still carrying ') + fmt((d.lastImpact.ke || 0) / 1000, 1) + ' kJ'))
             : '',
           idleEnergy: preview
-            ? (__alloT('stem.machinelab.scene_stored', 'Stored ') + fmt(preview.stored / 1000, 1) + ' kJ  →  ' +
-               __alloT('stem.machinelab.scene_stone_gets', 'stone gets ') + fmt(preview.muzzleKE / 1000, 1) + ' kJ (' + fmt(100 * preview.eta, 0) + '%)')
+            ? (young
+              ? (__alloT('stem.machinelab.scene_stored_y', 'The machine saved up a big push. The stone gets ') +
+                 fmt(100 * preview.eta, 0) + __alloT('stem.machinelab.scene_stored_y2', ' out of every 100 parts of it.'))
+              : (__alloT('stem.machinelab.scene_stored', 'Stored ') + fmt(preview.stored / 1000, 1) + ' kJ  →  ' +
+                 __alloT('stem.machinelab.scene_stone_gets', 'stone gets ') + fmt(preview.muzzleKE / 1000, 1) + ' kJ (' + fmt(100 * preview.eta, 0) + '%)'))
             : __alloT('stem.machinelab.bad_machine', 'This machine cannot fire. Check the sliders.'),
-          apexMark: __alloT('stem.machinelab.scene_apex_mark', 'apex '),
+          apexMark: young
+            ? __alloT('stem.machinelab.scene_apex_mark_y', 'highest ')
+            : __alloT('stem.machinelab.scene_apex_mark', 'apex '),
           metres: __alloT('stem.machinelab.scene_metres', ' m'),
           ke: __alloT('stem.machinelab.scene_ke', 'moving'),
           pe: __alloT('stem.machinelab.scene_pe', 'height'),

@@ -635,7 +635,8 @@ describe('Siege Field wave 9: the apex marked, the landing flagged, chaff on the
 
   it('says apex and metres through the label pipe, not as hard-coded English', () => {
     const src = source();
-    expect(src).toContain("apexMark: __alloT('stem.machinelab.scene_apex_mark', 'apex '),");
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark', 'apex ')");
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark_y', 'highest ')");
     expect(src).toContain("metres: __alloT('stem.machinelab.scene_metres', ' m'),");
     expect(src).toContain("(L.apexMark || 'apex ') + Math.round(apPt.y) + (L.metres || ' m')");
   });
@@ -1011,7 +1012,7 @@ describe('Siege Field wave 18: the Test Range gets the same instruments', () => 
 
   it('takes the words from the tool rather than hard-coding English in the bay', () => {
     const src = source();
-    expect(src).toContain("apexWord: __alloT('stem.machinelab.scene_apex_mark', 'apex '),");
+    expect(src).toContain('apexWord: young');
     expect(src).toContain("metresWord: __alloT('stem.machinelab.scene_metres', ' m'),");
   });
 
@@ -1396,5 +1397,44 @@ describe('Siege Field wave 27: the field holds for every machine and every wall'
       expect(html, JSON.stringify(st)).not.toContain('NaN');
       expect(html, JSON.stringify(st)).not.toContain('Infinity');
     }
+  });
+});
+
+describe('Siege Field wave 28: the field speaks the reader own register', () => {
+  it('gives young readers the saved-up push and older ones the kilojoules', () => {
+    const k2 = renderTool('machineLab', state({ bandOverride: 'k2' }));
+    expect(k2).toContain('The machine saved up a big push');
+    expect(k2).toContain('out of every 100 parts of it');
+    expect(k2).not.toContain('kJ  →');
+    const g68 = renderTool('machineLab', state({ bandOverride: 'g68' }));
+    expect(g68).toContain('Stored ');
+    expect(g68).toContain('kJ');
+  });
+
+  it('carries the same split into grade 3-5, and back to the technical wording at 6-8', () => {
+    expect(renderTool('machineLab', state({ bandOverride: 'g35' }))).toContain('The machine saved up a big push');
+    expect(renderTool('machineLab', state({ bandOverride: 'g912' }))).toContain('Stored ');
+  });
+
+  it('marks the top of the arc as "highest" for young readers and "apex" for the rest', () => {
+    const src = source();
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark_y', 'highest ')");
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark', 'apex ')");
+    // Both bays choose, not just the Siege Field.
+    expect(src).toContain('apexMark: young');
+    expect(src).toContain('apexWord: young');
+  });
+
+  it('says the outcome without a unit for young readers', () => {
+    const src = source();
+    expect(src).toContain("__alloT('stem.machinelab.scene_delivered_y', 'It hit the wall hard')");
+    expect(src).toContain("__alloT('stem.machinelab.scene_carried_y', 'It flew right over the wall')");
+  });
+
+  it('drops the percentage from the ranging line for young readers, keeping the idea', () => {
+    const src = source();
+    expect(src).toContain("__alloT('stem.machinelab.bracket_y3', ' m. The wall is caught between them, so try something in between.')");
+    // The older reading still carries the fraction, which is the actionable part.
+    expect(src).toContain("__alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +");
   });
 });

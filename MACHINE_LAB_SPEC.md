@@ -183,6 +183,21 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 28 (2026-09-06)
+
+- ★**The Siege Field spoke one register to everybody.** The HUD learned "How fast" for young
+  readers long ago and nothing added since did: the mark on the arc said `apex`, the ranging
+  line opened with `Bracketed:`, and the energy line over the field was in kilojoules for a
+  six-year-old. Three fixes, all on the existing `young` flag (K-2 and grades 3-5):
+  - the mark on the arc reads `highest 27 m`, in the Siege Field and the Test Range alike;
+  - the energy line reads "The machine saved up a big push. The stone gets 34 out of every 100
+    parts of it." — the same two facts, no unit;
+  - the outcome reads "It hit the wall hard" / "It flew right over the wall";
+  - the ranging line keeps the idea and drops the percentage: "One shot landed short at 50 m
+    and one flew long to 127 m. The wall is caught between them, so try something in between."
+- The older bands are untouched: the fraction is the actionable part of a bracket for a reader
+  who can use it, and it stays.
+
 ### Wave 27 (2026-09-06) — the rest of the edges
 
 Wave 26 rendered the ends of one slider and found four faults, so this renders the rest of the
