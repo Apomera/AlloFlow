@@ -183,6 +183,23 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 20 (2026-09-06)
+
+- **The wall is built, not stacked.** A stepped footing runs the length of the curtain, a
+  buttress every five metres carries it on the attacking side with a pyramid weathering on
+  top, and the bottom two courses of stone are darkened and greened as a damp course. The
+  castle was the focal point of every framing and the plainest thing in the valley.
+- ★**The footing is deliberately under half a course tall.** The first row of blocks belongs
+  to the physics; a footing that buried it would show an intact base after the model had
+  already breached it. Verified against a wall the tool's own rules had battered to 54/72
+  gone: the breach still reads.
+- **A pennant on the keep**, on the same wind as the curtain wall's banner and the camp's
+  standard. Three flags, one wind.
+- ★**Rotation-then-scale shears geometry.** The first attempt built the batter and the
+  buttresses from 4-sided cylinders rotated 45° and then scaled along the wall. The result was
+  a flat ramp growing out of the masonry and a row of thin free-standing posts. Plain boxes,
+  no non-uniform scale after a rotation.
+
 ### Wave 19 (2026-09-06)
 
 - **The Field Manual reads the field.** A new chapter, *Reading the Siege Field*, says what

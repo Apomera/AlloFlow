@@ -3755,7 +3755,12 @@ window.StemLab = window.StemLab || {
       if (b.state === 'breached') return new THREE.Color(0.66 * v, 0.62 * v, 0.56 * v).getHex();
       if (b.mat === 'granite') return new THREE.Color(0.62 * v, 0.64 * v, 0.68 * v).getHex();
       if (b.mat === 'earth') return new THREE.Color(0.55 * v, 0.42 * v, 0.28 * v).getHex();
-      return new THREE.Color(0.86 * v, 0.82 * v, 0.74 * v).getHex();
+      // A damp course: the bottom two rows of a real wall are wet, mossy and
+      // darker than the rest, and that band is most of what makes stone read
+      // as standing IN the ground rather than resting on it.
+      var damp = (b.row <= 1) ? (b.row === 0 ? 0.8 : 0.9) : 1;
+      var green = (b.row <= 1) ? 1.03 : 1;
+      return new THREE.Color(0.86 * v * damp, 0.82 * v * damp * green, 0.74 * v * damp).getHex();
     }
     if (m.wallPreset !== 'imported') {
       var towerMat = mat(contrast ? 0xffffff : 0xb9b1a3, tex.stone ? { map: tex.stone } : null);
@@ -3797,6 +3802,45 @@ window.StemLab = window.StemLab || {
         }
       });
       if (!contrast) {
+        // ── The foot of the wall. A curtain wall does not meet the ground at
+        // a right angle: it sits on a wider, battered plinth, and it is held
+        // up on the attacking side by buttresses. Both are dressing on the
+        // FIELD side of z = 0, so the blocks the physics owns are untouched
+        // and a breach still opens where the model says it does. ──
+        var plinthMat = mat(0x9c9384, tex.stone ? { map: tex.stone } : null);
+        // Two courses, the lower one wider: a stepped footing reads as built
+        // without any rotated geometry to shear.
+        // Kept under half a course tall on purpose: the first row of blocks
+        // belongs to the physics, and a footing that buried it would show an
+        // intact base after the model had breached it.
+        var plinth = new THREE.Mesh(new THREE.BoxGeometry(span + 2.2, 0.26, 2.8), plinthMat);
+        plinth.position.set(0, 0.13, 0);
+        plinth.castShadow = true; plinth.receiveShadow = true;
+        S.model.add(plinth);
+        var plinth2 = new THREE.Mesh(new THREE.BoxGeometry(span + 1.5, 0.2, 2.1), plinthMat);
+        plinth2.position.set(0, 0.36, 0);
+        plinth2.castShadow = true; plinth2.receiveShadow = true;
+        S.model.add(plinth2);
+        var buttressH = Math.max(2.4, wallTop * 0.55);
+        for (var bt = 0; bt <= Math.floor(span / 5); bt++) {
+          var btx = -span / 2 + 1.4 + bt * 5;
+          if (btx > span / 2 - 1.4) break;
+          // Leave the gateway clear on the preset that has one.
+          if (m.wallPreset === 'gatehouse' && Math.abs(btx) < 3) continue;
+          var buttress = new THREE.Mesh(new THREE.BoxGeometry(1.05, buttressH, 1.15), plinthMat);
+          buttress.position.set(btx, buttressH / 2, -0.95);
+          buttress.castShadow = true; buttress.receiveShadow = true;
+          S.model.add(buttress);
+          // A pyramid weathering on top, so rain runs off it rather than
+          // standing on a flat ledge. Rotated but not scaled: a square pyramid
+          // aligns with the buttress at 45 degrees.
+          var cap = new THREE.Mesh(new THREE.ConeGeometry(0.82, 0.75, 4), plinthMat);
+          cap.rotation.y = Math.PI / 4;
+          cap.position.set(btx, buttressH + 0.37, -0.95);
+          cap.castShadow = true;
+          S.model.add(cap);
+        }
+
         // The moat: a strip of water in front of the wall, rippling, with a
         // plank bridge across the middle. Rubble that falls forward lands in
         // it, which is where a real siege put its rubble too.
@@ -3874,6 +3918,19 @@ window.StemLab = window.StemLab || {
       keepRoof.position.set(0, keepH + 1.55, 11.5);
       keepRoof.castShadow = true;
       S.model.add(keepRoof);
+      // A pennant on the keep, on the same wind as the curtain wall's banner
+      // and the camp's standard. Three flags, one wind: that is the point.
+      var keepPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.6, 6), mat(0x3b2a1a));
+      keepPole.position.set(0, keepH + 4.4, 11.5);
+      S.model.add(keepPole);
+      var keepFlagGeo = new THREE.PlaneGeometry(1.7, 0.95, 8, 3);
+      keepFlagGeo.translate(0.85, 0, 0);
+      var keepFlag = new THREE.Mesh(keepFlagGeo, mat(0xb3202a, { side: THREE.DoubleSide }));
+      keepFlag.position.set(0, keepH + 5.2, 11.5);
+      keepFlag.castShadow = true;
+      S.model.add(keepFlag);
+      S.keepFlag = keepFlag;
+      S.keepFlagBase = keepFlagGeo.attributes.position.array.slice();
       for (var kw = 0; kw < 3; kw++) {
         var keepWin = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.7, 0.12), litMat());
         keepWin.position.set((kw - 1) * 1.5, keepH * 0.62, 8.85);
@@ -4934,6 +4991,19 @@ window.StemLab = window.StemLab || {
           bp.setY(bv, by - Math.max(0, 1 - windAbs / 3) * 0.35 * (bx / 2.4));
         }
         bp.needsUpdate = true;
+      }
+      // The keep's pennant, on the same rules again. One wind, three flags.
+      if (S.keepFlag && S.keepFlagBase) {
+        S.keepFlag.rotation.y = wind < 0 ? Math.PI : 0;
+        var kp = S.keepFlag.geometry.attributes.position;
+        var kbase = S.keepFlagBase;
+        var kamp = 0.1 + windAbs * 0.025, kfreq = 5.4 + windAbs * 0.8;
+        for (var kv = 0; kv < kp.count; kv++) {
+          var kx = kbase[kv * 3], ky = kbase[kv * 3 + 1];
+          kp.setZ(kv, ambient ? Math.sin(kx * 2.8 + tSec * kfreq + ky * 1.5) * kamp * (kx / 1.7 + 0.1) : 0);
+          kp.setY(kv, ky - Math.max(0, 1 - windAbs / 3) * 0.3 * (kx / 1.7));
+        }
+        kp.needsUpdate = true;
       }
       // The camp's standard, on the castle banner's rules: it is the same wind.
       if (S.standard && S.standardBase) {

@@ -435,7 +435,13 @@ describe('Siege Field wave 5: dressing that follows the hour', () => {
     // Each dressing block sits under a !contrast guard.
     expect(body).toContain("if (!contrast && typeof THREE.Sprite === 'function') {");
     expect(body).toContain("var grassTex = contrast ? null : makeCanvasTexture(");
-    expect(body).toContain('if (!contrast) {\n        // The moat:');
+    // The moat now shares its !contrast guard with the wall footing added in
+    // wave 20, so pin the guard and the block rather than their adjacency.
+    expect(body).toContain('if (!contrast) {\n        // ── The foot of the wall.');
+    const guard = body.indexOf('if (!contrast) {\n        // ── The foot of the wall.');
+    const moat = body.indexOf('// The moat: a strip of water in front of the wall');
+    expect(guard).toBeGreaterThan(0);
+    expect(moat).toBeGreaterThan(guard);
   });
 });
 
@@ -1049,5 +1055,53 @@ describe('Siege Field wave 19: the manual and the quests know the field', () => 
     expect(oc.check({ oneChangeStreak: 3 })).toBe(true);
     expect(oc.check({ oneChangeStreak: 2 })).toBe(false);
     expect(oc.progress({ oneChangeStreak: 2 })).toBe('2/3 in a row');
+  });
+});
+
+describe('Siege Field wave 20: the wall is built, not stacked', () => {
+  it('darkens the bottom two courses as a damp course', () => {
+    const src = source();
+    expect(src).toContain('var damp = (b.row <= 1) ? (b.row === 0 ? 0.8 : 0.9) : 1;');
+    expect(src).toContain('return new THREE.Color(0.86 * v * damp, 0.82 * v * damp * green, 0.74 * v * damp).getHex();');
+  });
+
+  it('keeps the footing under half a course, so it can never hide a breach', () => {
+    const src = source();
+    // Two courses, 0.26 and 0.20 tall, topping out at 0.46 of a 1.0 block.
+    expect(src).toContain('new THREE.BoxGeometry(span + 2.2, 0.26, 2.8)');
+    expect(src).toContain('plinth2.position.set(0, 0.36, 0);');
+    expect(src).toContain('// belongs to the physics, and a footing that buried it would show an');
+  });
+
+  it('builds the footing and buttresses from plain boxes, never a scaled rotation', () => {
+    const src = source();
+    const foot = src.slice(src.indexOf('// ── The foot of the wall.'), src.indexOf('// The moat: a strip of water in front of the wall'));
+    expect(foot).toContain('new THREE.BoxGeometry(1.05, buttressH, 1.15)');
+    // A 4-gon rotated 45 degrees and THEN scaled is sheared, which is what the
+    // first attempt at this looked like: a ramp growing out of the wall.
+    expect(foot).not.toContain('buttress.scale.set');
+    expect(foot).not.toContain('var batter =');   // the sheared ramp is gone, the PROSE still says battered
+  });
+
+  it('leaves the gateway clear on the preset that has one', () => {
+    const src = source();
+    expect(src).toContain("if (m.wallPreset === 'gatehouse' && Math.abs(btx) < 3) continue;");
+  });
+
+  it('flies the keep pennant on the same wind as the banner and the standard', () => {
+    const src = source();
+    expect(src).toContain('S.keepFlag = keepFlag;');
+    expect(src).toContain('if (S.keepFlag && S.keepFlagBase) {');
+    expect(src).toContain('kp.setZ(kv, ambient ? Math.sin(kx * 2.8 + tSec * kfreq + ky * 1.5) * kamp * (kx / 1.7 + 0.1) : 0);');
+    // Three flags, one wind: each reads the same windAbs the sock does.
+    const wind = (src.match(/rotation\.y = wind < 0 \? Math\.PI : 0;/g) || []).length;
+    expect(wind).toBeGreaterThanOrEqual(3);
+  });
+
+  it('dresses none of it in high contrast, where only the model is drawn', () => {
+    const src = source();
+    const body = src.slice(src.indexOf('function buildFieldScene('), src.indexOf('var SCENE_GL = '));
+    const guard = body.indexOf('if (!contrast) {\n        // ── The foot of the wall.');
+    expect(guard).toBeGreaterThan(0);
   });
 });
