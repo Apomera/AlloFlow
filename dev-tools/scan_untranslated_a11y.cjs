@@ -67,8 +67,32 @@ function callBodies(src, fnName) {
   return out;
 }
 
+// Screen-reader announcement helpers, by name. A tool whose helper is missing from this
+// list scans as "announcements: 0", which reads as clean — that is how 50 English
+// announcements in stem_tool_geologyexplorer.js (helper: `announce`) went unreported.
+// Add a name here rather than trusting a zero from a tool you have not opened.
+const ANNOUNCE_HELPERS = ['announceToSR', 'announce', 'srAnnounce', 'announceLive', 'sayToSR'];
+
+// ...and by SHAPE, because a fixed list of names cannot keep up. Most tools wrap
+// the live region in a helper of their own - llAnnounce, petsAnnounce, flAnnounce,
+// announceBee, setAnnounceText - and every one of those scanned as zero, which
+// reads as clean. learning_lab alone reported 0 announcements while holding 370
+// bare English calls through llAnnounce. So take any function DECLARED in this
+// file whose name contains "announce", in addition to the five known names.
+// callBodies() already matches whole words, so `announce` never swallows
+// `announceBee(` and `reannounce(` never matches at all.
+const ANNOUNCE_DECL = /(?:function\s+([A-Za-z_$][\w$]*)\s*\(|(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?function\s*\()/g;
+function announceHelpers(src) {
+  const names = new Set(ANNOUNCE_HELPERS);
+  for (const m of src.matchAll(ANNOUNCE_DECL)) {
+    const name = m[1] || m[2];
+    if (/announce/i.test(name)) names.add(name);
+  }
+  return [...names];
+}
+
 function findAnnouncements(src) {
-  return callBodies(src, 'announceToSR')
+  return announceHelpers(src).flatMap((fn) => callBodies(src, fn))
     .map((c) => ({ ...c, prose: (stripKeyed(c.body).match(PROSE) || []).filter(isProse) }))
     .filter((c) => c.prose.length);
 }
@@ -100,6 +124,18 @@ function findLabels(src) {
 if (SELFTEST) {
   const cases = [
     ["announceToSR('Field measurements cleared.')", 1, 0, 'bare announcement'],
+    ["announce('Field measurements cleared.')", 1, 0, 'bare announcement, announce() helper'],
+    ["announce(paused ? 'Drying paused.' : 'Drying resumed.')", 1, 0, 'conditional announcement, announce() helper'],
+    ["announce(__alloT('stem.x.k', 'Field measurements cleared.'))", 0, 0, 'keyed announcement, announce() helper'],
+    ["reannounce('Field measurements cleared.')", 0, 0, 'helper name must match as a whole word'],
+    ["function llAnnounce(m) {} llAnnounce('Field measurements cleared.')", 1, 0,
+      'per-tool helper declared in the file is discovered by shape'],
+    ["var petsAnnounce = function (m) {}; petsAnnounce('Field measurements cleared.')", 1, 0,
+      'per-tool helper declared as a var is discovered too'],
+    ["function llAnnounce(m) {} llAnnounce(__alloT('stem.x.k', 'Field measurements cleared.'))", 0, 0,
+      'a keyed call through a discovered helper is clean'],
+    ["llAnnounce('Field measurements cleared.')", 0, 0,
+      'an undeclared name is NOT a helper - only declarations in this file count'],
     ["announceToSR(paused ? 'Drying paused.' : 'Drying resumed.')", 1, 0, 'conditional announcement'],
     ["announceToSR('Row ' + n + ' selected.')", 1, 0, 'assembled announcement'],
     ["announceToSR(__alloT('stem.x.k', 'Field measurements cleared.'))", 0, 0, 'keyed announcement'],
