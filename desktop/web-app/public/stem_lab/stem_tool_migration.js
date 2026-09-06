@@ -524,7 +524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
   // ── Navigation methods data ──
   var NAV_METHODS = [
-    { id: 'magnetic', icon: '\uD83E\uDDED', name: 'Magnetic Sense', desc: 'Birds have magnetite crystals in their upper beaks connected to the trigeminal nerve. These crystals align with Earth\'s magnetic field like tiny compasses. Some species also have cryptochrome proteins in their eyes that may let them literally SEE magnetic field lines as colored overlays on their vision.' },
+    { id: 'magnetic', icon: '\uD83E\uDDED', name: 'Magnetic Sense', desc: 'Birds sense Earth\'s magnetic field, but HOW is still an open question \u2014 this is live science, not settled textbook. The leading candidate is cryptochrome, a light-sensitive protein in the eye whose chemistry is thought to respond to magnetic fields, which could give birds a directional overlay on what they see. An older explanation \u2014 magnetite crystals in the upper beak wired to the trigeminal nerve \u2014 lost most of its support in 2012, when the cells in question turned out to be immune cells (macrophages), not nerve cells. The trigeminal nerve does still appear to report field STRENGTH, so birds may run a compass in the eye and a map sense in the beak.' },
     { id: 'stars', icon: '\u2B50', name: 'Star Navigation', desc: 'Nocturnal migrants (warblers, thrushes) use star patterns to navigate. Experiments in planetariums showed that birds orient to the rotation center of the night sky (near Polaris). Young birds learn star patterns during their first summer — they aren\'t born knowing them.' },
     { id: 'sun', icon: '\u2600\uFE0F', name: 'Sun Compass', desc: 'Birds track the sun\'s position and use an internal circadian clock to compensate for its movement across the sky. Experiments with clock-shifted birds (kept in artificially lit rooms) showed they navigate in predictably wrong directions, proving the sun-compass mechanism.' },
     { id: 'landmarks', icon: '\uD83C\uDFD4\uFE0F', name: 'Landmarks', desc: 'Experienced migrants follow visual landmarks: coastlines, mountain ranges, rivers, and highways. Pigeons even follow roads and make turns at intersections. This "pilotage" navigation is learned over multiple migration trips and passed down through flock experience.' },
@@ -533,20 +533,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   ];
 
   // ── Beaufort scale labels ──
+  // Real Beaufort force bands in mph. The old table shifted every label up a
+  // force or two — it called 32–40 mph "Strong" when force 7 (32–38) is a near
+  // gale, and lumped forces 1–2 together as one "Light Breeze". Force numbers
+  // are carried so a student can check the label against a published scale.
   var BEAUFORT = [
-    { min: 0, max: 1, label: 'Calm' },
-    { min: 1, max: 7, label: 'Light Breeze' },
-    { min: 8, max: 18, label: 'Moderate' },
-    { min: 19, max: 31, label: 'Fresh' },
-    { min: 32, max: 40, label: 'Strong' },
-    { min: 41, max: 50, label: 'Gale' }
+    { min: 0, max: 1, force: 0, label: 'Calm' },
+    { min: 1, max: 3, force: 1, label: 'Light Air' },
+    { min: 4, max: 7, force: 2, label: 'Light Breeze' },
+    { min: 8, max: 12, force: 3, label: 'Gentle Breeze' },
+    { min: 13, max: 18, force: 4, label: 'Moderate Breeze' },
+    { min: 19, max: 24, force: 5, label: 'Fresh Breeze' },
+    { min: 25, max: 31, force: 6, label: 'Strong Breeze' },
+    { min: 32, max: 38, force: 7, label: 'Near Gale' },
+    { min: 39, max: 46, force: 8, label: 'Gale' },
+    { min: 47, max: 63, force: 9, label: 'Strong Gale' }
   ];
 
-  function getBeaufort(speed) {
+  function getBeaufortEntry(speed) {
     for (var i = 0; i < BEAUFORT.length; i++) {
-      if (speed <= BEAUFORT[i].max) return BEAUFORT[i].label;
+      if (speed <= BEAUFORT[i].max) return BEAUFORT[i];
     }
-    return 'Gale';
+    return BEAUFORT[BEAUFORT.length - 1];
+  }
+  function getBeaufort(speed) { return getBeaufortEntry(speed).label; }
+  // "Force 4 — Moderate Breeze". Used where there is room for the number.
+  function getBeaufortForce(speed) {
+    var e = getBeaufortEntry(speed);
+    return 'Force ' + e.force + ' \u2014 ' + e.label;
+  }
+
+  // ── One flight-energy model, read by every surface in this tool ──────────
+  // Two models used to answer the same question. The V-Formation tab costed a
+  // migration as a multiple of basal metabolic rate with a flat 35% saving for
+  // flying in a V; the Energy Inquiry tab costed it from drag with a 22%
+  // saving; the prose put the saving at 10-30%. One fact needs one derivation,
+  // so this is it and both tabs read it.
+  //
+  // The old inquiry model also had the mass dependence backwards. Its cost rose
+  // as mass^0.67 while its fat budget rose as mass^1, which made a heavier bird
+  // unconditionally better off \u2014 the opposite of what the tab's own open
+  // question asks a student to explain. What was missing is induced drag: the
+  // cost of holding weight up on a wing of finite span, which rises as
+  // mass\u00B2/span\u00B2. With both terms present, energy per km still rises with
+  // mass, but the fat-to-cost ratio peaks and then falls, so there is a best
+  // mass for a given wingspan \u2014 which is the real lesson about wing loading.
+  var MIGR_G = 9.81;            // m/s\u00B2
+  var MIGR_RHO = 1.0;           // kg/m\u00B3, roughly the air at 2 km cruising altitude
+  var MIGR_SPAN_EFF = 0.9;      // span efficiency of a real (not ideal) wing
+  var MIGR_VAIR = 14;           // m/s, representative migrant cruising airspeed
+  var MIGR_CDS = 0.0105;        // drag area per unit mass^(2/3), fitted to migrant body plans
+  var MIGR_FAT_KJ_PER_G = 39;   // kJ released per gram of fat
+  var MIGR_KJ_PER_KCAL = 4.184;
+  // Formation saving. In-flight measurements land around 10-30% depending on
+  // species and position in the flock; this tool quotes 22% as the midpoint
+  // everywhere it appears, and an echelon gets rather less than a full V.
+  var MIGR_FORMATION_SAVING = { solo: 0, echelon: 0.12, V: 0.22 };
+  // The wingspan a bird of this mass usually carries. Used where a surface does
+  // not let the student set span independently, so span never silently
+  // disappears from the physics. Fitted to the birds in SPECIES.
+  function migrTypicalSpan(massKg) { return 0.95 * Math.pow(Math.max(0.001, massKg), 0.39); }
+  function migrFlightEnergy(o) {
+    var m = Math.max(0.001, o.massKg);
+    var b = Math.max(0.05, o.wingspanM || migrTypicalSpan(m));
+    var v = MIGR_VAIR;
+    var wgt = m * MIGR_G;
+    // Induced drag \u2014 the price of lift on a finite wing.
+    var induced = (2 * wgt * wgt) / (MIGR_RHO * v * v * Math.PI * b * b * MIGR_SPAN_EFF);
+    // Profile and parasite drag \u2014 the price of pushing a body this size
+    // through the air. Frontal area scales as mass^(2/3) for a given build.
+    var profile = 0.5 * MIGR_RHO * v * v * MIGR_CDS * Math.pow(m, 2 / 3);
+    var dragN = induced + profile;
+    var saving = MIGR_FORMATION_SAVING[o.formation] || 0;
+    // Cost is per km OVER THE GROUND, so a tailwind genuinely cheapens the
+    // crossing and a headwind bites. Ground speed is floored: past about 11 m/s
+    // of headwind the bird is barely making ground and the ratio would run away.
+    var ground = Math.max(v * 0.2, v - (o.headwindMs || 0));
+    var windFactor = v / ground;
+    // One newton of drag over one kilometre is one kilojoule.
+    var energyPerKm = dragN * (1 - saving) * windFactor;
+    var totalKJ = energyPerKm * (o.distanceKm || 0);
+    var fatFrac = o.fatFraction == null ? 0.30 : o.fatFraction;
+    var fatBudgetKJ = m * 1000 * fatFrac * MIGR_FAT_KJ_PER_G;
+    return {
+      wingspanM: b, inducedN: induced, profileN: profile, dragN: dragN,
+      saving: saving, windFactor: windFactor,
+      energyPerKm: energyPerKm, totalKJ: totalKJ, totalKcal: totalKJ / MIGR_KJ_PER_KCAL,
+      fatBudgetKJ: fatBudgetKJ, fatNeededG: totalKJ / MIGR_FAT_KJ_PER_G,
+      ratio: totalKJ > 0 ? fatBudgetKJ / totalKJ : Infinity,
+      rangeKm: energyPerKm > 0 ? fatBudgetKJ / energyPerKm : 0
+    };
   }
 
   // ── Formation physics constants ──
@@ -572,7 +648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // ── Threats to migratory birds ──
   var MIGRATION_THREATS = [
     { threat: 'Light Pollution', emoji: '\uD83D\uDCA1', desc: 'Artificial lights disorient nocturnal migrants, causing building collisions. Up to 1 billion birds die from building strikes annually in the US alone. Lights Out programs in major cities reduce deaths by 80%.' },
-    { threat: 'Habitat Loss', emoji: '\uD83C\uDFD7\uFE0F', desc: 'Wetland drainage and deforestation destroy critical stopover sites where birds rest and refuel. Without these rest stops, birds cannot complete their journeys. 50% of North American wetlands have been lost since 1900.' },
+    { threat: 'Habitat Loss', emoji: '\uD83C\uDFD7\uFE0F', desc: 'Wetland drainage and deforestation destroy critical stopover sites where birds rest and refuel. Without these rest stops, birds cannot complete their journeys. More than half the wetlands of the lower 48 states have been drained since the 1780s.' },
     { threat: 'Climate Change', emoji: '\uD83C\uDF21\uFE0F', desc: 'Warming temperatures shift the timing of insect emergence and plant flowering, creating mismatches with bird arrival. Birds may arrive at breeding grounds to find their food sources have already peaked.' },
     { threat: 'Wind Turbines', emoji: '\uD83C\uDF2C\uFE0F', desc: 'Poorly sited wind farms can kill migratory birds, especially raptors. Modern solutions include radar-activated shutdown systems and careful placement away from migration corridors.' },
     { threat: 'Cat Predation', emoji: '\uD83D\uDC08', desc: 'Domestic and feral cats kill an estimated 1.3-4 billion birds per year in the US. Keeping cats indoors is one of the simplest conservation actions for birds.' }
@@ -1156,6 +1232,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // REGISTER TOOL
   // ════════════════════════════════════════════
   window.StemLab.registerTool('migration', {
+    // Pure seams. The flight-energy model is the one derivation every surface
+    // in this tool reads, so it is the thing worth pinning in a test.
+    _testing: {
+      flightEnergy: migrFlightEnergy,
+      typicalSpan: migrTypicalSpan,
+      formationSaving: MIGR_FORMATION_SAVING,
+      beaufort: getBeaufortEntry
+    },
     icon: '\uD83E\uDDED',
     label: 'Migration & Wind Lab',
     desc: '3D migration flight, Monarch journeys, V-formation aerodynamics, wind currents & flyways',
@@ -2960,19 +3044,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var ebVForm = d.ebVFormation !== false;
             var ebHeadwind = d.ebHeadwind || 0;
 
-            // Approximate energy model: base metabolic rate + flight cost
-            // Flight cost ≈ 10-15x basal metabolic rate for small passerines
-            // V-formation saves ~25-65% depending on position
-            var basalRate = ebWeight * 0.04; // kcal/hour resting (Kleiber's law approximation)
-            var flightMultiplier = 12; // flight is ~12x basal
-            var flightCostPerHour = basalRate * flightMultiplier;
-            var cruiseSpeed = Math.max(5, 30 - ebHeadwind); // mph effective
-            var flightHours = ebDist / cruiseSpeed;
-            var vFormSavings = ebVForm ? 0.35 : 0; // 35% savings
-            var totalCost = flightCostPerHour * flightHours * (1 - vFormSavings);
-            var fatNeeded = totalCost / 9; // 9 kcal per gram of fat
+            // Costed by the tool's one flight-energy model. This panel used to
+            // run its own metabolic model with a flat 35% V-formation saving,
+            // which disagreed with the Energy Inquiry tab's 22% and with the
+            // 10-30% the tool's own prose quotes. The controls here are in
+            // grams, miles and mph, so they are converted rather than
+            // reinterpreted, and span comes from the mass because this panel
+            // has no span control.
+            var ebModel = migrFlightEnergy({
+              massKg: ebWeight / 1000,
+              headwindMs: ebHeadwind * 0.44704,
+              formation: ebVForm ? 'V' : 'solo',
+              distanceKm: ebDist * 1.609344
+            });
+            var vFormSavings = ebModel.saving;
+            var totalCost = ebModel.totalKcal;
+            var fatNeeded = ebModel.fatNeededG;
             var percentBodyWeight = (fatNeeded / ebWeight * 100);
             var foodEquivalent = Math.round(totalCost / 2); // ~2 kcal per insect
+            var ebSpanCm = Math.round(ebModel.wingspanM * 100);
 
             return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
               h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, t('stem.migration.energy_budget_calculator', '\u26A1 Energy Budget Calculator')),
@@ -2995,7 +3085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     className: 'w-full accent-amber-500',
                     onChange: function(e) { upd('ebWeight', parseInt(e.target.value, 10)); }
                   }),
-                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, ebWeight < 20 ? 'Hummingbird-sized' : ebWeight < 50 ? 'Warbler-sized' : ebWeight < 200 ? 'Robin-sized' : ebWeight < 1000 ? 'Duck-sized' : ebWeight < 3000 ? 'Goose-sized' : 'Swan-sized')
+                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, (ebWeight < 20 ? t('stem.migration.size_hummingbird', 'Hummingbird-sized') : ebWeight < 50 ? t('stem.migration.size_warbler', 'Warbler-sized') : ebWeight < 200 ? t('stem.migration.size_robin', 'Robin-sized') : ebWeight < 1000 ? t('stem.migration.size_duck', 'Duck-sized') : ebWeight < 3000 ? t('stem.migration.size_goose', 'Goose-sized') : t('stem.migration.size_swan', 'Swan-sized')) + ' \u00B7 ' + t('stem.migration.assumed_wingspan', 'assumed wingspan') + ' ' + ebSpanCm + ' cm')
                 ),
                 // Headwind slider
                 h('div', null,
@@ -3011,9 +3101,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('button', {
                     className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' + (ebVForm ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700')),
                     'aria-pressed': ebVForm ? 'true' : 'false',
-                    'aria-label': 'V-formation: ' + (ebVForm ? 'on, saving 35% energy' : 'off'),
+                    'aria-label': t('stem.migration.v_formation_word', 'V-formation') + ': ' + (ebVForm ? t('stem.migration.on_saving_energy', 'on, saving 22% energy') : t('stem.migration.off_word', 'off')),
                     onClick: function() { upd('ebVFormation', !ebVForm); }
-                  }, '\uD83E\uDEBF V-Form: ' + (ebVForm ? 'ON (-35%)' : 'OFF'))
+                  }, '\uD83E\uDEBF V-Form: ' + (ebVForm ? 'ON (-22%)' : 'OFF'))
                 )
               ),
               // Results
@@ -3036,7 +3126,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 )
               ),
               h('div', { className: 'mt-2 text-[0.6875rem] leading-relaxed ' + textSecondary },
-                h('p', null, '\uD83D\uDD2C ', h('strong', null, t('stem.migration.the_science', 'The science: ')), t('stem.migration.bird_flight_costs_12x_their_resting_me', 'Bird flight costs ~12x their resting metabolic rate (Kleiber\'s Law). Fat provides 9 kcal/g \u2014 the most energy-dense fuel in biology. Before migration, birds enter '), h('strong', null, 'hyperphagia'), t('stem.migration.a_feeding_frenzy_where_they_may_double', ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through '), h('strong', null, t('stem.migration.55_of_its_body_weight', '55% of its body weight')), t('stem.migration.during_its_record_non_stop_flight_2026', ' during a record non-stop flight of 8,425 miles, Alaska to Tasmania.')),
+                h('p', null, '\uD83D\uDD2C ', h('strong', null, t('stem.migration.the_science', 'The science: ')), t('stem.migration.flight_cost_is_drag_times_distance', 'This costs the flight the way an engineer would: the bird has to overcome drag, and drag over distance is energy. Two things drag on it \u2014 holding its weight up on a wing of limited span, and pushing its body through the air. Fat provides 9 kcal per gram, the most energy-dense fuel in biology. Before migration birds enter '), h('strong', null, 'hyperphagia'), t('stem.migration.a_feeding_frenzy_where_they_may_double', ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through '), h('strong', null, t('stem.migration.55_of_its_body_weight', '55% of its body weight')), t('stem.migration.during_its_record_non_stop_flight_2026', ' during a record non-stop flight of 8,425 miles, Alaska to Tasmania.')),
+                h('p', { className: 'mt-1 italic ' + textMuted }, t('stem.migration.same_model_as_inquiry', 'The Energy Inquiry tab runs this same model, so the two tabs agree. It assumes a typical wingspan for the bird\'s mass; the inquiry tab lets you set span yourself.')),
                 percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold text-red-500' }, t('stem.migration.this_journey_requires_more_fat_than_th', '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.'))
               )
             );
@@ -3520,7 +3611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('canvas', {
               ref: _wcInitCanvas,
               role: 'img',
-              'aria-label': 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction. ' + windSpeed + ' mph ' + getBeaufort(windSpeed) + ' wind.',
+              'aria-label': t('stem.migration.wind_sandbox_aria', 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction.') + ' ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed) + '.',
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'c' || e.key === 'C') {
@@ -3621,12 +3712,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('label', { className: 'text-xs font-medium ' + textSecondary }, t('stem.migration.wind_2', '\uD83C\uDF2C\uFE0F Wind:')),
               h('input', {
                 type: 'range', min: 0, max: 50, value: windSpeed,
-                'aria-label': 'Wind speed: ' + windSpeed + ' mph, ' + getBeaufort(windSpeed),
+                'aria-label': t('stem.migration.wind_speed_label', 'Wind speed') + ': ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed),
                 className: 'flex-1 accent-sky-500',
                 onChange: function(e) { upd('windSpeed', parseInt(e.target.value, 10)); }
               }),
               h('span', { className: 'text-xs font-bold min-w-[80px] text-right ' + textPrimary }, windSpeed + ' mph'),
-              h('span', { className: 'text-[0.6875rem] ' + textMuted }, getBeaufort(windSpeed))
+              h('span', { className: 'text-[0.6875rem] ' + textMuted, title: getBeaufortForce(windSpeed) }, getBeaufort(windSpeed))
             )
           ),
 
@@ -6186,29 +6277,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       else if (tab === 'inquiry') tabContent = renderMigrationInquiry();
 
       function renderMigrationInquiry() {
-        var iq = d.inquiry || { wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = d.inquiry || { wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [], testVar: null, trials: [] };
+        // Trials used to be a flat five-line scratch log with no notion of what
+        // was being tested, so nothing in the tab could tell a controlled
+        // comparison from a confounded one. Older saved logs are carried over
+        // rather than dropped \u2014 a student's recorded work should survive the
+        // upgrade even though the old rows cannot say which variable was under
+        // test.
+        var iqTrials = iq.trials;
+        if (!iqTrials && iq.log && iq.log.length) {
+          iqTrials = iq.log.map(function(e, i) {
+            return { n: i + 1, testVar: null, legacy: true, wingspan: parseFloat(e.w), mass: parseFloat(e.m), headwind: e.hw, vMode: e.fmt, distance: e.d, ratio: parseFloat(e.fr), state: e.state, energyPerKm: null, totalKJ: null, fatBudget: null };
+          });
+        }
+        iqTrials = iqTrials || [];
         function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-        // Approximate energy model. Drag ∝ mass^(2/3) / wingspan; V-formation saves ~22% drag.
-        // Still-air cost per km: drag rises with mass and falls with span.
-        var baseE = Math.pow(iq.mass, 0.67) / Math.max(0.1, iq.wingspan) * 8;
-        // Wind, as the ground-speed ratio rather than a squared penalty.
-        // The old term was (headwind * headwind) * 0.04, which charged a 10 m/s
-        // TAILWIND exactly what it charged a 10 m/s headwind and made dead calm
-        // the cheapest condition in the model. Energy per km over the ground
-        // goes as airspeed / groundspeed, and groundspeed = airspeed - headwind,
-        // so a tailwind genuinely cheapens the crossing and a headwind bites
-        // hard. IQ_VAIR is a representative migrant cruising airspeed.
-        var IQ_VAIR = 14;
-        // Floor the groundspeed: past about 11 m/s of headwind the bird is
-        // barely making ground and the ratio would run away to infinity.
-        var iqGround = Math.max(IQ_VAIR * 0.2, IQ_VAIR - iq.headwind);
-        var windFactor = IQ_VAIR / iqGround;
-        var fmtSave = iq.vMode === 'V' ? 0.78 : iq.vMode === 'echelon' ? 0.88 : 1.0;
-        var energyPerKm = baseE * fmtSave * windFactor;
-        var totalKJ = energyPerKm * iq.distance;
-        var fatBurnKJ = iq.mass * 1000 * 0.30 * 39; // 30% fat × 39 kJ/g
-        var feasibility = fatBurnKJ / Math.max(1, totalKJ);
+        // Every number below comes from the tool's single flight-energy model,
+        // so this tab and the V-Formation tab's budget calculator can no longer
+        // disagree about what a migration costs.
+        var EM = migrFlightEnergy({
+          massKg: iq.mass, wingspanM: iq.wingspan, headwindMs: iq.headwind,
+          formation: iq.vMode, distanceKm: iq.distance
+        });
+        var fmtSave = 1 - EM.saving;
+        var energyPerKm = EM.energyPerKm;
+        var totalKJ = EM.totalKJ;
+        var fatBurnKJ = EM.fatBudgetKJ;
+        var feasibility = totalKJ > 0 ? fatBurnKJ / totalKJ : 999;
                 // Band boundaries. 'fatal' stays at 0.5 because its own label states
         // "< 50% of distance" and the two must agree. The borderline/feasible
         // edge moves 0.9 -> 1.0: at 0.9 the bird needs 111% of its fat reserve
@@ -6239,6 +6335,183 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           comfortable: { label: t('stem.migration.comfortable', 'Comfortable'), color: isDark ? '#4ade80' : '#15803d', bg: isDark ? '#0a2e1a' : '#f0fdf4', border: '#16a34a', desc: t('stem.migration.distance_is_well_within_energy_budget_', 'Distance is well within energy budget. Bar-tailed godwit-class endurance.') },
           easy: { label: t('stem.migration.easy', 'Easy'), color: isDark ? '#22d3ee' : '#0e7490', bg: isDark ? '#0a1f2e' : '#ecfeff', border: '#0891b2', desc: t('stem.migration.3_reserve_either_short_distance_or_ove', '3×+ reserve. Either short distance or oversized fat stores.') }
         })[state];
+        // ── Controlled-investigation scaffolding ──────────────────────────
+        // The tab models five variables at once. Watching a number move while
+        // you drag a slider shows THAT it moves; it cannot show WHY, because
+        // nothing stops you changing three things between looks. Naming one
+        // variable as the one under test makes the other four checkable, and
+        // makes a confounded pair of trials something the tab can point at.
+        var TEST_VARS = [
+          { id: 'wingspan', label: t('stem.migration.wingspan', 'Wingspan'), unit: 'm', num: true, val: function(x) { return x.wingspan; }, fmt: function(v) { return Number(v).toFixed(2); } },
+          { id: 'mass', label: t('stem.migration.mass', 'Mass'), unit: 'kg', num: true, val: function(x) { return x.mass; }, fmt: function(v) { return Number(v).toFixed(2); } },
+          { id: 'headwind', label: t('stem.migration.headwind', 'Headwind'), unit: 'm/s', num: true, val: function(x) { return x.headwind; }, fmt: function(v) { return String(v); } },
+          { id: 'distance', label: t('stem.migration.distance_3', 'Distance'), unit: 'km', num: true, val: function(x) { return x.distance; }, fmt: function(v) { return Number(v).toLocaleString(); } },
+          { id: 'vMode', label: t('stem.migration.formation', 'Formation'), unit: '', num: false, val: function(x) { return ['solo', 'echelon', 'V'].indexOf(x.vMode); }, fmt: function(v) { return ['solo', 'echelon', 'V'][v] || String(v); } }
+        ];
+        function testVarDef(id) {
+          for (var i = 0; i < TEST_VARS.length; i++) if (TEST_VARS[i].id === id) return TEST_VARS[i];
+          return null;
+        }
+        var activeVar = testVarDef(iq.testVar);
+        // Two trials are a fair comparison only if exactly the variable under
+        // test differs. This reports every OTHER field that moved, which is the
+        // thing a student cannot see by looking at the numbers.
+        function confoundsBetween(a, b) {
+          var out = [];
+          for (var i = 0; i < TEST_VARS.length; i++) {
+            var v = TEST_VARS[i];
+            if (v.id === b.testVar) continue;
+            if (v.val(a) !== v.val(b)) out.push(v.label);
+          }
+          return out;
+        }
+        // Trials of the current investigation, in the order they were recorded,
+        // each annotated with what changed since the previous one of its run.
+        var runTrials = iqTrials.filter(function(x) { return activeVar && x.testVar === activeVar.id; });
+        var runRows = runTrials.map(function(x, i) {
+          return { trial: x, confounds: i === 0 ? [] : confoundsBetween(runTrials[i - 1], x) };
+        });
+        var confoundedCount = runRows.filter(function(r) { return r.confounds.length > 0; }).length;
+        function recordTrial() {
+          var rec = {
+            n: iqTrials.length + 1, testVar: activeVar ? activeVar.id : null,
+            wingspan: iq.wingspan, mass: iq.mass, headwind: iq.headwind,
+            vMode: iq.vMode, distance: iq.distance,
+            energyPerKm: Math.round(energyPerKm * 100) / 100,
+            totalKJ: Math.round(totalKJ), fatBudget: Math.round(fatBurnKJ),
+            ratio: Math.round(feasibility * 100) / 100, state: sm.label,
+            at: new Date().toISOString().slice(11, 19)
+          };
+          setIQ({ trials: iqTrials.concat([rec]) });
+          if (typeof sfxMigrClick === 'function') sfxMigrClick();
+          var say = t('stem.migration.trial_recorded', 'Trial recorded') + ' ' + rec.n + '. ' + (activeVar ? activeVar.label + ' ' + activeVar.fmt(activeVar.val(rec)) + ' ' + activeVar.unit + ', ' : '') + t('stem.migration.reserve_ratio_label', 'reserve ratio') + ' ' + rec.ratio.toFixed(2) + '.';
+          if (announceToSR) announceToSR(say);
+          else { var lr = document.getElementById('allo-live-migration'); if (lr) lr.textContent = say; }
+        }
+        // A control is either the one under test or one that must not move.
+        // Saying so ON the control is what makes "change one thing" checkable
+        // while the student is dragging, rather than after the fact.
+        function iqVarTag(id) {
+          if (!activeVar) return null;
+          var testing = activeVar.id === id;
+          return h('span', {
+            style: {
+              marginLeft: 5, padding: '0 5px', borderRadius: 999, fontSize: 8.5, fontWeight: 900,
+              letterSpacing: '.04em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+              border: '1px solid ' + (testing ? sm.color : IQ.tileBorder),
+              background: testing ? sm.color : 'transparent',
+              color: testing ? (isDark ? '#000' : '#fff') : IQ.textDim
+            }
+          }, testing ? t('stem.migration.tag_testing', 'testing') : t('stem.migration.tag_held', 'held'));
+        }
+        // ── Notebook export ──────────────────────────────────────────────
+        // Nothing in this tab could leave it before, so a teacher had no way to
+        // collect the reasoning and a student had no way to keep it.
+        var IQ_MODEL_NOTE = t('stem.migration.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. The energy model is illustrative but has the right shape: cost per km is induced drag (\u221D mass\u00B2/span\u00B2, the price of holding weight up on a finite wing) plus profile and parasite drag (\u221D mass^\u2154), divided by the fraction of airspeed the bird keeps as ground speed. Fat budget is 30% of body mass at 39 kJ/g. It is calibrated to give sensible answers for birds the size of the ones in this tool, and it understates the cost for very small birds, whose wings work much less efficiently at their scale. V-formation savings vary ~10\u201330% across species and positions (Lissaman & Shollenberger 1970 theoretical upper bound; in-flight measurements include Weimerskirch et al. 2001 on pelicans and Portugal et al. 2014 on ibises); this tool uses 22% as a midpoint estimate everywhere it appears. For real-world stopover ecology consult primary literature.');
+        function iqStamp() { return new Date().toISOString().slice(0, 10); }
+        function iqSave(text, mime, ext) {
+          try {
+            var blob = new Blob([text], { type: mime });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'migration-energy-investigation-' + iqStamp() + '.' + ext;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            if (addToast) addToast(t('stem.migration.notebook_downloaded', 'Investigation notebook downloaded'), 'success');
+          } catch (e) {
+            if (addToast) addToast(t('stem.migration.download_failed', 'Download was blocked by this browser.'), 'error');
+          }
+        }
+        function iqEsc(v) {
+          return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function iqCsvCell(v) {
+          var str = String(v == null ? '' : v);
+          return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+        }
+        var IQ_COLS = [
+          { key: 'n', head: '#' },
+          { key: 'testVar', head: t('stem.migration.variable_tested', 'Variable tested') },
+          { key: 'wingspan', head: t('stem.migration.wingspan', 'Wingspan') + ' (m)' },
+          { key: 'mass', head: t('stem.migration.mass', 'Mass') + ' (kg)' },
+          { key: 'headwind', head: t('stem.migration.headwind', 'Headwind') + ' (m/s)' },
+          { key: 'vMode', head: t('stem.migration.formation', 'Formation') },
+          { key: 'distance', head: t('stem.migration.distance_3', 'Distance') + ' (km)' },
+          { key: 'energyPerKm', head: t('stem.migration.energy_per_km', 'Energy per km') + ' (kJ)' },
+          { key: 'totalKJ', head: t('stem.migration.total_need', 'Total need') + ' (kJ)' },
+          { key: 'fatBudget', head: t('stem.migration.fat_budget', 'Fat budget') + ' (kJ)' },
+          { key: 'ratio', head: t('stem.migration.reserve_ratio_label', 'reserve ratio') },
+          { key: 'state', head: t('stem.migration.outcome', 'Outcome') }
+        ];
+        function exportCsv() {
+          var lines = [IQ_COLS.map(function(c) { return iqCsvCell(c.head); }).join(',')];
+          iqTrials.forEach(function(x) {
+            lines.push(IQ_COLS.map(function(c) { return iqCsvCell(x[c.key]); }).join(','));
+          });
+          lines.push('');
+          lines.push(iqCsvCell(t('stem.migration.hypothesis_heading', 'Hypothesis')) + ',' + iqCsvCell(iq.hypothesis));
+          lines.push(iqCsvCell(t('stem.migration.explanation_heading', 'Explanation')) + ',' + iqCsvCell(iq.explanation));
+          lines.push(iqCsvCell(t('stem.migration.model_note_heading', 'Model note')) + ',' + iqCsvCell(IQ_MODEL_NOTE));
+          // UTF-8 BOM as an escape, so a literal BOM cannot be eaten in transit.
+          iqSave('\uFEFF' + lines.join('\r\n'), 'text/csv;charset=utf-8', 'csv');
+        }
+        function exportHtml() {
+          var rows = iqTrials.map(function(x) {
+            return '<tr>' + IQ_COLS.map(function(c) { return '<td>' + iqEsc(x[c.key]) + '</td>'; }).join('') + '</tr>';
+          }).join('\n');
+          var doc = [
+            '<!doctype html>',
+            '<html lang="en"><head><meta charset="utf-8">',
+            '<meta name="viewport" content="width=device-width,initial-scale=1">',
+            '<title>' + iqEsc(t('stem.migration.notebook_title', 'Migration energy investigation')) + ' \u2014 ' + iqStamp() + '</title>',
+            '<style>body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:70rem;margin:2rem auto;padding:0 1rem;line-height:1.5;color:#0f172a;background:#fff}',
+            'table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #94a3b8;padding:.35rem .5rem;text-align:left;font-size:.85rem}',
+            'th{background:#e2e8f0}caption{text-align:left;font-weight:700;margin-bottom:.4rem}',
+            'h1{font-size:1.4rem}h2{font-size:1.05rem;margin-top:1.6rem}.note{font-size:.8rem;color:#334155;font-style:italic}',
+            '@media (prefers-color-scheme:dark){body{background:#0f172a;color:#e2e8f0}th{background:#1e293b}th,td{border-color:#475569}.note{color:#cbd5e1}}</style>',
+            '</head><body>',
+            '<h1>' + iqEsc(t('stem.migration.notebook_title', 'Migration energy investigation')) + '</h1>',
+            '<p>' + iqEsc(t('stem.migration.notebook_recorded', 'Recorded')) + ': ' + iqStamp() + '</p>',
+            '<h2>' + iqEsc(t('stem.migration.hypothesis_heading', 'Hypothesis')) + '</h2>',
+            '<p>' + (iq.hypothesis ? iqEsc(iq.hypothesis) : '<em>' + iqEsc(t('stem.migration.not_recorded', 'Not recorded')) + '</em>') + '</p>',
+            '<h2>' + iqEsc(t('stem.migration.trials_heading', 'Trials')) + '</h2>',
+            '<table><caption>' + iqEsc(t('stem.migration.trials_caption', 'Every recorded trial, with the variable under test and the modelled outcome.')) + '</caption>',
+            '<thead><tr>' + IQ_COLS.map(function(c) { return '<th scope="col">' + iqEsc(c.head) + '</th>'; }).join('') + '</tr></thead>',
+            '<tbody>' + (rows || '<tr><td colspan="' + IQ_COLS.length + '">' + iqEsc(t('stem.migration.no_trials_yet', 'No trials recorded yet.')) + '</td></tr>') + '</tbody></table>',
+            '<h2>' + iqEsc(t('stem.migration.explanation_heading', 'Explanation')) + '</h2>',
+            '<p>' + (iq.explanation ? iqEsc(iq.explanation) : '<em>' + iqEsc(t('stem.migration.not_recorded', 'Not recorded')) + '</em>') + '</p>',
+            '<h2>' + iqEsc(t('stem.migration.model_note_heading', 'Model note')) + '</h2>',
+            '<p class="note">' + iqEsc(IQ_MODEL_NOTE) + '</p>',
+            '</body></html>'
+          ].join('\n');
+          iqSave(doc, 'text/html;charset=utf-8', 'html');
+        }
+        // ── Trend chart geometry ─────────────────────────────────────────
+        // Drawn only from RECORDED trials, never from the live slider, so the
+        // picture is the evidence the student collected rather than a preview
+        // of wherever the slider happens to be sitting.
+        var CH = { x: 40, y: 12, w: 264, h: 96 };
+        var chartPts = [];
+        var chartYMax = 1.2, chartOneY = CH.y + CH.h, chartXMin = 0, chartXMax = 1;
+        if (activeVar && runTrials.length >= 2) {
+          var xs = runTrials.map(function(x) { return activeVar.val(x); });
+          var ys = runTrials.map(function(x) { return x.ratio; });
+          var xMin = Math.min.apply(null, xs), xMax = Math.max.apply(null, xs);
+          var yMax = Math.max(1.2, Math.max.apply(null, ys) * 1.1);
+          var xSpan = (xMax - xMin) || 1;
+          chartPts = runTrials.map(function(x, i) {
+            return {
+              px: CH.x + ((xs[i] - xMin) / xSpan) * CH.w,
+              py: CH.y + CH.h - (Math.min(ys[i], yMax) / yMax) * CH.h,
+              xv: xs[i], yv: ys[i], n: x.n, conf: runRows[i].confounds.length > 0
+            };
+          }).sort(function(a, b) { return a.xv - b.xv; });
+          chartYMax = yMax;
+          chartOneY = CH.y + CH.h - (1 / yMax) * CH.h;
+          chartXMin = xMin; chartXMax = xMax;
+        }
+
         // Energy budget chart. The old bar clamped at 100%, so a bird needing
         // three times its fat reserve drew exactly the same picture as one that
         // just made it — the failure the whole tab is about was invisible.
@@ -6250,7 +6523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var BAR_MAX = 296;             // hard right edge of the plot
         var demandW = Math.min(BAR_MAX - BAR_X, demandPct * BAR_FULL);
         var overspends = demandPct > 1;
-        var rangeKm = energyPerKm > 0 ? fatBurnKJ / energyPerKm : 0;
+        var rangeKm = EM.rangeKm;
         var rangeScale = Math.max(rangeKm, iq.distance, 1);
         var rangeBarW = Math.max(2, (rangeKm / rangeScale) * (BAR_MAX - BAR_X));
         var needBarW = Math.max(2, (iq.distance / rangeScale) * (BAR_MAX - BAR_X));
@@ -6318,39 +6591,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('text', { x: BAR_X, y: 138, fill: IQ.textDim, fontSize: 9 },
               'headwind ' + iq.headwind + ' m/s · ' + iq.vMode + ' (saves ' + Math.round((1 - fmtSave) * 100) + '%) · ' + energyPerKm.toFixed(2) + ' kJ/km')
           ),
+          h('div', { style: { padding: 8, borderRadius: 8, background: IQ.tile, border: '1px solid ' + IQ.tileBorder, marginBottom: 10 } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, marginBottom: 5, color: IQ.text } }, t('stem.migration.what_are_you_testing', 'What are you testing? Pick one variable \u2014 the rest are held constant.')),
+            h('div', { role: 'group', 'aria-label': t('stem.migration.variable_tested', 'Variable tested'), style: { display: 'flex', gap: 5, flexWrap: 'wrap' } },
+              TEST_VARS.map(function(v) {
+                var on = activeVar && activeVar.id === v.id;
+                return h('button', {
+                  key: v.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                  onClick: function() { setKey('testVar', on ? null : v.id); },
+                  style: { padding: '3px 9px', fontSize: 11, fontWeight: 700, borderRadius: 999, cursor: 'pointer', border: '1px solid ' + (on ? sm.color : IQ.tileBorder), background: on ? sm.color : IQ.tile, color: on ? (isDark ? '#000' : '#fff') : IQ.textSoft }
+                }, v.label);
+              })
+            ),
+            activeVar && h('p', { style: { margin: '6px 0 0', fontSize: 10.5, lineHeight: 1.45, color: IQ.textDim } },
+              t('stem.migration.investigation_hint_a', 'Change only') + ' ' + activeVar.label + ' ' + t('stem.migration.investigation_hint_b', 'between trials. If anything else moves, the two trials cannot tell you what caused the difference.')),
+            !activeVar && h('p', { style: { margin: '6px 0 0', fontSize: 10.5, lineHeight: 1.45, color: IQ.textDim } },
+              t('stem.migration.investigation_hint_none', 'You can explore freely without picking one, but trials recorded this way are not a controlled comparison and are not charted.'))
+          ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.wingspan', 'Wingspan')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wingspan.toFixed(2) + ' m')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.wingspan', 'Wingspan'), iqVarTag('wingspan')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wingspan.toFixed(2) + ' m')),
               h('input', { type: 'range', min: 0.1, max: 3.0, step: 0.05, value: iq.wingspan, onChange: function(e) { setKey('wingspan', parseFloat(e.target.value)); }, style: { width: '100%' } })
             ),
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.mass', 'Mass')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass.toFixed(2) + ' kg')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.mass', 'Mass'), iqVarTag('mass')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass.toFixed(2) + ' kg')),
               h('input', { type: 'range', min: 0.05, max: 12, step: 0.05, value: iq.mass, onChange: function(e) { setKey('mass', parseFloat(e.target.value)); }, style: { width: '100%' } })
             ),
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.headwind', 'Headwind')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.headwind + ' m/s')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.headwind', 'Headwind'), iqVarTag('headwind')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.headwind + ' m/s')),
               h('input', { type: 'range', min: -10, max: 20, step: 1, value: iq.headwind, onChange: function(e) { setKey('headwind', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.distance_3', 'Distance')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.distance + ' km')),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.distance_3', 'Distance'), iqVarTag('distance')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.distance + ' km')),
               h('input', { type: 'range', min: 100, max: 15000, step: 100, value: iq.distance, onChange: function(e) { setKey('distance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             )
           ),
+          h('div', { style: { marginBottom: 10 } },
+            h('div', { id: 'migr-iq-formation-label', style: { fontSize: 11, marginBottom: 3, color: IQ.text, display: 'flex', alignItems: 'center' } },
+              h('span', null, t('stem.migration.formation', 'Formation'), iqVarTag('vMode'))
+            ),
+            h('div', { role: 'group', 'aria-labelledby': 'migr-iq-formation-label', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              ['solo', 'echelon', 'V'].map(function(f) {
+                var active = iq.vMode === f;
+                return h('button', { key: f, type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function() { setKey('vMode', f); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : IQ.tileBorder), background: active ? sm.color : IQ.tile, color: active ? (isDark ? '#000' : '#fff') : IQ.textDim, cursor: 'pointer' } }, f);
+              })
+            )
+          ),
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
-            ['solo', 'echelon', 'V'].map(function(f) {
-              var active = iq.vMode === f;
-              return h('button', { key: f, onClick: function() { setKey('vMode', f); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : IQ.tileBorder), background: active ? sm.color : IQ.tile, color: active ? (isDark ? '#000' : '#fff') : IQ.textDim, cursor: 'pointer' } }, f);
-            })
+            h('button', { type: 'button', onClick: recordTrial, style: { flex: '1 1 130px', padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.migration.record_trial', '📋 Record trial')),
+            iqTrials.length > 0 && h('button', { type: 'button', onClick: function() { setIQ({ trials: iqTrials.slice(0, -1) }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: IQ.textDim, cursor: 'pointer' } }, t('stem.migration.undo_trial', 'Undo last')),
+            iqTrials.length > 0 && h('button', { type: 'button', onClick: function() { setIQ({ trials: [], log: [] }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: IQ.textDim, cursor: 'pointer' } }, t('stem.migration.clear_trials', 'Clear trials')),
+            h('button', { type: 'button', onClick: function() { setIQ({ wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: IQ.textDim, cursor: 'pointer' } }, t('stem.migration.reset', 'Reset'))
           ),
-          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-            h('button', { onClick: function() {
-              var t = new Date().toISOString().slice(11, 19);
-              setIQ({ log: iq.log.concat([{ t: t, w: iq.wingspan.toFixed(2), m: iq.mass.toFixed(2), hw: iq.headwind, fmt: iq.vMode, d: iq.distance, fr: feasibility.toFixed(2), state: sm.label }]) });
-            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.migration.log_this_profile', '📋 Log this profile')),
-            h('button', { onClick: function() { setIQ({ wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: IQ.textDim, cursor: 'pointer' } }, t('stem.migration.reset', 'Reset'))
+
+          // \u2500\u2500 Relationship chart \u2500\u2500
+          // Two trials on the same variable is the minimum that can show a
+          // relationship at all, so the chart appears exactly then and not
+          // before. Confounded points are drawn differently rather than hidden:
+          // the student recorded them, and seeing them break the line is the
+          // lesson.
+          activeVar && chartPts.length >= 2 && h('svg', {
+            width: '100%', viewBox: '0 0 320 148', preserveAspectRatio: 'xMidYMid meet', role: 'img',
+            'aria-label': t('stem.migration.trend_chart_label', 'Relationship chart') + ': ' + activeVar.label + ' ' +
+              t('stem.migration.trend_chart_vs', 'against reserve ratio') + '. ' +
+              chartPts.length + ' ' + t('stem.migration.trials_plotted', 'trials plotted') + ', ' +
+              activeVar.label + ' ' + activeVar.fmt(chartXMin) + ' ' + t('stem.migration.to_word', 'to') + ' ' + activeVar.fmt(chartXMax) + ' ' + activeVar.unit + ', ' +
+              t('stem.migration.reserve_ratio_label', 'reserve ratio') + ' ' + chartPts[0].yv.toFixed(2) + ' ' + t('stem.migration.to_word', 'to') + ' ' + chartPts[chartPts.length - 1].yv.toFixed(2) + '. ' +
+              (confoundedCount > 0 ? confoundedCount + ' ' + t('stem.migration.trials_confounded_short', 'of these trials changed more than one variable.') : t('stem.migration.trials_all_controlled', 'Every trial changed only the variable under test.')) + ' ' +
+              t('stem.migration.table_is_data', 'The trial table below carries the same numbers.'),
+            style: { background: IQ.tile, borderRadius: 6, marginBottom: 10, display: 'block', width: '100%', maxWidth: 560, height: 'auto', border: '1px solid ' + IQ.tileBorder }
+          },
+            h('line', { x1: CH.x, y1: CH.y, x2: CH.x, y2: CH.y + CH.h, stroke: IQ.grid, strokeWidth: 1 }),
+            h('line', { x1: CH.x, y1: CH.y + CH.h, x2: CH.x + CH.w, y2: CH.y + CH.h, stroke: IQ.grid, strokeWidth: 1 }),
+            // The line the whole tab is about: reserve ratio 1.0, where the bird
+            // arrives with nothing left.
+            chartOneY >= CH.y && chartOneY <= CH.y + CH.h && h('line', { x1: CH.x, y1: chartOneY, x2: CH.x + CH.w, y2: chartOneY, stroke: '#eb6834', strokeWidth: 1.2, strokeDasharray: '4 3' }),
+            chartOneY >= CH.y && chartOneY <= CH.y + CH.h && h('text', { x: CH.x + CH.w, y: chartOneY - 3, fill: '#eb6834', fontSize: 8, fontWeight: 700, textAnchor: 'end' }, t('stem.migration.just_makes_it', 'just makes it (1.0)')),
+            h('polyline', {
+              points: chartPts.map(function(p) { return p.px.toFixed(1) + ',' + p.py.toFixed(1); }).join(' '),
+              fill: 'none', stroke: '#2a78d6', strokeWidth: 1.8, strokeLinejoin: 'round'
+            }),
+            chartPts.map(function(p, i) {
+              return p.conf
+                ? h('rect', { key: 'p' + i, x: p.px - 3.4, y: p.py - 3.4, width: 6.8, height: 6.8, fill: 'none', stroke: '#eb6834', strokeWidth: 1.8 })
+                : h('circle', { key: 'p' + i, cx: p.px, cy: p.py, r: 3.2, fill: '#2a78d6' });
+            }),
+            h('text', { x: CH.x - 4, y: CH.y + 4, fill: IQ.textDim, fontSize: 8, textAnchor: 'end' }, chartYMax.toFixed(1)),
+            h('text', { x: CH.x - 4, y: CH.y + CH.h, fill: IQ.textDim, fontSize: 8, textAnchor: 'end' }, '0'),
+            h('text', { x: CH.x, y: CH.y + CH.h + 12, fill: IQ.textDim, fontSize: 8 }, activeVar.fmt(chartXMin)),
+            h('text', { x: CH.x + CH.w, y: CH.y + CH.h + 12, fill: IQ.textDim, fontSize: 8, textAnchor: 'end' }, activeVar.fmt(chartXMax)),
+            h('text', { x: CH.x + CH.w / 2, y: CH.y + CH.h + 24, fill: IQ.textSoft, fontSize: 9, fontWeight: 700, textAnchor: 'middle' }, activeVar.label + (activeVar.unit ? ' (' + activeVar.unit + ')' : '')),
+            h('text', { x: 9, y: CH.y + CH.h / 2, fill: IQ.textSoft, fontSize: 9, fontWeight: 700, textAnchor: 'middle', transform: 'rotate(-90 9 ' + (CH.y + CH.h / 2) + ')' }, t('stem.migration.reserve_ratio_label', 'reserve ratio')),
+            confoundedCount > 0 && h('text', { x: CH.x, y: CH.y + CH.h + 36, fill: '#eb6834', fontSize: 8.5, fontWeight: 700 }, '□ = ' + t('stem.migration.more_than_one_changed', 'more than one variable changed'))
           ),
-          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: IQ.tile, border: '1px solid ' + IQ.tileBorder, marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
-            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · w' + e.w + ' m' + e.m + ' hw' + e.hw + ' ' + e.fmt + ' d' + e.d + ' → ' + e.fr + 'x'); })
+
+          // \u2500\u2500 Trial table \u2500\u2500
+          iqTrials.length > 0 && h('div', { style: { marginBottom: 10 } },
+            h('div', { style: { maxHeight: 190, overflow: 'auto', borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10 } },
+                h('caption', { style: { captionSide: 'top', textAlign: 'left', padding: '6px 8px 4px', fontSize: 11, fontWeight: 800, color: IQ.text } },
+                  activeVar
+                    ? activeVar.label + ' ' + t('stem.migration.investigation_word', 'investigation') + ' \u2014 ' + runTrials.length + '/' + iqTrials.length + ' ' + t('stem.migration.trials_word', 'trials')
+                    : t('stem.migration.all_trials', 'All recorded trials') + ' (' + iqTrials.length + ')'),
+                h('thead', null,
+                  h('tr', null,
+                    [t('stem.migration.trial_hash', '#'), t('stem.migration.variable_tested', 'Variable tested'), t('stem.migration.value_word', 'Value'), t('stem.migration.reserve_ratio_label', 'reserve ratio'), t('stem.migration.outcome', 'Outcome'), t('stem.migration.controlled_q', 'Controlled?')].map(function(hd, i) {
+                      return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid ' + IQ.grid, color: IQ.textSoft, fontWeight: 800, position: 'sticky', top: 0, background: IQ.tile } }, hd);
+                    })
+                  )
+                ),
+                h('tbody', null,
+                  (activeVar ? runRows : iqTrials.map(function(x) { return { trial: x, confounds: [] }; })).map(function(r, i) {
+                    var x = r.trial;
+                    var vd = testVarDef(x.testVar);
+                    return h('tr', { key: 'tr' + i, style: { borderBottom: '1px solid ' + IQ.grid } },
+                      h('td', { style: { padding: '3px 6px', color: IQ.textDim, fontFamily: 'monospace' } }, x.n),
+                      h('td', { style: { padding: '3px 6px', color: IQ.textSoft } }, vd ? vd.label : (x.legacy ? t('stem.migration.legacy_trial', 'earlier log') : t('stem.migration.free_explore', 'free explore'))),
+                      h('td', { style: { padding: '3px 6px', color: IQ.text, fontFamily: 'monospace' } }, vd ? vd.fmt(vd.val(x)) + (vd.unit ? ' ' + vd.unit : '') : '\u2014'),
+                      h('td', { style: { padding: '3px 6px', color: IQ.text, fontFamily: 'monospace', fontWeight: 700 } }, Number(x.ratio).toFixed(2) + 'x'),
+                      h('td', { style: { padding: '3px 6px', color: IQ.textSoft } }, x.state),
+                      h('td', { style: { padding: '3px 6px', color: r.confounds.length ? '#eb6834' : IQ.textDim, fontWeight: r.confounds.length ? 700 : 400 } },
+                        i === 0 && activeVar ? t('stem.migration.baseline_word', 'baseline')
+                          : r.confounds.length ? t('stem.migration.also_changed', 'also changed') + ': ' + r.confounds.join(', ')
+                          : (activeVar ? t('stem.migration.yes_word', 'yes') : '\u2014'))
+                    );
+                  })
+                )
+              )
+            ),
+            confoundedCount > 0 && h('p', { style: { margin: '6px 0 0', fontSize: 10.5, lineHeight: 1.45, color: '#eb6834', fontWeight: 600 } },
+              confoundedCount + ' ' + t('stem.migration.confound_warning', 'of these trials changed something besides the variable under test. A difference in reserve ratio across those two trials could have come from either change \u2014 the comparison cannot separate them. Re-run them with the other controls put back.'))
+          ),
+
+          // \u2500\u2500 Notebook export \u2500\u2500
+          iqTrials.length > 0 && h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' } },
+            h('span', { style: { fontSize: 10.5, fontWeight: 700, color: IQ.textDim } }, t('stem.migration.take_it_with_you', 'Take it with you:')),
+            h('button', { type: 'button', onClick: exportHtml, style: { padding: '5px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: sm.color, cursor: 'pointer' } }, t('stem.migration.export_html', 'Download notebook (HTML)')),
+            h('button', { type: 'button', onClick: exportCsv, style: { padding: '5px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: sm.color, cursor: 'pointer' } }, t('stem.migration.export_csv', 'Download trials (CSV)'))
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.migration.your_hypothesis_which_parameter_forces', 'Your hypothesis (which parameter forces the most stopovers?)')),
           h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.hypothesis_input', 'Migration energy hypothesis'), placeholder: t('stem.migration.e_g_v_formation_savings_only_pay_off_a', 'e.g., V-formation savings only pay off above 1500 km because takeoff cost dominates...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: IQ.tile, color: IQ.text, fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
@@ -6361,7 +6738,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('li', null, t('stem.migration.why_would_a_heavier_bird_necessarily_n', 'Why would a heavier bird necessarily need MORE energy per km — what does that have to do with drag?')),
               h('li', null, t('stem.migration.a_10_m_s_headwind_doubles_the_work_wha', 'A 10 m/s headwind doubles the work — what happens if half the journey has 10 m/s tailwind?')),
               h('li', null, t('stem.migration.why_is_v_formation_savings_about_22_wh', 'Why is V-formation savings about 22%? What does it cost the lead bird?')),
-              h('li', null, t('stem.migration.how_does_a_hummingbird_4_g_1500_km_gul', 'How does a hummingbird (4 g, 1500 km Gulf of Mexico crossing) even survive its migration?'))
+              h('li', null, t('stem.migration.how_does_a_hummingbird_4_g_1500_km_gul', 'How does a hummingbird (3 g, ~800 km Gulf of Mexico crossing) even survive its migration?')),
+              h('li', null, t('stem.migration.q_best_mass_for_a_span', 'Hold wingspan still and raise mass from the bottom of the slider to the top. The reserve ratio rises, peaks, and then falls. Why is there a best mass for a given wingspan \u2014 and what would a bird have to grow to carry more?'))
             )
           ),
           h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
@@ -6376,10 +6754,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // Topic-accent hero band per tab
       var TAB_META = {
         flight3d:  { accent: '#38bdf8', soft: 'rgba(14,116,144,0.16)', icon: '\uD83C\uDF10', title: t('stem.migration.flight_3d_title', '3D migration flight'), hint: t('stem.migration.flight_3d_hint', 'Fly through a dimensional migration corridor with species-specific flocking, terrain, route beacons, wind, camera views, and an explicit Monarch relay simulation.') },
-        vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: t('stem.migration.v_formation_flying', 'V-formation flying'),         hint: t('stem.migration.trailing_birds_catch_the_upwash_from_t', 'Trailing birds catch the upwash from the bird ahead \u2014 20\u201330% energy savings. Lead position rotates because the front bird does the most work.') },
+        vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: t('stem.migration.v_formation_flying', 'V-formation flying'),         hint: t('stem.migration.trailing_birds_catch_the_upwash_from_t', 'Trailing birds catch the upwash from the bird ahead \u2014 measured savings run about 10\u201330% in real flocks. Lead position rotates because the front bird does the most work.') },
         wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: t('stem.migration.wind_currents_thermals', 'Wind currents + thermals'),   hint: t('stem.migration.birds_read_pressure_gradients_we_canno', 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.') },
         routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: t('stem.migration.migration_routes_flyways', 'Migration routes + flyways'),  hint: t('stem.migration.four_major_north_american_flyways_paci', 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.') },
-        aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: t('stem.migration.aerodynamics_of_bird_flight', 'Aerodynamics of bird flight'), hint: t('stem.migration.wing_shape_aspect_ratio_camber_tunes_l', 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 60+ Hz wingbeat.') },
+        aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: t('stem.migration.aerodynamics_of_bird_flight', 'Aerodynamics of bird flight'), hint: t('stem.migration.wing_shape_aspect_ratio_camber_tunes_l', 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 50\u201380 Hz wingbeat.') },
         navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: t('stem.migration.weather_navigation', 'Weather + navigation'),       hint: t('stem.migration.birds_use_multiple_cues_simultaneously', 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.') },
         inquiry:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD2C', title: t('stem.migration.energy_inquiry', 'Energy inquiry'), hint: t('stem.migration.energy_inquiry_hint', 'Test how wingspan, body mass, wind, formation, and distance combine to determine whether a migration leg is feasible.') }
       };
