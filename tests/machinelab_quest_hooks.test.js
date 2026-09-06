@@ -17,7 +17,7 @@ beforeEach(() => {
 // machineLab slice directly. Nothing had ever called these functions.
 describe('Machine Lab quest hooks: shape', () => {
   it('registers six hooks, each with the fields the host reads', () => {
-    expect(hooks).toHaveLength(6);
+    expect(hooks).toHaveLength(8);
     for (const h of hooks) {
       expect(typeof h.id).toBe('string');
       expect(h.id.length).toBeGreaterThan(0);

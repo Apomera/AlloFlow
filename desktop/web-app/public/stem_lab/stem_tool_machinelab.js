@@ -5305,6 +5305,7 @@ window.StemLab = window.StemLab || {
       // The setup of the previous shot, and one line per ghost trace saying
       // what was changed to produce it.
       lastShotSetup: null, traceNotes: [],
+      oneChangeStreak: 0,
       // Compact traces of the last three flights, and the best siege per target.
       sceneTraces: [], siegeBests: {},
       // Sound is opt-in: a classroom default.
@@ -5423,6 +5424,28 @@ window.StemLab = window.StemLab || {
         icon: '📊',
         check: function (d) { return ((d && d.machinesFired) || []).length >= 3; },
         progress: function (d) { return ((d && d.machinesFired) || []).length + '/3 machines'; }
+      },
+      {
+        id: 'bracket_the_wall',
+        label: 'Bracket a wall: one shot short of it and one shot past it',
+        icon: '📏',
+        check: function (d) {
+          var b = d && d.bracket;
+          return !!(b && b.lo != null && b.hi != null && b.hi > b.lo);
+        },
+        progress: function (d) {
+          var b = d && d.bracket;
+          if (!b || (b.lo == null && b.hi == null)) return 'No bracket yet';
+          if (b.lo != null && b.hi != null) return 'Bracketed';
+          return b.lo != null ? 'Short shot in; now go long' : 'Long shot in; now fall short';
+        }
+      },
+      {
+        id: 'one_change_at_a_time',
+        label: 'Loose 3 shots in a row changing exactly one thing each time',
+        icon: '🔬',
+        check: function (d) { return ((d && d.oneChangeStreak) || 0) >= 3; },
+        progress: function (d) { return ((d && d.oneChangeStreak) || 0) + '/3 in a row'; }
       }
     ],
 
@@ -8014,8 +8037,8 @@ window.StemLab = window.StemLab || {
         for (var sf = 1; sf < SHOT_FIELDS.length; sf++) out[SHOT_FIELDS[sf][0]] = d[SHOT_FIELDS[sf][0]];
         return out;
       }
-      function describeChange(prev, now) {
-        if (!prev) return __alloT('stem.machinelab.chg_first', 'first shot');
+      function diffShot(prev, now) {
+        if (!prev) return { parts: [], text: __alloT('stem.machinelab.chg_first', 'first shot') };
         var parts = [];
         for (var cf = 0; cf < SHOT_FIELDS.length; cf++) {
           var key = SHOT_FIELDS[cf][0], name = SHOT_FIELDS[cf][1], unit = SHOT_FIELDS[cf][2], dp = SHOT_FIELDS[cf][3];
@@ -8025,9 +8048,14 @@ window.StemLab = window.StemLab || {
             ? machineLabel(is)
             : name + ' ' + fmt(Number(was), dp) + '→' + fmt(Number(is), dp) + unit);
         }
-        if (!parts.length) return __alloT('stem.machinelab.chg_same', 'same setup');
-        if (parts.length > 2) return parts.length + __alloT('stem.machinelab.chg_many', ' things changed');
-        return parts.join(', ');
+        var text = !parts.length ? __alloT('stem.machinelab.chg_same', 'same setup')
+          : (parts.length > 2 ? parts.length + __alloT('stem.machinelab.chg_many', ' things changed') : parts.join(', '));
+        return { parts: parts, text: text };
+      }
+      function describeChange(prev, now) { return diffShot(prev, now).text; }
+      // One change at a time, counted: the streak the quest is about.
+      function oneChangeAfter(diff) {
+        return diff.parts.length === 1 ? (d.oneChangeStreak || 0) + 1 : 0;
       }
 
       function judgeGuess(actual) {
@@ -8110,7 +8138,8 @@ window.StemLab = window.StemLab || {
           var shortGuess = judgeGuess('short');
           var shortLand = shortPath.length ? (Number(shortPath[shortPath.length - 1].x) || 0) : (preview.range || 0);
           var shortSetup = shotSetup();
-          var shortNote = describeChange(d.lastShotSetup, shortSetup);
+          var shortDiff = diffShot(d.lastShotSetup, shortSetup);
+          var shortNote = shortDiff.text;
           var shortBracket = bracketAfter('short', shortLand);
           updMulti(Object.assign({
             shotsFired: shots, totalCrankWork: work, lastImpact: null,
@@ -8128,7 +8157,8 @@ window.StemLab = window.StemLab || {
             sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || []),
             // Kept in step with sceneTraces, so trace and note never disagree.
             traceNotes: shortPath.length > 1 ? (d.traceNotes || []).slice(-2).concat([shortNote]) : (d.traceNotes || []),
-            lastShotSetup: shortSetup
+            lastShotSetup: shortSetup,
+            oneChangeStreak: oneChangeAfter(shortDiff)
           }, shortGuess.patch, shortBracket.patch));
           if (shortPath.length > 1) clearFlightLater(shortId, shortPlay + WINDUP_SECS);
           // The coach is for everyone, so it is spoken as well as shown.
@@ -8185,7 +8215,8 @@ window.StemLab = window.StemLab || {
         // shot missed sideways and says nothing about range; a hit ends the
         // question. Both leave the bracket exactly as it was.
         var hitSetup = shotSetup();
-        var hitNote = describeChange(d.lastShotSetup, hitSetup);
+        var hitDiff = diffShot(d.lastShotSetup, hitSetup);
+        var hitNote = hitDiff.text;
         var overBracket = (res.outcome === 'over')
           ? bracketAfter('over', flightPath.length ? (Number(flightPath[flightPath.length - 1].x) || 0) : (preview.range || 0))
           : { line: '', patch: {} };
@@ -8203,7 +8234,8 @@ window.StemLab = window.StemLab || {
           lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome },
           sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)]),
           traceNotes: (d.traceNotes || []).slice(-2).concat([hitNote]),
-          lastShotSetup: hitSetup
+          lastShotSetup: hitSetup,
+          oneChangeStreak: oneChangeAfter(hitDiff)
         }, hitGuess.patch, overBracket.patch));
         clearFlightLater(flightId, playSecs + WINDUP_SECS);
         if (nowBreached && !d.breached) {
@@ -9709,6 +9741,7 @@ window.StemLab = window.StemLab || {
           { id: 'machines', icon: '⚙️', label: __alloT('stem.machinelab.topic_machines', 'The six machines') },
           { id: 'history', icon: '🏛️', label: __alloT('stem.machinelab.topic_history', 'History and evidence') },
           { id: 'model', icon: '📐', label: __alloT('stem.machinelab.topic_model', 'What this model is not') },
+          { id: 'field', icon: '🌄', label: __alloT('stem.machinelab.topic_field', 'Reading the Siege Field') },
           { id: 'record', icon: '🧾', label: __alloT('stem.machinelab.topic_record', 'Your work') }
         ];
         var topic = d.manualTopic || 'energy';
@@ -9775,6 +9808,19 @@ window.StemLab = window.StemLab || {
               ]);
             }))
           ];
+        } else if (topic === 'field') {
+          content = [
+            para(__alloT('stem.machinelab.field_p1', 'The Siege Field draws the same flight the Test Range computes, in a valley with a castle at one end and your engine at the other. Everything drawn in it is derived from the model; nothing is decoration standing in for a number.'), 'p1'),
+            bullets([
+              __alloT('stem.machinelab.field_b_arc', 'The dashed arc is the flight the model predicts. The ring is where it meets the wall, the mark is its apex with a drop line to the ground it is measured from, and the beads are one second apart. Look at the beads: the horizontal gaps stay about the same while the vertical ones grow. That is gravity, drawn.'),
+              __alloT('stem.machinelab.field_b_track', 'The arc is also laid flat on the ground as a track. With a crosswind it leaves the lane, which is the same drift the readout gives as a number.'),
+              __alloT('stem.machinelab.field_b_flag', 'A stone that comes down on the ground plants a flag with its distance on it. Read it against the stakes every ten metres.'),
+              __alloT('stem.machinelab.field_b_notes', 'The last three flights stay as faint arcs, each labelled with what you changed to get it. Change one thing and the label says so. Change four and it says that too.'),
+              __alloT('stem.machinelab.field_b_bracket', 'One shot short of the wall and one shot past it fence the answer in. The band on the ground is that bracket, and the feedback says how far between the two shots the wall sits. That is the oldest method in gunnery, and it is the same idea as bisection.'),
+              __alloT('stem.machinelab.field_b_guess', 'Before each shot you can say what it will do. Right or wrong, the tool tells you, and keeps the streak. Guessing first is not a game: it is the difference between watching and predicting.')
+            ], 'ul'),
+            para(__alloT('stem.machinelab.field_p2', 'If motion is hard for you, the field can show every flight as a strobe of stones along the arc instead of a moving one, and every mark in it has the same number somewhere in the text below the bay.'), 'p2')
+          ];
         } else if (topic === 'record') {
           content = [workRecord()];
         } else {
@@ -9796,6 +9842,12 @@ window.StemLab = window.StemLab || {
         // The manual should be a launchpad, not a dead end. Each topic points
         // back to the smallest 3D experiment that makes its idea tangible.
         var manualRoute = {
+          field: {
+            view: 'scene', icon: '\uD83C\uDF04',
+            title: __alloT('stem.machinelab.manual_route_field_title', 'Go and read it'),
+            copy: __alloT('stem.machinelab.manual_route_field_copy', 'Loose one short and one long, find the bracket on the ground, then change one thing at a time until the wall comes down.'),
+            action: __alloT('stem.machinelab.manual_route_field_action', 'Open the Siege Field')
+          },
           energy: {
             view: 'range', icon: '\uD83C\uDFAF',
             title: __alloT('stem.machinelab.manual_route_energy_title', 'Watch the energy move'),

@@ -929,13 +929,13 @@ describe('Siege Field wave 17: every ghost arc says what changed', () => {
     const src = source();
     expect(src).toContain("['releaseAngle', __alloT('stem.machinelab.chg_release', 'release'), '°', 0],");
     expect(src).toContain(": name + ' ' + fmt(Number(was), dp) + '→' + fmt(Number(is), dp) + unit);");
-    expect(src).toContain("if (!prev) return __alloT('stem.machinelab.chg_first', 'first shot');");
+    expect(src).toContain("if (!prev) return { parts: [], text: __alloT('stem.machinelab.chg_first', 'first shot') };");
   });
 
   it('does not pretend a six-slider rebuild was one change', () => {
     const src = source();
-    expect(src).toContain("if (parts.length > 2) return parts.length + __alloT('stem.machinelab.chg_many', ' things changed');");
-    expect(src).toContain("if (!parts.length) return __alloT('stem.machinelab.chg_same', 'same setup');");
+    expect(src).toContain("(parts.length > 2 ? parts.length + __alloT('stem.machinelab.chg_many', ' things changed') : parts.join(', '))");
+    expect(src).toContain("var text = !parts.length ? __alloT('stem.machinelab.chg_same', 'same setup')");
   });
 
   it('keeps the notes in step with the traces on both outcomes', () => {
@@ -1008,5 +1008,46 @@ describe('Siege Field wave 18: the Test Range gets the same instruments', () => 
   it('still gives the apex as text in the range readouts', () => {
     const html = renderTool('machineLab', state({ view: 'range' }));
     expect(html).toContain('Apex');
+  });
+});
+
+describe('Siege Field wave 19: the manual and the quests know the field', () => {
+  it('adds a Reading the Siege Field chapter that routes to the field', () => {
+    const html = renderTool('machineLab', state({ view: 'learn', manualTopic: 'field' }));
+    expect(html).toContain('Reading the Siege Field');
+    expect(html).toContain('the beads are one second apart');
+    expect(html).toContain('the same idea as bisection');
+    expect(html).toContain('Open the Siege Field');
+  });
+
+  it('keeps the chapter honest about motion and text alternatives', () => {
+    const html = renderTool('machineLab', state({ view: 'learn', manualTopic: 'field' }));
+    expect(html).toContain('strobe of stones along the arc');
+    expect(html).toContain('the same number somewhere in the text below the bay');
+  });
+
+  it('counts a streak of one-change shots and resets it on anything else', () => {
+    const src = source();
+    expect(src).toContain("return diff.parts.length === 1 ? (d.oneChangeStreak || 0) + 1 : 0;");
+    expect(src).toContain('oneChangeStreak: oneChangeAfter(shortDiff)');
+    expect(src).toContain('oneChangeStreak: oneChangeAfter(hitDiff)');
+    expect(src).toContain('oneChangeStreak: 0,');
+  });
+
+  it('offers two quests for the two habits: bracket the wall, one change at a time', () => {
+    const hooks = cfg.questHooks;
+    const ids = hooks.map((q) => q.id);
+    expect(ids).toContain('bracket_the_wall');
+    expect(ids).toContain('one_change_at_a_time');
+    const br = hooks.filter((q) => q.id === 'bracket_the_wall')[0];
+    expect(br.check({ bracket: { at: 80, lo: 50, hi: 127 } })).toBe(true);
+    expect(br.check({ bracket: { at: 80, lo: 50, hi: null } })).toBe(false);
+    expect(br.check({ bracket: { at: 80, lo: 90, hi: 70 } })).toBe(false);
+    expect(br.progress({ bracket: { at: 80, lo: 50, hi: null } })).toBe('Short shot in; now go long');
+    expect(br.progress({})).toBe('No bracket yet');
+    const oc = hooks.filter((q) => q.id === 'one_change_at_a_time')[0];
+    expect(oc.check({ oneChangeStreak: 3 })).toBe(true);
+    expect(oc.check({ oneChangeStreak: 2 })).toBe(false);
+    expect(oc.progress({ oneChangeStreak: 2 })).toBe('2/3 in a row');
   });
 });

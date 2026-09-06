@@ -183,6 +183,21 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 19 (2026-09-06)
+
+- **The Field Manual reads the field.** A new chapter, *Reading the Siege Field*, says what
+  every mark in the valley is and what it is derived from: the arc, its ring, apex and
+  one-second beads; the ground track and what a crosswind does to it; the landing flag; the
+  labelled ghost arcs; the bracket and why it is bisection; and predict-then-loose. It routes
+  to the field with one instruction: loose one short and one long, find the bracket, then
+  change one thing at a time.
+- **Two quests for the two habits.** `bracket_the_wall` (both edges known at the current
+  standoff, with progress that says which edge is still missing) and `one_change_at_a_time`
+  (three shots in a row whose diff has exactly one part). The streak lives in
+  `oneChangeStreak`, written on both branches of `loose()`.
+- `diffShot()` now returns its parts and its sentence; `describeChange()` is the sentence.
+  Quest checks never compare against translated text.
+
 ### Wave 18 (2026-09-05)
 
 - **The Test Range gets the Siege Field instruments.** A bead on the fired arc for every
