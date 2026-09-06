@@ -3511,7 +3511,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             c.font = '9px system-ui';
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
-            c.fillText(t('stem.migration.energy_saved_short', 'Energy saved') + ' ' + Math.round(eff * 0.3) + '%  ·  ' +
+            // Was `eff * 0.3`, a bare constant that made a perfect formation
+            // claim 30% saved -- the top of the documented range, where every
+            // other surface in this tool says 22%. Scaled from the one savings
+            // table instead, so a perfect V reads 22% here too. (The leader
+            // itself saves nothing; this is the figure for the birds that are
+            // actually drafting, which is what the readout is about.)
+            c.fillText(t('stem.migration.energy_saved_short', 'Energy saved') + ' ' +
+              Math.round((eff / 100) * migrFormationSaving('v') * 100) + '%  ·  ' +
               t('stem.migration.rotations_short', 'rotations') + ' ' + (leaderRotations || 0), 18, 70);
 
             // Wake key — the two colours behind the birds mean opposite things,

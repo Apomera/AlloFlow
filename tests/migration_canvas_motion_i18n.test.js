@@ -96,7 +96,7 @@ function mount(tab, opts = {}) {
     get toolData() { return store; },
     update: (t, k, v) => { store = { ...store, [t]: { ...store[t], [k]: v } }; rerender && rerender(); },
     updateMulti: (t, o) => { store = { ...store, [t]: { ...store[t], ...o } }; rerender && rerender(); },
-    addToast: () => {}, announceToSR: () => {},
+    addToast: () => {}, announceToSR: () => {}, celebrate: () => {}, beep: () => {},
     t: opts.mark ? (k, fb) => MARK + (fb == null ? k : fb) : (k, fb) => (fb == null ? k : fb),
     isDark: true, setStemLabTool: () => {}, awardXP: () => {}
   };
@@ -210,6 +210,32 @@ describe('Migration Lab visible prose reaches the translator', () => {
       m.teardown();
     }
     expect(Array.from(bad)).toEqual([]);
+  });
+});
+
+describe('Migration Lab formation readout', () => {
+  it('never claims more energy saved than the model allows', () => {
+    // The canvas computed this as `efficiency * 0.3`, a bare constant that made
+    // a perfect formation claim 30% saved -- the top of the documented range,
+    // where the model, the 3D deck, the inquiry tab and the prose all say 22%.
+    const m = mount('vformation', { state: { vBirdCount: 9 } });
+    drive(4);
+    const autoV = Array.from(m.host.querySelectorAll('button')).find((b) => /Auto-Form V/i.test(b.textContent || ''));
+    expect(autoV, 'Auto-Form V control').toBeTruthy();
+    act(() => { autoV.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    draws.length = 0;
+    drive(10);
+
+    const line = draws.find((d) => /Energy saved/.test(d));
+    expect(line, 'the canvas prints an energy-saved readout').toBeTruthy();
+    const shown = Number((line.match(/Energy saved\s+(\d+)%/) || [])[1]);
+    const modelV = Math.round(tool._testing.savingFor('v') * 100);
+    expect(Number.isFinite(shown)).toBe(true);
+    // A perfect V is the best case, so it should reach the documented saving
+    // and never exceed it.
+    expect(shown).toBeLessThanOrEqual(modelV);
+    expect(shown).toBe(modelV);
+    m.teardown();
   });
 });
 
