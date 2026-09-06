@@ -260,3 +260,15 @@ One paired label is worth noting because it is the shape a partial pass leaves b
 
 The tool goes from 93 unwrapped user-visible strings to 33, and every one of those 33 is a fragment. The tool registration label at the top of the file was deliberately left alone: it sits outside the render function, where the guarded translator does not exist yet, and the STEM Lab shell handles that one itself.
 
+## Sentences that can actually be translated
+
+September 6, 2026. Wrapping every whole label still left the sentences that carry a value inside them. Those were built by joining strings: "Reveal " plus the structure name plus " on the " plus the side plus " side". A translator never sees that as a sentence, and no language whose word order differs from English can be produced from it. Most of them are aria-labels, so the learners worst affected are the ones using a screen reader in a language other than English.
+
+The blocker was the translator itself. The shell's t takes either a string fallback or an object of values, never both, and passing a fallback turns interpolation off entirely. So a sentence with a value in it could not have a fallback, and every string in this tool relies on its fallback.
+
+The tool's own wrapper now does the substitution, after it has decided whether the text came from the language pack or from the English fallback. Both paths get their values filled. It also replaces every occurrence of a name rather than only the first, which the shell's version does not, so a sentence may mention the same value twice.
+
+Twenty-four sentences were rewritten as single strings with named placeholders: the keyboard-shortcut summary, the search result side pickers, the study set actions and counts, the round summary, the cutaway plane readouts and its orientation map, the gestational week readout, the compare tray count, the recenter and pronounce actions, the reading-level buttons and the AI explanation button. Existing two-argument calls are untouched.
+
+Nine lines still concatenate. Each of those chooses between several messages in a nested conditional and needs the branches separated before it can be wrapped, which changes the shape of the code rather than the words.
+
