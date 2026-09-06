@@ -183,6 +183,39 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 29 (2026-09-06) — destruction with collision (P5, first cut)
+
+Breached blocks used to teleport, over a one-second ease with a sine hop, to a hashed spot on
+the far side of the wall, where they could overlap each other and the footing. They now fall.
+
+- **A debris model in `_machineMath`**: `debrisStart(before, after, res)` turns the blocks a
+  shot set loose into pieces with an initial velocity — the struck cell and its neighbours are
+  kicked into the castle in proportion to how far the blow exceeded the block's budget, and
+  everything else simply has nothing under it any more. `debrisStep(sim, dt)` is one fixed
+  step: gravity; the ground with the wall's own footing in it; the still-standing wall as a
+  slab a piece cannot enter, as high as its column still stands; sphere-on-sphere contact
+  between pieces with a little loss, so a block lands on another and rolls off it; rest once a
+  piece is supported and still. `debrisSettle(start)` runs it to rest and hands back where every
+  piece ended up.
+- **Decided once, in the model, at impact.** `loose()` settles the debris and stores the heap
+  in `rubbleRest` keyed by block. The field replays the identical fixed steps for the animation
+  and lands on the identical heap by construction; a rebuild of the scene draws the stored heap
+  and never re-simulates. Nothing here is random: every non-physical number comes from
+  `hash01`, and `tests/machinelab_debris.test.js` pins that the same shot always ends in the
+  same heap, that nothing rests below the ground or inside the standing wall, that no two
+  pieces share a spot, and that a block which only lost its support stays near its column.
+- **Rubble has its own rotating mesh**; the voxel batch pins every instance upright and a
+  fallen block is not upright. High contrast keeps the batch and the old heap, because its edge
+  outlines cannot rotate. A wall with no `rubbleRest` entry (one from before this wave, or an
+  import) still draws the hashed heap.
+- ★**The rubble drew solid black on the first render.** THREE r128's `InstancedMesh.setColorAt`
+  sizes the colour attribute from `count` on first use, and the mesh's count had already been
+  set to 0, so every colour write fell off the end of an empty array. Colours are now seeded
+  while count is still the capacity, the way `makeVoxelBatch` does. Caught by the screenshot;
+  no test could have.
+- Left for later: pieces are spheres for contact and cubes for drawing, so a corner can visually
+  clip a neighbour; the Target Wall bay still draws the hashed heap.
+
 ### Wave 28 (2026-09-06)
 
 - ★**The Siege Field spoke one register to everybody.** The HUD learned "How fast" for young

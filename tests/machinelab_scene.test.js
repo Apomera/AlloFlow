@@ -229,7 +229,8 @@ describe('Siege Field wave 2: replay, arc, wind, start card', () => {
 
   it('keeps the last flight on both a hit and a short shot, and marks a replay so it is not re-scored', () => {
     const src = source();
-    expect(src).toContain("lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome }");
+    // Wave 29 adds the debris start to the kept flight, so the replay can tumble too.
+    expect(src).toContain("lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, debris: debrisStart }");
     expect(src).toContain("lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null");
     expect(src).toContain("outcome: lf.outcome, replay: true, rate: REPLAY_RATE");
     // The swing stretches with the replay, so the arm is not done before the stone leaves.
@@ -1436,5 +1437,65 @@ describe('Siege Field wave 28: the field speaks the reader own register', () => 
     expect(src).toContain("__alloT('stem.machinelab.bracket_y3', ' m. The wall is caught between them, so try something in between.')");
     // The older reading still carries the fraction, which is the actionable part.
     expect(src).toContain("__alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +");
+  });
+});
+
+describe('Siege Field wave 29: destruction with collision', () => {
+  it('settles the debris in the model at impact and keeps the heap in state', () => {
+    const src = source();
+    expect(src).toContain('var debrisStart = _machineMath.debrisStart(blocks, res.blocks, res, { gravity: d.gravity });');
+    expect(src).toContain('var debrisRest = debrisStart ? _machineMath.debrisSettle(debrisStart) : null;');
+    expect(src).toContain("rubbleRest: debrisRest ? Object.assign({}, d.rubbleRest || {}, debrisRest.rest) : (d.rubbleRest || {}),");
+  });
+
+  it('hands the field the same start the model settled from, on both kept flights', () => {
+    const src = source();
+    expect(src).toContain('debris: debrisStart\n          },');
+    expect(src).toContain("lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, debris: debrisStart },");
+  });
+
+  it('replays the model own steps at the model own fixed dt, and never under reduced motion', () => {
+    const src = source();
+    expect(src).toContain("if (flying && landed && data.flight.debris && S.debrisId !== data.flight.id && !red) {");
+    expect(src).toContain('if (_machineMath.debrisStep(S.debrisSim, _machineMath.DEBRIS_DT)) { S.debrisSim.done = true; break; }');
+    // A frame that arrives late catches up in fixed steps, capped so a paused
+    // tab cannot spin for seconds on resume.
+    expect(src).toContain('while (S.debrisSim.t < want && guard++ < 600) {');
+  });
+
+  it('draws fallen blocks with a mesh that can rotate, and only outside high contrast', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && typeof THREE.InstancedMesh === 'function') {\n      var rubbleMesh = new THREE.InstancedMesh(");
+    expect(src).toContain('rd.rotation.set(it.rest[3], it.rest[4], it.rest[5]);');
+    expect(src).toContain('rd.rotation.set(it.p.rx, it.p.ry, it.p.rz);');
+  });
+
+  it('falls back to the hashed heap for a wall that predates the debris model', () => {
+    const src = source();
+    expect(src).toContain('var restT = data.rubbleRest ? data.rubbleRest[key] : null;');
+    expect(src).toContain('if (S.rubble && (lp || restT)) {');
+    // The hash path is still there, and still the one the determinism test pins.
+    expect(src).toMatch(/hash01\(b\.col, b\.row, 1\)/);
+  });
+
+  it('clears the heap with the wall, on a rebuild and on an import', () => {
+    const src = source();
+    expect(src).toContain("siegeFeedback: null, lastImpact: null, rubbleRest: {}");
+    expect(src).toContain("shotsFired: 0, totalCrankWork: 0, breached: false, lastImpact: null, rubbleRest: {},");
+    expect(src).toContain('// model at impact, read by the field; cleared with the wall.\n      rubbleRest: {},');
+  });
+
+  it('tells the field where the heap lies', () => {
+    const src = source();
+    expect(src).toContain('rubbleRest: d.rubbleRest || {},');
+  });
+
+  it('keeps the Target Wall scene builder out of the physics, as the architecture rule says', () => {
+    const src = source();
+    const sceneStart = src.indexOf('function buildWallScene(');
+    const sceneEnd = src.indexOf('var SIEGE_GL =');
+    const scene = src.slice(sceneStart, sceneEnd);
+    expect(scene).not.toContain('debrisSettle');
+    expect(scene).not.toContain('debrisStart');
   });
 });

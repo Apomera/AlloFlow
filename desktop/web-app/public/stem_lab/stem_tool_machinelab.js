@@ -844,6 +844,173 @@ window.StemLab = window.StemLab || {
 
     // A breach is a hole you could walk through: one column gone from the
     // ground to the top of that column.
+    // ── Debris ──────────────────────────────────────────────────────────
+    // What the blocks the model has just breached do next. Not a physics
+    // engine: spheres for contact, cubes for drawing, one fixed step, and
+    // every number that is not physics comes from hash01. That is enough for
+    // a block to fall, land, roll off a neighbour and stop, and it is
+    // reproducible by construction, which the tool's rubble has always been.
+    DEBRIS_DT: 1 / 120,
+    DEBRIS_SECONDS: 4,
+
+    // The pieces a shot sets loose, with the velocity each starts with. The
+    // struck cell and its neighbours are kicked into the castle in proportion
+    // to how far the blow exceeded the stone's budget; everything else simply
+    // has nothing under it any more.
+    debrisStart: function (before, after, res, opts) {
+      opts = opts || {};
+      var ext = this.wallExtent(after);
+      if (!ext || !res || res.outcome !== 'hit') return null;
+      var was = {};
+      (before || []).forEach(function (b) { if (b.state === 'breached') was[b.col + '_' + b.row] = true; });
+      var midCol = (ext.minCol + ext.maxCol) / 2;
+      var standing = {};
+      var pieces = [];
+      var self = this;
+      after.forEach(function (b) {
+        var key = b.col + '_' + b.row;
+        if (b.state !== 'breached') {
+          if (standing[b.col] == null || b.row > standing[b.col]) standing[b.col] = b.row;
+          return;
+        }
+        if (was[key]) return;
+        var budget = (self.MATERIALS[b.mat] || self.MATERIALS.limestone).budget * (pos(b.budgetMul) ? b.budgetMul : 1);
+        var near = Math.abs(b.col - res.col) <= 1 && Math.abs(b.row - res.row) <= 1;
+        var kick = near ? Math.max(1.6, Math.min(7, ((res.ke || 0) / Math.max(1, budget)) * 2.4)) : 0;
+        var h1 = hash01(b.col, b.row, 41), h2 = hash01(b.col, b.row, 42), h3 = hash01(b.col, b.row, 43);
+        pieces.push({
+          key: key, col: b.col, row: b.row,
+          x: b.col - midCol, y: b.row + 0.5, z: 0,
+          s: 0.62 + h1 * 0.18,
+          vx: (h2 - 0.5) * (near ? 1.6 : 0.5),
+          vy: near ? kick * 0.3 : 0,
+          vz: kick + (near ? 0 : (h3 - 0.5) * 0.4),
+          rx: 0, ry: 0, rz: 0,
+          wx: (h3 - 0.5) * 4, wy: (h1 - 0.5) * 2, wz: (h2 - 0.5) * 4,
+          rest: false
+        });
+      });
+      if (!pieces.length) return null;
+      return {
+        pieces: pieces,
+        span: Math.max(2, ext.maxCol - ext.minCol + 1),
+        midCol: midCol,
+        standing: standing,
+        g: pos(opts.gravity) ? opts.gravity : 9.81,
+        t: 0
+      };
+    },
+
+    // One fixed step. Ground with the wall's own footing in it, the standing
+    // wall as a slab the pieces cannot enter, and sphere-on-sphere contact
+    // between pieces so a block can land on another and roll off it.
+    debrisStep: function (sim, dt) {
+      var ps = sim.pieces, g = sim.g, half = sim.span / 2;
+      var i, j, p;
+      function groundAt(x, z) {
+        if (Math.abs(x) > half + 1.1) return 0;
+        var az = Math.abs(z);
+        return az < 1.05 ? 0.46 : (az < 1.4 ? 0.26 : 0);
+      }
+      for (i = 0; i < ps.length; i++) {
+        p = ps[i];
+        if (p.rest) continue;
+        p.vy -= g * dt;
+        p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+        p.rx += p.wx * dt; p.ry += p.wy * dt; p.rz += p.wz * dt;
+        var r = p.s * 0.5;
+        // The standing wall: a slab one block deep about z = 0, as high as the
+        // column under the piece still stands.
+        var col = Math.round(p.x + sim.midCol);
+        var top = sim.standing[col];
+        if (top != null && Math.abs(p.x) < half + 0.5 && p.y < top + 1 + r && Math.abs(p.z) < 0.5 + r) {
+          var side = p.z >= 0 ? 1 : -1;
+          if (p.z === 0) side = p.vz >= 0 ? 1 : -1;
+          p.z = side * (0.5 + r);
+          p.vz = -p.vz * 0.25;
+          p.vx *= 0.8;
+        }
+        // The ground, with the footing in it.
+        var floor = groundAt(p.x, p.z) + r;
+        if (p.y < floor) {
+          p.y = floor;
+          if (p.vy < 0) p.vy = -p.vy * 0.22;
+          p.vx *= 0.82; p.vz *= 0.82;
+          p.wx *= 0.75; p.wy *= 0.9; p.wz *= 0.75;
+          if (Math.abs(p.vy) < 0.35) p.vy = 0;
+        }
+      }
+      // Contact between pieces: separate, then swap the closing part of the
+      // velocity with a little loss. O(n^2) on a few dozen blocks is nothing.
+      for (i = 0; i < ps.length; i++) {
+        for (j = i + 1; j < ps.length; j++) {
+          var a = ps[i], b = ps[j];
+          if (a.rest && b.rest) continue;
+          var dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+          var min = (a.s + b.s) * 0.5;
+          var d2 = dx * dx + dy * dy + dz * dz;
+          if (d2 >= min * min || d2 === 0) continue;
+          var dist = Math.sqrt(d2), nx = dx / dist, ny = dy / dist, nz = dz / dist;
+          var push = (min - dist) * 0.5;
+          if (!a.rest) { a.x -= nx * push; a.y -= ny * push; a.z -= nz * push; }
+          if (!b.rest) { b.x += nx * push; b.y += ny * push; b.z += nz * push; }
+          var rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny + (b.vz - a.vz) * nz;
+          if (rel < 0) {
+            var imp = -rel * (1 + 0.15) * 0.5;
+            if (!a.rest) { a.vx -= nx * imp; a.vy -= ny * imp; a.vz -= nz * imp; }
+            if (!b.rest) { b.vx += nx * imp; b.vy += ny * imp; b.vz += nz * imp; }
+          }
+        }
+      }
+      // Rest: on the ground or on another piece, and not going anywhere.
+      var all = true;
+      for (i = 0; i < ps.length; i++) {
+        p = ps[i];
+        if (p.rest) continue;
+        var speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy + p.vz * p.vz);
+        var spin = Math.abs(p.wx) + Math.abs(p.wy) + Math.abs(p.wz);
+        var onFloor = p.y <= groundAt(p.x, p.z) + p.s * 0.5 + 0.02;
+        var supported = onFloor;
+        if (!supported) {
+          for (j = 0; j < ps.length && !supported; j++) {
+            if (j === i) continue;
+            var q = ps[j];
+            var ddx = q.x - p.x, ddz = q.z - p.z, ddy = p.y - q.y;
+            supported = ddy > 0 && ddy < (p.s + q.s) * 0.55 && (ddx * ddx + ddz * ddz) < Math.pow((p.s + q.s) * 0.5, 2);
+          }
+        }
+        if (supported && speed < 0.12 && spin < 0.4 && sim.t > 0.35) {
+          p.rest = true; p.vx = p.vy = p.vz = 0; p.wx = p.wy = p.wz = 0;
+        } else {
+          all = false;
+        }
+      }
+      sim.t += dt;
+      return all;
+    },
+
+    // Run a shot's debris to rest and hand back where every piece ended up,
+    // keyed by block. This is what the state keeps; the scene keeps nothing.
+    debrisSettle: function (start) {
+      if (!start) return null;
+      var sim = { pieces: start.pieces.map(function (p) { var c = {}; for (var k in p) if (Object.prototype.hasOwnProperty.call(p, k)) c[k] = p[k]; return c; }),
+                  span: start.span, midCol: start.midCol, standing: start.standing, g: start.g, t: 0 };
+      var steps = Math.round(this.DEBRIS_SECONDS / this.DEBRIS_DT);
+      var settledAt = null;
+      for (var i = 0; i < steps; i++) {
+        if (this.debrisStep(sim, this.DEBRIS_DT)) { settledAt = sim.t; break; }
+      }
+      var rest = {};
+      sim.pieces.forEach(function (p) {
+        rest[p.key] = [
+          Math.round(p.x * 1000) / 1000, Math.round(p.y * 1000) / 1000, Math.round(p.z * 1000) / 1000,
+          Math.round(p.rx * 1000) / 1000, Math.round(p.ry * 1000) / 1000, Math.round(p.rz * 1000) / 1000,
+          Math.round(p.s * 1000) / 1000
+        ];
+      });
+      return { rest: rest, seconds: settledAt != null ? settledAt : sim.t, settled: settledAt != null };
+    },
+
     isBreached: function (blocks) {
       if (!blocks || !blocks.length) return false;
       var cols = {};
@@ -3862,6 +4029,27 @@ window.StemLab = window.StemLab || {
       : null;
     if (batch) batch.addTo(S.model);
     S.wall = { batch: batch, contrast: contrast };
+    // Rubble has its own mesh: the voxel batch pins every instance upright,
+    // and a block that has fallen is not upright. Contrast keeps the batch
+    // (its edge outlines cannot rotate), so it keeps the old heap too.
+    if (!contrast && typeof THREE.InstancedMesh === 'function') {
+      var rubbleMesh = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff, map: tex.stone || null }),
+        Math.max(8, blocks.length)
+      );
+      rubbleMesh.castShadow = true; rubbleMesh.receiveShadow = true;
+      rubbleMesh.frustumCulled = false;
+      // Seed every instance's colour BEFORE lowering count: r128 sizes the
+      // colour attribute from count on the first setColorAt, and an attribute
+      // sized from zero draws every piece black.
+      var rubbleSeed = new THREE.Color(0xffffff);
+      for (var rs = 0; rs < rubbleMesh.count; rs++) rubbleMesh.setColorAt(rs, rubbleSeed);
+      if (rubbleMesh.instanceColor) rubbleMesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
+      rubbleMesh.count = 0;
+      S.model.add(rubbleMesh);
+      S.rubble = { mesh: rubbleMesh, dummy: new THREE.Object3D(), color: new THREE.Color() };
+    }
     function colourFor(b) {
       if (contrast) return b.state === 'breached' ? 0x888888 : 0xffffff;
       var v = 0.86 + hash01(b.col, b.row, 6) * 0.14;
@@ -4754,17 +4942,52 @@ window.StemLab = window.StemLab || {
         for (var tk in S.tumble) if (Object.prototype.hasOwnProperty.call(S.tumble, tk)) fell++;
         if (fell > 0 && data.sound && !red) SCENE_AUDIO.rubble(fell);
       }
+      // The debris replay. Started on the frame the stone lands from the same
+      // pieces the model started from, stepped at the model's fixed dt by the
+      // clock, and dropped once every piece rests: from then on the stored
+      // heap is drawn, which is the same heap because it is the same steps.
+      if (flying && landed && data.flight.debris && S.debrisId !== data.flight.id && !red) {
+        S.debrisId = data.flight.id; S.debrisT0 = now;
+        var dst = data.flight.debris;
+        S.debrisSim = {
+          pieces: dst.pieces.map(function (p) { var c = {}; for (var k in p) if (Object.prototype.hasOwnProperty.call(p, k)) c[k] = p[k]; return c; }),
+          span: dst.span, midCol: dst.midCol, standing: dst.standing, g: dst.g, t: 0, done: false
+        };
+      }
+      if (S.debrisSim && !S.debrisSim.done) {
+        var want = Math.min(_machineMath.DEBRIS_SECONDS, (now - S.debrisT0) / 1000);
+        var guard = 0;
+        while (S.debrisSim.t < want && guard++ < 600) {
+          if (_machineMath.debrisStep(S.debrisSim, _machineMath.DEBRIS_DT)) { S.debrisSim.done = true; break; }
+        }
+        if (S.debrisSim.t >= _machineMath.DEBRIS_SECONDS) S.debrisSim.done = true;
+      }
+      var live = {};
+      if (S.debrisSim && !S.debrisSim.done) {
+        S.debrisSim.pieces.forEach(function (p) { live[p.key] = p; });
+      }
       var tumbleK = (S.tumbleT0 != null && !red) ? Math.max(0, Math.min(1, (now - S.tumbleT0) / 1100)) : 1;
       var tumbleEase = tumbleK * tumbleK * (3 - 2 * tumbleK);
+      var rubbleList = [];
       if (S.wall.batch) {
         var n = 0, standing = {};
         for (var i = 0; i < list.length && n < S.wall.batch.capacity; i++) {
           var b = list[i];
           var x = b.col - midCol, y = b.row + 0.5, z = 0, sc = 1;
           if (b.state === 'breached') {
+            var key = b.col + '_' + b.row;
+            var restT = data.rubbleRest ? data.rubbleRest[key] : null;
+            var lp = live[key];
+            if (S.rubble && (lp || restT)) {
+              // Drawn by the rubble mesh below, rotated: not by the batch.
+              rubbleList.push({ b: b, p: lp, rest: restT });
+              continue;
+            }
+            // No record of where this one fell (a wall from before the debris
+            // model, or a contrast bay): the hashed heap, as before.
             var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
             var rx = x + (r1 - 0.5) * 2.4, rz = (r2 - 0.5) * 2.8 + 1.2, ry = 0.24 + r3 * 0.5, rsc = 0.45 + r1 * 0.25;
-            if (S.tumble && S.tumble[b.col + '_' + b.row] && tumbleEase < 1) {
+            if (S.tumble && S.tumble[key] && tumbleEase < 1) {
               x = x + (rx - x) * tumbleEase; z = rz * tumbleEase;
               y = y + (ry - y) * tumbleEase + Math.sin(tumbleEase * Math.PI) * 0.9;
               sc = 1 + (rsc - 1) * tumbleEase;
@@ -4779,6 +5002,30 @@ window.StemLab = window.StemLab || {
           S.wall.batch.set(n, mc - midCol, wallTop + 0.3, 0, 0.6, colourFor({ col: mc, row: ext.maxRow + 1, mat: 'stone', state: 'intact' })); n++;
         }
         S.wall.batch.commit(n);
+        if (S.rubble) {
+          var rm = S.rubble.mesh, rd = S.rubble.dummy, rc = S.rubble.color;
+          var rn = 0;
+          for (var ri3 = 0; ri3 < rubbleList.length && rn < rm.instanceMatrix.count; ri3++) {
+            var it = rubbleList[ri3];
+            if (it.p) {
+              rd.position.set(it.p.x, it.p.y, it.p.z);
+              rd.rotation.set(it.p.rx, it.p.ry, it.p.rz);
+              rd.scale.setScalar(it.p.s);
+            } else {
+              rd.position.set(it.rest[0], it.rest[1], it.rest[2]);
+              rd.rotation.set(it.rest[3], it.rest[4], it.rest[5]);
+              rd.scale.setScalar(it.rest[6]);
+            }
+            rd.updateMatrix();
+            rm.setMatrixAt(rn, rd.matrix);
+            rc.setHex(colourFor(it.b));
+            rm.setColorAt(rn, rc);
+            rn++;
+          }
+          rm.count = rn;
+          rm.instanceMatrix.needsUpdate = true;
+          if (rm.instanceColor) rm.instanceColor.needsUpdate = true;
+        }
         if (S.cracks) {
           var ci4 = 0;
           for (var bi3 = 0; bi3 < list.length && ci4 < S.cracks.length; bi3++) {
@@ -5542,6 +5789,9 @@ window.StemLab = window.StemLab || {
       oneChangeStreak: 0,
       // Compact traces of the last three flights, and the best siege per target.
       sceneTraces: [], siegeBests: {},
+      // Where every fallen block came to rest, keyed col_row. Written by the
+      // model at impact, read by the field; cleared with the wall.
+      rubbleRest: {},
       // Sound is opt-in: a classroom default.
       sceneSound: false,
       // Predict, then loose: the student's call on the next shot, and the run
@@ -8192,7 +8442,7 @@ window.StemLab = window.StemLab || {
         }
         updMulti({
           wallPreset: 'imported', wallBlocks: res.blocks,
-          shotsFired: 0, totalCrankWork: 0, breached: false, lastImpact: null,
+          shotsFired: 0, totalCrankWork: 0, breached: false, lastImpact: null, rubbleRest: {},
           siegeFeedback: {
             ok: true,
             message: __alloT('stem.machinelab.imp_ok', 'Imported your build: ') + res.cells +
@@ -8212,7 +8462,7 @@ window.StemLab = window.StemLab || {
           wallPreset: presetId || d.wallPreset || 'curtain',
           wallBlocks: _machineMath.buildWall(presetId || d.wallPreset || 'curtain'),
           shotsFired: 0, totalCrankWork: 0, breached: false,
-          siegeFeedback: null, lastImpact: null
+          siegeFeedback: null, lastImpact: null, rubbleRest: {}
         });
       }
 
@@ -8465,6 +8715,12 @@ window.StemLab = window.StemLab || {
         // Only a shot that went LONG closes the far side of the bracket. A wide
         // shot missed sideways and says nothing about range; a hit ends the
         // question. Both leave the bracket exactly as it was.
+        // The debris: started from the blocks this shot set loose, run to rest
+        // now, in the model, so the heap is decided once and reproducibly. The
+        // field replays the same steps for the animation and lands on the same
+        // heap by construction.
+        var debrisStart = _machineMath.debrisStart(blocks, res.blocks, res, { gravity: d.gravity });
+        var debrisRest = debrisStart ? _machineMath.debrisSettle(debrisStart) : null;
         var hitSetup = shotSetup();
         var hitDiff = diffShot(d.lastShotSetup, hitSetup);
         var hitNote = hitDiff.text;
@@ -8480,9 +8736,11 @@ window.StemLab = window.StemLab || {
           // What the 3D field needs to play the throw. `before` is the wall as
           // it stood, drawn until the stone lands.
           siegeFlight: {
-            id: flightId, path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, windup: WINDUP_SECS
+            id: flightId, path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, windup: WINDUP_SECS,
+            debris: debrisStart
           },
-          lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome },
+          lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, debris: debrisStart },
+          rubbleRest: debrisRest ? Object.assign({}, d.rubbleRest || {}, debrisRest.rest) : (d.rubbleRest || {}),
           sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)]),
           traceNotes: (d.traceNotes || []).slice(-2).concat([hitNote]),
           lastShotSetup: hitSetup,
@@ -9491,6 +9749,7 @@ window.StemLab = window.StemLab || {
           labels: labels,
           outcomeKind: outcomeKind,
           breached: !!d.breached,
+          rubbleRest: d.rubbleRest || {},
           dark: true, contrast: isContrast,
           geom: {
             beamLong: d.beamLong, beamShort: d.beamShort,
