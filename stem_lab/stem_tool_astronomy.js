@@ -224,14 +224,24 @@
     out.stars = BRIGHT_STARS.map(function (s) { return Object.assign({ name: s.name, con: s.con, mag: s.mag }, place(s.ra * 15, s.dec)); });
     return out;
   }
-  // Clear-sky visual transmission using the Kasten-Young relative-airmass
-  // approximation and a representative broadband extinction coefficient.
-  // The optional transmission floor keeps schematic markers discoverable at the horizon.
+  // Magnitudes of dimming from the air itself, measured against the zenith.
+  // Kasten-Young relative airmass with a representative clear-sky visual
+  // coefficient (0.18 mag per airmass at a typical low site). Catalogue
+  // magnitudes are already zenith values, so this returns 0 overhead: about
+  // 0.2 at 30 degrees, 0.8 at 10, and well over a magnitude in the last few.
+  function extinctionMag(altitudeDeg, coefficient) {
+    var numeric = Number(altitudeDeg);
+    var altitude = Number.isFinite(numeric) ? Math.max(0.5, Math.min(90, numeric)) : 0.5;
+    var k = Number(coefficient);
+    var airMass = 1 / (sind(altitude) + 0.50572 * Math.pow(altitude + 6.07995, -1.6364));
+    return (Number.isFinite(k) ? k : 0.18) * Math.max(0, airMass - 1);
+  }
+  // The same model as transmission rather than magnitudes, for schematic markers.
+  // The optional floor keeps them discoverable at the horizon.
   function atmosphericVisibility(altitudeDeg, baseOpacity, floor) {
     var numericAltitude = Number(altitudeDeg);
     var altitude = Number.isFinite(numericAltitude) ? Math.max(0.5, Math.min(90, numericAltitude)) : 0.5;
-    var airMass = 1 / (sind(altitude) + 0.50572 * Math.pow(altitude + 6.07995, -1.6364));
-    var transmission = Math.pow(10, -0.4 * 0.18 * Math.max(0, airMass - 1));
+    var transmission = Math.pow(10, -0.4 * extinctionMag(altitude));
     var numericBase = Number(baseOpacity), numericFloor = Number(floor);
     var opacity = Number.isFinite(numericBase) ? Math.max(0, Math.min(1, numericBase)) : 1;
     var minimum = Number.isFinite(numericFloor) ? Math.max(0, Math.min(1, numericFloor)) : 0.08;
@@ -1328,7 +1338,7 @@
       }
       catalog._pre = pre;
     }
-    var pre2 = catalog._pre, positions = new Float32Array(n * 3), alts = new Float32Array(n), azs = new Float32Array(n);
+    var pre2 = catalog._pre, positions = new Float32Array(n * 3), alts = new Float32Array(n), azs = new Float32Array(n), extMags = new Float32Array(n);
     var sLat = sind(lat), cLat = cosd(lat), lstDeg = lst * 15, R = radius || 600, up = 0;
     for (var k = 0; k < n; k++) {
       var ha = (lstDeg - pre2.ra[k]) * D2R, sd = pre2.sinDec[k], cd = pre2.cosDec[k];
@@ -1339,8 +1349,9 @@
       var altApp = alt + refractionDeg(alt * R2D) * D2R, cosApp = Math.cos(altApp), sinApp = Math.sin(altApp); // apparent altitude
       positions[k * 3] = Math.sin(az) * cosApp * R; positions[k * 3 + 1] = sinApp * R; positions[k * 3 + 2] = -Math.cos(az) * cosApp * R;
       alts[k] = altApp * R2D; azs[k] = az * R2D; if (altApp > 0) up++;
+      extMags[k] = (pre2.mags ? pre2.mags[k] : catalog.mag[k]) + extinctionMag(alts[k]);
     }
-    return { positions: positions, alts: alts, azs: azs, up: up, mags: pre2.mags };
+    return { positions: positions, alts: alts, azs: azs, up: up, mags: pre2.mags, extMags: extMags };
   }
   function horizonPoint(raDeg, decDeg, lst, lat, d, radius) {
     var p = precessJ2000(raDeg, decDeg, d), hz = applyRefraction(equToHorizon(p.ra, p.dec, lst, lat));
@@ -1552,7 +1563,7 @@
     return best;
   }
   if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
-    refractionDeg: refractionDeg, DEEP_SKY: DEEP_SKY, CONSTELLATION_NAMES: CONSTELLATION_NAMES, starColorClass: starColorClass,
+    refractionDeg: refractionDeg, extinctionMag: extinctionMag, atmosphericVisibility: atmosphericVisibility, DEEP_SKY: DEEP_SKY, CONSTELLATION_NAMES: CONSTELLATION_NAMES, starColorClass: starColorClass,
     skyEvents: skyEvents, identifyNearest: identifyNearest, starMotionAt: starMotionAt, diurnalPath: diurnalPath, objectVisibility: objectVisibility,
     normalizeObsTargets: normalizeObsTargets, obsTargetKey: obsTargetKey, MAX_OBS_TARGETS: MAX_OBS_TARGETS, observatoryPositionAt: observatoryPositionAt,
     OBSERVATORY_TRAIL_HOURS: OBSERVATORY_TRAIL_HOURS, SIDEREAL_RATE: SIDEREAL_RATE
@@ -1726,13 +1737,13 @@
     }));
 
     // Catalog stars: one Points cloud, plus a stencil-masked mirror for water.
-    var starGeometry = own(new THREE.BufferGeometry()), starCount = 0, baseMags = null, magsDrifted = false;
+    var starGeometry = own(new THREE.BufferGeometry()), starCount = 0;
     function starMaterial(mirror) {
       return own(new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, depthTest: !mirror, blending: THREE.AdditiveBlending,
         stencilWrite: mirror, stencilRef: 1, stencilFunc: mirror ? THREE.EqualStencilFunc : THREE.AlwaysStencilFunc, stencilZPass: THREE.KeepStencilOp,
         uniforms: { limit: { value: 6 }, pixelRatio: { value: renderer.getPixelRatio() }, time: { value: 0 }, twinkle: { value: 1 }, mirror: { value: mirror ? 1 : 0 } },
-        vertexShader: 'attribute float aMag; attribute vec3 aColor; attribute float aAlt; uniform float limit; uniform float pixelRatio; uniform float time; uniform float twinkle; uniform float mirror; varying float vAlpha; varying vec3 vColor; void main(){float vis=clamp((limit-aMag+0.6)*0.75,0.0,1.0);float ext=clamp(aAlt/12.0,0.0,1.0);float tw=1.0-0.18*twinkle*(0.5+0.5*sin(time*3.0+position.x*0.7+position.z*0.3))*(1.0-ext*0.6);vAlpha=vis*(0.3+0.7*ext)*tw;if(aAlt<0.0)vAlpha=0.0;vColor=aColor;float size=min(1.2+max(0.0,limit-aMag)*0.9,7.5)*pixelRatio*(1.0-0.35*mirror);gl_PointSize=vAlpha>0.0?size:0.0;vec3 p=position;if(mirror>0.5){p.x+=sin(time*1.3+p.z*0.05)*1.5;}gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',
+        vertexShader: 'attribute float aMag; attribute vec3 aColor; attribute float aAlt; uniform float limit; uniform float pixelRatio; uniform float time; uniform float twinkle; uniform float mirror; varying float vAlpha; varying vec3 vColor; void main(){float vis=clamp((limit-aMag+0.6)*0.75,0.0,1.0);float low=clamp(aAlt/12.0,0.0,1.0);float tw=1.0-0.30*twinkle*(0.5+0.5*sin(time*3.0+position.x*0.7+position.z*0.3))*(1.0-low*0.75);vAlpha=vis*tw;if(aAlt<0.0)vAlpha=0.0;vColor=aColor;float size=min(1.2+max(0.0,limit-aMag)*0.9,7.5)*pixelRatio*(1.0-0.35*mirror);gl_PointSize=vAlpha>0.0?size:0.0;vec3 p=position;if(mirror>0.5){p.x+=sin(time*1.3+p.z*0.05)*1.5;}gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',
         fragmentShader: 'varying float vAlpha; varying vec3 vColor; uniform float mirror; void main(){float r=length(gl_PointCoord-0.5)*2.0;float glow=exp(-r*r*4.5);gl_FragColor=vec4(vColor,glow*vAlpha*(1.0-0.45*mirror));}'
       }));
     }
@@ -1746,7 +1757,6 @@
       starGeometry.setAttribute('aAlt', new THREE.BufferAttribute(new Float32Array(starCount), 1).setUsage(THREE.DynamicDrawUsage));
       starGeometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
       starGeometry.setAttribute('aMag', new THREE.BufferAttribute(mags, 1));
-      baseMags = mags;
     }
     // Constellation lines share one LineSegments with per-vertex colour for the highlight.
     var lineSegments = [];
@@ -2001,8 +2011,7 @@
       var bodies = observatoryBodies(utcMs, res.lat, res.lon), d = bodies.d, lst = bodies.lst;
       var deepTime = res.drift !== 0;
       var horizon = catalogHorizon(catalog, lst, res.lat, d, 600, res.drift);
-      if (horizon.mags) { starGeometry.attributes.aMag.array.set(horizon.mags); starGeometry.attributes.aMag.needsUpdate = true; magsDrifted = true; }
-      else if (magsDrifted && baseMags) { starGeometry.attributes.aMag.array.set(baseMags); starGeometry.attributes.aMag.needsUpdate = true; magsDrifted = false; }
+      starGeometry.attributes.aMag.array.set(horizon.extMags); starGeometry.attributes.aMag.needsUpdate = true;
       starGeometry.attributes.position.array.set(horizon.positions); starGeometry.attributes.position.needsUpdate = true;
       starGeometry.attributes.aAlt.array.set(horizon.alts); starGeometry.attributes.aAlt.needsUpdate = true;
       var sunAlt = bodies.sun.alt, moon = bodies.moon, illum = moon.phase.illum;
@@ -2047,23 +2056,27 @@
       });
       // Named stars bright enough to label.
       var named = [];
-      Object.keys(catalog.names).forEach(function(hip) { var idx = catalog.byHip[hip]; var mg = horizon.mags ? horizon.mags[idx] : catalog.mag[idx]; if (idx === undefined || mg > 2.6 || mg > limit || horizon.alts[idx] < 1) return; named.push({ name: catalog.names[hip], x: horizon.positions[idx * 3], y: horizon.positions[idx * 3 + 1], z: horizon.positions[idx * 3 + 2], mag: mg, alt: horizon.alts[idx], az: horizon.azs[idx] }); });
+      Object.keys(catalog.names).forEach(function(hip) { var idx = catalog.byHip[hip]; if (idx === undefined) return; var mg = horizon.mags ? horizon.mags[idx] : catalog.mag[idx]; if (mg > 2.6 || horizon.extMags[idx] > limit || horizon.alts[idx] < 1) return; named.push({ name: catalog.names[hip], x: horizon.positions[idx * 3], y: horizon.positions[idx * 3 + 1], z: horizon.positions[idx * 3 + 2], mag: mg, alt: horizon.alts[idx], az: horizon.azs[idx] }); });
       named.sort(function(a, b) { return a.mag - b.mag; });
       // Sun, Moon, planets.
       var sunPos = meteorDirection(bodies.sun.az, sunAlt, 560);
       sunSprite.position.set(sunPos.x, sunPos.y, sunPos.z); sunDisc.position.copy(sunSprite.position);
       sunSprite.visible = sunDisc.visible = res.layers.sunMoon && !deepTime && sunAlt > -1.5;
+      var sunExt = extinctionMag(sunAlt), sunG = Math.max(0.55, 1 - sunExt * 0.09), sunB = Math.max(0.25, 1 - sunExt * 0.2);
+      sunSprite.material.color.setRGB(1, 0.945 * sunG, 0.76 * sunB); sunDisc.material.color.setRGB(1, sunG, sunB);
       var moonPos = meteorDirection(moon.az, moon.alt, 560);
       moonSprite.position.set(moonPos.x, moonPos.y, moonPos.z); moonHalo.position.copy(moonSprite.position);
       moonMirror.position.set(moonPos.x, -moonPos.y, moonPos.z);
       moonSprite.visible = res.layers.sunMoon && !deepTime && moon.alt > -1; moonHalo.visible = moonSprite.visible && dark > 0.1; moonMirror.visible = moonSprite.visible && moon.alt > 1;
-      moonHalo.material.opacity = illum * 0.5 * dark; moonMirror.material.opacity = illum * 0.6 * dark;
+      var moonExt = extinctionMag(moon.alt);
+      moonSprite.material.color.setRGB(1, Math.max(0.62, 1 - moonExt * 0.1), Math.max(0.38, 1 - moonExt * 0.22));
+      moonHalo.material.opacity = illum * 0.5 * dark * Math.pow(10, -0.4 * moonExt); moonMirror.material.opacity = illum * 0.6 * dark;
       if (Math.abs(illum - moonPhaseDrawn) > 0.004) { drawMoon(illum, moon.phase.waxing); moonPhaseDrawn = illum; }
       var planetMag = { mercury: 0.2, venus: -4.1, mars: 0.4, jupiter: -2.3, saturn: 0.7 };
       bodies.planets.forEach(function(p) {
         var s = planetSprites[p.id], pos = meteorDirection(p.az, p.alt, 560);
         s.position.set(pos.x, pos.y, pos.z);
-        var vis = Math.max(0, Math.min(1, (limit - planetMag[p.id] + 0.5) * 0.4)) * Math.min(1, Math.max(0, p.alt + 0.5));
+        var vis = Math.max(0, Math.min(1, (limit - (planetMag[p.id] + extinctionMag(p.alt)) + 0.5) * 0.4)) * Math.min(1, Math.max(0, p.alt + 0.5));
         s.visible = res.layers.planets && !deepTime && vis > 0.02 && p.alt > -0.5; s.material.opacity = vis;
       });
       // Shower radiant.
@@ -2079,7 +2092,7 @@
       DEEP_SKY.forEach(function(obj, i) {
         var sp = deepSprites[i], p = horizonPoint(obj.ra, obj.dec, lst, res.lat, d, 560);
         sp.position.set(p.x, p.y, p.z);
-        var vis = Math.max(0, Math.min(1, (limit - obj.mag + 1.2) * 0.35)) * dark;
+        var vis = Math.max(0, Math.min(1, (limit - (obj.mag + extinctionMag(p.alt)) + 1.2) * 0.35)) * dark;
         sp.visible = res.layers.deepSky && !deepTime && p.alt > 0.5 && vis > 0.03; sp.material.opacity = vis * 0.9;
         sp.userData.alt = p.alt; sp.userData.az = p.az; sp.userData.mag = obj.mag; sp.userData.name = obj.name;
         if (sp.visible) deepVisible.push(obj.id);
@@ -2097,7 +2110,9 @@
       eclipticLine.visible = equatorLine.visible = res.layers.guides;
       var poleAlt = Math.abs(res.lat), polePos = meteorDirection(res.lat >= 0 ? 0 : 180, poleAlt, 300);
       poleMarker.position.set(polePos.x, polePos.y, polePos.z); poleMarker.lookAt(0, 0, 0); poleMarker.visible = res.layers.guides && poleAlt > 0.5;
-      current = { deepTime: deepTime, mags: horizon.mags, trailStars: trailStars, deepVisible: deepVisible, eclTop: eclTop, eqTop: eqTop, pole: { az: res.lat >= 0 ? 0 : 180, alt: poleAlt },
+      var starsVisible = 0;
+      for (var vi = 0; vi < catalog.count; vi++) if (horizon.alts[vi] > 0 && horizon.extMags[vi] <= limit) starsVisible++;
+      current = { deepTime: deepTime, mags: horizon.mags, starsVisible: starsVisible, trailStars: trailStars, deepVisible: deepVisible, eclTop: eclTop, eqTop: eqTop, pole: { az: res.lat >= 0 ? 0 : 180, alt: poleAlt },
         horizon: horizon, utcMs: utcMs, lst: lst, d: d, sun: bodies.sun, moon: moon, planets: bodies.planets, limit: limit, dark: dark, starsUp: horizon.up, linesDrawn: drawn, centroids: centroids, named: named, radiant: radiant, rate: rate, meteorCount: Math.min(12, Math.round(rate / 6)), aurora: m.auroraOverride || auroraGeometry(res.lat, res.lon, res.aurora) };
       updateAurora();
       clock.textContent = typeof m.formatClock === 'function' ? m.formatClock(utcMs, playing()) : new Date(utcMs).toISOString();
@@ -2207,7 +2222,7 @@
       var ndc = new THREE.Vector3(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1, 0.5).unproject(camera).normalize();
       var dir = { x: ndc.x, y: ndc.y, z: ndc.z }, res = model.resolved, catalog = model.catalog, horizon = current.horizon, candidates = [];
       if (res.layers.stars) for (var i = 0; i < catalog.count; i++) {
-        if (horizon.alts[i] <= 0 || (current.mags ? current.mags[i] : catalog.mag[i]) > current.limit + 0.3) continue;
+        if (horizon.alts[i] <= 0 || horizon.extMags[i] > current.limit + 0.3) continue;
         var dot = (horizon.positions[i * 3] * dir.x + horizon.positions[i * 3 + 1] * dir.y + horizon.positions[i * 3 + 2] * dir.z) / 600;
         if (dot < 0.998) continue; // ~3.6° prefilter
         candidates.push({ kind: 'star', index: i, hip: catalog.hip[i], ra: catalog.ra[i], dec: catalog.dec[i], name: catalog.names[catalog.hip[i]] || ('HIP ' + catalog.hip[i]), mag: current.mags ? current.mags[i] : catalog.mag[i], ci: catalog.ci[i], con: catalog.codes[catalog.con[i]] || '', x: horizon.positions[i * 3], y: horizon.positions[i * 3 + 1], z: horizon.positions[i * 3 + 2], alt: horizon.alts[i], az: horizon.azs[i] });
@@ -2217,7 +2232,7 @@
       if (res.layers.deepSky) deepSprites.forEach(function(sp, i) { if (sp.visible) candidates.push({ kind: 'deepsky', id: DEEP_SKY[i].id, name: DEEP_SKY[i].name, ra: DEEP_SKY[i].ra, dec: DEEP_SKY[i].dec, type: DEEP_SKY[i].type, size: DEEP_SKY[i].size, mag: DEEP_SKY[i].mag, priority: 0.3, x: sp.position.x, y: sp.position.y, z: sp.position.z, alt: sp.userData.alt, az: sp.userData.az }); });
       var hit = identifyNearest(dir, candidates, 2.5);
       picked = hit ? { kind: hit.kind, id: hit.id, index: hit.index, name: hit.name, position: { x: hit.x, y: hit.y, z: hit.z } } : null;
-      var info = hit ? { kind: hit.kind, id: hit.id, hip: hit.hip, name: hit.name, mag: hit.mag, ci: hit.ci, ra: hit.ra, dec: hit.dec, pattern: hit.hip ? (HIP_TO_PATTERN[hit.hip] || undefined) : undefined, colorClass: hit.kind === 'star' ? starColorClass(hit.ci) : undefined, constellation: hit.con ? (CONSTELLATION_NAMES[hit.con] || hit.con) : undefined, type: hit.type, size: hit.size, illum: hit.illum, phase: hit.phase, alt: hit.alt, az: hit.az, angleDeg: hit.angleDeg } : null;
+      var info = hit ? { kind: hit.kind, id: hit.id, hip: hit.hip, name: hit.name, mag: hit.mag, extinction: Number.isFinite(hit.alt) ? extinctionMag(hit.alt) : undefined, ci: hit.ci, ra: hit.ra, dec: hit.dec, pattern: hit.hip ? (HIP_TO_PATTERN[hit.hip] || undefined) : undefined, colorClass: hit.kind === 'star' ? starColorClass(hit.ci) : undefined, constellation: hit.con ? (CONSTELLATION_NAMES[hit.con] || hit.con) : undefined, type: hit.type, size: hit.size, illum: hit.illum, phase: hit.phase, alt: hit.alt, az: hit.az, angleDeg: hit.angleDeg } : null;
       if (hooks && hooks.onPick) hooks.onPick(info);
       draw();
       return info;
@@ -2249,7 +2264,7 @@
     host.__observatoryLookAt = lookAt; // test/tooling hook, removed on dispose
     host.__observatoryDebug = function() {
       var c = current || {};
-      return { ready: !stopped && !lost, catalog: model ? model.catalog.count : 0, catalogSource: model ? model.catalog.source : '', fallback: !!(model && model.catalog.fallback), starsUp: c.starsUp || 0, linesDrawn: c.linesDrawn || 0, linesVisible: lineGroup.visible,
+      return { ready: !stopped && !lost, catalog: model ? model.catalog.count : 0, catalogSource: model ? model.catalog.source : '', fallback: !!(model && model.catalog.fallback), starsUp: c.starsUp || 0, starsVisible: c.starsVisible || 0, linesDrawn: c.linesDrawn || 0, linesVisible: lineGroup.visible,
         utc: c.utcMs ? new Date(c.utcMs).toISOString() : null, lst: c.lst, limit: c.limit, dark: c.dark,
         sun: c.sun ? { alt: c.sun.alt, az: c.sun.az } : null, moon: c.moon ? { alt: c.moon.alt, az: c.moon.az, illum: c.moon.phase.illum } : null,
         planets: c.planets ? c.planets.map(function(p) { return { id: p.id, alt: p.alt, az: p.az, visible: planetSprites[p.id].visible }; }) : [],
@@ -2258,6 +2273,10 @@
         drift: model ? model.resolved.drift : 0, deepTime: !!c.deepTime, withMotion: model ? model.catalog.withMotion : 0,
         trails: trailLines.visible, trailStars: c.trailStars || 0, trailHours: model ? model.resolved.trailHours : 0,
         skyMoonGlow: skyUniforms.moonGlow.value, skySunAlt: skyUniforms.sunAlt.value,
+        // The shader's brightness input is the CPU extinction model, not a copy of it.
+        starMagWired: !!(c.horizon && c.horizon.extMags && starGeometry.attributes.aMag.array[0] === c.horizon.extMags[0]),
+        sunExt: c.sun ? extinctionMag(c.sun.alt) : 0, moonExt: c.moon ? extinctionMag(c.moon.alt) : 0,
+        moonTint: [moonSprite.material.color.r, moonSprite.material.color.g, moonSprite.material.color.b],
         deepSky: c.deepVisible || [], guides: eclipticLine.visible, poleVisible: poleMarker.visible, moonFace: !!moonFace, picked: picked ? { kind: picked.kind, id: picked.id, name: picked.name } : null,
         brightStar: c.named && c.named.length ? { name: c.named[0].name, alt: c.named[0].alt, az: c.named[0].az } : null,
         spots: (function() { // canvas-pixel positions of a few objects, for tests and tooling
@@ -9602,6 +9621,9 @@
                       : __alloT('stem.astronomy.obs_ease_binocular', 'binoculars; a small telescope shows more.'),
                     pickedAdvice.tooBright ? h('span', { style: { color: '#fca5a5' } }, ' ' + __alloT('stem.astronomy.obs_ease_too_bright', 'A Bortle') + ' ' + pickedAdvice.bortle + ' ' + __alloT('stem.astronomy.obs_ease_too_bright_tail', 'sky is probably too bright for it tonight.')) : null,
                     pickedAdvice.surfaceBrightness ? h('span', null, ' ' + __alloT('stem.astronomy.obs_ease_extended', 'Its light is spread out, averaging about') + ' ' + pickedAdvice.surfaceBrightness.toFixed(1) + ' ' + __alloT('stem.astronomy.obs_ease_per_arcsec', 'magnitudes per square arcsecond, so it looks fainter than its total magnitude suggests. Surface brightness, not magnitude, decides whether you see an extended object.')) : null) : null,
+                  Number.isFinite(picked.extinction) && picked.extinction >= 0.25 ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
+                    h('strong', { style: { color: '#fdba74' } }, __alloT('stem.astronomy.obs_extinction_title', 'Through the air') + ': '),
+                    __alloT('stem.astronomy.obs_extinction_lead', 'dimmed by about') + ' ' + picked.extinction.toFixed(1) + ' ' + __alloT('stem.astronomy.obs_extinction_tail', 'magnitudes at this altitude. Light from something low crosses far more air than light from overhead, so it fades and reddens. The same object looks brighter once it climbs.')) : null,
                   pickedWhen ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
                     h('strong', { style: { color: '#a5f3fc' } }, __alloT('stem.astronomy.obs_when_title', 'Tonight') + ': '),
                     pickedWhen.neverRises ? __alloT('stem.astronomy.obs_when_never', 'never rises at this site.')

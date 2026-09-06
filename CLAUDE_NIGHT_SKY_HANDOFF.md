@@ -186,15 +186,45 @@ The remaining numeric claims were checked and stand: 61 Cygni does cover more th
 
 - Unit suite 65.
 
+## Enhancement slice 13 (2026-09-05): one atmosphere, shared by both views
+The 2D Sky Map dimmed objects by Kasten-Young airmass. The 3D observatory faded
+stars with `clamp(alt/12)`, an invented ramp with no physics in it, so the two
+views of the same sky disagreed about what you could see. There is now one model.
+
+- `extinctionMag(altDeg, k)` returns magnitudes of dimming relative to the zenith:
+  0 overhead, 0.18 at 30°, 0.83 at 10°, 1.7 at 5°, and several magnitudes in the
+  last degree. `atmosphericVisibility` (the 2D map's opacity helper) is now that
+  same function expressed as transmission, and a test asserts the identity, so the
+  two views cannot drift apart again.
+- `catalogHorizon` returns `extMags` beside `mags`: catalogue magnitude, plus
+  space motion in deep time, plus the air. That one array is what the star shader
+  draws with, what the label cut tests against, and what click-identify filters on
+  — a browser test asserts the shader's attribute is literally the CPU array
+  (`starMagWired`), not a second curve rewritten in GLSL.
+- Because brightness now flows through magnitude, both alpha **and** point size
+  respond, so the field visibly thins toward the horizon instead of fading by a
+  fixed 30%. Twinkle keeps its own altitude ramp, which is real scintillation and
+  is now stronger low down (0.30 at the horizon against 0.075 overhead).
+- Planets and deep-sky glows fade through the same air, which is why nobody
+  observes M7 at five degrees. A low Sun and a low Moon are also **reddened**, the
+  same physics that makes a sunset orange; `scratch/observatory-low-sun.png` from
+  the browser suite shows the deep-orange disc on the treeline.
+- Identifying something low now says what the air is costing it: "Through the air:
+  dimmed by about 1.1 magnitudes at this altitude…", hidden above 0.25 mag (~25°).
+  A pick saved before this slice has no `extinction` field and prints nothing
+  rather than NaN, which a test pins.
+- Unit suite 69; browser suite 15.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
 - Star trails during time-lapse (accumulation buffer) would be a striking addition but needs a render-target pipeline.
-- Proper motion is not applied (arcminute scale for a few fast stars over decades); refraction is now applied.
+- Refraction, proper motion and atmospheric extinction are all applied. The extinction coefficient is a single representative value (0.18 mag/airmass); a per-site or per-colour coefficient would be the next refinement, and reddening is currently applied to the Sun and Moon only, not to each star.
 - Aurora oval boundaries are a teaching approximation (Kp-like level → boundary latitude); the NOAA route is the real-data path.
 - Landscapes are procedural; a surveyed horizon for a named site would need elevation data.
 - The Sky Map tab still uses its own 6-site list (now linked to the Observatory); unifying the lists is a small follow-up.
-- Translations for the ~140 new `obs_*` keys have not been added to language packs.
+- Translations for the ~238 `obs_*` keys have not been added to language packs.
+- **Not mine, but found here:** `tests/astronomy_season_sun_path.test.js` fails two tests at HEAD, independent of any observatory work (polar day reports `data-solar-state="normal"`, and a "grazing day" case returns 526 minutes of daylight where the test expects under 5). Verified by running that suite against HEAD's own copy of the tool.
 - Slice 1 (2026-09-04) was swept into another session's deploy commit f238731dd and is live on the CDN; the 34 leftover strings landed in 7c7990f6e (unpushed). Slice 2 is uncommitted at the time of writing.
 
 ## Local tooling notes (this session)

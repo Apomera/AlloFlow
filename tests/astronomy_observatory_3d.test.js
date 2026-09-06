@@ -1049,6 +1049,84 @@ describe('Observatory tab rendering', () => {
     interval.mockRestore(); timeout.mockRestore();
   });
 
+  // --- atmospheric extinction ---------------------------------------------
+  it('dims by airmass, with one derivation shared by the 2D map and the 3D sky', () => {
+    expect(sky.extinctionMag(90)).toBeCloseTo(0, 6);
+    expect(sky.extinctionMag(30)).toBeCloseTo(0.18, 2);
+    expect(sky.extinctionMag(10)).toBeGreaterThan(0.75);
+    expect(sky.extinctionMag(10)).toBeLessThan(0.9);
+    expect(sky.extinctionMag(5)).toBeGreaterThan(1.5);
+    // Monotone from overhead down to the horizon.
+    let previous = -1;
+    for (let alt = 90; alt >= 1; alt -= 1) {
+      const value = sky.extinctionMag(alt);
+      expect(value).toBeGreaterThanOrEqual(previous);
+      previous = value;
+    }
+    // The coefficient scales the whole curve, so a hazier site is one number.
+    expect(sky.extinctionMag(30, 0.36)).toBeCloseTo(sky.extinctionMag(30) * 2, 6);
+    // Nonsense lands at the horizon rather than NaN.
+    expect(sky.extinctionMag('rubbish')).toBe(sky.extinctionMag(0.5));
+    // The 2D sky map's opacity helper is now this same model, as transmission.
+    for (const alt of [90, 45, 20, 8, 2]) {
+      expect(sky.atmosphericVisibility(alt, 1, 0)).toBeCloseTo(Math.pow(10, -0.4 * sky.extinctionMag(alt)), 10);
+    }
+  });
+
+  it('carries the extinguished magnitude beside the catalogue one', () => {
+    const catalog = sky.normalizeCatalog(JSON.parse(readFileSync(ASSET, 'utf8')));
+    const bodies = sky.observatoryBodies(Date.UTC(2026, 0, 15, 2), MOOSEHEAD.lat, MOOSEHEAD.lon);
+    const horizon = sky.catalogHorizon(catalog, bodies.lst, MOOSEHEAD.lat, bodies.d, 600);
+    expect(horizon.extMags).toBeTruthy();
+    expect(horizon.extMags.length).toBe(catalog.count);
+    let high = 0, low = 0;
+    for (let i = 0; i < catalog.count; i++) {
+      if (horizon.alts[i] <= 0) continue;
+      expect(horizon.extMags[i]).toBeCloseTo(catalog.mag[i] + sky.extinctionMag(horizon.alts[i]), 4);
+      expect(horizon.extMags[i]).toBeGreaterThanOrEqual(catalog.mag[i] - 1e-6); // the air never brightens
+      if (horizon.alts[i] > 60) high++;
+      if (horizon.alts[i] < 5) low++;
+    }
+    expect(high).toBeGreaterThan(0);
+    expect(low).toBeGreaterThan(0);
+    // Fewer stars survive the limiting magnitude than stand above the horizon.
+    const limit = sky.limitingMagnitude(4, -30, -20, 0);
+    let visible = 0;
+    for (let i = 0; i < catalog.count; i++) if (horizon.alts[i] > 0 && horizon.extMags[i] <= limit) visible++;
+    expect(visible).toBeGreaterThan(0);
+    expect(visible).toBeLessThan(horizon.up);
+  });
+
+  it('applies space motion before the air in deep time', () => {
+    const catalog = sky.normalizeCatalog(JSON.parse(readFileSync(ASSET, 'utf8')));
+    const bodies = sky.observatoryBodies(Date.UTC(2026, 0, 15, 2), MOOSEHEAD.lat, MOOSEHEAD.lon);
+    const drifted = sky.catalogHorizon(catalog, bodies.lst, MOOSEHEAD.lat, bodies.d, 600, 50000);
+    expect(drifted.mags).toBeTruthy();
+    let checked = 0;
+    for (let i = 0; i < catalog.count; i += 97) {
+      if (drifted.alts[i] <= 0) continue;
+      expect(drifted.extMags[i]).toBeCloseTo(drifted.mags[i] + sky.extinctionMag(drifted.alts[i]), 4);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(20);
+  });
+
+  it('says what the air is costing a low object and stays quiet overhead', () => {
+    const base = { kind: 'star', name: 'Sirius', hip: 32349, mag: -1.44, ci: 0.01, colorClass: 'blue-white', constellation: 'Canis Major', az: 150 };
+    const state = { obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' };
+    const low = new DOMParser().parseFromString(render({ ...state, obsPicked: { ...base, alt: 8, extinction: sky.extinctionMag(8) } }), 'text/html');
+    const lowText = low.body.textContent;
+    expect(lowText).toContain('Through the air');
+    expect(lowText).toContain('dimmed by about ' + sky.extinctionMag(8).toFixed(1));
+    expect(lowText).toContain('crosses far more air');
+    const high = new DOMParser().parseFromString(render({ ...state, obsPicked: { ...base, alt: 70, extinction: sky.extinctionMag(70) } }), 'text/html');
+    expect(high.body.textContent).not.toContain('Through the air');
+    // An older saved pick with no extinction field must not print NaN.
+    const legacy = new DOMParser().parseFromString(render({ ...state, obsPicked: { ...base, alt: 8 } }), 'text/html');
+    expect(legacy.body.textContent).not.toContain('NaN');
+    expect(legacy.body.textContent).not.toContain('Through the air');
+  });
+
   it('lists the observatory tab once and keeps the meteor tab intact', () => {
     const doc = new DOMParser().parseFromString(render(), 'text/html');
     const tabs = Array.from(doc.querySelectorAll('[role="tab"]')).map(el => el.textContent.trim());

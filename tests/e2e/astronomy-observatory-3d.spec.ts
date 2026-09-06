@@ -166,6 +166,30 @@ test('computes a real catalog sky from local assets for a fixed place and time',
   expect(errors).toEqual([]);
 });
 
+test('thins the sky near the horizon by atmospheric extinction', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, EVENING);
+  await expect.poll(async () => (await debug(sky)).catalog, { timeout: 60000 }).toBeGreaterThan(8000);
+  const info = await debug(sky);
+  // The magnitudes the shader draws with are the ones the CPU computed, not a
+  // second curve written in GLSL.
+  expect(info.starMagWired).toBe(true);
+  // Some stars stand above the horizon but are lost in the air near it.
+  expect(info.starsVisible).toBeGreaterThan(500);
+  expect(info.starsVisible).toBeLessThan(info.starsUp);
+  await sky.evaluate((el: any) => el.__observatoryLookAt(180, 4));
+  await page.screenshot({ path: 'scratch/observatory-horizon-murk.png', clip: (await sky.boundingBox())! });
+
+  // The same air reddens a setting Sun. Jump to sunset and face it.
+  await page.getByRole('button', { name: /^Jump to Sunset \d\d:\d\d$/ }).click();
+  await expect.poll(async () => (await debug(sky)).sun.alt).toBeGreaterThan(-1.5);
+  const low = await debug(sky);
+  expect(low.sunExt).toBeGreaterThan(4);
+  await sky.evaluate((el: any, az: number) => el.__observatoryLookAt(az, 3), low.sun.az);
+  await sky.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'scratch/observatory-low-sun.png', clip: (await sky.boundingBox())! });
+  expect(errors).toEqual([]);
+});
+
 test('place, hemisphere, daylight and time steps change the computed sky', async ({ page }) => {
   const { sky, errors } = await mountObservatory(page, EVENING);
   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
@@ -360,6 +384,8 @@ test('jump buttons land on the computed sunset, and the Sky Map hands its place 
   const atSunset = await debug(sky);
   expect(atSunset.sun.alt).toBeGreaterThan(-1.5);
   expect(atSunset.sun.alt).toBeLessThan(0.3);
+  // A Sun on the horizon is seen through tens of airmasses, and is drawn accordingly.
+  expect(atSunset.sunExt).toBeGreaterThan(2);
   await page.screenshot({ path: 'scratch/observatory-sunset.png', clip: (await sky.boundingBox())! });
   // Sky Map → Observatory hand-off.
   await page.evaluate(() => (window as any).__destroy());
