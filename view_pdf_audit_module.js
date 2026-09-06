@@ -4544,14 +4544,28 @@ function PdfAuditView(props) {
     } catch (_) {
     }
   };
+  const _visibleAuditRunSeqRef = useRef(0);
   const _beginVisibleAuditRun = (event, detail) => {
     _auditGateLog(event, detail);
     if (typeof setPdfAuditLoading === "function") setPdfAuditLoading(true);
     setPdfAuditResult((previous) => _viewAuditFallbackResult(previous, pendingPdfFile));
+    return ++_visibleAuditRunSeqRef.current;
   };
   const _restoreVisibleAuditAfterFailure = (snapshot) => {
     if (typeof setPdfAuditLoading === "function") setPdfAuditLoading(false);
     setPdfAuditResult(_viewAuditFallbackResult(snapshot, pendingPdfFile));
+  };
+  const _settleVisibleAuditRun = (seq, audit, label) => {
+    if (seq !== _visibleAuditRunSeqRef.current) {
+      _auditGateLog("audit " + label + " returned - superseded by a newer visible run, flag left to it", { seq, latest: _visibleAuditRunSeqRef.current });
+      return false;
+    }
+    if (typeof setPdfAuditLoading === "function") setPdfAuditLoading(false);
+    if (audit && typeof audit === "object") {
+      setPdfAuditResult((previous) => previous && !previous._choosing && !(previous.score === -1 && audit.score !== -1) ? previous : audit);
+    }
+    _auditGateLog("audit " + label + " returned - modal released its own loading flag", { seq, score: audit && typeof audit === "object" ? audit.score : null });
+    return true;
   };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
   const pdfModalRef = useRef(null);
@@ -8782,7 +8796,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
         setPdfFixMode("auto");
         const _auditChooserSnapshot = pdfAuditResult;
-        _beginVisibleAuditRun("audit ONE-CLICK started - loading asserted before clearing chooser", { docEpoch: _oneClickDocumentEpoch, freshRun: pdfDiagnosticFreshRun });
+        const _visibleRun = _beginVisibleAuditRun("audit ONE-CLICK started - loading asserted before clearing chooser", { docEpoch: _oneClickDocumentEpoch, freshRun: pdfDiagnosticFreshRun });
         addToast(t("toasts.auditing_remediating_pdf"), "info");
         let _audit = null;
         try {
@@ -8799,6 +8813,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           addToast(t("toasts.audit_error_stopped") || "The accessibility audit did not complete, so remediation was not started. Retry the audit and try again.", "error");
           return;
         }
+        if (!_oneClickDocumentIsCurrent()) return;
+        _settleVisibleAuditRun(_visibleRun, _audit, "ONE-CLICK");
         if (!_viewAuditCanStartRemediation(_audit)) {
           if (!_oneClickDocumentIsCurrent()) return;
           addToast(t("toasts.audit_error_stopped") || "The accessibility audit could not complete, so remediation was not started. Use Retry Audit to try again.", "error");
@@ -9266,7 +9282,7 @@ Return ONLY JSON:
       const _auditSnapshot = pdfAuditResult;
       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
       const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_auditEpoch);
-      _beginVisibleAuditRun("audit START clicked - loading asserted before clearing chooser", { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
+      const _visibleRun = _beginVisibleAuditRun("audit START clicked - loading asserted before clearing chooser", { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
       addToast(t("toasts.auditing_remediating_pdf"), "info");
       try {
         const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
@@ -9277,8 +9293,9 @@ Return ONLY JSON:
         if (!_result) {
           _restoreVisibleAuditAfterFailure(_auditSnapshot);
           addToast(t("toasts.audit_retryable_error") || "The audit did not complete. Please retry.", "error");
-        } else if (_result?.score === -1) {
-          addToast(t("toasts.audit_retryable_error") || "The audit could not complete. Please retry.", "error");
+        } else {
+          _settleVisibleAuditRun(_visibleRun, _result, "START");
+          if (_result?.score === -1) addToast(t("toasts.audit_retryable_error") || "The audit could not complete. Please retry.", "error");
         }
       } catch (error) {
         if (!_auditCurrent()) {
@@ -9670,7 +9687,7 @@ Return ONLY JSON:
       const _auditSnapshot = pdfAuditResult;
       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
       const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_auditEpoch);
-      _beginVisibleAuditRun("audit RETRY clicked - loading asserted before clearing result (fresh, skipCache)", { docEpoch: _auditEpoch });
+      const _visibleRun = _beginVisibleAuditRun("audit RETRY clicked - loading asserted before clearing result (fresh, skipCache)", { docEpoch: _auditEpoch });
       addToast(t("toasts.retrying_audit"), "info");
       try {
         const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true });
@@ -9681,8 +9698,9 @@ Return ONLY JSON:
         if (!_result) {
           _restoreVisibleAuditAfterFailure(_auditSnapshot);
           addToast(t("toasts.audit_retryable_error") || "The audit retry did not complete. Please try again.", "error");
-        } else if (_result?.score === -1) {
-          addToast(t("toasts.audit_retryable_error") || "The audit retry could not complete. Please try again.", "error");
+        } else {
+          _settleVisibleAuditRun(_visibleRun, _result, "RETRY");
+          if (_result?.score === -1) addToast(t("toasts.audit_retryable_error") || "The audit retry could not complete. Please try again.", "error");
         }
       } catch (error) {
         if (!_auditCurrent()) {

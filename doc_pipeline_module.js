@@ -13209,6 +13209,14 @@ var createDocPipeline = function(deps) {
     // Fresh attempt: clear any stale outage flag from a PRIOR failed attempt so a recovered
     // network/CDN isn't still reported as down. (Dead <script> corpses are removed on failure
     // below, so this retry's "already injected" check can't wait the full timeout on one.)
+    // (2026-09-06) A chain that just failed is not retried for 45s. One audit calls this three or
+    // four times for pdf.js alone; with every mirror blocked (Gemini Canvas CSP) each call re-ran
+    // the full 3 × 12s poll, so a 1 KB document spent ~2 minutes on the loading screen — a third of
+    // it AFTER the scored result existed. A blip still self-heals: the memo expires.
+    try {
+      const _downAt = typeof window !== 'undefined' && window.__alloflowCdnDown && window.__alloflowCdnDown[label];
+      if (typeof _downAt === 'number' && Date.now() - _downAt < 45000) return Promise.resolve(false);
+    } catch (_) {}
     try { if (typeof window !== 'undefined' && window.__alloflowCdnDown) delete window.__alloflowCdnDown[label]; } catch (_) {}
     const p = (async () => {
       // Another path may have already injected this script — wait for its global first.
@@ -13224,7 +13232,7 @@ var createDocPipeline = function(deps) {
         try { warnLog('[CDN] ' + label + ' failed from ' + list[k] + (k < list.length - 1 ? ' — trying fallback' : '')); } catch (_) {}
       }
       try {
-        if (typeof window !== 'undefined') { window.__alloflowCdnDown = window.__alloflowCdnDown || {}; window.__alloflowCdnDown[label] = true; }
+        if (typeof window !== 'undefined') { window.__alloflowCdnDown = window.__alloflowCdnDown || {}; window.__alloflowCdnDown[label] = Date.now(); }
         warnLog('[CDN] ' + label + ' unavailable from all ' + list.length + ' source(s) — the dependent feature will degrade (network/CDN blocked?).');
         // Don't permanently memoize the failure: drop the cached false-promise so a later call
         // (after the network/CDN recovers) actually RETRIES instead of returning this resolved-
@@ -18467,11 +18475,24 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       // When the source PDF ships a tag tree (Tier 8), we splice its headings
       // into the minimal HTML so axe-baseline credits the existing structure
       // instead of penalizing it as missing.
+      // (2026-09-06, field: "the audit UI keeps running after the audit completed") Everything from
+      // the first publish above to _finishAuditUi below runs with pdfAuditLoading still TRUE and a
+      // scored result already in state. Any await in this window that never settles — a CDN
+      // <script> that neither loads nor errors, an engine that never answers — parked the modal on
+      // "Checking your document…" for good, with the finished audit sitting behind it (reproduced
+      // in Chromium with one stalled axe-core mirror). The baseline only refines the score, so the
+      // whole window is bounded; a stalled engine degrades to _baselineAxeFailed exactly like a
+      // failed one. The abandoned flag keeps a late-finishing baseline from mutating the object the
+      // caller already holds (it may be mid-remediation by then).
+      const _AUDIT_BASELINE_BUDGET_MS = 180000;
+      let _baselineAbandoned = false;
       try {
+        await _withTimeout((async () => {
         // Use the passed-in base64 when skipping UI (batch mode); otherwise the run-entry
         // snapshot (S1 — the bound var could be another call's document by now).
         const _base64ForBaseline = _skipUi ? base64Data : _runBase64;
         const detBaseline = _imageInputMime ? null : await extractPdfTextDeterministic(_base64ForBaseline);
+        if (_baselineAbandoned) return;
         const rawText = (detBaseline && detBaseline.fullText) || '';
         // Tier 8 deep wire: use struct-tree-aware HTML when tags exist; falls
         // back to flat-paragraph rendering when untagged (same as before).
@@ -18498,6 +18519,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
           runAxeAudit(minimalHtml),
           runEqualAccessAudit(minimalHtml).catch(() => null),
         ]);
+        if (_baselineAbandoned) return;
         if (baselineAxe) {
           const _eaOk = baselineEa && typeof baselineEa.score === 'number';
           const deterministicBaseline = _eaOk ? Math.min(baselineAxe.score, baselineEa.score) : baselineAxe.score;
@@ -18542,7 +18564,9 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
             }));
           }
         }
+        })(), _AUDIT_BASELINE_BUDGET_MS, 'deterministic baseline audit');
       } catch (axeErr) {
+        _baselineAbandoned = true;
         warnLog('[PDF Audit] Baseline axe-core failed (non-blocking):', axeErr);
         // Dual-engine guarantee broken at baseline — flag so Fix & Verify can warn.
         triangulated._baselineAxeFailed = true;
@@ -20314,13 +20338,25 @@ HTML section ${chunkNum}/${chunks.length}:
             setTimeout(() => { clearInterval(wait); reject(new Error('axe-core load timeout after 10s from ' + _AXE_CDN_URL + ' (previous script tag exists but window.axe never appeared — CDN may have returned corrupted JS)')); }, 10000);
             return;
           }
+          // A mirror that neither loads nor errors (a stalled proxy, a sandbox that drops the
+          // request without an error event) used to park this promise for good — and the audit
+          // with it, because the baseline awaits this while pdfAuditLoading is still true. The
+          // sibling branch above always had a 10s cap; this one gets 20s for the three-mirror
+          // chain. The pending tag is removed on timeout so a later call does not find a corpse
+          // and wait on it again.
+          let _pendingScript = null;
+          const _loadDeadline = setTimeout(() => {
+            try { if (_pendingScript) _pendingScript.remove(); } catch (_) {}
+            reject(new Error('axe-core load timeout after 20s — no mirror answered (' + _AXE_CDN_URLS.join(', ') + ')'));
+          }, 20000);
           const tryAt = (i) => {
-            if (i >= _AXE_CDN_URLS.length) { reject(new Error('Failed to load axe-core from all ' + _AXE_CDN_URLS.length + ' CDN mirrors — check network, corporate proxy, or adblock')); return; }
+            if (i >= _AXE_CDN_URLS.length) { clearTimeout(_loadDeadline); reject(new Error('Failed to load axe-core from all ' + _AXE_CDN_URLS.length + ' CDN mirrors — check network, corporate proxy, or adblock')); return; }
             const script = document.createElement('script');
             script.src = _AXE_CDN_URLS[i];
             script.setAttribute('data-axe-core', 'true');
-            script.onload = () => resolve();
+            script.onload = () => { clearTimeout(_loadDeadline); resolve(); };
             script.onerror = () => { try { script.remove(); } catch (_) {} tryAt(i + 1); };
+            _pendingScript = script;
             document.head.appendChild(script);
           };
           tryAt(0);
@@ -20377,11 +20413,14 @@ HTML section ${chunkNum}/${chunks.length}:
           iframeDoc.head.appendChild(axeScript);
           resolve(); // inline scripts execute synchronously on append
         } else {
+          // Same stall guard as the document-level load above: an iframe script that never
+          // reports back must not hold the audit open (the frame itself is torn down in finally).
+          const _injectDeadline = setTimeout(() => reject(new Error('axe-core iframe injection timeout after 20s — no mirror answered')), 20000);
           const tryAt = (i) => {
-            if (i >= _AXE_CDN_URLS.length) { reject(new Error('Failed to inject axe-core into iframe from all ' + _AXE_CDN_URLS.length + ' CDN mirrors (inline cache empty AND iframe script loads failed — check CORS / CSP / proxy)')); return; }
+            if (i >= _AXE_CDN_URLS.length) { clearTimeout(_injectDeadline); reject(new Error('Failed to inject axe-core into iframe from all ' + _AXE_CDN_URLS.length + ' CDN mirrors (inline cache empty AND iframe script loads failed — check CORS / CSP / proxy)')); return; }
             const s = iframeDoc.createElement('script');
             s.src = _AXE_CDN_URLS[i];
-            s.onload = () => resolve();
+            s.onload = () => { clearTimeout(_injectDeadline); resolve(); };
             s.onerror = () => tryAt(i + 1);
             iframeDoc.head.appendChild(s);
           };

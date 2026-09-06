@@ -4539,6 +4539,7 @@ function PdfAuditView(props) {
   // pipeline's later loading write could arrive only after the modal had unmounted.
   // Assert loading synchronously before removing the chooser/result owner. This is
   // deliberately shared by Run Audit, Retry Audit, and Make Accessible.
+  const _visibleAuditRunSeqRef = useRef(0);
   const _beginVisibleAuditRun = (event, detail) => {
     _auditGateLog(event, detail);
     if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(true);
@@ -4552,10 +4553,35 @@ function PdfAuditView(props) {
     // still attached. The render gate skips _choosing while pdfAuditLoading is true, so a
     // healthy run still shows the spinner exactly as before.
     setPdfAuditResult((previous) => _viewAuditFallbackResult(previous, pendingPdfFile));
+    // The sequence number lets the run that returns tell whether it is still the latest visible
+    // run this modal started (see _settleVisibleAuditRun).
+    return ++_visibleAuditRunSeqRef.current;
   };
   const _restoreVisibleAuditAfterFailure = (snapshot) => {
     if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(false);
     setPdfAuditResult(_viewAuditFallbackResult(snapshot, pendingPdfFile));
+  };
+  // (2026-09-06, field: "the audit UI keeps running after the audit completed") The pipeline
+  // clears pdfAuditLoading on every exit, but that clear rides a run token and the host binding
+  // the pipeline captured at entry, and every recurrence of "sat on the audit spinner after the
+  // audit finished" (08-16, 08-18, 08-23, 09-04, today) was some new way for that hand-off to
+  // miss THIS modal. The modal started the run and is holding its result in hand, so it releases
+  // its own flag. A newer visible run owns the flag if it began after this one - then this is a
+  // no-op and the flag is left to that run.
+  const _settleVisibleAuditRun = (seq, audit, label) => {
+    if (seq !== _visibleAuditRunSeqRef.current) {
+      _auditGateLog('audit ' + label + ' returned - superseded by a newer visible run, flag left to it', { seq, latest: _visibleAuditRunSeqRef.current });
+      return false;
+    }
+    if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(false);
+    if (audit && typeof audit === 'object') {
+      // Keep whatever the pipeline already published (it is this same audit, possibly richer);
+      // install the returned audit only when the host still shows the chooser, or a failed audit
+      // that this run has just superseded.
+      setPdfAuditResult((previous) => (previous && !previous._choosing && !(previous.score === -1 && audit.score !== -1)) ? previous : audit);
+    }
+    _auditGateLog('audit ' + label + ' returned - modal released its own loading flag', { seq, score: audit && typeof audit === 'object' ? audit.score : null });
+    return true;
   };
   const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
 
@@ -8622,7 +8648,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // path): audit → Fix & Verify → auto-continue to target → autosave.
                     setPdfFixMode('auto');
                     const _auditChooserSnapshot = pdfAuditResult;
-                    _beginVisibleAuditRun('audit ONE-CLICK started - loading asserted before clearing chooser', { docEpoch: _oneClickDocumentEpoch, freshRun: pdfDiagnosticFreshRun });
+                    const _visibleRun = _beginVisibleAuditRun('audit ONE-CLICK started - loading asserted before clearing chooser', { docEpoch: _oneClickDocumentEpoch, freshRun: pdfDiagnosticFreshRun });
                     addToast(t('toasts.auditing_remediating_pdf'), 'info');
                     // Capture the audit result and hand it DIRECTLY to the fix. fixAndVerifyPdf
                     // REQUIRES an audit result and otherwise reads it from React state (pdfAuditResult),
@@ -8646,6 +8672,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       addToast(t('toasts.audit_error_stopped') || 'The accessibility audit did not complete, so remediation was not started. Retry the audit and try again.', 'error');
                       return;
                     }
+                    if (!_oneClickDocumentIsCurrent()) return;
+                    _settleVisibleAuditRun(_visibleRun, _audit, 'ONE-CLICK');
                     if (!_viewAuditCanStartRemediation(_audit)) {
                       if (!_oneClickDocumentIsCurrent()) return;
                       addToast(t('toasts.audit_error_stopped') || 'The accessibility audit could not complete, so remediation was not started. Use Retry Audit to try again.', 'error');
@@ -9280,7 +9308,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _auditSnapshot = pdfAuditResult;
                     const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
                     const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch);
-                    _beginVisibleAuditRun('audit START clicked - loading asserted before clearing chooser', { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
+                    const _visibleRun = _beginVisibleAuditRun('audit START clicked - loading asserted before clearing chooser', { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
                     addToast(t('toasts.auditing_remediating_pdf'), 'info');
                     try {
                       const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
@@ -9288,8 +9316,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       if (!_result) {
                         _restoreVisibleAuditAfterFailure(_auditSnapshot);
                         addToast(t('toasts.audit_retryable_error') || 'The audit did not complete. Please retry.', 'error');
-                      } else if (_result?.score === -1) {
-                        addToast(t('toasts.audit_retryable_error') || 'The audit could not complete. Please retry.', 'error');
+                      } else {
+                        _settleVisibleAuditRun(_visibleRun, _result, 'START');
+                        if (_result?.score === -1) addToast(t('toasts.audit_retryable_error') || 'The audit could not complete. Please retry.', 'error');
                       }
                     } catch (error) {
                       if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }
@@ -9924,7 +9953,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       const _auditSnapshot = pdfAuditResult;
                       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
                       const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch);
-                      _beginVisibleAuditRun('audit RETRY clicked - loading asserted before clearing result (fresh, skipCache)', { docEpoch: _auditEpoch });
+                      const _visibleRun = _beginVisibleAuditRun('audit RETRY clicked - loading asserted before clearing result (fresh, skipCache)', { docEpoch: _auditEpoch });
                       addToast(t('toasts.retrying_audit'), 'info');
                       try {
                         /* Retry means RETRY: a user pressing this after a cached replay wants a fresh audit, and the content-hash cache would otherwise hand back the identical result instantly (2026-08-10). */
@@ -9933,8 +9962,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (!_result) {
                           _restoreVisibleAuditAfterFailure(_auditSnapshot);
                           addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error');
-                        } else if (_result?.score === -1) {
-                          addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error');
+                        } else {
+                          _settleVisibleAuditRun(_visibleRun, _result, 'RETRY');
+                          if (_result?.score === -1) addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error');
                         }
                       } catch (error) {
                         if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }

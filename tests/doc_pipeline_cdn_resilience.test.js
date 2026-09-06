@@ -35,10 +35,11 @@ const makeLoader = makeLoaderFactory();
 function env(goodUrls, startLoaded) {
   let loaded = !!startLoaded;
   const win = {};
+  const counters = { injected: 0 }; // <script> tags created — proof of whether a chain was re-polled
   const doc = {
     querySelector: () => null,
     querySelectorAll: () => [], // failure path removes dead <script> corpses via this
-    createElement: () => ({
+    createElement: () => (counters.injected++, {
       setAttribute() {},
       _src: '',
       set src(v) { this._src = v; if (goodUrls.includes(v)) loaded = true; },
@@ -47,7 +48,7 @@ function env(goodUrls, startLoaded) {
     head: { appendChild() {} },
   };
   const api = makeLoader(doc, win, () => {});
-  return { win, isReady: () => loaded, load: api._loadCdnScript };
+  return { win, isReady: () => loaded, load: api._loadCdnScript, counters };
 }
 
 const FAST = { timeout: 40 }; // keep bad-source waits short in tests
@@ -72,18 +73,38 @@ describe('_loadCdnScript — resilient CDN loader', () => {
     const ok = await e.load('tesseract', ['https://a/lib.js', 'https://b/lib.js'], e.isReady, FAST);
     expect(ok).toBe(false);
     expect(e.win.__alloflowCdnDown).toBeTruthy();
-    expect(e.win.__alloflowCdnDown.tesseract).toBe(true);
+    // The flag is the failure time (2026-09-06): still truthy for "X unavailable" readers, and
+    // it lets the loader tell a chain that failed seconds ago from one that failed last hour.
+    expect(e.win.__alloflowCdnDown.tesseract).toBeTypeOf('number');
+    expect(Date.now() - e.win.__alloflowCdnDown.tesseract).toBeLessThan(5000);
   });
 
   it('retries after a total failure (does NOT memoize the failure for the session) and clears the flag on recovery', async () => {
     const e = env(['https://good/lib.js']); // only this URL flips the global ready
     const first = await e.load('pdfjs', ['https://bad/lib.js'], e.isReady, FAST); // all sources bad → fails
     expect(first).toBe(false);
-    expect(e.win.__alloflowCdnDown.pdfjs).toBe(true);
+    expect(e.win.__alloflowCdnDown.pdfjs).toBeTypeOf('number');
     // A later call (network recovered) must RETRY — the old code returned the cached false forever.
+    // "Later" is past the short failure memo (see the next test): age the recorded failure.
+    e.win.__alloflowCdnDown.pdfjs = Date.now() - 60000;
     const second = await e.load('pdfjs', ['https://good/lib.js'], e.isReady, FAST);
     expect(second).toBe(true);
     expect(e.win.__alloflowCdnDown.pdfjs).toBeFalsy(); // outage flag cleared on the successful retry
+  });
+
+  it('fails fast for 45s after a total failure instead of re-polling every mirror on every call', async () => {
+    // One audit asks for pdf.js three or four times. With every mirror blocked (Gemini Canvas
+    // CSP) each call re-ran the full 3 × 12s poll, so a 1 KB document sat ~2 minutes on the
+    // loading screen — a third of it after the scored result already existed (2026-09-06).
+    const e = env([]);
+    const first = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js'], e.isReady, FAST);
+    expect(first).toBe(false);
+    const injectedAfterFirst = e.counters.injected;
+    expect(injectedAfterFirst).toBe(2);
+    const second = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js'], e.isReady, FAST);
+    expect(second).toBe(false);
+    expect(e.counters.injected).toBe(injectedAfterFirst); // no new <script> tags: the chain was not re-polled
+    expect(e.win.__alloflowCdnDown.pdfjs).toBeTypeOf('number'); // the outage stays visible meanwhile
   });
 
   it('short-circuits when the global is already present (no injection needed)', async () => {
