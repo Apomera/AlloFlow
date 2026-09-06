@@ -1104,7 +1104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     { id: 'central_asian', color: '#17cfbb', colorLight: '#0c7368',
       name: 'Central Asian',
       span: 'Siberia to India and the Maldives',
-      note: 'The only flyway that crosses the Himalaya. Bar-headed geese fly over it at around 7,000 m in air holding a third of the oxygen of sea level.',
+      note: 'The only flyway that crosses the Himalaya. Bar-headed geese have been tracked over it as high as about 7,000 m, where the air holds roughly 40% of the oxygen available at sea level.',
       spine: [[95,72],[88,64],[80,55],[76,46],[75,38],[77,30],[78,22],[79,14],[76,8],[73,4]] },
     { id: 'east_asian_australasian', color: '#deaa08', colorLight: '#806204',
       name: 'East Asian / Australasian',
@@ -1847,7 +1847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       Object.assign({}, WORLD_FLYWAYS[6], {
         name: t('stem.migration.wfly_central_asian_name', 'Central Asian'),
         span: t('stem.migration.wfly_central_asian_span', 'Siberia to India and the Maldives'),
-        note: t('stem.migration.wfly_central_asian_note', 'The only flyway that crosses the Himalaya. Bar-headed geese fly over it at around 7,000 m in air holding a third of the oxygen of sea level.')
+        note: t('stem.migration.wfly_central_asian_note', 'The only flyway that crosses the Himalaya. Bar-headed geese have been tracked over it as high as about 7,000 m, where the air holds roughly 40% of the oxygen available at sea level.')
       }),
       Object.assign({}, WORLD_FLYWAYS[7], {
         name: t('stem.migration.wfly_east_asian_australasian_name', 'East Asian / Australasian'),
@@ -3883,7 +3883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
               h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, t('stem.migration.altitude_physiology', '\u2708\uFE0F Altitude Physiology')),
-              h('p', { className: 'text-[0.6875rem] mb-3 ' + textSecondary }, t('stem.migration.some_birds_migrate_at_extreme_altitude', 'Some birds migrate at extreme altitudes \u2014 Bar-headed Geese cross the Himalayas at 29,000 feet. Drag the slider to see how conditions change.')),
+              h('p', { className: 'text-[0.6875rem] mb-3 ' + textSecondary }, t('stem.migration.some_birds_migrate_at_extreme_altitude', 'Some birds migrate at extreme altitudes. The Bar-headed Goose is the famous case, and a good lesson in checking a famous number: it was long said to cross the Himalayas at 29,000 ft, but when the birds were fitted with satellite tags they topped out near 24,000 ft and spent most of the crossing below 18,000 ft, following the passes rather than the peaks. Drag the slider to see how conditions change.')),
               h('div', { className: 'mb-3' },
                 h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, '\u2B06\uFE0F ' + t('stem.migration.altitude_label', 'Altitude') + ': ' + altFeet.toLocaleString() + ' ' + t('stem.migration.ft_unit', 'ft') + ' (' + Math.round(altFeet * 0.3048) + ' m)'),
                 h('input', { type: 'range', min: 0, max: 37000, step: 500, value: altFeet,
@@ -5406,7 +5406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 [
                   { title: t('stem.migration.hyperphagia', 'Hyperphagia'), emoji: '\uD83C\uDF57', text: t('stem.migration.before_migration_birds_enter_a_feeding', 'Before migration, birds enter a feeding frenzy called hyperphagia, consuming food at 2-3 times their normal rate. A Blackpoll Warbler (12g) adds 8-12g of fat stores, nearly doubling its body weight. This fat is the fuel for non-stop flights of 2,000+ miles.') },
                   { title: t('stem.migration.organ_shrinkage', 'Organ Shrinkage'), emoji: '\uD83E\uDEC1', text: t('stem.migration.to_reduce_weight_migrating_birds_actua', 'To reduce weight, migrating birds actually shrink their digestive organs (intestines, liver, gizzard) by up to 40% before departure. Upon arrival at stopovers, they rapidly regrow these organs to refuel. This "phenotypic flexibility" is unique among vertebrates.') },
-                  { title: t('stem.migration.hemoglobin', 'Hemoglobin'), emoji: '\uD83E\uDE78', text: t('stem.migration.high_altitude_migrants_like_bar_headed', 'High-altitude migrants like Bar-headed Geese (which fly over the Himalayas at 29,000 ft) have special hemoglobin with higher oxygen affinity. Their muscles contain extra myoglobin, and their capillary density is double that of lowland species.') },
+                  { title: t('stem.migration.hemoglobin', 'Hemoglobin'), emoji: '\uD83E\uDE78', text: t('stem.migration.high_altitude_migrants_like_bar_headed', 'High-altitude migrants like Bar-headed Geese (satellite-tracked crossing the Himalayas as high as about 24,000 ft) have special hemoglobin with higher oxygen affinity. Their muscles contain extra myoglobin, and their capillary density is double that of lowland species.') },
                   { title: t('stem.migration.sleep_in_flight', 'Sleep in Flight'), emoji: '\uD83D\uDE34', text: t('stem.migration.some_birds_can_sleep_while_flying_usin', 'Some birds can sleep while flying using "unihemispheric sleep" \u2014 shutting down one brain hemisphere at a time. Frigate birds have been recorded sleeping for 42 minutes per day during 10-day transoceanic flights, taking micro-naps of 12 seconds each.') },
                   { title: t('stem.migration.navigation_clock', 'Navigation Clock'), emoji: '\u23F0', text: t('stem.migration.birds_maintain_an_internal_circadian_c', 'Birds maintain an internal circadian clock with extraordinary precision. This clock compensates for the sun\'s movement across the sky (time-compensated sun compass) and tracks seasonal changes in day length that trigger migration hormones.') },
                   { title: t('stem.migration.zugunruhe', 'Zugunruhe'), emoji: '\uD83C\uDF19', text: t('stem.migration.zugunruhe_migration_restlessness_is_a_', 'Zugunruhe ("migration restlessness") is a behavioral state where caged migratory birds flutter in the direction they would naturally migrate, at the time they would migrate. It is hormonally driven and genetically encoded. Even hand-raised birds with no migratory experience display Zugunruhe.') }
