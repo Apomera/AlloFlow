@@ -181,7 +181,7 @@ describe('Optics Lab refinements', () => {
     expect(source).toContain('outline:3px solid Highlight!important');
     expect(source).not.toContain('outline: none');
     expect(source.match(/h\('th', \{ scope: 'col'/g)).toHaveLength(7);
-    expect(source).toContain("'aria-label': 'Photon wavelength'" );
+    expect(source).toContain("'aria-label': __alloT('stem.optics.a11y_photon_wavelength', 'Photon wavelength')" );
     expect(source).toContain("'aria-label': t('stem.optics.hypothesis_input', 'TIR hypothesis')");
     expect(source).toContain('Lens ray tracer showing object and image formation.');
     expect(source).toContain('Comparison of coherent and incoherent light waves.');

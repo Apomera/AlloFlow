@@ -51916,6 +51916,9 @@
     "off": "OFF",
     "on": "ON",
     "optics": {
+      "a11y_wavelength": "Wavelength",
+      "a11y_aperture": "Aperture",
+      "a11y_log_frequency": "log₁₀(frequency)",
       "optics_lab": "Optics Lab",
       "ap_physics_2_ray_diagrams_snell_s_law_": "AP Physics 2: ray diagrams, Snell's law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.",
       "optics_lab_navigation": "Optics Lab navigation",

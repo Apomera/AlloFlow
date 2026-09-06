@@ -21,7 +21,7 @@ describe('Optics Lab improvement regressions', () => {
     expect(source).not.toContain("opCeleb.total + ' / 30 quiz questions mastered'");
     expect(source).toContain("opCeleb.total + ' / ' + AP_OPTICS_QUIZ.length + ' quiz questions mastered'");
     expect(source).toContain("'aria-pressed': isPicked ? 'true' : 'false'");
-    expect(source).toContain("role: 'region', 'aria-live': 'polite', 'aria-label': 'Quiz results'");
+    expect(source).toContain(`role: 'region', 'aria-live': 'polite', 'aria-label': __alloT('stem.optics.a11y_quiz_results', 'Quiz results')`);
   });
 
   it('uses a responsive topic grid and does not point inactive tabs at unmounted panels', () => {
@@ -96,7 +96,7 @@ describe('Optics Lab improvement regressions', () => {
     expect(source).toContain("'data-p2-relative-transmission': polP2Transmission.toFixed(6)");
     expect(source).toContain("'data-op-polarization-stage-trail': 'true'");
     expect(source).toContain("'data-op-polarization-rule': 'true'");
-    expect(source).toContain("role: 'progressbar', 'aria-label': 'Final transmitted intensity'");
+    expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.optics.a11y_final_transmitted_intensity', 'Final transmitted intensity')`);
     expect(source).toContain('Press zero to reset the camera.');
     const keyStart = source.indexOf('function keyPolView(event)');
     const keyEnd = source.indexOf('var segs =', keyStart);
