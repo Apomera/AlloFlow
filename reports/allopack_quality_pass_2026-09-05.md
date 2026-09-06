@@ -359,6 +359,25 @@ Reporting a pass that found nothing matters as much as reporting one that found 
 `tests/allopack_answer_integrity.test.js` keeps the machine-checkable half: no repeated options, exactly one option equal to the key, a usable expected answer on every short-answer item, and every math problem carrying an answer plus at least two non-empty worked steps. It was calibrated by making two options identical in one pack and confirming the failure, then restoring.
 
 It cannot check truth, and the file says so. That part was done by hand and will need doing again by hand whenever a pack is edited.
+## Sixteenth pass: every concept-sort card, in every bucket
+
+The seventh pass looked at whether sorts could be solved by surface cues. It never asked the simpler question: **is each card in the right bucket?** That matters more than it sounds, because a sort is *auto-graded* — the game compares each card's container against its `categoryId` — so a miscategorised card marks a correct student wrong with no teacher in the loop. Same defect class as a bad answer key, and less likely to be noticed.
+
+354 cards across 38 packs, read one at a time. **353 were right.**
+
+Several are deliberately hard and hold up under scrutiny. A hockey puck gliding at steady speed sits under *balanced* forces, which is the classic item students get wrong. A Venus flytrap sits under *producer*, with a parenthetical acknowledging that it also traps insects. A US nickel coin sits under *a magnet does not stick*, with "(mostly copper and nickel)" doing real work, because nickel metal is ferromagnetic while that alloy is not. Honey sits under *liquid* with "(very slow, but it flows)". Salt water left to crystallise and dry ice subliming both sit correctly under *physical change*.
+
+One borderline case was examined and kept: the Constitution sort files "preside over an impeachment trial of a President" under Judicial. The Senate conducts the trial, which is legislative, but the *presiding* is the Chief Justice's role, and the card says "preside". Precise as written.
+
+### The one that was wrong
+
+The Photosynthesis sort has three buckets: what goes in, what comes out, and a third labelled **"Place or part, not an ingredient"** — holding Chloroplast, Stomata, Chlorophyll, and **Soil minerals**.
+
+The first three are places or parts. Soil minerals are neither. They are a substance the plant genuinely takes up, and simply not part of this reaction. A student reasoning carefully from the bucket label had nowhere to put the card, and would be marked wrong for noticing.
+
+The card itself is the best one in the sort — it is exactly the "plants eat soil" misconception the reading spends a paragraph correcting, and van Helmont's willow is in the anchor chart to demolish it. So the card stays and the label goes: the bucket is now **"NEITHER (not a reactant or a product)"**, which is true of all four cards and is the sharper teaching point anyway. The sort is now in, out, or neither.
+
+This is the third defect in three passes that came from reading content rather than running a check, and the third that no gate could have caught: an invented statistic, a rewritten standards gloss, and a category label that quietly excluded its own contents. All three were well-formed.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
