@@ -199,7 +199,7 @@ const run = async () => {
   const ENVPD = { ...ENV, PD_SUBMISSIONS: PDKV };
   // schema_version "pd-1.0" is required by the current PD contract (versioned 2026-07); validation
   // failures return 422 Unprocessable Entity (structured {code,path,message}), not a bare 400.
-  const basePdModule = { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'trauma-informed-basics', title: 'Trauma-Informed Basics', language: 'en' }, sections: [{ title: 'Section 1', activities: [{ id: 'a1', title: 'Read: intro', type: 'read', content: { body: 'x' } }] }] };
+  const basePdModule = { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'trauma-informed-basics', version: '1.0.0', title: 'Trauma-Informed Basics', language: 'en' }, sections: [{ title: 'Section 1', activities: [{ id: 'a1', title: 'Read: intro', type: 'read', content: { body: 'x' } }] }] };
   const validPdBody = { pd_module: basePdModule, affirmations: validAff };
 
   // 23. missing PD_SUBMISSIONS binding → 500
@@ -239,7 +239,7 @@ const run = async () => {
   ] }] }, affirmations: validAff }), ENVPD);
   ok(r.status === 422, '/submitPd rejects an unknown activity type at the contract → 422 (got ' + r.status + ')');
   // 31. PII in a PD module is flagged but does NOT block (201)
-  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'pii-pd', title: 'PII PD', language: 'en' }, sections: [{ title: 'S', activities: [{ id: 'a1', title: 'Read', type: 'read', content: { body: 'email a@b.com' } }] }] }, affirmations: validAff }), ENVPD);
+  r = await worker.fetch(jsonPost('/submitPd', { pd_module: { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'pii-pd', version: '1.0.0', title: 'PII PD', language: 'en' }, sections: [{ title: 'S', activities: [{ id: 'a1', title: 'Read', type: 'read', content: { body: 'email a@b.com' } }] }] }, affirmations: validAff }), ENVPD);
   const pdpii = await r.json();
   ok(r.status === 201 && pdpii.pii_findings_count >= 1, '/submitPd flags PII (email) but still 201');
 
