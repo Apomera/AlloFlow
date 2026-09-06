@@ -840,6 +840,8 @@
       var React = ctx.React;
       var h = React.createElement;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
@@ -1533,7 +1535,7 @@
             cameraFocusId = id;
             if (_prefersReducedMotion) { camera.position.copy(focusCamera); camera.lookAt(focusTarget); }
             else { cameraTween = { progress: 0, fromCamera: camera.position.clone(), toCamera: focusCamera, fromRotation: [station.rotation.x, station.rotation.y, station.rotation.z], toRotation: [station.rotation.x, station.rotation.y, station.rotation.z], target: focusTarget }; }
-            announceToSR('Camera centered on ' + id + '.');
+            announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_centered_on', 'Camera centered on {value1}.'), { value1: id }));
           };
           var resizeObserver = null;
           function resizeScene() {
@@ -3442,7 +3444,7 @@
             });
             state.mode = 'CAPILLARY TRANSFER COMPLETE';
             setFeedback('ROOT ZONE FED // ' + state.capillaryDose.toFixed(2) + ' ML', 'safe', 2600);
-            announce('Capillary transfer complete at ' + state.capillaryDose.toFixed(2) + ' milliliters. The contained wick delivered water to the root zone without gravity.');
+            announce(__alloFill(__alloT('stem.spacestation.sr_capillary_transfer_complete_at_milliliters_the_co', 'Capillary transfer complete at {value1} milliliters. The contained wick delivered water to the root zone without gravity.'), { value1: state.capillaryDose.toFixed(2) }));
             dirty = true;
             return true;
           }
@@ -3460,7 +3462,7 @@
               });
               state.mode = 'CAPILLARY UNDERFILL';
               setFeedback('WICK UNDERFILLED // ' + state.capillaryDose.toFixed(2) + ' ML', 'warn', 2300);
-              announce('Underfill at ' + state.capillaryDose.toFixed(2) + ' milliliters. Reopen the contained valve and hold until the dose reaches at least two point seven milliliters.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_underfill_at_milliliters_reopen_the_contained_val', 'Underfill at {value1} milliliters. Reopen the contained valve and hold until the dose reaches at least two point seven milliliters.'), { value1: state.capillaryDose.toFixed(2) }));
               dirty = true;
               return false;
             }
@@ -3493,7 +3495,7 @@
             }
             if (state.capillaryDistance > capillaryReach) {
               setFeedback('PLANT CHAMBER OUT OF REACH // ' + state.capillaryDistance.toFixed(2) + ' M', 'warn', 1900);
-              announce('The plant chamber is ' + state.capillaryDistance.toFixed(2) + ' meters away. Move within zero point nine five meters.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_the_plant_chamber_is_meters_away_move_within_zero', 'The plant chamber is {value1} meters away. Move within zero point nine five meters.'), { value1: state.capillaryDistance.toFixed(2) }));
               return false;
             }
             if (state.capillaryAlignment < capillaryAlignmentMinimum) {
@@ -4007,7 +4009,7 @@
             placeCrewAtTransferStaging();
             var culpritLabel = culprit === 'body' ? 'BODY ENVELOPE' : culprit === 'bag' ? 'BAG ENVELOPE' : 'BODY + BAG ENVELOPES';
             setFeedback(culpritLabel + ' CLIPPED HATCH // RESET TO HARMONY', 'impact', 2900);
-            announce('Physical hatch contact. The ' + culpritLabel.toLowerCase() + ' crossed outside the zero point seven zero meter center radius. You and the bag were reset to Harmony staging.');
+            announce(__alloFill(__alloT('stem.spacestation.sr_physical_hatch_contact_the_crossed_outside_the_ze', 'Physical hatch contact. The {value1} crossed outside the zero point seven zero meter center radius. You and the bag were reset to Harmony staging.'), { value1: culpritLabel.toLowerCase() }));
             return true;
           }
           function updateHatchTransfer(dt) {
@@ -4192,7 +4194,7 @@
             }
             if (state.worksiteDistance > worksiteReach) {
               setFeedback('WORKSITE OUT OF REACH // ' + state.worksiteDistance.toFixed(2) + ' M', 'warn', 1800);
-              announce('The filter worksite is ' + state.worksiteDistance.toFixed(2) + ' meters away. Move within zero point seven two meters.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_the_filter_worksite_is_meters_away_move_within_ze', 'The filter worksite is {value1} meters away. Move within zero point seven two meters.'), { value1: state.worksiteDistance.toFixed(2) }));
               return false;
             }
             if (state.worksiteAlignment < worksiteAlignmentMinimum) {
@@ -4305,7 +4307,7 @@
               }
               if (secureDistance > cargoSecureReach) {
                 setFeedback('RESTRAINT OUT OF REACH // ' + secureDistance.toFixed(2) + ' M', 'warn', 1900);
-                announce('The Unity cargo restraint is ' + secureDistance.toFixed(2) + ' meters away. Move within 0.90 meters.');
+                announce(__alloFill(__alloT('stem.spacestation.sr_the_unity_cargo_restraint_is_meters_away_move_wit', 'The Unity cargo restraint is {value1} meters away. Move within 0.90 meters.'), { value1: secureDistance.toFixed(2) }));
                 return false;
               }
               if (!braced) {
@@ -4335,7 +4337,7 @@
             var relativeSpeed = tempCargoRelativeVelocity.length();
             if (relativeSpeed > cargoCatchRelativeSpeed) {
               setFeedback('RELATIVE SPEED TOO HIGH // ' + relativeSpeed.toFixed(2) + ' M/S', 'warn', 1900);
-              announce('Relative speed is ' + relativeSpeed.toFixed(2) + ' meters per second. Match the pouch motion below 0.20 before catching it.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_relative_speed_is_meters_per_second_match_the_pou', 'Relative speed is {value1} meters per second. Match the pouch motion below 0.20 before catching it.'), { value1: relativeSpeed.toFixed(2) }));
               return false;
             }
             tempCargoSharedVelocity.copy(state.velocity).multiplyScalar(crewMass);
@@ -4349,7 +4351,7 @@
             state.mode = state.velocity.length() > 0.006 ? 'COASTING + CARGO' : 'HOLDING CARGO';
             emit('cargo-caught', { room: state.room, speed: state.velocity.length(), relativeSpeed: relativeSpeed, distance: distance });
             setFeedback('POUCH CAUGHT // MOMENTUM SHARED', 'safe', 2100);
-            announce('Pouch caught at low relative speed. You and the five kilogram pouch now share a velocity of ' + state.velocity.length().toFixed(2) + ' meters per second.');
+            announce(__alloFill(__alloT('stem.spacestation.sr_pouch_caught_at_low_relative_speed_you_and_the_fi', 'Pouch caught at low relative speed. You and the five kilogram pouch now share a velocity of {value1} meters per second.'), { value1: state.velocity.length().toFixed(2) }));
             return true;
           }
           var stowCatchReach = 0.65;
@@ -4473,17 +4475,17 @@
               var stableBrace = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035;
               if (state.room !== 'harmony') {
                 setFeedback('RETURN ITEM TO HARMONY // USE MARKED RESTRAINT', 'warn', 2100);
-                announce('Carry the ' + heldItem.label + ' back to its marked Harmony restraint.');
+                announce(__alloFill(__alloT('stem.spacestation.sr_carry_the_back_to_its_marked_harmony_restraint', 'Carry the {value1} back to its marked Harmony restraint.'), { value1: heldItem.label }));
                 return false;
               }
               if (restraintDistance > stowSecureReach) {
                 setFeedback('RESTRAINT OUT OF REACH // ' + restraintDistance.toFixed(2) + ' M', 'warn', 1900);
-                announce('The item-specific restraint is ' + restraintDistance.toFixed(2) + ' meters away. Move within zero point nine meters.');
+                announce(__alloFill(__alloT('stem.spacestation.sr_the_item_specific_restraint_is_meters_away_move_w', 'The item-specific restraint is {value1} meters away. Move within zero point nine meters.'), { value1: restraintDistance.toFixed(2) }));
                 return false;
               }
               if (!stableBrace) {
                 setFeedback('BRACE + STOP // THEN SECURE WITH X', 'warn', 2100);
-                announce('Catch and hold the nearby rail and stop rotation before securing the ' + heldItem.label + '.');
+                announce(__alloFill(__alloT('stem.spacestation.sr_catch_and_hold_the_nearby_rail_and_stop_rotation', 'Catch and hold the nearby rail and stop rotation before securing the {value1}.'), { value1: heldItem.label }));
                 return false;
               }
               state.stowHeldId = null;
@@ -4526,7 +4528,7 @@
             var relativeSpeed = tempCargoRelativeVelocity.length();
             if (relativeSpeed > stowCatchRelativeSpeed) {
               setFeedback('MATCH ITEM MOTION // RELATIVE ' + relativeSpeed.toFixed(2) + ' M/S', 'warn', 2100);
-              announce('Relative speed to the nearest item is ' + relativeSpeed.toFixed(2) + ' meters per second. Slow below zero point two before catching it.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_relative_speed_to_the_nearest_item_is_meters_per', 'Relative speed to the nearest item is {value1} meters per second. Slow below zero point two before catching it.'), { value1: relativeSpeed.toFixed(2) }));
               return false;
             }
             state.stowHeldId = nearest.id;
@@ -4606,8 +4608,8 @@
             dirty = true;
             if (transferCancelled) {
               setFeedback('TRANSFER CANCELLED // BAG RETURNED TO HARMONY STAGING', 'warn', 2900);
-              announce('Bulky transfer cancelled before the cross-room training move. The bag returned to Harmony staging, crossing progress cleared, and the saved flight room moved to ' + roomInfo(def.id).name + '.');
-            } else if (speak) announce('Moved to ' + roomInfo(def.id).name + '. Camera centered and momentum stopped.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_bulky_transfer_cancelled_before_the_cross_room_tr', 'Bulky transfer cancelled before the cross-room training move. The bag returned to Harmony staging, crossing progress cleared, and the saved flight room moved to {value1}.'), { value1: roomInfo(def.id).name }));
+            } else if (speak) announce(__alloFill(__alloT('stem.spacestation.sr_moved_to_camera_centered_and_momentum_stopped', 'Moved to {value1}. Camera centered and momentum stopped.'), { value1: roomInfo(def.id).name }));
           }
           function grabRail() {
             if (state.railHeld) {
@@ -4623,7 +4625,7 @@
             var distance = railDistance(state.position, roomDef(state.room));
             if (distance > 0.68) {
               setFeedback('RAIL OUT OF REACH // ' + distance.toFixed(2) + ' M', 'warn', 1700);
-              announce('No handrail within reach. Nearest rail is ' + distance.toFixed(2) + ' meters away. Move within 0.68 meters and try again.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_no_handrail_within_reach_nearest_rail_is_meters_a', 'No handrail within reach. Nearest rail is {value1} meters away. Move within 0.68 meters and try again.'), { value1: distance.toFixed(2) }));
               return false;
             }
             state.velocity.set(0, 0, 0);
@@ -4644,7 +4646,7 @@
             moveToRoom(state.room, false, true);
             state.rolledFar = false;
             setFeedback('TRAINING ASSIST // CENTERED + STOPPED', 'info');
-            announce('Training assist used. Centered and stopped in ' + roomInfo(state.room).name + '.');
+            announce(__alloFill(__alloT('stem.spacestation.sr_training_assist_used_centered_and_stopped_in', 'Training assist used. Centered and stopped in {value1}.'), { value1: roomInfo(state.room).name }));
           }
           function resetRoute() {
             state.manualVisited = { harmony: true };
@@ -5090,7 +5092,7 @@
                 state.mode = 'RAIL PUSH-OFF';
                 emit('rail-push-off', { room: state.room, impulse: railPushOffImpulse, speed: pushOffDelta, carryingCargo: state.cargoMode === 'held' });
                 setFeedback('RAIL PUSH-OFF // ' + pushOffDelta.toFixed(2) + ' M/S', 'safe', 1700);
-                announce('Handrail push-off added ' + pushOffDelta.toFixed(2) + ' meters per second. Release the direction before another push.');
+                announce(__alloFill(__alloT('stem.spacestation.sr_handrail_push_off_added_meters_per_second_release', 'Handrail push-off added {value1} meters per second. Release the direction before another push.'), { value1: pushOffDelta.toFixed(2) }));
                 dirty = true;
               }
             } else if (hasTranslationInput && !state.pushOffLatch) {
@@ -5137,7 +5139,7 @@
                   state.lastWallEvent = now;
                   emit('collision', { room: state.room, speed: impactSpeed, normalSpeed: normalImpactSpeed, normal: state.lastImpactNormal });
                   setFeedback('HULL CONTACT // NORMAL ' + normalImpactSpeed.toFixed(2) + ' M/S', 'impact');
-                  announce('Hull contact. Normal impact speed ' + normalImpactSpeed.toFixed(2) + ' meters per second. Tangential motion continues along the surface.');
+                  announce(__alloFill(__alloT('stem.spacestation.sr_hull_contact_normal_impact_speed_meters_per_secon', 'Hull contact. Normal impact speed {value1} meters per second. Tangential motion continues along the surface.'), { value1: normalImpactSpeed.toFixed(2) }));
                 }
               }
             }
@@ -5300,7 +5302,7 @@
               if (completedThisCrossing) setFeedback('ORDERED ROUTE COMPLETE // CUPOLA', 'safe', 2400);
               else if (state.routeIndex < 0) setFeedback('ROUTE ORDER LOST // RETURN TO HARMONY', 'warn', 2100);
               else setFeedback((hatchSpeed <= 0.35 ? 'CONTROLLED HATCH // ' : 'FAST HATCH // ') + roomInfo(nextRoom.id).module.toUpperCase(), hatchSpeed <= 0.35 ? 'safe' : 'warn');
-              announce('Hatch crossed into ' + roomInfo(nextRoom.id).name + ' at ' + state.velocity.length().toFixed(2) + ' meters per second.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_hatch_crossed_into_at_meters_per_second', 'Hatch crossed into {value1} at {value2} meters per second.'), { value1: roomInfo(nextRoom.id).name, value2: state.velocity.length().toFixed(2) }));
             }
             setCameraFromState();
             updateMotionGuide();
@@ -5890,7 +5892,7 @@
           var margin = range - speed * speed / (2 * ACCEL) - 5;
           el.textContent = 'Phase ' + phase + ' · range ' + range.toFixed(0) + ' m · relative speed ' + speed.toFixed(2) + ' m/s · stopping margin ' + margin.toFixed(1) + ' m · fuel ' + st.fuel.toFixed(0) + '%' + (st.over ? ' · run over' : '');
           if (!st.over) {
-            if (!milestones.m100 && range < 100) { milestones.m100 = true; announceToSR('100 meters to the port. Speed ' + speed.toFixed(2) + ' meters per second.'); }
+            if (!milestones.m100 && range < 100) { milestones.m100 = true; announceToSR(__alloFill(__alloT('stem.spacestation.sr_100_meters_to_the_port_speed_meters_per_second', '100 meters to the port. Speed {value1} meters per second.'), { value1: speed.toFixed(2) })); }
             if (!milestones.m40 && range < 40) { milestones.m40 = true; announceToSR(__alloT('stem.spacestation.sr_final_approach_40_meters_dock_slower_than_0_6_met', 'Final approach, 40 meters. Dock slower than 0.6 meters per second.')); }
             if (!milestones.m15 && range < 15) { milestones.m15 = true; announceToSR(__alloT('stem.spacestation.sr_capture_corridor_15_meters_verify_alignment_and_p', 'Capture corridor, 15 meters. Verify alignment and positive stopping margin.')); }
           }
@@ -6016,7 +6018,7 @@
         var phaseLabel = evaS.done && evaS.failMsg ? 'ABORTED' : phaseSteps[phaseIndex];
         var phaseColor = evaS.done && evaS.failMsg ? '#f87171' : evaS.done ? '#4ade80' : '#38bdf8';
         return h('div', { className: 'iss-learning-visual iss-eva-visual' },
-          h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Spacewalk route. Astronaut at ' + EVA_RAILS[position] + '. Tether A at ' + EVA_RAILS[evaS.tetherA || 0] + '. Tether B at ' + EVA_RAILS[evaS.tetherB || 0] + '. Suit consumables ' + oxygen + ' percent. Projected at worksite ' + projectedOxygen + ' percent. ' + reserveStatus + '. ' + tetherStatus + '.' },
+          h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_spacewalk_route_astronaut_at_tether_a_at_tether', 'Spacewalk route. Astronaut at {value1}. Tether A at {value2}. Tether B at {value3}. Suit consumables {value4} percent. Projected at worksite {value5} percent. {value6}. {value7}.'), { value1: EVA_RAILS[position], value2: EVA_RAILS[evaS.tetherA || 0], value3: EVA_RAILS[evaS.tetherB || 0], value4: oxygen, value5: projectedOxygen, value6: reserveStatus, value7: tetherStatus })},
             h('defs', null, h('linearGradient', { id: 'iss-eva-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#020611' }), h('stop', { offset: '100%', stopColor: '#09213a' })),
               // Matches the gradient Earths already used by the orbit/ops/day
               // surfaces — this one was the odd flat disc out.
@@ -6054,7 +6056,7 @@
             h('text', { x: 600, y: 29, textAnchor: 'end', fill: '#cbd5e1', fontSize: 6.5, fontWeight: 800 }, 'NOW ' + oxygen.toFixed(0) + '%'),
             h('text', { x: 600, y: 40, textAnchor: 'end', fill: '#cbd5e1', fontSize: 6.5, fontWeight: 800 }, 'PLAN ' + projectedOxygen.toFixed(0) + '%'),
             h('text', { x: 22, y: 25, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'EVA ROUTE // TWO-TETHER PROTOCOL')),
-          h('div', { 'data-iss-eva-phase': phaseLabel, role: 'img', 'aria-label': 'EVA mission phase ' + phaseLabel + '. Step ' + (phaseIndex + 1) + ' of 4.', style: { position: 'relative', display: 'flex', justifyContent: 'space-between', margin: '10px 16px 7px', paddingTop: 1 } },
+          h('div', { 'data-iss-eva-phase': phaseLabel, role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_eva_mission_phase_step_of_4', 'EVA mission phase {value1}. Step {value2} of 4.'), { value1: phaseLabel, value2: (phaseIndex + 1) }), style: { position: 'relative', display: 'flex', justifyContent: 'space-between', margin: '10px 16px 7px', paddingTop: 1 } },
             h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: '9%', right: '9%', top: 10, height: 2, background: '#334155' } },
               h('div', { style: { height: '100%', width: (phaseIndex / 3 * 100) + '%', background: phaseColor, boxShadow: '0 0 8px ' + phaseColor } })),
             phaseSteps.map(function (step, i) {
@@ -6287,7 +6289,7 @@
                 [['back', '←', 'Brake'], ['up', '↑', 'Radial out'], ['down', '↓', 'Radial in'], ['fwd', '→', 'Forward']].map(function (b) {
                   function press(on) { return function (e) { e.preventDefault(); var cv = document.querySelector('[data-dock-canvas]') || e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockSetThrust) cv._dockSetThrust(b[0], on); }; }
                   function holdKey(on) { return function (e) { if (e.key === ' ' || e.key === 'Enter') press(on)(e); }; }
-                  return h('button', { key: b[0], type: 'button', 'aria-label': 'Thrust ' + b[2] + '. Press and hold with Space or Enter.', onPointerDown: press(true), onPointerUp: press(false), onPointerCancel: press(false), onPointerLeave: press(false), onKeyDown: holdKey(true), onKeyUp: holdKey(false), onBlur: press(false), style: { padding: '10px 16px', borderRadius: 10, fontSize: 14, fontWeight: 900, cursor: 'pointer', background: PANEL, color: TEXT, border: '1px solid #475569', touchAction: 'none' } }, b[1] + ' ', h('span', { style: { fontSize: 10, fontWeight: 600, color: SOFT } }, b[2]));
+                  return h('button', { key: b[0], type: 'button', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_thrust_press_and_hold_with_space_or_enter', 'Thrust {value1}. Press and hold with Space or Enter.'), { value1: b[2] }), onPointerDown: press(true), onPointerUp: press(false), onPointerCancel: press(false), onPointerLeave: press(false), onKeyDown: holdKey(true), onKeyUp: holdKey(false), onBlur: press(false), style: { padding: '10px 16px', borderRadius: 10, fontSize: 14, fontWeight: 900, cursor: 'pointer', background: PANEL, color: TEXT, border: '1px solid #475569', touchAction: 'none' } }, b[1] + ' ', h('span', { style: { fontSize: 10, fontWeight: 600, color: SOFT } }, b[2]));
                 })),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
                 h('button', { type: 'button', onClick: function (e) { var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockReset) cv._dockReset(dockRealMode); upd({ dockResult: null, dockMsg: '', dockDebrief: null }); }, style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🔁 ' + __alloT('stem.spacestation.dock_retry', 'New approach')),
@@ -6580,7 +6582,7 @@
           else if (event.type === 'worksite-reaction') announceToSR(__alloT('stem.spacestation.sr_reaction_torque_detected_recover_catch_the_nearby', 'Reaction torque detected. Recover, catch the nearby rail, then retry the filter service.'));
           else if (event.type === 'stow-airflow-warning') announceToSR(__alloT('stem.spacestation.sr_harmony_airflow_blocked_a_loose_item_is_at_the_ai', 'Harmony airflow blocked. A loose item is at the air return.'));
           else if (event.type === 'stow-caught') announceToSR(__alloT('stem.spacestation.sr_cabin_item_caught_carry_it_to_its_matching_harmon', 'Cabin item caught. Carry it to its matching Harmony restraint and brace on a rail.'));
-          else if (event.type === 'stow-secured') announceToSR('Cabin item secured. ' + Number(event.count || 0) + ' of three items stowed.');
+          else if (event.type === 'stow-secured') announceToSR(__alloFill(__alloT('stem.spacestation.sr_cabin_item_secured_of_three_items_stowed', 'Cabin item secured. {value1} of three items stowed.'), { value1: Number(event.count || 0) }));
           else if (event.type === 'stow-complete') announceToSR(__alloT('stem.spacestation.sr_harmony_cabin_stow_complete_all_three_items_restr', 'Harmony cabin stow complete. All three items restrained and airflow clear.'));
           else if (event.type === 'worksite-complete') announceToSR(__alloT('stem.spacestation.sr_filter_serviced_while_braced_reaction_torque_main', 'Filter serviced while braced. Reaction-torque maintenance challenge complete.'));
           else if (event.type === 'orientation-recovered') announceToSR(__alloT('stem.spacestation.sr_orientation_recovery_challenge_complete', 'Orientation recovery challenge complete.'));
@@ -6905,7 +6907,7 @@
             h('p', { id: 'iss-interior-flight-instructions', className: 'iss-interior-instructions' },
               'Training push controls are an exploration aid. Astronauts actually translate by pushing and pulling handrails or station structure; there are no personal thrusters inside. Tap a push briefly to add velocity, release to coast with no passive braking, and move within 0.68 m of a rail before catching it. While holding a rail, one direction creates a single 10 newton-second push-off; release the direction before another push. The cyan or amber cabin arrow predicts drift, the rail ring turns green within reach, and in-world destination signs mark the forward, port, and nadir branches. Arrow keys look; W/A/S/D translate; R/F move vertically; Q/E apply roll torque; Space holds or releases a rail; X catches or secures Harmony cabin items; C catches or secures the pouch; V opens the Destiny water injector; T holds the Tranquility torque tool; P holds the Cupola camera frame lock. In Harmony, match the nearest sleeping bag, crew tablet, or damp washcloth below 0.20 m/s relative speed, catch it within 0.65 m, then rail-brace at its matching restraint and press X again. A loose item near the air return blocks the airflow cue. Match the pouch below 0.20 m/s relative speed, then brace near the marked Unity restraint. At the Destiny glovebox, stabilize, face the lower injection port, hold V, and release in the 2.7-3.3 mL target band. The wick front advances with the square root of time, while an overfill forms a bead that clings inside the glovebox instead of falling. At the Tranquility filter, face the worksite, hold a nearby rail, and hold T for 1.5 seconds. In Cupola, move within 0.95 m of the camera control, center the selected bracket, catch the nearby rail, and hold P for a 1.2-second training frame lock; releasing early blurs the frame. Release and press P again after capture to close all seven external shutters. An unbraced tool attempt applies a simplified reaction roll because weightlessness removes foot friction, not inertia. Rotation continues after release, so counter-roll before aligning the deck. Follow Harmony -> Destiny -> Unity, turn port into Tranquility, then move nadir into Cupola. Stopping and braking readouts use a simplified constant-counter-push model.'),
             h('p', { id: 'iss-interior-transfer-instructions', className: 'iss-interior-instructions', 'data-iss-interior-transfer-instructions': 'true' }, 'Bulky hatch transfer: in Harmony, move beside the labeled bag and press B to clip its tether. The 12 kilogram bag follows behind and to your right with spring-and-damper lag. Keep both your body and the bag envelope within the 0.70 meter center clearance as you cross into Destiny; a rim clip safely resets both to Harmony staging.'),
-            h('div', { className: 'iss-nav-challenges', role: 'list', 'aria-label': 'Microgravity crew challenges. ' + navigationChallengeCount + ' of ' + challenges.length + ' complete.' },
+            h('div', { className: 'iss-nav-challenges', role: 'list', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_microgravity_crew_challenges_of_complete', 'Microgravity crew challenges. {value1} of {value2} complete.'), { value1: navigationChallengeCount, value2: challenges.length })},
               challenges.map(function (challenge) {
                 return h('div', { key: challenge.id, role: 'listitem', className: 'iss-nav-challenge' + (challenge.done ? ' is-complete' : ''), 'data-iss-nav-challenge': challenge.id },
                   h('i', { 'aria-hidden': 'true' }, challenge.done ? '\u2713' : '\u25CB'),
@@ -6914,7 +6916,7 @@
               })),
             h('p', { className: 'iss-interior-instructions', 'aria-live': 'off' },
               'Flight log: ' + Object.keys(navigation.hatches || {}).length + ' hatch transitions / ' + Number(navigation.railGrabs || 0) + ' rail catches / ' + Number(navigation.railPushOffs || 0) + ' rail push-offs / ' + Number(navigation.collisions || 0) + ' hull contacts / ' + Number(navigation.looseHits || 0) + ' cargo contacts / ' + Number(navigation.cargoSecures || 0) + ' pouches secured / ' + Number(navigation.transferContacts || 0) + ' hatch-transfer contacts / ' + Number(navigation.transferCompletions || 0) + ' bulky transfers / ' + Number(navigation.stowCatches || 0) + ' cabin items caught / ' + Number(navigation.stowSecures || 0) + ' cabin items secured / ' + Number(navigation.stowWarnings || 0) + ' airflow warnings / ' + Number(navigation.capillaryUnderfills || 0) + ' wick underfills / ' + Number(navigation.capillaryOverflows || 0) + ' contained overflows / ' + Number(navigation.capillaryTransfers || 0) + ' wick transfers / ' + Number(navigation.worksiteReactions || 0) + ' reaction-torque events / ' + Number(navigation.worksiteServices || 0) + ' filters serviced / ' + Number(navigation.observationBlurs || 0) + ' blurred Earth frames / ' + Number(navigation.observationInterruptions || 0) + ' interrupted frame locks / ' + Number(navigation.observationCaptures || 0) + ' Earth frames captured.'),
-            h('div', { className: 'iss-discovery-row', role: 'group', 'aria-label': 'Inspect details in ' + room.name },
+            h('div', { className: 'iss-discovery-row', role: 'group', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_inspect_details_in', 'Inspect details in {value1}'), { value1: room.name })},
               room.discoveries.map(function (spot, index) {
                 var active = selectedDiscovery === index;
                 return h('button', { key: index, type: 'button', 'aria-pressed': active, onClick: function () { inspectInteriorSpot(index); }, style: { borderColor: active ? room.color : '#475569', background: active ? room.color + '20' : 'rgba(2,6,23,.52)' } }, (inspected[room.id + ':' + index] ? '\u2713 ' : 'Inspect ') + spot[0]);
@@ -7062,7 +7064,7 @@
             room.id === 'tranquility' ? h('g', null, h('rect', { x: 304, y: 72, width: 116, height: 120, rx: 8, fill: '#292524', stroke: '#fbbf24', strokeWidth: 3 }), h('circle', { cx: 362, cy: 124, r: 34, fill: '#111827', stroke: '#94a3b8', strokeWidth: 6 }), [0, 1, 2, 3, 4, 5].map(function (i) { var a = i * Math.PI / 3; return h('line', { key: i, x1: 362, y1: 124, x2: 362 + Math.cos(a) * 27, y2: 124 + Math.sin(a) * 27, stroke: '#64748b', strokeWidth: 5 }); }), h('text', { x: 362, y: 178, textAnchor: 'middle', fill: '#fbbf24', fontSize: 12 }, 'AIRFLOW LOW')) :
             room.id === 'unity' ? h('g', { className: 'iss-float' }, h('rect', { x: 330, y: 93, width: 70, height: 58, rx: 8, fill: '#8b5e3c', stroke: '#fde68a', strokeWidth: 3 }), h('path', { d: 'M340 93 Q365 70 390 93', fill: 'none', stroke: '#fde68a', strokeWidth: 4 }), h('text', { x: 365, y: 128, textAnchor: 'middle', fill: '#fff7ed', fontSize: 13 }, 'CARGO')) :
             h('g', null, h('circle', { cx: 362, cy: 124, r: 75, fill: 'url(#iss-window-earth)', stroke: '#cbd5e1', strokeWidth: 8 }), h('circle', { cx: 362, cy: 124, r: 70, fill: 'none', stroke: '#bfeeff', strokeWidth: 3, opacity: 0.5 }), h('g', { filter: 'url(#iss-window-cloud)', opacity: .5 }, h('ellipse', { cx: 336, cy: 152, rx: 34, ry: 11, fill: '#f8fafc' }), h('ellipse', { cx: 392, cy: 168, rx: 26, ry: 8, fill: '#f8fafc' }), h('ellipse', { cx: 372, cy: 96, rx: 22, ry: 7, fill: '#f8fafc' })), h('path', { className: 'iss-earth-disc-land', d: issLandDiscPath(362, 124, 70, 16, 26), fill: '#5fae78', opacity: .82 }), h('ellipse', { cx: 336, cy: 100, rx: 13, ry: 7, fill: '#ffffff', opacity: 0.42 }));
-          return h('svg', { viewBox: '0 0 724 260', role: 'img', 'aria-label': 'Interior view of ' + room.name + '. ' + room.scene, style: { width: '100%', display: 'block', background: '#060b18' } },
+          return h('svg', { viewBox: '0 0 724 260', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_interior_view_of', 'Interior view of {value1}. {value2}'), { value1: room.name, value2: room.scene }), style: { width: '100%', display: 'block', background: '#060b18' } },
             h('defs', null,
               h('linearGradient', { id: 'iss-tunnel-ceiling', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '65%', stopColor: '#9aa8ba' }), h('stop', { offset: '100%', stopColor: '#536173' })),
               h('linearGradient', { id: 'iss-tunnel-floor', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#536173' }), h('stop', { offset: '100%', stopColor: '#172033' })),
@@ -7137,7 +7139,7 @@
             h('label', { htmlFor: 'iss-lowg-impulse', style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: TEXT, fontSize: 11.5, fontWeight: 800 } }, h('span', null, 'Push impulse'), h('span', { style: { color: room.color }, 'aria-hidden': 'true' }, impulse.toFixed(0) + ' N·s')),
             h('input', { id: 'iss-lowg-impulse', type: 'range', min: 2, max: 22, step: 1, value: impulse, onChange: function (e) { upd({ lowGImpulse: Number(e.target.value), lowGResult: null }); }, 'aria-valuetext': impulse.toFixed(0) + ' newton seconds', 'aria-describedby': 'iss-lowg-explain', style: { width: '100%', accentColor: room.color, margin: '8px 0 5px' } }),
             h('div', { className: 'iss-learning-visual', 'data-iss-lowg-trajectory': arrivalStatus.toLowerCase().replace(' ', '-'), style: { marginBottom: 8 } },
-              h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': 'Microgravity translation preview. Push impulse ' + impulse.toFixed(0) + ' newton seconds gives a constant coast speed of ' + speed.toFixed(2) + ' meters per second, travel time ' + travelTime.toFixed(1) + ' seconds, predicted arrival ' + arrivalStatus.toLowerCase() + '.' },
+              h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_microgravity_translation_preview_push_impulse_n', 'Microgravity translation preview. Push impulse {value1} newton seconds gives a constant coast speed of {value2} meters per second, travel time {value3} seconds, predicted arrival {value4}.'), { value1: impulse.toFixed(0), value2: speed.toFixed(2), value3: travelTime.toFixed(1), value4: arrivalStatus.toLowerCase() })},
                 h('defs', null, h('marker', { id: 'iss-lowg-vector-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: arrivalColor })), h('linearGradient', { id: 'iss-lowg-tunnel', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#101b2d' }), h('stop', { offset: '50%', stopColor: '#07101f' }), h('stop', { offset: '100%', stopColor: '#111827' }))),
                 h('rect', { width: 640, height: 150, fill: 'url(#iss-lowg-tunnel)' }),
                 h('path', { d: 'M35 28H605M35 122H605', stroke: '#64748b', strokeWidth: 5, strokeLinecap: 'round' }),
@@ -7174,7 +7176,7 @@
             if (index !== step) {
               var attemptMap = Object.assign({}, d.interiorAttempts || {}); attemptMap.destiny = (attemptMap.destiny || 0) + 1;
               upd({ researchFeedback: 'Sequence hold: complete step ' + (step + 1) + ' before moving ahead.', researchErrors: (d.researchErrors || 0) + 1, interiorAttempts: attemptMap });
-              announceToSR('Procedure out of sequence. Complete step ' + (step + 1) + ' first.');
+              announceToSR(__alloFill(__alloT('stem.spacestation.sr_procedure_out_of_sequence_complete_step_first', 'Procedure out of sequence. Complete step {value1} first.'), { value1: (step + 1) }));
               return;
             }
             var next = step + 1;
@@ -7280,7 +7282,7 @@
           return h('details', { 'data-iss-crew-notebook': room.id, style: { margin: '12px 0', padding: '8px 10px', borderRadius: 10, background: 'rgba(15,23,42,.6)', border: '1px solid #334155' } },
             h('summary', { style: { color: TEXT, fontSize: 11.5, fontWeight: 850, cursor: 'pointer' } }, '📓 Crew notebook', value.trim() ? h('span', { style: { marginLeft: 7, color: '#4ade80', fontSize: 9.5 } }, '• observation saved') : h('span', { style: { marginLeft: 7, color: SOFT, fontSize: 9.5 } }, '• optional reflection')),
             h('p', { id: promptId, style: { color: SOFT, fontSize: 10.5, lineHeight: 1.45, margin: '8px 0 5px' } }, prompts[room.id]),
-            h('textarea', { value: value, rows: 2, maxLength: 240, onChange: function (e) { var next = Object.assign({}, notes); next[room.id] = String(e.target.value || '').slice(0, 240); upd({ interiorNotes: next }); }, 'aria-label': 'Crew notebook observation for ' + room.name, 'aria-describedby': promptId + ' ' + countId, placeholder: 'Record an observation, claim, or question…', style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 8, borderRadius: 8, border: '1px solid #475569', background: '#020617', color: TEXT, fontFamily: 'inherit', fontSize: 11.5, lineHeight: 1.45 } }),
+            h('textarea', { value: value, rows: 2, maxLength: 240, onChange: function (e) { var next = Object.assign({}, notes); next[room.id] = String(e.target.value || '').slice(0, 240); upd({ interiorNotes: next }); }, 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_crew_notebook_observation_for', 'Crew notebook observation for {value1}'), { value1: room.name }), 'aria-describedby': promptId + ' ' + countId, placeholder: 'Record an observation, claim, or question…', style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 8, borderRadius: 8, border: '1px solid #475569', background: '#020617', color: TEXT, fontFamily: 'inherit', fontSize: 11.5, lineHeight: 1.45 } }),
             h('div', { id: countId, style: { textAlign: 'right', color: SOFT, fontSize: 10.5, marginTop: 3 }, 'aria-live': 'off' }, value.length + ' / 240 characters')
           );
         }
@@ -7358,7 +7360,7 @@
           function captureTarget() {
             if (interiorView !== 'diagram' || roomDone || captured) return;
             recordInteriorNavigation({ type: 'observation-captured', room: 'cupola', target: targetId, note: target.note, source: 'diagram' });
-            announceToSR('Image captured. ' + target.note);
+            announceToSR(__alloFill(__alloT('stem.spacestation.sr_image_captured', 'Image captured. {value1}'), { value1: target.note }));
           }
           function closeObservation() {
             if (interiorView !== 'diagram' || !captured || roomDone) return;
@@ -7413,7 +7415,7 @@
             h('div', { className: 'iss-interior-view-switch', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_interior_view_mode', 'Interior view mode') },
               h('button', { type: 'button', 'data-iss-interior-view': '3d', 'aria-pressed': interiorView === '3d', onClick: function (event) { chooseInteriorView('3d', event); } }, '3-D free-flight'),
               h('button', { type: 'button', 'data-iss-interior-view': 'diagram', 'aria-pressed': interiorView === 'diagram', onClick: function (event) { chooseInteriorView('diagram', event); } }, 'Accessible diagram'))),
-          h('div', { className: 'iss-location-strip iss-interior-route-map', role: 'group', 'aria-live': 'off', 'aria-label': 'Current station location: ' + room.name + '. Connected route: Harmony to Destiny to Unity, port turn into Tranquility, then nadir descent into Cupola.' },
+          h('div', { className: 'iss-location-strip iss-interior-route-map', role: 'group', 'aria-live': 'off', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_current_station_location_connected_route_harmon', 'Current station location: {value1}. Connected route: Harmony to Destiny to Unity, port turn into Tranquility, then nadir descent into Cupola.'), { value1: room.name })},
             h('div', { className: 'iss-route-map-heading', 'aria-hidden': 'true' },
               h('strong', null, 'CONNECTED INTERIOR ROUTE'), h('span', null, 'PORT TURN // NADIR DESCENT')),
             h('svg', { className: 'iss-route-schematic', viewBox: '0 0 620 100', 'aria-hidden': 'true', focusable: 'false' },
@@ -7760,7 +7762,7 @@
           return h('div', null, renderOpsNetwork(metrics, d.opsFocus || 'all'), renderOpsForecast(orbitForecast, sunlightMinutes, orbitMinute, orbitCursor, opsScenario === 'nominal' ? null : nominalForecast), h('div', { className: 'iss-ops-grid' },
             opsControl('iss-ops-crew','Crew aboard',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-ops-research','Research load',research,0,100,5,'%','#a78bfa','opsResearch'),
             opsControl('iss-ops-angle','Solar-array alignment',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-ops-battery','Battery state',battery,0,100,1,'%','#4ade80','opsBattery')),
-            h('button', { type: 'button', onClick: function () { var run = (d.opsRuns || 0) + 1; var log = (d.opsLog || []).concat(['ORBIT ' + run + ' // battery ' + projectedBattery.toFixed(0) + '%, cabin ' + cabinTemp.toFixed(1) + '°C, CMG ' + nextCmg.toFixed(0) + '%']).slice(-5); upd({ opsBattery: projectedBattery, opsCmg: nextCmg, opsRuns: run, opsLog: log, opsLastDebrief: health, opsScenario: 'custom', opsOrbitMinute: 92 }); if (announceToSR) announceToSR('Orbit simulation complete. Station health ' + health + ' percent.'); }, style: { width: '100%', marginTop: 10, padding: '10px 14px', border: '1px solid #4ade80', borderRadius: 10, background: 'rgba(34,197,94,.14)', color: '#86efac', fontWeight: 900, cursor: 'pointer' } }, '▶ Simulate the next 92-minute orbit'), renderMissionReplay());
+            h('button', { type: 'button', onClick: function () { var run = (d.opsRuns || 0) + 1; var log = (d.opsLog || []).concat(['ORBIT ' + run + ' // battery ' + projectedBattery.toFixed(0) + '%, cabin ' + cabinTemp.toFixed(1) + '°C, CMG ' + nextCmg.toFixed(0) + '%']).slice(-5); upd({ opsBattery: projectedBattery, opsCmg: nextCmg, opsRuns: run, opsLog: log, opsLastDebrief: health, opsScenario: 'custom', opsOrbitMinute: 92 }); if (announceToSR) announceToSR(__alloFill(__alloT('stem.spacestation.sr_orbit_simulation_complete_station_health_percent', 'Orbit simulation complete. Station health {value1} percent.'), { value1: health })); }, style: { width: '100%', marginTop: 10, padding: '10px 14px', border: '1px solid #4ade80', borderRadius: 10, background: 'rgba(34,197,94,.14)', color: '#86efac', fontWeight: 900, cursor: 'pointer' } }, '▶ Simulate the next 92-minute orbit'), renderMissionReplay());
         }
         function renderPower() {
           return h('div', null,
@@ -7778,7 +7780,7 @@
         function renderAttitude() {
           var wheelColor = nextCmg < 80 ? '#a78bfa' : '#f87171';
           return h('div', null,
-            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Control Moment Gyroscope cluster, projected saturation ' + nextCmg.toFixed(0) + ' percent.' }, h('rect', { width: 640, height: 190, fill: '#050b18' }), [125,255,385,515].map(function (x,i) { var tilt = i % 2 ? 18 : -18; return h('g', { key:i, transform:'translate('+x+',92)' }, h('g',{transform:'rotate('+tilt+')'},h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:34,fill:'none',stroke:'#1e1b4b',strokeWidth:5}),h('circle',{r:34,fill:'none',stroke:wheelColor,strokeWidth:5,strokeLinecap:'round',strokeDasharray:(nextCmg/100*213.6).toFixed(1)+' 213.6',transform:'rotate(-90)'}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4})),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1)),h('text',{y:60,textAnchor:'middle',fill:'#a5b4fc',fontSize:8,fontWeight:800,letterSpacing:.6},'GIMBAL '+(tilt>0?'+':'')+tilt+'°')); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'),h('text',{x:620,y:24,textAnchor:'end',fill:wheelColor,fontSize:13,fontWeight:900},nextCmg.toFixed(0)+'%'),h('text',{x:620,y:36,textAnchor:'end',fill:'#94a3b8',fontSize:7.5,fontWeight:800,letterSpacing:.7},'CLUSTER SATURATION · RULE < 80%'),h('text',{x:320,y:176,textAnchor:'middle',fill:'#94a3b8',fontSize:8.5},'Drag torque spins the wheels up; at saturation the wheels can absorb no more and thrusters must desaturate them.'))),
+            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_control_moment_gyroscope_cluster_projected_satu', 'Control Moment Gyroscope cluster, projected saturation {value1} percent.'), { value1: nextCmg.toFixed(0) })}, h('rect', { width: 640, height: 190, fill: '#050b18' }), [125,255,385,515].map(function (x,i) { var tilt = i % 2 ? 18 : -18; return h('g', { key:i, transform:'translate('+x+',92)' }, h('g',{transform:'rotate('+tilt+')'},h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:34,fill:'none',stroke:'#1e1b4b',strokeWidth:5}),h('circle',{r:34,fill:'none',stroke:wheelColor,strokeWidth:5,strokeLinecap:'round',strokeDasharray:(nextCmg/100*213.6).toFixed(1)+' 213.6',transform:'rotate(-90)'}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4})),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1)),h('text',{y:60,textAnchor:'middle',fill:'#a5b4fc',fontSize:8,fontWeight:800,letterSpacing:.6},'GIMBAL '+(tilt>0?'+':'')+tilt+'°')); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'),h('text',{x:620,y:24,textAnchor:'end',fill:wheelColor,fontSize:13,fontWeight:900},nextCmg.toFixed(0)+'%'),h('text',{x:620,y:36,textAnchor:'end',fill:'#94a3b8',fontSize:7.5,fontWeight:800,letterSpacing:.7},'CLUSTER SATURATION · RULE < 80%'),h('text',{x:320,y:176,textAnchor:'middle',fill:'#94a3b8',fontSize:8.5},'Drag torque spins the wheels up; at saturation the wheels can absorb no more and thrusters must desaturate them.'))),
             h('div', { className: 'iss-ops-grid' }, opsControl('iss-cmg-load','Current CMG saturation',cmg,0,100,1,'%','#a78bfa','opsCmg'), opsControl('iss-cmg-research','Disturbance / operations load',research,0,100,5,'%','#38bdf8','opsResearch'), opsControl('iss-cmg-angle','Array tracking demand',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), statusBox('Next-orbit saturation',nextCmg.toFixed(0) + '%','Above 80%: plan a propulsive desaturation.',wheelColor)),
             opsMeter('Momentum storage',nextCmg,wheelColor,'CMGs save fuel until their stored momentum must be dumped'),
             h('button',{type:'button',onClick:function(){opsLogEntry('CMG desaturation burn completed; momentum reset to 8%.',{opsCmg:8,opsRuns:(d.opsRuns||0)+1});},style:{marginTop:9,padding:'8px 12px',borderRadius:9,border:'1px solid #a78bfa',background:'rgba(167,139,250,.14)',color:'#ddd6fe',fontWeight:850,cursor:'pointer'}},'🔥 Perform thruster desaturation'));
@@ -7932,7 +7934,7 @@
         }
         var content=mode==='power'?renderPower():mode==='eclss'?renderEclss():mode==='thermal'?renderThermal():mode==='attitude'?renderAttitude():mode==='debris'?renderDebris():mode==='human'?renderHuman():mode==='emergency'?renderEmergency():mode==='rendezvous'?renderRendezvous():renderIntegrated();
         return h('div',{'data-iss-operations':mode},
-          h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Every subsystem shares power, heat, mass, and operating margin.')),h('div',{className:'iss-ops-health',style:{color:healthColor},'aria-label':'Station health '+health+' percent'},health+'%')),
+          h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Every subsystem shares power, heat, mass, and operating margin.')),h('div',{className:'iss-ops-health',style:{color:healthColor},'aria-label':__alloFill(__alloT('stem.spacestation.a11y_station_health_percent', 'Station health {value1} percent'), { value1: health })},health+'%')),
           renderScenarioPresets(),
           h('div',{className:'iss-ops-metrics',role:'list','aria-label':__alloT('stem.spacestation.a11y_station_flight_rules', 'Station flight rules')},flightRules.map(function(rule){return h('div',{key:rule.label,className:'iss-ops-metric',role:'listitem'},h('button',{type:'button','data-flight-rule':rule.mode,onClick:function(){setMode(rule.mode);},'aria-label':rule.label+' '+rule.value+'. Flight rule '+rule.rule+'. '+(rule.pass?'Go':'Attention')},h('span',{className:'iss-rule-heading'},h('span',{className:'iss-ops-metric-label'},rule.label),h('i',{className:'iss-rule-light'+(rule.pass?' is-go':' is-hold'),'aria-hidden':'true'})),h('strong',{className:'iss-ops-metric-value',style:{color:rule.color}},rule.value),h('small',null,'RULE '+rule.rule+' · '+(rule.pass?'GO':'CHECK'))));})),
           renderRuleStatus(),
@@ -8028,7 +8030,7 @@
           ),
           h('div', { className: 'iss-map-controls', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_3d_station_view_controls', '3D station view controls') },
             [['overview','◉ Overview'],['truss','↔ Truss'],['labs','⚗ Labs'],['russian','★ Russian segment'],['nadir','🌍 Earth-facing']].map(function (view) { var on = (d.mapView || 'overview') === view[0]; return h('button', { key: view[0], type: 'button', 'data-iss-camera-view': view[0], 'aria-pressed': on, onClick: function () { upd({ mapView: view[0] }); var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetView) cv._issSetView(view[0]); } }, view[1]); }),
-            h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); announceToSR('Camera centered on ' + selModule.name + '.'); } }, '◎ Center ' + selModule.name.split(' (')[0]),
+            h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_centered_on', 'Camera centered on {value1}.'), { value1: selModule.name })); } }, '◎ Center ' + selModule.name.split(' (')[0]),
             h('button', { type: 'button', 'data-iss-cutaway': 'true', 'aria-pressed': !!d.mapCutaway, onClick: function () { upd({ mapCutaway: !d.mapCutaway }); } }, d.mapCutaway ? '◫ Cutaway ON' : '▣ Isolate selected module')),
           h('p', { id: 'iss-map-instructions', style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '10px 0' } },
             __alloT('stem.spacestation.map_intro', 'A schematic (not to scale) 3-D map of the real station, with a Dragon docked at Harmony and a Progress freighter on Zvezda’s aft port. Drag or use the arrow keys to rotate, plus and minus to zoom, and Home to return to the overview. The module buttons provide an equivalent non-canvas inspection path.')),
@@ -8089,7 +8091,7 @@
         ];
         var selectedAllocation = selectedMinute < 360 || selectedMinute >= 1290 ? allocations[0] : selectedMinute < 450 ? allocations[1] : selectedMinute < 1080 ? allocations[2] : allocations[3];
         return h('div', { className: 'iss-crew-day-timeline', 'data-iss-crew-day-timeline': slot.h, 'data-iss-day-allocation': selectedAllocation.id },
-          h('svg', { viewBox: '0 0 640 157', role: 'img', 'aria-label': 'Twenty-four hour GMT crew timeline. Selected event ' + slot.label + ' at ' + slot.h + '. Daily allocation: 8.5 hours sleep, 1.5 hours preparation, 10.5 hours work and exercise, and 3.5 hours meals and crew time. The selected event is in the ' + selectedAllocation.label.toLowerCase() + ' block.' },
+          h('svg', { viewBox: '0 0 640 157', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_twenty_four_hour_gmt_crew_timeline_selected_eve', 'Twenty-four hour GMT crew timeline. Selected event {value1} at {value2}. Daily allocation: 8.5 hours sleep, 1.5 hours preparation, 10.5 hours work and exercise, and 3.5 hours meals and crew time. The selected event is in the {value3} block.'), { value1: slot.label, value2: slot.h, value3: selectedAllocation.label.toLowerCase() })},
             h('text', { x: 20, y: 16, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.2 }, '24-HOUR CREW TIMELINE // GMT'),
             phases.map(function (phase, phaseIndex) {
               var x = 40 + phase.start / 1440 * 560, width = (phase.end - phase.start) / 1440 * 560;
@@ -8148,7 +8150,7 @@
           return points.join(' ');
         }
         return h('div', { className: 'iss-learning-visual iss-day-orbit', 'data-iss-day-light-phase': inSunlight ? 'sunlight' : 'eclipse' },
-          h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': 'Orbital day-cycle display for ' + slot.h + ', ' + slot.label + '. Reference orbit ' + orbitNumber + ' of 16 is in ' + phaseLabel.toLowerCase() + ', with the next transition in about ' + Math.max(1, Math.round(minutesToTransition)) + ' minutes.' },
+          h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbital_day_cycle_display_for_reference_orbit_o', 'Orbital day-cycle display for {value1}, {value2}. Reference orbit {value3} of 16 is in {value4}, with the next transition in about {value5} minutes.'), { value1: slot.h, value2: slot.label, value3: orbitNumber, value4: phaseLabel.toLowerCase(), value5: Math.max(1, Math.round(minutesToTransition)) })},
             h('defs', null, h('linearGradient', { id: 'iss-day-bg', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#030712' }), h('stop', { offset: '49%', stopColor: '#091a31' }), h('stop', { offset: '100%', stopColor: '#2b1d0d' })), h('radialGradient', { id: 'iss-day-earth', cx: '38%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' }))),
             h('rect', { width: 640, height: 150, fill: 'url(#iss-day-bg)' }),
             h('text', { x: 20, y: 12, fill: '#94a3b8', fontSize: 8, fontWeight: 850, letterSpacing: 1.1 }, 'ORBIT-CYCLE RIBBON // 24 H GMT'),
@@ -8278,7 +8280,7 @@
                 h('text', { x: 12, y: 53, fill: '#94a3b8', fontSize: 8.5 }, node[1]));
             }),
             flow.loop ? h('text', { x: 320, y: 166, textAnchor: 'middle', fill: sys.color, fontSize: 8.5, fontWeight: 800, letterSpacing: 1.2 }, flow.loopLabel || 'FEEDBACK / RECOVERY LOOP') : h('text', { x: 320, y: 132, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700, letterSpacing: 1.1 }, 'ENERGY AND MASS MOVE ONE WAY THROUGH THIS VIEW')),
-          h('div', { className: 'iss-system-steps', role: 'group', 'aria-label': 'Inspect ' + sys.name + ' process stages' }, [{ label: 'All stages', step: 0 }].concat(flow.nodes.map(function (node, nodeIndex) { return { label: (nodeIndex + 1) + ' ' + node[0], step: nodeIndex + 1 }; })).map(function (item) { var on = selectedStep === item.step; return h('button', { key: item.step, type: 'button', 'data-iss-system-step': item.step, 'aria-pressed': on, onClick: function () { upd({ sysStep: item.step }); } }, item.label); })),
+          h('div', { className: 'iss-system-steps', role: 'group', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_inspect_process_stages', 'Inspect {value1} process stages'), { value1: sys.name })}, [{ label: 'All stages', step: 0 }].concat(flow.nodes.map(function (node, nodeIndex) { return { label: (nodeIndex + 1) + ' ' + node[0], step: nodeIndex + 1 }; })).map(function (item) { var on = selectedStep === item.step; return h('button', { key: item.step, type: 'button', 'data-iss-system-step': item.step, 'aria-pressed': on, onClick: function () { upd({ sysStep: item.step }); } }, item.label); })),
           h('div', { className: 'iss-visual-caption' }, h('span', null, selectedStep ? flow.nodes[selectedStep - 1][0] + ': ' + flow.nodes[selectedStep - 1][1] : flow.caption), h('span', null, selectedStep ? 'STAGE ' + selectedStep + ' / ' + flow.nodes.length : 'SELECTED: ' + sys.name.toUpperCase())));
       }
 
@@ -8304,7 +8306,7 @@
         var stationX = 320 + Math.cos(theta) * orbitRx;
         var stationY = 140 + Math.sin(theta) * orbitRy;
         return h('div', { className: 'iss-learning-visual iss-orbit-visual' },
-          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Orbit diagram at ' + orbitAlt + ' kilometers altitude, moving ' + orbitV.toFixed(2) + ' kilometers per second with a period of ' + orbitT.toFixed(1) + ' minutes. ' + comparisonText.toLowerCase() + '.' },
+          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbit_diagram_at_kilometers_altitude_moving_kil', 'Orbit diagram at {value1} kilometers altitude, moving {value2} kilometers per second with a period of {value3} minutes. {value4}.'), { value1: orbitAlt, value2: orbitV.toFixed(2), value3: orbitT.toFixed(1), value4: comparisonText.toLowerCase() })},
             h('defs', null,
               h('radialGradient', { id: 'iss-orbit-earth', cx: '35%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '52%', stopColor: '#1863a0' }), h('stop', { offset: '100%', stopColor: '#071c3b' })),
               h('filter', { id: 'iss-orbit-cloud', x: '-60%', y: '-180%', width: '220%', height: '460%' }, h('feGaussianBlur', { stdDeviation: 3 })),
@@ -8349,7 +8351,7 @@
           : orbitAlt <= 1000 ? 'LOWER DRAG'
           : 'RADIATION EXPOSURE RISES';
         return h('div', { className: 'iss-orbit-environment', 'data-iss-orbit-environment': regime },
-          h('svg', { viewBox: '0 0 640 142', role: 'img', 'aria-label': 'Altitude environment scale from 200 to 2000 kilometers. Current altitude ' + orbitAlt + ' kilometers is in the ' + regime.toLowerCase() + ' region.' },
+          h('svg', { viewBox: '0 0 640 142', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_altitude_environment_scale_from_200_to_2000_kil', 'Altitude environment scale from 200 to 2000 kilometers. Current altitude {value1} kilometers is in the {value2} region.'), { value1: orbitAlt, value2: regime.toLowerCase() })},
             h('defs', null,
               h('linearGradient', { id: 'iss-altitude-band', x1: '0', y1: '0', x2: '1', y2: '0' },
                 h('stop', { offset: '0%', stopColor: '#ef4444' }), h('stop', { offset: '7%', stopColor: '#f59e0b' }), h('stop', { offset: '18%', stopColor: '#22c55e' }), h('stop', { offset: '48%', stopColor: '#38bdf8' }), h('stop', { offset: '100%', stopColor: '#818cf8' })),
@@ -8699,7 +8701,7 @@
         var selectedX = xAt(step);
         var currentValues = rows.map(function (row) { return row.values[step] + row.suffix; });
         return h('div', { className: 'iss-assembly-growth', 'data-iss-assembly-growth': step },
-          h('svg', { viewBox: '0 0 640 148', role: 'img', 'aria-label': 'Station growth profile at ' + TIMELINE[step].y + '. ' + rows[0].label.toLowerCase() + ' ' + currentValues[0] + ', pressurized volume ' + currentValues[1] + ', available power ' + currentValues[2] + '.' },
+          h('svg', { viewBox: '0 0 640 148', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_station_growth_profile_at_pressurized_volume_av', 'Station growth profile at {value1}. {value2} {value3}, pressurized volume {value4}, available power {value5}.'), { value1: TIMELINE[step].y, value2: rows[0].label.toLowerCase(), value3: currentValues[0], value4: currentValues[1], value5: currentValues[2] })},
             h('rect', { width: 640, height: 148, fill: '#07101d' }),
             h('text', { x: 20, y: 19, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.25 }, 'ASSEMBLY GROWTH PROFILE // SHARED MILESTONE AXIS'),
             [0, 3, 6, 9, 12].map(function (i) { return h('line', { key: 'grid' + i, x1: xAt(i), y1: 30, x2: xAt(i), y2: 128, stroke: '#334155', strokeWidth: 1, opacity: i === 0 || i === 12 ? .7 : .35 }); }),
@@ -8742,7 +8744,7 @@
         var volumeStage = Math.round(visible.filter(function (m) { return m.id !== 'truss'; }).length / 12 * 916);
         return h('div', { className: 'iss-assembly-stage' },
           h('p', { className: 'iss-assembly-note' }, TIMELINE[step].e),
-          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Station assembly visualization at ' + TIMELINE[step].y + '. ' + visible.length + ' major elements shown, ' + (arrayWings.length * 2) + ' of 8 solar array wings installed, ' + powerStage + ' kilowatts available. ' + installLabel + '.' },
+          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_station_assembly_visualization_at_major_element', 'Station assembly visualization at {value1}. {value2} major elements shown, {value3} of 8 solar array wings installed, {value4} kilowatts available. {value5}.'), { value1: TIMELINE[step].y, value2: visible.length, value3: (arrayWings.length * 2), value4: powerStage, value5: installLabel })},
             h('defs', null, h('pattern', { id: 'iss-assembly-grid', width: 24, height: 24, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M24 0H0V24', fill: 'none', stroke: '#38bdf8', strokeWidth: .45, opacity: .15 })), h('marker', { id: 'iss-deorbit-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#fb7185' })),
               h('pattern', { id: 'iss-assembly-lattice', width: 7, height: 8, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M0 0L7 8M7 0L0 8', stroke: '#e2e8f0', strokeWidth: .7, fill: 'none' })),
               h('radialGradient', { id: 'iss-assembly-earth', cx: '46%', cy: '7%', r: '74%' },
@@ -8808,7 +8810,7 @@
           renderAssemblyVisual(),
           card(__alloT('stem.spacestation.timeline', '📜 Assembly to retirement'),
             h('div', { className: 'iss-timeline' }, TIMELINE.map(function (t2, i) {
-              return h('button', { type: 'button', className: 'iss-timeline-item iss-timeline-item-button' + (i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? ' is-active' : ''), key: i, 'data-iss-assembly-milestone': i, 'aria-label': 'Show station assembly at ' + t2.y, 'aria-current': i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? 'step' : undefined, onClick: function () { upd({ assemblyIdx: i }); }, style: { display: 'grid', gridTemplateColumns: '86px 1fr', gap: 10, padding: '7px 0', borderBottom: i < TIMELINE.length - 1 ? '1px solid rgba(51,65,85,0.5)' : 'none' } },
+              return h('button', { type: 'button', className: 'iss-timeline-item iss-timeline-item-button' + (i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? ' is-active' : ''), key: i, 'data-iss-assembly-milestone': i, 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_show_station_assembly_at', 'Show station assembly at {value1}'), { value1: t2.y }), 'aria-current': i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? 'step' : undefined, onClick: function () { upd({ assemblyIdx: i }); }, style: { display: 'grid', gridTemplateColumns: '86px 1fr', gap: 10, padding: '7px 0', borderBottom: i < TIMELINE.length - 1 ? '1px solid rgba(51,65,85,0.5)' : 'none' } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', fontFamily: 'ui-monospace, monospace' } }, t2.y),
                 h('div', { style: { fontSize: 12.5, color: TEXT, lineHeight: 1.55 } }, t2.e));
             })), '#38bdf8'),
@@ -8822,7 +8824,7 @@
 
       function renderQuizConsole(questionIndex) {
         var answered = d.quizDone ? QUIZ.length : Math.min(QUIZ.length, questionIndex + (d.quizPicked != null ? 1 : 0));
-        return h('div', { className: 'iss-quiz-console', role: 'group', 'aria-label': 'Quiz progress: ' + answered + ' of ' + QUIZ.length + ' answered, current score ' + (d.quizScore || 0) },
+        return h('div', { className: 'iss-quiz-console', role: 'group', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_quiz_progress_of_answered_current_score', 'Quiz progress: {value1} of {value2} answered, current score {value3}'), { value1: answered, value2: QUIZ.length, value3: (d.quizScore || 0) })},
           h('div', { className: 'iss-quiz-number', 'aria-hidden': 'true' }, d.quizDone ? '✓' : (questionIndex + 1) + '/' + QUIZ.length),
           h('div', { className: 'iss-quiz-track', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': QUIZ.length, 'aria-valuenow': answered, 'aria-label': __alloT('stem.spacestation.a11y_questions_answered', 'Questions answered') }, QUIZ.map(function (_, i) { return h('span', { key: i, className: 'iss-quiz-segment' + (i < answered ? ' is-complete' : '') }); })),
           h('div', { className: 'iss-quiz-score' }, 'Current score', h('strong', null, (d.quizScore || 0) + ' / ' + QUIZ.length)));
@@ -8837,7 +8839,7 @@
         var outcome = score >= QUIZ_PASS ? 'FLIGHT QUALIFIED' : 'TRAINING LOOP';
         var detail = known ? score + ' correct, ' + missed + ' to review.' : 'Question-by-question history begins on the next run.';
         return h('div', { className: 'iss-learning-visual iss-quiz-debrief', 'data-iss-quiz-debrief': known },
-          h('svg', { viewBox: '0 0 640 198', role: 'img', 'aria-label': 'Quiz debrief. Score ' + score + ' out of ' + QUIZ.length + '. ' + outcome.toLowerCase() + '. ' + detail },
+          h('svg', { viewBox: '0 0 640 198', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_quiz_debrief_score_out_of', 'Quiz debrief. Score {value1} out of {value2}. {value3}. {value4}'), { value1: score, value2: QUIZ.length, value3: outcome.toLowerCase(), value4: detail })},
             h('defs', null,
               h('linearGradient', { id: 'iss-quiz-debrief-bg', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#04101f' }), h('stop', { offset: '100%', stopColor: '#10153a' })),
               h('filter', { id: 'iss-quiz-ring-glow', x: '-40%', y: '-40%', width: '180%', height: '180%' }, h('feGaussianBlur', { stdDeviation: 4, result: 'blur' }), h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
@@ -8893,7 +8895,7 @@
               ), '#22c55e')
           : card((qi + 1) + ' / ' + QUIZ.length + ' — ' + q.q,
               h('div', null,
-                h('div', { role: 'group', 'aria-label': 'Answer options for question ' + (qi + 1) + ' of ' + QUIZ.length, style: { display: 'grid', gap: 6 } },
+                h('div', { role: 'group', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_answer_options_for_question_of', 'Answer options for question {value1} of {value2}'), { value1: (qi + 1), value2: QUIZ.length }), style: { display: 'grid', gap: 6 } },
                   q.o.map(function (opt, oi) {
                     var isPicked = picked === oi, isRight = oi === q.a;
                     var answerState = picked == null ? '' : isRight && isPicked ? '✓ Your answer — correct.' : isRight ? '✓ Correct answer.' : isPicked ? '✕ Your answer — incorrect.' : '';

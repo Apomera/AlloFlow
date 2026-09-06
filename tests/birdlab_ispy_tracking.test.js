@@ -1232,7 +1232,7 @@ describe('BirdLab I-Spy binocular tracking', () => {
     const fireSource = functionSlice('fireHint');
     expect(fireSource).toContain('function fireHint(bird, options)');
     expect(fireSource).toContain('options = options || {};');
-    expect(fireSource).toContain("if (options.announceLocation !== false) announce('Location clue: ' + bird.hint);");
+    expect(fireSource).toContain("if (options.announceLocation !== false) announce(__alloFill(__alloT('stem.birdlab.sr_location_clue', 'Location clue: {value1}'), { value1: bird.hint }));");
     expect(source).toContain('else fireHint(b);');
     expect(spatialSource).not.toContain('consumeHintUse(');
     expect(spatialSource).not.toContain("upd('blHintsUsed'");

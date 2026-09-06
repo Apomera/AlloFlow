@@ -2271,6 +2271,8 @@
       ready: false,
       render: function (ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
         var React = ctx && ctx.React;
         var h = React && React.createElement;
         if (!h) return null;
@@ -2438,7 +2440,7 @@
               callGemini(p3, true, false, 0.7).then(function (resp) {
                 var parsed = parseJson(resp);
                 var v = validateHypotheses(parsed && parsed.hypotheses);
-                if (v.ok) { upd('aiHyps', v.hypotheses); upd('aiText', ''); announce('AI proposed ' + v.hypotheses.length + ' competing explanations.'); }
+                if (v.ok) { upd('aiHyps', v.hypotheses); upd('aiText', ''); announce(__alloFill(__alloT('stem.lumen.sr_ai_proposed_competing_explanations', 'AI proposed {value1} competing explanations.'), { value1: v.hypotheses.length })); }
                 else { upd('aiHyps', null); upd('aiError', 'AI reading rejected (' + v.problems.join('; ') + '); showing data only.'); }
                 upd('aiLoading', false);
               }).catch(function () { upd('aiError', 'AI request failed; showing data only.'); upd('aiLoading', false); });
@@ -2503,7 +2505,7 @@
             var out = buildPresentationHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp), includePII: !!d.includePII, chartSvg: svgStr, chartType: chartType });
             download(out.filename, out.html, 'text/html');
             upd('exportMsg', 'Exported ' + out.filename + ' (max level ' + out.maxLevel + ').');
-            announce('Exported presentation ' + out.filename + '.');
+            announce(__alloFill(__alloT('stem.lumen.sr_exported_presentation', 'Exported presentation {value1}.'), { value1: out.filename }));
           };
           var kids = [];
           kids.push(h('nav', { key: 'workspaceNav', className: 'flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200', 'aria-label': __alloT('stem.lumen.a11y_lumen_workspace_modes', 'Lumen workspace modes') },
@@ -2610,7 +2612,7 @@
             return h('button', {
               key: 'c' + lvl, 'aria-pressed': ceiling === lvl ? 'true' : 'false',
               className: (ceiling === lvl ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border',
-              onClick: function () { upd('ceiling', lvl); upd('aiError', ''); announce('AI ceiling set to ' + label + '.'); }
+              onClick: function () { upd('ceiling', lvl); upd('aiError', ''); announce(__alloFill(__alloT('stem.lumen.sr_ai_ceiling_set_to', 'AI ceiling set to {value1}.'), { value1: label })); }
             }, label);
           };
           kids.push(h('div', { key: 'dial', className: 'mt-2 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.ai_involvement_ceiling', 'AI involvement ceiling') },
@@ -2723,7 +2725,7 @@
               className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800',
               onClick: function () {
                 var x = parseFloat(d.draftX), y = parseFloat(d.draftY);
-                if (isNaN(x) || isNaN(y)) { announce('Enter a numeric ' + xLabel.toLowerCase() + ' and value.'); return; }
+                if (isNaN(x) || isNaN(y)) { announce(__alloFill(__alloT('stem.lumen.sr_enter_a_numeric_and_value', 'Enter a numeric {value1} and value.'), { value1: xLabel.toLowerCase() })); return; }
                 var row = { x: x, y: y, phase: d.draftPhase || null };
                 var y2 = parseFloat(d.draftY2);
                 if (chartType === 'scatter' && !isNaN(y2)) row.y2 = y2; // paired 2nd measure, scatter only
@@ -2792,7 +2794,7 @@
                 var fileType = ingestFileTypeFromName(file.name);
                 if (!fileType) {
                   upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: null, error: 'Unsupported file type. Supported: ' + INGEST_FILE_TYPES.join(', ') });
-                  announce('File type not supported: ' + file.name);
+                  announce(__alloFill(__alloT('stem.lumen.sr_file_type_not_supported', 'File type not supported: {value1}'), { value1: file.name }));
                   ev.target.value = ''; return;
                 }
                 if (file.size > INGEST_MAX_BYTES) {
@@ -2912,7 +2914,7 @@
                   h('button', { className: 'px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('importPreview', null); announce(__alloT('stem.lumen.sr_import_cancelled', 'Import cancelled.')); } }, __alloT('stem.lumen.cancel_2', 'Cancel')),
                   h('button', { className: 'px-3 py-1 text-xs font-semibold rounded bg-amber-700 text-white hover:bg-amber-800', onClick: function () {
                     var mapped = mapTextTableToObservations({ headers: ip.headers, rows: ip.rows }, imp);
-                    if (mapped.error) { announce('Import error: ' + mapped.error); return; }
+                    if (mapped.error) { announce(__alloFill(__alloT('stem.lumen.sr_import_error', 'Import error: {value1}'), { value1: mapped.error })); return; }
                     if (!mapped.rows.length) { announce(__alloT('stem.lumen.sr_import_bound_0_rows_every_row_missing_or_non_nume', 'Import bound 0 rows (every row missing or non-numeric in the mapped columns).')); return; }
                     var next = obs.concat(mapped.rows);
                     setObservations(next);
@@ -3040,7 +3042,7 @@
                       var normalized = normalizeBenchExtraction(extraction);
                       var nextCells = rebuildScaffold();
                       setBench({ fileName: file.name, fileType: docType, error: extraction && extraction.error ? extraction.error : null, extraction: normalized, cells: nextCells, activePageIdx: 0 });
-                      announce('Loaded ' + file.name + ': ' + normalized.pages.length + ' page(s). Scaffold has ' + nextCells.length + ' empty cell(s) to verify.');
+                      announce(__alloFill(__alloT('stem.lumen.sr_loaded_page_s_scaffold_has_empty_cell_s_to_verify', 'Loaded {value1}: {value2} page(s). Scaffold has {value3} empty cell(s) to verify.'), { value1: file.name, value2: normalized.pages.length, value3: nextCells.length }));
                     }
                     if (docType === 'pdf') {
                       lazyLoadPdfJs().then(function (pdfjs) { return file.arrayBuffer().then(function (buf) { return extractPdfText(pdfjs, buf); }); }).then(land).catch(function (err) { setBench({ error: 'Could not load pdf.js: ' + (err && err.message ? err.message : 'unknown') + '. Try saving the PDF as plain text and importing that instead.' }); });
@@ -3096,7 +3098,7 @@
                 h('div', { className: 'flex flex-col justify-end text-slate-700' },
                   h('button', {
                     className: 'px-2 py-1 text-xs rounded border border-cyan-700 bg-white text-cyan-800 hover:bg-cyan-50',
-                    onClick: function () { setBench({ cells: rebuildScaffold() }); announce('Scaffold rebuilt: ' + (bw.cells || []).length + ' cells.'); }
+                    onClick: function () { setBench({ cells: rebuildScaffold() }); announce(__alloFill(__alloT('stem.lumen.sr_scaffold_rebuilt_cells', 'Scaffold rebuilt: {value1} cells.'), { value1: (bw.cells || []).length })); }
                   }, 'Rebuild scaffold (' + totalCount + ' cells, ' + verifiedCount + ' verified)'))),
               // Two-column layout: extracted text | cells
               h('div', { className: 'mt-3 grid grid-cols-1 lg:grid-cols-2 gap-3' },
@@ -3144,7 +3146,7 @@
                               var next = (bw.cells || []).slice();
                               next[idx] = r.cell;
                               setBench({ cells: next });
-                              announce('Cell verified: G' + c.grade + ' ' + c.season + ' p' + c.percentile + ' = ' + c.value + '.');
+                              announce(__alloFill(__alloT('stem.lumen.sr_cell_verified_g_p', 'Cell verified: G{value1} {value2} p{value3} = {value4}.'), { value1: c.grade, value2: c.season, value3: c.percentile, value4: c.value }));
                             } }, __alloT('stem.lumen.verify_this_cell', '✓ Verify this cell')),
                         v.ok ? null : h('span', { className: 'text-[0.625rem] text-amber-700' }, 'Needs: ' + v.errors.join(', '))));
                   })))),
@@ -3169,7 +3171,7 @@
             kids.push(h('div', { key: 'focusChip', role: 'status', className: 'mt-2 inline-flex items-center gap-2 text-xs font-semibold rounded-full px-3 py-1 border border-amber-400 text-amber-900', style: { background: '#fef3c7' } },
               h('span', { 'aria-hidden': 'true' }, '◐'),
               h('span', null, __alloT('stem.lumen.showing', 'Showing') + ' ' + claim.shownOf.shown + ' ' + __alloT('stem.lumen.of', 'of') + ' ' + claim.shownOf.total + ' — ' + __alloT('stem.lumen.stats_use_only_focused', 'stats and the chart use only the focused points')),
-              h('button', { className: 'underline font-semibold', onClick: function () { upd('focusIds', null); announce('Focus cleared — showing all ' + obs.length + ' points.'); } }, __alloT('stem.lumen.show_all', 'Show all'))));
+              h('button', { className: 'underline font-semibold', onClick: function () { upd('focusIds', null); announce(__alloFill(__alloT('stem.lumen.sr_focus_cleared_showing_all_points', 'Focus cleared — showing all {value1} points.'), { value1: obs.length })); } }, __alloT('stem.lumen.show_all', 'Show all'))));
           }
 
           // Multi-series: ONE provenance-bound sentence PER series (refused ones included — anti-cherry-pick).
@@ -3391,10 +3393,10 @@
               var next = currentFocus.indexOf(id) >= 0 ? currentFocus.filter(function (x2) { return x2 !== id; }) : currentFocus.concat([id]);
               if (!next.length || next.length === allObsIds.length) {
                 upd('focusIds', null);
-                announce('Focus cleared — showing all ' + allObsIds.length + ' points.');
+                announce(__alloFill(__alloT('stem.lumen.sr_focus_cleared_showing_all_points', 'Focus cleared — showing all {value1} points.'), { value1: allObsIds.length }));
               } else {
                 upd('focusIds', next);
-                announce('Focus: showing ' + next.length + ' of ' + allObsIds.length + ' points. Stats and the chart now use only the focused points.');
+                announce(__alloFill(__alloT('stem.lumen.sr_focus_showing_of_points_stats_and_the_chart_now_u', 'Focus: showing {value1} of {value2} points. Stats and the chart now use only the focused points.'), { value1: next.length, value2: allObsIds.length }));
               }
             };
             kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', 'aria-expanded': d.showTable ? 'true' : 'false', 'aria-controls': 'lumen-data-table', onClick: function () { announce(d.showTable ? 'Data table hidden.' : 'Data table shown.'); upd('showTable', !d.showTable); } },
@@ -3416,7 +3418,7 @@
                     (canEditRows ? h('td', { key: 'fc', className: 'border px-2 py-0.5 text-center' },
                       h('input', {
                         type: 'checkbox', checked: currentFocus.indexOf(rowId) >= 0,
-                        'aria-label': 'Include the point at ' + xLabel.toLowerCase() + ' ' + r.x + ', value ' + r.y + ' in the stats',
+                        'aria-label': __alloFill(__alloT('stem.lumen.a11y_include_the_point_at_value_in_the_stats', 'Include the point at {value1} {value2}, value {value3} in the stats'), { value1: xLabel.toLowerCase(), value2: r.x, value3: r.y }),
                         onChange: (function (id2) { return function () { toggleFocus(id2); }; })(rowId)
                       })) : null),
                     h('td', { className: 'border px-2 py-0.5' }, String(r.x)),
@@ -3429,7 +3431,7 @@
                     (canEditRows ? h('td', { key: 'rm', className: 'border px-2 py-0.5 text-center' },
                       h('button', {
                         className: 'text-rose-700 hover:text-rose-900 font-semibold',
-                        'aria-label': 'Remove the point at ' + xLabel.toLowerCase() + ' ' + r.x + ', value ' + r.y,
+                        'aria-label': __alloFill(__alloT('stem.lumen.a11y_remove_the_point_at_value', 'Remove the point at {value1} {value2}, value {value3}'), { value1: xLabel.toLowerCase(), value2: r.x, value3: r.y }),
                         onClick: (function (oi, rx, ry) { return function () {
                           setObservations(obs.filter(function (_, k2) { return k2 !== oi; }),
                             'Removed the point at ' + xLabel.toLowerCase() + ' ' + rx + ', value ' + ry + '. ' + (obs.length - 1) + ' observations remain.');
@@ -3532,7 +3534,7 @@
                   }, comp);
                   nref.id = 's' + (sourceRefs.length + 1);
                   upd('sourceRefs', sourceRefs.concat([nref])); upd('benchMsg', '');
-                  announce('Added benchmark: ' + nref.keyLabel + '.');
+                  announce(__alloFill(__alloT('stem.lumen.sr_added_benchmark', 'Added benchmark: {value1}.'), { value1: nref.keyLabel }));
                 }
               }, __alloT('stem.lumen.add_benchmark_btn', 'Add'))));
             // Honest empty-state: the curated norm table SHIPS EMPTY by design (every cell must be

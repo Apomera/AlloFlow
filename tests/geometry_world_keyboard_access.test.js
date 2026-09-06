@@ -878,7 +878,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("className: 'gw-scene-map', role: 'region', 'aria-labelledby': 'gw-scene-map-title'");
     expect(SOURCE).toContain("id: 'gw-scene-map-title'");
     expect(SOURCE).toContain("'aria-controls': 'gw-scene-map'");
-    expect(SOURCE).toContain("'aria-label': 'View structure: ' + structure.label");
+    expect(SOURCE).toContain("'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_view_structure', 'View structure: {value1}'), { value1: structure.label })");
     expect(SOURCE).toContain(`role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_structures_in_scene', 'Structures in scene')`);
     expect(SOURCE).toContain('engine.getSceneOverview = function()');
     expect(SOURCE).toContain('engine.focusStructure = function(index)');

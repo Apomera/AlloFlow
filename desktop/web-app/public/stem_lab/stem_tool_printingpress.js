@@ -183,6 +183,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       try {
       var React = ctx.React;
       var h = React.createElement;
@@ -900,8 +902,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             links.map(function(link, i) {
               var label = MODULE_LABELS[link.id] || link.id;
               return h('button', { key: i,
-                onClick: function() { upd('view', link.id); markVisited(link.id); announce('Opening ' + label); },
-                'aria-label': 'Open ' + label,
+                onClick: function() { upd('view', link.id); markVisited(link.id); announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: label })); },
+                'aria-label': __alloFill(__alloT('stem.printingpress.a11y_open', 'Open {value1}'), { value1: label }),
                 style: btn({
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4,
                   padding: 10, borderColor: T.border
@@ -1311,7 +1313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             onClick: function() {
               upd('view', tile.id);
               markVisited(tile.id);
-              announce('Opening ' + tile.label);
+              announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: tile.label }));
             },
             style: btn({
               display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
@@ -1471,7 +1473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   onClick: function () {
                     upd('view', nextTile.id);
                     markVisited(nextTile.id);
-                    announce('Opening ' + nextTile.label);
+                    announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: nextTile.label }));
                   },
                   style: Object.assign(btn({}), {
                     background: T.accent,
@@ -1495,7 +1497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8, flexWrap: 'wrap' } },
                 h('h1', { style: { margin: 0, fontSize: 30, color: T.accentHi, fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '0.02em' } }, __alloT('stem.printingpress.printingpress', '📜 PrintingPress')),
                 h('span', { style: { fontSize: 12, color: T.muted },
-                  'aria-label': 'Modules visited: ' + Math.min(visitedCount, totalModules) + ' of ' + totalModules },
+                  'aria-label': __alloFill(__alloT('stem.printingpress.a11y_modules_visited_of', 'Modules visited: {value1} of {value2}'), { value1: Math.min(visitedCount, totalModules), value2: totalModules })},
                   Math.min(visitedCount, totalModules) + ' / ' + totalModules + ' modules')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } },
                 __alloT('stem.printingpress.the_gutenberg_press_changed_who_could_', 'The Gutenberg press changed who could read, what could be known, and how fast an idea could travel. Pull the bar. Set the type. Then see the world it built.')),
@@ -1566,7 +1568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 { id: 'printGlossary', title: 'Review vocabulary', body: 'Use the glossary and quiz when students need consolidation.', tone: T.dim }
               ].map(function(route) {
                 return h('button', { key: route.id,
-                  onClick: function() { upd('view', route.id); markVisited(route.id); announce('Opening ' + route.title); },
+                  onClick: function() { upd('view', route.id); markVisited(route.id); announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: route.title })); },
                   style: Object.assign(btn({}), { textAlign: 'left', alignItems: 'stretch', minHeight: 112, padding: 12, background: T.cardAlt, borderColor: route.tone, borderTop: '4px solid ' + route.tone, cursor: 'pointer' }) },
                   h('div', { style: { fontSize: 14, color: route.tone, fontWeight: 800, fontFamily: 'Georgia, serif', marginBottom: 5 } }, route.title),
                   h('div', { style: { color: T.muted, fontSize: 11.5, lineHeight: 1.45, marginBottom: 8 } }, route.body),
@@ -1816,7 +1818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             if (nextCount === 25) awardBadge('morning_crew', 'Morning Crew (25 impressions)');
             if (nextCount === 50) awardBadge('half_day_run', 'Half-Day Run (50 impressions)');
             if (nextCount === 100) awardBadge('master_printer_run', 'Master Printer (100 impressions)');
-            announce('Step 6: Impression complete. ' + nextCount + ' total. The paper bears the printed text.');
+            announce(__alloFill(__alloT('stem.printingpress.sr_step_6_impression_complete_total_the_paper_bears', 'Step 6: Impression complete. {value1} total. The paper bears the printed text.'), { value1: nextCount }));
           } else if (pressState === 'revealed') {
             setPressState('clean');
             announce(__alloT('stem.printingpress.sr_press_reset_ready_for_the_next_impression', 'Press reset. Ready for the next impression.'));
@@ -1952,8 +1954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('svg', {
                 width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 520, display: 'block', margin: '0 auto', background: '#1f1610', borderRadius: 8 },
                 role: 'img',
-                'aria-label': 'Side view of a Gutenberg-style screw press in state: ' + pressState
-              },
+                'aria-label': __alloFill(__alloT('stem.printingpress.a11y_side_view_of_a_gutenberg_style_screw_press_in_s', 'Side view of a Gutenberg-style screw press in state: {value1}'), { value1: pressState })},
                 // ── SVG defs: wood grain pattern + paper aging filter ──
                 // The wood pattern is a vertical-grain texture using
                 // semi-transparent darker streaks. Reused on all wooden
@@ -2804,7 +2805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           var nextSlots = st.slots.slice();
           nextSlots[slotIdx] = SORTS[idx];
           setSt({ slots: nextSlots, picked: null });
-          announce('Placed ' + SORTS[idx] + ' in slot ' + (slotIdx + 1));
+          announce(__alloFill(__alloT('stem.printingpress.sr_placed_in_slot', 'Placed {value1} in slot {value2}'), { value1: SORTS[idx], value2: (slotIdx + 1) }));
         }
         function clearSlot(slotIdx) {
           var nextSlots = st.slots.slice();
@@ -3036,7 +3037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                       announce(isProofErrorPosition(i) ? 'Correct. That word is the error.' : 'Not the error. The correct answer is shown.');
                     },
                     'aria-pressed': isGuessed ? 'true' : 'false',
-                    'aria-label': 'Word ' + (i + 1) + ': ' + tok,
+                    'aria-label': __alloFill(__alloT('stem.printingpress.a11y_word', 'Word {value1}: {value2}'), { value1: (i + 1), value2: tok }),
                     disabled: proofRevealed,
                     style: {
                       display: 'inline-block',
@@ -3163,7 +3164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               var doneHere = !!challengesDone[ch.id];
               return h('button', {
                 key: i,
-                onClick: function() { setChallengeIdx(i); announce('Loaded ' + ch.label); },
+                onClick: function() { setChallengeIdx(i); announce(__alloFill(__alloT('stem.printingpress.sr_loaded', 'Loaded {value1}'), { value1: ch.label })); },
                 'aria-label': ch.label + (doneHere ? ' (composed)' : ''),
                 style: i === challengeIdx ? btnPrimary({ padding: '6px 12px', fontSize: 12 }) : btn({ padding: '6px 12px', fontSize: 12 })
               },
@@ -8337,13 +8338,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           setStep(0);
           setChoices([]);
           setFeedback(null);
-          announce('Role selected: ' + ROLES[roleId].label);
+          announce(__alloFill(__alloT('stem.printingpress.sr_role_selected', 'Role selected: {value1}'), { value1: ROLES[roleId].label }));
         }
         function pickChoice(choiceObj) {
           setFeedback(choiceObj);
           var newChoices = choices.concat([{ stepIdx: step, choice: choiceObj }]);
           setChoices(newChoices);
-          announce('Choice recorded. ' + choiceObj.outcome);
+          announce(__alloFill(__alloT('stem.printingpress.sr_choice_recorded_2', 'Choice recorded. {value1}'), { value1: choiceObj.outcome }));
         }
         function nextStep() {
           setFeedback(null);
@@ -8367,7 +8368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 var r = ROLES[roleId];
                 return h('button', { key: roleId,
                   onClick: function() { pickRole(roleId); },
-                  'aria-label': 'Choose role: ' + r.label,
+                  'aria-label': __alloFill(__alloT('stem.printingpress.a11y_choose_role', 'Choose role: {value1}'), { value1: r.label }),
                   style: btn({
                     display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
                     padding: 16, minHeight: 160, background: T.card, borderColor: T.border
@@ -9068,7 +9069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                       h('div', { style: { fontSize: 15, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, modLabel)),
                     h('button', {
                       className: 'printingpress-no-print',
-                      onClick: function() { upd('view', modId); markVisited(modId); announce('Opening ' + modLabel); },
+                      onClick: function() { upd('view', modId); markVisited(modId); announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: modLabel })); },
                       style: btnPrimary({ padding: '8px 14px', fontSize: 12, whiteSpace: 'nowrap' })
                     }, __alloT('stem.printingpress.review', 'Review →'))
                   ),
@@ -9093,7 +9094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             __alloT('stem.printingpress.question', 'Question '), h('strong', null, st.idx + 1), ' of ' + CUMULATIVE_QUESTIONS.length,
             __alloT('stem.printingpress.score', ' · score '), h('strong', null, st.score)),
           // Progress bar — fills as the student works through the quiz
-          h('div', { 'aria-label': 'Quiz progress: ' + progressPct + '%',
+          h('div', { 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_quiz_progress', 'Quiz progress: {value1}%'), { value1: progressPct }),
             style: { width: '100%', height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden', border: '1px solid ' + T.border, marginBottom: 12 } },
             h('div', { style: { width: progressPct + '%', height: '100%', background: T.accent, transition: 'width 0.3s ease' } })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 18 } },
@@ -10002,7 +10003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('div', { style: { maxHeight: 300, overflowY: 'auto', paddingRight: 6 } },
               timelineEvents.map(function(e, i) {
                 return h('div', { key: i,
-                  onClick: function() { setGpRegion(e.region); announce('Region selected: ' + e.region); },
+                  onClick: function() { setGpRegion(e.region); announce(__alloFill(__alloT('stem.printingpress.sr_region_selected', 'Region selected: {value1}'), { value1: e.region })); },
                   style: { cursor: 'pointer', padding: '6px 10px', marginBottom: 4, borderRadius: 6, background: T.cardAlt, borderLeft: '3px solid ' + (timelineColor[e.region] || T.accent), fontSize: 12, color: T.muted } },
                   h('span', { style: { fontFamily: 'ui-monospace, monospace', color: T.accentHi, marginRight: 8, fontWeight: 700 } }, e.year),
                   e.event
@@ -10213,7 +10214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               processStages.map(function(s, i) {
                 var sel = (i === pmStage);
                 return h('button', { key: i,
-                  onClick: function() { setPmStage(i); announce('Stage ' + (i+1) + ': ' + s.name); },
+                  onClick: function() { setPmStage(i); announce(__alloFill(__alloT('stem.printingpress.sr_stage', 'Stage {value1}: {value2}'), { value1: (i+1), value2: s.name })); },
                   style: btn({ padding: '8px 12px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   (i + 1) + '. ' + s.emoji + ' ' + s.name);
               })
@@ -11139,7 +11140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: cScenario <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.previous', '← Previous')),
               h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
                 printerScenarios.map(function(_, i) {
-                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Go to scenario ' + (i + 1), 'aria-current': (i === cScenario) ? 'true' : undefined, onClick: function() { setCScenario(i); setCScChoice(null); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCScenario(i); setCScChoice(null); } },
+                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_go_to_scenario', 'Go to scenario {value1}'), { value1: (i + 1) }), 'aria-current': (i === cScenario) ? 'true' : undefined, onClick: function() { setCScenario(i); setCScChoice(null); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCScenario(i); setCScChoice(null); } },
                     style: { cursor: 'pointer', display: 'inline-block', width: 28, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === cScenario) ? T.accent : T.cardAlt, color: (i === cScenario) ? T.ink : T.text, fontWeight: 700 } }, i + 1);
                 })
               ),
@@ -11158,7 +11159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             !cScChoice && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               curScenario.choices.map(function(c, i) {
                 return h('button', { key: c.id,
-                  onClick: function() { setCScChoice(c.id); announce('Selected: ' + c.label); },
+                  onClick: function() { setCScChoice(c.id); announce(__alloFill(__alloT('stem.printingpress.sr_selected', 'Selected: {value1}'), { value1: c.label })); },
                   style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
                   h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
                   c.label);
@@ -11540,7 +11541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: fnEditor <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.previous_era', '← Previous era')),
               h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
                 editorScenarios.map(function(_, i) {
-                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Go to era ' + (i + 1), 'aria-current': (i === fnEditor) ? 'true' : undefined, onClick: function() { setFnEditor(i); setFnEditorChoice(null); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFnEditor(i); setFnEditorChoice(null); } },
+                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_go_to_era', 'Go to era {value1}'), { value1: (i + 1) }), 'aria-current': (i === fnEditor) ? 'true' : undefined, onClick: function() { setFnEditor(i); setFnEditorChoice(null); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFnEditor(i); setFnEditorChoice(null); } },
                     style: { cursor: 'pointer', display: 'inline-block', width: 36, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === fnEditor) ? T.accent : T.cardAlt, color: (i === fnEditor) ? T.ink : T.text, fontWeight: 700, fontSize: 11 } }, editorScenarios[i].year);
                 })
               ),
@@ -11558,7 +11559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             !fnEditorChoice && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               es.choices.map(function(c, i) {
                 return h('button', { key: c.id,
-                  onClick: function() { setFnEditorChoice(c.id); announce('Choice: ' + c.label); },
+                  onClick: function() { setFnEditorChoice(c.id); announce(__alloFill(__alloT('stem.printingpress.sr_choice', 'Choice: {value1}'), { value1: c.label })); },
                   style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
                   h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
                   c.label);
@@ -11920,12 +11921,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           setAjChoices({});
           setAjYear(1);
           setAjStarted(true);
-          announce('Journey begun with ' + m.name);
+          announce(__alloFill(__alloT('stem.printingpress.sr_journey_begun_with', 'Journey begun with {value1}'), { value1: m.name }));
         }
         function advanceYear() {
           setAjYear(ajYear + 1);
           setAjPending(null);
-          announce('Year ' + (ajYear + 1) + ' begins.');
+          announce(__alloFill(__alloT('stem.printingpress.sr_year_begins', 'Year {value1} begins.'), { value1: (ajYear + 1) }));
         }
         function resetJourney() {
           setAjStarted(false);
@@ -12568,7 +12569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     onClick: function() {
                       setTfXHeight(p.xh); setTfWeight(p.w); setTfContrast(p.c);
                       setTfSerif(p.s); setTfWidth(p.width);
-                      announce('Loaded preset: ' + p.name);
+                      announce(__alloFill(__alloT('stem.printingpress.sr_loaded_preset', 'Loaded preset: {value1}'), { value1: p.name }));
                     },
                     style: btn({ padding: '6px 10px', fontSize: 11 }) }, p.name);
                 })

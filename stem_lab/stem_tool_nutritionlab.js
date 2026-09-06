@@ -1971,7 +1971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         entries.filter(function(x) { return x.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#f1f5f9', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
             nlH('span', { style: { color: '#475569' } }, e.source + ' — ' + e.mg + 'mg'),
-            nlH('button', { type: 'button', 'aria-label': 'Remove ' + e.source + ' calcium entry', onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_remove_calcium_entry', 'Remove {value1} calcium entry'), { value1: e.source }), onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -16507,6 +16507,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     aliases: ['nutrition', 'food labels', 'macros', 'micronutrients'],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React || window.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -16581,7 +16583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             next[v] = true;
             upd('nlBadges', next);
             lsSet('nutritionLab.badges.v1', next);
-            announce('Module explored: ' + v);
+            announce(__alloFill(__alloT('stem.nutritionlab.sr_module_explored', 'Module explored: {value1}'), { value1: v }));
           }
         }
       };
@@ -17086,8 +17088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('svg', {
               width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, style: { filter: 'drop-shadow(0 2px 3px rgba(15,23,42,0.15))' },
               role: 'img',
-              'aria-label': 'Energy split for this meal: carbs ' + c_kcal.toFixed(0) + ' kcal, protein ' + p_kcal.toFixed(0) + ' kcal, fat ' + f_kcal.toFixed(0) + ' kcal. Total ' + total.toFixed(0) + ' kcal.'
-            },
+              'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_energy_split_for_this_meal_carbs_kcal_protein_k', 'Energy split for this meal: carbs {value1} kcal, protein {value2} kcal, fat {value3} kcal. Total {value4} kcal.'), { value1: c_kcal.toFixed(0), value2: p_kcal.toFixed(0), value3: f_kcal.toFixed(0), value4: total.toFixed(0) })},
               paths,
               h('text', { x: cx, y: cy - 4, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#1e293b' }, total.toFixed(0)),
               h('text', { x: cx, y: cy + 16, textAnchor: 'middle', fontSize: 11, fill: '#475569' }, __alloT('stem.nutritionlab.kcal_in_plate', 'kcal in plate'))
@@ -17218,7 +17219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             fA.name + ' — ' + fA.serving + '   vs   ' + fB.name + ' — ' + fB.serving
           ),
           h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img',
-            'aria-label': 'Side-by-side comparison of ' + fA.name + ' and ' + fB.name + ' across energy, carbs, protein, fat, and fiber.' },
+            'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_side_by_side_comparison_of_and_across_energy_ca', 'Side-by-side comparison of {value1} and {value2} across energy, carbs, protein, fat, and fiber.'), { value1: fA.name, value2: fB.name })},
             ROWS.map(function(r, i) {
               var yMid = pad.t + i * (barH + 6) + barH / 2;
               var aVal = fA[r.key] || 0, bVal = fB[r.key] || 0;
@@ -17262,12 +17263,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         function addFood(id) {
           var next = plate.concat([id]);
           setPlate(next);
-          announce('Added ' + FOOD_BY_ID[id].name + ' to your plate. Plate now has ' + next.length + ' items.');
+          announce(__alloFill(__alloT('stem.nutritionlab.sr_added_to_your_plate_plate_now_has_items', 'Added {value1} to your plate. Plate now has {value2} items.'), { value1: FOOD_BY_ID[id].name, value2: next.length }));
         }
         function removeAt(idx) {
           var next = plate.slice(0, idx).concat(plate.slice(idx + 1));
           setPlate(next);
-          announce('Removed item from plate. Plate now has ' + next.length + ' items.');
+          announce(__alloFill(__alloT('stem.nutritionlab.sr_removed_item_from_plate_plate_now_has_items', 'Removed item from plate. Plate now has {value1} items.'), { value1: next.length }));
         }
         function clearPlate() {
           setPlate([]);
@@ -17332,7 +17333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   var sel = (category === cc.id);
                   return h('button', {
                     key: cc.id,
-                    onClick: function() { setCategory(cc.id); announce('Showing ' + cc.label); },
+                    onClick: function() { setCategory(cc.id); announce(__alloFill(__alloT('stem.nutritionlab.sr_showing', 'Showing {value1}'), { value1: cc.label })); },
                     role: 'radio',
                     'aria-checked': sel ? 'true' : 'false',
                     className: 'px-3 py-2 rounded-xl border-2 text-sm font-bold transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
@@ -17349,7 +17350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   return h('button', {
                     key: f.id,
                     onClick: function() { addFood(f.id); },
-                    'aria-label': 'Add ' + f.name + ' to plate. Per ' + f.serving + ': ' + f.kcal + ' kilocalories, ' + f.c + ' carbs, ' + f.p + ' protein, ' + f.f + ' fat, ' + f.fib + ' fiber.',
+                    'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_add_to_plate_per_kilocalories_carbs_protein_fat', 'Add {value1} to plate. Per {value2}: {value3} kilocalories, {value4} carbs, {value5} protein, {value6} fat, {value7} fiber.'), { value1: f.name, value2: f.serving, value3: f.kcal, value4: f.c, value5: f.p, value6: f.f, value7: f.fib }),
                     className: 'p-3 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition focus:outline-none focus:ring-2 ring-emerald-500/40 nutritionlab-card-lift text-left'
                   },
                     h('div', { className: 'text-3xl mb-1', 'aria-hidden': true }, f.emoji),
@@ -17385,7 +17386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                         ),
                         h('button', {
                           onClick: function() { removeAt(idx); },
-                          'aria-label': 'Remove ' + f.name,
+                          'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_remove', 'Remove {value1}'), { value1: f.name }),
                           className: 'px-2 py-1 rounded text-xs font-bold bg-rose-100 text-rose-900 hover:bg-rose-200 transition focus:outline-none focus:ring-2 ring-rose-400'
                         }, __alloT('stem.nutritionlab.remove', '✕ Remove'))
                       );
@@ -17598,7 +17599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                           var t = MINERALS.indexOf(match) >= 0 ? 'minerals' : 'vitamins';
                           setTab(t);
                           setTimeout(function() { setPicked(match); }, 60);
-                          announce('Opening ' + match.name);
+                          announce(__alloFill(__alloT('stem.nutritionlab.sr_opening', 'Opening {value1}'), { value1: match.name }));
                         }
                       },
                       'aria-label': n.name + ' — ' + n.why + '. Click to see full nutrient card.',
@@ -18058,7 +18059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 });
                 return h('button', {
                   key: L.id,
-                  onClick: function() { setLabelIdx(i); announce('Loaded ' + L.name); },
+                  onClick: function() { setLabelIdx(i); announce(__alloFill(__alloT('stem.nutritionlab.sr_loaded', 'Loaded {value1}'), { value1: L.name })); },
                   'aria-pressed': sel ? 'true' : 'false',
                   'aria-label': 'Challenge ' + (i + 1) + ' (' + L.difficulty + ')' + (done ? ' — completed' : ''),
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 relative ' +
@@ -18208,8 +18209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   // Score donut
                   h('div', { className: 'relative flex-shrink-0', style: { width: 96, height: 96 } },
                     h('svg', { viewBox: '0 0 100 100', width: 96, height: 96,
-                      'aria-label': 'Accuracy: ' + totalCorrect + ' of ' + totalPicks + ' picks correct'
-                    },
+                      'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_accuracy_of_picks_correct', 'Accuracy: {value1} of {value2} picks correct'), { value1: totalCorrect, value2: totalPicks })},
                       h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
                       h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
                         strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
@@ -18715,13 +18715,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         function next() {
           if (stageIdx < DIGESTION_STAGES.length - 1) {
             setStageIdx(stageIdx + 1);
-            announce('Now at ' + DIGESTION_STAGES[stageIdx + 1].name);
+            announce(__alloFill(__alloT('stem.nutritionlab.sr_now_at', 'Now at {value1}'), { value1: DIGESTION_STAGES[stageIdx + 1].name }));
           }
         }
         function prev() {
           if (stageIdx > 0) {
             setStageIdx(stageIdx - 1);
-            announce('Now at ' + DIGESTION_STAGES[stageIdx - 1].name);
+            announce(__alloFill(__alloT('stem.nutritionlab.sr_now_at', 'Now at {value1}'), { value1: DIGESTION_STAGES[stageIdx - 1].name }));
           }
         }
 
@@ -18745,7 +18745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     'aria-controls': 'nutrition-digestion-panel-' + s.id,
                     'aria-selected': sel ? 'true' : 'false',
                     tabIndex: sel ? 0 : -1,
-                    onClick: function() { setStageIdx(i); announce('Jumped to ' + s.name); },
+                    onClick: function() { setStageIdx(i); announce(__alloFill(__alloT('stem.nutritionlab.sr_jumped_to', 'Jumped to {value1}'), { value1: s.name })); },
                     onKeyDown: function(e) { digestionStageTabKeyDown(e, i); },
                     className: 'flex items-center gap-2 px-3 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                       (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-white text-slate-800 border-slate-500 hover:border-emerald-500')
@@ -21019,7 +21019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           var bottleH = 200, bottleW = 80;
           return h('div', { className: 'flex items-center gap-4' },
             h('svg', { width: bottleW, height: bottleH, viewBox: '0 0 ' + bottleW + ' ' + bottleH,
-              role: 'img', 'aria-label': 'Daily fluid target shown as a bottle ' + pct + ' percent full.' },
+              role: 'img', 'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_daily_fluid_target_shown_as_a_bottle_percent_fu', 'Daily fluid target shown as a bottle {value1} percent full.'), { value1: pct })},
               // Bottle outline
               h('rect', { x: 14, y: 22, width: bottleW - 28, height: bottleH - 30, rx: 8, fill: 'none', stroke: '#0c4a6e', strokeWidth: 2 }),
               // Bottle neck
@@ -21449,7 +21449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         function quizNext() {
           setQuiz({ i: quiz.i + 1, pick: null, done: quiz.done || 0 });
           setRegion(null);
-          announce('Next prediction: ' + bodyMapShortName(bodyMapNutrient(BODY_MAP_CHALLENGES[(quiz.i + 1) % BODY_MAP_CHALLENGES.length])));
+          announce(__alloFill(__alloT('stem.nutritionlab.sr_next_prediction', 'Next prediction: {value1}'), { value1: bodyMapShortName(bodyMapNutrient(BODY_MAP_CHALLENGES[(quiz.i + 1) % BODY_MAP_CHALLENGES.length])) }));
         }
 
         // Keep the viewer in step with React. Runs every render on purpose:

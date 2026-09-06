@@ -673,6 +673,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -2053,7 +2055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             // Energy bar
             h('div', { className: 'flex items-center gap-2' },
               h('span', { className: 'text-[0.6875rem] font-bold ' + (isDark ? 'text-amber-400' : 'text-amber-600') }, t('stem.echolocation.energy_2', '\u26A1 Energy')),
-              h('div', { className: 'w-24 h-3 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200'), 'aria-label': 'Energy: ' + Math.round(sonarStateRef.current.energy) + '%' },
+              h('div', { className: 'w-24 h-3 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200'), 'aria-label': __alloFill(__alloT('stem.echolocation.a11y_energy', 'Energy: {value1}%'), { value1: Math.round(sonarStateRef.current.energy) })},
                 h('div', {
                   style: { width: Math.round(sonarStateRef.current.energy) + '%', background: sonarStateRef.current.energy > 30 ? '#f59e0b' : '#ef4444', transition: 'width 0.2s' },
                   className: 'h-full rounded-full'
@@ -2863,7 +2865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 if (hit.type === 'colony') typeLabel = 'bat colony';
                 if (hit.type === 'passage') typeLabel = 'hidden passage';
                 if (hit.type === 'web') typeLabel = 'spider web';
-                srAnnounce('Object discovered: ' + typeLabel + ' at distance ' + Math.round(dist) + ' pixels');
+                srAnnounce(__alloFill(__alloT('stem.echolocation.sr_object_discovered_at_distance_pixels', 'Object discovered: {value1} at distance {value2} pixels'), { value1: typeLabel, value2: Math.round(dist) }));
                 // Discovery chime + echo return proportional to distance
                 try {
                   var dAc = window._echoLabAC;
@@ -3094,7 +3096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               width: 700,
               height: 180,
               role: 'img',
-              'aria-label': 'Sound wave visualization showing a sine wave at ' + waveFreq + ' hertz with wavelength ' + wavelength.toFixed(3) + ' meters',
+              'aria-label': __alloFill(__alloT('stem.echolocation.a11y_sound_wave_visualization_showing_a_sine_wave_at', 'Sound wave visualization showing a sine wave at {value1} hertz with wavelength {value2} meters'), { value1: waveFreq, value2: wavelength.toFixed(3) }),
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'ArrowRight') { e.preventDefault(); upd('waveFreq', Math.min(200000, waveFreq + 100)); }
@@ -3110,7 +3112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   (isBatRange ? ' \uD83E\uDD87 Bat range!' : isAudible ? ' \uD83D\uDC42 Audible' : waveFreq < 20 ? ' \uD83D\uDC33 Infrasonic' : ' Beyond ultrasonic')),
                 h('input', {
                   type: 'range', min: 20, max: 200000, value: waveFreq, step: 10,
-                  'aria-label': 'Frequency slider, ' + waveFreq + ' hertz',
+                  'aria-label': __alloFill(__alloT('stem.echolocation.a11y_frequency_slider_hertz', 'Frequency slider, {value1} hertz'), { value1: waveFreq }),
                   onChange: function(e) { upd('waveFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
                 }),
@@ -3125,7 +3127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[0.6875rem] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Amplitude: ' + (waveAmp * 100).toFixed(0) + '%'),
                 h('input', {
                   type: 'range', min: 0, max: 100, value: Math.round(waveAmp * 100), step: 1,
-                  'aria-label': 'Amplitude slider, ' + Math.round(waveAmp * 100) + ' percent',
+                  'aria-label': __alloFill(__alloT('stem.echolocation.a11y_amplitude_slider_percent', 'Amplitude slider, {value1} percent'), { value1: Math.round(waveAmp * 100) }),
                   onChange: function(e) { upd('waveAmp', parseInt(e.target.value) / 100); },
                   className: 'w-full accent-indigo-500'
                 })
@@ -3133,7 +3135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
             // Play tone button
             isAudible ? h('button', {
-              'aria-label': 'Play tone at ' + waveFreq + ' hertz',
+              'aria-label': __alloFill(__alloT('stem.echolocation.a11y_play_tone_at_hertz', 'Play tone at {value1} hertz'), { value1: waveFreq }),
               onClick: function() {
                 if (typeof beep === 'function') {
                   try { beep(Math.min(waveFreq, 18000), 0.5, waveAmp * 0.3); } catch(e) {}
@@ -3168,7 +3170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[0.6875rem] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Distance to object: ' + distCalcDist + ' m'),
                 h('input', {
                   type: 'range', min: 1, max: 200, value: distCalcDist, step: 1,
-                  'aria-label': 'Distance to object, ' + distCalcDist + ' meters',
+                  'aria-label': __alloFill(__alloT('stem.echolocation.a11y_distance_to_object_meters', 'Distance to object, {value1} meters'), { value1: distCalcDist }),
                   onChange: function(e) { upd('distCalcDist', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
                 })),
@@ -3234,7 +3236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               width: 700,
               height: 150,
               role: 'img',
-              'aria-label': 'Sound reflection visualization showing incident and reflected waves off ' + wallMaterial + ' wall',
+              'aria-label': __alloFill(__alloT('stem.echolocation.a11y_sound_reflection_visualization_showing_incident', 'Sound reflection visualization showing incident and reflected waves off {value1} wall'), { value1: wallMaterial }),
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'ArrowRight') {
@@ -4162,7 +4164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     }
                   });
                   upd('selectedAnatomyPart', found);
-                  if (found) srAnnounce('Selected: ' + (BAT_ANATOMY.find(function(p) { return p.id === found; }) || {}).label);
+                  if (found) srAnnounce(__alloFill(__alloT('stem.echolocation.sr_selected', 'Selected: {value1}'), { value1: (BAT_ANATOMY.find(function(p) { return p.id === found; }) || {}).label }));
                 },
                 onKeyDown: function(e) {
                   var ids = BAT_ANATOMY.map(function(p) { return p.id; });
@@ -4171,13 +4173,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     e.preventDefault();
                     var nextIdx = (curIdx + 1) % ids.length;
                     upd('selectedAnatomyPart', ids[nextIdx]);
-                    srAnnounce('Selected: ' + BAT_ANATOMY[nextIdx].label);
+                    srAnnounce(__alloFill(__alloT('stem.echolocation.sr_selected', 'Selected: {value1}'), { value1: BAT_ANATOMY[nextIdx].label }));
                   }
                   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
                     e.preventDefault();
                     var prevIdx = (curIdx - 1 + ids.length) % ids.length;
                     upd('selectedAnatomyPart', ids[prevIdx]);
-                    srAnnounce('Selected: ' + BAT_ANATOMY[prevIdx].label);
+                    srAnnounce(__alloFill(__alloT('stem.echolocation.sr_selected', 'Selected: {value1}'), { value1: BAT_ANATOMY[prevIdx].label }));
                   }
                 },
                 style: { width: '100%', maxWidth: '500px', height: 'auto', borderRadius: '8px', display: 'block', background: isDark ? '#0f172a' : '#f1f5f9', cursor: 'pointer' }
@@ -4669,7 +4671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   '\uD83D\uDE97 Human Noise Level: ' + noiseLevel + '%' + (noiseLevel > 50 ? ' \u2014 Animals going silent!' : '')),
                 h('input', {
                   type: 'range', min: 0, max: 100, value: noiseLevel, step: 1,
-                  'aria-label': 'Human noise level, ' + noiseLevel + ' percent',
+                  'aria-label': __alloFill(__alloT('stem.echolocation.a11y_human_noise_level_percent', 'Human noise level, {value1} percent'), { value1: noiseLevel }),
                   onChange: function(e) { upd('noiseLevel', parseInt(e.target.value)); },
                   className: 'w-full accent-red-500'
                 }),
@@ -4747,7 +4749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                         h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, animal.name),
                         h('div', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, animal.freq))),
                     h('button', {
-                      'aria-label': 'Play ' + animal.name + ' sound',
+                      'aria-label': __alloFill(__alloT('stem.echolocation.a11y_play_sound', 'Play {value1} sound'), { value1: animal.name }),
                       onClick: function() {
                         if (typeof beep === 'function') {
                           try { beep(animal.beepFreq, animal.beepDur, 0.2); } catch(e) {}
@@ -4790,7 +4792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   'Chirps in 14 seconds: ' + (d.cricketChirps || 30)),
                 h('input', {
                   type: 'range', min: 5, max: 80, value: d.cricketChirps || 30, step: 1,
-                  'aria-label': 'Cricket chirps per 14 seconds: ' + (d.cricketChirps || 30),
+                  'aria-label': __alloFill(__alloT('stem.echolocation.a11y_cricket_chirps_per_14_seconds', 'Cricket chirps per 14 seconds: {value1}'), { value1: (d.cricketChirps || 30) }),
                   onChange: function(e) { upd('cricketChirps', parseInt(e.target.value)); },
                   className: 'w-full accent-emerald-500'
                 }),

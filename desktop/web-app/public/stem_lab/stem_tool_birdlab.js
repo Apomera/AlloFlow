@@ -11647,6 +11647,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var h = React.createElement;
     var useState = React.useState;
     var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+    // Fills {value1}-style placeholders, so a translation can reorder them.
+    var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
     var title = props.title, icon = props.icon, items = props.items, accent = props.accent;
     var idxState = useState(0);
     var idx = idxState[0], setIdx = idxState[1];
@@ -11729,6 +11731,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var React = ctx.React || window.React;
     var h = React.createElement;
     var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+    // Fills {value1}-style placeholders, so a translation can reorder them.
+    var __alloFill = function (template, values) { return String(template).replace(/{([A-Za-z0-9_]+)}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
     return h('div', { className: 'p-4 max-w-5xl mx-auto' },
       h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
         h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.bird_reproduction_deep_2', '🥚 Bird Reproduction Deep')),
@@ -11765,6 +11769,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     desc: 'Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab\'s free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.',
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/{([A-Za-z0-9_]+)}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       // The module finder and the footer sit on the HOST surface - white in
       // light and dark, pure BLACK in the contrast theme, where the search
       // label measured 1.44:1.
@@ -12025,7 +12031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             next[v] = true;
             upd('blBadges', next);
             lsSet('birdLab.badges.v1', next);
-            announce('Module explored: ' + v);
+            announce(__alloFill(__alloT('stem.birdlab.sr_module_explored', 'Module explored: {value1}'), { value1: v }));
           }
         }
       };
@@ -12119,7 +12125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           { key: 'wikipedia', label: __alloT('stem.birdlab.wikipedia', '📖 Wikipedia'), url: links.wikipedia, color: 'transition-colors bg-slate-100 text-slate-800 border-slate-400 hover:bg-slate-200 active:scale-[0.97]' },
           { key: 'inaturalist', label: __alloT('stem.birdlab.inaturalist', '🔎 iNaturalist'), url: links.inaturalist, color: 'transition-colors bg-violet-100 text-violet-800 border-violet-400 hover:bg-violet-200 active:scale-[0.97]' }
         ];
-        return h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'External resources for ' + name },
+        return h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_external_resources_for', 'External resources for {value1}'), { value1: name })},
           ITEMS.map(function(item) {
             return h('a', {
               key: item.key,
@@ -12187,7 +12193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       function rankMedallion(i, overrideLabel) {
         var p = rankPalette(i, overrideLabel);
         return h('div', {
-          'aria-label': 'Rank ' + (i + 1) + ', ' + p.label,
+          'aria-label': __alloFill(__alloT('stem.birdlab.a11y_rank', 'Rank {value1}, {value2}'), { value1: (i + 1), value2: p.label }),
           style: {
             position: 'absolute', top: -16, left: 14,
             display: 'flex', alignItems: 'center', gap: 0,
@@ -13457,7 +13463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               type: 'button',
               onClick: function() {
                 upd('view', 'maineBirds');
-                announce('Opening Maine Birds Spotlight — featured: ' + __todaysBird.name);
+                announce(__alloFill(__alloT('stem.birdlab.sr_opening_maine_birds_spotlight_featured', 'Opening Maine Birds Spotlight — featured: {value1}'), { value1: __todaysBird.name }));
               },
               'aria-label': 'Today\'s featured bird: ' + __todaysBird.name + '. Click to open Maine Birds Spotlight.',
               className: 'w-full mb-5 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg text-left transition hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-4 ring-amber-500/40 birdlab-card-lift',
@@ -13538,7 +13544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             return h('button', {
               type: 'button',
               onClick: function () { goto('lifeList'); },
-              'aria-label': 'Open your bird life list. ' + spottedCount + ' of ' + allKeys.length + ' species identified.',
+              'aria-label': __alloFill(__alloT('stem.birdlab.a11y_open_your_bird_life_list_of_species_identified', 'Open your bird life list. {value1} of {value2} species identified.'), { value1: spottedCount, value2: allKeys.length }),
               className: 'w-full mb-5 rounded-2xl border-2 border-emerald-400 shadow-md text-left transition hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-4 ring-emerald-500/40 birdlab-card-lift overflow-hidden',
               style: { background: 'linear-gradient(110deg, #ecfdf5 0%, #d1fae5 50%, #fef3c7 100%)' }
             },
@@ -14240,12 +14246,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           upd('blXp', nextXp);
           upd('blXpLedger', nextLedger);
           lsSet('birdLab.progress.v1', { xp: nextXp, ledger: nextLedger });
-          announce('Earned ' + amount + ' field XP: ' + label + '.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_earned_field_xp', 'Earned {value1} field XP: {value2}.'), { value1: amount, value2: label }));
           if (typeof addToast === 'function')
             addToast('+' + amount + ' XP  ' + label, 'success');
           if (after.index > before.index) {
             setRankCelebration({ rank: after.rank, xp: nextXp, ts: Date.now() });
-            announce('Field rank advanced to ' + after.rank.name + '!');
+            announce(__alloFill(__alloT('stem.birdlab.sr_field_rank_advanced_to', 'Field rank advanced to {value1}!'), { value1: after.rank.name }));
             if (typeof addToast === 'function') addToast(after.rank.icon + ' New rank: ' + after.rank.name, 'success');
             setTimeout(function() { setRankCelebration(null); }, 4200);
           }
@@ -14407,7 +14413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           for (var filterLabelIndex = 0; filterLabelIndex < RECORD_FILTERS.length; filterLabelIndex++) {
             if (RECORD_FILTERS[filterLabelIndex].id === nextFilter) { nextLabel = RECORD_FILTERS[filterLabelIndex].label; break; }
           }
-          announce('Bird record filter: ' + nextLabel + '.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_bird_record_filter', 'Bird record filter: {value1}.'), { value1: nextLabel }));
         }
 
         function focusBirdLabRefSoon(targetRef) {
@@ -14430,7 +14436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (sceneSweep && shouldAdvanceSceneSweep()) {
             var nextSweepId = nextSceneSweepLensId(sceneLens);
             setSceneLens(nextSweepId);
-            announce('Sweep complete. Moving to the ' + nextSweepId + ' lens.');
+            announce(__alloFill(__alloT('stem.birdlab.sr_sweep_complete_moving_to_the_lens', 'Sweep complete. Moving to the {value1} lens.'), { value1: nextSweepId }));
           } else if (!sceneSweep) {
             setSceneLens('wide');
           }
@@ -14452,7 +14458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setFieldSession(nextSession);
           upd('blFieldSession', nextSession);
           lsSet('birdLab.session.v1', nextSession);
-          announce('Adaptive field session started in ' + habitat.name + '.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_adaptive_field_session_started_in', 'Adaptive field session started in {value1}.'), { value1: habitat.name }));
           if (typeof addToast === 'function') addToast('?? Field session started', 'success');
           focusBirdLabRefSoon(habitatSceneRef);
         }
@@ -14477,7 +14483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           requireFreshBinocularAcquisition();
           setFieldCondition(nextCondition);
           upd('blFieldCondition', nextCondition);
-          announce('Field condition: ' + FIELD_CONDITIONS[nextCondition].label + '. ' + FIELD_CONDITIONS[nextCondition].note + ' ' + FIELD_CONDITIONS[nextCondition].effect + '.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_field_condition', 'Field condition: {value1}. {value2} {value3}.'), { value1: FIELD_CONDITIONS[nextCondition].label, value2: FIELD_CONDITIONS[nextCondition].note, value3: FIELD_CONDITIONS[nextCondition].effect }));
         }
 
         function formatTime(seconds) {
@@ -14538,7 +14544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setDailyDone(nd);
           upd('blDailyDone', nd);
           awardFieldXp('daily:' + dailyKey, dailyChallenge.xp, 'Daily challenge: ' + dailyChallenge.title);
-          announce('Daily challenge complete: ' + dailyChallenge.title);
+          announce(__alloFill(__alloT('stem.birdlab.sr_daily_challenge_complete', 'Daily challenge complete: {value1}'), { value1: dailyChallenge.title }));
           if (typeof addToast === 'function') addToast(dailyChallenge.icon + ' Daily Challenge complete! ' + dailyChallenge.title, 'success');
           chirpClean();
         }
@@ -14990,7 +14996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (spotStreak > 0) {
             setSpotStreak(0);
             upd('blSpotStreak', 0);
-            if (spotStreak >= 3) announce('Clue used \u2014 streak reset (was ' + spotStreak + ').');
+            if (spotStreak >= 3) announce(__alloFill(__alloT('stem.birdlab.sr_clue_used_u2014_streak_reset_was', 'Clue used \u2014 streak reset (was {value1}).'), { value1: spotStreak }));
           }
           return true;
         }
@@ -15010,7 +15016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           var hintStamp = Date.now();
           setHintActive({ species: bird.species, ts: hintStamp });
           chirpHint();
-          if (options.announceLocation !== false) announce('Location clue: ' + bird.hint);
+          if (options.announceLocation !== false) announce(__alloFill(__alloT('stem.birdlab.sr_location_clue', 'Location clue: {value1}'), { value1: bird.hint }));
           setTimeout(function() {
             setHintActive(function(cur) {
               return (cur && cur.species === bird.species && cur.ts === hintStamp) ? null : cur;
@@ -15071,7 +15077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           upd('blRecordFilter', 'all');
           focusBirdLabRefSoon(habitatSceneRef);
           upd('activeHabitat', newId);
-          announce('Switched to ' + HABITATS[newId].name + ' habitat. ' + habitatSpeciesCount(HABITATS[newId]) + ' birds to find.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_switched_to_habitat_birds_to_find', 'Switched to {value1} habitat. {value2} birds to find.'), { value1: HABITATS[newId].name, value2: habitatSpeciesCount(HABITATS[newId]) }));
           // Start the silent spot-time clock if not already running for this habitat
           // (only counts toward a personal best on a clean clear at the current difficulty)
           if (!habitatStartTs[newId]) {
@@ -15133,7 +15139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           lsSet('birdLab.rounds.v1', nextCounts);
           setSpotStreak(0);
           upd('blSpotStreak', 0);
-          announce('New ' + habitat.name + ' round started on ' + DIFFICULTY_LABELS[roundDifficulty] + '.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_new_round_started_on', 'New {value1} round started on {value2}.'), { value1: habitat.name, value2: DIFFICULTY_LABELS[roundDifficulty] }));
           if (typeof addToast === 'function') addToast('\uD83D\uDD04 Fresh round: ' + habitat.name + ' on ' + DIFFICULTY_TIER_LABEL[roundDifficulty], 'success');
         }
         function changeBinocularHoldMode(nextMode) {
@@ -15142,7 +15148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           requireFreshBinocularAcquisition();
           setBinocularHoldMode(nextMode);
           upd('blBinocularHoldMode', nextMode);
-          announce('Binocular hold: ' + BINOCULAR_HOLD_DURATIONS[nextMode].label + ', ' + (BINOCULAR_HOLD_DURATIONS[nextMode].ms / 1000).toFixed(1) + ' seconds.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_binocular_hold_seconds', 'Binocular hold: {value1}, {value2} seconds.'), { value1: BINOCULAR_HOLD_DURATIONS[nextMode].label, value2: (BINOCULAR_HOLD_DURATIONS[nextMode].ms / 1000).toFixed(1) }));
         }
         function changeDifficulty(nextDifficulty) {
           if (!nextDifficulty || nextDifficulty === difficulty) return;
@@ -15151,7 +15157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setDifficulty(nextDifficulty);
           upd('blDifficulty', nextDifficulty);
           if (foundCount > 0) startNewRound(nextDifficulty);
-          else announce('Difficulty: ' + DIFFICULTY_LABELS[nextDifficulty] + '. ' + DIFFICULTY_BUDGETS[nextDifficulty] + ' hints per habitat.');
+          else announce(__alloFill(__alloT('stem.birdlab.sr_difficulty_hints_per_habitat', 'Difficulty: {value1}. {value2} hints per habitat.'), { value1: DIFFICULTY_LABELS[nextDifficulty], value2: DIFFICULTY_BUDGETS[nextDifficulty] }));
         }
 
 
@@ -15287,7 +15293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             var medal = DIFFICULTY_MEDAL[difficulty];
             var tierLabel = DIFFICULTY_TIER_LABEL[difficulty];
             var actionWord = isUpgrade ? 'upgraded to' : 'cleared on';
-            announce('Clean habitat ' + actionWord + ' ' + tierLabel + ' tier! All ' + totalBirds + ' birds spotted in ' + habitat.name + '.');
+            announce(__alloFill(__alloT('stem.birdlab.sr_clean_habitat_tier_all_birds_spotted_in', 'Clean habitat {value1} {value2} tier! All {value3} birds spotted in {value4}.'), { value1: actionWord, value2: tierLabel, value3: totalBirds, value4: habitat.name }));
             if (typeof addToast === 'function') addToast(medal + ' ' + tierLabel + ' — ' + habitat.name + ' ' + actionWord + ' ' + tierLabel + ' tier!', 'success');
             chirpClean();
             // Record personal best clear time (habitat × difficulty)
@@ -15300,7 +15306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 var nbt = Object.assign({}, bestTimes); nbt[btKey] = elapsed;
                 setBestTimes(nbt);
                 upd('blBestTimes', nbt);
-                if (prev != null) announce('New personal best: ' + formatTime(elapsed));
+                if (prev != null) announce(__alloFill(__alloT('stem.birdlab.sr_new_personal_best', 'New personal best: {value1}'), { value1: formatTime(elapsed) }));
               }
               // Reset the timer for this habitat (so a re-run can earn a new PB later)
               var hsr = Object.assign({}, habitatStartTs); delete hsr[habitatId];
@@ -15357,12 +15363,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // Surface the celebration UI for ~3.2s, then auto-clear.
             setLiferCelebration({ species: species, habitatId: habitatId, at: Date.now() });
             try { setTimeout(function () { setLiferCelebration(null); }, 3200); } catch (e) {}
-            announce('New lifer! ' + species.name + ' added to your life list.');
+            announce(__alloFill(__alloT('stem.birdlab.sr_new_lifer_added_to_your_life_list', 'New lifer! {value1} added to your life list.'), { value1: species.name }));
           } else {
-            announce('Identified: ' + species.name);
+            announce(__alloFill(__alloT('stem.birdlab.sr_identified', 'Identified: {value1}'), { value1: species.name }));
           }
           if (assignmentAwarded) {
-            announce('Target Search complete. ' + species.name + ' confirmed; free discovery resumed.');
+            announce(__alloFill(__alloT('stem.birdlab.sr_target_search_complete_confirmed_free_discovery_r', 'Target Search complete. {value1} confirmed; free discovery resumed.'), { value1: species.name }));
           } else if (assignmentWasActive && !isAssignmentTarget) {
             announce(species.name + ' recorded. Your target is still the ' + assignmentSpecies.name + '.');
             if (typeof addToast === 'function') addToast('🔭 ' + species.name + ' recorded · target still ' + assignmentSpecies.name, 'info');
@@ -15762,8 +15768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           autoFocusedHabitatRef.current = habitatId;
           setSceneLens(fullest.id);
           upd('blSceneLens', fullest.id);
-          announce('Small screen: opened the ' + fullest.id + ' sweep so birds are large enough to identify. '
-            + 'Switch to the wide sweep any time from the scene lens controls.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_small_screen_opened_the_sweep_so_birds_are_large', 'Small screen: opened the {value1} sweep so birds are large enough to identify. Switch to the wide sweep any time from the scene lens controls.'), { value1: fullest.id }));
         }, [sceneStageIsSmall, habitatId, sceneLens, sceneSweep]);
         function sceneBirdBehaviorHoldsRoute(behaviorState) {
           return !!(behaviorState && behaviorState.script === 'paddle-dabble-recover' && behaviorState.state === 'dabble');
@@ -15952,7 +15957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               ref: habitatSceneRef,
               tabIndex: -1,
               role: 'region',
-              'aria-label': 'Interactive ' + habitat.name + ' habitat scene',
+              'aria-label': __alloFill(__alloT('stem.birdlab.a11y_interactive_habitat_scene', 'Interactive {value1} habitat scene'), { value1: habitat.name }),
               className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden focus:outline-none focus:ring-4 ring-sky-500/40 ' + (sceneActive ? '' : 'birdlab-scene--motion-off') + (binocularUi.targetId ? ' birdlab-scene--acquiring' : '') + (binocularActive ? ' birdlab-scene--binocular-active' : ''),
               'data-birdlab-scene-shell': 'true',
               'data-birdlab-condition': fieldCondition,
@@ -16650,18 +16655,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     }, __alloT('stem.birdlab.diary', '📔 Diary'))
                   ),
                   h('div', { className: 'flex items-center gap-3 flex-wrap text-center' },
-                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Lifers: ' + totalLifers + ' unique species' },
+                    h('div', { className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_lifers_unique_species', 'Lifers: {value1} unique species'), { value1: totalLifers })},
                       h('div', { className: 'text-xl font-black text-emerald-700 tracking-tight', 'aria-hidden': 'true' }, totalLifers),
                       h('div', { className: 'text-[0.625rem] uppercase tracking-wider text-slate-700' }, 'lifers')
                     ),
                     h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
-                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Best streak: ' + bestStreak + ' in a row' },
+                    h('div', { className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_best_streak_in_a_row', 'Best streak: {value1} in a row'), { value1: bestStreak })},
                       h('div', { className: 'text-xl font-black tracking-tight ' + (bestStreak >= 10 ? 'text-amber-700' : bestStreak >= 5 ? 'text-orange-700' : 'text-slate-700'), 'aria-hidden': 'true' },
                         (bestStreak >= 10 ? '🦅 ' : bestStreak >= 5 ? '🔥 ' : '') + bestStreak),
                       h('div', { className: 'text-[0.625rem] uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.best_streak', 'best streak'))
                     ),
                     h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
-                    h('div', { className: 'flex-shrink-0', 'aria-label': 'Clean habitats: ' + cleanCount + ' of ' + totalHabitats },
+                    h('div', { className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_clean_habitats_of', 'Clean habitats: {value1} of {value2}'), { value1: cleanCount, value2: totalHabitats })},
                       h('div', { className: 'text-xl font-black tracking-tight ' + (allHabitatsClean ? 'text-amber-700' : 'text-slate-700'), 'aria-hidden': 'true' },
                         (allHabitatsClean ? '🏆 ' : '') + cleanCount + '/' + totalHabitats),
                       // Mini medal tally — shows distribution of tier achievements
@@ -16792,7 +16797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       if (!tier) return null;
                       return h('span', {
                         title: 'Clean Habitat — ' + DIFFICULTY_TIER_LABEL[tier] + ' tier (' + DIFFICULTY_LABELS[tier] + ')',
-                        'aria-label': 'Clean Habitat ' + DIFFICULTY_TIER_LABEL[tier] + ' tier',
+                        'aria-label': __alloFill(__alloT('stem.birdlab.a11y_clean_habitat_tier', 'Clean Habitat {value1} tier'), { value1: DIFFICULTY_TIER_LABEL[tier] }),
                         className: 'ml-1.5 text-[0.75rem]'
                       }, DIFFICULTY_MEDAL[tier]);
                     })()
@@ -16832,8 +16837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     (spotStreak >= 5 ? 'bg-amber-100 border-amber-400'
                       : spotStreak >= 3 ? 'bg-orange-100 border-orange-400'
                       : 'bg-white border-slate-300'),
-                  'aria-label': 'Spotter streak: ' + spotStreak + ' in a row. Personal best ' + bestStreak + '.'
-                },
+                  'aria-label': __alloFill(__alloT('stem.birdlab.a11y_spotter_streak_in_a_row_personal_best', 'Spotter streak: {value1} in a row. Personal best {value2}.'), { value1: spotStreak, value2: bestStreak })},
                   h('div', { className: 'text-xl font-black tracking-tight ' + (spotStreak >= 5 ? 'text-amber-700' : spotStreak >= 3 ? 'text-orange-700' : 'text-slate-700'),
                     'aria-hidden': 'true'
                   }, (spotStreak >= 10 ? '🦅 ' : spotStreak >= 5 ? '🔥 ' : '') + spotStreak),
@@ -17426,7 +17430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setPicked(hs);
           var nv = Object.assign({}, visited); nv[speciesId + '.' + hs.id] = true;
           setVisited(nv);
-          announce('Selected: ' + hs.label);
+          announce(__alloFill(__alloT('stem.birdlab.sr_selected', 'Selected: {value1}'), { value1: hs.label }));
         }
 
         function hsVisited(hs) {
@@ -17438,7 +17442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setSpeciesId(sid);
           setPicked(null);
           var s = SPECIES_OPTIONS.find(function(x) { return x.id === sid; });
-          announce('Switched to ' + (s ? s.label : sid) + '.');
+          announce(__alloFill(__alloT('stem.birdlab.sr_switched_to', 'Switched to {value1}.'), { value1: (s ? s.label : sid) }));
         }
 
         var visitedCount = fm.hotspots.filter(hsVisited).length;
@@ -17549,8 +17553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       viewBox: zoomVB,
                       width: '100%', height: '100%',
                       preserveAspectRatio: 'xMidYMid slice',
-                      role: 'img', 'aria-label': 'Zoomed view of ' + picked.label + ' on the ' + fm.name
-                    },
+                      role: 'img', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_zoomed_view_of_on_the', 'Zoomed view of {value1} on the {value2}'), { value1: picked.label, value2: fm.name })},
                       fm.bigSvg(h),
                       // Highlight ring on the hotspot inside the zoom
                       h('circle', {
@@ -18969,7 +18972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'p-6 flex flex-col md:flex-row items-center gap-5' },
                     // Score donut
                     h('div', { className: 'relative flex-shrink-0', style: { width: 110, height: 110 } },
-                      h('svg', { viewBox: '0 0 100 100', width: 110, height: 110, 'aria-label': 'Score: ' + quizScore + ' out of ' + quizPool.length },
+                      h('svg', { viewBox: '0 0 100 100', width: 110, height: 110, 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_score_out_of', 'Score: {value1} out of {value2}'), { value1: quizScore, value2: quizPool.length })},
                         h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: '#e5e7eb', strokeWidth: 10 }),
                         h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 10,
                           strokeLinecap: 'round',
@@ -19448,7 +19451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       var rad = 32, circ = 2 * Math.PI * rad;
                       var dashOff = circ - (revealPct / 100) * circ;
                       return h('div', { className: 'relative flex-shrink-0', style: { width: 92, height: 92 } },
-                        h('svg', { viewBox: '0 0 100 100', width: 92, height: 92, 'aria-label': 'Score: ' + correctPicks + ' of ' + hab.belong.length },
+                        h('svg', { viewBox: '0 0 100 100', width: 92, height: 92, 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_score_of', 'Score: {value1} of {value2}'), { value1: correctPicks, value2: hab.belong.length })},
                           h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: '#e5e7eb', strokeWidth: 9 }),
                           h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: revealColor, strokeWidth: 9,
                             strokeLinecap: 'round',
@@ -19587,7 +19590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         function focusHotspot(name) {
           setPickedHotspot(name);
           if (!name) return;
-          announce('Focused: ' + name);
+          announce(__alloFill(__alloT('stem.birdlab.sr_focused', 'Focused: {value1}'), { value1: name }));
           // Smooth-scroll to the matching card after a tick (so the highlight class is applied)
           setTimeout(function() {
             var el = document.getElementById('hotspot-card-' + name.replace(/[^a-z0-9]/gi, '-').toLowerCase());
@@ -20102,7 +20105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         className: 'birdlab-map-pin',
                         onClick: function() { focusHotspot(spot.name); },
                         role: 'button', tabIndex: 0,
-                        'aria-label': 'Pin ' + (i + 1) + ': ' + spot.name + ' — ' + spot.area + '. Click to view details.',
+                        'aria-label': __alloFill(__alloT('stem.birdlab.a11y_pin_click_to_view_details', 'Pin {value1}: {value2} — {value3}. Click to view details.'), { value1: (i + 1), value2: spot.name, value3: spot.area }),
                         onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focusHotspot(spot.name); } }
                       },
                         h('title', null, spot.name + ' — ' + spot.area),
@@ -20285,7 +20288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   { id: 'atlantic',    color: '#dc2626', label: __alloT('stem.birdlab.atlantic', 'Atlantic'),    d: 'M 340 60 Q 348 110 360 160 Q 372 210 380 245 Q 384 262 380 270' }
                 ];
                 var activePath = (flyways.filter(function(x) { return x.id === pickedFlyway; })[0] || flyways[3]).d;
-                return h('div', { className: 'bg-gradient-to-b from-sky-50 to-amber-50 rounded-2xl border-2 border-slate-300 shadow p-4', role: 'img', 'aria-label': 'Schematic map of the four North American flyways. ' + (flyways.filter(function(x) { return x.id === pickedFlyway; })[0] || flyways[3]).label + ' Flyway is highlighted. Maine sits on the Atlantic Flyway.' },
+                return h('div', { className: 'bg-gradient-to-b from-sky-50 to-amber-50 rounded-2xl border-2 border-slate-300 shadow p-4', role: 'img', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_schematic_map_of_the_four_north_american_flyway', 'Schematic map of the four North American flyways. {value1} Flyway is highlighted. Maine sits on the Atlantic Flyway.'), { value1: (flyways.filter(function(x) { return x.id === pickedFlyway; })[0] || flyways[3]).label })},
                   h('svg', { 'aria-hidden': 'true', viewBox: '0 0 440 300', className: 'w-full h-auto', preserveAspectRatio: 'xMidYMid meet' },
                     h('defs', null,
                       h('linearGradient', { id: 'fwLand', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
@@ -20693,8 +20696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         ),
                         rng && rng.kind !== 'sedentary' && h('div', {
                           className: 'relative h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-300',
-                          'aria-label': 'Distance bar ' + (rng.min) + ' to ' + (rng.max) + ' miles on a 0 to 6000-mile scale'
-                        },
+                          'aria-label': __alloFill(__alloT('stem.birdlab.a11y_distance_bar_to_miles_on_a_0_to_6000_mile_scale', 'Distance bar {value1} to {value2} miles on a 0 to 6000-mile scale'), { value1: (rng.min), value2: (rng.max) })},
                           // Range fill: from min to max
                           h('div', {
                             style: {
@@ -23022,7 +23024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
               }, 100);
-              announce('Notebook exported as CSV — ' + notebook.length + ' entries');
+              announce(__alloFill(__alloT('stem.birdlab.sr_notebook_exported_as_csv_entries', 'Notebook exported as CSV — {value1} entries'), { value1: notebook.length }));
             } catch (err) {
               announce(__alloT('stem.birdlab.sr_csv_export_failed_try_printing_instead', 'CSV export failed — try printing instead'));
             }
@@ -23276,7 +23278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           h('div', { className: 'flex items-center gap-1 birdlab-no-print' },
                             h('button', {
                               onClick: function() { startEditEntry(entry); },
-                              'aria-label': 'Edit entry from ' + dt,
+                              'aria-label': __alloFill(__alloT('stem.birdlab.a11y_edit_entry_from', 'Edit entry from {value1}'), { value1: dt }),
                               title: __alloT('stem.birdlab.edit', 'Edit'),
                               className: 'transition-colors px-2 py-1 rounded text-amber-700 hover:bg-amber-100 hover:text-amber-900 text-sm font-bold focus:outline-none focus:ring-2 ring-amber-500/40 active:scale-[0.97]'
                             }, '✏'),
@@ -23297,7 +23299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                                 } catch (e) { if (addToast) addToast(unavailable, 'warning'); return; }
                                 if (ok) deleteEntry(entry.id);
                               },
-                              'aria-label': 'Delete entry from ' + dt,
+                              'aria-label': __alloFill(__alloT('stem.birdlab.a11y_delete_entry_from', 'Delete entry from {value1}'), { value1: dt }),
                               title: __alloT('stem.birdlab.delete', 'Delete'),
                               className: 'transition-colors px-2 py-1 rounded text-rose-600 hover:bg-rose-100 hover:text-rose-800 text-sm font-bold focus:outline-none focus:ring-2 ring-rose-500/40 active:scale-[0.97]'
                             }, '✕')
@@ -23925,7 +23927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         function pickPair(L, R) {
           setLeftKey(L); upd('cmpLeft', L);
           setRightKey(R); upd('cmpRight', R);
-          announce('Comparing ' + (BIRDS[L] && BIRDS[L].name) + ' and ' + (BIRDS[R] && BIRDS[R].name));
+          announce(__alloFill(__alloT('stem.birdlab.sr_comparing_and', 'Comparing {value1} and {value2}'), { value1: (BIRDS[L] && BIRDS[L].name), value2: (BIRDS[R] && BIRDS[R].name) }));
         }
         // Hand-curated interesting pairs from the available BIRDS
         var SUGGESTED_PAIRS = [

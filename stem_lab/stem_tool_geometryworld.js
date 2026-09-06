@@ -2453,6 +2453,8 @@
     ],
     render: function (ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.geometryWorld) || {};
@@ -2878,7 +2880,7 @@
             // Staggered so simultaneous toasts don't overwrite each other.
             var showIt = function() {
               if (addToast) addToast(badge.icon + ' Achievement: ' + badge.name + ' \u2014 ' + badge.desc, 'success');
-              announceToSR('Achievement unlocked! ' + badge.name + '. ' + badge.desc);
+              announceToSR(__alloFill(__alloT('stem.geometryworld.sr_achievement_unlocked', 'Achievement unlocked! {value1}. {value2}'), { value1: badge.name, value2: badge.desc }));
             };
             if (i === 0) showIt(); else setTimeout(showIt, i * 900);
           });
@@ -4424,7 +4426,7 @@
                   engine._angleHelpers.push(aLbl);
                   var kind = deg < 89.5 ? 'acute' : (deg > 90.5 ? (deg > 179.5 ? 'straight' : 'obtuse') : 'right');
                   upd('actionFeedback', '\uD83D\uDCD0 Angle: ' + degStr + '\u00b0 (' + kind + ')');
-                  announceToSR('Angle measured. ' + degStr + ' degrees. ' + kind + ' angle.');
+                  announceToSR(__alloFill(__alloT('stem.geometryworld.sr_angle_measured_degrees_angle', 'Angle measured. {value1} degrees. {value2} angle.'), { value1: degStr, value2: kind }));
                   if (engine.logEvent) engine.logEvent('angle_measure', { degrees: parseFloat(degStr), kind: kind });
                   setTimeout(function() { upd('actionFeedback', ''); }, 3500);
                   // Auto-clear helpers after 20s so the scene stays tidy.
@@ -4865,7 +4867,7 @@
           engine.camera.lookAt(focus.x, focus.y, focus.z);
           setGuidedTourStep(0);
           setGuidedTourActive(true);
-          announceToSR('Guided explore tour started. ' + guidedTourSteps[0] + '.');
+          announceToSR(__alloFill(__alloT('stem.geometryworld.sr_guided_explore_tour_started', 'Guided explore tour started. {value1}.'), { value1: guidedTourSteps[0] }));
           return true;
         };
         engine.stopGuidedTour = function(completed) {
@@ -7070,7 +7072,7 @@
             engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: '#cbd5e1' } },
               '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
             ),
-            el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + score + ' of ' + totalQ + ' questions complete', style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 800 } },
+            el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_lesson_progress_of_questions_complete', 'Lesson progress: {value1} of {value2} questions complete'), { value1: score, value2: totalQ }), style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 800 } },
               (score >= totalQ && totalQ > 0 ? '\uD83C\uDFC6 ' : '\u2B50 ') + score + '/' + totalQ
             ),
             Object.keys(earnedBadges).length > 0 && el('div', { className: 'gw-badge-strip', role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned', title: Object.keys(earnedBadges).length + ' badges earned: ' + ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) { return a.name; }).join(', ') },
@@ -7332,7 +7334,7 @@
                     var selectedView = volumeRepresentations.find(function(view) { return view.key === key; });
                     var eng = window[engineKey];
                     if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
-                    if (selectedView) announceToSR('Showing equivalent view: ' + selectedView.label + '. ' + selectedView.expression + '. ' + selectedView.question);
+                    if (selectedView) announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_equivalent_view', 'Showing equivalent view: {value1}. {value2}. {value3}'), { value1: selectedView.label, value2: selectedView.expression, value3: selectedView.question }));
                   },
                   style: { flex: 1, minWidth: '110px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
                 }, volumeRepresentations.map(function(view) { return el('option', { key: view.key, value: view.key }, view.label); }))
@@ -7362,7 +7364,7 @@
                 recommendedVolumeRepresentation.key !== activeVolumeRepresentation.key && el('button', {
                   type: 'button',
                   className: 'gw-focusable',
-                  'aria-label': 'Open recommended volume view: ' + recommendedVolumeRepresentation.label,
+                  'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_open_recommended_volume_view', 'Open recommended volume view: {value1}'), { value1: recommendedVolumeRepresentation.label }),
                   onClick: function() {
                     if (hasUnsavedRepresentationDraft) {
                       if (addToast) addToast('Save or discard your explanation draft before opening another view.', 'info');
@@ -7380,7 +7382,7 @@
                       volumeRepresentationEvidenceChecked: false,
                       volumeRepresentationConnectionSaved: false
                     });
-                    if (recommendedView) announceToSR('Showing recommended view: ' + recommendedView.label + '. ' + recommendedView.expression + '. ' + recommendedView.question);
+                    if (recommendedView) announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_recommended_view', 'Showing recommended view: {value1}. {value2}. {value3}'), { value1: recommendedView.label, value2: recommendedView.expression, value3: recommendedView.question }));
                     var eng = window[engineKey];
                     if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, source: 'misconception_recommendation', misconception: recommendedVolumeRepresentation.diagnosisCode, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
                   },
@@ -7493,7 +7495,7 @@
                       upd('renderQuality', preference);
                       var liveEngine = window[engineKey];
                       var profile = liveEngine && liveEngine.applyRenderQuality ? liveEngine.applyRenderQuality(preference) : resolveGeometryRenderProfile(preference, {});
-                      announceToSR('3D graphics quality set to ' + profile.label + '.');
+                      announceToSR(__alloFill(__alloT('stem.geometryworld.sr_3d_graphics_quality_set_to', '3D graphics quality set to {value1}.'), { value1: profile.label }));
                     }
                   },
                     el('option', { value: 'auto' }, 'Auto (' + renderQualityProfile.label + ')'),
@@ -7501,7 +7503,7 @@
                     el('option', { value: 'balanced' }, 'Balanced'),
                     el('option', { value: 'detail' }, 'Detailed')
                   ),
-                  el('span', { className: 'gw-quality-resolved', role: 'status', 'aria-live': 'polite', 'aria-label': 'Resolved graphics mode: ' + renderQualityProfile.label }, renderQualityProfile.label),
+                  el('span', { className: 'gw-quality-resolved', role: 'status', 'aria-live': 'polite', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_resolved_graphics_mode', 'Resolved graphics mode: {value1}'), { value1: renderQualityProfile.label })}, renderQualityProfile.label),
                   el('span', { id: 'gw-quality-help', className: 'gw-quality-help' }, renderQualityProfile.reason)
                 ),
                 worldActive && tutorialDismissed && engine && el('button', {
@@ -8628,7 +8630,7 @@
           selectedShape > 0 && el('span', {
             style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#94a3b8', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
             className: 'gw-focusable', role: 'button', tabIndex: 0,
-            'aria-label': 'Rotate selected shape. Current rotation ' + (blockRotation * 90) + ' degrees',
+            'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_rotate_selected_shape_current_rotation_degrees', 'Rotate selected shape. Current rotation {value1} degrees'), { value1: (blockRotation * 90) }),
             onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('blockRotation', (blockRotation + 1) % 4); } },
             'aria-pressed': blockRotation > 0 ? 'true' : 'false',
             onClick: function() { upd('blockRotation', (blockRotation + 1) % 4); },
@@ -8724,7 +8726,7 @@
               eng._coordAnnounce = !eng._coordAnnounce;
               if (addToast) addToast(eng._coordAnnounce ? '\uD83D\uDD0A Coord announcements ON (press C to toggle)' : '\uD83D\uDD07 Coord announcements OFF', 'info');
               if (eng._coordAnnounce && typeof announceToSR === 'function') {
-                announceToSR('Coordinate announcements on. Position at X ' + Math.floor(eng.camera.position.x) + ' Y ' + Math.floor(eng.camera.position.y) + ' Z ' + Math.floor(eng.camera.position.z));
+                announceToSR(__alloFill(__alloT('stem.geometryworld.sr_coordinate_announcements_on_position_at_x_y_z', 'Coordinate announcements on. Position at X {value1} Y {value2} Z {value3}'), { value1: Math.floor(eng.camera.position.x), value2: Math.floor(eng.camera.position.y), value3: Math.floor(eng.camera.position.z) }));
               }
             },
             'aria-pressed': engine._coordAnnounce ? 'true' : 'false',
@@ -9026,7 +9028,7 @@
                   el('div', { style: { color: '#f0fdfa', fontSize: 11, fontWeight: 800 } }, structure.label),
                   el('div', { style: { marginTop: 2, color: '#a7f3d0', fontFamily: 'monospace', fontSize: 10 } }, structure.dimensions.length + ' × ' + structure.dimensions.width + ' × ' + structure.dimensions.height + ' units'),
                   el('div', { style: { marginTop: 2, color: '#94a3b8', fontSize: 9 } }, 'Origin X' + structure.origin.x + ' Y' + structure.origin.y + ' Z' + structure.origin.z + ' · ' + structure.type),
-                  el('button', { type: 'button', className: 'gw-focusable', 'aria-label': 'View structure: ' + structure.label, onClick: function() { if (engine && engine.focusStructure) engine.focusStructure(structure.index); }, style: { minHeight: 34, marginTop: 6, padding: '5px 9px', border: '1px solid rgba(45,212,191,0.3)', borderRadius: 7, background: 'rgba(13,148,136,0.28)', color: '#ccfbf1', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'View structure')
+                  el('button', { type: 'button', className: 'gw-focusable', 'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_view_structure', 'View structure: {value1}'), { value1: structure.label }), onClick: function() { if (engine && engine.focusStructure) engine.focusStructure(structure.index); }, style: { minHeight: 34, marginTop: 6, padding: '5px 9px', border: '1px solid rgba(45,212,191,0.3)', borderRadius: 7, background: 'rgba(13,148,136,0.28)', color: '#ccfbf1', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'View structure')
                 );
               })
             ),
@@ -9401,7 +9403,7 @@
                 curQ.choices.map(function(choice, ci) {
                   return el('button', {
                     key: 'choice-' + ci + '-' + String(choice).slice(0, 24),
-                    'aria-label': 'Answer option ' + (ci + 1) + ': ' + choice,
+                    'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_answer_option', 'Answer option {value1}: {value2}'), { value1: (ci + 1), value2: choice }),
                     onClick: function() {
                       if (ci === curQ.correct) {
                         sfxCorrect();
@@ -9429,7 +9431,7 @@
                           try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
                           if (addToast) addToast('\u2705 Correct! +1', 'success');
                           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
-                          announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
+                          announceToSR(__alloFill(__alloT('stem.geometryworld.sr_correct_score_is_now_of', 'Correct! Score is now {value1} of {value2}'), { value1: newScore, value2: totalQ }));
                       if (window._alloHaptic) window._alloHaptic('correct');
                           // 3D confetti from NPC + celebration bounce
                           if (eng && npc.body) {
@@ -9440,7 +9442,7 @@
                           if (newScore >= totalQ && totalQ > 0) {
                             sfxComplete();
                             if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
-                            announceToSR('Lesson complete! You answered all ' + totalQ + ' questions correctly. The sun is setting \u2014 look up to see the celebration.');
+                            announceToSR(__alloFill(__alloT('stem.geometryworld.sr_lesson_complete_you_answered_all_questions_correc', 'Lesson complete! You answered all {value1} questions correctly. The sun is setting \u2014 look up to see the celebration.'), { value1: totalQ }));
                               // Trigger reflection prompt after a delay
                               setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
                             if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);

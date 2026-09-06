@@ -403,10 +403,10 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain("role: 'note'");
     expect(SOURCE).toContain("id: 'gw-volume-representation', value: activeVolumeRepresentation.key, className: 'gw-focusable'");
     expect(SOURCE).toContain("id: 'gw-representation-reason', className: 'gw-focusable'");
-    expect(SOURCE).toContain("'aria-label': 'Open recommended volume view: '");
+    expect(SOURCE).toContain("'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_open_recommended_volume_view', 'Open recommended volume view: {value1}')");
     expect(SOURCE).toContain("'aria-describedby': representationSentenceStarter");
-    expect(SOURCE).toContain("announceToSR('Showing equivalent view: '");
-    expect(SOURCE).toContain("announceToSR('Showing recommended view: '");
+    expect(SOURCE).toContain("announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_equivalent_view', 'Showing equivalent view: {value1}");
+    expect(SOURCE).toContain("announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_recommended_view', 'Showing recommended view: {value1}");
     expect(SOURCE).toContain("'aria-live': 'polite'");
   });
 

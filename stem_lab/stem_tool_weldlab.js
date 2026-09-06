@@ -308,6 +308,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     aliases: ['welding', 'MIG TIG', 'weld defects', 'skilled trades'],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       // The hub screen paints no ground, so its title, subtitle, section
       // label and footer sit on the HOST surface - white in light and dark,
       // pure BLACK in the contrast theme, where 'WeldLab' measured 1.44:1.
@@ -457,7 +459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             next[v] = true;
             upd('weldBadges', next);
             lsSet('weldLab.badges.v1', next);
-            announce('Module explored: ' + v);
+            announce(__alloFill(__alloT('stem.weldlab.sr_module_explored', 'Module explored: {value1}'), { value1: v }));
           }
         }
       };
@@ -1094,7 +1096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   var sel = (P === p);
                   return h('button', {
                     key: p,
-                    onClick: function() { setP(p); announce('Selected ' + processInfo[p].label); },
+                    onClick: function() { setP(p); announce(__alloFill(__alloT('stem.weldlab.sr_selected', 'Selected {value1}'), { value1: processInfo[p].label })); },
                     role: 'radio',
                     'aria-checked': sel ? 'true' : 'false',
                     className: 'p-3 rounded-xl border-2 text-sm font-bold transition-all focus:outline-none focus:ring-4 ring-orange-500/40 ' +
@@ -1417,7 +1419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     var lbl = p === 'mig' ? 'MIG' : p === 'tig' ? 'TIG' : p === 'stick' ? 'Stick' : 'Oxy';
                     return h('button', {
                       key: p,
-                      onClick: function() { setP(p); announce('Process: ' + lbl); },
+                      onClick: function() { setP(p); announce(__alloFill(__alloT('stem.weldlab.sr_process', 'Process: {value1}'), { value1: lbl })); },
                       role: 'radio',
                       'aria-checked': sel ? 'true' : 'false',
                       className: 'p-2 rounded-lg border-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
@@ -1433,7 +1435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     var sel = (M === mk);
                     return h('button', {
                       key: mk,
-                      onClick: function() { setM(mk); announce('Material: ' + MATERIAL[mk].name); },
+                      onClick: function() { setM(mk); announce(__alloFill(__alloT('stem.weldlab.sr_material', 'Material: {value1}'), { value1: MATERIAL[mk].name })); },
                       role: 'radio',
                       'aria-checked': sel ? 'true' : 'false',
                       className: 'w-full p-2 rounded-lg border-2 text-xs font-bold text-left transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
@@ -1450,7 +1452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     var lbl = t === 0.125 ? '1/8"' : t === 0.1875 ? '3/16"' : t === 0.25 ? '1/4"' : '3/8"';
                     return h('button', {
                       key: t,
-                      onClick: function() { setTH(t); announce('Thickness ' + lbl); },
+                      onClick: function() { setTH(t); announce(__alloFill(__alloT('stem.weldlab.sr_thickness', 'Thickness {value1}'), { value1: lbl })); },
                       role: 'radio',
                       'aria-checked': sel ? 'true' : 'false',
                       className: 'p-2 rounded-lg border-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
@@ -1495,7 +1497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function () {
                     setBeadView(m.id);
-                    announce('View: ' + m.label + ' (' + m.sub + ')');
+                    announce(__alloFill(__alloT('stem.weldlab.sr_view', 'View: {value1} ({value2})'), { value1: m.label, value2: m.sub }));
                   },
                   className: 'px-3 py-1.5 rounded-lg border-2 font-bold text-xs transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
                     (sel ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
@@ -1537,7 +1539,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       var sel = (jointType === j.id);
                       return h('button', {
                         key: j.id,
-                        onClick: function() { setJointType(j.id); announce('Joint: ' + j.label + ' (' + j.desc + ')'); },
+                        onClick: function() { setJointType(j.id); announce(__alloFill(__alloT('stem.weldlab.sr_joint', 'Joint: {value1} ({value2})'), { value1: j.label, value2: j.desc })); },
                         role: 'radio',
                         'aria-checked': sel ? 'true' : 'false',
                         title: j.desc,
@@ -1563,7 +1565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       var sel = (weldPosition === p.id);
                       return h('button', {
                         key: p.id,
-                        onClick: function() { setWeldPosition(p.id); announce('Position: ' + p.label + ' (' + p.desc + ')'); },
+                        onClick: function() { setWeldPosition(p.id); announce(__alloFill(__alloT('stem.weldlab.sr_position', 'Position: {value1} ({value2})'), { value1: p.label, value2: p.desc })); },
                         role: 'radio',
                         'aria-checked': sel ? 'true' : 'false',
                         title: p.desc,
@@ -3348,7 +3350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               var next = Object.assign({}, found);
               next[hit.id] = true;
               setFound(next);
-              announce('Identified ' + DEFECT_INFO[hit.type].name);
+              announce(__alloFill(__alloT('stem.weldlab.sr_identified', 'Identified {value1}'), { value1: DEFECT_INFO[hit.type].name }));
               // ── Defect Catalog: log first-find of this defect TYPE across all samples ──
               // Per-sample 'found' resets when switching samples; the catalog
               // sticks across samples and across sessions (when wired through
@@ -3558,7 +3560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   var sel = (sampleIdx === i);
                   return h('button', {
                     key: s.id,
-                    onClick: function() { setSampleIdx(i); announce('Loaded ' + s.name); },
+                    onClick: function() { setSampleIdx(i); announce(__alloFill(__alloT('stem.weldlab.sr_loaded', 'Loaded {value1}'), { value1: s.name })); },
                     role: 'radio',
                     'aria-checked': sel ? 'true' : 'false',
                     className: 'p-2 rounded-lg border-2 text-xs font-bold text-left transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
@@ -3575,7 +3577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 width: 900,
                 height: 280,
                 role: 'img',
-                'aria-label': 'Inspection sample. ' + sample.name + '. Total defects to find: ' + totalDefects + '. Found so far: ' + foundCount + '.',
+                'aria-label': __alloFill(__alloT('stem.weldlab.a11y_inspection_sample_total_defects_to_find_found_s', 'Inspection sample. {value1}. Total defects to find: {value2}. Found so far: {value3}.'), { value1: sample.name, value2: totalDefects, value3: foundCount }),
                 onClick: handleCanvasClick,
                 style: { cursor: revealAll ? 'default' : 'crosshair' },
                 className: 'w-full block rounded-lg'
@@ -3597,7 +3599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     var next = Object.assign({}, found);
                     next[df.id] = true;
                     setFound(next);
-                    announce('Identified zone: ' + DEFECT_INFO[df.type].name);
+                    announce(__alloFill(__alloT('stem.weldlab.sr_identified_zone', 'Identified zone: {value1}'), { value1: DEFECT_INFO[df.type].name }));
                   },
                   'aria-disabled': revealAll || foundCount === totalDefects ? 'true' : 'false',
                   className: 'px-3 py-1.5 rounded-lg bg-orange-700 text-white text-xs font-bold border-2 border-orange-700 hover:bg-orange-800 transition focus:outline-none focus:ring-4 ring-orange-500/40 ' +
@@ -4092,7 +4094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           if (quizIdx + 1 >= quizPool.length) {
             // End — keep on results screen
             setQuizFeedback({ end: true });
-            announce('Quiz complete. Score: ' + quizScore + ' of ' + quizPool.length);
+            announce(__alloFill(__alloT('stem.weldlab.sr_quiz_complete_score_of', 'Quiz complete. Score: {value1} of {value2}'), { value1: quizScore, value2: quizPool.length }));
           } else {
             setQuizIdx(quizIdx + 1);
             setQuizFeedback(null);
@@ -4141,8 +4143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'p-6 flex flex-wrap items-center gap-5', style: { background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
                     h('div', { className: 'relative flex-shrink-0', style: { width: 100, height: 100 } },
                       h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
-                        'aria-label': 'Score: ' + quizScore + ' out of ' + quizPool.length
-                      },
+                        'aria-label': __alloFill(__alloT('stem.weldlab.a11y_score_out_of', 'Score: {value1} out of {value2}'), { value1: quizScore, value2: quizPool.length })},
                         h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
                         h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
                           strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
@@ -4604,7 +4605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   var sel = (challengeIdx === i);
                   return h('button', {
                     key: c.id,
-                    onClick: function() { setChallengeIdx(i); announce('Challenge ' + (i + 1) + ' loaded'); },
+                    onClick: function() { setChallengeIdx(i); announce(__alloFill(__alloT('stem.weldlab.sr_challenge_loaded', 'Challenge {value1} loaded'), { value1: (i + 1) })); },
                     'aria-pressed': sel ? 'true' : 'false',
                     className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
                       (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
@@ -6258,9 +6259,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 newBest[tier] = finalScore;
                 setBestScores(newBest);
                 lsSet('weldLab.speed.best.v1', newBest);
-                announce('New personal best for ' + live.T.name + ' tier: ' + finalScore + ' percent');
+                announce(__alloFill(__alloT('stem.weldlab.sr_new_personal_best_for_tier_percent', 'New personal best for {value1} tier: {value2} percent'), { value1: live.T.name, value2: finalScore }));
               } else {
-                announce('Run complete. Score: ' + finalScore + ' percent.');
+                announce(__alloFill(__alloT('stem.weldlab.sr_run_complete_score_percent', 'Run complete. Score: {value1} percent.'), { value1: finalScore }));
               }
               return;
             }
@@ -6280,7 +6281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           setV(SPEED_OPTIMAL.V);
           setA(SPEED_OPTIMAL.A);
           setRunning(true);
-          announce('Speed challenge started, ' + T.name + ' tier, ' + T.duration + ' seconds');
+          announce(__alloFill(__alloT('stem.weldlab.sr_speed_challenge_started_tier_seconds', 'Speed challenge started, {value1} tier, {value2} seconds'), { value1: T.name, value2: T.duration }));
         }
         function stopRun() {
           setRunning(false);
@@ -7026,7 +7027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 var sel = (codePick === c.id);
                 return h('button', {
                   key: c.id,
-                  onClick: function() { setCodePick(c.id); announce('Code: ' + c.label); },
+                  onClick: function() { setCodePick(c.id); announce(__alloFill(__alloT('stem.weldlab.sr_code', 'Code: {value1}'), { value1: c.label })); },
                   className: 'px-4 py-2 rounded-lg border-2 text-sm font-bold transition focus:outline-none focus:ring-2 ring-purple-500/40 ' +
                     (sel ? 'bg-purple-600 text-white border-purple-700' : 'bg-white text-slate-800 border-slate-300 hover:border-purple-400')
                 }, c.label);
@@ -8622,7 +8623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 roadmapPaths.map(function(p) {
                   return h('button', {
                     key: p.id,
-                    onClick: function() { setRoadPath(p.id); announce('Selected ' + p.title); },
+                    onClick: function() { setRoadPath(p.id); announce(__alloFill(__alloT('stem.weldlab.sr_selected', 'Selected {value1}'), { value1: p.title })); },
                     className: 'text-left bg-white border-2 border-fuchsia-300 hover:border-fuchsia-600 hover:bg-fuchsia-50 rounded-xl p-4 transition focus:outline-none focus:ring-2 ring-fuchsia-500/40'
                   },
                     h('div', { className: 'flex items-baseline gap-2 mb-2' },
@@ -9800,7 +9801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                             h('div', { className: 'text-sm font-bold text-slate-700 mb-1' }, m.st.role),
                             h('div', { className: 'text-xs font-mono text-emerald-700 mb-2' }, m.st.pay),
                             h('button', {
-                              onClick: function() { setIdx(m.i); setMode('browse'); announce('Showing ' + m.st.name); },
+                              onClick: function() { setIdx(m.i); setMode('browse'); announce(__alloFill(__alloT('stem.weldlab.sr_showing', 'Showing {value1}'), { value1: m.st.name })); },
                               className: 'text-xs font-bold px-3 py-1.5 rounded-lg bg-fuchsia-700 text-white hover:bg-fuchsia-800 transition'
                             }, __alloT('stem.weldlab.read_full_profile', 'Read full profile →'))
                           ),
