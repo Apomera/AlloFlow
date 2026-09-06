@@ -183,6 +183,29 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 26 (2026-09-06) — the valley at both ends of the standoff slider
+
+The Siege Field was built and screenshotted at a standoff of about 80 m. The slider goes from
+10 to 300. Rendering both ends found four faults, none of which any test could see:
+
+- ★**At 300 m the fog ate the target.** `Fog(P.fog, 80, 360)` leaves a castle at 300 m as a
+  pale smudge, in the one view whose subject is the shot. Fog now reaches past the target:
+  near `max(70, standoff * 0.55)`, far `max(360, standoff * 2.4)`, with the storm closing both
+  by a factor rather than to fixed metres.
+- ★**At 300 m the ridges stood in the meadow.** They were at a fixed 236/278/318 m while the
+  ground grows with the standoff, so the mountains ended up inside the field. They are now
+  0.60, 0.71 and 0.81 of the field — past the ground's rim at 0.5, inside the sky at 0.92 —
+  and their heights scale with it, or a distant range reads as a kerb.
+- **The sky, stars, sun flare and moon** were fixed radii too, so at a long standoff the ground
+  reached past them. All four are now proportions of `horizonR`.
+- ★**At 10 m the camp leaned on the castle**: stakes, windsock, cart and standard all sit at a
+  fixed offset from the engine, which at a 10 m standoff puts them at the wall. They are
+  clamped to `campFront` = 45% of the standoff.
+- **One number for the size of the field.** `fieldSpan` and `groundSpan` were the same formula
+  written twice; the second is now the first.
+- At 80 m the proportions reproduce the constants they replaced exactly (392 m field → ridges
+  at 235, 278, 318), which a test pins and a re-render confirms.
+
 ### Wave 25 (2026-09-06) — a gate for the 857 translatable strings
 
 Eighteen waves have added translatable strings and nothing checked them. Four faults are

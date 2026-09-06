@@ -3445,8 +3445,20 @@ window.StemLab = window.StemLab || {
     };
     var tex = contrast ? {} : { stone: stoneTexture(THREE), wood: woodTexture(THREE) };
 
+    // The field is as long as the standoff, so everything that stands at the
+    // edge of it has to be sized from the same number. groundSpan is set with
+    // the terrain below; these are the radii that must always sit outside it.
+    var fieldSpan = Math.max(320, standoff * 2.4 + 200);
+    var horizonR = Math.max(400, fieldSpan * 0.92);
+    var campFront = function (metres) { return Math.min(metres, standoff * 0.45); };
+
     if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(P.horizon, 1);
-    if (S.scene) S.scene.fog = (P.fog != null && typeof THREE.Fog === 'function') ? new THREE.Fog(P.fog, P.rain ? 40 : 80, P.rain ? 240 : 360) : null;
+    // Fog has to reach past the target or a 300 m castle is a pale smudge and
+    // the view stops being about the shot.
+    var fogNear = Math.max(70, standoff * 0.55), fogFar = Math.max(360, standoff * 2.4);
+    if (S.scene) S.scene.fog = (P.fog != null && typeof THREE.Fog === 'function')
+      ? new THREE.Fog(P.fog, P.rain ? fogNear * 0.5 : fogNear, P.rain ? fogFar * 0.66 : fogFar)
+      : null;
 
     // ── Sky ──
     if (typeof THREE.ShaderMaterial === 'function') {
@@ -3465,7 +3477,7 @@ window.StemLab = window.StemLab || {
         side: THREE.BackSide, depthWrite: false, fog: false
       });
       S.skyMat = skyMat;
-      var sky = new THREE.Mesh(new THREE.SphereGeometry(360, 32, 16), skyMat);
+      var sky = new THREE.Mesh(new THREE.SphereGeometry(horizonR, 32, 16), skyMat);
       sky.position.set(0, 0, -standoff * 0.5);
       sky.frustumCulled = false;
       S.model.add(sky);
@@ -3474,9 +3486,9 @@ window.StemLab = window.StemLab || {
       var starPos = new Float32Array(420 * 3);
       for (var si = 0; si < 420; si++) {
         var th = hash01(si, 1, 21) * Math.PI * 2, ph = Math.acos(1 - hash01(si, 2, 22) * 0.9);
-        starPos[si * 3] = Math.sin(ph) * Math.cos(th) * 350;
-        starPos[si * 3 + 1] = Math.cos(ph) * 350 + 4;
-        starPos[si * 3 + 2] = Math.sin(ph) * Math.sin(th) * 350 - standoff * 0.5;
+        starPos[si * 3] = Math.sin(ph) * Math.cos(th) * horizonR * 0.97;
+        starPos[si * 3 + 1] = Math.cos(ph) * horizonR * 0.97 + 4;
+        starPos[si * 3 + 2] = Math.sin(ph) * Math.sin(th) * horizonR * 0.97 - standoff * 0.5;
       }
       var starGeo = new THREE.BufferGeometry();
       starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
@@ -3533,7 +3545,7 @@ window.StemLab = window.StemLab || {
       });
       if (flareTex) {
         var flare = new THREE.Sprite(new THREE.SpriteMaterial({ map: flareTex, color: P.sun, transparent: true, opacity: 0.35 + 0.35 * P.glow, depthWrite: false, depthTest: false, fog: false }));
-        flare.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), 330);
+        flare.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), horizonR * 0.92);
         flare.scale.set(P.stars ? 40 : 110, P.stars ? 40 : 110, 1);
         S.model.add(flare);
       }
@@ -3559,7 +3571,7 @@ window.StemLab = window.StemLab || {
         if (moonTex) {
           moonTex.wrapS = THREE.ClampToEdgeWrapping; moonTex.wrapT = THREE.ClampToEdgeWrapping;
           var moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, transparent: true, depthWrite: false, depthTest: false, fog: false }));
-          moon.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), 320);
+          moon.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), horizonR * 0.89);
           moon.scale.set(24, 24, 1);
           S.model.add(moon);
         }
@@ -3583,11 +3595,12 @@ window.StemLab = window.StemLab || {
           var cl = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, color: cloudTint, transparent: true, opacity: P.stars ? 0.45 : 0.75, depthWrite: false }));
           var cs = 70 + hash01(ck, 11, 54) * 80;
           cl.scale.set(cs, cs * 0.45, 1);
-          cl.position.set((hash01(ck, 13, 55) - 0.5) * 420, 38 + hash01(ck, 17, 56) * 34, -standoff * 0.5 + (hash01(ck, 19, 57) - 0.5) * 380);
+          cl.position.set((hash01(ck, 13, 55) - 0.5) * fieldSpan * 1.07, 38 + hash01(ck, 17, 56) * 34, -standoff * 0.5 + (hash01(ck, 19, 57) - 0.5) * fieldSpan * 0.97);
           cl.userData = { x0: cl.position.x, speed: 0.4 + hash01(ck, 23, 58) * 0.5 };
           clouds.add(cl);
         }
         S.model.add(clouds); S.clouds = clouds;
+        S.cloudWrap = fieldSpan * 1.17;
       }
     }
 
@@ -3602,7 +3615,9 @@ window.StemLab = window.StemLab || {
     var span = Math.max(2, ext.maxCol - ext.minCol + 1);
     var wallTop = ext.maxRow + 1;
     var laneHalf = Math.max(12, span / 2 + 8);
-    var groundSpan = Math.max(320, standoff * 2.4 + 200);
+    // The same number as fieldSpan above, not a second copy of the formula:
+    // the terrain and everything ringing it must agree by construction.
+    var groundSpan = fieldSpan;
     var seg = 64;
     var geo = new THREE.PlaneGeometry(groundSpan, groundSpan, seg, seg);
     geo.rotateX(-Math.PI / 2);
@@ -3746,9 +3761,14 @@ window.StemLab = window.StemLab || {
     if (!contrast) {
       var ridgeCentre = new THREE.Vector3(0, 0, -standoff * 0.5);
       var ridgeNear = new THREE.Color(P.stars ? 0x1b2544 : 0x496b46);
-      [[236, 36, 0.5], [278, 54, 0.68], [318, 76, 0.84]].forEach(function (layer, li) {
-        var R = layer[0], H = layer[1], haze = layer[2];
-        var segs = 72, pos = [], base = -30;
+      // Proportions, not metres: at 80 m of standoff these are the same 236,
+      // 278 and 318 they always were, and at 300 m they are still past the rim
+      // of a field that has grown with it. The heights grow too, or a distant
+      // range would read as a kerb.
+      var ridgeScale = Math.max(1, fieldSpan / 392);
+      [[0.60, 36, 0.5], [0.71, 54, 0.68], [0.81, 76, 0.84]].forEach(function (layer, li) {
+        var R = fieldSpan * layer[0], H = layer[1] * ridgeScale, haze = layer[2];
+        var segs = 72, pos = [], base = -30 * ridgeScale;
         var peak = function (i) {
           var f = (i % segs) / segs;
           return H * (0.44 + 0.3 * Math.sin(f * 6.283 * 3 + li * 1.7) + 0.28 * hash01(i % segs, li + 1, 111) + 0.18 * Math.sin(f * 6.283 * 7 + li * 0.6));
@@ -4199,7 +4219,7 @@ window.StemLab = window.StemLab || {
 
       // The supply cart: the stones did not walk here.
       var cart = new THREE.Group();
-      cart.position.set(9.4, campGround(9.4, -standoff + 5.5), -standoff + 5.5);
+      cart.position.set(9.4, campGround(9.4, -standoff + campFront(5.5)), -standoff + campFront(5.5));
       cart.rotation.y = 0.5;
       var bed = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.55, 1.5), mat(0x6b4b2a, tex.wood ? { map: tex.wood } : null));
       bed.position.y = 0.95; bed.castShadow = true;
@@ -4236,7 +4256,7 @@ window.StemLab = window.StemLab || {
       for (var pk = 0; pk < 13; pk++) {
         var pkx = -9 + pk * 1.5;
         if (Math.abs(pkx) < 2.6) continue;
-        var pkz = -standoff + 8.5 + hash01(pk, 11, 153) * 0.6;
+        var pkz = -standoff + campFront(8.5) + hash01(pk, 11, 153) * 0.6;
         var stake = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.11, 2.1, 5), mat(0x5f4326));
         stake.position.set(pkx, campGround(pkx, pkz) + 0.85, pkz);
         stake.rotation.x = -0.42;
@@ -4247,13 +4267,13 @@ window.StemLab = window.StemLab || {
 
       // The camp's standard, answering the castle's banner across the field.
       var stdPole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 5.4, 6), mat(0x3b2a1a));
-      stdPole.position.set(13.8, campGround(13.8, -standoff + 7.5) + 2.7, -standoff + 7.5);
+      stdPole.position.set(13.8, campGround(13.8, -standoff + campFront(7.5)) + 2.7, -standoff + campFront(7.5));
       stdPole.castShadow = true;
       S.model.add(stdPole);
       var stdGeo = new THREE.PlaneGeometry(2.1, 1.15, 9, 3);
       stdGeo.translate(1.05, 0, 0);
       var standard = new THREE.Mesh(stdGeo, mat(0x2f5f8f, { side: THREE.DoubleSide }));
-      standard.position.set(13.8, campGround(13.8, -standoff + 7.5) + 4.6, -standoff + 7.5);
+      standard.position.set(13.8, campGround(13.8, -standoff + campFront(7.5)) + 4.6, -standoff + campFront(7.5));
       standard.castShadow = true;
       S.model.add(standard);
       S.standard = standard;
@@ -4496,11 +4516,11 @@ window.StemLab = window.StemLab || {
     // ── A windsock beside the engine: the wind, read where the stone leaves. ──
     if (!contrast) {
       var sockPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 3.6, 6), mat(0x3b2a1a));
-      sockPole.position.set(-6.5, 1.8, -standoff + 5.5);
+      sockPole.position.set(-6.5, 1.8, -standoff + campFront(5.5));
       sockPole.castShadow = true;
       S.model.add(sockPole);
       var sockPivot = new THREE.Group();
-      sockPivot.position.set(-6.5, 3.5, -standoff + 5.5);
+      sockPivot.position.set(-6.5, 3.5, -standoff + campFront(5.5));
       var sock = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.6, 8, 1, true), new THREE.MeshLambertMaterial({ color: 0xf2a33a, side: THREE.DoubleSide }));
       // Cone axis is y with the tip at +y; lay it so the open mouth is at the pivot.
       sock.rotation.z = Math.PI / 2; sock.position.x = 0.8;
@@ -5194,8 +5214,9 @@ window.StemLab = window.StemLab || {
       if (S.clouds) {
         S.clouds.children.forEach(function (cl, ci2) {
           var u = cl.userData;
-          cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % 460 : 0);
-          if (cl.position.x > 230) cl.position.x -= 460; if (cl.position.x < -230) cl.position.x += 460;
+          var wrap = S.cloudWrap || 460;
+          cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % wrap : 0);
+          if (cl.position.x > wrap / 2) cl.position.x -= wrap; if (cl.position.x < -wrap / 2) cl.position.x += wrap;
         });
       }
       // Chaff drifts with the wind, and wraps rather than running out.

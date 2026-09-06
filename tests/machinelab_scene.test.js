@@ -426,7 +426,7 @@ describe('Siege Field wave 5: dressing that follows the hour', () => {
 
   it('drifts the clouds with the wind and stills them with ambient motion off', () => {
     const src = source();
-    expect(src).toContain("cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % 460 : 0);");
+    expect(src).toContain("cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % wrap : 0);");
     expect(src).toContain("S.water.material.map.offset.x = ambient ? (tSec * 0.03) % 1 : 0;");
   });
 
@@ -460,7 +460,7 @@ describe('Siege Field wave 6: storm, landing marks, life', () => {
     expect(skyPreset('storm', false).rain).toBe(true);
     expect(skyPreset('storm', true).rain).toBeFalsy();
     const src = source();
-    expect(src).toContain('new THREE.Fog(P.fog, P.rain ? 40 : 80, P.rain ? 240 : 360)');
+    expect(src).toContain('new THREE.Fog(P.fog, P.rain ? fogNear * 0.5 : fogNear, P.rain ? fogFar * 0.66 : fogFar)');
   });
 
   it('rain, lightning and thunder are ambient-gated, and the rain changes nothing in the model', () => {
@@ -689,7 +689,7 @@ describe('Siege Field wave 10: seconds on the arc, the track on the ground', () 
 describe('Siege Field wave 11: far ridges, grass and wildflowers', () => {
   it('rings the valley with three ridge bands, each hazed further toward the horizon', () => {
     const src = source();
-    expect(src).toContain('[[236, 36, 0.5], [278, 54, 0.68], [318, 76, 0.84]].forEach(function (layer, li) {');
+    expect(src).toContain('[[0.60, 36, 0.5], [0.71, 54, 0.68], [0.81, 76, 0.84]].forEach(function (layer, li) {');
     expect(src).toContain('var rcol = ridgeNear.clone().lerp(new THREE.Color(P.horizon), haze);');
     // The tint is the haze, so the ridges must not take the scene fog as well.
     expect(src).toContain('color: rcol.getHex(), side: THREE.DoubleSide, fog: false');
@@ -697,9 +697,10 @@ describe('Siege Field wave 11: far ridges, grass and wildflowers', () => {
 
   it('sits the ridges outside the ground plane and never culls them', () => {
     const src = source();
-    // groundSpan reaches at most standoff * 2.4 + 200, half of that from the
-    // valley centre, so the nearest band at 236 is always past the rim.
-    expect(src).toContain('var groundSpan = Math.max(320, standoff * 2.4 + 200);');
+    // The ground reaches half the field from the valley centre, so a band at
+    // 0.60 of the field is past its rim at any standoff.
+    expect(src).toContain('var fieldSpan = Math.max(320, standoff * 2.4 + 200);');
+    expect(src).toContain('var groundSpan = fieldSpan;');
     expect(src).toContain('ridgeMesh.frustumCulled = false;');
   });
 
@@ -845,7 +846,7 @@ describe('Siege Field wave 14: the camera takes the hit, a moon, rain that lands
   it('hangs a moon where the light comes from, and only at an hour that has stars', () => {
     const src = source();
     expect(src).toContain("if (P.stars && typeof THREE.Sprite === 'function') {");
-    expect(src).toContain('moon.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), 320);');
+    expect(src).toContain('moon.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), horizonR * 0.89);');
   });
 
   it('gives the storm somewhere to land, on a fixed cycle with no spawner', () => {
@@ -1292,5 +1293,60 @@ describe('Siege Field wave 24: the record says how the wall was ranged', () => {
     expect(one).toContain('Called the shot right 1 time in a row');
     const many = renderTool('machineLab', recordState({ fieldStreak: 4 }));
     expect(many).toContain('Called the shot right 4 times in a row');
+  });
+});
+
+describe('Siege Field wave 26: the valley holds at both ends of the standoff slider', () => {
+  it('sizes the sky from the field rather than from a constant', () => {
+    const src = source();
+    expect(src).toContain('var horizonR = Math.max(400, fieldSpan * 0.92);');
+    expect(src).toContain('new THREE.SphereGeometry(horizonR, 32, 16)');
+    expect(src).toContain('horizonR * 0.97');   // stars
+    expect(src).toContain('horizonR * 0.92');   // sun flare
+    expect(src).toContain('horizonR * 0.89');   // moon
+  });
+
+  it('has one number for the size of the field, not two copies of the formula', () => {
+    const src = source();
+    expect(src).toContain('var groundSpan = fieldSpan;');
+    // The ridges must sit outside the ground and inside the sky: 0.81 of the
+    // field is past the ground edge at 0.5 and inside the sky at 0.92.
+    expect(src).toContain('[[0.60, 36, 0.5], [0.71, 54, 0.68], [0.81, 76, 0.84]].forEach(function (layer, li) {');
+    expect(src).toContain('var R = fieldSpan * layer[0], H = layer[1] * ridgeScale, haze = layer[2];');
+  });
+
+  it('reaches the fog past the target, so a 300 m castle is still a castle', () => {
+    const src = source();
+    expect(src).toContain('var fogNear = Math.max(70, standoff * 0.55), fogFar = Math.max(360, standoff * 2.4);');
+    expect(src).toContain('? new THREE.Fog(P.fog, P.rain ? fogNear * 0.5 : fogNear, P.rain ? fogFar * 0.66 : fogFar)');
+  });
+
+  it('keeps the camp off the castle when the engine is parked at ten metres', () => {
+    const src = source();
+    expect(src).toContain('var campFront = function (metres) { return Math.min(metres, standoff * 0.45); };');
+    for (const site of [
+      'var pkz = -standoff + campFront(8.5) + hash01(pk, 11, 153) * 0.6;',
+      'sockPole.position.set(-6.5, 1.8, -standoff + campFront(5.5));',
+      'cart.position.set(9.4, campGround(9.4, -standoff + campFront(5.5)), -standoff + campFront(5.5));',
+      'stdPole.position.set(13.8, campGround(13.8, -standoff + campFront(7.5)) + 2.7, -standoff + campFront(7.5));'
+    ]) expect(src, site).toContain(site);
+  });
+
+  it('wraps the clouds over the width it actually scattered them across', () => {
+    const src = source();
+    expect(src).toContain('S.cloudWrap = fieldSpan * 1.17;');
+    expect(src).toContain('var wrap = S.cloudWrap || 460;');
+    expect(src).toContain('if (cl.position.x > wrap / 2) cl.position.x -= wrap;');
+  });
+
+  it('still draws the same valley at the standoff it was designed around', () => {
+    // At 80 m the proportions reproduce the constants they replaced: the field
+    // is 392 m, so the ridges are at 235, 278 and 317 as before.
+    const fieldSpan = Math.max(320, 80 * 2.4 + 200);
+    expect(fieldSpan).toBe(392);
+    expect(Math.round(fieldSpan * 0.60)).toBe(235);
+    expect(Math.round(fieldSpan * 0.71)).toBe(278);
+    expect(Math.round(fieldSpan * 0.81)).toBe(318);
+    expect(Math.max(1, fieldSpan / 392)).toBe(1);
   });
 });
