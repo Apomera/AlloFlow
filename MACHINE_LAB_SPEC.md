@@ -183,6 +183,19 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 24 (2026-09-06)
+
+- **The work record says HOW the wall was ranged, not only that it fell.** A breach in three
+  shots by bracketing is a different piece of work from a breach in thirty by nudging, and the
+  record is what leaves the tool and reaches a teacher. It now reports:
+  - the bracket, with both edges and where the wall sat between them as a percentage — or,
+    with one edge in, exactly which half is still missing;
+  - what changed between the last three shots, newest first, and whether two or more of them
+    in a row changed exactly one thing;
+  - how many shots in a row were called correctly before being loosed.
+- Each line appears only once there is something to report, so a fresh record still says
+  nothing about ranging.
+
 ### Wave 23 (2026-09-06)
 
 - **The valley has a sound.** An ambient bed of two looped noise sources — one through a

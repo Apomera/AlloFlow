@@ -1247,3 +1247,50 @@ describe('Siege Field wave 23: the valley has a sound, and it stops when asked',
     expect(html).toMatch(/aria-pressed="false"[^>]*>[^<]*🔇/);
   });
 });
+
+describe('Siege Field wave 24: the record says how the wall was ranged', () => {
+  const recordState = (o = {}) => state(Object.assign({ view: 'learn', manualTopic: 'record' }, o));
+
+  it('reports a closed bracket with both edges and where the wall sat between them', () => {
+    const html = renderTool('machineLab', recordState({ bracket: { at: 80, lo: 50, hi: 130 } }));
+    expect(html).toContain('bracketed the wall at 80 m between a short at 50 m and a long at 130 m');
+    expect(html).toContain('with the wall 38% of the way between them');
+  });
+
+  it('says which half is missing when only one edge is in', () => {
+    const short = renderTool('machineLab', recordState({ bracket: { at: 80, lo: 50, hi: null } }));
+    expect(short).toContain('one side of a bracket so far');
+    expect(short).toContain('still no shot past the wall');
+    const long = renderTool('machineLab', recordState({ bracket: { at: 80, lo: null, hi: 130 } }));
+    expect(long).toContain('still nothing falling short of it');
+  });
+
+  it('says nothing about ranging before a shot has been loosed', () => {
+    const html = renderTool('machineLab', recordState());
+    expect(html).not.toContain('Ranging:');
+    expect(html).not.toContain('Last changes, newest first');
+    expect(html).not.toContain('Called the shot right');
+  });
+
+  it('lists what changed between shots, and flags a real one-variable run', () => {
+    const html = renderTool('machineLab', recordState({
+      traceNotes: ['first shot', 'release 35→45°', 'counterweight 900→1600 kg'],
+      oneChangeStreak: 2
+    }));
+    expect(html).toContain('Last changes, newest first: counterweight 900→1600 kg; release 35→45°; first shot');
+    expect(html).toContain('2 shots in a row changed exactly one thing');
+  });
+
+  it('does not claim a one-variable run on a single such shot', () => {
+    const html = renderTool('machineLab', recordState({ traceNotes: ['release 35→45°'], oneChangeStreak: 1 }));
+    expect(html).toContain('Last changes, newest first: release 35→45°');
+    expect(html).not.toContain('in a row changed exactly one thing');
+  });
+
+  it('counts called shots, and gets the singular right', () => {
+    const one = renderTool('machineLab', recordState({ fieldStreak: 1 }));
+    expect(one).toContain('Called the shot right 1 time in a row');
+    const many = renderTool('machineLab', recordState({ fieldStreak: 4 }));
+    expect(many).toContain('Called the shot right 4 times in a row');
+  });
+});

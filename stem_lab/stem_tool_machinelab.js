@@ -8911,6 +8911,43 @@ window.StemLab = window.StemLab || {
             return k + ' ' + bb.shots + __alloT('stem.machinelab.rec_bests_shots', ' shots (') + fmt((bb.work || 0) / 1000, 0) + ' kJ)';
           }).join(', '));
         }
+        // How the target was ranged, not just whether it fell. A breach in
+        // three shots by bracketing is a different piece of work from a breach
+        // in thirty by nudging, and the record is what a teacher reads.
+        var br = d.bracket;
+        if (br && (br.lo != null || br.hi != null)) {
+          if (br.lo != null && br.hi != null && br.hi > br.lo) {
+            var frac = Math.max(0, Math.min(1, (br.at - br.lo) / (br.hi - br.lo)));
+            lines.push(__alloT('stem.machinelab.rec_bracket', 'Ranging: bracketed the wall at ') + fmt(br.at, 0) +
+              __alloT('stem.machinelab.rec_bracket2', ' m between a short at ') + fmt(br.lo, 0) +
+              __alloT('stem.machinelab.rec_bracket3', ' m and a long at ') + fmt(br.hi, 0) +
+              __alloT('stem.machinelab.rec_bracket4', ' m, with the wall ') + Math.round(frac * 100) +
+              __alloT('stem.machinelab.rec_bracket5', '% of the way between them.'));
+          } else {
+            lines.push(__alloT('stem.machinelab.rec_bracket_half', 'Ranging: one side of a bracket so far — ') +
+              (br.lo != null
+                ? __alloT('stem.machinelab.rec_bracket_lo', 'a short at ') + fmt(br.lo, 0) + __alloT('stem.machinelab.rec_bracket_lo2', ' m, still no shot past the wall.')
+                : __alloT('stem.machinelab.rec_bracket_hi', 'a long at ') + fmt(br.hi, 0) + __alloT('stem.machinelab.rec_bracket_hi2', ' m, still nothing falling short of it.')));
+          }
+        }
+        // Whether the shots were an experiment or a scramble. Both are honest
+        // outcomes; only one of them answers a one-variable question.
+        var notes = d.traceNotes || [];
+        if (notes.length) {
+          lines.push(__alloT('stem.machinelab.rec_changes', 'Last changes, newest first: ') +
+            notes.slice().reverse().join('; ') +
+            ((d.oneChangeStreak || 0) >= 2
+              ? __alloT('stem.machinelab.rec_onechange', ' — ') + d.oneChangeStreak +
+                __alloT('stem.machinelab.rec_onechange2', ' shots in a row changed exactly one thing.')
+              : ''));
+        }
+        if ((d.fieldStreak || 0) > 0) {
+          lines.push(__alloT('stem.machinelab.rec_guess', 'Called the shot right ') + d.fieldStreak +
+            (d.fieldStreak === 1
+              ? __alloT('stem.machinelab.rec_guess1', ' time in a row before loosing it.')
+              : __alloT('stem.machinelab.rec_guess2', ' times in a row before loosing it.')));
+        }
+
         // Running the best-stone search is a real piece of investigation, and
         // the record showed no sign of it. Report what it found rather than
         // just that it happened, so the line is evidence and not a tick.
