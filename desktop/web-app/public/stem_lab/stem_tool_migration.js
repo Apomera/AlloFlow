@@ -1732,6 +1732,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     ];
   }
 
+  // ── Localised world-flyway tables ──────────────────────
+  // Same shape and same reason as the tables above: module scope, so the
+  // translator has to be passed in, and literal keys, so extraction can see
+  // them.
+  function migrLocalizedWorldFlyways(t) {
+    if (!t) return WORLD_FLYWAYS;
+    return [
+      Object.assign({}, WORLD_FLYWAYS[0], {
+        name: t('stem.migration.wfly_pacific_americas_name', 'Pacific Americas'),
+        span: t('stem.migration.wfly_pacific_americas_span', 'Alaska to Tierra del Fuego'),
+        note: t('stem.migration.wfly_pacific_americas_note', 'Runs the whole Pacific rim of two continents. Western sandpipers and dunlin funnel through the Copper River Delta in Alaska in flocks of millions, then follow the coast south.')
+      }),
+      Object.assign({}, WORLD_FLYWAYS[1], {
+        name: t('stem.migration.wfly_mississippi_americas_name', 'Mississippi Americas'),
+        span: t('stem.migration.wfly_mississippi_americas_span', 'Arctic Canada to Patagonia'),
+        note: t('stem.migration.wfly_mississippi_americas_note', 'The continental funnel: no mountain ranges to cross, one great river valley to follow, and the Gulf of Mexico to get over at the end of it.')
+      }),
+      Object.assign({}, WORLD_FLYWAYS[2], {
+        name: t('stem.migration.wfly_atlantic_americas_name', 'Atlantic Americas'),
+        span: t('stem.migration.wfly_atlantic_americas_span', 'Canadian Arctic to Argentina'),
+        note: t('stem.migration.wfly_atlantic_americas_note', 'Red knots time this route to arrive at Delaware Bay exactly when horseshoe crabs spawn. Miss the window and the birds cannot refuel for the rest of the journey.')
+      }),
+      Object.assign({}, WORLD_FLYWAYS[3], {
+        name: t('stem.migration.wfly_east_atlantic_name', 'East Atlantic'),
+        span: t('stem.migration.wfly_east_atlantic_span', 'Arctic Siberia and Greenland to West Africa'),
+        note: t('stem.migration.wfly_east_atlantic_note', 'The Wadden Sea is the single most important refuelling stop on it: tidal flats where a bird can put on the fat for the Sahara in a couple of weeks.')
+      }),
+      Object.assign({}, WORLD_FLYWAYS[4], {
+        name: t('stem.migration.wfly_mediterranean_black_sea_name', 'Mediterranean / Black Sea'),
+        span: t('stem.migration.wfly_mediterranean_black_sea_span', 'Siberia and Eastern Europe to sub-Saharan Africa'),
+        note: t('stem.migration.wfly_mediterranean_black_sea_note', 'Soaring birds cannot use thermals over open water, so storks and raptors on this flyway bottleneck at the Bosphorus and Gibraltar rather than cross the Mediterranean.')
+      }),
+      Object.assign({}, WORLD_FLYWAYS[5], {
+        name: t('stem.migration.wfly_west_asian_east_african_name', 'West Asian / East African'),
+        span: t('stem.migration.wfly_west_asian_east_african_span', 'Western Siberia to southern Africa'),
+        note: t('stem.migration.wfly_west_asian_east_african_note', 'Crosses the Arabian peninsula and the Rift Valley. Millions of birds thread the narrow neck at Bab-el-Mandeb, where Africa and Asia are 30 km apart.')
+      }),
+      Object.assign({}, WORLD_FLYWAYS[6], {
+        name: t('stem.migration.wfly_central_asian_name', 'Central Asian'),
+        span: t('stem.migration.wfly_central_asian_span', 'Siberia to India and the Maldives'),
+        note: t('stem.migration.wfly_central_asian_note', 'The only flyway that crosses the Himalaya. Bar-headed geese fly over it at around 7,000 m in air holding a third of the oxygen of sea level.')
+      }),
+      Object.assign({}, WORLD_FLYWAYS[7], {
+        name: t('stem.migration.wfly_east_asian_australasian_name', 'East Asian / Australasian'),
+        span: t('stem.migration.wfly_east_asian_australasian_span', 'Arctic Siberia and Alaska to Australia and New Zealand'),
+        note: t('stem.migration.wfly_east_asian_australasian_note', 'The most threatened of the eight. Its birds depend on the Yellow Sea tidal flats, and roughly two thirds of those flats have been reclaimed since the 1950s.')
+      })
+    ];
+  }
+  function migrLocalizedGlobalMigrants(t) {
+    if (!t) return GLOBAL_MIGRANTS;
+    return [
+      Object.assign({}, GLOBAL_MIGRANTS[0], {
+        name: t('stem.migration.gmig_arctic_tern_name', 'Arctic Tern'),
+        trip: t('stem.migration.gmig_arctic_tern_trip', 'Arctic to Antarctic, about 70,000 km a year'),
+        fact: t('stem.migration.gmig_arctic_tern_fact', 'Sees more daylight than any other animal alive, because it spends both of its summers inside a polar summer. A tern that lives thirty years has flown roughly the distance to the Moon and back three times.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[1], {
+        name: t('stem.migration.gmig_bartailed_godwit_world_name', 'Bar-tailed Godwit'),
+        trip: t('stem.migration.gmig_bartailed_godwit_world_trip', 'Alaska to New Zealand, non-stop'),
+        fact: t('stem.migration.gmig_bartailed_godwit_world_fact', 'Shrinks its own gut and liver before departure to carry more fat, then flies for over a week without eating, drinking or landing. It navigates an ocean with no landmarks at all.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[2], {
+        name: t('stem.migration.gmig_monarch_world_name', 'Monarch Butterfly'),
+        trip: t('stem.migration.gmig_monarch_world_trip', 'Canada to central Mexico, over four generations'),
+        fact: t('stem.migration.gmig_monarch_world_fact', 'No individual makes the round trip. The butterfly that arrives in Mexico is the great-grandchild of the one that left, and it has never been there before.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[3], {
+        name: t('stem.migration.gmig_globe_skimmer_name', 'Globe Skimmer Dragonfly'),
+        trip: t('stem.migration.gmig_globe_skimmer_trip', 'India to East Africa across open ocean'),
+        fact: t('stem.migration.gmig_globe_skimmer_fact', 'A four-centimetre insect crossing the Indian Ocean. It rides the monsoon winds at altitude rather than flying the distance itself, and the round trip spans several generations.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[4], {
+        name: t('stem.migration.gmig_humpback_name', 'Humpback Whale'),
+        trip: t('stem.migration.gmig_humpback_trip', 'Alaskan feeding grounds to Hawaiian breeding grounds'),
+        fact: t('stem.migration.gmig_humpback_fact', 'Fasts for the entire migration and the whole breeding season, living on fat laid down in one Alaskan summer. It swims about 4,800 km each way in roughly six weeks.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[5], {
+        name: t('stem.migration.gmig_caribou_name', 'Porcupine Caribou'),
+        trip: t('stem.migration.gmig_caribou_trip', 'Yukon forests to the Arctic coastal plain'),
+        fact: t('stem.migration.gmig_caribou_fact', 'The longest land migration of any animal: up to 2,400 km a year on foot. Calving is timed to the few weeks when the coastal plain greens up and the mosquitoes have not yet arrived.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[6], {
+        name: t('stem.migration.gmig_sockeye_name', 'Sockeye Salmon'),
+        trip: t('stem.migration.gmig_sockeye_trip', 'North Pacific back to the stream it hatched in'),
+        fact: t('stem.migration.gmig_sockeye_fact', 'Finds one river out of a coastline, then one tributary out of a watershed, apparently by smell. It stops eating on entering fresh water and its body is consumed by the journey.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[7], {
+        name: t('stem.migration.gmig_european_eel_name', 'European Eel'),
+        trip: t('stem.migration.gmig_european_eel_trip', 'European rivers to the Sargasso Sea'),
+        fact: t('stem.migration.gmig_european_eel_fact', 'Spawns in the middle of the Atlantic and dies there. Nobody has ever observed a wild European eel spawning; the breeding ground was inferred from where the smallest larvae were found.')
+      }),
+      Object.assign({}, GLOBAL_MIGRANTS[8], {
+        name: t('stem.migration.gmig_leatherback_name', 'Leatherback Turtle'),
+        trip: t('stem.migration.gmig_leatherback_trip', 'Indonesian beaches to the California coast'),
+        fact: t('stem.migration.gmig_leatherback_fact', 'A reptile that keeps itself warmer than the water around it, which lets it feed on jellyfish in seas cold enough to kill other turtles. It crosses the entire Pacific to do it.')
+      })
+    ];
+  }
+  function migrLocalizedKinds(t) {
+    if (!t) return { bird: 'bird', insect: 'insect', mammal: 'mammal', fish: 'fish', reptile: 'reptile' };
+    return {
+      bird: t('stem.migration.kind_bird', 'bird'),
+      insect: t('stem.migration.kind_insect', 'insect'),
+      mammal: t('stem.migration.kind_mammal', 'mammal'),
+      fish: t('stem.migration.kind_fish', 'fish'),
+      reptile: t('stem.migration.kind_reptile', 'reptile')
+    };
+  }
+
   window.StemLab.registerTool('migration', {
     // Pure seams. The flight-energy model is the one derivation every surface
     // in this tool reads, so it is the thing worth pinning in a test.
@@ -1776,6 +1886,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var FORMATION_FACTS = migrLocalizedFormationFacts(t);
       var MIGRATION_RECORDS = migrLocalizedMigrationRecords(t);
       var FLYWAY_NAMES = migrLocalizedFlywayNames(t);
+      var WORLD_FLYWAYS = migrLocalizedWorldFlyways(t);
+      var GLOBAL_MIGRANTS = migrLocalizedGlobalMigrants(t);
+      var MIGRANT_KINDS = migrLocalizedKinds(t);
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var awardXP = ctx.awardXP;
@@ -5129,11 +5242,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.the_four_north_american_flyways', '\uD83D\uDDFA\uFE0F The Four North American Flyways')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+              // Names come from FLYWAY_NAMES rather than four more keys: this
+              // block used to carry atlantic_2 / mississippi_2 / central_2 /
+              // pacific_2, a third copy of strings the map legend and the
+              // comparison table also spell.
               [
-                { name: t('stem.migration.atlantic_2', 'Atlantic'), color: '#3b82f6', emoji: '\uD83C\uDF0A', birds: '~500 species', terrain: 'Coastal marshes, barrier islands, estuaries', key: 'Delaware Bay, Chesapeake Bay stopover sites' },
-                { name: t('stem.migration.mississippi_2', 'Mississippi'), color: '#22c55e', emoji: '\uD83C\uDF3F', birds: '~325 species', terrain: 'River bottomlands, wetlands, delta marshes', key: 'Mississippi River acts as a north-south highway' },
-                { name: t('stem.migration.central_2', 'Central'), color: '#f59e0b', emoji: '\uD83C\uDF3E', birds: '~300 species', terrain: 'Great Plains, prairies, playas', key: 'Platte River hosts 600,000 Sandhill Cranes each spring' },
-                { name: t('stem.migration.pacific_2', 'Pacific'), color: '#ef4444', emoji: '\uD83C\uDF0B', birds: '~350 species', terrain: 'Coastline, mountains, inland valleys', key: 'Pacific Coast provides continuous north-south corridor' }
+                { name: FLYWAY_NAMES.atlantic, color: '#3b82f6', emoji: '\uD83C\uDF0A', birds: '~500 ' + t('stem.migration.species_word', 'species'), terrain: t('stem.migration.flyway_atlantic_terrain', 'Coastal marshes, barrier islands, estuaries'), key: t('stem.migration.flyway_atlantic_key', 'Delaware Bay, Chesapeake Bay stopover sites') },
+                { name: FLYWAY_NAMES.mississippi, color: '#22c55e', emoji: '\uD83C\uDF3F', birds: '~325 ' + t('stem.migration.species_word', 'species'), terrain: t('stem.migration.flyway_mississippi_terrain', 'River bottomlands, wetlands, delta marshes'), key: t('stem.migration.flyway_mississippi_key', 'Mississippi River acts as a north-south highway') },
+                { name: FLYWAY_NAMES.central, color: '#f59e0b', emoji: '\uD83C\uDF3E', birds: '~300 ' + t('stem.migration.species_word', 'species'), terrain: t('stem.migration.flyway_central_terrain', 'Great Plains, prairies, playas'), key: t('stem.migration.flyway_central_key', 'Platte River hosts 600,000 Sandhill Cranes each spring') },
+                { name: FLYWAY_NAMES.pacific, color: '#ef4444', emoji: '\uD83C\uDF0B', birds: '~350 ' + t('stem.migration.species_word', 'species'), terrain: t('stem.migration.flyway_pacific_terrain', 'Coastline, mountains, inland valleys'), key: t('stem.migration.flyway_pacific_key', 'Pacific Coast provides continuous north-south corridor') }
               ].map(function(fw) {
                 return h('div', { key: fw.name, className: 'rounded-lg p-3 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                   h('div', { className: 'flex items-center gap-1.5 mb-1.5' },
@@ -5440,7 +5557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('span', { className: 'text-lg', 'aria-hidden': 'true' }, g.emoji),
                     h('div', { className: 'min-w-0' },
                       h('div', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, g.name),
-                      h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.kind_' + g.kind, g.kind))
+                      h('div', { className: 'text-[0.6875rem] ' + textMuted }, (MIGRANT_KINDS[g.kind] || g.kind))
                     )
                   ),
                   h('div', { className: 'text-[0.6875rem] mt-1 ' + textSecondary }, g.trip)
