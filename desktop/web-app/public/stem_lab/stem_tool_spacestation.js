@@ -1483,7 +1483,7 @@
             else if (e.key === 'ArrowDown') station.rotation.x = Math.min(.7, station.rotation.x + .09);
             else if ((e.key === '+' || e.key === '=') && camera.position.length() > 6) camera.position.multiplyScalar(.9);
             else if ((e.key === '-' || e.key === '_') && camera.position.length() < 28) camera.position.multiplyScalar(1.1);
-            else if (e.key === 'Home') { cv._issSetView('overview'); upd({ mapView: 'overview' }); announceToSR('Station camera returned to overview.'); }
+            else if (e.key === 'Home') { cv._issSetView('overview'); upd({ mapView: 'overview' }); announceToSR(__alloT('stem.spacestation.sr_station_camera_returned_to_overview', 'Station camera returned to overview.')); }
             else handled = false;
             if (handled) { e.preventDefault(); if (e.key !== 'Home') { cameraTween = null; cameraFocusId = null; } }
           }
@@ -3466,29 +3466,29 @@
             }
             if (state.transferMode === 'tethered') {
               setFeedback('BULKY BAG TETHERED // FINISH HATCH TRANSFER', 'warn', 1900);
-              announce('Finish the bulky hatch transfer before opening the Destiny water injector.');
+              announce(__alloT('stem.spacestation.sr_finish_the_bulky_hatch_transfer_before_opening_th', 'Finish the bulky hatch transfer before opening the Destiny water injector.'));
               return false;
             }
             if (state.capillaryPressLatched || state.capillaryActive) return false;
             if (Number(cv._issInteriorResearchStep || 0) < 1) {
               setFeedback('SECURE SAMPLE FIRST // WATER VALVE LOCKED', 'warn', 2200);
-              announce('Secure the Destiny plant sample before opening the contained water valve.');
+              announce(__alloT('stem.spacestation.sr_secure_the_destiny_plant_sample_before_opening_th', 'Secure the Destiny plant sample before opening the contained water valve.'));
               return false;
             }
             updateCapillaryMetrics();
             if (state.capillaryComplete) {
               setFeedback('PLANT SAMPLE FED // WICK SATURATED', 'safe');
-              announce('The Destiny plant sample has already received its target capillary dose.');
+              announce(__alloT('stem.spacestation.sr_the_destiny_plant_sample_has_already_received_its', 'The Destiny plant sample has already received its target capillary dose.'));
               return false;
             }
             if (state.room !== 'destiny') {
               setFeedback('PLANT CHAMBER IN DESTINY // FOLLOW FORWARD ROUTE', 'warn', 1900);
-              announce('The contained plant-watering experiment is in Destiny laboratory.');
+              announce(__alloT('stem.spacestation.sr_the_contained_plant_watering_experiment_is_in_des', 'The contained plant-watering experiment is in Destiny laboratory.'));
               return false;
             }
             if (state.cargoMode === 'held') {
               setFeedback('SECURE POUCH BEFORE SCIENCE', 'warn', 1800);
-              announce('Secure the cargo pouch before handling the fluid experiment.');
+              announce(__alloT('stem.spacestation.sr_secure_the_cargo_pouch_before_handling_the_fluid', 'Secure the cargo pouch before handling the fluid experiment.'));
               return false;
             }
             if (state.capillaryDistance > capillaryReach) {
@@ -3498,12 +3498,12 @@
             }
             if (state.capillaryAlignment < capillaryAlignmentMinimum) {
               setFeedback('ALIGN WITH GLOVEBOX // FACE THE CYAN RING', 'warn', 1900);
-              announce('Face the cyan plant-chamber ring more directly before opening the water valve.');
+              announce(__alloT('stem.spacestation.sr_face_the_cyan_plant_chamber_ring_more_directly_be', 'Face the cyan plant-chamber ring more directly before opening the water valve.'));
               return false;
             }
             if (!state.capillaryStable) {
               setFeedback('STABILIZE BODY // STOP OR HOLD A RAIL', 'warn', 1900);
-              announce('Stop your linear and rotational motion, or hold a handrail, before transferring contained fluid.');
+              announce(__alloT('stem.spacestation.sr_stop_your_linear_and_rotational_motion_or_hold_a', 'Stop your linear and rotational motion, or hold a handrail, before transferring contained fluid.'));
               return false;
             }
             state.capillaryAttempts += 1;
@@ -3518,7 +3518,7 @@
             state.capillaryMaxAngularSpeed = Math.abs(state.angularVelocity);
             state.mode = 'CAPILLARY TRANSFER // 0%';
             setFeedback('VALVE OPEN // TARGET 2.7-3.3 ML', 'info', 1900);
-            announce('Contained water valve open. Hold V, then release between two point seven and three point three milliliters.');
+            announce(__alloT('stem.spacestation.sr_contained_water_valve_open_hold_v_then_release_be', 'Contained water valve open. Hold V, then release between two point seven and three point three milliliters.'));
             dirty = true;
             return true;
           }
@@ -3559,7 +3559,7 @@
                 });
                 state.mode = 'CAPILLARY TRANSFER INTERRUPTED';
                 setFeedback('TRANSFER INTERRUPTED // REPOSITION + RELEASE V', 'warn', 2200);
-                announce('Fluid transfer interrupted. Release V, stabilize near the glovebox, and realign before trying again.');
+                announce(__alloT('stem.spacestation.sr_fluid_transfer_interrupted_release_v_stabilize_ne', 'Fluid transfer interrupted. Release V, stabilize near the glovebox, and realign before trying again.'));
               } else {
                 state.capillaryDuration += dt;
                 state.capillaryDose = Math.min(capillaryDoseMaximum, state.capillaryDose + capillaryFlowRate * dt);
@@ -3579,7 +3579,7 @@
                   });
                   state.mode = 'CAPILLARY OVERFLOW CONTAINED';
                   setFeedback('OVERFLOW CONTAINED // SURFACE-TENSION BEAD', 'impact', 2600);
-                  announce('The valve auto-closed at three point three milliliters. A water bead clings inside the sealed glovebox because surface tension dominates in microgravity.');
+                  announce(__alloT('stem.spacestation.sr_the_valve_auto_closed_at_three_point_three_millil', 'The valve auto-closed at three point three milliliters. A water bead clings inside the sealed glovebox because surface tension dominates in microgravity.'));
                 }
               }
             }
@@ -3683,26 +3683,26 @@
                 state.observationProgress = 0;
                 state.mode = 'CAMERA FRAME BLURRED';
                 setFeedback('FRAME BLURRED // HOLD P UNTIL LOCK', 'warn', 2100);
-                announce('The handheld Earth image blurred when the camera moved before frame lock. Brace on the rail and hold P for the full training interval.');
+                announce(__alloT('stem.spacestation.sr_the_handheld_earth_image_blurred_when_the_camera', 'The handheld Earth image blurred when the camera moved before frame lock. Brace on the rail and hold P for the full training interval.'));
               }
               dirty = true;
               return true;
             }
             if (state.transferMode === 'tethered') {
               setFeedback('BULKY BAG TETHERED // FINISH HATCH TRANSFER', 'warn', 1900);
-              announce('Finish the bulky hatch transfer before handling the Cupola camera.');
+              announce(__alloT('stem.spacestation.sr_finish_the_bulky_hatch_transfer_before_handling_t', 'Finish the bulky hatch transfer before handling the Cupola camera.'));
               return false;
             }
             if (state.observationPressLatched || state.observationActive) return false;
             updateObservationMetrics();
             if (state.room !== 'cupola') {
               setFeedback('CAMERA STATION IN CUPOLA // FOLLOW NADIR ROUTE', 'warn', 1900);
-              announce('The Earth observation camera station is in Cupola.');
+              announce(__alloT('stem.spacestation.sr_the_earth_observation_camera_station_is_in_cupola', 'The Earth observation camera station is in Cupola.'));
               return false;
             }
             if (state.observationSecured) {
               setFeedback('CUPOLA SECURE // SHUTTERS CLOSED', 'safe');
-              announce('The Cupola observation is complete and all seven shutters are closed.');
+              announce(__alloT('stem.spacestation.sr_the_cupola_observation_is_complete_and_all_seven', 'The Cupola observation is complete and all seven shutters are closed.'));
               return false;
             }
             if (state.observationCaptured) {
@@ -3719,17 +3719,17 @@
             }
             if (state.observationDistance > observationReach) {
               setFeedback('CAMERA CONTROL OUT OF REACH // ' + state.observationDistance.toFixed(2) + ' M', 'warn', 1900);
-              announce('Move within zero point nine five meters of the Cupola camera control.');
+              announce(__alloT('stem.spacestation.sr_move_within_zero_point_nine_five_meters_of_the_cu', 'Move within zero point nine five meters of the Cupola camera control.'));
               return false;
             }
             if (state.observationAlignment < observationAlignmentMinimum) {
               setFeedback('FRAME EARTH TARGET // CENTER THE VIOLET BRACKET', 'warn', 1900);
-              announce('Center the selected Earth target inside the violet Cupola bracket before starting the frame lock.');
+              announce(__alloT('stem.spacestation.sr_center_the_selected_earth_target_inside_the_viole', 'Center the selected Earth target inside the violet Cupola bracket before starting the frame lock.'));
               return false;
             }
             if (!state.observationBraced) {
               setFeedback('BRACE ON RAIL // DAMP CAMERA MOTION', 'warn', 2000);
-              announce('Catch and hold the nearby rail, then stop rotation before taking the handheld Earth image.');
+              announce(__alloT('stem.spacestation.sr_catch_and_hold_the_nearby_rail_then_stop_rotation', 'Catch and hold the nearby rail, then stop rotation before taking the handheld Earth image.'));
               return false;
             }
             state.observationAttempts += 1;
@@ -3742,7 +3742,7 @@
             state.observationMaxAngularSpeed = Math.abs(state.angularVelocity);
             state.mode = 'EARTH FRAME LOCK // 0%';
             setFeedback('CAMERA STEADY // HOLD P FOR 1.2 S', 'info', 1800);
-            announce('Camera frame lock started. Stay braced and hold P for one point two seconds.');
+            announce(__alloT('stem.spacestation.sr_camera_frame_lock_started_stay_braced_and_hold_p', 'Camera frame lock started. Stay braced and hold P for one point two seconds.'));
             dirty = true;
             return true;
           }
@@ -3798,7 +3798,7 @@
                 });
                 state.mode = 'EARTH FRAME INTERRUPTED';
                 setFeedback('FRAME LOST // REBRACE + REALIGN', 'warn', 2200);
-                announce('Earth frame lock interrupted by lost bracing, reach, or alignment. Release P and set up the camera again.');
+                announce(__alloT('stem.spacestation.sr_earth_frame_lock_interrupted_by_lost_bracing_reac', 'Earth frame lock interrupted by lost bracing, reach, or alignment. Release P and set up the camera again.'));
               } else {
                 state.observationProgress = Math.min(observationDuration, state.observationProgress + dt);
                 state.observationMinAlignment = Math.min(state.observationMinAlignment, state.observationAlignment);
@@ -3820,7 +3820,7 @@
                   });
                   state.mode = 'EARTH FRAME CAPTURED';
                   setFeedback('FRAME LOCKED // RELEASE P, THEN CLOSE SHUTTERS', 'safe', 2800);
-                  announce('Stable Earth image captured. Release P, then press it again to close all seven Cupola shutters.');
+                  announce(__alloT('stem.spacestation.sr_stable_earth_image_captured_release_p_then_press', 'Stable Earth image captured. Release P, then press it again to close all seven Cupola shutters.'));
                 }
               }
             }
@@ -3925,28 +3925,28 @@
           function transferAction() {
             if (state.transferComplete) {
               setFeedback('BULKY TRANSFER COMPLETE // BAG DOCKED', 'safe');
-              announce('The bulky transfer bag is already docked in Destiny.');
+              announce(__alloT('stem.spacestation.sr_the_bulky_transfer_bag_is_already_docked_in_desti', 'The bulky transfer bag is already docked in Destiny.'));
               return false;
             }
             if (state.transferMode === 'tethered') {
               setFeedback('TETHER CLIPPED // CENTER BODY + BAG', 'info', 1800);
-              announce('The transfer tether is clipped. Keep both your body and the lagging bag centered through the hatch.');
+              announce(__alloT('stem.spacestation.sr_the_transfer_tether_is_clipped_keep_both_your_bod', 'The transfer tether is clipped. Keep both your body and the lagging bag centered through the hatch.'));
               return false;
             }
             if (state.cargoMode === 'held' || state.stowHeldId || state.toolHeld || state.capillaryActive || state.observationActive) {
               setFeedback('HANDS BUSY // SECURE CURRENT TOOL FIRST', 'warn', 2100);
-              announce('Secure the item or finish the current tool activity before clipping the bulky transfer tether.');
+              announce(__alloT('stem.spacestation.sr_secure_the_item_or_finish_the_current_tool_activi', 'Secure the item or finish the current tool activity before clipping the bulky transfer tether.'));
               return false;
             }
             if (state.room !== 'harmony') {
               setFeedback('TRANSFER BAG STAGED IN HARMONY', 'warn', 1900);
-              announce('Return to the Harmony side of the forward hatch to begin the bulky transfer.');
+              announce(__alloT('stem.spacestation.sr_return_to_the_harmony_side_of_the_forward_hatch_t', 'Return to the Harmony side of the forward hatch to begin the bulky transfer.'));
               return false;
             }
             var attachDistance = state.position.distanceTo(transferStagingPoint);
             if (attachDistance > transferAttachReach) {
               setFeedback('TETHER CLIP OUT OF REACH // ' + attachDistance.toFixed(2) + ' M', 'warn', 1900);
-              announce('Move within zero point seven eight meters of the staged transfer bag before pressing B.');
+              announce(__alloT('stem.spacestation.sr_move_within_zero_point_seven_eight_meters_of_the', 'Move within zero point seven eight meters of the staged transfer bag before pressing B.'));
               return false;
             }
             state.transferAttempts += 1;
@@ -3966,7 +3966,7 @@
             syncTransferCanvasProps();
             emit('transfer-attempt', { room: 'harmony', attempt: state.transferAttempts, source: '3d' });
             setFeedback('TETHER CLIPPED // BAG WILL LAG', 'info', 2300);
-            announce('Tether clipped. The twelve kilogram bag follows with spring and damping lag. Center your body, then allow clearance for the bag before crossing into Destiny.');
+            announce(__alloT('stem.spacestation.sr_tether_clipped_the_twelve_kilogram_bag_follows_wi', 'Tether clipped. The twelve kilogram bag follows with spring and damping lag. Center your body, then allow clearance for the bag before crossing into Destiny.'));
             return true;
           }
           function updateTransferTetherGeometry() {
@@ -4092,7 +4092,7 @@
             });
             state.mode = 'BULKY TRANSFER COMPLETE';
             setFeedback('BOTH ENVELOPES CENTERED // BAG DOCKED IN DESTINY', 'safe', 3000);
-            announce('Bulky hatch transfer complete. Both your body and the lagging bag made their own centered crossings before the bag docked in Destiny.');
+            announce(__alloT('stem.spacestation.sr_bulky_hatch_transfer_complete_both_your_body_and', 'Bulky hatch transfer complete. Both your body and the lagging bag made their own centered crossings before the bag docked in Destiny.'));
           }
           function setWorksiteVisualComplete(completed) {
             var filterColor = completed ? 0x25634a : 0x4b5e73;
@@ -4168,26 +4168,26 @@
               state.worksiteMaxAngularSpeed = 0;
               if (abandonedProgress) {
                 setFeedback('TOOL RELEASED // STABLE TIME RESET', 'info', 1400);
-                announce('Torque tool released before the filter fastener was secure. Hold it for one point five seconds while braced.');
+                announce(__alloT('stem.spacestation.sr_torque_tool_released_before_the_filter_fastener_w', 'Torque tool released before the filter fastener was secure. Hold it for one point five seconds while braced.'));
               }
               dirty = true;
               return true;
             }
             if (state.transferMode === 'tethered') {
               setFeedback('BULKY BAG TETHERED // FINISH HATCH TRANSFER', 'warn', 1900);
-              announce('Finish the bulky hatch transfer before using the torque tool.');
+              announce(__alloT('stem.spacestation.sr_finish_the_bulky_hatch_transfer_before_using_the', 'Finish the bulky hatch transfer before using the torque tool.'));
               return false;
             }
             if (state.worksitePressLatched || state.toolHeld) return false;
             updateWorksiteMetrics();
             if (state.worksiteComplete) {
               setFeedback('FILTER SERVICED // AIRFLOW RESTORED', 'safe');
-              announce('The Tranquility inlet filter is already serviced.');
+              announce(__alloT('stem.spacestation.sr_the_tranquility_inlet_filter_is_already_serviced', 'The Tranquility inlet filter is already serviced.'));
               return false;
             }
             if (state.room !== 'tranquility') {
               setFeedback('WORKSITE IN TRANQUILITY // FOLLOW PORT BRANCH', 'warn', 1900);
-              announce('The filter maintenance worksite is in Tranquility.');
+              announce(__alloT('stem.spacestation.sr_the_filter_maintenance_worksite_is_in_tranquility', 'The filter maintenance worksite is in Tranquility.'));
               return false;
             }
             if (state.worksiteDistance > worksiteReach) {
@@ -4197,7 +4197,7 @@
             }
             if (state.worksiteAlignment < worksiteAlignmentMinimum) {
               setFeedback('ALIGN WITH FILTER // FACE THE AMBER RING', 'warn', 1800);
-              announce('Face the filter worksite more directly before using the torque tool.');
+              announce(__alloT('stem.spacestation.sr_face_the_filter_worksite_more_directly_before_usi', 'Face the filter worksite more directly before using the torque tool.'));
               return false;
             }
             state.worksiteAttempts += 1;
@@ -4210,7 +4210,7 @@
               state.mode = 'UNBRACED REACTION TORQUE';
               emit('worksite-reaction', { room: 'tranquility', distance: state.worksiteDistance, alignment: state.worksiteAlignment, angularImpulse: appliedImpulse, attempt: state.worksiteAttempts });
               setFeedback('UNBRACED TORQUE // BODY ROTATING', 'impact', 2200);
-              announce('The unbraced tool turned your body instead of the fastener. Catch a rail, stop the roll, release T, and try again.');
+              announce(__alloT('stem.spacestation.sr_the_unbraced_tool_turned_your_body_instead_of_the', 'The unbraced tool turned your body instead of the fastener. Catch a rail, stop the roll, release T, and try again.'));
               dirty = true;
               return false;
             }
@@ -4220,7 +4220,7 @@
             state.worksiteMaxAngularSpeed = Math.abs(state.angularVelocity);
             state.mode = 'BRACED MAINTENANCE';
             setFeedback('TOOL ENGAGED // HOLD STEADY 1.5 S', 'info', 1800);
-            announce('Torque tool engaged while braced. Hold T steadily for one point five seconds.');
+            announce(__alloT('stem.spacestation.sr_torque_tool_engaged_while_braced_hold_t_steadily', 'Torque tool engaged while braced. Hold T steadily for one point five seconds.'));
             dirty = true;
             return true;
           }
@@ -4240,7 +4240,7 @@
                 state.toolHeld = false;
                 state.worksiteProgress = 0;
                 setFeedback('WORK INTERRUPTED // REBRACE + REALIGN', 'warn', 1800);
-                announce('Stable maintenance interrupted. Release T, catch the rail, realign with the filter, and try again.');
+                announce(__alloT('stem.spacestation.sr_stable_maintenance_interrupted_release_t_catch_th', 'Stable maintenance interrupted. Release T, catch the rail, realign with the filter, and try again.'));
               } else {
                 state.worksiteProgress = Math.min(worksiteDuration, state.worksiteProgress + dt);
                 state.worksiteMaxSpeed = Math.max(state.worksiteMaxSpeed, state.velocity.length());
@@ -4255,7 +4255,7 @@
                   setWorksiteVisualComplete(true);
                   emit('worksite-complete', { room: 'tranquility', duration: worksiteDuration, maxSpeed: state.worksiteMaxSpeed, maxAngularSpeed: state.worksiteMaxAngularSpeed, attempt: state.worksiteAttempts, braced: true });
                   setFeedback('FILTER SERVICED // AIRFLOW RESTORED', 'safe', 2500);
-                  announce('Filter serviced while braced. Reaction-torque maintenance challenge complete.');
+                  announce(__alloT('stem.spacestation.sr_filter_serviced_while_braced_reaction_torque_main', 'Filter serviced while braced. Reaction-torque maintenance challenge complete.'));
                 }
               }
             }
@@ -4281,17 +4281,17 @@
           function cargoAction() {
             if (state.transferMode === 'tethered') {
               setFeedback('BULKY BAG TETHERED // HANDS COMMITTED', 'warn', 1900);
-              announce('Finish the bulky hatch transfer before handling the Unity cargo pouch.');
+              announce(__alloT('stem.spacestation.sr_finish_the_bulky_hatch_transfer_before_handling_t_2', 'Finish the bulky hatch transfer before handling the Unity cargo pouch.'));
               return false;
             }
             if (state.cargoMode === 'secured') {
               setFeedback('POUCH SECURED // RESTRAINT LOCKED', 'safe');
-              announce('The cargo pouch is already secured at the Unity restraint point.');
+              announce(__alloT('stem.spacestation.sr_the_cargo_pouch_is_already_secured_at_the_unity_r', 'The cargo pouch is already secured at the Unity restraint point.'));
               return false;
             }
             if (state.stowHeldId) {
               setFeedback('ONE ITEM AT A TIME // SECURE CABIN ITEM', 'warn', 2100);
-              announce('Secure the carried Harmony cabin item before handling the Unity cargo pouch.');
+              announce(__alloT('stem.spacestation.sr_secure_the_carried_harmony_cabin_item_before_hand', 'Secure the carried Harmony cabin item before handling the Unity cargo pouch.'));
               return false;
             }
             if (state.cargoMode === 'held') {
@@ -4300,7 +4300,7 @@
               var braced = state.railHeld || (state.velocity.length() <= 0.04 && secureRailDistance <= 0.68);
               if (state.room !== 'unity') {
                 setFeedback('SECURE IN UNITY // RETURN TO RESTRAINT', 'warn', 1900);
-                announce('Carry the pouch back to the marked restraint point in Unity.');
+                announce(__alloT('stem.spacestation.sr_carry_the_pouch_back_to_the_marked_restraint_poin', 'Carry the pouch back to the marked restraint point in Unity.'));
                 return false;
               }
               if (secureDistance > cargoSecureReach) {
@@ -4310,7 +4310,7 @@
               }
               if (!braced) {
                 setFeedback('BRACE AT RAIL // THEN SECURE', 'warn', 1900);
-                announce('Brace on the nearby handrail, or stop within rail reach, before securing the pouch.');
+                announce(__alloT('stem.spacestation.sr_brace_on_the_nearby_handrail_or_stop_within_rail', 'Brace on the nearby handrail, or stop within rail reach, before securing the pouch.'));
                 return false;
               }
               cargo.position.copy(cargoSecurePoint);
@@ -4322,7 +4322,7 @@
               setCargoVisualMode('secured');
               emit('cargo-secured', { room: 'unity', speed: state.velocity.length(), distance: secureDistance });
               setFeedback('POUCH SECURED // RESTRAINT LOCKED', 'safe', 2300);
-              announce('Cargo pouch secured at the Unity restraint. Loose-object management challenge complete.');
+              announce(__alloT('stem.spacestation.sr_cargo_pouch_secured_at_the_unity_restraint_loose', 'Cargo pouch secured at the Unity restraint. Loose-object management challenge complete.'));
               return true;
             }
             var distance = cargoDistance();
@@ -4452,17 +4452,17 @@
           function stowAction() {
             if (state.transferMode === 'tethered') {
               setFeedback('BULKY BAG TETHERED // HANDS COMMITTED', 'warn', 1900);
-              announce('Finish the bulky hatch transfer before catching a loose cabin item.');
+              announce(__alloT('stem.spacestation.sr_finish_the_bulky_hatch_transfer_before_catching_a', 'Finish the bulky hatch transfer before catching a loose cabin item.'));
               return false;
             }
             if (state.stowComplete) {
               setFeedback('HARMONY STOW COMPLETE // AIRFLOW CLEAR', 'safe');
-              announce('All three Harmony cabin items are already secured and the air return is clear.');
+              announce(__alloT('stem.spacestation.sr_all_three_harmony_cabin_items_are_already_secured', 'All three Harmony cabin items are already secured and the air return is clear.'));
               return false;
             }
             if (state.cargoMode === 'held') {
               setFeedback('ONE ITEM AT A TIME // SECURE CARGO POUCH', 'warn', 2100);
-              announce('Secure the Unity cargo pouch before catching a Harmony cabin item.');
+              announce(__alloT('stem.spacestation.sr_secure_the_unity_cargo_pouch_before_catching_a_ha', 'Secure the Unity cargo pouch before catching a Harmony cabin item.'));
               return false;
             }
             state.stowAttempts += 1;
@@ -4497,7 +4497,7 @@
                 cv._issInteriorCabinComplete = true;
                 emit('stow-complete', { room: 'harmony', count: securedCount, attempt: state.stowAttempts, source: '3d' });
                 setFeedback('3 OF 3 SECURED // AIR RETURN CLEAR', 'safe', 2800);
-                announce('All three cabin items are restrained. Harmony airflow is clear and the canonical cabin stow job is complete.');
+                announce(__alloT('stem.spacestation.sr_all_three_cabin_items_are_restrained_harmony_airf', 'All three cabin items are restrained. Harmony airflow is clear and the canonical cabin stow job is complete.'));
               } else {
                 setFeedback(securedCount + ' OF 3 SECURED // FIND NEXT LOOSE ITEM', 'safe', 2200);
                 announce(heldItem.label + ' secured. ' + securedCount + ' of three items are now stowed.');
@@ -4507,7 +4507,7 @@
             }
             if (state.room !== 'harmony') {
               setFeedback('LOOSE ITEMS IN HARMONY // RETURN FOR CABIN STOW', 'warn', 2000);
-              announce('The loose-item cabin stow activity is in Harmony.');
+              announce(__alloT('stem.spacestation.sr_the_loose_item_cabin_stow_activity_is_in_harmony', 'The loose-item cabin stow activity is in Harmony.'));
               return false;
             }
             var nearest = null;
@@ -4519,7 +4519,7 @@
             });
             if (!nearest || nearestDistance > stowCatchReach) {
               setFeedback('LOOSE ITEM OUT OF REACH // ' + (nearest ? nearestDistance.toFixed(2) : '--') + ' M', 'warn', 1900);
-              announce('Move within zero point six five meters of the nearest loose cabin item before pressing X.');
+              announce(__alloT('stem.spacestation.sr_move_within_zero_point_six_five_meters_of_the_nea', 'Move within zero point six five meters of the nearest loose cabin item before pressing X.'));
               return false;
             }
             tempCargoRelativeVelocity.copy(state.velocity).sub(nearest.velocity);
@@ -4614,7 +4614,7 @@
               state.railHeld = false;
               state.mode = 'STATIONARY';
               setFeedback('HANDRAIL RELEASED // READY TO PUSH', 'info');
-              announce('Handrail released. Use one push direction to launch away from the rail.');
+              announce(__alloT('stem.spacestation.sr_handrail_released_use_one_push_direction_to_launc', 'Handrail released. Use one push direction to launch away from the rail.'));
               dirty = true;
               return true;
             }
@@ -5060,7 +5060,7 @@
                 state.orientationDone = true;
                 emit('orientation-recovered', { room: state.room, angularVelocity: state.angularVelocity });
                 setFeedback('ORIENTATION RECOVERED // ROTATION ARRESTED', 'safe');
-                announce('Orientation recovered. Your agreed deck direction is level and the roll rate is nearly stopped.');
+                announce(__alloT('stem.spacestation.sr_orientation_recovered_your_agreed_deck_direction', 'Orientation recovered. Your agreed deck direction is level and the roll rate is nearly stopped.'));
               }
             }
 
@@ -5251,7 +5251,7 @@
                 if (now - state.lastCargoEvent > 700) {
                   state.lastCargoEvent = now;
                   setFeedback('LOOSE CARGO CONTACT // MOMENTUM TRANSFER', 'warn');
-                  announce('Loose cargo contact. Momentum transferred between you and the five kilogram pouch.');
+                  announce(__alloT('stem.spacestation.sr_loose_cargo_contact_momentum_transferred_between', 'Loose cargo contact. Momentum transferred between you and the five kilogram pouch.'));
                 }
                 dirty = true;
               }
@@ -5468,7 +5468,7 @@
           function onWebGLContextLost(event) {
             if (event && event.preventDefault) event.preventDefault();
             if (disposed) return;
-            announce('The 3-D graphics context was lost. The accessible interior diagram remains available.');
+            announce(__alloT('stem.spacestation.sr_the_3_d_graphics_context_was_lost_the_accessible', 'The 3-D graphics context was lost. The accessible interior diagram remains available.'));
             cleanup();
             showInteriorFallback('The 3-D graphics context was lost. Choose Accessible diagram to keep exploring every room and activity.');
           }
@@ -5891,8 +5891,8 @@
           el.textContent = 'Phase ' + phase + ' · range ' + range.toFixed(0) + ' m · relative speed ' + speed.toFixed(2) + ' m/s · stopping margin ' + margin.toFixed(1) + ' m · fuel ' + st.fuel.toFixed(0) + '%' + (st.over ? ' · run over' : '');
           if (!st.over) {
             if (!milestones.m100 && range < 100) { milestones.m100 = true; announceToSR('100 meters to the port. Speed ' + speed.toFixed(2) + ' meters per second.'); }
-            if (!milestones.m40 && range < 40) { milestones.m40 = true; announceToSR('Final approach, 40 meters. Dock slower than 0.6 meters per second.'); }
-            if (!milestones.m15 && range < 15) { milestones.m15 = true; announceToSR('Capture corridor, 15 meters. Verify alignment and positive stopping margin.'); }
+            if (!milestones.m40 && range < 40) { milestones.m40 = true; announceToSR(__alloT('stem.spacestation.sr_final_approach_40_meters_dock_slower_than_0_6_met', 'Final approach, 40 meters. Dock slower than 0.6 meters per second.')); }
+            if (!milestones.m15 && range < 15) { milestones.m15 = true; announceToSR(__alloT('stem.spacestation.sr_capture_corridor_15_meters_verify_alignment_and_p', 'Capture corridor, 15 meters. Verify alignment and positive stopping margin.')); }
           }
         }
         cv._dockResetMilestones = function () { milestones.m100 = false; milestones.m40 = false; milestones.m15 = false; };
@@ -6283,7 +6283,7 @@
                 style: { width: '100%', maxWidth: 820, display: 'block', margin: '0 auto', borderRadius: 12, border: '1px solid #334155', background: '#050a18', cursor: 'crosshair' }
               }),
               h('div', { id: 'iss-dock-status', className: 'iss-sr-only', 'data-dock-hud': 'true', 'aria-live': 'off', 'aria-atomic': 'true' }, 'Phase far field · range 192 m · relative speed 1.00 m/s · stopping margin 185.3 m · fuel 100%'),
-              h('div', { role: 'group', 'aria-label': 'Thruster controls', style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_thruster_controls', 'Thruster controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
                 [['back', '←', 'Brake'], ['up', '↑', 'Radial out'], ['down', '↓', 'Radial in'], ['fwd', '→', 'Forward']].map(function (b) {
                   function press(on) { return function (e) { e.preventDefault(); var cv = document.querySelector('[data-dock-canvas]') || e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockSetThrust) cv._dockSetThrust(b[0], on); }; }
                   function holdKey(on) { return function (e) { if (e.key === ' ' || e.key === 'Enter') press(on)(e); }; }
@@ -6307,7 +6307,7 @@
               renderEvaRouteVisual(),
               !evaS.started ? h('button', { type: 'button', onClick: evaReset, style: { padding: '8px 16px', borderRadius: 10, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 900, fontSize: 13, cursor: 'pointer' } }, '🚪 ' + __alloT('stem.spacestation.eva_start', 'Open the hatch')) :
               h('div', null,
-                h('div', { role: 'list', 'aria-label': 'Handrail route', style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 } },
+                h('div', { role: 'list', 'aria-label': __alloT('stem.spacestation.a11y_handrail_route', 'Handrail route'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 } },
                   EVA_RAILS.map(function (r, i) {
                     var here = evaS.pos === i;
                     var tA = evaS.tetherA === i, tB = evaS.tetherB === i;
@@ -6568,23 +6568,23 @@
             station.interiorNav = nav;
             return Object.assign({}, prev, { spaceStation: station });
           });
-          if (event.type === 'hatch' && !navigation.preciseHatch && (event.controlled === true || Number(event.speed) <= 0.35)) announceToSR('Controlled hatch challenge complete.');
-          else if (event.type === 'rail-grab' && (event.controlled === true || (event.controlled == null && Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35))) announceToSR('Controlled handrail stop challenge complete.');
-          else if (event.type === 'cargo-caught') announceToSR('Cargo pouch caught. Carry it to the marked Unity restraint while braced.');
-          else if (event.type === 'cargo-secured') announceToSR('Cargo pouch secured. Loose-object management challenge complete.');
-          else if (event.type === 'cargo-clear') announceToSR('Loose cargo avoided. Navigation challenge complete.');
-          else if (event.type === 'transfer-attempt') announceToSR('Transfer tether clipped. Center both body and bag through the Harmony-Destiny hatch.');
+          if (event.type === 'hatch' && !navigation.preciseHatch && (event.controlled === true || Number(event.speed) <= 0.35)) announceToSR(__alloT('stem.spacestation.sr_controlled_hatch_challenge_complete', 'Controlled hatch challenge complete.'));
+          else if (event.type === 'rail-grab' && (event.controlled === true || (event.controlled == null && Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35))) announceToSR(__alloT('stem.spacestation.sr_controlled_handrail_stop_challenge_complete', 'Controlled handrail stop challenge complete.'));
+          else if (event.type === 'cargo-caught') announceToSR(__alloT('stem.spacestation.sr_cargo_pouch_caught_carry_it_to_the_marked_unity_r', 'Cargo pouch caught. Carry it to the marked Unity restraint while braced.'));
+          else if (event.type === 'cargo-secured') announceToSR(__alloT('stem.spacestation.sr_cargo_pouch_secured_loose_object_management_chall', 'Cargo pouch secured. Loose-object management challenge complete.'));
+          else if (event.type === 'cargo-clear') announceToSR(__alloT('stem.spacestation.sr_loose_cargo_avoided_navigation_challenge_complete', 'Loose cargo avoided. Navigation challenge complete.'));
+          else if (event.type === 'transfer-attempt') announceToSR(__alloT('stem.spacestation.sr_transfer_tether_clipped_center_both_body_and_bag', 'Transfer tether clipped. Center both body and bag through the Harmony-Destiny hatch.'));
           else if (event.type === 'transfer-contact') announceToSR(event.source === 'diagram' ? 'Diagram hatch contact. Only the still diagram scenario reset; the saved 3-D flight room is unchanged.' : 'Physical body or bag envelope clipped the hatch rim. Crew and bag reset to Harmony staging.');
-          else if (event.type === 'transfer-cancelled') announceToSR('Bulky transfer cancelled before a cross-room training move. Bag returned to Harmony staging; contact and completion counts did not change.');
-          else if (event.type === 'transfer-complete') announceToSR('Bulky hatch transfer complete. Transfer bag docked in Destiny.');
-          else if (event.type === 'worksite-reaction') announceToSR('Reaction torque detected. Recover, catch the nearby rail, then retry the filter service.');
-          else if (event.type === 'stow-airflow-warning') announceToSR('Harmony airflow blocked. A loose item is at the air return.');
-          else if (event.type === 'stow-caught') announceToSR('Cabin item caught. Carry it to its matching Harmony restraint and brace on a rail.');
+          else if (event.type === 'transfer-cancelled') announceToSR(__alloT('stem.spacestation.sr_bulky_transfer_cancelled_before_a_cross_room_trai', 'Bulky transfer cancelled before a cross-room training move. Bag returned to Harmony staging; contact and completion counts did not change.'));
+          else if (event.type === 'transfer-complete') announceToSR(__alloT('stem.spacestation.sr_bulky_hatch_transfer_complete_transfer_bag_docked', 'Bulky hatch transfer complete. Transfer bag docked in Destiny.'));
+          else if (event.type === 'worksite-reaction') announceToSR(__alloT('stem.spacestation.sr_reaction_torque_detected_recover_catch_the_nearby', 'Reaction torque detected. Recover, catch the nearby rail, then retry the filter service.'));
+          else if (event.type === 'stow-airflow-warning') announceToSR(__alloT('stem.spacestation.sr_harmony_airflow_blocked_a_loose_item_is_at_the_ai', 'Harmony airflow blocked. A loose item is at the air return.'));
+          else if (event.type === 'stow-caught') announceToSR(__alloT('stem.spacestation.sr_cabin_item_caught_carry_it_to_its_matching_harmon', 'Cabin item caught. Carry it to its matching Harmony restraint and brace on a rail.'));
           else if (event.type === 'stow-secured') announceToSR('Cabin item secured. ' + Number(event.count || 0) + ' of three items stowed.');
-          else if (event.type === 'stow-complete') announceToSR('Harmony cabin stow complete. All three items restrained and airflow clear.');
-          else if (event.type === 'worksite-complete') announceToSR('Filter serviced while braced. Reaction-torque maintenance challenge complete.');
-          else if (event.type === 'orientation-recovered') announceToSR('Orientation recovery challenge complete.');
-          else if (event.type === 'route-complete') announceToSR('Five-module free-flight route complete.');
+          else if (event.type === 'stow-complete') announceToSR(__alloT('stem.spacestation.sr_harmony_cabin_stow_complete_all_three_items_restr', 'Harmony cabin stow complete. All three items restrained and airflow clear.'));
+          else if (event.type === 'worksite-complete') announceToSR(__alloT('stem.spacestation.sr_filter_serviced_while_braced_reaction_torque_main', 'Filter serviced while braced. Reaction-torque maintenance challenge complete.'));
+          else if (event.type === 'orientation-recovered') announceToSR(__alloT('stem.spacestation.sr_orientation_recovery_challenge_complete', 'Orientation recovery challenge complete.'));
+          else if (event.type === 'route-complete') announceToSR(__alloT('stem.spacestation.sr_five_module_free_flight_route_complete', 'Five-module free-flight route complete.'));
         }
         function roomInfoForInterior(id) {
           return INTERIOR_ROOMS.find(function (candidate) { return candidate.id === id; }) || INTERIOR_ROOMS[0];
@@ -6624,7 +6624,7 @@
               canvas._issInteriorEvent = null;
               canvas._issInteriorWantRoom = null;
             }
-            announceToSR('Accessible interior diagram opened at the saved flight room.');
+            announceToSR(__alloT('stem.spacestation.sr_accessible_interior_diagram_opened_at_the_saved_f', 'Accessible interior diagram opened at the saved flight room.'));
             return;
           }
           setLabToolData(function (prev) {
@@ -6637,7 +6637,7 @@
             station.interiorView = '3d';
             return Object.assign({}, prev, { spaceStation: station });
           });
-          announceToSR('Interactive 3-D free-flight view restored at the saved flight room.');
+          announceToSR(__alloT('stem.spacestation.sr_interactive_3_d_free_flight_view_restored_at_the', 'Interactive 3-D free-flight view restored at the saved flight room.'));
         }
         function renderInteriorSimulation() {
           var challenges = [
@@ -6765,7 +6765,7 @@
             });
             var canvas = interiorCanvasFrom(event.currentTarget);
             if (canvas && canvas._issInteriorReset) canvas._issInteriorReset();
-            announceToSR('Free-flight route restarted in Harmony. Crew jobs were kept.');
+            announceToSR(__alloT('stem.spacestation.sr_free_flight_route_restarted_in_harmony_crew_jobs', 'Free-flight route restarted in Harmony. Crew jobs were kept.'));
           }
           return h('div', { className: 'iss-interior-sim', 'data-iss-interior-sim': 'true' },
             h('div', { className: 'iss-interior-3d', 'data-iss-interior-3d': room.id, 'data-iss-room-transition': room.id },
@@ -6816,7 +6816,7 @@
                 },
                 'data-iss-interior-canvas': 'true',
                 role: 'application', tabIndex: 0,
-                'aria-label': 'Interactive 3-D interior of the International Space Station. Training push controls add velocity for exploration; actual crew translate by pushing and pulling handrails. White gloved forearms and task props show your current body task: tucked, holding a rail, carrying cargo, using the torque tool, holding the water injector, or framing Earth with a handheld camera. In-world destination signs mark the forward, port, and nadir branches; labeled deck and overhead surfaces plus a numeric roll readout preserve orientation. Follow Harmony through Destiny and Unity, turn port into Tranquility, then move nadir into Cupola. Linear and rotational momentum continue until you counter-push or catch a nearby rail. In Harmony, use X to catch the nearest loose sleeping bag, tablet, or washcloth within zero point six five meters and below zero point two meters per second relative speed, then rail-brace at its matching restraint and press X again. Airflow risk is shown with color, shape, and text. Match a loose pouch velocity before catching and securing it. At the Destiny plant glovebox, stabilize, face the lower wick port, then hold V and release between 2.7 and 3.3 milliliters. At the Tranquility filter, brace on a rail before applying torque. In Cupola, approach the camera control, hold the nearby rail, center the selected Earth target, then hold P for a one point two second training frame lock.',
+                'aria-label': __alloT('stem.spacestation.a11y_interactive_3_d_interior_of_the_international_s', 'Interactive 3-D interior of the International Space Station. Training push controls add velocity for exploration; actual crew translate by pushing and pulling handrails. White gloved forearms and task props show your current body task: tucked, holding a rail, carrying cargo, using the torque tool, holding the water injector, or framing Earth with a handheld camera. In-world destination signs mark the forward, port, and nadir branches; labeled deck and overhead surfaces plus a numeric roll readout preserve orientation. Follow Harmony through Destiny and Unity, turn port into Tranquility, then move nadir into Cupola. Linear and rotational momentum continue until you counter-push or catch a nearby rail. In Harmony, use X to catch the nearest loose sleeping bag, tablet, or washcloth within zero point six five meters and below zero point two meters per second relative speed, then rail-brace at its matching restraint and press X again. Airflow risk is shown with color, shape, and text. Match a loose pouch velocity before catching and securing it. At the Destiny plant glovebox, stabilize, face the lower wick port, then hold V and release between 2.7 and 3.3 milliliters. At the Tranquility filter, brace on a rail before applying torque. In Cupola, approach the camera control, hold the nearby rail, center the selected Earth target, then hold P for a one point two second training frame lock.'),
                 'aria-describedby': 'iss-interior-flight-instructions iss-interior-transfer-instructions iss-interior-flight-status iss-interior-transfer-readout iss-interior-stow-readout iss-interior-cabin-airflow iss-interior-observation-readout',
                 'aria-keyshortcuts': 'W A S D R F Q E B C V T P X ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'
               }),
@@ -6846,7 +6846,7 @@
               h('strong', null, nextChallenge ? nextChallenge.title : 'All crew challenges complete'),
               h('small', null, nextChallenge ? nextChallenge.note : 'Review the route or continue the crew activities.')),
             h('div', { className: 'iss-interior-controls' },
-              h('div', { className: 'iss-interior-thrusters', role: 'group', 'aria-label': 'Virtual navigation push controls' },
+              h('div', { className: 'iss-interior-thrusters', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_virtual_navigation_push_controls', 'Virtual navigation push controls') },
                 controlButton('forward', 'Push forward', 'W'),
                 controlButton('back', 'Push reverse', 'S'),
                 controlButton('left', 'Push left', 'A'),
@@ -6855,7 +6855,7 @@
                 controlButton('down', 'Lower', 'F'),
                 controlButton('rollLeft', 'Roll left', 'Q'),
                 controlButton('rollRight', 'Roll right', 'E')),
-              h('div', { className: 'iss-interior-safety', role: 'group', 'aria-label': 'Free-flight safety assists' },
+              h('div', { className: 'iss-interior-safety', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_free_flight_safety_assists', 'Free-flight safety assists') },
                 h('button', { type: 'button', 'data-iss-interior-grab': 'true', onClick: safetyAction('_issInteriorGrabRail') }, 'Grab handrail'),
                 h('button', { type: 'button', 'data-iss-interior-cargo-action': 'true', 'data-iss-interior-cargo-status': 'loose', 'aria-disabled': 'true', onClick: safetyAction('_issInteriorCargoAction') }, 'Catch pouch (C)'),
                 h('button', {
@@ -7044,7 +7044,7 @@
               h('line', { x1: 400, y1: 139, x2: 363, y2: 130, stroke: '#fbbf24' }),
               h('text', { x: 20, y: 205, fill: transferDiagramColor, fontSize: 10, fontWeight: 900 }, transferDone ? 'CLEAR // BAG DOCKED IN DESTINY' : transferContact ? 'CONTACT // DIAGRAM RESET; 3-D ROOM SAVED' : 'CENTER BOTH ENVELOPES BEFORE CROSSING')),
             h('p', { style: { margin: '7px 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'The 12 kilogram bag follows behind and to your right. A harder pull increases separation; checking only your body ignores the bag envelope.'),
-            h('div', { role: 'group', 'aria-label': 'Choose a bulky hatch-transfer method', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(145px,1fr))', gap: 6 } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_choose_a_bulky_hatch_transfer_method', 'Choose a bulky hatch-transfer method'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(145px,1fr))', gap: 6 } },
               transferChoices.map(function (choice) {
                 return h('button', {
                   key: choice[0], type: 'button', disabled: transferDone,
@@ -7261,9 +7261,9 @@
                 h('text', { x: 74, y: 147, fill: '#94a3b8', fontSize: 8 }, 'EARLIER'),
                 h('text', { x: 500, y: 147, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, 'NOW →'),
                 reading >= 0 ? h('path', { d: 'M60 31H510V134H60Z', fill: 'none', stroke: traces[reading].color, strokeWidth: 1, strokeDasharray: '5 5', opacity: .5 }) : null)),
-            h('div', { role: 'group', 'aria-label': 'Life-support telemetry channels', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(82px,1fr))', gap: 5 } }, sensors.map(function (sensor, i) { var checked = !!checks[i]; return h('button', { key: i, type: 'button', 'aria-pressed': checked, onClick: function () { inspectSensor(i); }, style: { minWidth: 0, padding: 7, borderRadius: 8, textAlign: 'left', border: '1px solid ' + (checked ? room.color : '#475569'), background: checked ? room.color + '16' : 'rgba(2,6,23,.38)', color: TEXT, cursor: 'pointer' } }, h('span', { style: { display: 'block', color: SOFT, fontSize: 8.5, lineHeight: 1.25 } }, (checked ? '✓ ' : '') + sensor[0]), h('strong', { style: { display: 'block', color: sensor[1] === 'NORMAL' ? '#4ade80' : '#fbbf24', fontSize: 11, marginTop: 3 } }, sensor[1])); })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_life_support_telemetry_channels', 'Life-support telemetry channels'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(82px,1fr))', gap: 5 } }, sensors.map(function (sensor, i) { var checked = !!checks[i]; return h('button', { key: i, type: 'button', 'aria-pressed': checked, onClick: function () { inspectSensor(i); }, style: { minWidth: 0, padding: 7, borderRadius: 8, textAlign: 'left', border: '1px solid ' + (checked ? room.color : '#475569'), background: checked ? room.color + '16' : 'rgba(2,6,23,.38)', color: TEXT, cursor: 'pointer' } }, h('span', { style: { display: 'block', color: SOFT, fontSize: 8.5, lineHeight: 1.25 } }, (checked ? '✓ ' : '') + sensor[0]), h('strong', { style: { display: 'block', color: sensor[1] === 'NORMAL' ? '#4ade80' : '#fbbf24', fontSize: 11, marginTop: 3 } }, sensor[1])); })),
             reading >= 0 && sensors[reading] ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 6, padding: 7, borderRadius: 7, background: 'rgba(251,191,36,.08)', color: TEXT, fontSize: 10.5, lineHeight: 1.45 } }, h('strong', { style: { color: '#fbbf24' } }, sensors[reading][0] + ': '), sensors[reading][2]) : h('p', { style: { color: SOFT, fontSize: 10, margin: '6px 0 0' } }, 'Inspect at least two channels before commanding maintenance.'),
-            h('div', { role: 'group', 'aria-label': 'Maintenance actions', style: { display: 'grid', gap: 5, marginTop: 8 } }, room.choices.map(function (choice) { var picked = choiceId === choice.id; return h('button', { key: choice.id, type: 'button', disabled: checkedCount < 2 || roomDone, onClick: function () { chooseInterior(choice); }, style: { textAlign: 'left', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (roomDone && choice.correct ? '#22c55e' : picked ? room.color : '#475569'), background: roomDone && choice.correct ? 'rgba(34,197,94,.14)' : picked ? room.color + '16' : 'rgba(2,6,23,.35)', color: TEXT, fontSize: 10.5, fontWeight: 750, cursor: checkedCount < 2 || roomDone ? 'not-allowed' : 'pointer', opacity: checkedCount < 2 ? .45 : roomDone && !choice.correct ? .5 : 1 } }, (roomDone && choice.correct ? '✓ ' : '') + choice.label); })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_maintenance_actions', 'Maintenance actions'), style: { display: 'grid', gap: 5, marginTop: 8 } }, room.choices.map(function (choice) { var picked = choiceId === choice.id; return h('button', { key: choice.id, type: 'button', disabled: checkedCount < 2 || roomDone, onClick: function () { chooseInterior(choice); }, style: { textAlign: 'left', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (roomDone && choice.correct ? '#22c55e' : picked ? room.color : '#475569'), background: roomDone && choice.correct ? 'rgba(34,197,94,.14)' : picked ? room.color + '16' : 'rgba(2,6,23,.35)', color: TEXT, fontSize: 10.5, fontWeight: 750, cursor: checkedCount < 2 || roomDone ? 'not-allowed' : 'pointer', opacity: checkedCount < 2 ? .45 : roomDone && !choice.correct ? .5 : 1 } }, (roomDone && choice.correct ? '✓ ' : '') + choice.label); })),
             pickedChoice ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 7, padding: 7, borderRadius: 7, background: pickedChoice.correct ? 'rgba(34,197,94,.1)' : 'rgba(251,191,36,.1)', borderLeft: '3px solid ' + (pickedChoice.correct ? '#22c55e' : '#fbbf24'), color: TEXT, fontSize: 10.5, lineHeight: 1.45 } }, pickedChoice.feedback) : null
           );
         }        function renderCrewNotebook() {
@@ -7298,7 +7298,7 @@
           var cabinDiagramEnabled = d.interiorView === 'diagram';
           function secureItem(item) {
             if (roomDone || stowed[item[0]]) return;
-            if (!cabinDiagramEnabled) { announceToSR('3-D cabin stow is active. Use X to catch or secure the nearest item.'); return; }
+            if (!cabinDiagramEnabled) { announceToSR(__alloT('stem.spacestation.sr_3_d_cabin_stow_is_active_use_x_to_catch_or_secure', '3-D cabin stow is active. Use X to catch or secure the nearest item.')); return; }
             var next = Object.assign({}, stowed); next[item[0]] = true;
             var nextCount = items.filter(function (candidate) { return !!next[candidate[0]]; }).length;
             if (nextCount >= items.length) {
@@ -7335,7 +7335,7 @@
                 [0,1,2].map(function (i) { var complete = i < stowedCount; return h('g', { key: i, transform: 'translate(' + (285 + i * 34) + ',153)' }, h('circle', { r: 7, fill: complete ? '#14532d' : '#111827', stroke: complete ? '#4ade80' : '#475569', strokeWidth: 1.5 }), h('text', { y: 3, textAnchor: 'middle', fill: complete ? '#dcfce7' : '#94a3b8', fontSize: 7, fontWeight: 900 }, complete ? '✓' : String(i + 1))); }))),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', marginBottom: 6 } }, h('strong', { style: { color: TEXT, fontSize: 11 } }, 'Loose-item scan'), h('span', { role: 'status', 'aria-live': 'polite', style: { color: stowedCount === items.length ? '#4ade80' : room.color, fontSize: 10, fontWeight: 800 } }, stowedCount + ' / ' + items.length + ' secured')),
             !cabinDiagramEnabled ? h('div', { role: 'status', style: { marginBottom: 6, color: '#fde68a', fontSize: 10.5, fontWeight: 800 } }, '3-D cabin-stow controls active - use X to catch or secure each item.') : null,
-            h('div', { role: 'group', 'aria-label': 'Cabin items to secure', style: { display: 'grid', gap: 6 } }, items.map(function (item) { var secure = !!stowed[item[0]]; return h('button', { key: item[0], type: 'button', disabled: secure || roomDone || !cabinDiagramEnabled, 'aria-disabled': secure || roomDone || !cabinDiagramEnabled ? 'true' : 'false', onClick: function () { secureItem(item); }, style: { display: 'grid', gridTemplateColumns: '28px 1fr', gap: 7, textAlign: 'left', padding: 8, borderRadius: 8, border: '1px solid ' + (secure ? '#22c55e' : '#475569'), background: secure ? 'rgba(34,197,94,.12)' : 'rgba(2,6,23,.38)', color: TEXT, cursor: secure || roomDone || !cabinDiagramEnabled ? 'default' : 'pointer' } }, h('span', { style: { fontSize: 19 }, 'aria-hidden': 'true' }, secure ? '✓' : item[1]), h('span', null, h('strong', { style: { display: 'block', color: secure ? '#4ade80' : TEXT, fontSize: 11 } }, item[2] + ' — ' + item[3]), h('span', { style: { display: 'block', color: SOFT, fontSize: 9.5, lineHeight: 1.4, marginTop: 2 } }, cabinDiagramEnabled ? item[4] : 'Use X in the 3-D simulation.'))); })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_cabin_items_to_secure', 'Cabin items to secure'), style: { display: 'grid', gap: 6 } }, items.map(function (item) { var secure = !!stowed[item[0]]; return h('button', { key: item[0], type: 'button', disabled: secure || roomDone || !cabinDiagramEnabled, 'aria-disabled': secure || roomDone || !cabinDiagramEnabled ? 'true' : 'false', onClick: function () { secureItem(item); }, style: { display: 'grid', gridTemplateColumns: '28px 1fr', gap: 7, textAlign: 'left', padding: 8, borderRadius: 8, border: '1px solid ' + (secure ? '#22c55e' : '#475569'), background: secure ? 'rgba(34,197,94,.12)' : 'rgba(2,6,23,.38)', color: TEXT, cursor: secure || roomDone || !cabinDiagramEnabled ? 'default' : 'pointer' } }, h('span', { style: { fontSize: 19 }, 'aria-hidden': 'true' }, secure ? '✓' : item[1]), h('span', null, h('strong', { style: { display: 'block', color: secure ? '#4ade80' : TEXT, fontSize: 11 } }, item[2] + ' — ' + item[3]), h('span', { style: { display: 'block', color: SOFT, fontSize: 9.5, lineHeight: 1.4, marginTop: 2 } }, cabinDiagramEnabled ? item[4] : 'Use X in the 3-D simulation.'))); })),
             roomDone ? h('div', { role: 'status', style: { marginTop: 7, padding: 7, borderRadius: 7, background: 'rgba(34,197,94,.1)', color: '#bbf7d0', fontSize: 10.5 } }, 'Cabin clear ✓ Air return unobstructed ✓ Morning stow logged') : null
           );
         }        function renderCupolaObservation() {
@@ -7390,7 +7390,7 @@
                 shutters ? h('g', null, h('circle', { cx: 320, cy: 100, r: 82, fill: '#334155', stroke: '#64748b', strokeWidth: 4 }), [-54,-36,-18,0,18,36,54].map(function (offset) { return h('line', { key: offset, x1: 242, y1: 100 + offset, x2: 398, y2: 100 + offset, stroke: '#475569', strokeWidth: 8 }); }), h('path', { d: 'M290 100L310 120L350 78', fill: 'none', stroke: '#86efac', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }), h('text', { x: 320, y: 144, textAnchor: 'middle', fill: '#dcfce7', fontSize: 8.5, fontWeight: 850 }, 'SHUTTERS CLOSED')) : null,
                 h('g', { transform: 'translate(18,147)' }, h('rect', { width: 188, height: 31, rx: 6, fill: 'rgba(2,6,23,.76)', stroke: target.color, strokeWidth: 1 }), h('text', { x: 9, y: 13, fill: '#94a3b8', fontSize: 7.5, fontWeight: 850, letterSpacing: .6 }, 'CAMERA PLAN'), h('text', { x: 9, y: 25, fill: '#f8fafc', fontSize: 8, fontWeight: 850 }, target.mode.toUpperCase())),
                 h('text', { x: 622, y: 171, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, '7 PRESSURE WINDOWS // EXTERNAL IMPACT SHUTTERS'))),
-            h('div', { role: 'group', 'aria-label': 'Earth observation targets', style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginTop: 7 } }, Object.keys(targets).map(function (id) { var t = targets[id], active = id === targetId; return h('button', { key: id, type: 'button', disabled: roomDone, 'aria-pressed': active, onClick: function () { selectTarget(id); }, style: { minWidth: 0, padding: 6, borderRadius: 7, border: '1px solid ' + (active ? t.color : '#475569'), background: active ? t.color + '18' : 'rgba(2,6,23,.35)', color: active ? '#f8fafc' : SOFT, fontSize: 9.5, fontWeight: 800, cursor: roomDone ? 'default' : 'pointer' } }, t.icon + ' ' + t.label); })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_earth_observation_targets', 'Earth observation targets'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginTop: 7 } }, Object.keys(targets).map(function (id) { var t = targets[id], active = id === targetId; return h('button', { key: id, type: 'button', disabled: roomDone, 'aria-pressed': active, onClick: function () { selectTarget(id); }, style: { minWidth: 0, padding: 6, borderRadius: 7, border: '1px solid ' + (active ? t.color : '#475569'), background: active ? t.color + '18' : 'rgba(2,6,23,.35)', color: active ? '#f8fafc' : SOFT, fontSize: 9.5, fontWeight: 800, cursor: roomDone ? 'default' : 'pointer' } }, t.icon + ' ' + t.label); })),
             h('div', { style: { marginTop: 6, padding: 7, borderRadius: 7, background: 'rgba(2,6,23,.4)', border: '1px solid #334155', color: TEXT, fontSize: 10 } }, h('strong', { style: { color: target.color } }, 'Camera plan: '), target.mode),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 7 } },
               h('button', { type: 'button', disabled: interiorView !== 'diagram' || roomDone || shutters || captured, onClick: captureTarget, style: { padding: 8, borderRadius: 8, border: '1px solid ' + target.color, background: captured ? target.color + '20' : 'rgba(2,6,23,.35)', color: TEXT, fontSize: 10.5, fontWeight: 850, cursor: interiorView === 'diagram' && !roomDone && !shutters && !captured ? 'pointer' : 'not-allowed' } }, captured ? '✓ Image captured' : interiorView === '3d' ? 'Use 3-D camera control (P)' : '📷 Capture image'),
@@ -7403,14 +7403,14 @@
               h('div', null, h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' } }, __alloT('stem.spacestation.interior_kicker', 'Your crew shift')), h('h3', { style: { margin: '3px 0 2px', color: TEXT, fontSize: 18 } }, __alloT('stem.spacestation.interior_title', 'Float inside. Work like an astronaut.')), h('p', { style: { margin: 0, color: SOFT, fontSize: 12.5 } }, __alloT('stem.spacestation.interior_intro', 'Move through five real station spaces. Inspect what is around you, make a crew decision, and learn the science from the result.'))),
               h('div', { style: { minWidth: 150, textAlign: 'right' } }, h('strong', { style: { color: completed === INTERIOR_ROOMS.length ? '#4ade80' : '#7dd3fc', fontSize: 15 } }, completed + ' / ' + INTERIOR_ROOMS.length + ' jobs'), h('div', { style: { height: 7, marginTop: 5, borderRadius: 9, overflow: 'hidden', background: '#0f172a', border: '1px solid #334155' } }, h('div', { style: { width: (completed / INTERIOR_ROOMS.length * 100) + '%', height: '100%', background: completed === INTERIOR_ROOMS.length ? '#22c55e' : '#0ea5e9', transition: 'width .25s ease' } }))))),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, margin: '-4px 0 12px' } },
-            h('div', { role: 'status', 'aria-label': 'Crew shift progress', style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            h('div', { role: 'status', 'aria-label': __alloT('stem.spacestation.a11y_crew_shift_progress', 'Crew shift progress'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               [['🚪', visitedCount + '/5', 'rooms visited'], ['🔎', inspectedCount + '/10', 'details inspected'], ['✓', completed + '/5', 'jobs complete']].map(function (item, i) { return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 5, padding: '5px 8px', borderRadius: 20, background: 'rgba(2,6,23,.42)', border: '1px solid #334155', color: TEXT, fontSize: 10.5 } }, h('span', { 'aria-hidden': 'true' }, item[0]), h('strong', { style: { color: '#7dd3fc' } }, item[1]), h('span', { style: { color: SOFT } }, item[2])); })),
-            h('div', { role: 'group', 'aria-label': 'Learning guidance level', style: { display: 'flex', gap: 4, padding: 3, borderRadius: 9, background: '#0f172a', border: '1px solid #334155' } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_learning_guidance_level', 'Learning guidance level'), style: { display: 'flex', gap: 4, padding: 3, borderRadius: 9, background: '#0f172a', border: '1px solid #334155' } },
               [['guided', '🧭 Guided'], ['independent', '🎯 Independent']].map(function (mode) { var active = guided ? mode[0] === 'guided' : mode[0] === 'independent'; return h('button', { key: mode[0], type: 'button', 'aria-pressed': active, onClick: function () { upd({ interiorGuided: mode[0] === 'guided' }); }, style: { padding: '5px 8px', borderRadius: 6, border: 'none', background: active ? '#0ea5e9' : 'transparent', color: active ? '#04121f' : SOFT, fontSize: 10.5, fontWeight: 800, cursor: 'pointer' } }, mode[1]); }))
           ),
           h('div', { className: 'iss-interior-viewbar' },
             h('p', null, 'Choose free-flight for spatial practice or the diagram for a still, low-power view.'),
-            h('div', { className: 'iss-interior-view-switch', role: 'group', 'aria-label': 'Interior view mode' },
+            h('div', { className: 'iss-interior-view-switch', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_interior_view_mode', 'Interior view mode') },
               h('button', { type: 'button', 'data-iss-interior-view': '3d', 'aria-pressed': interiorView === '3d', onClick: function (event) { chooseInteriorView('3d', event); } }, '3-D free-flight'),
               h('button', { type: 'button', 'data-iss-interior-view': 'diagram', 'aria-pressed': interiorView === 'diagram', onClick: function (event) { chooseInteriorView('diagram', event); } }, 'Accessible diagram'))),
           h('div', { className: 'iss-location-strip iss-interior-route-map', role: 'group', 'aria-live': 'off', 'aria-label': 'Current station location: ' + room.name + '. Connected route: Harmony to Destiny to Unity, port turn into Tranquility, then nadir descent into Cupola.' },
@@ -7593,7 +7593,7 @@
               h('circle', { r: 7, fill: '#38bdf8' })),
             nodes.map(function (n) { var on = active(n); return h('g', { key: n.label, transform: 'translate(' + n.x + ',' + n.y + ')', opacity: on ? 1 : .36 }, h('circle', { r: 28, fill: '#111d30', stroke: on ? n.color : '#475569', strokeWidth: on ? 2.8 : 1.2 }), h('circle', { r: 22, fill: n.color, opacity: on ? .12 : .03 }), h('text', { y: -3, textAnchor: 'middle', fill: on ? n.color : '#64748b', fontSize: 8, fontWeight: 900, letterSpacing: .8 }, n.label), h('text', { y: 12, textAnchor: 'middle', fill: on ? '#f8fafc' : '#94a3b8', fontSize: 10, fontWeight: 850 }, n.value)); }),
             h('text', { x: 20, y: 24, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'MISSION OPERATIONS // COUPLED SYSTEMS')),
-          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': 'Highlight a station system flow' }, [{ id: 'all', label: 'All systems' }].concat(nodes.map(function (node) { return { id: node.id, label: node.label }; })).map(function (item) { var on = selectedFocus === item.id; return h('button', { key: item.id, type: 'button', 'data-iss-system-focus': item.id, 'aria-pressed': on, onClick: function () { upd({ opsFocus: item.id }); } }, item.label); })),
+          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_highlight_a_station_system_flow', 'Highlight a station system flow') }, [{ id: 'all', label: 'All systems' }].concat(nodes.map(function (node) { return { id: node.id, label: node.label }; })).map(function (item) { var on = selectedFocus === item.id; return h('button', { key: item.id, type: 'button', 'data-iss-system-focus': item.id, 'aria-pressed': on, onClick: function () { upd({ opsFocus: item.id }); } }, item.label); })),
           h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, details[selectedFocus] || details.all));
       }      function renderOperations() {
         var crew = opsClamp(d.opsCrew == null ? 7 : d.opsCrew, 3, 11);
@@ -7740,7 +7740,7 @@
           if (announceToSR) announceToSR(scenario.label + ' mission scenario loaded.');
         }
         function renderScenarioPresets() {
-          return h('div', { className: 'iss-ops-presets', role: 'group', 'aria-label': 'Mission scenario presets' },
+          return h('div', { className: 'iss-ops-presets', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_mission_scenario_presets', 'Mission scenario presets') },
             scenarioPresets.map(function (scenario) { var on = opsScenario === scenario.id; return h('button', { key: scenario.id, type: 'button', 'data-iss-scenario': scenario.id, 'aria-pressed': on, onClick: function () { applyScenario(scenario); } }, h('span', { className: 'iss-preset-icon', 'aria-hidden': 'true' }, scenario.icon), h('span', null, h('strong', null, scenario.label), h('small', null, scenario.note))); }),
             opsScenario === 'custom' ? h('span', { className: 'iss-custom-badge', role: 'status' }, 'CUSTOM CONFIGURATION') : null);
         }
@@ -7754,7 +7754,7 @@
           ];
           return h('div', { className: 'iss-mission-replay', 'data-iss-mission-replay': 'true' },
             h('div', { className: 'iss-replay-heading' }, h('strong', null, 'MISSION REPLAY // ORBIT ' + (d.opsRuns || 0)), h('span', null, 'Select an event to inspect synchronized telemetry.')),
-            h('div', { className: 'iss-replay-lane', role: 'group', 'aria-label': 'Mission replay events' }, replayEvents.map(function (event) { var on = Math.round(orbitMinute) === Math.round(event.minute); return h('button', { key: event.label, type: 'button', 'data-iss-replay-event': event.minute, 'aria-pressed': on, onClick: function () { upd({ opsOrbitMinute: event.minute }); } }, h('i', { 'aria-hidden': 'true' }), h('strong', null, 'T+' + event.minute), h('span', null, event.label), h('small', null, event.note)); })));
+            h('div', { className: 'iss-replay-lane', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_mission_replay_events', 'Mission replay events') }, replayEvents.map(function (event) { var on = Math.round(orbitMinute) === Math.round(event.minute); return h('button', { key: event.label, type: 'button', 'data-iss-replay-event': event.minute, 'aria-pressed': on, onClick: function () { upd({ opsOrbitMinute: event.minute }); } }, h('i', { 'aria-hidden': 'true' }), h('strong', null, 'T+' + event.minute), h('span', null, event.label), h('small', null, event.note)); })));
         }        function statusBox(title, value, note, color) { return h('div', { className: 'iss-ops-control' }, h('div', { style: { color: SOFT, fontSize: 8.5, fontWeight: 850, letterSpacing: .8, textTransform: 'uppercase' } }, title), h('strong', { style: { display: 'block', marginTop: 4, color: color, fontSize: 18 } }, value), h('div', { style: { marginTop: 4, color: SOFT, fontSize: 9.5, lineHeight: 1.45 } }, note)); }
         function renderIntegrated() {
           return h('div', null, renderOpsNetwork(metrics, d.opsFocus || 'all'), renderOpsForecast(orbitForecast, sunlightMinutes, orbitMinute, orbitCursor, opsScenario === 'nominal' ? null : nominalForecast), h('div', { className: 'iss-ops-grid' },
@@ -7873,11 +7873,11 @@
               h('div', { className: 'iss-visual-caption' }, h('span', null, 'Schematic response geometry'), h('span', null, stateLabel)));
           }
           return h('div', null,
-            h('div', { className: 'iss-emergency-grid', role: 'group', 'aria-label': 'Emergency scenario' }, Object.keys(scenarios).map(function (id) { var on = id === sid; return h('button', { key: id, type: 'button', 'aria-pressed': on, onClick: function () { upd({ opsEmergency: id, opsEmergencyResult: '', opsEmergencyCorrect: false }); }, style: { padding: 9, borderRadius: 9, border: '1px solid ' + (on ? '#f87171' : '#475569'), background: on ? 'rgba(239,68,68,.14)' : 'rgba(2,6,23,.35)', color: on ? '#fecaca' : TEXT, fontWeight: 800, cursor: 'pointer' } }, scenarios[id].name); })),
+            h('div', { className: 'iss-emergency-grid', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_emergency_scenario', 'Emergency scenario') }, Object.keys(scenarios).map(function (id) { var on = id === sid; return h('button', { key: id, type: 'button', 'aria-pressed': on, onClick: function () { upd({ opsEmergency: id, opsEmergencyResult: '', opsEmergencyCorrect: false }); }, style: { padding: 9, borderRadius: 9, border: '1px solid ' + (on ? '#f87171' : '#475569'), background: on ? 'rgba(239,68,68,.14)' : 'rgba(2,6,23,.35)', color: on ? '#fecaca' : TEXT, fontWeight: 800, cursor: 'pointer' } }, scenarios[id].name); })),
             renderIncidentVisual(),
             card('🚨 ' + scenario.name, h('div', null,
               h('div', { style: { padding: 9, marginBottom: 9, borderRadius: 9, background: 'rgba(239,68,68,.08)', borderLeft: '3px solid #ef4444', color: '#fecaca', font: '750 11px ui-monospace,monospace' } }, scenario.telemetry),
-              h('div', { role: 'group', 'aria-label': 'Emergency actions', style: { display: 'grid', gap: 6 } }, scenario.choices.map(function (choice, i) { return h('button', { className: 'iss-emergency-choice', key: i, type: 'button', onClick: function () { var correct = i === scenario.correct; upd({ opsEmergencyResult: (correct ? 'PROCEDURE CORRECT // ' : 'PROCEDURE HOLD // ') + choice[1], opsEmergencyCorrect: correct }); announceToSR(choice[1]); }, style: { borderRadius: 9, border: '1px solid #475569', background: 'rgba(2,6,23,.38)', color: TEXT, fontWeight: 750, cursor: 'pointer' } }, choice[0]); })),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_emergency_actions', 'Emergency actions'), style: { display: 'grid', gap: 6 } }, scenario.choices.map(function (choice, i) { return h('button', { className: 'iss-emergency-choice', key: i, type: 'button', onClick: function () { var correct = i === scenario.correct; upd({ opsEmergencyResult: (correct ? 'PROCEDURE CORRECT // ' : 'PROCEDURE HOLD // ') + choice[1], opsEmergencyCorrect: correct }); announceToSR(choice[1]); }, style: { borderRadius: 9, border: '1px solid #475569', background: 'rgba(2,6,23,.38)', color: TEXT, fontWeight: 750, cursor: 'pointer' } }, choice[0]); })),
               d.opsEmergencyResult ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, borderLeft: '3px solid ' + (d.opsEmergencyCorrect ? '#22c55e' : '#fbbf24'), background: d.opsEmergencyCorrect ? 'rgba(34,197,94,.1)' : 'rgba(251,191,36,.1)', color: TEXT, fontSize: 11.5 } }, d.opsEmergencyResult) : null), '#ef4444'));
         }
         function renderRendezvous() {
@@ -7922,7 +7922,7 @@
                 h('text', { x: 26, y: 188, fill: '#7dd3fc', fontSize: 8, fontWeight: 850, letterSpacing: 1 }, hold.phase),
                 h('text', { x: 26, y: 205, fill: '#f8fafc', fontSize: 11, fontWeight: 900 }, hold.cue.toUpperCase()),
                 hold.checks.map(function (check, i) { return h('g', { key: check, transform: 'translate(' + (316 + i * 101) + ',194)' }, h('circle', { r: 5, fill: '#14532d', stroke: '#4ade80', strokeWidth: 1.4 }), h('text', { x: 10, y: 3, fill: '#bbf7d0', fontSize: 7, fontWeight: 850 }, check)); })),
-              h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': 'Inspect a rendezvous hold point' }, holds.map(function (item, i) { var on = i === holdIndex; return h('button', { key: item.range, type: 'button', 'data-iss-rendezvous-hold': i, 'aria-pressed': on, onClick: function () { upd({ opsRendezvousHold: i }); } }, item.range + ' · ' + item.phase.toLowerCase()); })),
+              h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_inspect_a_rendezvous_hold_point', 'Inspect a rendezvous hold point') }, holds.map(function (item, i) { var on = i === holdIndex; return h('button', { key: item.range, type: 'button', 'data-iss-rendezvous-hold': i, 'aria-pressed': on, onClick: function () { upd({ opsRendezvousHold: i }); } }, item.range + ' · ' + item.phase.toLowerCase()); })),
               h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, h('strong', { style: { color: '#7dd3fc' } }, hold.phase + ': '), hold.detail),
               h('div', { className: 'iss-visual-caption' }, h('span', null, 'Selected hold drives the flight-rule checks'), h('span', null, 'Representative sequence · vehicle routes vary'))),
             card('Approach discipline', h('div', null,
@@ -7934,9 +7934,9 @@
         return h('div',{'data-iss-operations':mode},
           h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Every subsystem shares power, heat, mass, and operating margin.')),h('div',{className:'iss-ops-health',style:{color:healthColor},'aria-label':'Station health '+health+' percent'},health+'%')),
           renderScenarioPresets(),
-          h('div',{className:'iss-ops-metrics',role:'list','aria-label':'Station flight rules'},flightRules.map(function(rule){return h('div',{key:rule.label,className:'iss-ops-metric',role:'listitem'},h('button',{type:'button','data-flight-rule':rule.mode,onClick:function(){setMode(rule.mode);},'aria-label':rule.label+' '+rule.value+'. Flight rule '+rule.rule+'. '+(rule.pass?'Go':'Attention')},h('span',{className:'iss-rule-heading'},h('span',{className:'iss-ops-metric-label'},rule.label),h('i',{className:'iss-rule-light'+(rule.pass?' is-go':' is-hold'),'aria-hidden':'true'})),h('strong',{className:'iss-ops-metric-value',style:{color:rule.color}},rule.value),h('small',null,'RULE '+rule.rule+' · '+(rule.pass?'GO':'CHECK'))));})),
+          h('div',{className:'iss-ops-metrics',role:'list','aria-label':__alloT('stem.spacestation.a11y_station_flight_rules', 'Station flight rules')},flightRules.map(function(rule){return h('div',{key:rule.label,className:'iss-ops-metric',role:'listitem'},h('button',{type:'button','data-flight-rule':rule.mode,onClick:function(){setMode(rule.mode);},'aria-label':rule.label+' '+rule.value+'. Flight rule '+rule.rule+'. '+(rule.pass?'Go':'Attention')},h('span',{className:'iss-rule-heading'},h('span',{className:'iss-ops-metric-label'},rule.label),h('i',{className:'iss-rule-light'+(rule.pass?' is-go':' is-hold'),'aria-hidden':'true'})),h('strong',{className:'iss-ops-metric-value',style:{color:rule.color}},rule.value),h('small',null,'RULE '+rule.rule+' · '+(rule.pass?'GO':'CHECK'))));})),
           renderRuleStatus(),
-          h('div',{className:'iss-ops-modes',role:'group','aria-label':'Operations simulation'},modes.map(function(m){var on=mode===m[0];return h('button',{className:'iss-ops-mode',key:m[0],type:'button','aria-pressed':on,onClick:function(){setMode(m[0]);},style:{borderRadius:9,border:'1px solid '+(on?'#38bdf8':'#334155'),background:on?'rgba(14,165,233,.18)':PANEL,color:on?'#bae6fd':TEXT,fontSize:10.5,fontWeight:850,cursor:'pointer'}},m[1]+' '+m[2]);})),content,
+          h('div',{className:'iss-ops-modes',role:'group','aria-label':__alloT('stem.spacestation.a11y_operations_simulation', 'Operations simulation')},modes.map(function(m){var on=mode===m[0];return h('button',{className:'iss-ops-mode',key:m[0],type:'button','aria-pressed':on,onClick:function(){setMode(m[0]);},style:{borderRadius:9,border:'1px solid '+(on?'#38bdf8':'#334155'),background:on?'rgba(14,165,233,.18)':PANEL,color:on?'#bae6fd':TEXT,fontSize:10.5,fontWeight:850,cursor:'pointer'}},m[1]+' '+m[2]);})),content,
           h('div',{className:'iss-ops-debrief'},h('strong',{style:{color:'#7dd3fc',fontSize:11}},'FLIGHT DIRECTOR DEBRIEF'),h('p',{style:{margin:'5px 0 0',color:TEXT,fontSize:11.5,lineHeight:1.55}},health>=75?'All modeled systems retain useful margin. Now increase research load or crew size and find the boundary.':health>=50?'The station is operating with thin margin. Inspect the red or amber subsystem before the next orbit.':'Mission rule violation: one or more life-critical systems require immediate correction.'),(d.opsLog||[]).length?h('div',{className:'iss-ops-log',role:'log'},(d.opsLog||[]).map(function(entry,i){return h('div',{key:i},entry);})):null));
       }
       // ── Tabs ──
@@ -8026,7 +8026,7 @@
             h('span', { id: 'iss-map-status', className: 'iss-sr-only', role: 'status', 'aria-live': 'polite' }, 'Selected module ' + selModule.name + '. Camera view ' + (d.mapView || 'overview') + '.'),
             h('span', { id: 'iss-map-orientation', className: 'iss-sr-only' }, 'Orientation triad: X is port to starboard, Y is zenith to nadir, and Z is aft to forward.')
           ),
-          h('div', { className: 'iss-map-controls', role: 'group', 'aria-label': '3D station view controls' },
+          h('div', { className: 'iss-map-controls', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_3d_station_view_controls', '3D station view controls') },
             [['overview','◉ Overview'],['truss','↔ Truss'],['labs','⚗ Labs'],['russian','★ Russian segment'],['nadir','🌍 Earth-facing']].map(function (view) { var on = (d.mapView || 'overview') === view[0]; return h('button', { key: view[0], type: 'button', 'data-iss-camera-view': view[0], 'aria-pressed': on, onClick: function () { upd({ mapView: view[0] }); var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetView) cv._issSetView(view[0]); } }, view[1]); }),
             h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); announceToSR('Camera centered on ' + selModule.name + '.'); } }, '◎ Center ' + selModule.name.split(' (')[0]),
             h('button', { type: 'button', 'data-iss-cutaway': 'true', 'aria-pressed': !!d.mapCutaway, onClick: function () { upd({ mapCutaway: !d.mapCutaway }); } }, d.mapCutaway ? '◫ Cutaway ON' : '▣ Isolate selected module')),
@@ -8035,7 +8035,7 @@
           h('p', { style: { fontSize: 11.5, color: SOFT, lineHeight: 1.55, margin: '0 0 10px', paddingLeft: 9, borderLeft: '2px solid rgba(148,163,184,.35)' } },
             __alloT('stem.spacestation.earth_note', 'About the planet below: the coastlines are real, drawn from the public-domain Natural Earth dataset, and the city lights sit at the real coordinates of major metropolitan areas. The surface colouring, sea ice and cloud bands are schematic — a picture of where deserts, storm tracks and ice tend to be, not measured data. The station is drawn hanging above the globe rather than at a real point on its path; for where it actually flies, open Orbit Lab and look at the ground track.')),
           h('button', { type: 'button', onClick: function () { upd({ tab: 'interior', interiorRoom: d.interiorRoom || 'harmony' }); }, style: { margin: '0 0 10px', padding: '7px 12px', borderRadius: 9, border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.12)', color: '#7dd3fc', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🚪 Open the hatch — explore inside'),
-          h('div', { className: 'iss-module-picker', role: 'group', 'aria-label': 'Station modules', style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0' } },
+          h('div', { className: 'iss-module-picker', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_station_modules', 'Station modules'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0' } },
             MODULES.map(function (m) {
               var on = m.id === d.selModule;
               return h('button', {
@@ -8173,7 +8173,7 @@
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
             __alloT('stem.spacestation.day_intro', 'The station runs on GMT — a compromise between Houston and Moscow. Step through a typical workday. Every line has a WHY: nothing aboard is done a certain way by accident.')),
           renderDayOrbitVisual(slot, idx),
-          h('div', { className: 'iss-day-strip', role: 'group', 'aria-label': 'Daily schedule', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+          h('div', { className: 'iss-day-strip', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_daily_schedule', 'Daily schedule'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
             DAY_SCHEDULE.map(function (s2, i) {
               var on = i === idx;
               return h('button', {
@@ -8433,8 +8433,8 @@
             h('text', { x: 620, y: 23, textAnchor: 'end', fill: stateColor, fontSize: 8.5, fontWeight: 900 }, trajectoryState),
             h('text', { x: 48, y: 207, fill: '#cbd5e1', fontSize: 8.5, fontWeight: 800 }, solar.label + ' // INITIAL DECAY ' + rateLabel + ' M/DAY'),
             h('text', { x: 606, y: 207, textAnchor: 'end', fill: '#cbd5e1', fontSize: 8.5, fontWeight: 800 }, plannedLabel + ' // NET ' + (netChange >= 0 ? '+' : '−') + Math.abs(netChange).toFixed(1) + ' KM')),
-          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': 'Select solar activity for the drag model' }, Object.keys(solarModes).map(function (id) { var on = id === solarId; return h('button', { key: id, type: 'button', 'data-iss-solar-mode': id, 'aria-pressed': on, onClick: function () { upd({ orbitSolar: id }); } }, solarModes[id].label.toLowerCase()); })),
-          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': 'Select a reboost plan' }, [{ day: 0, label: 'No reboost' }, { day: 10, label: 'Reboost day 10' }, { day: 20, label: 'Reboost day 20' }].map(function (plan) { var on = plan.day === reboostDay; return h('button', { key: plan.day, type: 'button', 'data-iss-reboost-plan': plan.day, 'aria-pressed': on, onClick: function () { upd({ orbitReboostDay: plan.day }); } }, plan.label); })),
+          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_solar_activity_for_the_drag_model', 'Select solar activity for the drag model') }, Object.keys(solarModes).map(function (id) { var on = id === solarId; return h('button', { key: id, type: 'button', 'data-iss-solar-mode': id, 'aria-pressed': on, onClick: function () { upd({ orbitSolar: id }); } }, solarModes[id].label.toLowerCase()); })),
+          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_a_reboost_plan', 'Select a reboost plan') }, [{ day: 0, label: 'No reboost' }, { day: 10, label: 'Reboost day 10' }, { day: 20, label: 'Reboost day 20' }].map(function (plan) { var on = plan.day === reboostDay; return h('button', { key: plan.day, type: 'button', 'data-iss-reboost-plan': plan.day, 'aria-pressed': on, onClick: function () { upd({ orbitReboostDay: plan.day }); } }, plan.label); })),
           h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, 'Initial modeled decay ' + rateLabel + ' m/day · Day-30 altitude ' + endAltitude.toFixed(1) + ' km · Net ' + (netChange >= 0 ? '+' : '−') + Math.abs(netChange).toFixed(1) + ' km.'),
           h('div', { className: 'iss-visual-caption' }, h('span', null, 'Anchored to 75 m/day at 420 km in nominal conditions'), h('span', null, 'Simplified density response · not a reentry forecast')));
       }
@@ -8444,7 +8444,7 @@
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
             __alloT('stem.spacestation.sys_intro', 'The station is a closed-loop machine that must make its own air, recycle its own water, shed its own heat, and hold its own orientation — forever, with no hardware store. Each system below is an engineering-design case study (NGSS MS-ETS1).')),
-          h('div', { className: 'iss-system-tabs', role: 'group', 'aria-label': 'Station systems', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+          h('div', { className: 'iss-system-tabs', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_station_systems', 'Station systems'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
             SYSTEMS.map(function (s2, i) {
               var on = i === idx;
               return h('button', {
@@ -8469,7 +8469,7 @@
                 value: d.askInput || '', rows: 2, maxLength: 400,
                 onChange: function (e) { upd({ askInput: String(e.target.value || '').slice(0, 400) }); },
                 placeholder: __alloT('stem.spacestation.ask_ph', 'How do they fix a leak? What happens in a fire? Can you see the station from my town?'),
-                'aria-label': 'Question for Mission Control', 'aria-describedby': 'iss-ask-count',
+                'aria-label': __alloT('stem.spacestation.a11y_question_for_mission_control', 'Question for Mission Control'), 'aria-describedby': 'iss-ask-count',
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: 'rgba(2,6,23,0.5)', color: TEXT, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
               }),
               h('div', { id: 'iss-ask-count', 'aria-live': 'off', style: { marginTop: 3, color: SOFT, fontSize: 10.5, textAlign: 'right' } }, String((d.askInput || '').length) + ' / 400 characters'),
@@ -8604,7 +8604,7 @@
               'aria-describedby': 'iss-inc-note',
               style: { width: '100%', accentColor: '#38bdf8' }
             }),
-            h('div', { role: 'group', 'aria-label': 'Inclination presets', style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0' } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_inclination_presets', 'Inclination presets'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0' } },
               [['ISS — 51.6°', 51.6], ['Equatorial — 0°', 0], ['Cape Canaveral due east — 28.5°', 28.5], ['Polar — 90°', 90]].map(function (preset) {
                 var on = Math.abs(inc - preset[1]) < 0.05;
                 return h('button', {
@@ -8824,7 +8824,7 @@
         var answered = d.quizDone ? QUIZ.length : Math.min(QUIZ.length, questionIndex + (d.quizPicked != null ? 1 : 0));
         return h('div', { className: 'iss-quiz-console', role: 'group', 'aria-label': 'Quiz progress: ' + answered + ' of ' + QUIZ.length + ' answered, current score ' + (d.quizScore || 0) },
           h('div', { className: 'iss-quiz-number', 'aria-hidden': 'true' }, d.quizDone ? '✓' : (questionIndex + 1) + '/' + QUIZ.length),
-          h('div', { className: 'iss-quiz-track', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': QUIZ.length, 'aria-valuenow': answered, 'aria-label': 'Questions answered' }, QUIZ.map(function (_, i) { return h('span', { key: i, className: 'iss-quiz-segment' + (i < answered ? ' is-complete' : '') }); })),
+          h('div', { className: 'iss-quiz-track', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': QUIZ.length, 'aria-valuenow': answered, 'aria-label': __alloT('stem.spacestation.a11y_questions_answered', 'Questions answered') }, QUIZ.map(function (_, i) { return h('span', { key: i, className: 'iss-quiz-segment' + (i < answered ? ' is-complete' : '') }); })),
           h('div', { className: 'iss-quiz-score' }, 'Current score', h('strong', null, (d.quizScore || 0) + ' / ' + QUIZ.length)));
       }
       function renderQuizDebriefVisual() {

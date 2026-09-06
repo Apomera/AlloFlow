@@ -1461,7 +1461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlTextarea({ value: form.items, onChange: function(e) { setForm(Object.assign({}, form, { items: e.target.value })); }, placeholder: 'What did you eat? (just list — no judgment)', rows: 2 }),
           nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
             nlH('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', fontWeight: 700 } }, 'Energy after: '),
-            nlH('input', { type: 'range', min: 1, max: 10, value: form.energy, onChange: function(e) { setForm(Object.assign({}, form, { energy: parseInt(e.target.value) })); }, 'aria-label': 'Energy after meal, from 1 to 10', style: { flex: 1 } }),
+            nlH('input', { type: 'range', min: 1, max: 10, value: form.energy, onChange: function(e) { setForm(Object.assign({}, form, { energy: parseInt(e.target.value) })); }, 'aria-label': __alloT('stem.nutritionlab.a11y_energy_after_meal_from_1_to_10', 'Energy after meal, from 1 to 10'), style: { flex: 1 } }),
             nlH('strong', { style: { color: '#059669', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.energy + '/10')
           ),
           nlTextarea({ value: form.notes, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'Notes (optional)', rows: 2 }),
@@ -1536,14 +1536,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ),
         nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 11, color: '#0c4a6e' } },
           nlH('span', null, 'Daily target:'),
-          nlH('input', { type: 'number', value: targetMl, onChange: function(e) { setTarget(parseInt(e.target.value) || 2500); }, 'aria-label': 'Daily water target in milliliters', style: { width: 80, padding: '3px 6px', borderRadius: 4, border: '1px solid #bae6fd', fontSize: 11 } }),
+          nlH('input', { type: 'number', value: targetMl, onChange: function(e) { setTarget(parseInt(e.target.value) || 2500); }, 'aria-label': __alloT('stem.nutritionlab.a11y_daily_water_target_in_milliliters', 'Daily water target in milliliters'), style: { width: 80, padding: '3px 6px', borderRadius: 4, border: '1px solid #bae6fd', fontSize: 11 } }),
           nlH('span', null, 'mL (NAM AI: ~2700 for teen girls, ~3700 for teen boys)')
         )
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', value: form.ml, onChange: function(e) { setForm(Object.assign({}, form, { ml: parseInt(e.target.value) || 0 })); }, 'aria-label': 'Water amount in milliliters', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.ml, onChange: function(e) { setForm(Object.assign({}, form, { ml: parseInt(e.target.value) || 0 })); }, 'aria-label': __alloT('stem.nutritionlab.a11y_water_amount_in_milliliters', 'Water amount in milliliters'), style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlSelect({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); } }, source_opts)
           ),
           nlH('div', { style: { display: 'flex', gap: 4 } },
@@ -16900,7 +16900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               ),
               h('button', {
                 type: 'button',
-                onClick: function() { upd('nlStartDismissed', true); announce('Start-here guide hidden.'); },
+                onClick: function() { upd('nlStartDismissed', true); announce(__alloT('stem.nutritionlab.sr_start_here_guide_hidden', 'Start-here guide hidden.')); },
                 'aria-label': __alloT('stem.nutritionlab.start_here_dismiss_aria', 'Hide the start-here guide'),
                 className: 'text-xs font-bold px-2.5 py-1 rounded-lg bg-white border border-fuchsia-300 text-fuchsia-900 hover:bg-fuchsia-100 focus:outline-none focus:ring-2 ring-fuchsia-500/40'
               }, __alloT('stem.nutritionlab.start_here_dismiss', 'Got it'))
@@ -17271,7 +17271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         }
         function clearPlate() {
           setPlate([]);
-          announce('Plate cleared.');
+          announce(__alloT('stem.nutritionlab.sr_plate_cleared', 'Plate cleared.'));
         }
 
         // Totals
@@ -19431,7 +19431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 ),
                 h('div', { className: 'flex flex-col sm:flex-row gap-3 pt-2' },
                   h('button', {
-                    onClick: function() { setConsented(true); announce('Continuing to Eating Disorder Awareness module'); },
+                    onClick: function() { setConsented(true); announce(__alloT('stem.nutritionlab.sr_continuing_to_eating_disorder_awareness_module', 'Continuing to Eating Disorder Awareness module')); },
                     className: 'flex-1 px-5 py-3 rounded-xl bg-emerald-700 text-white font-black hover:bg-emerald-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40'
                   }, __alloT('stem.nutritionlab.i_understand_continue', '✓ I understand — continue')),
                   h('button', {
@@ -21374,11 +21374,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           var next = (region === id) ? null : id;
           setRegion(next);
           if (next) announce(r.label + '. ' + r.uses);
-          else announce('Cleared region selection.');
+          else announce(__alloT('stem.nutritionlab.sr_cleared_region_selection', 'Cleared region selection.'));
         }
         function pickNutrient(id) {
           setNutrient(id);
-          if (id === 'plate') { setModeRaw('nutrient'); announce('Showing the nutrients from your plate.'); return; }
+          if (id === 'plate') { setModeRaw('nutrient'); announce(__alloT('stem.nutritionlab.sr_showing_the_nutrients_from_your_plate', 'Showing the nutrients from your plate.')); return; }
           var n = bodyMapNutrient(id), m = BODY_NUTRIENT_MAP[id];
           if (seen.indexOf(id) === -1) setSeen(seen.concat([id]));
           if (n && m) {

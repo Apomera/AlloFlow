@@ -3393,7 +3393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             }
           } else {
             setFalseReads(falseReads + 1);
-            announce('No defect at that point.');
+            announce(__alloT('stem.weldlab.sr_no_defect_at_that_point', 'No defect at that point.'));
           }
         }
 
@@ -3618,10 +3618,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     setFound({});
                     setFalseReads(0);
                     setRevealAll(false);
-                    announce('Reset sample');
+                    announce(__alloT('stem.weldlab.sr_reset_sample', 'Reset sample'));
                   } else {
                     setRevealAll(true);
-                    announce('All defects revealed');
+                    announce(__alloT('stem.weldlab.sr_all_defects_revealed', 'All defects revealed'));
                   }
                 },
                 className: 'rounded-xl shadow border-2 ' +
@@ -4077,7 +4077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           setQuizFeedback(null);
           setQuizAnswers([]);
           setQuizMode(true);
-          announce('Joint matching quiz started');
+          announce(__alloT('stem.weldlab.sr_joint_matching_quiz_started', 'Joint matching quiz started'));
         }
         function answerQuiz(answerKey) {
           if (quizFeedback) return; // already answered
@@ -4110,7 +4110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
               h('div', { className: 'flex items-center justify-between' },
                 h('button', {
-                  onClick: function() { setQuizMode(false); announce('Returned to catalog'); },
+                  onClick: function() { setQuizMode(false); announce(__alloT('stem.weldlab.sr_returned_to_catalog', 'Returned to catalog')); },
                   className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold text-sm text-slate-800'
                 }, __alloT('stem.weldlab.back_to_catalog', '← Back to Catalog')),
                 h('div', { className: 'text-sm font-bold text-slate-700' },
@@ -6284,7 +6284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
         function stopRun() {
           setRunning(false);
-          announce('Run stopped early');
+          announce(__alloT('stem.weldlab.sr_run_stopped_early', 'Run stopped early'));
         }
 
         // Live in-spec status
@@ -7980,18 +7980,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             setConsScScore(consScScore + 1);
             announce('Correct!');
           } else {
-            announce('Not quite — see the explanation.');
+            announce(__alloT('stem.weldlab.sr_not_quite_see_the_explanation', 'Not quite — see the explanation.'));
           }
         }
         function nextConsScenario() {
           var ni = (consScIdx + 1) % consScenarios.length;
           setConsScIdx(ni);
           setConsScPicked(null);
-          if (ni === 0) announce('Restarted at scenario 1.');
+          if (ni === 0) announce(__alloT('stem.weldlab.sr_restarted_at_scenario_1', 'Restarted at scenario 1.'));
         }
         function resetConsQuiz() {
           setConsScIdx(0); setConsScScore(0); setConsScPicked(null);
-          announce('Scenario quiz reset');
+          announce(__alloT('stem.weldlab.sr_scenario_quiz_reset', 'Scenario quiz reset'));
         }
         var curScenario = consScenarios[consScIdx] || consScenarios[0];
 
@@ -8638,7 +8638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'flex justify-between items-baseline gap-2 flex-wrap' },
                 h('h2', { className: 'text-xl font-black text-fuchsia-900' }, curRoadmap.icon + ' ' + curRoadmap.title),
                 h('button', {
-                  onClick: function() { setRoadPath(null); announce('Returned to path picker'); },
+                  onClick: function() { setRoadPath(null); announce(__alloT('stem.weldlab.sr_returned_to_path_picker', 'Returned to path picker')); },
                   className: 'transition-colors text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                 }, __alloT('stem.weldlab.pick_a_different_path', '← Pick a different path'))
               ),
@@ -8768,7 +8768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
         function resetAudit() {
           setShAudit({});
-          announce('Audit reset');
+          announce(__alloT('stem.weldlab.sr_audit_reset', 'Audit reset'));
         }
         function categoryScore(catId) {
           var catRec = window.StemLab && window.StemLab.findById ? window.StemLab.findById(auditCategories, catId) : null;
@@ -9333,18 +9333,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             setMbQScore(mbQScore + 1);
             announce('Correct!');
           } else {
-            announce('Not quite — see the explanation.');
+            announce(__alloT('stem.weldlab.sr_not_quite_see_the_explanation', 'Not quite — see the explanation.'));
           }
         }
         function nextQuestion() {
           var ni = (mbQIdx + 1) % symbolQuestions.length;
           setMbQIdx(ni);
           setMbQPicked(null);
-          if (ni === 0) announce('Quiz restarted. Score reset.');
+          if (ni === 0) announce(__alloT('stem.weldlab.sr_quiz_restarted_score_reset', 'Quiz restarted. Score reset.'));
         }
         function resetQuiz() {
           setMbQIdx(0); setMbQScore(0); setMbQPicked(null);
-          announce('Quiz reset');
+          announce(__alloT('stem.weldlab.sr_quiz_reset', 'Quiz reset'));
         }
         var curQ = symbolQuestions[mbQIdx] || symbolQuestions[0];
 
@@ -9785,7 +9785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'flex justify-between items-baseline flex-wrap gap-2' },
                   h('h3', { className: 'text-lg font-black text-fuchsia-900' }, __alloT('stem.weldlab.your_top_matches', '🎯 Your top matches')),
                   h('button', {
-                    onClick: function() { resetQuiz(); announce('Quiz reset'); },
+                    onClick: function() { resetQuiz(); announce(__alloT('stem.weldlab.sr_quiz_reset', 'Quiz reset')); },
                     className: 'transition-colors text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                   }, __alloT('stem.weldlab.start_over', '↺ Start over'))
                 ),

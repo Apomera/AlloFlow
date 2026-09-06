@@ -2323,7 +2323,7 @@
               h('div', { className: 'mt-5 grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))' } },
                 modeButton('study', 'Study Sources', 'Ask questions, inspect exact supporting passages and save grounded notes.', '#2563eb', '📖'),
                 modeButton('data', 'Analyze Data', 'Build defensible charts and claims with uncertainty and provenance kept visible.', '#d97706', '📊'),
-                h('div', { className: 'p-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50', 'aria-label': 'Conduct Inquiry. Available through Research Hub.' },
+                h('div', { className: 'p-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50', 'aria-label': __alloT('stem.lumen.a11y_conduct_inquiry_available_through_research_hub', 'Conduct Inquiry. Available through Research Hub.') },
                   h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🔎'),
                   h('span', { className: 'block mt-2 font-extrabold text-base text-slate-700' }, 'Conduct Inquiry'),
                   h('span', { className: 'block mt-1 text-sm leading-5 text-slate-500' }, 'Research Hub remains the inquiry workspace while its evidence model is connected to Lumen.'))),
@@ -2449,7 +2449,7 @@
                 var parsed = parseJson(resp);
                 var t = parsed && parsed.text;
                 var lint = lintL2(t || '', aiCtx);
-                if (t && lint.ok) { upd('aiText', t); upd('aiHyps', null); announce('AI re-worded your numbers.'); }
+                if (t && lint.ok) { upd('aiText', t); upd('aiHyps', null); announce(__alloT('stem.lumen.sr_ai_re_worded_your_numbers', 'AI re-worded your numbers.')); }
                 else { upd('aiText', ''); upd('aiError', 'AI re-word rejected' + (lint.offending.length ? (' (new number ' + lint.offending.join(', ') + ')') : '') + '; showing data only.'); }
                 upd('aiLoading', false);
               }).catch(function () { upd('aiError', 'AI request failed; showing data only.'); upd('aiLoading', false); });
@@ -2506,7 +2506,7 @@
             announce('Exported presentation ' + out.filename + '.');
           };
           var kids = [];
-          kids.push(h('nav', { key: 'workspaceNav', className: 'flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200', 'aria-label': 'Lumen workspace modes' },
+          kids.push(h('nav', { key: 'workspaceNav', className: 'flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200', 'aria-label': __alloT('stem.lumen.a11y_lumen_workspace_modes', 'Lumen workspace modes') },
             h('button', { type: 'button', onClick: function () { upd('mode', 'home'); }, className: 'px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50' }, '← Lumen home'),
             h('span', { className: 'text-xs font-bold text-amber-900' }, 'Analyze Data'),
             h('button', { type: 'button', onClick: function () { upd('mode', 'study'); }, className: 'ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200' }, 'Switch to Study Sources')));
@@ -2580,8 +2580,8 @@
           // route through the SAME pure parsers as the file path, and stage it.
           function stagePastedText(raw) {
             var text = (raw == null ? '' : String(raw)).trim();
-            if (!text) { announce('Nothing to parse — paste some data first.'); return; }
-            if (text.length > INGEST_MAX_BYTES) { upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: 'pasted text', fileType: null, error: 'Pasted text exceeds the ' + (INGEST_MAX_BYTES / 1024 / 1024) + ' MB limit.' }); announce('Pasted text too large.'); return; }
+            if (!text) { announce(__alloT('stem.lumen.sr_nothing_to_parse_paste_some_data_first', 'Nothing to parse — paste some data first.')); return; }
+            if (text.length > INGEST_MAX_BYTES) { upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: 'pasted text', fileType: null, error: 'Pasted text exceeds the ' + (INGEST_MAX_BYTES / 1024 / 1024) + ' MB limit.' }); announce(__alloT('stem.lumen.sr_pasted_text_too_large', 'Pasted text too large.')); return; }
             var isJson = text[0] === '{' || text[0] === '[';
             var parsed = isJson ? parseJsonTable(text) : parseTextTable(text);
             stageParsedTable(parsed, 'pasted text', isJson ? 'json' : 'text');
@@ -2684,7 +2684,7 @@
                 obStep(3, __alloT('stem.lumen.ob_step3_bold', 'Read the finding'), __alloT('stem.lumen.ob_step3_rest', ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.'))),
               h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
                 h('button', { key: 'obSample', className: 'px-3 py-1.5 text-sm font-semibold rounded-lg text-white hover:opacity-90', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 3px rgba(234,88,12,0.3)' }, onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); } }, __alloT('stem.lumen.try_a_sample', 'Try a sample')),
-                h('button', { key: 'obPaste', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, __alloT('stem.lumen.paste_data', '⎘ Paste data')),
+                h('button', { key: 'obPaste', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce(__alloT('stem.lumen.sr_paste_box_opened', 'Paste box opened.')); } }, __alloT('stem.lumen.paste_data', '⎘ Paste data')),
                 h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100 cursor-pointer' }, __alloT('stem.lumen.import_file', '⇪ Import file'))),
               h('p', { className: 'mt-3 text-[0.6875rem] text-slate-500' }, __alloT('stem.lumen.honest_by_design_fewer_than_3_points_y', 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.'))));
           }
@@ -2797,7 +2797,7 @@
                 }
                 if (file.size > INGEST_MAX_BYTES) {
                   upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'File too large (' + (file.size / 1024 / 1024).toFixed(2) + ' MB > 2 MB limit). Split into smaller files.' });
-                  announce('File too large.');
+                  announce(__alloT('stem.lumen.sr_file_too_large', 'File too large.'));
                   ev.target.value = ''; return;
                 }
                 if (isWorkbookIngestType(fileType)) {
@@ -2807,7 +2807,7 @@
                     });
                   }).catch(function (err) {
                     upd('importPreview', { headers: [], rows: [], mapping: {}, fileName: file.name, fileType: fileType, error: 'Could not load the spreadsheet parser library. Try saving the sheet as CSV instead. (' + (err && err.message ? err.message : 'unknown') + ')' });
-                    announce('Spreadsheet parser unavailable; try CSV.');
+                    announce(__alloT('stem.lumen.sr_spreadsheet_parser_unavailable_try_csv', 'Spreadsheet parser unavailable; try CSV.'));
                   });
                 } else if (fileType === 'json') {
                   file.text().then(function (text) { stageParsedTable(parseJsonTable(text), file.name, fileType); });
@@ -2881,7 +2881,7 @@
               }),
               h('div', { className: 'mt-2 flex gap-2' },
                 h('button', { className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800', onClick: function () { stagePastedText(d.pasteText); } }, __alloT('stem.lumen.parse_pasted_data', 'Parse pasted data')),
-                h('button', { className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('pasteText', ''); upd('showPaste', false); announce('Paste cancelled.'); } }, __alloT('stem.lumen.cancel', 'Cancel'))))
+                h('button', { className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('pasteText', ''); upd('showPaste', false); announce(__alloT('stem.lumen.sr_paste_cancelled', 'Paste cancelled.')); } }, __alloT('stem.lumen.cancel', 'Cancel'))))
             );
           }
 
@@ -2909,11 +2909,11 @@
               h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
                 h('div', { className: 'text-sm font-semibold text-slate-700' }, __alloT('stem.lumen.map_columns_from', '⇪ Map columns from') + ' ' + (ip.fileName || __alloT('stem.lumen.imported_file', 'imported file')) + (ip.fileType ? (' · ' + ip.fileType + (ip.delimiter && ip.fileType !== 'xlsx' ? (' · delim ' + (ip.delimiter === '\t' ? 'TAB' : '"' + ip.delimiter + '"')) : '')) : '')),
                 h('div', { className: 'flex gap-2' },
-                  h('button', { className: 'px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('importPreview', null); announce('Import cancelled.'); } }, __alloT('stem.lumen.cancel_2', 'Cancel')),
+                  h('button', { className: 'px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('importPreview', null); announce(__alloT('stem.lumen.sr_import_cancelled', 'Import cancelled.')); } }, __alloT('stem.lumen.cancel_2', 'Cancel')),
                   h('button', { className: 'px-3 py-1 text-xs font-semibold rounded bg-amber-700 text-white hover:bg-amber-800', onClick: function () {
                     var mapped = mapTextTableToObservations({ headers: ip.headers, rows: ip.rows }, imp);
                     if (mapped.error) { announce('Import error: ' + mapped.error); return; }
-                    if (!mapped.rows.length) { announce('Import bound 0 rows (every row missing or non-numeric in the mapped columns).'); return; }
+                    if (!mapped.rows.length) { announce(__alloT('stem.lumen.sr_import_bound_0_rows_every_row_missing_or_non_nume', 'Import bound 0 rows (every row missing or non-numeric in the mapped columns).')); return; }
                     var next = obs.concat(mapped.rows);
                     setObservations(next);
                     upd('importPreview', null);
@@ -3132,7 +3132,7 @@
                           h('input', { type: 'text', value: c.sourceExcerpt || '', disabled: c.verified, className: 'w-full px-1.5 py-0.5 border border-slate-300 rounded text-xs',
                             onChange: function (ev) { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { sourceExcerpt: ev.target.value }); setBench({ cells: next }); } }))),
                       h('div', { className: 'mt-1 flex items-center gap-2' },
-                        c.verified ? h('button', { className: 'px-2 py-0.5 text-[10.5px] rounded border border-slate-300 hover:bg-slate-50', onClick: function () { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { verified: false, reviewedOn: null, signoffHash: null }); setBench({ cells: next }); announce('Cell unverified — edits re-enabled.'); } }, __alloT('stem.lumen.unverify_edit', 'Unverify (edit)')) :
+                        c.verified ? h('button', { className: 'px-2 py-0.5 text-[10.5px] rounded border border-slate-300 hover:bg-slate-50', onClick: function () { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { verified: false, reviewedOn: null, signoffHash: null }); setBench({ cells: next }); announce(__alloT('stem.lumen.sr_cell_unverified_edits_re_enabled', 'Cell unverified — edits re-enabled.')); } }, __alloT('stem.lumen.unverify_edit', 'Unverify (edit)')) :
                           h('button', { disabled: !canVerify, className: 'px-2 py-0.5 text-[10.5px] rounded border ' + (canVerify ? 'border-emerald-700 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border-slate-400 bg-slate-50 text-slate-600 cursor-not-allowed'),
                             onClick: function () {
                               // No Date in this layer — the caller provides reviewedOn as the YYYY-MM-DD of the host. The browser is allowed to use Date here (the render path is not a workflow script).
@@ -3205,10 +3205,10 @@
               var text = assoc ? assoc.text : faceFor(claim, audience, compHasSynthetic(comp));
               try {
                 if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-                  navigator.clipboard.writeText(text).then(function () { announce('Finding copied — the provenance level travels with it.'); },
-                    function () { announce('Copy failed — select the sentence and copy manually.'); });
-                } else { announce('Copy is not available here — select the sentence and copy manually.'); }
-              } catch (eC) { announce('Copy failed — select the sentence and copy manually.'); }
+                  navigator.clipboard.writeText(text).then(function () { announce(__alloT('stem.lumen.sr_finding_copied_the_provenance_level_travels_with', 'Finding copied — the provenance level travels with it.')); },
+                    function () { announce(__alloT('stem.lumen.sr_copy_failed_select_the_sentence_and_copy_manually', 'Copy failed — select the sentence and copy manually.')); });
+                } else { announce(__alloT('stem.lumen.sr_copy_is_not_available_here_select_the_sentence_an', 'Copy is not available here — select the sentence and copy manually.')); }
+              } catch (eC) { announce(__alloT('stem.lumen.sr_copy_failed_select_the_sentence_and_copy_manually', 'Copy failed — select the sentence and copy manually.')); }
             };
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2' },
@@ -3475,8 +3475,8 @@
                       ? h('span', { className: 'text-emerald-700' }, __alloT('stem.lumen.signed_off_kept_as_an_ai_reading_not_a', '✓ Signed off — kept as an AI reading, not a measured finding.'))
                       : h('span', null,
                         h('span', { className: 'text-amber-700 mr-2' }, __alloT('stem.lumen.sign_off_before_a_formal_export', '⚠ Sign off before a formal export:')),
-                        h('button', { className: 'underline mr-2', onClick: function () { upd('signoff', signoffHash(d.aiHyps, claim._hash)); announce('Signed off: AI reading owned for this exact data.'); } }, __alloT('stem.lumen.own_it', 'Own it')),
-                        h('button', { className: 'underline', onClick: function () { upd('aiHyps', null); upd('signoff', null); announce('Demoted: AI reading removed.'); } }, __alloT('stem.lumen.demote_remove', 'Demote (remove)')))
+                        h('button', { className: 'underline mr-2', onClick: function () { upd('signoff', signoffHash(d.aiHyps, claim._hash)); announce(__alloT('stem.lumen.sr_signed_off_ai_reading_owned_for_this_exact_data', 'Signed off: AI reading owned for this exact data.')); } }, __alloT('stem.lumen.own_it', 'Own it')),
+                        h('button', { className: 'underline', onClick: function () { upd('aiHyps', null); upd('signoff', null); announce(__alloT('stem.lumen.sr_demoted_ai_reading_removed', 'Demoted: AI reading removed.')); } }, __alloT('stem.lumen.demote_remove', 'Demote (remove)')))
                   ) : null));
               }
               if (levelIndex(ceiling) < 3 && d.aiText) {
@@ -3554,7 +3554,7 @@
               // Present mode = a clean, full-screen, project-ready layer (the calm
               // analysis view stays the default front door); it is also what the
               // presentation export captures. Amber to read as the share action.
-              h('button', { id: 'lumen-present-trigger', className: 'px-2.5 py-1 text-xs font-semibold rounded-full text-white', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' }, onClick: function () { upd('presentMode', true); announce('Present mode opened.'); } }, __alloT('stem.lumen.present', '▶ Present')),
+              h('button', { id: 'lumen-present-trigger', className: 'px-2.5 py-1 text-xs font-semibold rounded-full text-white', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' }, onClick: function () { upd('presentMode', true); announce(__alloT('stem.lumen.sr_present_mode_opened', 'Present mode opened.')); } }, __alloT('stem.lumen.present', '▶ Present')),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, __alloT('stem.lumen.brief_html', 'Brief (HTML)')),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportCsv }, __alloT('stem.lumen.data_csv', 'Data (CSV)')),
               h('label', { className: 'text-xs text-slate-600 flex items-center gap-1' },
@@ -3668,7 +3668,7 @@
             // Close + RETURN focus to the ▶ Present trigger (hook-less: defer one tick
             // so the re-render that unmounts the overlay has happened first).
             var closePresent = function () {
-              upd('presentMode', false); announce('Present mode closed.');
+              upd('presentMode', false); announce(__alloT('stem.lumen.sr_present_mode_closed', 'Present mode closed.'));
               try { setTimeout(function () { focusId('lumen-present-trigger'); }, 0); } catch (eR) { }
             };
             var goFullscreen = function () {

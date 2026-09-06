@@ -2039,7 +2039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           : ['Cave Exploration', 'Night Forest', 'Urban Night', 'Custom'];
         var sceneIndices = isFrugivore ? [3, 1, 2, 4] : [0, 1, 2, 4];
 
-        return h('div', { id: 'echo-sonar-fs-workspace', className: 'space-y-3', 'data-echolocation-fullscreen-workspace': 'true', role: 'region', 'aria-label': 'Echolocation sonar scene and flight controls' },
+        return h('div', { id: 'echo-sonar-fs-workspace', className: 'space-y-3', 'data-echolocation-fullscreen-workspace': 'true', role: 'region', 'aria-label': __alloT('stem.echolocation.a11y_echolocation_sonar_scene_and_flight_controls', 'Echolocation sonar scene and flight controls') },
           // Species toggle + energy bar
           h('div', { className: 'flex flex-wrap gap-2 items-center justify-between' },
             h('div', { className: 'flex items-center gap-2' },
@@ -2462,7 +2462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           }
           if (window._alloHaptic) window._alloHaptic('echo');
         } catch(e) {}
-        srAnnounce('Sonar pulse emitted');
+        srAnnounce(__alloT('stem.echolocation.sr_sonar_pulse_emitted', 'Sonar pulse emitted'));
       }
 
       function addCustomObject() {
@@ -2939,7 +2939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             if (addToast) addToast('\uD83D\uDDFA\uFE0F Cave mapped! Quest complete!', 'success');
             if (typeof celebrate === 'function') celebrate();
             if (typeof awardXP === 'function') awardXP(25);
-            srAnnounce('Cave mapped! Quest complete!');
+            srAnnounce(__alloT('stem.echolocation.sr_cave_mapped_quest_complete', 'Cave mapped! Quest complete!'));
           }
 
           // Fade sonar buffer
@@ -4967,7 +4967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     'Write for a ' + (gradeLevel || 'middle school') + ' student. Keep it engaging and educational. Use bullet points.';
                   callGemini(prompt).then(function(result) {
                     updMulti({ soundmapResult: result, soundmapLoading: false });
-                    srAnnounce('Soundscape description generated');
+                    srAnnounce(__alloT('stem.echolocation.sr_soundscape_description_generated', 'Soundscape description generated'));
                   }).catch(function(err) {
                     updMulti({ soundmapResult: 'Error generating soundscape: ' + err.message, soundmapLoading: false });
                   });

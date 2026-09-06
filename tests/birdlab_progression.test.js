@@ -501,7 +501,7 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(source).toContain('evidenceLog: d.blEvidenceLog');
     expect(source).toContain("'evidence-habitat:' + habitatId");
     expect(source).toContain('evidenceMasteryPct');
-    expect(source).toContain("'aria-label': 'Evidence-backed species in this habitat'");
+    expect(source).toContain(`'aria-label': __alloT('stem.birdlab.a11y_evidence_backed_species_in_this_habitat', 'Evidence-backed species in this habitat')`);
     expect(source).toContain('speciesEvidenceReady');
     expect(source).toContain('function updateFieldNote(value)');
     expect(source).toContain("'note:' + speciesKey");

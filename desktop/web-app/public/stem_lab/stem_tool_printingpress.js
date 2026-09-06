@@ -377,7 +377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('button', {
               className: 'printingpress-no-print',
               'aria-label': __alloT('stem.printingpress.back_to_printingpress_menu', 'Back to PrintingPress menu'),
-              onClick: function() { upd('view', 'menu'); announce('Back to menu'); },
+              onClick: function() { upd('view', 'menu'); announce(__alloT('stem.printingpress.sr_back_to_menu', 'Back to menu')); },
               style: btn({ padding: '6px 12px', fontSize: 12 })
             }, __alloT('stem.printingpress.menu', '← Menu')),
             h('span', { 'aria-hidden': 'true', style: { color: T.accent, opacity: 0.7, display: 'inline-flex', alignItems: 'center' } }, fleuron(11)),
@@ -597,7 +597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 var nr = Object.assign({}, results);
                 delete nr[qIdx]; delete nr[qIdx + '_pick'];
                 setResults(nr);
-                announce('Question reset. Try again.');
+                announce(__alloT('stem.printingpress.sr_question_reset_try_again', 'Question reset. Try again.'));
               },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.printingpress.try_again_2', '↺ Try again')),
             h('button', {
@@ -1551,7 +1551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('text', { x: 65, y: 156, textAnchor: 'middle', fill: T.dim, fontSize: 7, fontStyle: 'italic', fontFamily: 'Georgia, serif' }, __alloT('stem.printingpress.1450_screw_press', '~1450 screw press'))
             )
           ),
-          h('section', { 'data-printingpress-command': 'true', 'aria-label': 'PrintingPress shop dashboard',
+          h('section', { 'data-printingpress-command': 'true', 'aria-label': __alloT('stem.printingpress.a11y_printingpress_shop_dashboard', 'PrintingPress shop dashboard'),
             style: { background: 'linear-gradient(135deg, rgba(254,243,199,0.10), rgba(58,38,18,0.32))', border: '1px solid ' + T.accent, borderRadius: 12, padding: 14, marginBottom: 18 } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, alignItems: 'stretch' } },
               h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
@@ -1766,7 +1766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               clearInterval(iv);
               setPressState('inked');
               setInkAnim(0);
-              announce('Type is inked. Lay paper on the tympan.');
+              announce(__alloT('stem.printingpress.sr_type_is_inked_lay_paper_on_the_tympan', 'Type is inked. Lay paper on the tympan.'));
             }
           }, 40);
           return function() { clearInterval(iv); };
@@ -1783,7 +1783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           var to = setTimeout(function() {
             if (pressState === 'clean' && count >= 1) {
               setTourActive(false);
-              announce('Guided tour complete. Click any button to take the controls.');
+              announce(__alloT('stem.printingpress.sr_guided_tour_complete_click_any_button_to_take_the', 'Guided tour complete. Click any button to take the controls.'));
               return;
             }
             advance();
@@ -1794,13 +1794,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         function advance() {
           if (pressState === 'clean') {
             setPressState('inking');
-            announce('Step 2: Inking the type with the leather ink balls.');
+            announce(__alloT('stem.printingpress.sr_step_2_inking_the_type_with_the_leather_ink_balls', 'Step 2: Inking the type with the leather ink balls.'));
           } else if (pressState === 'inked') {
             setPressState('papered');
-            announce('Step 4: Paper laid on the tympan. Now pull the bar.');
+            announce(__alloT('stem.printingpress.sr_step_4_paper_laid_on_the_tympan_now_pull_the_bar', 'Step 4: Paper laid on the tympan. Now pull the bar.'));
           } else if (pressState === 'papered') {
             setPressState('pressed');
-            announce('Step 5: Bar pulled, screw turning, platen down. Pressure applied to the type forme.');
+            announce(__alloT('stem.printingpress.sr_step_5_bar_pulled_screw_turning_platen_down_press', 'Step 5: Bar pulled, screw turning, platen down. Pressure applied to the type forme.'));
           } else if (pressState === 'pressed') {
             setPressState('revealed');
             var nextCount = count + 1;
@@ -1819,7 +1819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             announce('Step 6: Impression complete. ' + nextCount + ' total. The paper bears the printed text.');
           } else if (pressState === 'revealed') {
             setPressState('clean');
-            announce('Press reset. Ready for the next impression.');
+            announce(__alloT('stem.printingpress.sr_press_reset_ready_for_the_next_impression', 'Press reset. Ready for the next impression.'));
           }
         }
 
@@ -1873,7 +1873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               style: { flex: 1, minWidth: 160, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14, fontFamily: 'Georgia, serif', fontWeight: 700, letterSpacing: '0.05em' }
             }),
             h('button', {
-              onClick: function() { setPhrase('FIAT LUX'); announce('Phrase reset to FIAT LUX.'); },
+              onClick: function() { setPhrase('FIAT LUX'); announce(__alloT('stem.printingpress.sr_phrase_reset_to_fiat_lux', 'Phrase reset to FIAT LUX.')); },
               disabled: pressState !== 'clean' && pressState !== 'revealed',
               style: btn({ padding: '6px 10px', fontSize: 11, opacity: (pressState !== 'clean' && pressState !== 'revealed') ? 0.5 : 1 })
             }, __alloT('stem.printingpress.fiat_lux', '↺ FIAT LUX')),
@@ -2415,13 +2415,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   onClick: function() {
                     if (pressState !== 'clean') { setPressState('clean'); }
                     setTourActive(true);
-                    announce('Guided tour starting. The press will cycle automatically.');
+                    announce(__alloT('stem.printingpress.sr_guided_tour_starting_the_press_will_cycle_automat', 'Guided tour starting. The press will cycle automatically.'));
                   },
                   'aria-label': __alloT('stem.printingpress.start_a_hands_free_guided_tour_through', 'Start a hands-free guided tour through the full press cycle'),
                   style: btn({ padding: '12px 16px', fontSize: 13, background: T.accentHi, color: T.ink, border: '1px solid ' + T.accentHi, fontWeight: 700 })
                 }, __alloT('stem.printingpress.guided_tour', '▶ Guided Tour')),
                 tourActive && h('button', {
-                  onClick: function() { setTourActive(false); announce('Guided tour stopped.'); },
+                  onClick: function() { setTourActive(false); announce(__alloT('stem.printingpress.sr_guided_tour_stopped', 'Guided tour stopped.')); },
                   style: btn({ padding: '12px 16px', fontSize: 13, background: T.dangerBgStrong, color: T.parchment, border: '1px solid ' + T.dangerText })
                 }, __alloT('stem.printingpress.stop_tour', '⏸ Stop tour')),
                 // Parts-labels toggle: on/off, persists across state changes
@@ -2435,7 +2435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     fontWeight: showLabels ? 700 : 600 })
                 }, showLabels ? '🔖 Labels: On' : '🔖 Show parts'),
                 count > 0 && !tourActive && h('button', {
-                  onClick: function() { setCount(0); setPressState('clean'); announce('Counter reset.'); },
+                  onClick: function() { setCount(0); setPressState('clean'); announce(__alloT('stem.printingpress.sr_counter_reset', 'Counter reset.')); },
                   style: btn({ padding: '12px 16px', fontSize: 13 })
                 }, __alloT('stem.printingpress.reset_run', '↺ Reset run'))
               )
@@ -2788,7 +2788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           if (pressState !== 'pressing') return;
           var to = setTimeout(function() {
             setPressState('printed');
-            announce('Impression complete. The mirror-reversed type prints as readable text.');
+            announce(__alloT('stem.printingpress.sr_impression_complete_the_mirror_reversed_type_prin', 'Impression complete. The mirror-reversed type prints as readable text.'));
             awardBadge('impression', 'First Impression');
           }, 900);
           return function() { clearTimeout(to); };
@@ -2848,7 +2848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   setDecodeAnswer('');
                   setDecodeFeedback(null);
                   setDecodeGenState({ loading: false, error: null });
-                  announce('New AI-generated mirror word loaded.');
+                  announce(__alloT('stem.printingpress.sr_new_ai_generated_mirror_word_loaded', 'New AI-generated mirror word loaded.'));
                 })
                 .catch(function(err) {
                   setDecodeGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
@@ -2893,7 +2893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     setDecodeIdx((decodeIdx + 1) % DECODE_WORDS.length);
                     setDecodeAnswer(''); setDecodeFeedback(null);
                     setDecodeGenState({ loading: false, error: null });
-                    announce('Next word loaded.');
+                    announce(__alloT('stem.printingpress.sr_next_word_loaded', 'Next word loaded.'));
                   },
                   style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.new_word', '↻ New word')),
                 callGemini && h('button', {
@@ -2997,7 +2997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   setProofGuess(null);
                   setProofRevealed(false);
                   setProofGenState({ loading: false, error: null });
-                  announce('New AI-generated proof loaded.');
+                  announce(__alloT('stem.printingpress.sr_new_ai_generated_proof_loaded', 'New AI-generated proof loaded.'));
                 })
                 .catch(function(err) {
                   setProofGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
@@ -3078,7 +3078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     setProofIdx((proofIdx + 1) % PROOF_LINES.length);
                     setProofGuess(null); setProofRevealed(false);
                     setProofGenState({ loading: false, error: null });
-                    announce('New proof loaded.');
+                    announce(__alloT('stem.printingpress.sr_new_proof_loaded', 'New proof loaded.'));
                   },
                   style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
                 }, __alloT('stem.printingpress.new_proof', '\u21BB New proof')),
@@ -3472,18 +3472,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             // Action buttons
             h('div', { className: 'printingpress-no-print', style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
               pressState === 'idle' && h('button', {
-                onClick: function() { setPressState('pressing'); announce('Pressing the type onto paper.'); },
+                onClick: function() { setPressState('pressing'); announce(__alloT('stem.printingpress.sr_pressing_the_type_onto_paper', 'Pressing the type onto paper.')); },
                 style: btnPrimary({ padding: '10px 20px', fontSize: 14 })
               }, __alloT('stem.printingpress.press', '🪢 Press!')),
               pressState === 'printed' && h('button', {
-                onClick: function() { setPressState('idle'); announce('Press reset.'); },
+                onClick: function() { setPressState('idle'); announce(__alloT('stem.printingpress.sr_press_reset', 'Press reset.')); },
                 style: btn({ padding: '10px 16px', fontSize: 13 })
               }, __alloT('stem.printingpress.press_again', '↺ Press again')),
               pressState === 'printed' && h('button', {
                 onClick: function() {
                   setSt({ slots: ['', '', '', '', '', '', '', ''], picked: null });
                   setPressState('idle');
-                  announce('Composing stick cleared. Set a new phrase.');
+                  announce(__alloT('stem.printingpress.sr_composing_stick_cleared_set_a_new_phrase', 'Composing stick cleared. Set a new phrase.'));
                 },
                 style: btn({ padding: '10px 16px', fontSize: 13 })
               }, __alloT('stem.printingpress.compose_new', '🆕 Compose new'))
@@ -3660,7 +3660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               // After-reveal controls
               revealed && h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
                 impStage === 'right' && h('button', {
-                  onClick: function() { setImpStage('right-open'); announce('Folded. Showing the inner side.'); },
+                  onClick: function() { setImpStage('right-open'); announce(__alloT('stem.printingpress.sr_folded_showing_the_inner_side', 'Folded. Showing the inner side.')); },
                   style: btnPrimary({ padding: '10px 16px', fontSize: 13 })
                 }, __alloT('stem.printingpress.fold_it', '\u{1F4D6} Fold it')),
                 impStage === 'right-open' && h('button', {
@@ -3769,7 +3769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             if (castingFocus >= 2) {
               setCastingTour(false);
               setCastingFocus(null);
-              announce('Casting tour complete.');
+              announce(__alloT('stem.printingpress.sr_casting_tour_complete', 'Casting tour complete.'));
             } else {
               setCastingFocus(castingFocus + 1);
             }
@@ -3937,12 +3937,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               onClick: function() {
                 setCastingTour(true);
                 setCastingFocus(0);
-                announce('Casting tour starting. Walking through the three steps.');
+                announce(__alloT('stem.printingpress.sr_casting_tour_starting_walking_through_the_three_s', 'Casting tour starting. Walking through the three steps.'));
               },
               style: btn({ padding: '8px 14px', fontSize: 12, background: T.accentHi, color: T.ink, border: '1px solid ' + T.accentHi, fontWeight: 700 })
             }, __alloT('stem.printingpress.walk_through_the_steps', '▶ Walk through the steps')),
             castingTour && h('button', {
-              onClick: function() { setCastingTour(false); setCastingFocus(null); announce('Casting tour stopped.'); },
+              onClick: function() { setCastingTour(false); setCastingFocus(null); announce(__alloT('stem.printingpress.sr_casting_tour_stopped', 'Casting tour stopped.')); },
               style: btn({ padding: '8px 14px', fontSize: 12, background: T.dangerBgStrong, color: T.parchment, border: '1px solid ' + T.dangerText })
             }, __alloT('stem.printingpress.stop', '⏸ Stop'))
           ),
@@ -4332,7 +4332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('span', null, '300,000')
             ),
             !sortRevealed && h('div', { className: 'printingpress-no-print', style: { textAlign: 'center' } },
-              h('button', { onClick: function() { setSortRevealed(true); announce('Reveal: about 100,000 sorts.'); },
+              h('button', { onClick: function() { setSortRevealed(true); announce(__alloT('stem.printingpress.sr_reveal_about_100_000_sorts', 'Reveal: about 100,000 sorts.')); },
                 style: btnPrimary({ padding: '10px 20px', fontSize: 14 }) }, __alloT('stem.printingpress.reveal_the_answer', '🔍 Reveal the answer'))
             ),
             sortRevealed && (function() {
@@ -4387,7 +4387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   __alloT('stem.printingpress.always_sums_to_100_adjusting_one_slide', 'Always sums to 100%. Adjusting one slider rebalances the others.')),
                 // Reset button
                 h('button', { className: 'printingpress-no-print',
-                  onClick: function() { setLeadPct(54); setTinPct(28); announce('Alloy reset to historical Gutenberg-era target.'); },
+                  onClick: function() { setLeadPct(54); setTinPct(28); announce(__alloT('stem.printingpress.sr_alloy_reset_to_historical_gutenberg_era_target', 'Alloy reset to historical Gutenberg-era target.')); },
                   style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.printingpress.reset_to_historical_54_28_18', '↺ Reset to historical (54/28/18)'))
               ),
               // Right: cast quality preview
@@ -5254,7 +5254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               ),
               h('div', { className: 'printingpress-no-print', style: { marginTop: 10, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
                 !spreadPlaying && spreadMonth < 12 && h('button', {
-                  onClick: function() { setSpreadPlaying(true); announce('Reformation spread animation playing'); },
+                  onClick: function() { setSpreadPlaying(true); announce(__alloT('stem.printingpress.sr_reformation_spread_animation_playing', 'Reformation spread animation playing')); },
                   style: btnPrimary({ padding: '8px 16px', fontSize: 13 }) },
                   spreadMonth === 0 ? '▶ Play (Oct 1517 onward)' : '▶ Resume'),
                 spreadPlaying && h('button', {
@@ -5318,7 +5318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 h('strong', { style: { color: T.accentHi } }, '❓ '), th.prompt
               ),
               !psReveal && h('button', { className: 'printingpress-no-print',
-                onClick: function() { setPsReveal(true); announce('Analysis revealed'); },
+                onClick: function() { setPsReveal(true); announce(__alloT('stem.printingpress.sr_analysis_revealed', 'Analysis revealed')); },
                 style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.reveal_the_analysis', '🔍 Reveal the analysis')),
               psReveal && h('div', { 'aria-live': 'polite', style: {
                 background: '#1f3d28', border: '1px solid ' + T.ok, borderRadius: 6, padding: 12,
@@ -6376,7 +6376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   });
                   setDetPicked(null);
                   setDetGenState({ loading: false, error: null });
-                  announce('New AI-generated typeface sample loaded.');
+                  announce(__alloT('stem.printingpress.sr_new_ai_generated_typeface_sample_loaded', 'New AI-generated typeface sample loaded.'));
                 })
                 .catch(function(err) {
                   setDetGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
@@ -6930,7 +6930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   setPplGuess(null);
                   setPplRevealed(false);
                   setPplGenState({ loading: false, error: null });
-                  announce('New AI-generated quote loaded.');
+                  announce(__alloT('stem.printingpress.sr_new_ai_generated_quote_loaded', 'New AI-generated quote loaded.'));
                 })
                 .catch(function(err) {
                   setPplGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
@@ -9126,7 +9126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 onClick: function() {
                   var nextPicks = Object.assign({}, picks); delete nextPicks[st.idx];
                   upd('bigQuizState', Object.assign({}, st, { answered: false, lastChoice: null, picks: nextPicks }));
-                  announce('Question reset. Try again.');
+                  announce(__alloT('stem.printingpress.sr_question_reset_try_again', 'Question reset. Try again.'));
                 },
                 style: btn({ padding: '10px 16px', fontSize: 14 }) }, __alloT('stem.printingpress.try_again_4', '↺ Try again')),
               h('button', {
@@ -9252,7 +9252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               STARTER_PROMPTS.map(function(sp, spi) {
                 return h('button', { key: spi,
-                  onClick: function() { setQ(sp); announce('Question loaded. Click Ask to submit.'); },
+                  onClick: function() { setQ(sp); announce(__alloT('stem.printingpress.sr_question_loaded_click_ask_to_submit', 'Question loaded. Click Ask to submit.')); },
                   style: btn({ padding: '6px 10px', fontSize: 12, background: T.cardAlt, borderColor: T.border, color: T.muted }) },
                   '💭 ' + sp);
               })
@@ -11193,7 +11193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   onClick: function() {
                     setCGuessChoice(i);
                     if (i === curGuess.correct) { setCGuessScore(cGuessScore + 1); announce('Correct!'); }
-                    else announce('Not quite — see the explanation.');
+                    else announce(__alloT('stem.printingpress.sr_not_quite_see_the_explanation', 'Not quite — see the explanation.'));
                   },
                   style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
                   h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
@@ -11909,7 +11909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           nc[year + '_' + decId] = choiceId;
           setAjChoices(nc);
           setAjPending({ year: year, decId: decId, choiceId: choiceId, outcome: ch.outcome });
-          announce('Choice recorded.');
+          announce(__alloT('stem.printingpress.sr_choice_recorded', 'Choice recorded.'));
         }
         function startJourney(masterId) {
           var m = masters.find(function(mm) { return mm.id === masterId; });
@@ -11934,7 +11934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           setAjStats({ comp: 5, press: 5, biz: 5, rep: 50, money: 0, health: 100 });
           setAjChoices({});
           setAjPending(null);
-          announce('Journey reset.');
+          announce(__alloT('stem.printingpress.sr_journey_reset', 'Journey reset.'));
         }
 
         // ── Determine ending if year 7 final decision made ──
@@ -12617,7 +12617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   onClick: function() {
                     setTfGameChoice(i);
                     if (i === gameQ.correct) { setTfGameScore(tfGameScore + 1); announce('Correct!'); }
-                    else announce('Not quite.');
+                    else announce(__alloT('stem.printingpress.sr_not_quite', 'Not quite.'));
                   },
                   style: btn({ padding: '12px 14px', fontSize: 14, textAlign: 'left' }) },
                   h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
@@ -17388,7 +17388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           fiPicked == null && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
             r.options.map(function(opt, i) {
               return h('button', { key: i,
-                onClick: function() { setFiPicked(i); if (i === r.correct) { setFiScore(fiScore + 1); announce('Correct.'); } else announce('Not quite.'); },
+                onClick: function() { setFiPicked(i); if (i === r.correct) { setFiScore(fiScore + 1); announce(__alloT('stem.printingpress.sr_correct', 'Correct.')); } else announce(__alloT('stem.printingpress.sr_not_quite', 'Not quite.')); },
                 style: btn({ padding: '12px 14px', fontSize: 14, textAlign: 'left' }) },
                 h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
                 opt);

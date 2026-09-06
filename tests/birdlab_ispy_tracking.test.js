@@ -50,7 +50,7 @@ describe('BirdLab I-Spy binocular tracking', () => {
     expect(tickSource).toContain("handleBirdClickRef.current(bird, 'spotted')");
     expect(tickSource).not.toContain("handleBirdClick(bird, 'spotted')");
     expect(source).toContain("'data-birdlab-binocular-progress': 'true'");
-    expect(source).toContain("'aria-label': 'Binocular focus progress'");
+    expect(source).toContain(`'aria-label': __alloT('stem.birdlab.a11y_binocular_focus_progress', 'Binocular focus progress')`);
     expect(source).toContain("'data-birdlab-binocular-hold': binocularHoldMode");
     expect(source).toContain("'data-birdlab-binocular-hold-option':");
   });
