@@ -183,6 +183,21 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 21 (2026-09-06)
+
+- **A shock ring on the face of the wall.** A hit opens a ring out of the point of impact,
+  clear of the stone face, gone in 600 ms. It carries no number and claims none: it is there
+  so the eye knows WHERE the energy arrived. Hits only; never under reduced motion.
+- **The birds break from their circle** when a stone lands, climbing and spreading for about
+  three and a half seconds before settling. Ambient life, so with ambient off they simply
+  circle.
+- **The crew cheer a breach** for three seconds, latched on the transition so it fires once
+  and the hop is added to whatever the winch heave was already doing. The scene is told
+  whether the wall is breached rather than inferring it from block counts.
+- Note on verification: the ring lives 600 ms, which is below what a SwiftShader screenshot
+  can reliably catch, so it is pinned by test and by its code path. The cheer was photographed
+  deterministically by mounting a wall the damage model had already broken open.
+
 ### Wave 20 (2026-09-06)
 
 - **The wall is built, not stacked.** A stepped footing runs the length of the curtain, a

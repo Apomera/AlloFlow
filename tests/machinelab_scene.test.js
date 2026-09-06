@@ -1105,3 +1105,40 @@ describe('Siege Field wave 20: the wall is built, not stacked', () => {
     expect(guard).toBeGreaterThan(0);
   });
 });
+
+describe('Siege Field wave 21: the field reacts to the hit', () => {
+  it('opens a shock ring on the face of the wall, and only on a hit', () => {
+    const src = source();
+    expect(src).toContain("if (S.shock && data.outcomeKind === 'hit' && !red) {");
+    // Clear of the face: the blocks are one deep about z = 0.
+    expect(src).toContain('S.shock.position.set(S.impactPos.x, S.impactPos.y, -0.62);');
+    expect(src).toContain('var shockAge = (now - (S.shockT0 || now)) / 600;');
+    expect(src).toContain('S.shock.scale.setScalar(1 + shockAge * 6);');
+  });
+
+  it('takes the ring away when its window closes, and never shows it under reduced motion', () => {
+    const src = source();
+    expect(src).toContain('if (shockAge >= 1 || red) { S.shock.visible = false; }');
+  });
+
+  it('sends the birds up and out when a stone lands, only while ambient life is on', () => {
+    const src = source();
+    expect(src).toContain('var scare = (ambient && S.impactAt != null) ? Math.max(0, 1 - (now - S.impactAt) / 3500) : 0;');
+    expect(src).toContain('var rad = u.r + scareEase * 16;');
+    expect(src).toContain('var flap = ambient ? Math.sin(tSec * (9 + scareEase * 14) + u.phase) * (0.6 + scareEase * 0.4) : 0.2;');
+  });
+
+  it('lets the crew cheer a breach for three seconds, latched so it fires once', () => {
+    const src = source();
+    expect(src).toContain('if (data.breached && !S.sawBreach) { S.sawBreach = true; S.breachAt = now; }');
+    expect(src).toContain('if (!data.breached) { S.sawBreach = false; S.breachAt = null; }');
+    expect(src).toContain('var cheer = (!red && S.breachAt != null) ? Math.max(0, 1 - (now - S.breachAt) / 3000) : 0;');
+    // The hop is added to whatever the winch heave already did, not instead.
+    expect(src).toContain('member.position.y = Math.max(member.position.y, Math.abs(Math.sin(tSec * 6.5 + cw * 1.7)) * 0.42 * cheer);');
+  });
+
+  it('tells the scene whether the wall is breached', () => {
+    const src = source();
+    expect(src).toContain('breached: !!d.breached,');
+  });
+});

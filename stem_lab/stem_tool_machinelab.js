@@ -4235,6 +4235,17 @@ window.StemLab = window.StemLab || {
     if (apexLabel) S.model.add(apexLabel.sprite);
     S.apexMark = { tick: apexTick, drop: dropLine, label: apexLabel, sig: null };
 
+    // ── The hit itself, on the face of the wall: a ring that opens out of the
+    // point of impact and is gone in half a second. It carries no number and
+    // claims none; it is there so the eye knows WHERE the energy arrived. ──
+    var shock = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.92, 24), new THREE.MeshBasicMaterial({
+      color: contrast ? 0xffffff : 0xffe9b0, transparent: true, opacity: 0.9,
+      depthWrite: false, side: THREE.DoubleSide, fog: false
+    }));
+    shock.visible = false;
+    S.model.add(shock);
+    S.shock = shock;
+
     // ── The ranging bracket, laid on the ground between the best short and
     // the best over. The band is the ground the answer is known to be on; the
     // bar across it is halfway, which is the next thing to try. ──
@@ -4677,6 +4688,11 @@ window.StemLab = window.StemLab || {
         var heave = (winding > 0 && !red) ? Math.sin(tSec * 7 * Math.PI / 1.0) : 0;
         S.crew[0].rotation.x = heave * 0.22; S.crew[0].position.y = Math.max(0, heave) * 0.08;
         S.crew[1].rotation.x = -heave * 0.18; S.crew[1].position.y = Math.max(0, -heave) * 0.08;
+        // A breach is the thing they have been working for, so they are
+        // allowed to notice. Three seconds, then back to work.
+        if (data.breached && !S.sawBreach) { S.sawBreach = true; S.breachAt = now; }
+        if (!data.breached) { S.sawBreach = false; S.breachAt = null; }
+        var cheer = (!red && S.breachAt != null) ? Math.max(0, 1 - (now - S.breachAt) / 3000) : 0;
         // And they watch it go. Turning to follow the stone is the cheapest
         // possible cue that the thing in the air is the thing they just threw.
         var watchAt = stonePos || (S.impactAt != null && (now - S.impactAt) < 2600 ? S.impactPos : null);
@@ -4693,6 +4709,9 @@ window.StemLab = window.StemLab || {
           while (dY > Math.PI) dY -= Math.PI * 2;
           while (dY < -Math.PI) dY += Math.PI * 2;
           member.rotation.y += dY * Math.min(1, dt * 4);
+          if (cheer > 0) {
+            member.position.y = Math.max(member.position.y, Math.abs(Math.sin(tSec * 6.5 + cw * 1.7)) * 0.42 * cheer);
+          }
         }
       }
 
@@ -4855,6 +4874,15 @@ window.StemLab = window.StemLab || {
           var last = pts[pts.length - 1];
           S.impactPos = new THREE.Vector3(last.z || 0, Math.max(0.3, last.y), -standoff + last.x);
           if (data.sound && !red) SCENE_AUDIO.thud(data.outcomeKind === 'hit', (Number(data.impactKJ) || 0));
+          if (S.shock && data.outcomeKind === 'hit' && !red) {
+            // Just clear of the face (blocks are one deep about z = 0) so it
+            // reads as being ON the wall rather than buried in it.
+            S.shock.position.set(S.impactPos.x, S.impactPos.y, -0.62);
+            S.shock.scale.setScalar(1);
+            S.shock.material.opacity = 0.9;
+            S.shock.visible = true;
+            S.shockT0 = now;
+          }
           if (S.scorch && data.outcomeKind !== 'hit') {
             S.scorch.position.set(S.impactPos.x, 0.05, S.impactPos.z);
             S.scorch.rotation.z = hash01(Math.round(S.impactPos.x * 10), Math.round(S.impactPos.z * 10), 95) * 6.28;
@@ -4895,6 +4923,15 @@ window.StemLab = window.StemLab || {
               bm.material.opacity = 1;
             });
           }
+        }
+      }
+      // The shock ring opens out of the impact and is gone in half a second.
+      if (S.shock && S.shock.visible) {
+        var shockAge = (now - (S.shockT0 || now)) / 600;
+        if (shockAge >= 1 || red) { S.shock.visible = false; }
+        else {
+          S.shock.scale.setScalar(1 + shockAge * 6);
+          S.shock.material.opacity = 0.9 * (1 - shockAge) * (1 - shockAge);
         }
       }
       // The trail runs hotter with speed: a slow lob leaves a pale one, a
@@ -5138,11 +5175,16 @@ window.StemLab = window.StemLab || {
         });
       }
       if (S.birds) {
+        // A stone landing sends them up and out for a few seconds. Ambient
+        // life, so with ambient off or motion reduced they simply circle.
+        var scare = (ambient && S.impactAt != null) ? Math.max(0, 1 - (now - S.impactAt) / 3500) : 0;
+        var scareEase = scare * scare;
         S.birds.children.forEach(function (bird) {
           var u = bird.userData, ang = (ambient ? tSec * 0.22 : 0) + u.phase;
-          bird.position.set(Math.cos(ang) * u.r + 6, u.h + Math.sin(tSec * 0.7 + u.phase) * 1.2, Math.sin(ang) * u.r - standoff * 0.45);
+          var rad = u.r + scareEase * 16;
+          bird.position.set(Math.cos(ang) * rad + 6, u.h + scareEase * 9 + Math.sin(tSec * 0.7 + u.phase) * 1.2, Math.sin(ang) * rad - standoff * 0.45);
           bird.rotation.y = -ang;
-          var flap = ambient ? Math.sin(tSec * 9 + u.phase) * 0.6 : 0.2;
+          var flap = ambient ? Math.sin(tSec * (9 + scareEase * 14) + u.phase) * (0.6 + scareEase * 0.4) : 0.2;
           u.wl.rotation.z = flap; u.wr.rotation.z = -flap;
         });
       }
@@ -9261,6 +9303,7 @@ window.StemLab = window.StemLab || {
           ambient: ambient,
           labels: labels,
           outcomeKind: outcomeKind,
+          breached: !!d.breached,
           dark: true, contrast: isContrast,
           geom: {
             beamLong: d.beamLong, beamShort: d.beamShort,
