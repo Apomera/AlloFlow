@@ -183,6 +183,23 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 27 (2026-09-06) — the rest of the edges
+
+Wave 26 rendered the ends of one slider and found four faults, so this renders the rest of the
+Siege Field's edges: the two machines that are not a trebuchet, a wall imported from Build, the
+crosswind at its stop, and the heaviest and lightest stones.
+
+- ★**A crewman stood in front of the ballista and the onager.** The engine camera frames the
+  MACHINE, so a figure at a fixed distance is waist-high beside a five-metre trebuchet and
+  taller than a one-metre torsion engine in the same shot — the onager was almost entirely
+  hidden behind a crew member. Crew spacing now follows the engine's own size, and both winch
+  hands work from +x, which is the side that camera does not look through.
+- Checked and sound: the imported wall draws as the learner's own columns with no towers, ward,
+  moat, footing or rampart (the tool does not own that geometry); the map camera at 20 m/s
+  reads the drift; a 300 kg stone and a 0.2 kg one both frame correctly.
+- The suite now renders the Siege Field for all three machines, all four presets, and both ends
+  of the standoff, crosswind and stone sliders, asserting no NaN or Infinity reaches the markup.
+
 ### Wave 26 (2026-09-06) — the valley at both ends of the standoff slider
 
 The Siege Field was built and screenshotted at a standoff of about 80 m. The slider goes from

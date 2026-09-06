@@ -1350,3 +1350,51 @@ describe('Siege Field wave 26: the valley holds at both ends of the standoff sli
     expect(Math.max(1, fieldSpan / 392)).toBe(1);
   });
 });
+
+describe('Siege Field wave 27: the field holds for every machine and every wall', () => {
+  it('spaces the crew by the size of the engine they are working', () => {
+    const src = source();
+    expect(src).toContain("var crewSpread = (m.kind === 'ballista' || m.kind === 'onager') ? 0.6 : 1;");
+    expect(src).toContain('addFigure(THREE, S.model, 2.9 * crewSpread, -standoff - 2.4 * crewSpread, 0x9c3b2e, -1.9),');
+  });
+
+  it('keeps both winch hands on the side the engine camera does not look through', () => {
+    const src = source();
+    const crew = src.slice(src.indexOf('var crewSpread ='), src.indexOf('var tent ='));
+    // Two figures at +x; only the third, which stands downrange, is at -x.
+    expect((crew.match(/S\.model, -?\d/g) || []).length).toBe(3);
+    expect(crew).toContain('S.model, 2.9 * crewSpread');
+    expect(crew).toContain('S.model, 4.6 * crewSpread');
+    expect(crew).toContain('S.model, -4.4 * crewSpread');
+  });
+
+  for (const machine of ['trebuchet', 'ballista', 'onager']) {
+    it('renders the Siege Field for the ' + machine + ' with no undefined, NaN or Infinity', () => {
+      const html = renderTool('machineLab', state({ machine }));
+      expect(html).toContain('Siege Field');
+      expect(html).not.toContain('undefined');
+      expect(html).not.toContain('NaN');
+      expect(html).not.toContain('Infinity');
+    });
+  }
+
+  for (const preset of ['curtain', 'gatehouse', 'keep', 'motte']) {
+    it('renders the Siege Field for the ' + preset + ' target with no undefined, NaN or Infinity', () => {
+      const html = renderTool('machineLab', state({ wallPreset: preset }));
+      expect(html).not.toContain('undefined');
+      expect(html).not.toContain('NaN');
+      expect(html).not.toContain('Infinity');
+    });
+  }
+
+  it('renders at both ends of the standoff and crosswind sliders', () => {
+    for (const st of [
+      { standoff: 10 }, { standoff: 300 }, { windZ: -20 }, { windZ: 20 },
+      { projMass: 0.2, projDiameter: 0.03 }, { projMass: 300, projDiameter: 0.6 }
+    ]) {
+      const html = renderTool('machineLab', state(st));
+      expect(html, JSON.stringify(st)).not.toContain('NaN');
+      expect(html, JSON.stringify(st)).not.toContain('Infinity');
+    }
+  });
+});

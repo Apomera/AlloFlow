@@ -4165,10 +4165,17 @@ window.StemLab = window.StemLab || {
     }
     S.siegeGuest = guest;
     if (!contrast) {
+      // Where the crew stand is a framing decision, not a decoration. The
+      // engine camera fits the MACHINE, so a figure at a fixed distance is
+      // waist-high beside a trebuchet and taller than a ballista in the same
+      // shot. Their spacing follows the engine's own size, and the two winch
+      // hands work from +x, which is the side that camera does not look
+      // through — dressing on -x ends up between the lens and the machine.
+      var crewSpread = (m.kind === 'ballista' || m.kind === 'onager') ? 0.6 : 1;
       S.crew = [
-        addFigure(THREE, S.model, -3.6, -standoff - 2.4, 0x9c3b2e, 1.1),
-        addFigure(THREE, S.model, 3.4, -standoff - 3.0, 0x3b5f9c, -0.9),
-        addFigure(THREE, S.model, -4.4, -standoff + 3.2, 0x6b7b3a, 2.3)
+        addFigure(THREE, S.model, 2.9 * crewSpread, -standoff - 2.4 * crewSpread, 0x9c3b2e, -1.9),
+        addFigure(THREE, S.model, 4.6 * crewSpread, -standoff - 3.4 * crewSpread, 0x3b5f9c, -1.4),
+        addFigure(THREE, S.model, -4.4 * crewSpread, -standoff + 3.2 * crewSpread, 0x6b7b3a, 2.3)
       ];
       var tent = new THREE.Mesh(new THREE.ConeGeometry(2.4, 2.8, 8), mat(0xd9c9a2));
       tent.position.set(11.5, terrainHeight(11.5, -standoff + 1, standoff, laneHalf) + 1.4, -standoff + 1);
