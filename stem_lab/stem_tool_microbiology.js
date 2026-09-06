@@ -1567,7 +1567,7 @@
                   h('span', null, __alloT('stem.microbiology.slide_smear_1000x_oil_immersion', '🔬 Slide Smear (1000x Oil Immersion)')),
                   h('span', { style: { color: microAccentText('#a78bfa') } }, step === 0 ? 'Step 0: Heat-Fixed Smear' : 'Step ' + step + ': ' + stepLabels[step - 1])
                 ),
-                h('svg', { role: 'img', 'aria-label': 'Gram stain microscopy process visualization', viewBox: '0 0 200 150', style: { width: '100%', height: 160, display: 'block', background: 'var(--allo-stem-deeper, #070a13)', borderRadius: 8, border: '1px solid #334155' } },
+                h('svg', { role: 'img', 'aria-label': __alloT('stem.microbiology.a11y_gram_stain_microscopy_process_visualization', 'Gram stain microscopy process visualization'), viewBox: '0 0 200 150', style: { width: '100%', height: 160, display: 'block', background: 'var(--allo-stem-deeper, #070a13)', borderRadius: 8, border: '1px solid #334155' } },
                   h('circle', { cx: 100, cy: 75, r: 72, fill: 'none', stroke: '#1e293b', strokeWidth: 0.5 }),
                   h('line', { x1: 100, y1: 3, x2: 100, y2: 147, stroke: '#1e293b', strokeWidth: 0.3, strokeDasharray: '2,2' }),
                   h('line', { x1: 25, y1: 75, x2: 175, y2: 75, stroke: '#1e293b', strokeWidth: 0.3, strokeDasharray: '2,2' }),
@@ -4864,7 +4864,7 @@
               (iq.log || []).length > 0 && H('div', {
                 role: 'log',
                 'aria-live': 'polite',
-                'aria-label': 'Recent growth condition profiles',
+                'aria-label': __alloT('stem.microbiology.a11y_recent_growth_condition_profiles', 'Recent growth condition profiles'),
                 style: { padding: 8, marginBottom: 10, borderRadius: 6, background: '#111827', border: '1px solid #334155', fontSize: 10, color: '#cbd5e1', lineHeight: 1.5 }
               },
                 iq.log.map(function(entry, index) {

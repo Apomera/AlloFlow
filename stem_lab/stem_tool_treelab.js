@@ -169,6 +169,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     return 'g68';
   }
   function bandRank(b) { var i = BANDS.indexOf(b); return i < 0 ? 2 : i; }
+  // Translation keys for Grove Journey text are derived from the English itself: the first
+  // words as a slug plus a short hash of the whole string, so two strings that begin alike
+  // never share a key and the pack tooling can regenerate every key from the source alone.
+  function groveKey(text) {
+    var str = String(text);
+    var slug = str.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').split('_').slice(0, 5).join('_');
+    var hash = 5381;
+    for (var i = 0; i < str.length; i++) hash = ((hash * 33) ^ str.charCodeAt(i)) >>> 0;
+    return (slug || 'text') + '_' + hash.toString(36).slice(-4);
+  }
   // atLeast('g68') is the gate used throughout: a feature appears from that band up.
   function atLeast(band, floor) { return bandRank(band) >= bandRank(floor); }
   // Chips in the knowledge-check trail wrap by row on a phone. Twelve of them left one
@@ -5237,6 +5247,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // 3D view controls read as "◀ ▶ ▲ ▼ + −", which a screen reader announces
       // as punctuation or nothing at all, so the accessible name has to come
       // from somewhere other than the label text.
+      // Read-aloud, shared by the views that offer it. One utterance at a time: starting a
+      // new one cancels whatever is speaking, and each view keeps its own pressed flag, so a
+      // control never shows as speaking for text it is not reading.
+      function speechReady() {
+        return typeof window !== 'undefined' && !!window.speechSynthesis
+          && typeof SpeechSynthesisUtterance !== 'undefined';
+      }
+      function stopSpeech(stateKey) {
+        try { if (speechReady()) window.speechSynthesis.cancel(); } catch (e) {}
+        upd(stateKey, false);
+      }
+      function speakText(text, stateKey) {
+        if (!speechReady() || !text) return;
+        try {
+          window.speechSynthesis.cancel();
+          var utterance = new SpeechSynthesisUtterance(text);
+          // Slower for the youngest band, which is also where the wording is shortest.
+          utterance.rate = band === 'k2' ? 0.85 : 0.95;
+          utterance.onend = function () { upd(stateKey, false); };
+          utterance.onerror = function () { upd(stateKey, false); };
+          upd(stateKey, true);
+          window.speechSynthesis.speak(utterance);
+        } catch (e) { upd(stateKey, false); }
+      }
       function btn(key, labelTxt, onClick, opts) {
         var o = opts || {};
         return h('button', {
@@ -11331,11 +11365,17 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         var pending = d.grovePending && typeof d.grovePending === 'object' ? d.grovePending : {};
         // K-2 wording layer: same facts, shorter words. Everything else keeps the full text.
         var simple = band === 'k2';
-        function say(short, full) { return simple ? short : full; }
+        // Every grove string reaches the language packs through here. Missing keys fall
+        // back to the English, so this is inert for English and a hook for everyone else.
+        function gt(text) {
+          if (typeof text !== 'string' || !text.trim()) return text;
+          return __alloT('stem.treelab.grove.' + groveKey(text), text);
+        }
+        function say(short, full) { return gt(simple ? short : full); }
         var cardNames = { roots: 'Grow roots', reserve: 'Save food', offspring: 'Make new trees' };
         var cardCopy = { roots: 'Roots help the tree find water later.', reserve: 'Keep food for hard years.', offspring: 'Use saved food to make seeds and shoots.' };
-        function priorityName(p) { return simple ? cardNames[p.id] : p.name; }
-        function priorityCopy(p) { return simple ? cardCopy[p.id] : p.copy; }
+        function priorityName(p) { return gt(simple ? cardNames[p.id] : p.name); }
+        function priorityCopy(p) { return gt(simple ? cardCopy[p.id] : p.copy); }
         var eventCopySimple = { calm: 'A good year. Plenty of water for growing.', wet: 'A rainy year. Wet soil helps the trees drink.', dry: 'A dry year. Little water. Leaves close their pores and make less food.', storm: 'A storm tears leaves off one patch. More sun reaches it after.' };
         // Focus follows the action when the control that was activated disappears (start, ending, setup).
         function focusLater(selector) {
@@ -11352,13 +11392,13 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               try { var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (e) { ok = false; }
             }
             upd('groveShare', { kind: kind, status: ok ? 'copied' : 'failed', text: text });
-            srSay(ok ? (kind === 'code' ? 'Grove code copied.' : 'Run summary copied.') : 'Copy did not work here. The text is shown below; select it and press Ctrl+C.');
+            srSay(ok ? (kind === 'code' ? gt('Grove code copied.') : gt('Run summary copied.')) : gt('Copy did not work here. The text is shown below; select it and press Ctrl+C.'));
           }, function () { upd('groveShare', { kind: kind, status: 'failed', text: text }); });
         }
         // Read-aloud for the year's evidence. Seventeen sibling tools offer this; the wording
         // spoken is whatever the band already renders, so K-2 hears the short sentences.
         function receiptSpeechText(r) {
-          var out = [say('Year ', 'Year ') + r.year + ': ' + r.event.title + '.'];
+          var out = [say('Year ', 'Year ') + r.year + ': ' + gt(r.event.title) + '.'];
           out.push(say('Card used: ', 'Priority used: ') + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + '.');
           out.push(r.arrivals + say(r.arrivals === 1 ? ' new tree came.' : ' new trees came.', r.arrivals === 1 ? ' new arrival.' : ' new arrivals.'));
           out.push(r.established + say(' new trees have made it so far.', ' established descendants so far.'));
@@ -11366,38 +11406,24 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           whereLines(r).forEach(function (line) { out.push(line.text); });
           return out.join(' ');
         }
-        function stopSpeaking() {
-          try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
-          upd('groveSpeaking', false);
-        }
-        function speakReceipt(r) {
-          if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return;
-          try {
-            window.speechSynthesis.cancel();
-            var u = new SpeechSynthesisUtterance(receiptSpeechText(r));
-            u.rate = simple ? 0.85 : 0.95;
-            u.onend = function () { upd('groveSpeaking', false); };
-            u.onerror = function () { upd('groveSpeaking', false); };
-            upd('groveSpeaking', true);
-            window.speechSynthesis.speak(u);
-          } catch (e) { upd('groveSpeaking', false); }
-        }
+        function stopSpeaking() { stopSpeech('groveSpeaking'); }
+        function speakReceipt(r) { speakText(receiptSpeechText(r), 'groveSpeaking'); }
         // The control only appears where the browser can actually speak.
         function readAloudButton(r) {
-          if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return null;
+          if (!speechReady()) return null;
           var on = !!d.groveSpeaking;
           return h('button', { key: 'speak', type: 'button', className: 'grove-speak', 'aria-pressed': on,
             onClick: function () { if (on) stopSpeaking(); else speakReceipt(r); } },
             on ? say('⏹ Stop reading', '⏹ Stop reading') : say('▶ Read this to me', '▶ Read this aloud'));
         }
         function runSummaryText() {
-          var out = ['Grove Journey \u00b7 code ' + config.seed + ' \u00b7 ' + (config.mode === 'deck' ? 'event deck' : 'generated weather')];
+          var out = [gt('Grove Journey \u00b7 code ') + config.seed + ' \u00b7 ' + (config.mode === 'deck' ? gt('event deck') : gt('generated weather'))];
           grove.receipts.forEach(function (r) {
-            out.push('Year ' + r.year + ': ' + r.event.title + ' \u00b7 ' + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + ' \u00b7 ' + r.arrivals + ' arrivals, ' + r.deaths + ' losses, ' + r.established + ' established');
+            out.push(gt('Year ') + r.year + ': ' + gt(r.event.title) + ' \u00b7 ' + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + ' \u00b7 ' + r.arrivals + gt(' arrivals, ') + r.deaths + gt(' losses, ') + r.established + gt(' established'));
           });
-          out.push('After ' + grove.year + (grove.year === 1 ? ' year: ' : ' years: ') + summary.living + ' living, ' + summary.established + ' established in ' + summary.descendantPatches + (summary.descendantPatches === 1 ? ' patch' : ' patches') + (summary.ended ? (summary.success ? ' \u00b7 goal reached' : ' \u00b7 goal not reached') : ''));
+          out.push(gt('After ') + grove.year + (grove.year === 1 ? gt(' year: ') : gt(' years: ')) + summary.living + gt(' living, ') + summary.established + gt(' established in ') + summary.descendantPatches + (summary.descendantPatches === 1 ? gt(' patch') : gt(' patches')) + (summary.ended ? (summary.success ? gt(' \u00b7 goal reached') : gt(' \u00b7 goal not reached')) : ''));
           var entry = ledger.filter(function (e) { return e.key === config.seed + '|' + config.mode + '|' + JSON.stringify(config.choices); })[0];
-          if (entry && entry.note) out.push('Reflection: ' + entry.note);
+          if (entry && entry.note) out.push(gt('Reflection: ') + entry.note);
           return out.join('\n');
         }
         function shareBlock() {
@@ -11410,7 +11436,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             share ? h('p', { key: 'status', className: 'grove-caption', role: 'status' }, share.status === 'copied'
               ? (share.kind === 'code' ? say('Code copied. A friend can type it to get the same weather.', 'Grove code copied. Anyone who enters it with the same event mode plays the same weather.') : say('Story copied.', 'Run summary copied.'))
               : say('Copy did not work here. Select the text below and press Ctrl+C.', 'Copy did not work in this host. Select the text below and press Ctrl+C.')) : null,
-            share && share.status === 'failed' ? h('textarea', { key: 'text', className: 'grove-share-text', readOnly: true, rows: 4, value: share.text, 'aria-label': share.kind === 'code' ? 'Grove code' : 'Run summary', onFocus: function (e) { e.target.select(); } }) : null
+            share && share.status === 'failed' ? h('textarea', { key: 'text', className: 'grove-share-text', readOnly: true, rows: 4, value: share.text, 'aria-label': share.kind === 'code' ? gt('Grove code') : gt('Run summary'), onFocus: function (e) { e.target.select(); } }) : null
           ]);
         }
         function saveRun(nextConfig, message, prediction) {
@@ -11442,7 +11468,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           var nextConfig = Object.assign({}, config, { choices: config.choices.concat([{ priority: priorityId, route: route }]) });
           var next = groveRestore(nextConfig), result = next.receipts[next.receipts.length - 1];
           var guess = pending.arrivals || pending.food ? { year: next.year, arrivals: pending.arrivals || '', food: pending.food || '' } : null;
-          saveRun(nextConfig, 'Year ' + next.year + ' complete. ' + result.arrivals + ' new arrivals; ' + groveSummary(next).established + ' established descendants.', guess);
+          saveRun(nextConfig, gt('Year ') + next.year + gt(' complete. ') + result.arrivals + gt(' new arrivals; ') + groveSummary(next).established + gt(' established descendants.'), guess);
         }
         function glyph(node, index, count) {
           var x = count === 1 ? 70 : count === 2 ? 48 + index * 43 : 33 + index * 37;
@@ -11510,42 +11536,42 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         function closeup() {
           var status = portrait ? TREE3D.status() : 'idle';
           var ready = status === 'ready';
-          var partCopy = { crown: 'Leaves capture light. Their area and water stress come from this campaign tree.',
-            trunk: 'The trunk supports the canopy and carries water. Its size comes from this tree’s growth history.',
-            roots: 'Roots are shown as a schematic cutaway. The model tracks root mass, not an exact underground root shape.' };
-          return h('section', { key: 'closeup', className: 'grove-closeup', 'aria-label': 'Campaign tree in 3D' }, [
+          var partCopy = { crown: gt('Leaves capture light. Their area and water stress come from this campaign tree.'),
+            trunk: gt('The trunk supports the canopy and carries water. Its size comes from this tree’s growth history.'),
+            roots: gt('Roots are shown as a schematic cutaway. The model tracks root mass, not an exact underground root shape.') };
+          return h('section', { key: 'closeup', className: 'grove-closeup', 'aria-label': __alloT('stem.treelab.a11y_campaign_tree_in_3d', 'Campaign tree in 3D') }, [
             h('div', { key: 'selectors', className: 'grove-closeup-selectors' }, [
-              h('div', { key: 'patch' }, [h('label', { key: 'label', htmlFor: 'grove-inspect-patch' }, 'Habitat patch'),
-                h('select', { key: 'select', id: 'grove-inspect-patch', value: selection, onChange: function (e) { upd('grovePatch', Number(e.target.value)); } }, GROVE_PATCHES.map(function (p, i) { return h('option', { key: i, value: i }, p.name); }))]),
-              portrait ? h('div', { key: 'tree' }, [h('label', { key: 'label', htmlFor: 'grove-inspect-tree' }, 'Tree to inspect'),
+              h('div', { key: 'patch' }, [h('label', { key: 'label', htmlFor: 'grove-inspect-patch' }, gt('Habitat patch')),
+                h('select', { key: 'select', id: 'grove-inspect-patch', value: selection, onChange: function (e) { upd('grovePatch', Number(e.target.value)); } }, GROVE_PATCHES.map(function (p, i) { return h('option', { key: i, value: i }, gt(p.name)); }))]),
+              portrait ? h('div', { key: 'tree' }, [h('label', { key: 'label', htmlFor: 'grove-inspect-tree' }, gt('Tree to inspect')),
                 h('select', { key: 'select', id: 'grove-inspect-tree', value: portrait.node.id, onChange: function (e) { upd('groveTree', e.target.value); } }, selectedNodes.map(function (node, index) {
-                  return h('option', { key: node.id, value: node.id }, (index + 1) + '. ' + speciesById(node.tree.speciesId).name + ' · age ' + node.tree.age + (node.tree.alive ? '' : ' · died'));
+                  return h('option', { key: node.id, value: node.id }, (index + 1) + '. ' + __alloT('stem.treelab.species_' + node.tree.speciesId, speciesById(node.tree.speciesId).name) + gt(' · age ') + node.tree.age + (node.tree.alive ? '' : gt(' · died')));
                 }))]) : null
             ]),
             portrait ? h('div', { key: 'portrait' }, [
-              h('div', { key: 'title', className: 'grove-closeup-heading' }, [h('h3', { key: 'name' }, portrait.species.name),
-                h('span', { key: 'size' }, 'Age ' + portrait.node.tree.age + ' · ' + round(portrait.node.tree.heightM, 1) + ' m tall · ' + round(portrait.node.tree.dbhCm, 1) + ' cm across')]),
+              h('div', { key: 'title', className: 'grove-closeup-heading' }, [h('h3', { key: 'name' }, __alloT('stem.treelab.species_' + portrait.species.id, portrait.species.name)),
+                h('span', { key: 'size' }, gt('Age ') + portrait.node.tree.age + ' · ' + round(portrait.node.tree.heightM, 1) + gt(' m tall · ') + round(portrait.node.tree.dbhCm, 1) + gt(' cm across'))]),
               h('div', { key: 'canvas', ref: GROVE_3D_ATTACH, className: 'grove-closeup-canvas', role: 'img',
-                'aria-label': '3D summer illustration of ' + portrait.species.name + ', age ' + portrait.node.tree.age + ', ' + round(portrait.node.tree.heightM, 1) + ' metres tall, in ' + site.name + '. ' + (portrait.node.tree.alive ? 'Living tree.' : 'This tree has died.') + (portrait.visual.severeWaterStress ? ' Leaves show water stress.' : '') }),
+                'aria-label': gt('3D summer illustration of ') + __alloT('stem.treelab.species_' + portrait.species.id, portrait.species.name) + gt(', age ') + portrait.node.tree.age + ', ' + round(portrait.node.tree.heightM, 1) + gt(' metres tall, in ') + gt(site.name) + '. ' + (portrait.node.tree.alive ? gt('Living tree.') : gt('This tree has died.')) + (portrait.visual.severeWaterStress ? gt(' Leaves show water stress.') : '') }),
               !ready ? h('p', { key: 'status', role: 'status', className: 'grove-caption' }, status === 'failed'
-                ? '3D is unavailable on this device. The habitat map and tree measurements remain available.' : 'Loading the 3D tree… You can keep using the map and campaign controls.') : null,
-              h('div', { key: 'camera', className: 'grove-camera-controls', role: 'group', 'aria-label': 'Campaign camera controls' }, [
-                btn('left', '↶', function () { TREE3D.nudge(-0.22, 0); }, { small: true, ariaLabel: 'Rotate tree left', disabled: !ready }),
-                btn('right', '↷', function () { TREE3D.nudge(0.22, 0); }, { small: true, ariaLabel: 'Rotate tree right', disabled: !ready }),
-                btn('up', '↑', function () { TREE3D.nudge(0, 0.12); }, { small: true, ariaLabel: 'Tilt tree view up', disabled: !ready }),
-                btn('down', '↓', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: 'Tilt tree view down', disabled: !ready }),
-                btn('in', '+', function () { TREE3D.zoom(-0.4); }, { small: true, ariaLabel: 'Zoom in on tree', disabled: !ready }),
-                btn('out', '−', function () { TREE3D.zoom(0.4); }, { small: true, ariaLabel: 'Zoom out from tree', disabled: !ready }),
-                btn('reset', 'Reset view', function () { TREE3D.reset(); }, { small: true, disabled: !ready })
+                ? gt('3D is unavailable on this device. The habitat map and tree measurements remain available.') : gt('Loading the 3D tree… You can keep using the map and campaign controls.')) : null,
+              h('div', { key: 'camera', className: 'grove-camera-controls', role: 'group', 'aria-label': __alloT('stem.treelab.a11y_campaign_camera_controls', 'Campaign camera controls') }, [
+                btn('left', '↶', function () { TREE3D.nudge(-0.22, 0); }, { small: true, ariaLabel: gt('Rotate tree left'), disabled: !ready }),
+                btn('right', '↷', function () { TREE3D.nudge(0.22, 0); }, { small: true, ariaLabel: gt('Rotate tree right'), disabled: !ready }),
+                btn('up', '↑', function () { TREE3D.nudge(0, 0.12); }, { small: true, ariaLabel: gt('Tilt tree view up'), disabled: !ready }),
+                btn('down', '↓', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: gt('Tilt tree view down'), disabled: !ready }),
+                btn('in', '+', function () { TREE3D.zoom(-0.4); }, { small: true, ariaLabel: gt('Zoom in on tree'), disabled: !ready }),
+                btn('out', '−', function () { TREE3D.zoom(0.4); }, { small: true, ariaLabel: gt('Zoom out from tree'), disabled: !ready }),
+                btn('reset', gt('Reset view'), function () { TREE3D.reset(); }, { small: true, disabled: !ready })
               ]),
-              h('div', { key: 'parts', role: 'group', 'aria-label': 'Inspect campaign tree parts' }, ['crown', 'trunk', 'roots'].map(function (part) {
-                return btn(part, part === 'crown' ? 'Leaves' : part === 'trunk' ? 'Trunk' : 'Roots', function () { upd('grovePart', d.grovePart === part ? null : part); }, { small: true, pressed: d.grovePart === part, disabled: !ready || part === 'crown' && !portrait.node.tree.alive });
+              h('div', { key: 'parts', role: 'group', 'aria-label': __alloT('stem.treelab.a11y_inspect_campaign_tree_parts', 'Inspect campaign tree parts') }, ['crown', 'trunk', 'roots'].map(function (part) {
+                return btn(part, part === 'crown' ? gt('Leaves') : part === 'trunk' ? gt('Trunk') : gt('Roots'), function () { upd('grovePart', d.grovePart === part ? null : part); }, { small: true, pressed: d.grovePart === part, disabled: !ready || part === 'crown' && !portrait.node.tree.alive });
               })),
-              h('p', { key: 'part-copy', className: 'grove-caption', 'aria-live': 'polite' }, partCopy[d.grovePart] || 'Drag to orbit, or use the camera buttons. Select a part to inspect its role.'),
-              h('p', { key: 'conditions', className: 'grove-caption' }, (grove.year ? 'Year ' + grove.year + ' conditions' : 'Starting conditions') + ': ' + Math.round(portrait.env.soilWater * 100) + '% soil moisture · ' + Math.round(portrait.env.light * 100) + '% light · ' + portrait.env.tempC + ' °C.'),
-              h('p', { key: 'time', className: 'grove-caption' }, 'A summer illustration of this tree’s current state, with ' + (grove.year ? 'the last completed year’s conditions.' : 'the starting patch conditions.') + ' Viewing does not advance time. Background woodland is scenery; the habitat map records your actual grove.')
-            ]) : h('div', { key: 'empty', className: 'grove-closeup-empty' }, [h('h3', { key: 'title' }, 'Room for a future tree.'),
-              h('p', { key: 'copy' }, 'No tree has arrived in ' + site.name + ' yet. Choose another patch above, or return to the habitat map to follow your grove’s spread.')])
+              h('p', { key: 'part-copy', className: 'grove-caption', 'aria-live': 'polite' }, partCopy[d.grovePart] || gt('Drag to orbit, or use the camera buttons. Select a part to inspect its role.')),
+              h('p', { key: 'conditions', className: 'grove-caption' }, (grove.year ? gt('Year ') + grove.year + gt(' conditions') : gt('Starting conditions')) + ': ' + Math.round(portrait.env.soilWater * 100) + gt('% soil moisture · ') + Math.round(portrait.env.light * 100) + gt('% light · ') + portrait.env.tempC + ' °C.'),
+              h('p', { key: 'time', className: 'grove-caption' }, gt('A summer illustration of this tree’s current state, with ') + (grove.year ? gt('the last completed year’s conditions.') : gt('the starting patch conditions.')) + gt(' Viewing does not advance time. Background woodland is scenery; the habitat map records your actual grove.'))
+            ]) : h('div', { key: 'empty', className: 'grove-closeup-empty' }, [h('h3', { key: 'title' }, gt('Room for a future tree.')),
+              h('p', { key: 'copy' }, gt('No tree has arrived in ') + gt(site.name) + gt(' yet. Choose another patch above, or return to the habitat map to follow your grove’s spread.'))])
           ]);
         }
 
@@ -11561,13 +11587,13 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           // Pairs validated with the dataviz palette checker against the light card (#ffffff) and
           // dark card (#1e293b) surfaces; dash and marker shape carry identity without colour.
           var colours = isContrast ? ['#ffffff', '#ffff00'] : isDark ? ['#059669', '#d97706'] : ['#059669', '#b45309'];
-          var defs = [{ id: 'living', name: 'Living trees', short: 'living', colour: colours[0], dash: 'none', square: false },
-            { id: 'established', name: 'Established descendants', short: 'established', colour: colours[1], dash: '6 4', square: true }];
+          var defs = [{ id: 'living', name: gt('Living trees'), short: gt('living'), colour: colours[0], dash: 'none', square: false },
+            { id: 'established', name: gt('Established descendants'), short: gt('established'), colour: colours[1], dash: '6 4', square: true }];
           var ticks = []; for (var v = 0; v <= maxY; v += step) ticks.push(v);
           var end = series[series.length - 1], close = Math.abs(y(end.living) - y(end.established)) < 11;
           return h('figure', { key: 'chart', className: 'grove-chart' }, [
-            h('figcaption', { key: 'cap' }, 'Living trees and established descendants by year'),
-            h('svg', { key: 'svg', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Line chart. ' + defs.map(function (s) { return s.name + ' by year: ' + series.map(function (p) { return p[s.id]; }).join(', '); }).join('. ') + '. The timeline below lists the same years.' }, [
+            h('figcaption', { key: 'cap' }, gt('Living trees and established descendants by year')),
+            h('svg', { key: 'svg', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': gt('Line chart. ') + defs.map(function (s) { return s.name + gt(' by year: ') + series.map(function (p) { return p[s.id]; }).join(', '); }).join('. ') + gt('. The timeline below lists the same years.') }, [
               h('g', { key: 'grid' }, ticks.map(function (tick) { return h('g', { key: tick }, [h('line', { key: 'l', x1: padL, x2: W - padR, y1: y(tick), y2: y(tick), stroke: T.border, strokeWidth: 1 }), h('text', { key: 't', x: padL - 6, y: y(tick) + 3.5, textAnchor: 'end', fontSize: 10, fill: T.dim }, tick)]); })),
               h('g', { key: 'years' }, series.map(function (p) { return h('text', { key: p.year, x: x(p.year), y: H - 8, textAnchor: 'middle', fontSize: 10, fill: T.dim }, p.year); })),
               defs.map(function (s, si) {
@@ -11577,7 +11603,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                   series.map(function (p) {
                     var mark = s.square ? h('rect', { key: 'm', x: x(p.year) - 4, y: y(p[s.id]) - 4, width: 8, height: 8, fill: s.colour, stroke: T.card, strokeWidth: 2 })
                       : h('circle', { key: 'm', cx: x(p.year), cy: y(p[s.id]), r: 4, fill: s.colour, stroke: T.card, strokeWidth: 2 });
-                    return h('g', { key: p.year }, [h('title', { key: 't' }, 'Year ' + p.year + ': ' + p[s.id] + ' ' + s.short), mark]);
+                    return h('g', { key: p.year }, [h('title', { key: 't' }, gt('Year ') + p.year + ': ' + p[s.id] + ' ' + s.short), mark]);
                   }),
                   h('text', { key: 'label', x: x(8) + 9, y: labelY, fontSize: 10, fill: T.text }, end[s.id] + ' ' + s.short)
                 ]);
@@ -11588,8 +11614,8 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         }
         function whereLines(r) {
           var lines = [];
-          if (r.damaged && r.event.damage) lines.push({ key: 'storm', text: GROVE_PATCHES[r.event.patch].name + ': the storm removed leaf tissue from ' + r.damaged + (r.damaged === 1 ? ' tree.' : ' trees.') });
-          var limits = simple ? { moisture: 'too dry', light: 'too shady', chance: 'just bad luck', space: 'no room' } : { moisture: 'dry soil lowered the odds', light: 'shade lowered the odds', chance: 'chance alone', space: 'no space left' };
+          if (r.damaged && r.event.damage) lines.push({ key: 'storm', text: gt(GROVE_PATCHES[r.event.patch].name) + gt(': the storm removed leaf tissue from ') + r.damaged + (r.damaged === 1 ? gt(' tree.') : gt(' trees.')) });
+          var limits = simple ? { moisture: gt('too dry'), light: gt('too shady'), chance: gt('just bad luck'), space: gt('no room') } : { moisture: gt('dry soil lowered the odds'), light: gt('shade lowered the odds'), chance: gt('chance alone'), space: gt('no space left') };
           var groups = {}, order = [];
           GROVE_PATCHES.forEach(function (site, i) {
             var here = (r.landings || []).filter(function (l) { return l.patch === i; });
@@ -11598,17 +11624,17 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             if (arrived) parts.push(arrived + say(' grew', ' took root'));
             ['moisture', 'light', 'chance', 'space'].forEach(function (limit) {
               var n = here.filter(function (l) { return l.outcome !== 'arrived' && l.limit === limit; }).length;
-              if (n) parts.push(n + (simple ? ' did not grow (' + limits[limit] + ')' : ' failed, ' + limits[limit]));
+              if (n) parts.push(n + (simple ? gt(' did not grow (') + limits[limit] + ')' : gt(' failed, ') + limits[limit]));
             });
-            var signature = parts.join(' \u00b7 '); if (!groups[signature]) { groups[signature] = []; order.push(signature); } groups[signature].push(site.name);
+            var signature = parts.join(' \u00b7 '); if (!groups[signature]) { groups[signature] = []; order.push(signature); } groups[signature].push(gt(site.name));
           });
           // Patches with identical outcomes share one line, so a dry year reads as one fact.
           order.forEach(function (signature) {
-            var names = groups[signature], each = names.length > 1 ? signature.replace(/(\d+) (took root|failed|grew|did not grow)/g, '$1 $2 each') : signature;
+            var names = groups[signature], each = names.length > 1 ? signature.replace(/(\d+) (took root|failed|grew|did not grow)/g, gt('$1 $2 each')) : signature;
             lines.push({ key: 'land-' + signature, text: names.join(', ') + ': ' + each + '.' });
           });
           (r.losses || []).forEach(function (loss) {
-            lines.push({ key: 'loss-' + loss.id, text: GROVE_PATCHES[loss.patch].name + ': ' + speciesById(loss.speciesId).name + ', age ' + loss.age + (loss.cause === 'dry_seedling' ? say(', died. The soil was too dry for a small tree.', ', died in dry soil while still small.') : loss.cause === 'senescence' ? ', died of old age.' : say(', ran out of food and died.', ', ran out of stored food and died.')) + say(' Its trunk stays on the map.', ' Its trunk stays on the map as a snag.') });
+            lines.push({ key: 'loss-' + loss.id, text: GROVE_PATCHES[loss.patch].name + ': ' + speciesById(loss.speciesId).name + gt(', age ') + loss.age + (loss.cause === 'dry_seedling' ? say(', died. The soil was too dry for a small tree.', ', died in dry soil while still small.') : loss.cause === 'senescence' ? gt(', died of old age.') : say(', ran out of food and died.', ', ran out of stored food and died.')) + say(' Its trunk stays on the map.', ' Its trunk stays on the map as a snag.') });
           });
           return lines;
           }
@@ -11616,7 +11642,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             var lines = whereLines(r);
             if (!lines.length) return null;
             return h('div', { key: 'where' }, [h('h4', { key: 'h' }, say('Where it happened', 'Where it happened')),
-              h('ul', { key: 'l', className: 'grove-where', 'aria-label': 'Where it happened' }, lines.map(function (line) { return h('li', { key: line.key }, line.text); }))]);
+              h('ul', { key: 'l', className: 'grove-where', 'aria-label': __alloT('stem.treelab.a11y_where_it_happened', 'Where it happened') }, lines.map(function (line) { return h('li', { key: line.key }, line.text); }))]);
         }
         function predictionOutcome(guess, r) {
           var bucket = r.arrivals === 0 ? 'none' : r.arrivals <= 2 ? 'some' : 'many', actual = r.net < 0 ? 'shortfall' : 'surplus';
@@ -11628,18 +11654,18 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           var guess = predictions.filter(function (p) { return p.year === r.year; })[0];
           if (!guess || !(guess.arrivals || guess.food)) return null;
           var outcome = predictionOutcome(guess, r), bucket = outcome.bucket;
-          var names = simple ? { none: 'no new trees', some: '1 or 2 new trees', many: '3 or more new trees' } : { none: 'no arrivals', some: '1 or 2 arrivals', many: '3 or more arrivals' }, lines = [];
+          var names = simple ? { none: gt('no new trees'), some: gt('1 or 2 new trees'), many: gt('3 or more new trees') } : { none: gt('no arrivals'), some: gt('1 or 2 arrivals'), many: gt('3 or more arrivals') }, lines = [];
           if (names[guess.arrivals]) {
             var hit = guess.arrivals === bucket;
             lines.push((hit ? say('You were right: ', 'Matched: ') : say('Not this time: ', 'Missed: ')) + say('you said ', 'you predicted ') + names[guess.arrivals] + '; ' + r.arrivals + say(' came.', ' arrived.') + (hit ? '' : say(' New trees need water, light, room and luck.', ' Each landing depends on patch conditions, space and a chance draw, so the same choice can turn out differently.')));
           }
           if (guess.food === 'surplus' || guess.food === 'shortfall') {
             var actual = outcome.actual, match = outcome.food === true;
-            lines.push((match ? say('You were right: ', 'Matched: ') : say('Not this time: ', 'Missed: ')) + say('you said ' + (guess.food === 'surplus' ? 'more food' : 'less food') + '; the grove made ' + (actual === 'surplus' ? 'more' : 'less') + ' food than it used.', 'you predicted a ' + guess.food + '; the grove had a ' + actual + '.') + (match ? '' : actual === 'shortfall'
+            lines.push((match ? say('You were right: ', 'Matched: ') : say('Not this time: ', 'Missed: ')) + (simple ? gt('you said ') + gt(guess.food === 'surplus' ? 'more food' : 'less food') + gt('; the grove made ') + gt(actual === 'surplus' ? 'more' : 'less') + gt(' food than it used.') : gt('you predicted a ') + gt(guess.food) + gt('; the grove had a ') + gt(actual) + '.') + (match ? '' : actual === 'shortfall'
               ? (r.event.water < 0.42 ? say(' Dry soil made the leaves close their pores, so they made less food.', ' Dry soil closed stomata, which also limits carbon uptake.') : r.damaged ? say(' Fewer leaves made less food.', ' Lost leaf tissue meant less photosynthesis while maintenance costs continued.') : say(' Wood and roots eat food every year.', ' Living wood and roots cost food every year, even in a calm one.'))
               : say(' Water and light helped the leaves make lots of food.', ' Moisture and light let photosynthesis outpace maintenance this year.')));
           }
-          return h('div', { key: 'prediction', className: 'grove-prediction', 'data-grove-prediction': true }, [h('h4', { key: 'h' }, 'Your prediction'),
+          return h('div', { key: 'prediction', className: 'grove-prediction', 'data-grove-prediction': true }, [h('h4', { key: 'h' }, gt('Your prediction')),
             lines.map(function (t, i) { return h('p', { key: i }, t); })]);
         }
         function ledgerBlock() {
@@ -11650,23 +11676,23 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             return h('div', { key: 'note' }, [h('label', { key: 'l', htmlFor: 'grove-note' }, say('Your notes', 'Your reflection')),
               h('textarea', { key: 't', id: 'grove-note', rows: 3, maxLength: 240, value: mine.note || '', placeholder: say('What would you do differently next time?', 'What would you try differently next time, and why?'),
                 onChange: function (e) { var text = e.target.value; upd('groveLedger', function (prev) { return (Array.isArray(prev) ? prev : []).map(function (entry) { return entry && entry.key === currentKey ? Object.assign({}, entry, { note: text }) : entry; }); }); } }),
-              h('p', { key: 'c', className: 'grove-caption' }, 'Saved with this run. It appears when you compare later runs of the same grove.')]);
+              h('p', { key: 'c', className: 'grove-caption' }, gt('Saved with this run. It appears when you compare later runs of the same grove.'))]);
           }
           var others = ledger.filter(function (e) { return e.seed === config.seed && e.mode === config.mode && e.key !== currentKey; });
-          if (!others.length) return h('div', { key: 'ledger-empty' }, [noteField(), h('p', { key: 'p', className: 'grove-caption' }, 'Replay this grove with different priorities. Its weather stays the same, so the comparison is fair.')]);
+          if (!others.length) return h('div', { key: 'ledger-empty' }, [noteField(), h('p', { key: 'p', className: 'grove-caption' }, gt('Replay this grove with different priorities. Its weather stays the same, so the comparison is fair.'))]);
           var hidden = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' };
-          return h('div', { key: 'ledger' }, [h('h4', { key: 'h' }, 'Other runs of ' + config.seed),
-            h('ul', { key: 'l', className: 'grove-ledger', 'aria-label': 'Earlier runs of this grove' }, others.slice().reverse().map(function (e) {
+          return h('div', { key: 'ledger' }, [h('h4', { key: 'h' }, gt('Other runs of ') + config.seed),
+            h('ul', { key: 'l', className: 'grove-ledger', 'aria-label': __alloT('stem.treelab.a11y_earlier_runs_of_this_grove', 'Earlier runs of this grove') }, others.slice().reverse().map(function (e) {
               var cards = e.priorities.map(function (id) { return GROVE_PRIORITIES.filter(function (p) { return p.id === id; })[0] || GROVE_PRIORITIES[1]; });
               return h('li', { key: e.key }, [
                 h('span', { key: 'icons', 'aria-hidden': true }, cards.map(function (c) { return c.icon; }).join('')),
-                h('span', { key: 'names', style: hidden }, 'Priorities: ' + cards.map(function (c) { return c.name; }).join(', ') + '.'),
-                ' \u00b7 ' + e.established + ' established in ' + e.patches + (e.patches === 1 ? ' patch' : ' patches') + ' \u00b7 ' + e.living + ' living' + (e.success ? ' \u00b7 goal reached' : e.years < 8 ? ' \u00b7 ended in year ' + e.years : '') + (e.note ? ' \u00b7 \u201c' + String(e.note).slice(0, 240) + '\u201d' : '')
+                h('span', { key: 'names', style: hidden }, gt('Priorities: ') + cards.map(function (c) { return c.name; }).join(', ') + '.'),
+                ' \u00b7 ' + e.established + gt(' established in ') + e.patches + (e.patches === 1 ? gt(' patch') : gt(' patches')) + ' \u00b7 ' + e.living + gt(' living') + (e.success ? gt(' \u00b7 goal reached') : e.years < 8 ? gt(' \u00b7 ended in year ') + e.years : '') + (e.note ? ' \u00b7 \u201c' + String(e.note).slice(0, 240) + '\u201d' : '')
               ]);
             })),
-            h('p', { key: 'note', className: 'grove-caption' }, 'Same code and event mode mean the same weather every year. Differences come from your priorities, the routes chosen and each landing\u2019s chance draw.'), noteField()]);
+            h('p', { key: 'note', className: 'grove-caption' }, gt('Same code and event mode mean the same weather every year. Differences come from your priorities, the routes chosen and each landing\u2019s chance draw.')), noteField()]);
         }
-        return h('section', { className: 'allo-tree-grove', 'aria-label': 'Grove campaign', style: {
+        return h('section', { className: 'allo-tree-grove', 'aria-label': __alloT('stem.treelab.a11y_grove_campaign', 'Grove campaign'), style: {
           '--grove-card': T.card, '--grove-ink': T.text, '--grove-muted': T.dim, '--grove-line': T.border,
                    '--grove-track': isContrast ? '#000000' : (isDark ? '#0f172a' : '#eef2f7'),
           '--grove-wash': isContrast ? '#000' : isDark ? '#122e2a' : '#eff6ed', '--grove-accent': T.accent,
@@ -11677,14 +11703,14 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           h('style', { key: 'style' }, GROVE_CSS),
           h('a', { key: 'skip', className: 'grove-skip', href: '#grove-decisions', onClick: function (e) { e.preventDefault(); focusLater('#grove-decisions'); } }, say('Skip to this year' + '\u2019' + 's choice', 'Skip to this year' + '\u2019' + 's decision')),
           h('header', { key: 'head', className: 'grove-header' }, [
-            h('div', { key: 'intro' }, [h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'A SMALL FOREST · A LASTING STORY'),
-              h('h3', { key: 'title' }, 'Leave a living legacy.'),
-              h('p', { key: 'copy' }, band === 'k2' ? 'Help your grove through eight years. Give new trees a chance to take root.' : 'Guide a grove through eight years. Keep a lineage alive and establish descendants in two patches.')]),
-            h('div', { key: 'year', className: 'grove-year' }, [h('strong', { key: 'n' }, grove.year + ' / 8'), h('span', { key: 'l' }, 'years completed')])
+            h('div', { key: 'intro' }, [h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, gt('A SMALL FOREST · A LASTING STORY')),
+              h('h3', { key: 'title' }, gt('Leave a living legacy.')),
+              h('p', { key: 'copy' }, band === 'k2' ? gt('Help your grove through eight years. Give new trees a chance to take root.') : gt('Guide a grove through eight years. Keep a lineage alive and establish descendants in two patches.'))]),
+            h('div', { key: 'year', className: 'grove-year' }, [h('strong', { key: 'n' }, grove.year + ' / 8'), h('span', { key: 'l' }, gt('years completed'))])
           ]),
-          h('div', { key: 'progress', className: 'grove-progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': grove.year, 'aria-label': 'Years completed' }, Array.from({ length: 8 }, function (_, i) {
+          h('div', { key: 'progress', className: 'grove-progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': grove.year, 'aria-label': __alloT('stem.treelab.a11y_years_completed', 'Years completed') }, Array.from({ length: 8 }, function (_, i) {
             var ev = i < grove.year ? grove.receipts[i].event : null;
-            return h('span', { key: i, className: i < grove.year ? 'is-complete' : '', 'aria-hidden': true, title: ev ? 'Year ' + (i + 1) + ': ' + ev.title : undefined }, ev ? ev.icon + ' ' + (i + 1) : i + 1);
+            return h('span', { key: i, className: i < grove.year ? 'is-complete' : '', 'aria-hidden': true, title: ev ? gt('Year ') + (i + 1) + ': ' + gt(ev.title) : undefined }, ev ? ev.icon + ' ' + (i + 1) : i + 1);
           })),
           h('div', { key: 'layout', className: 'grove-layout' }, [
             h('div', { key: 'landscape', className: 'grove-landscape' }, [
@@ -11693,11 +11719,11 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                 h('span', { key: 'offspring' }, [h('strong', { key: 'v', 'data-grove-established': true }, summary.established), say(' new trees that made it', ' established descendants')]),
                 h('span', { key: 'patches', className: 'grove-goal' }, [h('strong', { key: 'v' }, summary.descendantPatches + ' / 2'), say(' places with new trees', ' descendant patches'), h('span', { key: 'dots', className: 'grove-goal-dots', 'aria-hidden': true }, [0, 1].map(function (i) { return h('i', { key: i, className: i < summary.descendantPatches ? 'is-filled' : '' }); }))])
               ]),
-              h('div', { key: 'views', className: 'grove-view-switch', role: 'group', 'aria-label': 'Grove view' }, [
-                btn('map', 'Habitat map', function () { upd('groveView', 'map'); }, { pressed: !inspect3d }),
-                btn('3d', '3D close-up', function () { upd('groveView', '3d'); }, { pressed: inspect3d })
+              h('div', { key: 'views', className: 'grove-view-switch', role: 'group', 'aria-label': __alloT('stem.treelab.a11y_grove_view', 'Grove view') }, [
+                btn('map', gt('Habitat map'), function () { upd('groveView', 'map'); }, { pressed: !inspect3d }),
+                btn('3d', gt('3D close-up'), function () { upd('groveView', '3d'); }, { pressed: inspect3d })
               ]),
-              inspect3d ? closeup() : h('div', { key: 'map', className: 'grove-map', role: 'group', 'aria-label': 'Grove habitat patches' }, GROVE_PATCHES.map(function (patch, i) {
+              inspect3d ? closeup() : h('div', { key: 'map', className: 'grove-map', role: 'group', 'aria-label': __alloT('stem.treelab.a11y_grove_habitat_patches', 'Grove habitat patches') }, GROVE_PATCHES.map(function (patch, i) {
                 var living = grove.trees.filter(function (n) { return n.patch === i && n.tree.alive; });
                 var dead = grove.trees.filter(function (n) { return n.patch === i && !n.tree.alive; });
                 var gained = last ? last.landings.filter(function (l) { return l.patch === i && l.outcome === 'arrived'; }).length : 0;
@@ -11705,11 +11731,11 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                 var wet = Math.round(groveEnvironment(grove, i, last ? last.event : groveEvent(config, 1)).soilWater * 100);
                 var gap = grove.gaps.indexOf(i) >= 0;
                 return h('button', { key: i, type: 'button', className: 'grove-patch is-' + patch.habitat + (i === selection ? ' is-selected' : '') + (dryNext.indexOf(i) >= 0 ? ' is-dry-next' : ''),
-                  'aria-pressed': i === selection, title: patch.name + ' \u00b7 ' + say({ exposed: 'sunny', damp: 'wet', sheltered: 'shady' }[patch.habitat], patch.habitat) + ' \u00b7 soil ' + wet + '% wet' + (gap ? ' \u00b7 storm opening' : ''), 'aria-label': patch.name + ': ' + living.length + ' living trees' + (gap ? ', canopy opening' : '') + (dead.length ? ', ' + dead.length + ' dead' : '') + (gained ? ', ' + gained + ' arrived this year' : '') + (lost ? ', ' + lost + ' lost this year' : '') + (dryNext.indexOf(i) >= 0 ? ', dry next year' : '') + ', soil ' + wet + '% wet',
+                  'aria-pressed': i === selection, title: gt(patch.name) + ' \u00b7 ' + say({ exposed: 'sunny', damp: 'wet', sheltered: 'shady' }[patch.habitat], patch.habitat) + gt(' \u00b7 soil ') + wet + gt('% wet') + (gap ? gt(' \u00b7 storm opening') : ''), 'aria-label': gt(patch.name) + ': ' + living.length + gt(' living trees') + (gap ? gt(', canopy opening') : '') + (dead.length ? ', ' + dead.length + gt(' dead') : '') + (gained ? ', ' + gained + gt(' arrived this year') : '') + (lost ? ', ' + lost + gt(' lost this year') : '') + (dryNext.indexOf(i) >= 0 ? gt(', dry next year') : '') + gt(', soil ') + wet + gt('% wet'),
                   onClick: function () { upd('grovePatch', i); } }, [
-                  h('span', { key: 'name', className: 'grove-patch-name' }, patch.name),
+                  h('span', { key: 'name', className: 'grove-patch-name' }, gt(patch.name)),
                   gained || lost ? h('span', { key: 'badge', className: 'grove-patch-badge' + (gained ? '' : ' is-loss'), 'aria-hidden': true }, (gained ? '+' + gained : '') + (gained && lost ? ' ' : '') + (lost ? '\u2212' + lost : '')) : null,
-                  dryNext.indexOf(i) >= 0 ? h('span', { key: 'dry', className: 'grove-patch-dry', 'aria-hidden': true }, 'dry next') : null,
+                  dryNext.indexOf(i) >= 0 ? h('span', { key: 'dry', className: 'grove-patch-dry', 'aria-hidden': true }, gt('dry next')) : null,
                   h('svg', { key: 'trees', viewBox: '0 0 140 100', 'aria-hidden': true, focusable: 'false' }, [
                     h('ellipse', { key: 'ground', cx: 70, cy: 85, rx: 64, ry: 12, fill: isContrast ? '#444' : '#91b18b44' }),
                     gap ? h('path', { key: 'gap', d: 'M70 2 L30 86 L110 86Z', fill: isContrast ? '#ffff00' : '#ffe58a', opacity: isContrast ? 0.22 : 0.5 }) : null,
@@ -11717,50 +11743,50 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                     dead.slice(0, 3).map(function (node, idx) { return snag(node, idx); }),
                     living.length ? living.map(function (node, idx) { return glyph(node, idx, living.length); }) : h('path', { key: 'empty', d: 'M65 84 Q68 74 64 71 M69 86 Q69 76 74 72 M73 86 Q77 82 79 77', fill: 'none', stroke: isContrast ? '#fff' : '#6c8b61', strokeWidth: 2 })
                   ]),
-                  h('span', { key: 'label', className: 'grove-patch-count' }, (living.length ? living.length + (living.length === 1 ? ' tree' : ' trees') : 'Open ground') + (dead.length ? ' \u00b7 ' + dead.length + (dead.length === 1 ? ' snag' : ' snags') : '') + (gap ? ' \u00b7 gap' : '')),
-                  h('span', { key: 'water', className: 'grove-patch-water', 'aria-hidden': true, title: 'Soil ' + wet + '% wet' }, h('i', { key: 'f', style: { width: wet + '%' } }))
+                  h('span', { key: 'label', className: 'grove-patch-count' }, (living.length ? living.length + (living.length === 1 ? gt(' tree') : gt(' trees')) : gt('Open ground')) + (dead.length ? ' \u00b7 ' + dead.length + (dead.length === 1 ? gt(' snag') : gt(' snags')) : '') + (gap ? gt(' \u00b7 gap') : '')),
+                  h('span', { key: 'water', className: 'grove-patch-water', 'aria-hidden': true, title: gt('Soil ') + wet + gt('% wet') }, h('i', { key: 'f', style: { width: wet + '%' } }))
                 ]);
               })),
-              inspect3d ? null : h('p', { key: 'legend', className: 'grove-caption' }, simple ? 'Round top: oak. Pointy top: aspen. Small tree: young. Grey trunk: a dead tree. A + badge means new trees this year; a \u2212 badge means trees lost. The bar shows how wet the soil is. A yellow glow means a storm let in more light.' : 'Rounded crown: oak \u00b7 Narrow crown: aspen \u00b7 Small tree: young individual \u00b7 Bare grey trunk: a dead tree left standing (a snag). Badges mark this year\u2019s arrivals (+) and losses (\u2212). The bar under each patch shows this year\u2019s soil moisture; a pale wedge marks a storm opening. Symbol size follows tree height but is not to scale.'),
-              h('section', { key: 'inspect', className: 'grove-inspect', 'aria-label': 'Selected patch' }, [
-                h('h3', { key: 'title' }, site.name),
-                h('p', { key: 'habitat' }, say({ exposed: 'Sunny spot', damp: 'Wet spot', sheltered: 'Shady spot' }[site.habitat], site.habitat.charAt(0).toUpperCase() + site.habitat.slice(1) + ' habitat') + ' · ' + Math.round(groveEnvironment(grove, selection, forecast).light * 100) + '% light setting' + (summary.ended ? '' : ' \u00b7 next year ' + Math.round(groveEnvironment(grove, selection, forecast).soilWater * 100) + '% soil moisture' + (dryNext.indexOf(selection) >= 0 ? ' (dry)' : '')) + (grove.gaps.indexOf(selection) >= 0 ? ' · a storm opened the canopy' : '')),
+              inspect3d ? null : h('p', { key: 'legend', className: 'grove-caption' }, simple ? gt('Round top: oak. Pointy top: aspen. Small tree: young. Grey trunk: a dead tree. A + badge means new trees this year; a \u2212 badge means trees lost. The bar shows how wet the soil is. A yellow glow means a storm let in more light.') : gt('Rounded crown: oak \u00b7 Narrow crown: aspen \u00b7 Small tree: young individual \u00b7 Bare grey trunk: a dead tree left standing (a snag). Badges mark this year\u2019s arrivals (+) and losses (\u2212). The bar under each patch shows this year\u2019s soil moisture; a pale wedge marks a storm opening. Symbol size follows tree height but is not to scale.')),
+              h('section', { key: 'inspect', className: 'grove-inspect', 'aria-label': __alloT('stem.treelab.a11y_selected_patch', 'Selected patch') }, [
+                h('h3', { key: 'title' }, gt(site.name)),
+                h('p', { key: 'habitat' }, say({ exposed: 'Sunny spot', damp: 'Wet spot', sheltered: 'Shady spot' }[site.habitat], { exposed: 'Exposed habitat', damp: 'Damp habitat', sheltered: 'Sheltered habitat' }[site.habitat]) + ' · ' + Math.round(groveEnvironment(grove, selection, forecast).light * 100) + gt('% light setting') + (summary.ended ? '' : gt(' \u00b7 next year ') + Math.round(groveEnvironment(grove, selection, forecast).soilWater * 100) + gt('% soil moisture') + (dryNext.indexOf(selection) >= 0 ? gt(' (dry)') : '')) + (grove.gaps.indexOf(selection) >= 0 ? gt(' · a storm opened the canopy') : '')),
                 selectedNodes.length ? h('ul', { key: 'trees' }, selectedNodes.map(function (node) {
-                  return h('li', { key: node.id }, speciesById(node.tree.speciesId).name + ' · age ' + node.tree.age + ' · ' + (!node.tree.alive ? say('died', 'died; lineage record retained') : node.parent ? node.born === grove.year ? say('just arrived', 'new arrival; survival not yet established') : say('new tree, growing', 'established descendant') : say('first tree', 'founding tree')) + (node.parent ? ' · ' + (node.route === 'root_sucker' ? say('shoot', 'clonal shoot') : say('from a seed', 'seed offspring')) : ''));
+                  return h('li', { key: node.id }, __alloT('stem.treelab.species_' + node.tree.speciesId, speciesById(node.tree.speciesId).name) + gt(' · age ') + node.tree.age + ' · ' + (!node.tree.alive ? say('died', 'died; lineage record retained') : node.parent ? node.born === grove.year ? say('just arrived', 'new arrival; survival not yet established') : say('new tree, growing', 'established descendant') : say('first tree', 'founding tree')) + (node.parent ? ' · ' + (node.route === 'root_sucker' ? say('shoot', 'clonal shoot') : say('from a seed', 'seed offspring')) : ''));
                 })) : h('p', { key: 'empty' }, say('No trees here yet. A seed could land here, or a shoot could grow from next door.', 'No trees here yet. A seed may arrive from farther away; root suckers stay in the parent’s patch or an adjacent one.')),
-                !inspect3d && portrait ? action('inspect-tree', 'Explore this patch’s trees in 3D', function () { upd('groveView', '3d'); }) : null,
-                h('details', { key: 'traits' }, [h('summary', { key: 's' }, 'Species traits and stored food'),
-                  h('p', { key: 'p' }, 'These traits are already present. Choosing a resource priority does not change genes.'),
+                !inspect3d && portrait ? action('inspect-tree', gt('Explore this patch’s trees in 3D'), function () { upd('groveView', '3d'); }) : null,
+                h('details', { key: 'traits' }, [h('summary', { key: 's' }, gt('Species traits and stored food')),
+                  h('p', { key: 'p' }, gt('These traits are already present. Choosing a resource priority does not change genes.')),
                   selectedNodes.filter(function (n) { return n.tree.alive; }).map(function (node) {
                     var species = speciesById(node.tree.speciesId);
-                    return h('p', { key: node.id }, species.name + ': shade tolerance ' + Math.round(species.shadeTol * 100) + '/100; drought tolerance ' + Math.round(species.droughtTol * 100) + '/100. Food reserve: ' + formatCarbon(Math.max(0, node.tree.reserves)) + '; reproductive savings: ' + formatCarbon(node.tree.seedsBanked) + '.');
+                    return h('p', { key: node.id }, __alloT('stem.treelab.species_' + species.id, species.name) + gt(': shade tolerance ') + Math.round(species.shadeTol * 100) + gt('/100; drought tolerance ') + Math.round(species.droughtTol * 100) + gt('/100. Food reserve: ') + formatCarbon(Math.max(0, node.tree.reserves)) + gt('; reproductive savings: ') + formatCarbon(node.tree.seedsBanked) + '.');
                   })])
               ])
             ]),
-            h('section', { key: 'choices', className: 'grove-decisions', id: 'grove-decisions', tabIndex: -1, 'aria-label': 'Journey decisions' }, [
+            h('section', { key: 'choices', className: 'grove-decisions', id: 'grove-decisions', tabIndex: -1, 'aria-label': __alloT('stem.treelab.a11y_journey_decisions', 'Journey decisions') }, [
               !started ? h('div', { key: 'setup', className: 'grove-setup' }, [
-                h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'YOUR FIRST GROVE'),
-                h('h3', { key: 'title', tabIndex: -1 }, 'Three trees. Eight years. What will take root?'),
+                h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, gt('YOUR FIRST GROVE')),
+                h('h3', { key: 'title', tabIndex: -1 }, gt('Three trees. Eight years. What will take root?')),
                 h('p', { key: 'copy' }, say('Two big trees have saved food for making new trees. A small aspen is growing nearby. Your lab tree is safe on its own page.', 'Two adults bring reproductive savings from their earlier lives. A young aspen is already growing nearby. Your single-tree lab stays separate.')),
-                h('label', { key: 'ml', htmlFor: 'grove-mode' }, 'Events'),
-                h('select', { key: 'mode', id: 'grove-mode', value: config.mode, onChange: function (e) { upd('groveMode', e.target.value); } }, [h('option', { key: 'deck', value: 'deck' }, 'Event deck · authored scenarios'), h('option', { key: 'generated', value: 'generated' }, 'Generated weather · bounded combinations')]),
-                h('p', { key: 'modehelp', className: 'grove-caption' }, config.mode === 'deck' ? 'A repeatable draw of gentle years, rain, drought and storms.' : 'Temperature, moisture and storm strength are combined by rules. This is procedural weather, not AI-generated biology.'),
-                h('label', { key: 'sl', htmlFor: 'grove-seed' }, 'Grove code'),
+                h('label', { key: 'ml', htmlFor: 'grove-mode' }, gt('Events')),
+                h('select', { key: 'mode', id: 'grove-mode', value: config.mode, onChange: function (e) { upd('groveMode', e.target.value); } }, [h('option', { key: 'deck', value: 'deck' }, gt('Event deck · authored scenarios')), h('option', { key: 'generated', value: 'generated' }, gt('Generated weather · bounded combinations'))]),
+                h('p', { key: 'modehelp', className: 'grove-caption' }, config.mode === 'deck' ? gt('A repeatable draw of gentle years, rain, drought and storms.') : gt('Temperature, moisture and storm strength are combined by rules. This is procedural weather, not AI-generated biology.')),
+                h('label', { key: 'sl', htmlFor: 'grove-seed' }, gt('Grove code')),
                 h('input', { key: 'seed', id: 'grove-seed', maxLength: 32, value: d.groveSeed == null ? 'GROVE-01' : d.groveSeed, onChange: function (e) { upd('groveSeed', e.target.value); } }),
                 h('p', { key: 'seedhelp', className: 'grove-caption' }, say('Same code = same weather. So you can try a new plan and compare.', 'The same code and event mode give the same weather. Try another strategy fairly.')),
-                (function () { var runs = ledger.filter(function (e) { return e.seed === config.seed && e.mode === config.mode; }).length; return runs ? h('p', { key: 'runs', className: 'grove-caption' }, runs === 1 ? '1 completed run on this code is remembered for comparison.' : runs + ' completed runs on this code are remembered for comparison.') : null; })(),
-                action('start', 'Begin Grove Journey', function () { saveRun(config, 'Grove Journey started. Read the forecast and choose a resource priority.'); })
+                (function () { var runs = ledger.filter(function (e) { return e.seed === config.seed && e.mode === config.mode; }).length; return runs ? h('p', { key: 'runs', className: 'grove-caption' }, runs === 1 ? gt('1 completed run on this code is remembered for comparison.') : runs + gt(' completed runs on this code are remembered for comparison.')) : null; })(),
+                action('start', gt('Begin Grove Journey'), function () { saveRun(config, gt('Grove Journey started. Read the forecast and choose a resource priority.')); })
               ]) : summary.ended ? h('div', { key: 'ending', className: 'grove-ending', 'data-grove-ending': true }, [
-                h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'THE GROVE’S STORY'),
-                h('h3', { key: 'title', tabIndex: -1 }, summary.success ? 'A living legacy.' : summary.living ? 'The story can grow further.' : 'This grove’s run has ended.'),
+                h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, gt('THE GROVE’S STORY')),
+                h('h3', { key: 'title', tabIndex: -1 }, summary.success ? gt('A living legacy.') : summary.living ? gt('The story can grow further.') : gt('This grove’s run has ended.')),
                 h('p', { key: 'copy' }, summary.established + say(' new trees made it, in ', ' descendants survived beyond their arrival year, across ') + summary.descendantPatches + say(' places. ', ' patches. ') + (summary.success ? say('You did it: new trees in two places!', 'You reached the two-patch goal.') : say('Try a different card and play the same weather again.', 'Try changing an earlier priority and compare the same weather.'))),
                 h('p', { key: 'new' }, summary.newArrivals ? summary.newArrivals + say(' trees came this year. They need one more year to count.', ' arrivals in the last year are too new to count as established.') : say('Your journal keeps your discoveries.', 'Your field journal stays with you across runs.')),
                 ledgerBlock()
               ]) : h('div', { key: 'turn', className: 'grove-turn' }, [
                 h('div', { key: 'forecast', className: 'grove-forecast' }, [
-                  h('span', { key: 'year', className: 'grove-eyebrow' }, 'YEAR ' + (grove.year + 1) + ' · FORECAST'),
-                  h('h3', { key: 'title', tabIndex: -1 }, forecast.icon + ' ' + forecast.title), h('p', { key: 'copy' }, simple ? eventCopySimple[forecast.id] || forecast.copy : forecast.copy),
-                  h('p', { key: 'numbers', className: 'grove-caption' }, simple ? forecast.temp + ' \u00b0C \u00b7 soil ' + Math.round(forecast.water * 100) + '% wet' + (forecast.damage ? ' \u00b7 the storm hits ' + GROVE_PATCHES[forecast.patch].name : '') + (forecast.water < 0.42 ? '. Small trees may not make it in dry spots.' : '.') : forecast.temp + ' °C · ' + Math.round(forecast.water * 100) + '% baseline soil moisture' + (forecast.damage ? ' · ' + GROVE_PATCHES[forecast.patch].name + ' loses ' + Math.round(forecast.damage * 100) + '% of leaf tissue' : '') + '. Patch moisture varies.' + (forecast.water < 0.42 ? ' Trees three years old or younger face extra risk in dry patches.' : '')),
+                  h('span', { key: 'year', className: 'grove-eyebrow' }, gt('YEAR ') + (grove.year + 1) + gt(' · FORECAST')),
+                  h('h3', { key: 'title', tabIndex: -1 }, forecast.icon + ' ' + gt(forecast.title)), h('p', { key: 'copy' }, gt(simple ? eventCopySimple[forecast.id] || forecast.copy : forecast.copy)),
+                  h('p', { key: 'numbers', className: 'grove-caption' }, simple ? forecast.temp + gt(' \u00b0C \u00b7 soil ') + Math.round(forecast.water * 100) + gt('% wet') + (forecast.damage ? gt(' \u00b7 the storm hits ') + gt(GROVE_PATCHES[forecast.patch].name) : '') + (forecast.water < 0.42 ? gt('. Small trees may not make it in dry spots.') : '.') : forecast.temp + ' °C · ' + Math.round(forecast.water * 100) + gt('% baseline soil moisture') + (forecast.damage ? ' · ' + gt(GROVE_PATCHES[forecast.patch].name) + gt(' loses ') + Math.round(forecast.damage * 100) + gt('% of leaf tissue') : '') + gt('. Patch moisture varies.') + (forecast.water < 0.42 ? gt(' Trees three years old or younger face extra risk in dry patches.') : '')),
                   dryNext.length ? h('p', { key: 'risk', className: 'grove-risk' }, say('Next year these spots will be dry: ', 'Dry next year: ') + dryNext.map(function (i) { return GROVE_PATCHES[i].name; }).join(', ') + '. ' + (youngAtRisk ? youngAtRisk + (youngAtRisk === 1 ? say(' small tree is there. It may not make it. ', ' young tree stands there and faces extra risk. ') : say(' small trees are there. They may not make it. ', ' young trees stand there and face extra risk. ')) : '') + say('New trees do not grow well in dry spots.', 'New arrivals in dry patches rarely take root.')) : null,
                 ]),
                 h('fieldset', { key: 'priorities', className: 'grove-priorities' }, [h('legend', { key: 'legend' }, say('Pick a card for this year', 'Choose this year’s priority')), GROVE_PRIORITIES.map(function (priority) {
@@ -11773,33 +11799,33 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                   h('select', { key: 'select', id: 'grove-route', value: route, onChange: function (e) { upd('groveRoute', e.target.value); } }, [h('option', { key: 'mixed', value: 'mixed' }, say('Oak seeds + aspen shoots nearby', 'Oak seeds + local aspen shoots')), h('option', { key: 'seed', value: 'seed' }, say('Seeds from both kinds of tree', 'Seeds from both species'))]),
                   h('p', { key: 'help', className: 'grove-caption' }, say('Shoots grow close by and often make it. Seeds can go far but often fail.', 'Shoots establish more often nearby. Seeds can reach all patches but often fail. Neither route guarantees survival.'))]) : null,
                 h('div', { key: 'predict', className: 'grove-predict' }, [
-                  h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'PREDICT, THEN CHECK \u00b7 OPTIONAL'),
-                  h('label', { key: 'al', htmlFor: 'grove-predict-arrivals' }, band === 'k2' ? 'How many new trees will arrive this year?' : 'How many new arrivals do you expect this year?'),
+                  h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, gt('PREDICT, THEN CHECK \u00b7 OPTIONAL')),
+                  h('label', { key: 'al', htmlFor: 'grove-predict-arrivals' }, band === 'k2' ? gt('How many new trees will arrive this year?') : gt('How many new arrivals do you expect this year?')),
                   h('select', { key: 'as', id: 'grove-predict-arrivals', value: pending.arrivals || '', onChange: function (e) { upd('grovePending', Object.assign({}, pending, { arrivals: e.target.value })); } }, [
-                    h('option', { key: 'skip', value: '' }, say('Skip', 'Skip this prediction')), h('option', { key: 'none', value: 'none' }, 'None'), h('option', { key: 'some', value: 'some' }, '1 or 2'), h('option', { key: 'many', value: 'many' }, '3 or more')]),
-                  h('label', { key: 'fl', htmlFor: 'grove-predict-food' }, band === 'k2' ? 'Will the grove make more food than it uses?' : 'Will the grove make more food than it uses overall?'),
+                    h('option', { key: 'skip', value: '' }, say('Skip', 'Skip this prediction')), h('option', { key: 'none', value: 'none' }, gt('None')), h('option', { key: 'some', value: 'some' }, gt('1 or 2')), h('option', { key: 'many', value: 'many' }, gt('3 or more'))]),
+                  h('label', { key: 'fl', htmlFor: 'grove-predict-food' }, band === 'k2' ? gt('Will the grove make more food than it uses?') : gt('Will the grove make more food than it uses overall?')),
                   h('select', { key: 'fs', id: 'grove-predict-food', value: pending.food || '', onChange: function (e) { upd('grovePending', Object.assign({}, pending, { food: e.target.value })); } }, [
                     h('option', { key: 'skip', value: '' }, say('Skip', 'Skip this prediction')), h('option', { key: 'surplus', value: 'surplus' }, say('Yes, more food', 'Yes, a surplus')), h('option', { key: 'shortfall', value: 'shortfall' }, say('No, less food', 'No, a shortfall'))]),
                   h('p', { key: 'help', className: 'grove-caption' }, say('After the year, see if you were right. Being wrong is OK!', 'The evidence after the year checks your prediction. A miss is useful: it shows where the model surprised you.'))
                 ]),
-                action('advance', 'Live through year ' + (grove.year + 1) + ' →', advance),
+                action('advance', gt('Live through year ') + (grove.year + 1) + ' →', advance),
                 h('p', { key: 'time', className: 'grove-caption' }, say('One click = one year. The cards do not change what kind of tree it is.', 'One click advances one whole year. Each tree uses its own food budget; these cards do not alter inherited traits.')),
-                last ? h('a', { key: 'evidence-link', className: 'grove-evidence-link', href: '#grove-receipt', onClick: function (e) { e.preventDefault(); var el = document.querySelector('.allo-tree-grove #grove-receipt'); if (el) { if (el.scrollIntoView) el.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' }); el.focus({ preventScroll: true }); } } }, say('See what happened in year ' + last.year + ' \u2193', 'Read the year ' + last.year + ' evidence \u2193')) : null
+                last ? h('a', { key: 'evidence-link', className: 'grove-evidence-link', href: '#grove-receipt', onClick: function (e) { e.preventDefault(); var el = document.querySelector('.allo-tree-grove #grove-receipt'); if (el) { if (el.scrollIntoView) el.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' }); el.focus({ preventScroll: true }); } } }, (simple ? gt('See what happened in year ') + last.year + ' \u2193' : gt('Read the year ') + last.year + gt(' evidence \u2193'))) : null
               ]),
               started ? h('div', { key: 'replay', className: 'grove-replay' }, [
-                action('undo', 'Try the previous year again', function () { saveRun(Object.assign({}, config, { choices: config.choices.slice(0, -1) }), 'Returned to the previous year with the same forecast.'); }, !grove.year),
-                h('details', { key: 'restart' }, [h('summary', { key: 's' }, 'Replay or choose a new grove'),
-                  h('p', { key: 'p', className: 'grove-caption' }, 'Replaying resets this grove’s timeline. Your journal and lab tree stay saved.'),
-                  action('same', 'Replay this grove from the start', function () { saveRun(Object.assign({}, config, { choices: [] }), 'Same grove restarted; the weather sequence is unchanged.'); }),
-                  action('new', 'Return to grove setup', function () { updMulti({ groveRun: null, groveSeed: config.seed, groveMode: config.mode, groveJournal: journal, grovePredictions: [], grovePending: null, groveShare: null }); focusLater('.grove-setup h3'); srSay('Grove setup opened. Change the code or event mode to begin another run.'); })]),
+                action('undo', gt('Try the previous year again'), function () { saveRun(Object.assign({}, config, { choices: config.choices.slice(0, -1) }), gt('Returned to the previous year with the same forecast.')); }, !grove.year),
+                h('details', { key: 'restart' }, [h('summary', { key: 's' }, gt('Replay or choose a new grove')),
+                  h('p', { key: 'p', className: 'grove-caption' }, gt('Replaying resets this grove’s timeline. Your journal and lab tree stay saved.')),
+                  action('same', gt('Replay this grove from the start'), function () { saveRun(Object.assign({}, config, { choices: [] }), gt('Same grove restarted; the weather sequence is unchanged.')); }),
+                  action('new', gt('Return to grove setup'), function () { updMulti({ groveRun: null, groveSeed: config.seed, groveMode: config.mode, groveJournal: journal, grovePredictions: [], grovePending: null, groveShare: null }); focusLater('.grove-setup h3'); srSay(gt('Grove setup opened. Change the code or event mode to begin another run.')); })]),
                 shareBlock(),
-                h('p', { key: 'seed', className: 'grove-caption' }, config.seed + ' · ' + (config.mode === 'deck' ? 'Event deck' : 'Generated weather') + ' · saved with this lab')
+                h('p', { key: 'seed', className: 'grove-caption' }, config.seed + ' · ' + (config.mode === 'deck' ? gt('Event deck') : gt('Generated weather')) + gt(' · saved with this lab'))
               ]) : null
             ])
           ]),
-          h('section', { key: 'receipt', className: 'grove-receipt', id: 'grove-receipt', tabIndex: -1, 'aria-label': 'Latest year evidence' }, last ? [
-            h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'YEAR ' + last.year + ' · WHAT HAPPENED'),
-            h('h3', { key: 'title' }, last.event.title),
+          h('section', { key: 'receipt', className: 'grove-receipt', id: 'grove-receipt', tabIndex: -1, 'aria-label': __alloT('stem.treelab.a11y_latest_year_evidence', 'Latest year evidence') }, last ? [
+            h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, gt('YEAR ') + last.year + gt(' · WHAT HAPPENED')),
+            h('h3', { key: 'title' }, gt(last.event.title)),
             (function () {
               var before = groveDiscoveries(groveRestore(Object.assign({}, config, { choices: config.choices.slice(0, -1) })));
               var earned = groveDiscoveries(grove).filter(function (id) { return before.indexOf(id) < 0; });
@@ -11807,30 +11833,30 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                 var outcome = predictionOutcome(predictions.filter(function (p) { return p.year === last.year; })[0], last);
                 if ((outcome.arrivals === true || outcome.food === true) && grove.receipts.slice(0, -1).every(function (r) { var g = predictions.filter(function (p) { return p.year === r.year; })[0]; if (!g) return true; var o = predictionOutcome(g, r); return o.arrivals !== true && o.food !== true; })) earned.push('prediction-hit');
               }
-              return earned.length ? h('p', { key: 'discovery', className: 'grove-discovery', role: 'status' }, '\u2726 New discovery: ' + earned.map(function (id) { return journalNames[id]; }).join(' \u00b7 ')) : null;
+              return earned.length ? h('p', { key: 'discovery', className: 'grove-discovery', role: 'status' }, gt('\u2726 New discovery: ') + earned.map(function (id) { return gt(journalNames[id]); }).join(' \u00b7 ')) : null;
             })(),
             h('p', { key: 'priority' }, say('Card used: ', 'Priority used: ') + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === last.choice.priority; })[0]) + '.'),
             h('p', { key: 'result' }, last.arrivals + (last.arrivals === 1 ? say(' new tree came · ', ' new arrival · ') : say(' new trees came · ', ' new arrivals · ')) + last.established + say(' new trees that made it · ', ' established descendants · ') + last.deaths + (last.deaths === 1 ? say(' tree died.', ' tree lost.') : say(' trees died.', ' trees lost.'))),
-            h('p', { key: 'why' }, (last.net < 0 ? say('The grove used more food than it made. Trees ate their saved food.', 'The grove used more food than it made overall. Trees with a shortfall drew on their own reserves.') : say('The grove made more food than it used. Each tree used the extra for your card.', 'The grove made more food than it used overall; each tree allocated its own surplus to your chosen priority.')) + (last.damaged ? say(' The storm tore leaves off ', ' The storm removed leaf tissue from ') + last.damaged + ' trees.' : '')),
-            h('p', { key: 'stored' }, say('Saved food: ', 'Stored food across living trees: ') + formatCarbon(last.reserves) + (prev ? ' (' + (last.reserves >= prev.reserves ? 'up ' : 'down ') + formatCarbon(Math.abs(round(last.reserves - prev.reserves, 2))) + ' from last year)' : '') + say('. Food for new trees: ', '. Reproductive savings: ') + formatCarbon(last.banked) + '.'),
+            h('p', { key: 'why' }, (last.net < 0 ? say('The grove used more food than it made. Trees ate their saved food.', 'The grove used more food than it made overall. Trees with a shortfall drew on their own reserves.') : say('The grove made more food than it used. Each tree used the extra for your card.', 'The grove made more food than it used overall; each tree allocated its own surplus to your chosen priority.')) + (last.damaged ? say(' The storm tore leaves off ', ' The storm removed leaf tissue from ') + last.damaged + gt(' trees.') : '')),
+            h('p', { key: 'stored' }, say('Saved food: ', 'Stored food across living trees: ') + formatCarbon(last.reserves) + (prev ? ' (' + (last.reserves >= prev.reserves ? gt('up ') : gt('down ')) + formatCarbon(Math.abs(round(last.reserves - prev.reserves, 2))) + gt(' from last year)') : '') + say('. Food for new trees: ', '. Reproductive savings: ') + formatCarbon(last.banked) + '.'),
             last.attempts ? h('p', { key: 'chance' }, last.attempts + say(' tries to make new trees used ', ' reproductive attempts used ') + formatCarbon(last.spent) + say('. Where they landed, water, light, luck and room decided which grew. New trees must live one more year to count.', '. Landings, moisture, light, chance and available space determined which arrived. Arrivals must survive another year to count toward the goal.')) : h('p', { key: 'no-attempt' }, say('No new trees this year. Pick the Make new trees card to try.', 'No reproductive attempts this year. Mature trees spend their reproductive savings when you choose Invest in offspring.')),
             whereList(last),
             predictionCheck(last),
             readAloudButton(last),
-            h('p', { key: 'history-note', className: 'grove-caption' }, summary.ended ? 'This is the final year’s evidence. Your journal retains the whole run.' : 'This is evidence from the completed year. The forecast above describes the next year.')
-          ] : h('p', { key: 'empty' }, 'Your first year’s evidence will appear here. Establishment is a milestone; a seed landing alone is not a surviving next generation.')),
-          h('details', { key: 'journal', className: 'grove-notebook' }, [h('summary', { key: 's' }, 'Field journal · ' + journal.length + (journal.length === 1 ? ' discovery' : ' discoveries')),
-            h('p', { key: 'intro' }, 'Discoveries carry between runs. They recognise observations, not permanent strength bonuses.'),
-            journal.length ? h('ul', { key: 'discoveries' }, journal.map(function (id) { return h('li', { key: id }, journalNames[id]); })) : h('p', { key: 'empty' }, 'Complete a year to begin your journal.'),
+            h('p', { key: 'history-note', className: 'grove-caption' }, summary.ended ? gt('This is the final year’s evidence. Your journal retains the whole run.') : gt('This is evidence from the completed year. The forecast above describes the next year.'))
+          ] : h('p', { key: 'empty' }, gt('Your first year’s evidence will appear here. Establishment is a milestone; a seed landing alone is not a surviving next generation.'))),
+          h('details', { key: 'journal', className: 'grove-notebook' }, [h('summary', { key: 's' }, gt('Field journal · ') + journal.length + (journal.length === 1 ? gt(' discovery') : gt(' discoveries'))),
+            h('p', { key: 'intro' }, gt('Discoveries carry between runs. They recognise observations, not permanent strength bonuses.')),
+            journal.length ? h('ul', { key: 'discoveries' }, journal.map(function (id) { return h('li', { key: id }, gt(journalNames[id])); })) : h('p', { key: 'empty' }, gt('Complete a year to begin your journal.')),
             journeyChart(),
-            h('ol', { key: 'timeline', 'aria-label': 'Journey timeline' }, grove.receipts.map(function (r) { return h('li', { key: r.year }, 'Year ' + r.year + ': ' + r.event.title + ' · ' + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + ' · ' + r.arrivals + ' arrivals, ' + r.deaths + ' losses.'); }))]),
-          h('details', { key: 'science', className: 'grove-notebook' }, [h('summary', { key: 's' }, 'How this model works · evolution, genes and old growth'),
-            h('p', { key: 'model' }, 'This is a small ecological teaching model. Weather ranges, reproductive maturity (oak 20 years; aspen 10), establishment chances and the three-living-trees-per-patch limit are scenario assumptions. Moisture and light are prescribed patch settings, not a shared soil-water simulation. Storm gaps persist for this eight-year run. Trees three years old or younger face an extra chance of dying when their patch is dry; older trees die here only if their stored food runs out.'),
-            h('p', { key: 'evolution' }, 'Natural selection acts on existing heritable variation through differences in survival and reproduction across generations. Trees do not choose useful mutations. This first journey models species differences and reproduction, not within-species genetic evolution. Its allocation cards are resource decisions in a game abstraction.'),
-            h('p', { key: 'gmo' }, 'Choosing parents for breeding and deliberately modifying genes are human interventions. A future trait experiment would label those separately from natural selection and show costs as well as benefits. No gene editing or mutation upgrades occur here.'),
-            h('p', { key: 'old' }, 'Old growth is more than a collection of old trees: forest structure, dead wood, habitat and regeneration matter, with definitions varying by forest type. An eight-year grove cannot become an old-growth forest. A future legacy scenario would start with an established forest.'),
-            h('p', { key: 'invasive' }, 'Invasive species need specific hosts and mechanisms. Emerald ash borer belongs in an ash-focused scenario; this oak-and-aspen journey does not simulate it.'),
-            h('p', { key: 'sources' }, [h('a', { key: 'e', href: 'https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/natural-selection/', target: '_blank', rel: 'noopener noreferrer' }, 'UC Berkeley: natural selection'), ' · ', h('a', { key: 'f', href: 'https://research.fs.usda.gov/treesearch/5546', target: '_blank', rel: 'noopener noreferrer' }, 'US Forest Service: old-growth structure')])])
+            h('ol', { key: 'timeline', 'aria-label': __alloT('stem.treelab.a11y_journey_timeline', 'Journey timeline') }, grove.receipts.map(function (r) { return h('li', { key: r.year }, gt('Year ') + r.year + ': ' + gt(r.event.title) + ' · ' + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + ' · ' + r.arrivals + gt(' arrivals, ') + r.deaths + gt(' losses.')); }))]),
+          h('details', { key: 'science', className: 'grove-notebook' }, [h('summary', { key: 's' }, gt('How this model works · evolution, genes and old growth')),
+            h('p', { key: 'model' }, gt('This is a small ecological teaching model. Weather ranges, reproductive maturity (oak 20 years; aspen 10), establishment chances and the three-living-trees-per-patch limit are scenario assumptions. Moisture and light are prescribed patch settings, not a shared soil-water simulation. Storm gaps persist for this eight-year run. Trees three years old or younger face an extra chance of dying when their patch is dry; older trees die here only if their stored food runs out.')),
+            h('p', { key: 'evolution' }, gt('Natural selection acts on existing heritable variation through differences in survival and reproduction across generations. Trees do not choose useful mutations. This first journey models species differences and reproduction, not within-species genetic evolution. Its allocation cards are resource decisions in a game abstraction.')),
+            h('p', { key: 'gmo' }, gt('Choosing parents for breeding and deliberately modifying genes are human interventions. A future trait experiment would label those separately from natural selection and show costs as well as benefits. No gene editing or mutation upgrades occur here.')),
+            h('p', { key: 'old' }, gt('Old growth is more than a collection of old trees: forest structure, dead wood, habitat and regeneration matter, with definitions varying by forest type. An eight-year grove cannot become an old-growth forest. A future legacy scenario would start with an established forest.')),
+            h('p', { key: 'invasive' }, gt('Invasive species need specific hosts and mechanisms. Emerald ash borer belongs in an ash-focused scenario; this oak-and-aspen journey does not simulate it.')),
+            h('p', { key: 'sources' }, [h('a', { key: 'e', href: 'https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/natural-selection/', target: '_blank', rel: 'noopener noreferrer' }, gt('UC Berkeley: natural selection')), ' · ', h('a', { key: 'f', href: 'https://research.fs.usda.gov/treesearch/5546', target: '_blank', rel: 'noopener noreferrer' }, gt('US Forest Service: old-growth structure'))])])
         ]);
       }
 
@@ -13015,6 +13041,32 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         if (prior !== 'right' && prior !== 'wrong') prior = null;
         var storyTabs = (TABS || []).filter(function (tab) { return tab.id !== 'quiz'; });
 
+        function quizSpeechText() {
+          var out = [__alloT('stem.treelab.quiz' + qKey + '_q', q.q)];
+          q.a.forEach(function (opt, i) {
+            out.push(String.fromCharCode(65 + i) + '. ' + __alloT('stem.treelab.quiz' + qKey + '_opt' + i, opt) + '.');
+          });
+          if (answered) {
+            out.push(picked === q.correct
+              ? (band === 'k2' ? __alloT('stem.treelab.evidence_connected_k2', 'You used the clue') : __alloT('stem.treelab.evidence_connected', 'Evidence connected'))
+              : (band === 'k2' ? __alloT('stem.treelab.revise_model_k2', 'Not yet - look at the clue') : __alloT('stem.treelab.revise_model', 'Not yet - revise the model')));
+            out.push(__alloT('stem.treelab.quiz' + qKey + '_why', q.why));
+          }
+          return out.join(' ');
+        }
+        // Same shape as the grove control, reading whatever is on screen: before an answer
+        // the question and its options, after one the verdict and the explanation too.
+        function quizSpeechButton() {
+          if (!speechReady()) return null;
+          var on = !!d.quizSpeaking;
+          return btn('speak', on
+            ? '\u23F9 ' + __alloT('stem.treelab.stop_reading', 'Stop reading')
+            : '\u25B6 ' + (band === 'k2'
+              ? __alloT('stem.treelab.read_to_me_k2', 'Read this to me')
+              : __alloT('stem.treelab.read_aloud', 'Read this aloud')),
+            function () { if (on) stopSpeech('quizSpeaking'); else speakText(quizSpeechText(), 'quizSpeaking'); },
+            { small: true, pressed: on });
+        }
         var kids = [card([
           h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' },
             __alloT('stem.treelab.quiz_eyebrow', 'Canopy of understanding')),
@@ -13062,6 +13114,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           ]) : null,
           h('p', { key: 'q', className: 'allo-tree-quiz-question', style: { fontSize: 14, color: T.text, lineHeight: 1.6, marginBottom: 10, fontWeight: 600 } },
             __alloT('stem.treelab.quiz' + qKey + '_q', q.q)),
+          quizSpeechButton(),
           h('div', { key: 'opts', className: 'allo-tree-quiz-options', role: 'group', 'aria-label': __alloT('stem.treelab.answer_choices', 'Answer choices') }, q.a.map(function (opt, i) {
             var isCorrect = i === q.correct;
             var chosen = picked === i;
@@ -13654,6 +13707,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
     fitDistance: fitDistance, BASE_DIST: BASE_DIST,
     strategyById: strategyById, resolveBand: resolveBand, atLeast: atLeast,
     trailColumns: trailColumns,
+    groveKey: groveKey,
     SPECIES: SPECIES, STRATEGIES: STRATEGIES, QUIZ: QUIZ, BANDS: BANDS
   };
 

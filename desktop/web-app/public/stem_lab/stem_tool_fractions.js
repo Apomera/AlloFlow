@@ -2957,7 +2957,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'fraction-lab-kicker' }, 'Live fraction model'),
                 h('h4', { id: 'fraction-practice-title', className: 'text-lg font-black text-rose-900 leading-tight m-0' }, pn + '/' + pd + ' of the whole')
               ),
-              h('div', { className: 'fraction-lab-mode-toggle', role: 'group', 'aria-label': 'Visual model' },
+              h('div', { className: 'fraction-lab-mode-toggle', role: 'group', 'aria-label': __alloT('stem.fractions.a11y_visual_model', 'Visual model') },
                 ['pie', 'bar'].map(function(m) {
                   return h('button', { key: m,
                     type: 'button',
@@ -2980,7 +2980,7 @@ window.StemLab = window.StemLab || {
             h('div', {
               className: 'fraction-lab-strip-grid',
               role: 'group',
-              'aria-label': 'Choose how many parts are selected'
+              'aria-label': __alloT('stem.fractions.a11y_choose_how_many_parts_are_selected', 'Choose how many parts are selected')
             },
               Array.from({ length: pd }, function(_, i) {
                 var nextValue = i < pn ? i : i + 1;
@@ -3365,7 +3365,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs font-black text-indigo-800' }, 'Signed fractions'),
             h('p', { className: 'text-[0.6875rem] text-indigo-700 mt-0.5' }, signedFractions ? 'Sign Detective is active. Predict positive, zero, or negative before the exact result is revealed.' : 'Enable negative numerators to practice Grade 7 rational-number sign rules.')
           ),
-          h('button', { type: 'button', role: 'switch', 'aria-checked': signedFractions, 'aria-label': 'Signed fraction mode',
+          h('button', { type: 'button', role: 'switch', 'aria-checked': signedFractions, 'aria-label': __alloT('stem.fractions.a11y_signed_fraction_mode', 'Signed fraction mode'),
             onClick: function() { var next = !signedFractions; upd({ signedFractions: next, num1: next ? num1 : Math.abs(num1), num2: next ? num2 : Math.abs(num2), signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
             className: 'px-3 py-2 rounded-lg text-xs font-black transition-all ' + (signedFractions ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300')
           }, signedFractions ? 'Signed mode on' : 'Enable signed mode')
@@ -4310,7 +4310,7 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
-        h('div', { className: 'space-y-2 max-h-[480px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500', role: 'region', tabIndex: 0, 'aria-label': 'Fraction standards by grade' },
+        h('div', { className: 'space-y-2 max-h-[480px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.fractions.a11y_fraction_standards_by_grade', 'Fraction standards by grade') },
           filtered.map(function(c) {
             return h('div', { key: c.code, className: 'bg-white rounded-lg p-3 border border-indigo-100' },
               h('div', { className: 'flex items-start gap-2' },
@@ -4432,7 +4432,7 @@ window.StemLab = window.StemLab || {
           served: 0, money: 0, customers: [], gameOver: false
         }});
         sfxNewChallenge();
-        announceToSR('Pizza Shop started! Slice the pizza to match each order.');
+        announceToSR(__alloT('stem.fractions.sr_pizza_shop_started_slice_the_pizza_to_match_each', 'Pizza Shop started! Slice the pizza to match each order.'));
       };
 
       var serveCustomer = function() {
@@ -4458,7 +4458,7 @@ window.StemLab = window.StemLab || {
           else { sfxComplete(); addToast('🎉 Pizza Shop complete! $' + newMoney + ' earned!', 'success'); awardXP('fractionPizza', 50, 'Pizza Shop complete'); }
         } else {
           sfxWrong();
-          announceToSR('Wrong slice count or pizza size');
+          announceToSR(__alloT('stem.fractions.sr_wrong_slice_count_or_pizza_size', 'Wrong slice count or pizza size'));
           addToast('❌ Order was ' + ps.order.orderN + '/' + ps.order.orderD, 'error');
         }
       };
@@ -4552,7 +4552,7 @@ window.StemLab = window.StemLab || {
       var startFractionRace = function() {
         upd({ frGame: { round: newRound(), score: 0, timeLeft: 30, gameOver: false, mistakes: 0, answer: '' }});
         sfxNewChallenge();
-        announceToSR('Fraction Race! Type the fraction you see. You have 30 seconds.');
+        announceToSR(__alloT('stem.fractions.sr_fraction_race_type_the_fraction_you_see_you_have', 'Fraction Race! Type the fraction you see. You have 30 seconds.'));
       };
       var submitRace = function(ans) {
         var match = String(ans || '').trim().match(/^(\d+)\/(\d+)$/);
@@ -4568,7 +4568,7 @@ window.StemLab = window.StemLab || {
         } else {
           sfxWrong();
           upd({ frGame: Object.assign({}, fr, { mistakes: fr.mistakes + 1, answer: '' }) });
-          announceToSR('Wrong, try again');
+          announceToSR(__alloT('stem.fractions.sr_wrong_try_again', 'Wrong, try again'));
         }
       };
 
@@ -4652,7 +4652,7 @@ window.StemLab = window.StemLab || {
       var startEMGame = function() {
         upd({ emGame: { cards: makeEquivalentPairs(6), flipped: [], matched: [], moves: 0, gameOver: false }});
         sfxNewChallenge();
-        announceToSR('Equivalent Match started! Find 6 pairs of equivalent fractions.');
+        announceToSR(__alloT('stem.fractions.sr_equivalent_match_started_find_6_pairs_of_equivale', 'Equivalent Match started! Find 6 pairs of equivalent fractions.'));
       };
 
       var flipCard = function(idx) {
@@ -4756,7 +4756,7 @@ window.StemLab = window.StemLab || {
       var startFishGame = function() {
         upd({ ffGame: { round: newFishRound(), score: 0, lives: 3, gameOver: false }});
         sfxNewChallenge();
-        announceToSR('Fraction Fish! Click the fish with the matching fraction.');
+        announceToSR(__alloT('stem.fractions.sr_fraction_fish_click_the_fish_with_the_matching_fr', 'Fraction Fish! Click the fish with the matching fraction.'));
       };
       var catchFish = function(fishIdx) {
         var f = ff.round.fish[fishIdx];
@@ -5487,7 +5487,7 @@ window.StemLab = window.StemLab || {
         else if (name === 'motor') save({ tempo: 0.25, holdFrozen: false });
         else if (name === 'visual') save({ audioOn: false });
         else if (name === 'audio') save({ audioOn: true, reducedMotion: true });
-        announceToSR('Comfort preset applied.');
+        announceToSR(__alloT('stem.fractions.sr_comfort_preset_applied', 'Comfort preset applied.'));
       };
 
       // Live stash for the belt rAF loop (captured ctx is stale; refs read this).
@@ -5498,9 +5498,9 @@ window.StemLab = window.StemLab || {
           if (!g.active || g.phase !== 'play' || !g.timed) return;
           save({ misses: (g.misses || 0) + 1, comboPaused: true,
             lastCoach: 'The plate came back around - take your time and share it equally.' });
-          announceToSR('Plate came back around. Try again, no rush.');
+          announceToSR(__alloT('stem.fractions.sr_plate_came_back_around_try_again_no_rush', 'Plate came back around. Try again, no rush.'));
         },
-        onApproaching: function() { announceToSR('A plate is nearing the window. Serve it soon or it will loop back around.'); }
+        onApproaching: function() { announceToSR(__alloT('stem.fractions.sr_a_plate_is_nearing_the_window_serve_it_soon_or_it', 'A plate is nearing the window. Serve it soon or it will loop back around.')); }
       };
 
       // ── helper: a comfort/accessibility row (shared by menu + in-game) ──
@@ -7840,7 +7840,7 @@ window.StemLab = window.StemLab || {
       };
       var clearPieces = function() {
         upd({ manipPieces: [] });
-        announceToSR('Workspace cleared.');
+        announceToSR(__alloT('stem.fractions.sr_workspace_cleared', 'Workspace cleared.'));
       };
       var totalVal = manipPieces.reduce(function(acc, p) { return acc + (p.n / p.d); }, 0);
 
@@ -8215,7 +8215,7 @@ window.StemLab = window.StemLab || {
             }, tables[t].label.split(' ')[0]);
           })
         ),
-        h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3 max-h-[500px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-cyan-600', role: 'region', tabIndex: 0, 'aria-label': 'Scrollable fraction conversion table' },
+        h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3 max-h-[500px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-cyan-600', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.fractions.a11y_scrollable_fraction_conversion_table', 'Scrollable fraction conversion table') },
           h('h5', { className: 'text-sm font-black text-cyan-900 mb-2' }, current.label),
           h('table', { className: 'w-full text-sm' },
             h('thead', { className: 'sticky top-0 bg-white' },
@@ -8281,7 +8281,7 @@ window.StemLab = window.StemLab || {
           className: 'w-full px-3 py-2 rounded-lg border border-indigo-300 text-sm'
         }),
         h('p', { className: 'text-[0.6875rem] text-indigo-700' }, filtered.length + ' term' + (filtered.length === 1 ? '' : 's')),
-        h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-600', role: 'region', tabIndex: 0, 'aria-label': 'Fraction glossary terms' },
+        h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-600', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.fractions.a11y_fraction_glossary_terms', 'Fraction glossary terms') },
           filtered.length === 0
             ? h('p', { className: 'text-xs italic text-slate-500 text-center py-4' }, __alloT('stem.fractions.no_matches_2', 'No matches.'))
             : filtered.map(function(v, i) {
@@ -9018,7 +9018,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'flex gap-2' },
           h('label', { className: 'text-xs font-bold text-blue-700 self-center' }, 'Grade:'),
-          h('select', { 'aria-label': "Grade", value: examGrade,
+          h('select', { 'aria-label': __alloT('stem.fractions.a11y_grade', 'Grade'), value: examGrade,
             onChange: function(e) { upd({ examGrade: parseInt(e.target.value), examQs: null, examFinished: false }); },
             className: 'px-2 py-1 rounded border border-blue-300 text-xs' },
             [3, 4, 5, 6].map(function(g) { return h('option', { key: 'eg-' + g, value: g }, 'Grade ' + g); })
@@ -10763,7 +10763,7 @@ window.StemLab = window.StemLab || {
 
     var renderSubTabStrip = function(items, currentId, onSelect, accentColor) {
       accentColor = accentColor || 'rose';
-      return h('div', { className: 'flex gap-1 bg-' + accentColor + '-50 rounded-lg p-1 border border-' + accentColor + '-200 flex-wrap mb-3', role: 'group', 'aria-label': 'Choose a subsection' },
+      return h('div', { className: 'flex gap-1 bg-' + accentColor + '-50 rounded-lg p-1 border border-' + accentColor + '-200 flex-wrap mb-3', role: 'group', 'aria-label': __alloT('stem.fractions.a11y_choose_a_subsection', 'Choose a subsection') },
         items.map(function(s) {
           var active = currentId === s.id;
           return h('button', {
@@ -11023,7 +11023,7 @@ window.StemLab = window.StemLab || {
           var nf = base + newly;
           upd({ stripPairsSeen: seen, stripEquivFound: nf });
           sfxCorrect();
-          announceToSR('Equivalent fractions found. They line up at the same gridline.');
+          announceToSR(__alloT('stem.fractions.sr_equivalent_fractions_found_they_line_up_at_the_sa', 'Equivalent fractions found. They line up at the same gridline.'));
           checkBadges({
             correct: score.correct, streak: streak,
             typesUsed: Object.keys(challengeTypesUsed).length,
@@ -11064,10 +11064,10 @@ window.StemLab = window.StemLab || {
         var set = pick(sets);
         var ns = set.map(function(p, i) { return { id: newId() + i, n: p[0], d: p[1] }; });
         upd({ strips: ns, stripGrid: true }); sfxClick();
-        announceToSR('Example loaded with the grid on. Watch the strips line up.');
+        announceToSR(__alloT('stem.fractions.sr_example_loaded_with_the_grid_on_watch_the_strips', 'Example loaded with the grid on. Watch the strips line up.'));
         rewardEquiv(ns);
       };
-      var clearStrips = function() { upd({ strips: [] }); sfxClick(); announceToSR('Cleared all strips.'); if (typeof addToast === 'function') addToast('Strips cleared', 'info'); };
+      var clearStrips = function() { upd({ strips: [] }); sfxClick(); announceToSR(__alloT('stem.fractions.sr_cleared_all_strips', 'Cleared all strips.')); if (typeof addToast === 'function') addToast('Strips cleared', 'info'); };
 
       var gridOverlay = function() {
         if (!gridShowable) return null;
@@ -11648,7 +11648,7 @@ window.StemLab = window.StemLab || {
             className: 'fraction-lab-equivalence-canvas',
             role: 'img',
             tabIndex: 0,
-            'aria-label': 'Equivalent fractions canvas comparing one half, two fourths, four eighths, and eight sixteenths as the same value.',
+            'aria-label': __alloT('stem.fractions.a11y_equivalent_fractions_canvas_comparing_one_half', 'Equivalent fractions canvas comparing one half, two fourths, four eighths, and eight sixteenths as the same value.'),
             'data-fraction-equivalence-canvas': 'true',
             ref: function(cvEl) {
               if (!cvEl) return;

@@ -4851,7 +4851,7 @@
                   var arr = [];
                   for (var ri = 0; ri < numSlots; ri++) arr.push(1);
                   updMulti({ timerActive: true, timerPaused: false, timerStart: Date.now(), timerElapsedMs: 0, coefficients: arr, feedback: null });
-                  if (announceToSR) announceToSR('Speed challenge started. There is no time limit, and you can pause at any time.');
+                  if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_speed_challenge_started_there_is_no_time_limit_an', 'Speed challenge started. There is no time limit, and you can pause at any time.'));
                 },
                 className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-700 hover:bg-amber-200'
               }, __alloT('stem.chembalance.start_speed_challenge', '\u23F1 Start speed challenge')),
@@ -4860,10 +4860,10 @@
                 onClick: function() {
                   if (d.timerPaused) {
                     updMulti({ timerPaused: false, timerStart: Date.now() });
-                    if (announceToSR) announceToSR('Speed challenge timer resumed.');
+                    if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_speed_challenge_timer_resumed', 'Speed challenge timer resumed.'));
                   } else {
                     updMulti({ timerPaused: true, timerStart: null, timerElapsedMs: getTimerElapsedMs() });
-                    if (announceToSR) announceToSR('Speed challenge timer paused.');
+                    if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_speed_challenge_timer_paused', 'Speed challenge timer paused.'));
                   }
                 },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold border ' + (d.timerPaused ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-amber-100 text-amber-700 border-amber-600')
@@ -5010,7 +5010,7 @@
               var mass = result.mass;
               var elems = result.elems;
               if (mass <= 0) return h('p', { role: 'alert', className: 'text-xs text-slate-600 italic' }, __alloT('stem.chembalance.enter_a_valid_formula_above_2', 'Enter a valid formula above'));
-              return h('div', { role: 'region', 'aria-label': 'Molar mass result', className: 'bg-white rounded-xl border p-3 mb-3' },
+              return h('div', { role: 'region', 'aria-label': __alloT('stem.chembalance.a11y_molar_mass_result', 'Molar mass result'), className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('p', { className: 'text-lg font-bold text-teal-700' }, 'Molar Mass: ' + mass.toFixed(3) + ' g/mol'),
                   h('span', { className: 'px-2 py-0.5 bg-teal-100 text-teal-700 text-[0.6875rem] font-bold rounded-full' }, stoichFormula)
@@ -5343,10 +5343,10 @@
                   onClick: function() {
                     if (chalIdx + 1 < chalQuestions.length) {
                       updMulti({ _chalIdx: chalIdx + 1, _chalFeedback: null });
-                      if (announceToSR) announceToSR('Next chemistry challenge question.');
+                      if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_next_chemistry_challenge_question', 'Next chemistry challenge question.'));
                     } else {
                       updMulti({ _chalIdx: chalQuestions.length, _chalFeedback: null });
-                      if (announceToSR) announceToSR('Chemistry challenge complete.');
+                      if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_chemistry_challenge_complete', 'Chemistry challenge complete.'));
                     }
                   },
                   className: 'mt-2 px-4 py-2 text-xs font-bold text-white bg-lime-700 rounded-lg hover:bg-lime-800'
@@ -5414,14 +5414,14 @@
                         checkBadges();
                         updMulti({ _battleActive: false, _battleResult: 'won', _battleFeedback: null });
                         awardXP('battleWin', 30, 'Element Battle');
-                        if (announceToSR) announceToSR('Element battle won.');
+                        if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_element_battle_won', 'Element battle won.'));
                       } else if (battleHP <= 0) {
                         chemSound('damage');
                         updMulti({ _battleActive: false, _battleResult: 'lost', _battleFeedback: null });
-                        if (announceToSR) announceToSR('Element battle complete.');
+                        if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_element_battle_complete', 'Element battle complete.'));
                       } else {
                         updMulti({ _battleRound: battleRound + 1, _battleFeedback: null });
-                        if (announceToSR) announceToSR('Next element battle round.');
+                        if (announceToSR) announceToSR(__alloT('stem.chembalance.sr_next_element_battle_round', 'Next element battle round.'));
                       }
                     },
                     className: 'mt-2 px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700'
@@ -6775,7 +6775,7 @@
           !isChemHub && subtool !== 'finale' && h('div', { className: 'flex flex-wrap gap-2 mt-4 pt-3 border-t border-slate-200' },
             (subtool === 'acids' || subtool === 'pHHunt') && h('button', {
               type: 'button',
-              onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); },
+              onClick: function() { setStemLabTool('titrationLab'); announceToSR(__alloT('stem.chembalance.sr_opening_titration_lab', 'Opening Titration Lab')); },
               className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-full hover:bg-lime-100'
             }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
             h('button', {

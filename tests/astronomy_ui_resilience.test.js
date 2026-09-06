@@ -109,7 +109,7 @@ describe('Astronomy Sky Map resilience', () => {
     const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
     expect(source).toContain('function boundedSkyOffset(value, min, max, step)');
     expect(source).toContain("'aria-pressed': isToggle ? on : undefined");
-    expect(source).toContain("role: 'group', 'aria-label': 'Sky time controls'");
+    expect(source).toContain(`role: 'group', 'aria-label': __alloT('stem.astronomy.a11y_sky_time_controls', 'Sky time controls')`);
     expect(source).toContain("dayOff >= 365");
     expect(source).toContain('Math.min(1, Math.max(0.4, 1 - s.mag * 0.18))');
   });

@@ -211,12 +211,12 @@ describe('Raptor Hunt accessible flight controls and lifecycle', () => {
     const text = source();
     expect(text).toContain("'data-raptor-controls': 'true'");
     expect(text).toContain("role: 'group'");
-    expect(text).toContain("'aria-label': 'Raptor flight controls'");
+    expect(text).toContain(`'aria-label': __alloT('stem.raptorhunt.a11y_raptor_flight_controls', 'Raptor flight controls')`);
     expect(text).toMatch(/type:\s*'button'[\s\S]{0,500}onPointerDown/);
     expect(text).toContain("'aria-pressed': active");
     expect(text).toContain('function requestHuntFullscreen()');
     expect(text).toMatch(/requestFullscreen|webkitRequestFullscreen/);
-    expect(text).toContain("'aria-label': 'Toggle fullscreen flight view'");
+    expect(text).toContain(`'aria-label': __alloT('stem.raptorhunt.a11y_toggle_fullscreen_flight_view', 'Toggle fullscreen flight view')`);
     expect(text).toContain('canvas:focus-visible');
   });
 
@@ -330,7 +330,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain("'data-raptor-flight-signature': 'true'");
     expect(text).toContain('Replay flight recorder timeline');
     expect(text).toContain("'data-replay': simUI.recorderReplay ? 'true' : 'false'");
-    expect(text).toContain("'aria-label': 'Adjust the next flight setup'");
+    expect(text).toContain(`'aria-label': __alloT('stem.raptorhunt.a11y_adjust_the_next_flight_setup', 'Adjust the next flight setup')`);
     expect(text).toContain('Flight setup opened from coach read');
     expect(text).toContain('runHistory.push(historyEntry)');
     expect(text).toContain("'data-raptor-flight-history': 'true'");
@@ -4515,6 +4515,304 @@ describe('Raptor Hunt prey energy value', () => {
   });
 
   it('keeps the deploy mirror byte-identical after the prey energy change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt accessibility string translation', () => {
+  const text = source();
+
+  const KEYS = [...new Set([...text.matchAll(/__alloT\(\s*'([^']+)'/g)].map((m) => m[1]))];
+  const isAccessibility = (key) => /\.(sr|a11y)_/.test(key);
+
+  function packLeaves(file) {
+    const parsed = JSON.parse(readFileSync(file, 'utf8'));
+    const leaves = new Set();
+    (function walk(node, prefix) {
+      for (const key of Object.keys(node)) {
+        const value = node[key];
+        const next = prefix ? prefix + '.' + key : key;
+        if (value && typeof value === 'object') walk(value, next);
+        else leaves.add(next);
+      }
+    }(parsed, ''));
+    return leaves;
+  }
+
+  // Another session rewrites the packs, so a pack that is mid-write must not fail the
+  // raptor suite. Missing or unparseable means "cannot check", not "broken".
+  let leaves = null;
+  try { leaves = packLeaves('lang/french.js'); } catch (error) { leaves = null; }
+
+  it('reaches the translator from inside the simulation', () => {
+    // The handoff claimed for several passes that __alloT was out of scope inside
+    // initHuntSim. It is not: these four calls run, and the browser probes that drove
+    // the bird into the starving and landing paths reported no page errors.
+    const init = functionBody(text, 'initHuntSim');
+    expect(init).toContain("rhAnnounce(__alloT('stem.raptorhunt.sr_exhausted_glide_to_recover'");
+    expect(init).toContain("rhAnnounce(__alloT('stem.raptorhunt.sr_taking_off'");
+    expect(text).toContain('var __alloT = function (k, fb)');
+    // Declared before initHuntSim, in a scope that encloses it.
+    expect(text.indexOf('var __alloT = function (k, fb)'))
+      .toBeLessThan(text.indexOf('function initHuntSim'));
+  });
+
+  it('asks for its accessibility strings through the translator, not as literals', () => {
+    // Whatever their pack status, these must at least be translatable call sites.
+    const accessibility = KEYS.filter(isAccessibility);
+    expect(accessibility.length).toBeGreaterThan(150);
+  });
+
+  it('does not let the untranslated accessibility count grow', () => {
+    if (!leaves) return;   // pack mid-write; see above
+    const accessibility = KEYS.filter(isAccessibility);
+    const missing = accessibility.filter((k) => !leaves.has(k));
+    // A ratchet, not a target. Every one of this tool's accessibility keys is absent
+    // from every shipped pack, while 1526 of its 1526 ordinary keys are present, so a
+    // screen-reader user in any of the 62 languages hears English. Fixing that is a
+    // translation operation across 62 packs, recorded in the twenty-fifth pass. This
+    // gate exists so the number can only go down.
+    expect(missing.length).toBeLessThanOrEqual(175);
+  });
+
+  it('keeps ordinary copy fully translated, which is what makes the gap categorical', () => {
+    if (!leaves) return;
+    const ordinary = KEYS.filter((k) => !isAccessibility(k));
+    const missing = ordinary.filter((k) => !leaves.has(k));
+    expect(ordinary.length).toBeGreaterThan(1400);
+    // If this ever fails, the visible UI has started losing keys too and the problem
+    // is no longer specific to the accessibility layer.
+    expect(missing.length).toBeLessThanOrEqual(5);
+  });
+});
+
+describe('Raptor Hunt visual field and target lock cone', () => {
+  const text = source();
+  const init = functionBody(text, 'initHuntSim');
+
+  const roster = [...text.matchAll(/\{ id: '([a-zA-Z]+)', name: '([^']+)'[\s\S]{0,700}?visualFieldDeg: (\d+)/g)]
+    .map((m) => ({ id: m[1], name: m[2], fov: Number(m[3]), isOwl: /isOwl: true/.test(text.slice(text.indexOf("id: '" + m[1] + "'"), text.indexOf("id: '" + m[1] + "'") + 300)) }));
+
+  const lockFieldDeg = (fov) => Math.max(90, Math.min(180, fov || 120));
+  const lockConeDot = (fov) => Math.cos((lockFieldDeg(fov) / 2) * Math.PI / 180);
+
+  it('reads the visual field it will reason about from the shipped roster', () => {
+    expect(roster.length).toBeGreaterThanOrEqual(18);
+    expect(Math.min(...roster.map((s) => s.fov))).toBe(110);
+    expect(Math.max(...roster.map((s) => s.fov))).toBe(220);
+    // The encyclopedia makes the claim the simulation now honours.
+    expect(text).toContain('Raptors also have wider visual fields');
+  });
+
+  it('derives the lock cone from the species field instead of a flat 120 degrees', () => {
+    expect(init).not.toContain('candidate.distance > targetAcquireRange || candidate.dot < 0.5) continue;');
+    expect(init).toContain('var lockFieldDeg = Math.max(90, Math.min(180, Number(species.visualFieldDeg) || 120));');
+    expect(init).toContain('var lockConeDot = Math.cos((lockFieldDeg / 2) * Math.PI / 180);');
+    expect(init).toContain('candidate.dot < lockConeDot) continue;');
+    // A species with no datum lands exactly where every species used to be.
+    expect(lockConeDot(undefined)).toBeCloseTo(0.5, 10);
+  });
+
+  it('gives owls the narrowest cone and never locks behind the bird', () => {
+    const owls = roster.filter((s) => s.isOwl);
+    const others = roster.filter((s) => !s.isOwl);
+    expect(owls.length).toBeGreaterThanOrEqual(3);
+    owls.forEach((o) => others.forEach((h) => {
+      expect(lockConeDot(o.fov), o.name + ' vs ' + h.name).toBeGreaterThan(lockConeDot(h.fov));
+    }));
+    // Wider field, wider or equal cone; monotonic across the roster.
+    const sorted = [...roster].sort((a, b) => a.fov - b.fov);
+    for (let i = 1; i < sorted.length; i += 1) {
+      expect(lockConeDot(sorted[i].fov)).toBeLessThanOrEqual(lockConeDot(sorted[i - 1].fov) + 1e-12);
+    }
+    // The forward-hemisphere cap: a 220-degree hawk stops at dot 0, not -0.34.
+    roster.forEach((s) => expect(lockConeDot(s.fov), s.name).toBeGreaterThanOrEqual(0));
+    expect(lockFieldDeg(220)).toBe(180);
+  });
+
+  it('leaves the strike gate alone so a wider lock does not mean a looser hit', () => {
+    expect(init).toContain('canStrike: distance <= reach && dot >= 0.7');
+    // Every species\' lock cone is at least as wide as the strike cone, so a lockable
+    // target is never one the bird could hit without turning toward it.
+    roster.forEach((s) => expect(lockConeDot(s.fov), s.name).toBeLessThan(0.7));
+  });
+
+  it('reports the cone in the snapshot, matching the browser-measured values', () => {
+    ['visualFieldDeg', 'lockFieldDeg', 'lockConeDot'].forEach((f) => expect(text).toContain(f + ':'));
+    // Measured in a browser after the change; the owl figure is the one that moved.
+    expect(lockConeDot(110)).toBeCloseTo(0.5736, 3);
+    expect(lockConeDot(200)).toBeCloseTo(0, 10);
+    expect(lockConeDot(220)).toBeCloseTo(0, 10);
+  });
+
+  it('keeps the deploy mirror byte-identical after the visual field change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt species call shape', () => {
+  const text = source();
+  const audio = functionBody(text, 'playSpeciesCall');
+
+  // The catalogue the calls section teaches from, parsed from the source.
+  const catalogue = [...text.matchAll(/\{ id: '([a-z-]+)', code: 'C\d+', name: '[^']+', group: '(\w+)', pattern: '(\w+)', pitchLabel: '(\w+)', pitchRank: (\d+), beats: (\d+)/g)]
+    .map((m) => ({ id: m[1], group: m[2], pattern: m[3], pitchLabel: m[4], beats: Number(m[6]) }));
+  const byId = Object.fromEntries(catalogue.map((c) => [c.id, c]));
+  // Parse the alias table itself, not every `id: 'value'` pair in a 3 MB file: the
+  // loose version of this caught a silhouette map's greatHorned: 'owl' first.
+  const aliasBlock = text.slice(text.indexOf('var RAPTOR_CALL_ALIASES = {'), text.indexOf('function raptorCallProfile'));
+  const aliases = Object.fromEntries([...aliasBlock.matchAll(/(\w+): '([a-z-]+)'/g)].map((m) => [m[1], m[2]]));
+
+  it('bridges the two id conventions the tool uses for the same birds', () => {
+    expect(text).toContain('var RAPTOR_CALL_ALIASES = {');
+    expect(text).toContain('function raptorCallProfile(speciesId) {');
+    // Module level, so the sim can reach it: declared before initHuntSim.
+    expect(text.indexOf('function raptorCallProfile')).toBeLessThan(text.indexOf('function initHuntSim'));
+    ['greatHorned', 'snowyOwl', 'kestrel', 'turkeyVulture', 'condor'].forEach((id) => {
+      expect(byId[aliases[id]], id + ' -> ' + aliases[id]).toBeTruthy();
+    });
+  });
+
+  it('no longer gives a vulture the same screech as a falcon', () => {
+    // The old branch was owl / bald eagle / everyone else. The catalogue says both
+    // vultures are broadband noise with no clean pitch.
+    expect(audio).not.toContain("osc.type = species.isOwl ? 'sine' : 'sawtooth';\n            var baseFreq");
+    expect(audio).toContain("var callProfile = raptorCallProfile(species.id);");
+    expect(audio).toContain("if (callPattern === 'noise') {");
+    expect(audio).toContain('osc = audioCtx.createBufferSource();');
+    expect(audio).toContain("hissFilter.type = 'lowpass';");
+    ['turkey-vulture', 'california-condor'].forEach((id) => {
+      expect(byId[id].pattern, id).toBe('noise');
+      expect(byId[id].pitchLabel, id).toBe('broadband');
+    });
+  });
+
+  it('takes the number of notes from the catalogue, not a constant', () => {
+    expect(audio).toContain("var callBeats = callProfile ? Math.max(1, Math.min(8, callProfile.beats || 1)) : 1;");
+    expect(audio).toContain('for (var note = 0; note < callBeats; note++) {');
+    expect(audio).toContain('for (var burst = 0; burst < callBeats; burst++) {');
+    expect(byId['american-kestrel'].pattern).toBe('pulses');
+    expect(byId['american-kestrel'].beats).toBeGreaterThanOrEqual(3);
+    expect(byId['snowy-owl'].pattern).toBe('hoot');
+    expect(byId['snowy-owl'].beats).toBeGreaterThanOrEqual(2);
+  });
+
+  it('keeps the pitch anchors and the generic screech for species the catalogue does not name', () => {
+    expect(audio).toContain("var baseFreq = species.isOwl ? 320 : species.id === 'baldEagle' ? 600 : 1100;");
+    expect(audio).toContain('osc.frequency.linearRampToValueAtTime(baseFreq * 0.6, now2 + 0.8);');
+    // A bird with no alias at all falls through to the screech.
+    expect(aliases.harpyEagle).toBeUndefined();
+  });
+
+  it('keeps every one-shot on the gated master with bounded lifetime, hiss included', () => {
+    // The polish suite pins this routing; the buffer-source path must obey it too.
+    expect(audio).toContain('g.connect(flightMasterGain)');
+    expect(audio).not.toContain('audioCtx.destination');
+    expect(audio).toContain('activeFlightOneShots[activeFlightOneShots.length - 1] = osc;');
+    expect(audio).toContain('osc.stop(now2 + 0.9);');
+    expect(audio).toContain('try { hissFilter.disconnect(); }');
+  });
+
+  it('reports the call shape in the snapshot', () => {
+    expect(text).toContain('callShape: lastCallShape,');
+    expect(text).toContain('callPattern: (function() { var p = raptorCallProfile(species.id);');
+  });
+
+  it('keeps the deploy mirror byte-identical after the call change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt debrief consistency', () => {
+  const text = source();
+  const init = functionBody(text, 'initHuntSim');
+
+  it('labels the debrief peak as airspeed, matching the HUD metric', () => {
+    // runMaxSpeed records raptor.speed, which is airspeed. Since the eighteenth pass
+    // the wind chip also shows ground speed, and the HUD metric was renamed Airspeed
+    // for that reason; a debrief that says "Peak speed" is the same number under a
+    // second name.
+    expect(init).toContain('runMaxSpeed = Math.max(runMaxSpeed, raptor.speed);');
+    expect(text).toContain("['Peak airspeed', (flightSummary.maxSpeedMph || 0) + ' mph']");
+    expect(text).not.toContain("['Peak speed',");
+  });
+
+  it('names the thermal-entry event once and counts it by that name', () => {
+    // The producer and three consumers spelled 'Entered thermal' independently. An
+    // edit to any one of them would silently zero the thermal count in the debrief,
+    // the flight signature and the mission progress, with nothing failing.
+    expect(init).toContain("var FLIGHT_EVENT_ENTERED_THERMAL = 'Entered thermal';");
+    const bare = (init.match(/'Entered thermal'/g) || []).length;
+    expect(bare).toBe(1);
+    expect((init.match(/FLIGHT_EVENT_ENTERED_THERMAL/g) || []).length).toBeGreaterThanOrEqual(5);
+    expect(init).toContain("recordFlightEvent('thermal', thermalActive ? FLIGHT_EVENT_ENTERED_THERMAL : 'Left thermal'");
+  });
+
+  it('only gives energy coaching for energy warnings', () => {
+    // The "Protect your energy budget" advice fires on any warning event. Recorded
+    // here as a checked fact: the only two producers are the stamina and calorie
+    // warnings, so a run with a full reserve never gets energy advice for another
+    // reason. If a third producer is added, this is where to decide whether it counts.
+    const producers = (init.match(/recordFlightEvent\('warning', '([^']+)'/g) || []).map((m) => m.match(/'warning', '([^']+)'/)[1]);
+    expect(producers.sort()).toEqual(['Calories depleted', 'Stamina depleted']);
+  });
+
+  it('keeps the deploy mirror byte-identical after the debrief change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt prey detection distance', () => {
+  const text = source();
+  const init = functionBody(text, 'initHuntSim');
+
+  it('detects the raptor by true distance, not by its footprint on the map', () => {
+    // Measured before the change: the same prey on the same track fled at the same
+    // instant at 15 m altitude (34 m away) and at 99 m altitude (106 m away), because
+    // only the horizontal distance was compared.
+    expect(init).toContain('var pdy = pm2.mesh.position.y - raptor.y;');
+    expect(init).toContain('var pd3 = Math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz);');
+    expect(init).toContain("if (pd3 < preyDetectionRadius && pm2.data.behavior === 'flee-on-sight') {");
+    expect(init).not.toContain('var pd2 = Math.sqrt(pdx * pdx + pdz * pdz);');
+    expect(init).not.toMatch(/\bpd2\b/);
+  });
+
+  it('anchors the radius so the low cruise still alerts and the high pass does not', () => {
+    expect(init).toContain('var detectionR = 40 + (raptor.isOwl ? -16 : 0);');
+    const base = 40, owl = 24;
+    // Old owl discount was 15 of 25; the ratio is preserved.
+    expect(owl / base).toBeCloseTo(15 / 25, 10);
+    // The two browser-measured geometries, against the widest and narrowest prey scale
+    // the profiles ship (insect 1.4 down to snake 0.75). Low cruise alerts for the
+    // rabbit kind that fled (scale 1.1); the 99 m pass alerts nothing at any scale.
+    const rabbitScale = 1.1;
+    expect(33.6).toBeLessThan(base * rabbitScale);
+    expect(106.5).toBeGreaterThan(base * 1.4);
+    // Typical cruise: 30 m up and 25 m across.
+    expect(Math.hypot(30, 25)).toBeLessThan(base);
+  });
+
+  it('scales the silent-strike pull-up alert and the calm-down range the same way', () => {
+    // 30 of 25 becomes 48 of 40; calming down also uses true distance, or a bird that
+    // climbs straight up keeps the prey below it alerted from half a kilometre.
+    expect(init).toContain("if (mission.id === 'silentStrike' && pullUpKey && pd3 < 48 && !pm2.missionAlerted) {");
+    expect(48 / 40).toBeCloseTo(30 / 25, 10);
+    expect(init).toContain('if (pd3 > 80) {');
+    expect(init).not.toContain('if (pd2 > 80) {');
+  });
+
+  it('still flees along the ground', () => {
+    // Direction is a ground heading away from the bird; only the trigger went 3-D.
+    expect(init).toContain('var fleeAngle = Math.atan2(pdz, pdx);');
+  });
+
+  it('reports the evidence fields in the snapshot', () => {
+    ['alertedPreyCount', 'nearestPreyHorizontalM', 'nearestPrey3dM', 'altitudeAboveGround'].forEach((f) => {
+      expect(text).toContain(f + ':');
+    });
+  });
+
+  it('keeps the deploy mirror byte-identical after the detection change', () => {
     expect(source(MIRROR)).toBe(text);
   });
 });

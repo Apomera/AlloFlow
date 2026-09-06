@@ -219,5 +219,15 @@
   "titration_lab": "⚗️ Titration Lab →",
   "snapshot": "Snapshot",
   "snapshot_2": "📸 Snapshot",
-  "periodic_table_four_major_blocks": "⚛ Periodic Table — Four major blocks"
+  "periodic_table_four_major_blocks": "⚛ Periodic Table — Four major blocks",
+  "sr_speed_challenge_started_there_is_no_time_limit_an": "Speed challenge started. There is no time limit, and you can pause at any time.",
+  "sr_speed_challenge_timer_resumed": "Speed challenge timer resumed.",
+  "sr_speed_challenge_timer_paused": "Speed challenge timer paused.",
+  "a11y_molar_mass_result": "Molar mass result",
+  "sr_next_chemistry_challenge_question": "Next chemistry challenge question.",
+  "sr_chemistry_challenge_complete": "Chemistry challenge complete.",
+  "sr_element_battle_won": "Element battle won.",
+  "sr_element_battle_complete": "Element battle complete.",
+  "sr_next_element_battle_round": "Next element battle round.",
+  "sr_opening_titration_lab": "Opening Titration Lab"
 }
