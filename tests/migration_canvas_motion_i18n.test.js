@@ -213,6 +213,75 @@ describe('Migration Lab visible prose reaches the translator', () => {
   });
 });
 
+describe('Migration Lab challenge without an AI backend', () => {
+  // startChallenge() set the game active and cleared the choices, then
+  // generateDecision() opened with `if (!callGemini) return`. The panel drew
+  // its status bar -- Energy 100%, 3000 mi left, Step 1 -- and nothing under
+  // it. No choices, no loading state, no error. The two offline decks that
+  // would have rescued it lived inside catch blocks the guard returned before.
+  //
+  // The mount harness deliberately provides no callGemini, so this is the
+  // no-AI path by construction.
+  function playChallenge(pick, maxSteps) {
+    const m = mount('navigate');
+    drive(3);
+    const start = Array.from(m.host.querySelectorAll('button')).find((b) => /Start Challenge/i.test(b.textContent || ''));
+    expect(start, 'Start Challenge control').toBeTruthy();
+    act(() => start.dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
+    drive(2);
+
+    const scenarios = new Set();
+    let steps = 0;
+    let stuck = false;
+    for (let i = 0; i < (maxSteps || 30); i++) {
+      const st = m.ctx.toolData.migration;
+      if (st.challengeComplete || st.challengeDistRemaining <= 0 || st.challengeEnergy <= 0) break;
+      const ch = st.challengeChoices;
+      if (!ch || !ch.choices || !ch.choices.length) { stuck = true; break; }
+      scenarios.add(ch.scenario);
+      const choice = pick(ch.choices, st);
+      const b = Array.from(m.host.querySelectorAll('button')).find((x) => (x.textContent || '').includes(choice.label));
+      if (!b) { stuck = true; break; }
+      act(() => b.dispatchEvent(new window.MouseEvent('click', { bubbles: true })));
+      drive(2);
+      steps++;
+    }
+    const final = m.ctx.toolData.migration;
+    m.teardown();
+    return { stuck, steps, scenarios, final };
+  }
+
+  it('offers choices immediately with no AI backend', () => {
+    const r = playChallenge((c) => c[0], 3);
+    expect(r.stuck, 'the game must not stall with no choices').toBe(false);
+    expect(r.steps).toBeGreaterThan(0);
+  });
+
+  it('varies the scenario rather than repeating one screen', () => {
+    const r = playChallenge((c) => c[0], 6);
+    expect(r.scenarios.size).toBeGreaterThan(1);
+  });
+
+  it('is winnable by good play and not by naive play', () => {
+    // A game the student cannot win teaches nothing, and one they cannot lose
+    // teaches nothing either. Taking whichever choice covers the most ground
+    // should run the flock out of energy; budgeting it should get them home.
+    const naive = playChallenge((c) => c.reduce((a, b) => ((b.distance_gain || 0) > (a.distance_gain || 0) ? b : a)));
+    expect(naive.final.challengeDistRemaining, 'naive play should not arrive').toBeGreaterThan(0);
+
+    const thoughtful = playChallenge((choices, st) => {
+      const recover = choices.find((c) => (c.energy_cost || 0) > 0);
+      if (st.challengeEnergy < 25 && recover) return recover;
+      return choices.reduce((a, b) => {
+        const ra = (a.distance_gain || 0) / Math.max(1, -(a.energy_cost || 0));
+        const rb = (b.distance_gain || 0) / Math.max(1, -(b.energy_cost || 0));
+        return rb > ra ? b : a;
+      });
+    });
+    expect(thoughtful.final.challengeDistRemaining, 'budgeting energy should get the flock home').toBe(0);
+  });
+});
+
 describe('Migration Lab formation readout', () => {
   it('never claims more energy saved than the model allows', () => {
     // The canvas computed this as `efficiency * 0.3`, a bare constant that made

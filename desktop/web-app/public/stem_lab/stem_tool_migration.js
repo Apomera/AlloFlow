@@ -6813,11 +6813,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           generateDecision(0, 100, 3000, 'Clear', 50);
         }
 
+        // The offline decision deck. Two divergent copies of this used to sit
+        // inside the two catch blocks below, and neither was reachable in the
+        // case that matters most: the `if (!callGemini) return` above fired
+        // first, so a deployment with no AI key started the game and then
+        // showed a status bar with nothing under it. One deck now, every path
+        // reaches it, and it alternates so a run without AI is not the same
+        // screen every step.
+        function offlineDecision(step, energy, remaining, weather) {
+          var w = String(weather || 'clear').toLowerCase();
+          var deck = [
+            {
+              scenario: t('stem.migration.offline_scenario_mountain', 'Your flock encounters {weather} conditions over a mountain range. Energy is at {energy}%.'),
+              choices: [
+                { label: t('stem.migration.push_through_the_weather', 'Push through the weather'), energy_cost: -20, distance_gain: 400, flock_change: -3, result: t('stem.migration.offline_result_push', 'The flock battles through but loses some members to exhaustion.') },
+                { label: t('stem.migration.find_shelter_and_wait', 'Find shelter and wait'), energy_cost: -5, distance_gain: 0, flock_change: 0, result: t('stem.migration.offline_result_shelter', 'The flock rests safely but makes no progress.') },
+                { label: t('stem.migration.detour_around', 'Detour around'), energy_cost: -12, distance_gain: 250, flock_change: -1, result: t('stem.migration.offline_result_detour', 'A longer but safer route. One bird gets separated.') }
+              ]
+            },
+            {
+              scenario: t('stem.migration.offline_scenario_open', 'The flock faces {weather} conditions. {miles} miles remain.'),
+              choices: [
+                { label: t('stem.migration.keep_flying', 'Keep flying'), energy_cost: -15, distance_gain: 300, flock_change: -1, result: t('stem.migration.offline_result_keep', 'Steady progress at moderate cost.') },
+                { label: t('stem.migration.land_and_rest', 'Land and rest'), energy_cost: 10, distance_gain: 0, flock_change: 0, result: t('stem.migration.offline_result_rest', 'The flock recovers some energy.') },
+                { label: t('stem.migration.ride_thermals', 'Ride thermals'), energy_cost: -5, distance_gain: 200, flock_change: 0, result: t('stem.migration.offline_result_thermals', 'Smart use of rising air currents saves energy.') }
+              ]
+            }
+          ];
+          var pick = deck[step % deck.length];
+          return {
+            scenario: String(pick.scenario)
+              .replace('{weather}', w)
+              .replace('{energy}', energy)
+              .replace('{miles}', remaining),
+            choices: pick.choices
+          };
+        }
+
         function generateDecision(step, energy, remaining, weather, flockSize) {
-          if (!callGemini) return;
-          upd('challengeLoading', true);
           var weathers = ['Clear', 'Overcast', 'Headwind', 'Tailwind', 'Thunderstorm', 'Fog', 'Crosswind', 'Snow Squall'];
           var newWeather = weathers[Math.floor(Math.random() * weathers.length)];
+          function useOffline() {
+            updMulti({
+              challengeChoices: offlineDecision(step, energy, remaining, newWeather),
+              challengeWeather: newWeather,
+              challengeLoading: false
+            });
+          }
+          // No AI backend is a supported way to run this tool, not a dead end.
+          if (!callGemini) { useOffline(); return; }
+          upd('challengeLoading', true);
           var prompt = 'You are creating a bird migration survival game for a grade ' + (gradeLevel || 5) + ' student. The flock of ' + flockSize + ' Canada Geese is migrating south. Step ' + (step + 1) + ' of the journey. Energy: ' + energy + '%. Distance remaining: ' + remaining + ' miles. Weather: ' + newWeather + '. Create ONE decision point. Format your response EXACTLY as JSON (no markdown): {"scenario": "brief description of what the flock encounters", "choices": [{"label": "choice text", "energy_cost": number, "distance_gain": number, "flock_change": number, "result": "what happens"}]}. Give exactly 3 choices with different risk/reward tradeoffs. Energy costs should be -5 to -30. Distance gains 100-500. Flock changes -5 to +2. Make it educational about bird biology.';
 
           callGemini(prompt).then(function(result) {
@@ -6830,39 +6875,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 jsonStr = jsonStr.substring(startIdx, endIdx + 1);
               }
               var parsed = JSON.parse(jsonStr);
+              if (!parsed || !parsed.choices || !parsed.choices.length) throw new Error('no choices');
               updMulti({
                 challengeChoices: parsed,
                 challengeWeather: newWeather,
                 challengeLoading: false
               });
             } catch (e) {
-              updMulti({
-                challengeChoices: {
-                  scenario: 'Your flock encounters ' + newWeather.toLowerCase() + ' conditions over a mountain range. Energy is at ' + energy + '%.',
-                  choices: [
-                    { label: t('stem.migration.push_through_the_weather', 'Push through the weather'), energy_cost: -20, distance_gain: 400, flock_change: -3, result: 'The flock battles through but loses some members to exhaustion.' },
-                    { label: t('stem.migration.find_shelter_and_wait', 'Find shelter and wait'), energy_cost: -5, distance_gain: 0, flock_change: 0, result: 'The flock rests safely but makes no progress.' },
-                    { label: t('stem.migration.detour_around', 'Detour around'), energy_cost: -12, distance_gain: 250, flock_change: -1, result: 'A longer but safer route. One bird gets separated.' }
-                  ]
-                },
-                challengeWeather: newWeather,
-                challengeLoading: false
-              });
+              useOffline();
             }
-          }).catch(function() {
-            updMulti({
-              challengeChoices: {
-                scenario: 'The flock faces ' + newWeather.toLowerCase() + ' conditions. ' + remaining + ' miles remain.',
-                choices: [
-                  { label: t('stem.migration.keep_flying', 'Keep flying'), energy_cost: -15, distance_gain: 300, flock_change: -1, result: 'Steady progress at moderate cost.' },
-                  { label: t('stem.migration.land_and_rest', 'Land and rest'), energy_cost: 10, distance_gain: 0, flock_change: 0, result: 'The flock recovers some energy.' },
-                  { label: t('stem.migration.ride_thermals', 'Ride thermals'), energy_cost: -5, distance_gain: 200, flock_change: 0, result: 'Smart use of rising air currents saves energy.' }
-                ]
-              },
-              challengeWeather: newWeather,
-              challengeLoading: false
-            });
-          });
+          }).catch(useOffline);
         }
 
         function makeChoice(choiceIdx) {
