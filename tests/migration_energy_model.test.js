@@ -410,6 +410,50 @@ describe('Migration Lab tool integrity', () => {
     }
   });
 
+  it('survives malformed persisted state on every tab', () => {
+    // Tool state is persisted, so it comes back stale, partial or corrupted:
+    // a renamed key, a half-written value, a schema from an older build. Three
+    // of these used to throw, all from a guard testing falsiness where it
+    // needed to test shape.
+    //
+    // The challenge two are not hypothetical. challengeChoices is JSON.parse of
+    // a model response, and `!parsed.choices.length` passes a STRING happily --
+    // a string has a length. A model answering {"choices": "push through"} was
+    // stored and then crashed the render.
+    const TABS = ['flight3d', 'vformation', 'wind', 'routes', 'world', 'aero', 'navigate', 'inquiry'];
+    const CASES = {
+      'trials is not an array': { inquiry: { wingspan: 1, mass: 1, headwind: 0, vMode: 'V', distance: 1000, trials: 'nope' } },
+      'model returned choices as a string': { challengeActive: true, challengeChoices: { scenario: null, choices: 'push through' }, challengeLog: null },
+      'model returned choices with holes': { challengeActive: true, challengeChoices: { choices: [null, { label: null }] } },
+      'unknown ids': { selectedSpecies: 'pterodactyl', selectedWing: 'jetpack', flightFormation: 'teleport' },
+      'NaN and Infinity': { windSpeed: NaN, aoa: Infinity, altFeet: NaN, inquiry: { wingspan: NaN, mass: Infinity, headwind: NaN, vMode: 'V', distance: NaN } },
+      'wrong types everywhere': { selectedSpecies: 42, selectedWing: [], windSpeed: {}, windObjects: 'not-an-array' },
+      'nulls where objects belong': { inquiry: null, challengeChoices: null }
+    };
+    const broken = [];
+    for (const [name, bad] of Object.entries(CASES)) {
+      for (const tab of TABS) {
+        try {
+          const html = render(tab, true, bad);
+          if (!html || html.length < 500) broken.push(name + ' / ' + tab + ' rendered almost nothing');
+        } catch (e) {
+          broken.push(name + ' / ' + tab + ' threw: ' + String(e.message).slice(0, 70));
+        }
+      }
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it('never puts NaN into an attribute the browser has to parse', () => {
+    // A NaN does not throw; it renders width="NaN" and value="NaN", which is
+    // invalid markup and a slider the browser cannot place.
+    const html = render('inquiry', true, {
+      inquiry: { wingspan: NaN, mass: Infinity, headwind: NaN, vMode: 'V', distance: NaN, trials: [] }
+    });
+    expect(html).not.toMatch(/="NaN"/);
+    expect(html).not.toMatch(/="Infinity"/);
+  });
+
   it('renders no AI control when there is no AI backend', () => {
     // The AI Explorer button used to render enabled with no backend
     // configured, and clicking it was a silent no-op: handleAIExplorer opens

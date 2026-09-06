@@ -677,6 +677,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // two separate tables with two sets of numbers until one of them drifted.
   // Lookup is case-insensitive so 'V' and 'v' cannot become different answers.
   var MIGR_FORMATION_SAVING = { solo: 0, swarm: 0.05, loose: 0.07, echelon: 0.12, v: 0.22 };
+  // Persisted numbers arrive as whatever was last written: a string from an
+  // older schema, a NaN from a failed calculation, an object from a key that
+  // used to hold something else. `x || fallback` takes anything truthy and
+  // `typeof x === 'number'` still admits NaN and Infinity, so both let bad
+  // values reach arithmetic, SVG attributes and React children.
+  function migrNum(value, fallback, lo, hi) {
+    var n = typeof value === 'number' ? value : (typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN);
+    if (!isFinite(n)) return fallback;
+    if (lo != null && n < lo) return lo;
+    if (hi != null && n > hi) return hi;
+    return n;
+  }
+  // Sibling of migrNum for state that is rendered as text or handed to a
+  // <select value>. React throws "Objects are not valid as a React child" for
+  // one and warns "must be a scalar value" for the other, and persisted state
+  // is exactly where a non-scalar comes from.
+  function migrStr(value, fallback) {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' && isFinite(value)) return String(value);
+    return fallback == null ? '' : fallback;
+  }
   function migrFormationSaving(mode) {
     if (!mode) return 0;
     var k = String(mode).toLowerCase();
@@ -2058,14 +2079,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // Live values ref — updated every render so animation loops read fresh state
       var _liveVals = useRef({});
       _liveVals.current = {
-        birdCount: d.vBirdCount || 9, simSpeed: d.vSpeed || 1,
-        windDir: d.windDir || 0, windSpeed: d.windSpeed || 15,
+        birdCount: migrNum(d.vBirdCount, 9, 2, 30), simSpeed: migrNum(d.vSpeed, 1, 0.25, 4),
+        windDir: migrNum(d.windDir, 0, -360, 360), windSpeed: migrNum(d.windSpeed, 15, 0, 50),
         showStreamlines: d.showStreamlines, placingObj: d.placingObj,
-        selectedSpecies: d.selectedSpecies, aoa: d.aoa || 5,
+        selectedSpecies: d.selectedSpecies, aoa: migrNum(d.aoa, 5, 0, 20),
         flightSpecies: d.flightSpecies || d.selectedSpecies || 'canada_goose',
         flightCamera: d.flightCamera || 'chase',
         flightFormation: d.flightFormation || 'natural',
-        flightWind: d.flightWind == null ? 8 : d.flightWind,
+        flightWind: migrNum(d.flightWind, 8, -15, 25),
         flightPaused: !!d.flightPaused,
         flightSeason: d.flightSeason || 'fall',
         selectedWing: d.selectedWing || MIGR_DEFAULT_WING, isDark: isDark, tab: tab, t: t,
@@ -2909,13 +2930,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       }, []);
 
       function renderFlight3D() {
-        var speciesId = d.flightSpecies || d.selectedSpecies || 'canada_goose';
+        // These four are <select> values, which React requires to be scalar.
+        var speciesId = migrStr(d.flightSpecies, '') || migrStr(d.selectedSpecies, '') || 'canada_goose';
         var species = findMigrationSpecies(speciesId);
-        var formationMode = d.flightFormation || 'natural';
+        var formationMode = migrStr(d.flightFormation, '') || 'natural';
         var resolvedFormation = flightFormationName(species, formationMode);
-        var flightWind = d.flightWind == null ? 8 : d.flightWind;
-        var cameraMode = d.flightCamera || 'chase';
-        var season = d.flightSeason || 'fall';
+        var flightWind = migrNum(d.flightWind, 8, -15, 25);
+        var cameraMode = migrStr(d.flightCamera, '') || 'chase';
+        var season = migrStr(d.flightSeason, '') || 'fall';
         var groundSpeed = Math.max(1, Math.round(species.speed + flightWind * 2.237));
         // Monarchs are the deliberate exception: their swarm is not drafting,
         // so the deck credits them nothing however they are flying.
@@ -3095,8 +3117,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var dragRef = _vfDragRef;
         var timeRef = _vfTimeRef;
 
-        var birdCount = d.vBirdCount || 9;
-        var simSpeed = d.vSpeed || 1;
+        var birdCount = migrNum(d.vBirdCount, 9, 2, 30);
+        var simSpeed = migrNum(d.vSpeed, 1, 0.25, 4);
         var leaderRotations = d.vLeaderRotations || 0;
 
         // Sync the perfect-V award ref with persisted state on (re)mount.
@@ -3778,10 +3800,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // ── Energy Budget Calculator (Interactive) ──
           (function() {
-            var ebDist = d.ebDistance || 3000;
-            var ebWeight = d.ebWeight || 30; // grams
+            var ebDist = migrNum(d.ebDistance, 3000, 100, 7000);
+            var ebWeight = migrNum(d.ebWeight, 30, 5, 5000); // grams
             var ebVForm = d.ebVFormation !== false;
-            var ebHeadwind = d.ebHeadwind || 0;
+            var ebHeadwind = migrNum(d.ebHeadwind, 0, 0, 25);
 
             // Costed by the tool's one flight-energy model. This panel used to
             // run its own metabolic model with a flat 35% V-formation saving,
@@ -3874,7 +3896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // ── Altitude Physiology (Interactive) ──
           (function() {
-            var altFeet = d.altFeet || 15000;
+            var altFeet = migrNum(d.altFeet, 15000, 0, 37000);
             var oxygenPercent = Math.max(5, 100 * Math.exp(-altFeet / 27000)); // exponential decay
             var tempC = 15 - (altFeet * 0.00198); // standard lapse rate ~2°C per 1000ft
             var tempF = tempC * 9 / 5 + 32;
@@ -3954,8 +3976,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var windBirdsRef = _wcBirdsRef;
         var timeRef = _wcTimeRef;
 
-        var windDir = d.windDir || 0; // degrees, 0=East
-        var windSpeed = d.windSpeed || 15;
+        var windDir = migrNum(d.windDir, 0, -360, 360); // degrees, 0=East
+        var windSpeed = migrNum(d.windSpeed, 15, 0, 50);
         var showStreamlines = d.showStreamlines || false;
         var placingObj = d.placingObj || null; // 'mountain', 'building', 'lake', 'thermal', 'forest'
 
@@ -4550,7 +4572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var timeRef = _rtTimeRef;
         var selectedSpecies = d.selectedSpecies || null;
         var routeAnimProgress = d.routeAnimProgress || 0;
-        var aiExplorerText = d.aiExplorerText || '';
+        var aiExplorerText = migrStr(d.aiExplorerText, '');
         var aiExplorerLoading = d.aiExplorerLoading || false;
 
         // Flyway colors
@@ -5699,7 +5721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var animRef = _arAnimRef;
         var timeRef = _arTimeRef;
 
-        var aoa = typeof d.aoa === 'number' ? d.aoa : 5; // angle of attack
+        var aoa = migrNum(d.aoa, 5, 0, 20); // angle of attack
         var selectedWing = d.selectedWing || MIGR_DEFAULT_WING;
 
         function getWingType(id) {
@@ -6789,17 +6811,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // Challenge state
         var challengeActive = d.challengeActive || false;
         var challengeStep = d.challengeStep || 0;
-        var challengeEnergy = typeof d.challengeEnergy === 'number' ? d.challengeEnergy : 100;
-        var challengeDistance = typeof d.challengeDistance === 'number' ? d.challengeDistance : 3000;
-        var challengeDistRemaining = typeof d.challengeDistRemaining === 'number' ? d.challengeDistRemaining : 3000;
-        var challengeWeather = d.challengeWeather || 'Clear';
-        var challengeFlockSize = typeof d.challengeFlockSize === 'number' ? d.challengeFlockSize : 50;
+        var challengeEnergy = migrNum(d.challengeEnergy, 100, 0, 100);
+        var challengeDistance = migrNum(d.challengeDistance, 3000, 0, 20000);
+        var challengeDistRemaining = migrNum(d.challengeDistRemaining, 3000, 0, 20000);
+        var challengeWeather = migrStr(d.challengeWeather, 'Clear');
+        var challengeFlockSize = migrNum(d.challengeFlockSize, 50, 1, 1000);
         var challengeChoices = d.challengeChoices || null;
-        var challengeResult = d.challengeResult || '';
+        var challengeResult = migrStr(d.challengeResult, '');
         var challengeLoading = d.challengeLoading || false;
         var challengeScore = d.challengeScore || 0;
         var challengeComplete = d.challengeComplete || false;
-        var challengeLog = d.challengeLog || [];
+        var challengeLog = (Array.isArray(d.challengeLog) ? d.challengeLog : []).filter(function(r) { return r && typeof r === 'object'; });
 
         function startChallenge() {
           updMulti({
@@ -6881,7 +6903,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 jsonStr = jsonStr.substring(startIdx, endIdx + 1);
               }
               var parsed = JSON.parse(jsonStr);
-              if (!parsed || !parsed.choices || !parsed.choices.length) throw new Error('no choices');
+              // A string has a length, so the old check passed
+              // {"choices": "push through"} straight through to a render that
+              // then threw. Require a real array of usable rows.
+              var okChoices = parsed && Array.isArray(parsed.choices)
+                ? parsed.choices.filter(function(c) { return c && typeof c === 'object' && c.label; })
+                : [];
+              if (!okChoices.length) throw new Error('no usable choices');
+              parsed.choices = okChoices;
               updMulti({
                 challengeChoices: parsed,
                 challengeWeather: newWeather,
@@ -6894,8 +6923,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
 
         function makeChoice(choiceIdx) {
-          if (!challengeChoices || !challengeChoices.choices) return;
-          var choice = challengeChoices.choices[choiceIdx];
+          if (!challengeChoices || !Array.isArray(challengeChoices.choices)) return;
+          // Index into the same filtered list the buttons were built from, or
+          // the nth button would apply the wrong choice once a hole is dropped.
+          var usable = challengeChoices.choices.filter(function(c) { return c && typeof c === 'object'; });
+          var choice = usable[choiceIdx];
           if (!choice) return;
 
           var newEnergy = clamp(challengeEnergy + (choice.energy_cost || 0), 0, 100);
@@ -7077,7 +7109,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('p', { className: 'text-xs font-medium ' + textPrimary }, challengeChoices.scenario)
                 ),
                 h('div', { className: 'grid gap-2' },
-                  (challengeChoices.choices || []).map(function(ch, ci) {
+                  // Belt and braces: the validation above is new, and a
+                  // browser somewhere still has the old shape in storage.
+                  (Array.isArray(challengeChoices.choices) ? challengeChoices.choices : [])
+                    .filter(function(ch) { return ch && typeof ch === 'object'; })
+                    .map(function(ch, ci) {
                     return h('button', {
                       key: ci,
                       className: 'p-3 rounded-lg border text-left transition-all hover:ring-2 hover:ring-sky-300 ' + borderCol + ' ' + cardBg,
@@ -7267,14 +7303,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       else if (tab === 'inquiry') tabContent = renderMigrationInquiry();
 
       function renderMigrationInquiry() {
-        var iq = d.inquiry || { wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [], testVar: null, trials: [] };
+        var IQ_DEFAULTS = { wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [], testVar: null, trials: [] };
+        var iq = d.inquiry || IQ_DEFAULTS;
+        // The five numbers this tab computes from all reach the DOM as SVG
+        // geometry and slider values. A NaN or an Infinity out of stale storage
+        // does not throw -- it renders width="NaN" and value="NaN", which is
+        // invalid markup and a slider the browser cannot place. Coerce each to
+        // a finite number in range, falling back to the default.
+        (function() {
+          var bounds = { wingspan: [0.1, 3], mass: [0.05, 12], headwind: [-10, 20], distance: [100, 15000] };
+          var fixed = null;
+          for (var k in bounds) {
+            var v = Number(iq[k]);
+            if (!isFinite(v) || v < bounds[k][0] || v > bounds[k][1]) {
+              if (!fixed) fixed = Object.assign({}, iq);
+              fixed[k] = isFinite(v) ? Math.min(bounds[k][1], Math.max(bounds[k][0], v)) : IQ_DEFAULTS[k];
+            }
+          }
+          if (fixed) iq = fixed;
+        })();
         // Trials used to be a flat five-line scratch log with no notion of what
         // was being tested, so nothing in the tab could tell a controlled
         // comparison from a confounded one. Older saved logs are carried over
         // rather than dropped \u2014 a student's recorded work should survive the
         // upgrade even though the old rows cannot say which variable was under
         // test.
-        var iqTrials = iq.trials;
+        // Persisted state can come back any shape at all: a renamed key, a
+        // half-written value, a schema from an older build. Anything that is
+        // not an array of rows is treated as no rows rather than crashing the
+        // tab, which is what iqTrials.filter did.
+        var iqTrials = Array.isArray(iq.trials) ? iq.trials : null;
         if (!iqTrials && iq.log && iq.log.length) {
           iqTrials = iq.log.map(function(e, i) {
             return { n: i + 1, testVar: null, legacy: true, wingspan: parseFloat(e.w), mass: parseFloat(e.m), headwind: e.hw, vMode: e.fmt, distance: e.d, ratio: parseFloat(e.fr), state: e.state, energyPerKm: null, totalKJ: null, fatBudget: null };
