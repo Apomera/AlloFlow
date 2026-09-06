@@ -593,7 +593,9 @@ describe('Geometry World mobile action WCAG parity', () => {
       ['Talk to nearby character', 'talk', 'talkToNearbyNpc'],
       ['Undo last block action', 'undo', 'undoMobileBlockAction'],
     ].forEach(function(pair) {
-      expect(SOURCE).toContain("type: 'button', className: 'gw-focusable', 'aria-label': '" + pair[0]);
+      // The name is now a translated key with the English as its fallback, so
+      // match the fallback rather than a bare literal.
+      expect(SOURCE).toMatch(new RegExp("type: 'button', className: 'gw-focusable', 'aria-label': __alloT\\('[^']+', '" + pair[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
       expect(SOURCE).toContain(`onClick: function() { runMobileButtonAction('${pair[1]}', ${pair[2]}); },`);
     });
     expect(SOURCE).toContain("engine._lastTouchAction = { key: actionKey, at: Date.now() };");
@@ -624,8 +626,8 @@ describe('Geometry World visual refinement contract', () => {
   it('keeps measurement details in a dismissible floating inspector', () => {
     expect(SOURCE).toContain("className: 'gw-prediction-bar gw-prediction-panel'");
     expect(SOURCE).toContain("className: 'gw-measure-card'");
-    expect(SOURCE).toContain("'aria-label': 'Measurement inspector'");
-    expect(SOURCE).toContain("'aria-label': 'Close measurement inspector'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector')`);
     expect(SOURCE).toContain('.gw-measure-card{position:absolute!important;');
   });
 
@@ -670,7 +672,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("className: 'gw-root gw-state-screen'");
     expect(SOURCE).toContain("'aria-labelledby': 'gw-mobile-title'");
     expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': 'true'");
-    expect(SOURCE).toContain("className: 'gw-loading-track', role: 'progressbar', 'aria-label': 'Loading 3D engine'");
+    expect(SOURCE).toContain(`className: 'gw-loading-track', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_loading_3d_engine', 'Loading 3D engine')`);
     expect(SOURCE).not.toContain("width: '60%'");
     expect(SOURCE).toContain("role: 'alert', 'aria-live': 'assertive', 'aria-labelledby': 'gw-webgl-recovery-title'");
     expect(SOURCE).toContain("className: 'gw-recovery-details'");
@@ -686,8 +688,8 @@ describe('Geometry World visual refinement contract', () => {
     expect((SOURCE.match(/className: 'gw-state-card'/g) || []).length).toBeGreaterThanOrEqual(3);
     expect((SOURCE.match(/className: 'gw-primary-cta gw-state-primary gw-focusable'/g) || []).length).toBeGreaterThanOrEqual(2);
     expect(SOURCE).toContain("type: 'button', className: 'gw-state-secondary gw-focusable'");
-    expect(SOURCE).toContain("'aria-label': 'Touch look settings'");
-    expect(SOURCE).toContain("'aria-label': 'Touch look sensitivity'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_touch_look_settings', 'Touch look settings')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_touch_look_sensitivity', 'Touch look sensitivity')`);
     expect(SOURCE).toContain("'aria-valuetext': 'Look speed '");
     expect(SOURCE).toContain('.gw-state-icon,.gw-loading-mark,.gw-loading-sweep{animation:none!important}');
   });
@@ -696,12 +698,12 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("className: 'gw-minimap'");
     expect(SOURCE).toContain('bottom:150px!important');
     expect(SOURCE).toContain("className: 'gw-collab-roster'");
-    expect(SOURCE).toContain("role: 'region',\n          'aria-label': 'Builders online'");
+    expect(SOURCE).toContain(`role: 'region',\n          'aria-label': __alloT('stem.geometryworld.a11y_builders_online', 'Builders online')`);
     expect(SOURCE).toContain("'data-self': isMe ? 'true' : 'false'");
-    expect(SOURCE).toContain("className: 'gw-transform-panel', role: 'region', 'aria-label': 'Transform discovery'");
+    expect(SOURCE).toContain(`className: 'gw-transform-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_transform_discovery', 'Transform discovery')`);
     expect(SOURCE).toContain("className: 'gw-transform-state', role: 'status', 'aria-live': 'polite'");
-    expect(SOURCE).toContain("'aria-label': 'Add current transform to observation log'");
-    expect(SOURCE).toContain("'aria-label': 'Reset transform discovery'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_add_current_transform_to_observation_log', 'Add current transform to observation log')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_reset_transform_discovery', 'Reset transform discovery')`);
     expect(SOURCE).toContain('@media(prefers-reduced-motion:reduce){.gw-minimap{transition:none!important}');
   });
 
@@ -714,7 +716,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("type: isDone ? undefined : 'button'");
     expect(SOURCE).toContain("'aria-label': isDone ? undefined : 'Navigate to objective: ' + objectiveText");
     expect(SOURCE).toContain("className: 'gw-reset-button gw-focusable'");
-    expect(SOURCE).toContain("'aria-label': 'Reset lesson progress and reload the world'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_reset_lesson_progress_and_reload_the_world', 'Reset lesson progress and reload the world')`);
     expect(SOURCE).toContain('.gw-collab-roster{top:auto;bottom:150px}');
   });
 
@@ -733,13 +735,13 @@ describe('Geometry World visual refinement contract', () => {
   });
 
   it('styles secondary data panels and environmental alerts as accessible HUD content', () => {
-    expect(SOURCE).toContain("className: 'gw-history-panel', role: 'region', 'aria-label': 'Measurement history'");
+    expect(SOURCE).toContain(`className: 'gw-history-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_history', 'Measurement history')`);
     expect(SOURCE).toContain("className: 'gw-history-title gw-hud-panel-heading'");
     expect(SOURCE).toContain("'data-current': mi === 0 ? 'true' : 'false'");
     expect(SOURCE).toContain("className: 'gw-retrieval-card'");
     expect(SOURCE).toContain("className: 'gw-retrieval-input gw-focusable'");
     expect(SOURCE).toContain("className: 'gw-focusable gw-retrieval-button'");
-    expect(SOURCE).toContain("className: 'gw-inventory-panel', role: 'region', 'aria-label': 'Block inventory'");
+    expect(SOURCE).toContain(`className: 'gw-inventory-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_block_inventory', 'Block inventory')`);
     expect(SOURCE).toContain("className: 'gw-inventory-row'");
     expect(SOURCE).toContain('bottom:238px!important');
     expect(SOURCE).toContain("className: 'gw-environment-tint gw-environment-tint--water'");
@@ -751,11 +753,11 @@ describe('Geometry World visual refinement contract', () => {
   });
 
   it('keeps the game bar compact and moves secondary controls into accessible overlays', () => {
-    expect(SOURCE).toContain("className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World')");
-    expect(SOURCE).toContain("el('header', { className: 'gw-toolbar', 'aria-label': 'Geometry World lesson controls'");
+    expect(SOURCE).toContain(`className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World')`);
+    expect(SOURCE).toContain(`el('header', { className: 'gw-toolbar', 'aria-label': __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls')`);
     expect(SOURCE).toContain("className: 'gw-brand-lockup'");
     expect(SOURCE).toContain("el('h2', { id: 'gw-title', className: 'gw-title' }");
-    expect(SOURCE).toContain("className: 'gw-status-cluster', 'aria-label': 'Lesson status and game menu'");
+    expect(SOURCE).toContain(`className: 'gw-status-cluster', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_status_and_game_menu', 'Lesson status and game menu')`);
     expect(SOURCE).toContain("'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog'");
     expect(SOURCE).toContain("id: 'gw-settings-dialog', role: 'dialog', 'aria-modal': 'true'");
     expect(SOURCE).toContain("className: 'gw-fullscreen-quickbar'");
@@ -793,7 +795,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("el('h3', { id: 'gw-tutorial-title', className: 'gw-tutorial-title' }");
     expect(SOURCE).toContain("['Explore the world', 'Meet a guide', 'Measure a structure', 'Build a block'][tutorialStep]");
     expect(SOURCE).toContain("id: 'gw-tutorial-instruction', className: 'gw-tutorial-instruction'");
-    expect(SOURCE).toContain("className: 'gw-tutorial-progress', role: 'progressbar', 'aria-label': 'Tutorial progress'");
+    expect(SOURCE).toContain(`className: 'gw-tutorial-progress', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_tutorial_progress', 'Tutorial progress')`);
     expect(SOURCE).toContain("'aria-valuenow': tutorialStep + 1");
     expect(SOURCE).toContain("className: 'gw-tutorial-dot', 'data-complete': si < tutorialStep ? 'true' : 'false'");
     expect(SOURCE).toContain("className: 'gw-tutorial-actions'");
@@ -813,12 +815,12 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("el('section', { className: 'gw-intro-objectives', 'aria-labelledby': 'gw-intro-objectives-title'");
     expect(SOURCE).toContain("el('ol', null");
     expect(SOURCE).toContain("return el('li', { key: 'objlist-' + i");
-    expect(SOURCE).toContain("className: 'gw-intro-formula', role: 'note', 'aria-label': 'Key formulas'");
-    expect(SOURCE).toContain("className: 'gw-intro-meta', 'aria-label': 'Lesson overview'");
+    expect(SOURCE).toContain(`className: 'gw-intro-formula', role: 'note', 'aria-label': __alloT('stem.geometryworld.a11y_key_formulas', 'Key formulas')`);
+    expect(SOURCE).toContain(`className: 'gw-intro-meta', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_overview', 'Lesson overview')`);
     expect(SOURCE).toContain("className: 'gw-intro-actions'");
     expect(SOURCE).toContain("className: 'gw-primary-cta gw-intro-start gw-focusable'");
     expect(SOURCE).toContain("className: 'gw-intro-secondary gw-focusable'");
-    expect(SOURCE).toContain("'aria-label': 'Start lesson without the guided tutorial'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_start_lesson_without_the_guided_tutorial', 'Start lesson without the guided tutorial')`);
     expect(SOURCE).toContain('function loadLessonByKey(lessonKey, _attempt, skipTutorial)');
     expect(SOURCE).toContain('loadLessonByKey(lessonKey, attempt + 1, skipTutorial)');
     expect(SOURCE).toContain('if (skipTutorial) { lessonState.tutorialStep = 4; lessonState.tutorialDismissed = true; }');
@@ -841,7 +843,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("className: 'gw-reflection-save gw-focusable', disabled: !reflectionText.trim()");
     expect(SOURCE).toContain("text: reflectionText.trim()");
     expect(SOURCE).toContain("className: 'gw-reflection-skip gw-focusable'");
-    expect(SOURCE).toContain("'aria-label': 'Continue without saving a reflection'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_continue_without_saving_a_reflection', 'Continue without saving a reflection')`);
     expect(SOURCE).toContain('.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;');
     expect(SOURCE).toContain('.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;');
     expect(SOURCE).toContain('.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}');
@@ -851,24 +853,24 @@ describe('Geometry World visual refinement contract', () => {
   it('makes the guided explore tour perceivable and keyboard operable', () => {
     expect(SOURCE).toContain("className: 'gw-tour-button gw-focusable'");
     expect(SOURCE).toContain("'aria-pressed': guidedTourActive");
-    expect(SOURCE).toContain("'aria-label': 'Guided explore checkpoint'");
-    expect(SOURCE).toContain("'aria-label': 'Exit guided explore tour'");
-    expect(SOURCE).toContain("role: 'region', 'aria-label': 'Guided explore checkpoint'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_guided_explore_checkpoint', 'Guided explore checkpoint')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_exit_guided_explore_tour', 'Exit guided explore tour')`);
+    expect(SOURCE).toContain(`role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_guided_explore_checkpoint', 'Guided explore checkpoint')`);
     expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
     expect(SOURCE).toContain("guidedTourReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)");
     expect(SOURCE).toContain('if (!tour.reducedMotion)');
-    expect(SOURCE).toContain("className: 'gw-view-presets', role: 'group', 'aria-label': 'Camera views'");
+    expect(SOURCE).toContain(`className: 'gw-view-presets', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_camera_views', 'Camera views')`);
     expect(SOURCE).toContain("'aria-label': viewPresetLabels[preset] + ' camera view'");
     expect(SOURCE).toContain("'aria-pressed': active");
     expect(SOURCE).toContain('Camera view: ');
     expect(SOURCE).toContain('Camera preset canceled. Free exploration restored.');
   });
   it('makes the Layer Explorer semantic and keyboard operable', () => {
-    expect(SOURCE).toContain("className: 'gw-layer-explorer', role: 'region', 'aria-label': 'Layer explorer'");
+    expect(SOURCE).toContain(`className: 'gw-layer-explorer', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_layer_explorer', 'Layer explorer')`);
     expect(SOURCE).toContain("id: 'gw-layer-focus', type: 'range'");
-    expect(SOURCE).toContain("'aria-label': 'Layer explorer depth'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_layer_explorer_depth', 'Layer explorer depth')`);
     expect(SOURCE).toContain("'aria-valuetext': layerFocus === 0 ? 'All layers visible'");
-    expect(SOURCE).toContain("'aria-label': 'Show all layers'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_show_all_layers', 'Show all layers')`);
     expect(SOURCE).toContain('Showing layers 1 through ');
     expect(SOURCE).toContain('data-geometry-layer-explorer');
   });
@@ -877,7 +879,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("id: 'gw-scene-map-title'");
     expect(SOURCE).toContain("'aria-controls': 'gw-scene-map'");
     expect(SOURCE).toContain("'aria-label': 'View structure: ' + structure.label");
-    expect(SOURCE).toContain("role: 'list', 'aria-label': 'Structures in scene'");
+    expect(SOURCE).toContain(`role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_structures_in_scene', 'Structures in scene')`);
     expect(SOURCE).toContain('engine.getSceneOverview = function()');
     expect(SOURCE).toContain('engine.focusStructure = function(index)');
     expect(SOURCE).toContain('Text alternative');
@@ -887,18 +889,18 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("'aria-labelledby': 'gw-completion-title', 'aria-describedby': 'gw-completion-description'");
     expect(SOURCE).toContain("el('h2', { id: 'gw-completion-title', className: 'gw-completion-title' }");
     expect(SOURCE).toContain("el('p', { id: 'gw-completion-description', className: 'gw-completion-description' }");
-    expect(SOURCE).toContain("className: 'gw-completion-metrics', role: 'list', 'aria-label': 'Lesson activity summary'");
+    expect(SOURCE).toContain(`className: 'gw-completion-metrics', role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_activity_summary', 'Lesson activity summary')`);
     expect(SOURCE).toContain("className: 'gw-completion-metric', role: 'listitem'");
     expect(SOURCE).toContain("className: 'gw-completion-actions'");
     expect(SOURCE).toContain("type: 'button', className: 'gw-completion-next gw-focusable'");
     expect(SOURCE).toContain("'aria-label': 'Continue to next lesson: '");
     expect(SOURCE).toContain("type: 'button', className: 'gw-completion-replay gw-focusable'");
-    expect(SOURCE).toContain("'aria-label': 'Replay current lesson'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_replay_current_lesson', 'Replay current lesson')`);
     expect(SOURCE).toContain("upd({ activeLesson: nextKey, measureHistory: [], reflectionText: '' })");
     expect(SOURCE).toContain("upd({ measureHistory: [], reflectionText: '' })");
     expect(SOURCE).toContain("el('section', { className: 'gw-completion-journey', 'aria-labelledby': 'gw-journey-title'");
     expect(SOURCE).toContain("el('h3', { id: 'gw-journey-title', className: 'gw-journey-title' }");
-    expect(SOURCE).toContain("className: 'gw-journey-stats', role: 'list', 'aria-label': 'Course achievement summary'");
+    expect(SOURCE).toContain(`className: 'gw-journey-stats', role: 'list', 'aria-label': __alloT('stem.geometryworld.a11y_course_achievement_summary', 'Course achievement summary')`);
     expect(SOURCE).toContain("className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'badges'");
     expect(SOURCE).toContain("el('blockquote', { className: 'gw-journey-quote' }");
     expect(SOURCE).toContain('.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;');

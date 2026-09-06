@@ -362,7 +362,7 @@ describe('Geometry World measurement model', () => {
 
     expect(math.buildRepresentationExploration([], [], '')).toMatchObject({ visitedCount: 0, target: 0, percent: 0, complete: false });
     expect(SOURCE).toContain('data-geometry-representation-progress');
-    expect(SOURCE).toContain("'aria-label': 'Equivalent volume views explored'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_equivalent_volume_views_explored', 'Equivalent volume views explored')`);
     expect(SOURCE).toContain('viewsExplored: representationExploration.visitedCount');
   });
 
@@ -426,7 +426,7 @@ describe('Geometry World measurement model', () => {
     expect(oneCheck.message).toBe('Add evidence from the structure or equation before saving.');
 
     expect(math.buildRepresentationConnectionReadiness('Both equations count the same 24 cubes.', true, true)).toMatchObject({ ready: true, missing: [], message: '' });
-    expect(SOURCE).toContain("'aria-label': 'Explanation self-check'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_explanation_self_check', 'Explanation self-check')`);
     expect(SOURCE).toContain('I named what stays the same.');
     expect(SOURCE).toContain('I used evidence from the structure or equation.');
     expect(SOURCE).toContain('selfCheck: { invariant: true, evidence: true }');
@@ -594,7 +594,7 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('(predictionState.history || []).concat');
     expect(SOURCE).toContain("'Composite structure'");
     expect(SOURCE).toContain("'Bounding box ' + measureResult.boundingVolume");
-    expect(SOURCE).toContain("'aria-label': 'Estimated volume in cubic units'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_estimated_volume_in_cubic_units', 'Estimated volume in cubic units')`);
     expect(SOURCE).toContain("'data-geometry-prediction-result': 'true'");
     expect(SOURCE).toContain("'data-geometry-estimate-result': 'committed-before-measurement'");
     expect(SOURCE).toContain('var estimateOutcome = resolveVolumeEstimateMeasurement');
@@ -644,8 +644,8 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('ev.target.value = activeVolumeRepresentation.key');
     expect(SOURCE).toContain('Save or discard your explanation draft before switching views.');
     expect(SOURCE).toContain('Save or discard your explanation draft before opening another view.');
-    expect(SOURCE).toContain("'aria-label': 'Discard unsaved representation explanation'");
-    expect(SOURCE).toContain("announceToSR('Explanation draft discarded.");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_discard_unsaved_representation_explanation', 'Discard unsaved representation explanation')`);
+    expect(SOURCE).toContain("announceToSR(__alloT('stem.geometryworld.sr_explanation_draft_discarded_you_can_now_choose_an', 'Explanation draft discarded.");
 
     const guardIndex = SOURCE.indexOf('if (hasUnsavedRepresentationDraft)');
     const switchIndex = SOURCE.indexOf('upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key', guardIndex);
@@ -659,14 +659,14 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}');
     expect(SOURCE).toContain("whiteSpace: 'normal'");
     expect(SOURCE).toContain("maxWidth: isMobile ? 'calc(100vw - 168px)'");
-    expect(SOURCE).toContain("'aria-label': 'Place block'");
-    expect(SOURCE).toContain("'aria-label': 'Measure structure'");
-    expect(SOURCE).toContain("'aria-label': 'Undo last block action'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action')`);
     expect(SOURCE).toContain("engine._undoStack && engine._undoStack.length > 0 && el('button'");
     expect(SOURCE).toContain("engine._redoStack && engine._redoStack.length > 0 && el('button'");
-    expect(SOURCE).toContain("'aria-label': 'Toggle fly mode'");
-    expect(SOURCE).toContain("'aria-label': 'Return to spawn point'");
-    expect(SOURCE).toContain("'aria-label': 'Clear my placed blocks'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_return_to_spawn_point', 'Return to spawn point')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_clear_my_placed_blocks', 'Clear my placed blocks')`);
     expect(SOURCE).not.toContain("engine._undoStack && engine._undoStack.length > 0 && el('div'");
   });
 });

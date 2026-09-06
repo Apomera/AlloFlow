@@ -30992,6 +30992,7 @@
       "back_to_tools": "Back to tools"
     },
     "companionplanting": {
+      "a11y_grow": "Grow!",
       "sr_clipboard_access_is_unavailable_use_the_evidence": "Clipboard access is unavailable. Use the evidence portfolio text for manual copying.",
       "sr_automatic_copy_failed_use_the_evidence_portfolio": "Automatic copy failed. Use the evidence portfolio text for manual copying.",
       "sr_progress_export_is_unavailable_in_this_environmen": "Progress export is unavailable in this environment.",
@@ -41935,6 +41936,9 @@
       "cutaway": "Cutaway"
     },
     "geometryworld": {
+      "a11y_minimap": "Minimap",
+      "a11y_jump": "Jump",
+      "a11y_encouragement": "Encouragement",
       "sr_game_settings_and_tools_opened": "Game settings and tools opened.",
       "sr_angle_point_a_set_aim_at_the_vertex_and_press_v": "Angle point A set. Aim at the vertex and press V.",
       "sr_angle_vertex_set_aim_at_the_third_point_and_press": "Angle vertex set. Aim at the third point and press V.",

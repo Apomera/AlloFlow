@@ -210,7 +210,7 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('focus-visible:outline-4');
     expect(source).toContain("'aria-atomic': true");
     expect(source).toContain('crew-contribution-help-');
-    expect(source).toContain("role: 'group', 'aria-label': 'Sixteen community garden plot controls'");
+    expect(source).toContain(`role: 'group', 'aria-label': __alloT('stem.companionplanting.a11y_sixteen_community_garden_plot_controls', 'Sixteen community garden plot controls')`);
     expect(source).toContain('data-community-a11y-scope');
     expect(source).toContain('data-community-wcag-style');
     expect(source).toContain('forced-colors:active');

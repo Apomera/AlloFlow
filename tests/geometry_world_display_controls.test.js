@@ -366,7 +366,7 @@ describe('Geometry World display stability controls', function() {
     expect(SOURCE).toContain('engine.setViewPreset = function(preset, focusOverride)');
     expect(SOURCE).toContain('getViewPresetTarget');
     expect(SOURCE).toContain("className: 'gw-view-presets'");
-    expect(SOURCE).toContain("'aria-label': 'Camera views'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_camera_views', 'Camera views')`);
     expect(SOURCE).toContain("'aria-label': viewPresetLabels[preset] + ' camera view'");
     expect(SOURCE).toContain('engine._viewPresetReturn');
   });
@@ -379,15 +379,15 @@ describe('Geometry World display stability controls', function() {
     expect(SOURCE).toContain('engine.startGuidedTour = function()');
     expect(SOURCE).toContain('engine.stopGuidedTour = function(completed)');
     expect(SOURCE).toContain("className: 'gw-tour-overlay'");
-    expect(SOURCE).toContain("'aria-label': 'Guided explore checkpoint'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_guided_explore_checkpoint', 'Guided explore checkpoint')`);
     expect(SOURCE).toContain('guidedTourSteps');
     expect(SOURCE).toContain('tourProgress');
     expect(SOURCE).toContain('reducedMotion: guidedTourReducedMotion');
   });
   it('keeps touch controls discoverable and WCAG-sized in source and fullscreen markup', function() {
     expect(SOURCE).toContain("'data-geometry-touch-toggle': 'true'");
-    expect(SOURCE).toContain("'aria-label': 'Touch joystick: drag on the left side to move'");
-    expect(SOURCE).toContain("'aria-label': 'Touch actions'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_touch_joystick_drag_on_the_left_side_to_move', 'Touch joystick: drag on the left side to move')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_touch_actions', 'Touch actions')`);
     expect(SOURCE).toContain('.gw-touch-controls button{min-width:56px!important;min-height:56px!important');
     expect(SOURCE).toContain('engine.setTouchControlsEnabled = function(enabled)');
     expect(SOURCE).toContain("'data-touch-mode': touchMode ? 'touch' : 'desktop'");
