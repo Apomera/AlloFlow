@@ -53,6 +53,26 @@ describe('brainAtlas 3D surface goes through the translator', () => {
     });
   });
 
+  it('covers the panels the second and third passes reached', () => {
+    [
+      ['d3_recenter', 'Recenter'],
+      ['d3_save_to_study_set', 'Save to study set'],
+      ['d3_what_it_contributes', 'What it contributes'],
+      ['d3_anatomical_cutaway', 'Anatomical cutaway'],
+      ['d3_guided_pathway', 'Guided pathway'],
+      ['d3_first_half', 'First half'],
+      ['d3_opposite_half', 'Opposite half'],
+    ].forEach(([key, english]) => {
+      expect(src).toContain("t('stem.brainatlas." + key + "', \"" + english + "\")");
+    });
+  });
+
+  it('wraps both halves of a paired label, not just one', () => {
+    // First half sat beside an already-wrapped Opposite half, which is the
+    // shape a partial pass leaves behind
+    expect(src).toMatch(/d3_opposite_half[\s\S]{0,80}d3_first_half/);
+  });
+
   it('leaves no wrapped label with an empty fallback', () => {
     const empty = src.match(/t\('stem\.brainatlas\.d3_[a-z0-9_]+', ""\)/g) || [];
     expect(empty).toHaveLength(0);

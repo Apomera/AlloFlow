@@ -250,3 +250,13 @@ The compact entry the review asked for already exists, and the overview is colla
 
 Closing the remaining gap means either hiding the search controls on phones or shortening the canvas header, and both are product decisions rather than defects, so they are recorded here rather than changed. The numbers above are the baseline to measure any such change against.
 
+## Finishing the extraction
+
+September 6, 2026. Two more passes over the same surface. The first pass had taken labels sitting directly in a React text or property slot; these two take the ones that sit in expression positions instead, mostly nested ternaries choosing between several messages, plus the search placeholders, the cutaway panel, the challenge clue selector, the compare tray guidance and the guide-card actions.
+
+Another 66 strings now reach the translator, again with their existing wording as the fallback. One string already had a key and was pointed at it rather than given a second one. Every remaining literal on this surface is a genuine concatenation fragment: a phrase with a trailing space before a structure name, or one beginning with a full stop that follows a value. Those cannot be wrapped as they stand; the fix is to rewrite the sentence so the variable sits inside a parameter, which is a separate job and a wording change.
+
+One paired label is worth noting because it is the shape a partial pass leaves behind. The cutaway panel showed either "Opposite half" or "First half"; the first was already wrapped and the second was not, so a translated session would have shown one of the two in English depending on which way the slider sat. Both are wrapped now, and a test pins that they stay together.
+
+The tool goes from 93 unwrapped user-visible strings to 33, and every one of those 33 is a fragment. The tool registration label at the top of the file was deliberately left alone: it sits outside the render function, where the guarded translator does not exist yet, and the STEM Lab shell handles that one itself.
+
