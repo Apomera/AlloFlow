@@ -43,9 +43,9 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("if (!reducedMotion && assemblyPulse)");
     expect(source).toContain("if (!reducedMotion && claimEvidencePulse)");
     expect(source).toContain("if (!reducedMotion) loggedRings.forEach");
-    expect(source).toContain("role: 'progressbar', 'aria-label': 'Fossil assembly progress'");
-    expect(source).toContain("role: 'progressbar', 'aria-label': 'Claim strength'");
-    expect(source).toContain("role: 'progressbar', 'aria-label': 'Reconstruction challenge progress'");
+    expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_fossil_assembly_progress', 'Fossil assembly progress')`);
+    expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_claim_strength', 'Claim strength')`);
+    expect(source).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_challenge_progress', 'Reconstruction challenge progress')`);
     expect(source).toContain("scanStatusText = 'Evidence log '");
     expect(source).toContain("assemblyProgressText = 'Assembly '");
     expect(source).toContain("claimReadinessText = 'Claim strength '");
@@ -68,7 +68,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('padding: fieldFocusActive ? 10 : 16');
     expect(source).toContain('function openSpeciesFile()');
     expect(source).toContain("field3dDrawerOpen: false, field3dFocusMode: false");
-    expect(source).toContain("className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': '3D model view controls'");
+    expect(source).toContain(`className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_3d_model_view_controls', '3D model view controls')`);
     expect(source).toContain("id: 'dinolab-field-species-file'");
     expect(source).toContain('grid-template-columns:repeat(auto-fit,minmax(108px,1fr))');
     expect(source).toContain('var cameraPresetState = React.useState(null)');
@@ -82,7 +82,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("id: 'dinolab-field-focus-toggle'");
     expect(source).toContain('View controls & layers');
     expect(source).toContain("className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite'");
-    expect(source).toContain("className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': 'Evidence route'");
+    expect(source).toContain(`className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_evidence_route', 'Evidence route')`);
     expect(source).toContain("onScanTargetChange: setScanTarget");
     expect(source).toContain("scanActive: workflowStarted");
     expect(source).toContain("onLogScanTarget: logScanTarget");
@@ -91,7 +91,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'aria-current': current ? 'step' : null");
     expect(source).toContain("'aria-label': 'Focus ' + step.label + ' evidence anchor'");
     expect(source).toContain("className: 'dinolab-3d-orientation-cue', role: 'note'");
-    expect(source).toContain("'aria-label': 'Dismiss 3D viewer orientation tips'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_dismiss_3d_viewer_orientation_tips', 'Dismiss 3D viewer orientation tips')`);
     expect(source).toContain("var orientationCueVisible = !focusMode && !workflowStarted && d.field3dOrientationDismissed !== true;");
     expect(source).toContain('function dismissOrientationCue()');
     expect(source).toContain('function notifyOrientationInteraction()');
@@ -134,7 +134,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("status: directFeatherEvidence ? 'Contradicted historical model' : 'Historical comparison'");
     expect(source).toContain("status: avianEligible ? (directFeatherEvidence ? 'Evidence-compatible' : 'Phylogenetic hypothesis') : 'Not supported for this clade'");
     expect(source).toContain("var requestedReconstructionMode = d.field3dReconstructionMode || 'evidence';");
-    expect(source).toContain("role: 'group', 'aria-label': 'Reconstruction hypothesis'");
+    expect(source).toContain(`role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_hypothesis', 'Reconstruction hypothesis')`);
     expect(source).toContain('Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile.');
     expect(source).toContain('props.reconstructionMode, props.showSkeleton');
     expect(source).toContain('var surfaceBodyHeight = bodyHeight * surfaceHypothesis.bodyHeightScale;');
@@ -153,9 +153,9 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function fieldProgressRestorePatch(record)');
     expect(source).toContain('function fieldProgressClearPatch()');
     expect(source).toContain('function decorateFieldProgressPatch(patch)');
-    expect(source).toContain("'aria-label': 'Saved Dino Lab investigation'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_saved_dino_lab_investigation', 'Saved Dino Lab investigation')`);
     expect(source).toContain("'aria-label': 'Resume Dino Lab investigation for ' + savedSpecies.common");
-    expect(source).toContain("'aria-label': 'Clear saved Dino Lab investigation'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_clear_saved_dino_lab_investigation', 'Clear saved Dino Lab investigation')`);
     expect(source).toContain("'Why this matters'");
     expect(source).toContain("'Why this fossil matters'");
     expect(source).toContain("'Why this inference is cautious'");
@@ -164,8 +164,8 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function downloadFieldInvestigationSummary()');
     expect(source).toContain('navigator.clipboard.writeText(summary)');
     expect(source).toContain('new Blob([summary]');
-    expect(source).toContain("'aria-label': 'Copy Dino Lab investigation summary to clipboard'");
-    expect(source).toContain("'aria-label': 'Download Dino Lab investigation summary'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_copy_dino_lab_investigation_summary_to_clipboar', 'Copy Dino Lab investigation summary to clipboard')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_download_dino_lab_investigation_summary', 'Download Dino Lab investigation summary')`);
     expect(source).toContain('var cameraTargetIsEvidence = !!evidenceAnchorPoints[scanTargetId];');
     expect(source).toContain('var targetForView = cameraTarget.clone();');
     expect(source).toContain('camera.position.set(targetForView.x + len * 0.12');
@@ -186,7 +186,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('materials.body.opacity = opaqueSurface ? 1 : alpha;');
     expect(source).toContain('material.depthWrite = opaqueSurface;');
     expect(source).toContain("{ id: 'life', label: 'Life view', detail: 'Opaque surface'");
-    expect(source).toContain("'aria-label': 'Body inference opacity'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_body_inference_opacity', 'Body inference opacity')`);
     expect(source).toContain("className: 'dinolab-3d-view-controls'");
     expect(source).toContain('var previousSceneChildren = scene.children.slice();');
     expect(source).toContain('renderer = rendererRef.current;');
@@ -231,7 +231,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('profile.manualUnguals = /Titanosaur/i.test(clade) ? 0 : 1;');
     expect(source).toContain("profile.coverage = 'limited'");
     expect(source).toContain('function updateCameraReadout()');
-    expect(source).toContain("'aria-label': 'Current 3D camera view'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view')`);
     expect(source).toContain('new THREE.CanvasTexture(skyCanvas)');
     expect(source).toContain('renderer.outputEncoding = THREE.sRGBEncoding;');
     expect(source).toContain('renderer.toneMapping = THREE.ACESFilmicToneMapping;');
@@ -569,7 +569,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("digGridDesc = 'Dig grid with '");
     expect(source).toContain("'aria-disabled': isDug ? 'true' : 'false'");
     expect(source).toContain("var cellLabel = 'Cell ' + (cellIdx + 1)");
-    expect(source).toContain("'aria-label': 'Identify the find choices'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_identify_the_find_choices', 'Identify the find choices')`);
     expect(source).toContain("'aria-pressed': (picked || isAnswer) ? 'true' : 'false'");
     expect(source).not.toContain("disabled: isDug");
   });
@@ -600,14 +600,14 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End'");
     expect(source).toContain('.dinolab-root button:focus-visible');
     expect(source).toContain('outline:3px solid #f8fafc!important');
-    expect(source).toContain("'aria-label': 'Filter by geological period'");
-    expect(source).toContain("'aria-label': 'Filter by diet'");
-    expect(source).toContain("'aria-label': 'Filter by location'");
-    expect(source).toContain("'aria-label': 'Sort dinosaurs'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_filter_by_geological_period', 'Filter by geological period')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_filter_by_diet', 'Filter by diet')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_filter_by_location', 'Filter by location')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_sort_dinosaurs', 'Sort dinosaurs')`);
     expect(source).toContain("className: 'dinolab-explore-layout'");
     expect(source).toContain('function tabGroupFor(id)');
     expect(source).toContain("'data-tab-group': tabGroupFor(tb.id)");
-    expect(source).toContain("'aria-label': 'Dino Lab section navigation'");
+    expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_dino_lab_section_navigation', 'Dino Lab section navigation')`);
     expect(source).toContain("className: 'dinolab-section-cue'");
     expect(source).toContain('overflow-x:auto!important');
   });

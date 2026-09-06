@@ -23159,7 +23159,7 @@ var d = labToolData.cell || {};
           function closeCellPlayTutorial(resumeCanvas) {
             if (activePlayPredictionPending) {
               focusCellPlayRegion('[data-cell-prediction-checkpoint]', '[data-cell-prediction-option]:not([disabled])');
-              if (typeof announceToSR === 'function') announceToSR('Choose a prediction, or select Start without prediction.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.cell.sr_choose_a_prediction_or_select_start_without_predi', 'Choose a prediction, or select Start without prediction.'));
               return;
             }
             finishCellPlayTutorial(resumeCanvas);
@@ -23367,7 +23367,7 @@ var d = labToolData.cell || {};
 
             React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.cell.a11y_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83D\uDD2C Cell Simulator"),
 
@@ -23435,7 +23435,7 @@ var d = labToolData.cell || {};
                     placeholder: 'Search modes...',
                     // Named by hand: what precedes this field is the breadcrumb
                     // trail ("Hub" / category), not a caption for it.
-                    'aria-label': 'Search modes',
+                    'aria-label': __alloT('stem.cell.a11y_search_modes', 'Search modes'),
                     value: d._cellSearch || '',
                     onChange: function(e) { upd('_cellSearch', e.target.value); upd('_cellCategory', null); },
                     className: 'ml-auto px-2 py-1 text-xs border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600'
@@ -23753,7 +23753,7 @@ var d = labToolData.cell || {};
                   ),
                   React.createElement("strong", { "data-cell-mission-ribbon-primary": true, className: "mt-1 block text-[0.875rem] font-black leading-tight text-white", "aria-hidden": "true" }, activePlayMissionRibbonPrimary),
                   React.createElement("p", { "data-cell-mission-ribbon-secondary": true, className: "mt-1 text-[0.75rem] font-bold leading-snug text-slate-200", "aria-hidden": "true" }, activePlayMissionRibbonSecondary),
-                  activePlayLightHoldActive && React.createElement("div", { "data-cell-mission-ribbon-light-progress": true, className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/20", role: "progressbar", "aria-label": "Continuous light exposure", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": activePlayCue.progressPct, "aria-valuetext": activePlayCue.progressPct + " percent of one light-energy evidence cycle" },
+                  activePlayLightHoldActive && React.createElement("div", { "data-cell-mission-ribbon-light-progress": true, className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/20", role: "progressbar", "aria-label": __alloT('stem.cell.a11y_continuous_light_exposure', 'Continuous light exposure'), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": activePlayCue.progressPct, "aria-valuetext": activePlayCue.progressPct + " percent of one light-energy evidence cycle" },
                     React.createElement("div", { className: "h-full rounded-full bg-amber-300 transition-[width] motion-reduce:transition-none", style: { width: activePlayCue.progressPct + "%" }, "aria-hidden": "true" })
                   )
                 ),
@@ -23798,10 +23798,10 @@ var d = labToolData.cell || {};
                     activePlayCue.progressPct !== null && activePlayCue.kind === 'light' && React.createElement("span", { className: "text-[0.5625rem] font-black tabular-nums text-white" }, activePlayCue.progressPct + "%")
                   ),
                   React.createElement("p", { className: "mt-0.5 text-[0.625rem] font-bold leading-snug text-emerald-100" }, activePlayCue.text),
-                  activePlayCue.progressPct !== null && activePlayCue.kind === 'light' && React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/20", role: "progressbar", "aria-label": "Continuous light exposure", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": activePlayCue.progressPct, "aria-valuetext": activePlayCue.progressPct + " percent of one light-energy evidence cycle" },
+                  activePlayCue.progressPct !== null && activePlayCue.kind === 'light' && React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/20", role: "progressbar", "aria-label": __alloT('stem.cell.a11y_continuous_light_exposure', 'Continuous light exposure'), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": activePlayCue.progressPct, "aria-valuetext": activePlayCue.progressPct + " percent of one light-energy evidence cycle" },
                     React.createElement("div", { className: "h-full rounded-full bg-amber-300 transition-[width]", style: { width: activePlayCue.progressPct + "%" }, "aria-hidden": "true" })
                   ),
-                  activePlayCue.phase === 'paused' && (activePlayCue.kind === 'food' || activePlayCue.kind === 'pathogen') && React.createElement("button", { type: "button", "data-cell-recover-targets": true, onClick: recoverCellMissionTargets, "aria-label": "Reset unavailable mission targets and resume the simulation", className: "mt-2 min-h-9 w-full rounded-lg bg-amber-300 px-3 py-2 text-[0.625rem] font-black text-slate-950 shadow-sm hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "Reset targets & resume"),
+                  activePlayCue.phase === 'paused' && (activePlayCue.kind === 'food' || activePlayCue.kind === 'pathogen') && React.createElement("button", { type: "button", "data-cell-recover-targets": true, onClick: recoverCellMissionTargets, "aria-label": __alloT('stem.cell.a11y_reset_unavailable_mission_targets_and_resume_th', 'Reset unavailable mission targets and resume the simulation'), className: "mt-2 min-h-9 w-full rounded-lg bg-amber-300 px-3 py-2 text-[0.625rem] font-black text-slate-950 shadow-sm hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "Reset targets & resume"),
                   activePlayCue.announcement && React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, activePlayCue.announcement)
                 ) : !activeMissionEvidenceComplete && !activePlayCue ? React.createElement("p", { "data-cell-target-guide-note": true, className: "mt-1 text-[0.625rem] font-bold leading-snug " + (activePlayPredictionPending ? "text-violet-200" : "text-emerald-200") }, activePlayPredictionPending ? "Make the Predict decision; target guidance begins when controls unlock." : activePlayTutorial.stationary ? "Compass names the next structure and where to select it." : "Compass label reads target \u00B7 distance \u00B7 direction.") : null,
                 activeMissionEvidenceComplete && !activeMissionComplete ? React.createElement("div", { "data-cell-evidence-to-explain": true, role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": "Evidence set: 3 of 3 observations. " + ((activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence") + ". Next: open the evidence explanation.", className: "mt-2 rounded-lg border border-amber-300/40 bg-gradient-to-r from-emerald-400/15 to-amber-300/15 p-2" },
@@ -23890,7 +23890,7 @@ var d = labToolData.cell || {};
 
                 React.createElement("input", {
 
-                  type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1, "aria-label": "Microscope zoom level",
+                  type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1, "aria-label": __alloT('stem.cell.a11y_microscope_zoom_level', 'Microscope zoom level'),
 
                   onChange: function (e) { var z = parseFloat(e.target.value); upd("zoom", z); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetZoom) cv._cellSimSetZoom(z); },
 
@@ -23902,7 +23902,7 @@ var d = labToolData.cell || {};
 
                 React.createElement("button", {
                   type: "button",
-                  "aria-label": "Reset microscope view",
+                  "aria-label": __alloT('stem.cell.a11y_reset_microscope_view', 'Reset microscope view'),
                   onClick: function () { var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1); cellSound('select'); },
                   className: "rounded bg-slate-100 px-1.5 py-0.5 text-[0.6875rem] font-black text-slate-700 hover:bg-white active:scale-[0.97]"
                 }, "\u21BA")
@@ -23917,7 +23917,7 @@ var d = labToolData.cell || {};
 
                 React.createElement("input", {
 
-                  type: "range", min: 1, max: 5, step: 1, value: d.simSpeed || 1, "aria-label": "Simulation speed",
+                  type: "range", min: 1, max: 5, step: 1, value: d.simSpeed || 1, "aria-label": __alloT('stem.cell.a11y_simulation_speed', 'Simulation speed'),
 
                   onChange: function (e) { var s = parseInt(e.target.value); upd("simSpeed", s); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetSpeed) cv._cellSimSetSpeed(s); },
 
@@ -24240,7 +24240,7 @@ var d = labToolData.cell || {};
                       React.createElement("p", { className: "mt-1 text-[0.625rem] font-black leading-snug text-slate-800" }, (activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence")
                     ),
                     React.createElement("p", { className: "text-[0.625rem] font-black leading-snug text-amber-900" }, activeExplanationCheck.prompt),
-                    React.createElement("div", { className: "mt-2 space-y-1.5", role: "group", "aria-label": "Choose the explanation best supported by mission evidence" },
+                    React.createElement("div", { className: "mt-2 space-y-1.5", role: "group", "aria-label": __alloT('stem.cell.a11y_choose_the_explanation_best_supported_by_missio', 'Choose the explanation best supported by mission evidence') },
                       activeExplanationCheck.options.map(function (option, optionIndex) {
                         var explanationSelected = activeExplanationChoice === optionIndex;
                         return React.createElement("button", { key: optionIndex, type: "button", "data-cell-explanation-option": optionIndex, "aria-pressed": explanationSelected, "aria-label": "Explanation " + String.fromCharCode(65 + optionIndex) + ": " + option.text, onClick: function () { recordCellPlayExplanation(activePlayDef.id, optionIndex); cellSound(option.correct ? 'correct' : 'wrong'); if (option.correct) focusCellNextStepAction(); }, className: "flex min-h-11 w-full items-start gap-2 rounded-lg border px-2.5 py-2 text-left text-[0.625rem] font-bold leading-snug transition " + (explanationSelected && !option.correct ? "border-rose-300 bg-rose-50 text-rose-900" : "border-slate-200 bg-white text-slate-700 hover:border-amber-400 hover:bg-amber-50") },
@@ -24284,7 +24284,7 @@ var d = labToolData.cell || {};
 
                   React.createElement("button", {
 
-                    "aria-label": "Show all cell types in petri dish",
+                    "aria-label": __alloT('stem.cell.a11y_show_all_cell_types_in_petri_dish', 'Show all cell types in petri dish'),
 
                     onClick: function() {
 
@@ -24315,7 +24315,7 @@ var d = labToolData.cell || {};
 
                   React.createElement("button", {
 
-                    "aria-label": "Clear all cell types from petri dish",
+                    "aria-label": __alloT('stem.cell.a11y_clear_all_cell_types_from_petri_dish', 'Clear all cell types from petri dish'),
 
                     onClick: function() {
 
@@ -24350,7 +24350,7 @@ var d = labToolData.cell || {};
 
               ),
 
-              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2", role: "group", "aria-label": "Cell type visibility filters" },
+              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2", role: "group", "aria-label": __alloT('stem.cell.a11y_cell_type_visibility_filters', 'Cell type visibility filters') },
 
                 ORGANISMS.map(function(org) {
 
@@ -24994,7 +24994,7 @@ var d = labToolData.cell || {};
                   ),
 
                   d.quizFeedback.correct && React.createElement("div", { className: "flex justify-end" },
-                    React.createElement("button", { "aria-label": "Next",
+                    React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_next', 'Next'),
                       onClick: function () {
                         var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                         setLabToolData(function(prev) {
@@ -25018,7 +25018,7 @@ var d = labToolData.cell || {};
             d._cellShowBadges && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83C\uDFC5 Badges (" + ext.badges.length + "/" + Object.keys(cellBadges).length + ")"),
-                React.createElement("button", { "aria-label": "Close badges", onClick: function () { upd('_cellShowBadges', false); }, className: "transition-colors text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_close_badges', 'Close badges'), onClick: function () { upd('_cellShowBadges', false); }, className: "transition-colors text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 Object.keys(cellBadges).map(function (key) {
@@ -25039,12 +25039,12 @@ var d = labToolData.cell || {};
             d._cellShowAI && React.createElement("div", { className: "mt-3 bg-blue-50 rounded-xl border-2 border-blue-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-blue-700" }, "\uD83E\uDD16 AI Biology Tutor"),
-                React.createElement("button", { "aria-label": "Close AI tutor", onClick: function () { upd('_cellShowAI', false); }, className: "transition-colors text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_close_ai_tutor', 'Close AI tutor'), onClick: function () { upd('_cellShowAI', false); }, className: "transition-colors text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
                   type: "text", placeholder: "Ask about cells, organisms...", value: d._cellAIQ || '',
-                  'aria-label': 'Ask the cell biology AI tutor',
+                  'aria-label': __alloT('stem.cell.a11y_ask_the_cell_biology_ai_tutor', 'Ask the cell biology AI tutor'),
                   onChange: function (e) { upd('_cellAIQ', e.target.value); },
                   onKeyDown: function (e) { if (e.key === 'Enter') askAI(d._cellAIQ); },
                   className: "flex-1 px-3 py-1.5 text-xs rounded-lg border border-blue-200 focus:border-blue-400"
@@ -25060,10 +25060,10 @@ var d = labToolData.cell || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": "Toggle badges panel", "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 active:scale-[0.97]") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
-              React.createElement("button", { "aria-label": "AI Tutor", "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-[0.97]") }, "\uD83E\uDD16 AI Tutor"),
+              React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_toggle_badges_panel', 'Toggle badges panel'), "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 active:scale-[0.97]") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_ai_tutor', 'AI Tutor'), "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-[0.97]") }, "\uD83E\uDD16 AI Tutor"),
 
-              React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
             )
 
@@ -25319,17 +25319,17 @@ var d = labToolData.cell || {};
               }              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true },
                 h('p', { className: 'text-[0.8125rem] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
                 // cell-type toggle
-                h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell type' },
+                h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_type', 'Cell type') },
                   CTYPES.map(function (c) {
                     var on = c.id === ctype;
                     return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
                   })),
-                h('div', { className: 'text-[0.75rem] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': 'Study progress' },
+                h('div', { className: 'text-[0.75rem] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_study_progress', 'Study progress') },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-900' }, 'Study progress • ' + (((CTYPES.find(function (c) { return c.id === ctype; }) || {}).label) || ctype)), h('p', { className: 'mt-0.5 text-[0.6875rem] text-sky-800' }, directoryMasteredCount + ' mastered • ' + directoryReviewCount + ' in review • ' + Math.max(0, orgKeys.length - directoryMasteredCount) + ' remaining')) ,
                     h('button', { onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
                   ),
-                  h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': directoryProgressPct, 'aria-label': 'Mastery progress' }, h('div', { className: 'h-full rounded-full bg-sky-600 transition-all', style: { width: directoryProgressPct + '%' } })),
+                  h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': directoryProgressPct, 'aria-label': __alloT('stem.cell.a11y_mastery_progress', 'Mastery progress') }, h('div', { className: 'h-full rounded-full bg-sky-600 transition-all', style: { width: directoryProgressPct + '%' } })),
                   h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] font-bold text-sky-800' },
                     h('span', null, 'Mastery ' + directoryProgressPct + '%'),
                     h('span', null, 'Explored ' + directoryExploredCount + '/' + orgKeys.length),
@@ -25339,14 +25339,14 @@ var d = labToolData.cell || {};
                 h('details', { className: 'mb-2 rounded-xl border border-slate-300 bg-slate-50 p-3', 'data-cell-progress-portability': true },
                   h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Portable progress record'),
                   h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-600' }, 'Export this versioned record to continue on another device, or paste one from a previous session. Importing restores each cell type separately.'),
-                  h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-500 bg-white px-2.5 py-2 font-mono text-[0.625rem] leading-snug text-slate-800', 'aria-label': 'Portable cell progress JSON' }),
+                  h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-500 bg-white px-2.5 py-2 font-mono text-[0.625rem] leading-snug text-slate-800', 'aria-label': __alloT('stem.cell.a11y_portable_cell_progress_json', 'Portable cell progress JSON') }),
                   h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
                     h('button', { onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
                     h('button', { onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
                     h('button', { onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
                   ),
                   progressNotice && h('p', { className: 'mt-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[0.6875rem] text-slate-700', role: 'status', 'aria-live': 'polite' }, progressNotice),
-                  h('div', { className: 'mt-3', 'data-cell-progress-overview': true, role: 'region', 'aria-label': 'Progress across cell types' },
+                  h('div', { className: 'mt-3', 'data-cell-progress-overview': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_progress_across_cell_types', 'Progress across cell types') },
                     h('p', { className: 'text-[10.5px] font-black uppercase tracking-wide text-slate-600' }, 'Portfolio overview'),
                     h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, portfolioOverview.map(function (item) {
                       var mastery = item.total ? Math.round(item.mastered / item.total * 100) : 0;
@@ -25358,7 +25358,7 @@ var d = labToolData.cell || {};
                     }))
                   )
                 ),
-                h('div', { className: 'flex flex-wrap gap-2 mb-2 items-center', role: 'group', 'aria-label': 'Cell comparison and guided pathways' },
+                h('div', { className: 'flex flex-wrap gap-2 mb-2 items-center', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_comparison_and_guided_pathways', 'Cell comparison and guided pathways') },
                   h('button', { 'aria-pressed': compareMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCompare = !compareMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (compareMode ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100') }, compareMode ? 'Hide comparison' : 'Compare cells'),
                   h('button', { 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
                   h('button', { 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
@@ -25374,12 +25374,12 @@ var d = labToolData.cell || {};
                 ),
                 h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2', 'data-cell-zoom-control': true },
                   h('label', { htmlFor: 'cell-detail-zoom', className: 'text-xs font-black text-sky-900' }, 'Detail zoom ' + Math.round(zoomLevel * 100) + '%'),
-                  h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-sky-600', 'aria-label': 'Cell diagram detail zoom' }),
+                  h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-sky-600', 'aria-label': __alloT('stem.cell.a11y_cell_diagram_detail_zoom', 'Cell diagram detail zoom') }),
                   h('span', { className: 'text-[0.625rem] text-sky-800' }, '85%–125% • centered on the cell')
                 ),
                 depthMode && h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2', 'data-cell-depth-control': true },
                   h('label', { htmlFor: 'cell-optical-depth', className: 'text-xs font-black text-amber-900' }, 'Optical section ' + Math.round(depthLevel) + '%'),
-                  h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-amber-600', 'aria-label': 'Optical section depth' }),
+                  h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-amber-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth') }),
                   h('span', { className: 'text-[0.625rem] text-amber-800' }, 'Focal slice • structures outside this plane fade')
                 ),
                 h('div', { className: 'mb-2 rounded-lg border border-lime-200 bg-lime-50 px-3 py-2', 'data-cell-specialization-control': true },
@@ -25394,10 +25394,10 @@ var d = labToolData.cell || {};
                 ),
                 h('div', { className: 'mb-2', 'data-cell-structure-directory': true },
                   h('button', { 'aria-expanded': directoryOpen ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = !directoryOpen; return cel; }); }, className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-black transition-colors ' + (directoryOpen ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100') }, directoryOpen ? 'Hide structure directory' : 'Open structure directory', h('span', { className: 'float-right font-normal opacity-80' }, directoryOpen ? 'collapse' : 'study by role')),
-                  directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': 'Structure directory' },
+                  directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': __alloT('stem.cell.a11y_structure_directory', 'Structure directory') },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[0.625rem] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
                     h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                      h('input', { type: 'search', value: directoryQuery, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': 'Search structure directory' }),
+                      h('input', { type: 'search', value: directoryQuery, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': __alloT('stem.cell.a11y_search_structure_directory', 'Search structure directory') }),
                       h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
                       h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
                     ),
@@ -25421,7 +25421,7 @@ var d = labToolData.cell || {};
                     }))
                   )
                 ),
-                currentCheck && h('div', { className: 'mb-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2', 'data-cell-concept-check': true, role: 'region', 'aria-label': 'Organelle concept check' },
+                currentCheck && h('div', { className: 'mb-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2', 'data-cell-concept-check': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_organelle_concept_check', 'Organelle concept check') },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('div', null,
                       h('span', { className: 'text-xs font-black uppercase tracking-wide text-orange-900' }, 'Check your reasoning before reveal'),
@@ -25430,7 +25430,7 @@ var d = labToolData.cell || {};
                     ),
                     checkRevealed ? h('button', { onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
                   ),
-                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Concept check answers' },
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_concept_check_answers', 'Concept check answers') },
                     currentCheck.options.map(function (option, index) {
                       var chosen = checkChoice === index;
                       var correct = checkRevealed && index === currentCheck.answer;
@@ -25440,14 +25440,14 @@ var d = labToolData.cell || {};
                   ),
                   checkRevealed && h('div', { className: 'mt-2 rounded-md border border-orange-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-orange-950', 'data-cell-concept-feedback': checkChoice === currentCheck.answer ? 'correct' : 'retry', role: 'status', 'aria-live': 'polite' }, (checkChoice === currentCheck.answer ? 'Reasoning check: correct. ' : 'Reasoning check: not yet. ') + currentCheck.explanation)
                 ),
-                adaptiveQuizActive && adaptiveQuizItem && h('div', { className: 'mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-cell-adaptive-quiz': true, role: 'region', 'aria-label': 'Adaptive organelle check' },
+                adaptiveQuizActive && adaptiveQuizItem && h('div', { className: 'mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-cell-adaptive-quiz': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_adaptive_organelle_check', 'Adaptive organelle check') },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[0.625rem] font-bold text-fuchsia-800' }, 'Review-first retrieval • ' + adaptiveQuizCorrect + ' correct / ' + adaptiveQuizAttempts + ' attempts')),
                     h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
                   ),
                   h('p', { className: 'mt-2 text-[0.75rem] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
                   h('p', { className: 'mt-1 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950' }, adaptiveQuizItem.fn),
-                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Adaptive check answers' }, adaptiveOptions.map(function (key, index) {
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_adaptive_check_answers', 'Adaptive check answers') }, adaptiveOptions.map(function (key, index) {
                     var chosen = adaptiveQuizChoice === index;
                     var correct = adaptiveQuizRevealed && index === adaptiveAnswer;
                     var wrong = adaptiveQuizRevealed && chosen && !correct;
@@ -25557,7 +25557,7 @@ var d = labToolData.cell || {};
                 h('details', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2', 'data-cell-structure-transcript': true },
                   h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Text transcript of cell diagram'),
                   h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-600' }, 'A ' + ctype + ' cell diagram with ' + orgKeys.length + ' selectable structures. ' + (depthMode ? 'Optical section depth: ' + Math.round(depthLevel) + '%. ' : 'Optical section is off. ') + (selOrg ? 'Selected structure: ' + selOrg.name + '.' : 'No structure selected.')),
-                  h('ul', { className: 'mt-2 grid gap-2 md:grid-cols-2', 'aria-label': 'Text descriptions of cell structures' }, orgKeys.map(function (key) {
+                  h('ul', { className: 'mt-2 grid gap-2 md:grid-cols-2', 'aria-label': __alloT('stem.cell.a11y_text_descriptions_of_cell_structures', 'Text descriptions of cell structures') }, orgKeys.map(function (key) {
                     var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
                     return h('li', { key: 'transcript-' + key, className: 'rounded-md border bg-white p-2 text-[0.6875rem] leading-relaxed', style: { borderColor: item.color } },
                       h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[0.625rem] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-600') }, explored ? 'Explored' : 'Not explored')),
@@ -25568,7 +25568,7 @@ var d = labToolData.cell || {};
                   }))
                 ),                h('div', { className: 'text-[10.5px] text-slate-500 mt-1 leading-snug' }, __alloT('stem.cell.interior_caveat', 'Schematic, not to scale: organelle sizes and numbers are simplified (a real cell has hundreds of mitochondria), and this is one 2-D slice of a 3-D cell. Cells also specialize — this is a “typical” one.')),
                 // organelle legend (keyboard-accessible selection)
-                h('div', { className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': 'Organelles — tap to inspect' },
+                h('div', { className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_organelles_tap_to_inspect', 'Organelles — tap to inspect') },
                   orgKeys.map(function (k) {
                     var o = CELL_ORGANELLES[k], on = sel === k;
                     return h('button', { key: k, 'aria-pressed': on ? 'true' : 'false', onClick: function () { pick(k); }, className: 'px-2 py-1 rounded-md text-[11.5px] font-bold border transition-colors active:scale-[0.97] ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: o.color, borderColor: o.color } : { borderColor: o.color } },
@@ -25580,7 +25580,7 @@ var d = labToolData.cell || {};
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'inline-block w-3 h-3 rounded-full', 'aria-hidden': 'true', style: { background: selOrg.color } }),
                     h('span', { className: 'text-base font-black text-slate-800' }, selOrg.name)),
-                  CELL_ULTRASTRUCTURE[sel] ? h('div', { className: 'mb-2 flex flex-wrap gap-1', 'aria-label': 'Ultrastructure features to notice' },
+                  CELL_ULTRASTRUCTURE[sel] ? h('div', { className: 'mb-2 flex flex-wrap gap-1', 'aria-label': __alloT('stem.cell.a11y_ultrastructure_features_to_notice', 'Ultrastructure features to notice') },
                     CELL_ULTRASTRUCTURE[sel].split(' | ').map(function(feature) { return h('span', { key: feature, className: 'rounded-full border px-2 py-0.5 text-[0.625rem] font-black tracking-wide', style: { borderColor: selOrg.color, color: '#334155', background: '#f8fafc' } }, feature); })) : null,
                   h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[0.8125rem] text-slate-700 leading-relaxed' },
                     h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Core function'),
@@ -25673,7 +25673,7 @@ var d = labToolData.cell || {};
                     });
                   } else microPatch({ microStage: 5, microFeedback: 'Evidence recorded. Compare the same structure at another biological scale.', microEvidence: microEvidence.concat([entry]).slice(-6) });
                   if (typeof addToast === 'function') addToast(procedureSpecimen ? 'Integrated cell evidence recorded' : 'Microdissection evidence recorded', 'success');
-                  if (typeof announceToSR === 'function') announceToSR('Microdissection evidence recorded');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.cell.sr_microdissection_evidence_recorded', 'Microdissection evidence recorded'));
                   return;
                 }
                 var messages = ['Objective calibrated. The scale bar now anchors the field of view.', 'Thin section prepared. Adjust section depth to scan a different plane.', 'Label applied. Fluorescence increases contrast; it does not enlarge the structure.', 'Target sample collected. Record the preparation and instrument metadata.'];
@@ -25736,19 +25736,19 @@ var d = labToolData.cell || {};
                   )
                 ),
                 h('div', { className: 'mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs leading-relaxed text-sky-950' }, h('strong', null, 'Scientific model: '), 'At cell scale, researchers use microtomes, optical sectioning, micropipettes, probes, and laser-capture systems—not a hand-held scalpel. The drawing is schematic; the scale bar and procedure order carry the measurement meaning.'),
-                h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-5', 'aria-label': 'Microdissection protocol progress' }, MICRO_STEPS.map(function(label, index) { var done = microStage > index, active = microStage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-xs font-bold', style: { borderColor: done || active ? '#8b5cf6' : '#cbd5e1', background: done ? '#ede9fe' : active ? '#f5f3ff' : '#fff', color: done || active ? '#5b21b6' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
+                h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-5', 'aria-label': __alloT('stem.cell.a11y_microdissection_protocol_progress', 'Microdissection protocol progress') }, MICRO_STEPS.map(function(label, index) { var done = microStage > index, active = microStage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-xs font-bold', style: { borderColor: done || active ? '#8b5cf6' : '#cbd5e1', background: done ? '#ede9fe' : active ? '#f5f3ff' : '#fff', color: done || active ? '#5b21b6' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
                 h('div', { className: 'mt-3 grid gap-3 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]' },
                   h('div', null,
-                    h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell specimen type' }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFromInterior: false, microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
+                    h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_specimen_type', 'Cell specimen type') }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFromInterior: false, microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
                     h('div', { className: 'overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-xl' },
                       h('canvas', { key: 'cell-micro-canvas', 'data-cell-microdissection-canvas': true, width: 760, height: 440, role: 'img', 'aria-label': 'Microdissection view of a ' + microType + ' cell at protocol stage ' + Math.min(5, microStage + 1) + '. ' + (targetDef ? 'Target: ' + targetDef.name + '.' : 'No target selected.'), style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }, onClick: function(e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); setMicroTarget(interiorHitTest(microType, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height)); }, ref: microCanvasRefCb })
                     ),
-                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'micro-section-depth' }, 'Section depth ' + microDepth + '%'), h('input', { id: 'micro-section-depth', type: 'range', min: 0, max: 100, step: 1, value: microDepth, onChange: function(e) { microPatch({ microSectionDepth: Number(e.target.value) }); }, className: 'min-w-[180px] flex-1 accent-violet-600', 'aria-label': 'Optical section depth' })),
-                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Cell structures to target' }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'micro-section-depth' }, 'Section depth ' + microDepth + '%'), h('input', { id: 'micro-section-depth', type: 'range', min: 0, max: 100, step: 1, value: microDepth, onChange: function(e) { microPatch({ microSectionDepth: Number(e.target.value) }); }, className: 'min-w-[180px] flex-1 accent-violet-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth') })),
+                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_structures_to_target', 'Cell structures to target') }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))
                   ),
                   h('aside', { className: 'space-y-3' },
-                    h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-800' }, 'Instrument'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1', role: 'group', 'aria-label': 'Microdissection instrument' }, MICRO_TOOLS.map(function(item) { var on = item.id === microTool; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microTool: item.id, microFeedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-slate-700 hover:bg-violet-50') }, item.label, h('span', { className: 'block text-[0.625rem] font-normal opacity-80' }, item.use)); }))),
-                    h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Microscopy label' }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
+                    h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-800' }, 'Instrument'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1', role: 'group', 'aria-label': __alloT('stem.cell.a11y_microdissection_instrument', 'Microdissection instrument') }, MICRO_TOOLS.map(function(item) { var on = item.id === microTool; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microTool: item.id, microFeedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-slate-700 hover:bg-violet-50') }, item.label, h('span', { className: 'block text-[0.625rem] font-normal opacity-80' }, item.use)); }))),
+                    h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_microscopy_label', 'Microscopy label') }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
                     h('button', { type: 'button', onClick: runMicroStep, disabled: microStage >= 5, className: 'w-full rounded-xl bg-violet-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-emerald-700', 'data-micro-action': microStage }, actionLabels[microStage]),
                     h('div', { role: 'status', 'aria-live': 'polite', className: 'min-h-[48px] rounded-lg border border-slate-200 bg-white p-2 text-xs leading-relaxed text-slate-700' }, d.microFeedback || 'Start by selecting the objective and calibrating the field of view.'),
                     h('button', { type: 'button', onClick: function() { microPatch({ microStage: 0, microTool: 'objective', microStain: 'none', microTarget: null, microFromInterior: false, microFeedback: 'Protocol reset. Calibrate the objective.' }); }, className: 'w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50' }, 'Reset protocol')
@@ -25756,7 +25756,7 @@ var d = labToolData.cell || {};
                 ),
                 h('div', { className: 'mt-4 grid gap-3 lg:grid-cols-2' },
                   h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50/60 p-3' }, h('h5', { className: 'text-sm font-black text-emerald-900' }, 'Evidence log'), microEvidence.length ? h('ul', { className: 'mt-2 space-y-1.5 text-xs text-emerald-950' }, microEvidence.slice().reverse().map(function(entry) { return h('li', { key: entry.id, className: 'rounded-lg border border-emerald-200 bg-white p-2' }, h('strong', null, entry.targetName), ' · ', entry.cellType, ' · ', entry.tool, ' · ', entry.stain, ' · depth ', entry.sectionDepth, '%'); })) : h('p', { className: 'mt-2 text-xs text-emerald-900' }, 'No evidence recorded yet. Complete the five-stage protocol to preserve the target, preparation, instrument, label, and section depth.'), microEvidence.length ? h('button', { type: 'button', onClick: function() { microPatch({ microEvidence: [] }); }, className: 'mt-2 text-xs font-bold text-emerald-800 underline' }, 'Clear evidence log') : null),
-                  h('nav', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-3', 'aria-label': 'Scale Journey destinations' }, h('h5', { className: 'text-sm font-black text-indigo-950' }, 'Scale Journey'), h('p', { className: 'mt-1 text-xs leading-relaxed text-indigo-900' }, 'Follow the same biological story outward to an organ system or inward to microscopy and molecules.'), h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
+                  h('nav', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-3', 'aria-label': __alloT('stem.cell.a11y_scale_journey_destinations', 'Scale Journey destinations') }, h('h5', { className: 'text-sm font-black text-indigo-950' }, 'Scale Journey'), h('p', { className: 'mt-1 text-xs leading-relaxed text-indigo-900' }, 'Follow the same biological story outward to an organ system or inward to microscopy and molecules.'), h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
                     h('button', { type: 'button', onClick: function() { openCellScaleDestination('anatomy', 'anatomy', { _activeTab: 'explore' }, 'Anatomy Explorer'); }, className: 'rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Human body →'),
                     h('button', { type: 'button', onClick: function() { openCellScaleDestination('dissection', 'dissection', {}, 'Dissection Lab'); }, className: 'rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Organ dissection →'),
                     h('button', { type: 'button', onClick: function() { openCellScaleDestination('microbiology', 'microbiology', { tab: 'microscope' }, 'Microscope Lab'); }, className: 'rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Microscope →'),
@@ -25973,7 +25973,7 @@ var d = labToolData.cell || {};
                   ),
                   h('span', { className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-black uppercase tracking-wide', style: { background: processVisual.soft, color: processVisual.accent } }, processVisual.eyebrow)
                 ),
-                h('div', { role: 'tablist', 'aria-label': 'Cellular process diagrams', className: 'mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' },
+                h('div', { role: 'tablist', 'aria-label': __alloT('stem.cell.a11y_cellular_process_diagrams', 'Cellular process diagrams'), className: 'mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' },
                   PROCESSES.map(function(p, index) {
                     var on = p.id === process.id;
                     var pv = processVisuals[p.id] || processVisuals.respiration;
@@ -26315,7 +26315,7 @@ var d = labToolData.cell || {};
                       ),
                       h('span', { className: 'rounded-full px-2.5 py-1 text-[0.6875rem] font-black', style: { background: processVisual.soft, color: processVisual.accent }, 'aria-live': 'polite' }, 'Stage ' + (selectedStepIndex + 1) + ' of ' + process.steps.length)
                     ),
-                    h('div', { role: 'progressbar', 'aria-label': 'Focused pathway stage', 'aria-valuemin': 1, 'aria-valuemax': process.steps.length, 'aria-valuenow': selectedStepIndex + 1, className: 'mb-3 flex gap-1' },
+                    h('div', { role: 'progressbar', 'aria-label': __alloT('stem.cell.a11y_focused_pathway_stage', 'Focused pathway stage'), 'aria-valuemin': 1, 'aria-valuemax': process.steps.length, 'aria-valuenow': selectedStepIndex + 1, className: 'mb-3 flex gap-1' },
                       process.steps.map(function(step, index) {
                         var reached = index <= selectedStepIndex;
                         return h('span', { key: 'progress-' + step[0], className: 'h-1.5 flex-1 rounded-full', style: { background: reached ? processVisual.accent : '#cbd5e1' }, 'aria-hidden': 'true' });
@@ -26482,14 +26482,14 @@ var d = labToolData.cell || {};
                   React.createElement('h3', { className: 'text-base font-bold text-green-700 flex items-center gap-1.5' }, '📚 Organism Encyclopedia'),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-full' }, filtered.length + ' organisms')
                 ),
-                React.createElement('input', { type: 'text', 'aria-label': 'Search organism encyclopedia', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
-                React.createElement('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Filter organisms by group' },
+                React.createElement('input', { type: 'text', 'aria-label': __alloT('stem.cell.a11y_search_organism_encyclopedia', 'Search organism encyclopedia'), placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
+                React.createElement('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': __alloT('stem.cell.a11y_filter_organisms_by_group', 'Filter organisms by group') },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
                     return React.createElement('button', { type: 'button', key: k, 'aria-pressed': sel ? 'true' : 'false', onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-green-100 active:scale-[0.97]') }, k);
                   })
                 ),
-                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200', role: 'group', 'aria-label': 'Choose an organism' },
+                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200', role: 'group', 'aria-label': __alloT('stem.cell.a11y_choose_an_organism', 'Choose an organism') },
                   filtered.map(function(o, i) {
                     var sel = idx === i;
                     return React.createElement('button', { type: 'button', key: o.id, 'aria-current': sel ? 'true' : undefined, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-700 border border-slate-500 hover:bg-green-50 hover:border-green-400 active:scale-[0.97]'), title: o.name }, o.name);
@@ -26670,13 +26670,13 @@ var d = labToolData.cell || {};
                 React.createElement('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[0.625rem] font-black text-purple-700 uppercase' }, 'Organism A'),
-                    React.createElement('select', { 'aria-label': "Organism A", value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
+                    React.createElement('select', { 'aria-label': __alloT('stem.cell.a11y_organism_a', 'Organism A'), value: aIdx, onChange: function(e) { upd('_cmpA', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[0.625rem] font-black text-purple-700 uppercase' }, 'Organism B'),
-                    React.createElement('select', { 'aria-label': "Organism B", value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
+                    React.createElement('select', { 'aria-label': __alloT('stem.cell.a11y_organism_b', 'Organism B'), value: bIdx, onChange: function(e) { upd('_cmpB', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 text-xs border-2 border-purple-500 rounded-lg mt-1 font-bold bg-purple-50 text-purple-800 outline-none' },
                       ORGANISM_DB.map(function(o, i) { return React.createElement('option', { key: i, value: i }, o.name); })
                     )
                   )
@@ -26835,7 +26835,7 @@ var d = labToolData.cell || {};
               var filtered = search ? CELL_GLOSSARY.filter(function(g) { return g.term.toLowerCase().indexOf(search.toLowerCase()) !== -1 || g.definition.toLowerCase().indexOf(search.toLowerCase()) !== -1; }) : CELL_GLOSSARY;
               return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-indigo-300 p-4' },
                 React.createElement('h3', { className: 'text-base font-bold text-indigo-700 mb-3' }, 'Cell Biology Glossary'),
-                React.createElement('input', { 'aria-label': 'Search glossary terms', type: 'text', placeholder: 'Search terms...', value: search, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-2 py-1 text-xs border-2 border-indigo-200 rounded mb-3' }),
+                React.createElement('input', { 'aria-label': __alloT('stem.cell.a11y_search_glossary_terms', 'Search glossary terms'), type: 'text', placeholder: 'Search terms...', value: search, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-2 py-1 text-xs border-2 border-indigo-200 rounded mb-3' }),
                 React.createElement('div', { className: 'grid md:grid-cols-2 gap-1' },
                   filtered.map(function(g) {
                     return React.createElement('div', { key: g.id, className: 'bg-indigo-50 border border-indigo-200 rounded p-2 text-xs' },
@@ -26950,7 +26950,7 @@ var d = labToolData.cell || {};
                 React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
                   'Catalogues, atlases, pathways, lab references and study sets. Pick a shelf, then a table.'),
 
-                React.createElement('div', { role: 'group', 'aria-label': 'Library shelves', className: 'flex flex-wrap gap-1 mb-2' },
+                React.createElement('div', { role: 'group', 'aria-label': __alloT('stem.cell.a11y_library_shelves', 'Library shelves'), className: 'flex flex-wrap gap-1 mb-2' },
                   groups.map(function (g) {
                     var sel = g === group;
                     return React.createElement('button', {
@@ -26966,7 +26966,7 @@ var d = labToolData.cell || {};
                   })
                 ),
 
-                React.createElement('div', { role: 'group', 'aria-label': 'Tables on this shelf', className: 'flex flex-wrap gap-1 mb-2' },
+                React.createElement('div', { role: 'group', 'aria-label': __alloT('stem.cell.a11y_tables_on_this_shelf', 'Tables on this shelf'), className: 'flex flex-wrap gap-1 mb-2' },
                   visible.map(function (s) {
                     var sel = s.id === active.id;
                     return React.createElement('button', {
@@ -27052,7 +27052,7 @@ var d = labToolData.cell || {};
                       h('td', { className: 'px-1 border border-slate-200' }, o.st));
                   }))
                 ),
-                h('textarea', { 'aria-label': 'Osmosis hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
+                h('textarea', { 'aria-label': __alloT('stem.cell.a11y_osmosis_hypothesis', 'Osmosis hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
                   className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
@@ -27064,7 +27064,7 @@ var d = labToolData.cell || {};
                   h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     'I understand — explain in own words'),
-                  iq.understood && h('textarea', { 'aria-label': 'Osmosis explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
+                  iq.understood && h('textarea', { 'aria-label': __alloT('stem.cell.a11y_osmosis_explanation', 'Osmosis explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
                     className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
                 h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Design note: discrete 3-state osmosis marker; no membrane-integrity score; no reveal — by design.')
               );
@@ -27090,7 +27090,7 @@ var d = labToolData.cell || {};
                     autoFocus: true,
                     onClick: function() { upd('_studyConcept', null); },
                     className: 'transition-colors absolute top-3 right-3 text-slate-600 hover:text-slate-900 font-bold p-1 rounded-lg hover:bg-slate-100 active:scale-[0.97]',
-                    'aria-label': 'Close flashcard'
+                    'aria-label': __alloT('stem.cell.a11y_close_flashcard', 'Close flashcard')
                   }, '✕'),
                   React.createElement('div', { className: 'text-center' },
                     React.createElement('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),

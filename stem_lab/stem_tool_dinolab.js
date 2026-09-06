@@ -6360,10 +6360,10 @@ window.StemLab = window.StemLab || {
           '</div></body></html>';
         try {
           var w = window.open('', '_blank', 'width=620,height=900');
-          if (!w) { announceToSR('Pop-up blocked. Allow pop-ups to print the card.'); return; }
+          if (!w) { announceToSR(__alloT('stem.dinolab.sr_pop_up_blocked_allow_pop_ups_to_print_the_card', 'Pop-up blocked. Allow pop-ups to print the card.')); return; }
           w.document.open(); w.document.write(html); w.document.close();
           announceToSR('Trading card for ' + dn.common + ' opened in a new window.');
-        } catch (e) { announceToSR('Could not open the trading card.'); }
+        } catch (e) { announceToSR(__alloT('stem.dinolab.sr_could_not_open_the_trading_card', 'Could not open the trading card.')); }
       }
       // Shared print-window opener (pop-up-blocked guard + try/catch).
       function openPrint(html, okMsg, what) {
@@ -6372,7 +6372,7 @@ window.StemLab = window.StemLab || {
           if (!w) { announceToSR('Pop-up blocked. Allow pop-ups to print ' + (what || 'this') + '.'); return; }
           w.document.open(); w.document.write(html); w.document.close();
           announceToSR(okMsg);
-        } catch (e) { announceToSR('Could not open the print view.'); }
+        } catch (e) { announceToSR(__alloT('stem.dinolab.sr_could_not_open_the_print_view', 'Could not open the print view.')); }
       }
       // Print a cut-out species card deck (for sorting activities). All dynamic
       // strings are HTML-escaped via esc().
@@ -6475,7 +6475,7 @@ window.StemLab = window.StemLab || {
         var active = tab === tb.id;
         return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'data-tab-group': tabGroupFor(tb.id), title: tabGroupFor(tb.id) + ': ' + tb.label, tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
-      var tabNavigation = el('nav', { 'aria-label': 'Dino Lab section navigation', style: { background: T.deeper } },
+      var tabNavigation = el('nav', { 'aria-label': __alloT('stem.dinolab.a11y_dino_lab_section_navigation', 'Dino Lab section navigation'), style: { background: T.deeper } },
         el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', gap: 7, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
           el('span', { style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: dinoCueInk } }, activeTabGroup),
           el('span', { 'aria-hidden': 'true' }, '›'),
@@ -6537,10 +6537,10 @@ window.StemLab = window.StemLab || {
         continents.forEach(function (c) { continentPills.push(pill(filterContinent === c, c, function () { upd('filterContinent', c); }, 'c_' + c.replace(/\W/g, ''))); });
         var controls = el('div', { style: { marginBottom: 12 } },
           el('input', { type: 'text', value: query, placeholder: t('stem.dinolab.search_by_name_meaning_clade_or_place', 'Search by name, meaning, clade, or place...'), 'aria-label': t('stem.dinolab.search_dinosaurs', 'Search dinosaurs'), onChange: function (e) { upd('query', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }),
-          el('div', { role: 'group', 'aria-label': 'Filter by geological period', style: { marginBottom: 6 } }, periodPills),
-          el('div', { role: 'group', 'aria-label': 'Filter by diet', style: { marginBottom: 6 } }, dietPills),
-          el('div', { role: 'group', 'aria-label': 'Filter by location', style: { marginBottom: 6 } }, continentPills),
-          el('div', { role: 'group', 'aria-label': 'Sort dinosaurs', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, el('span', { 'aria-hidden': 'true', style: { fontSize: 12, color: T.soft } }, 'Sort:'), pill(sortBy === 'name', 'A to Z', function () { upd('sortBy', 'name'); }, 's_name'), pill(sortBy === 'time', 'Oldest first', function () { upd('sortBy', 'time'); }, 's_time'), pill(sortBy === 'length', 'Longest', function () { upd('sortBy', 'length'); }, 's_len'), pill(sortBy === 'weight', 'Heaviest', function () { upd('sortBy', 'weight'); }, 's_wt'), el('button', { key: 'surprise', onClick: function () { var n = (d.surpriseN || 0) + 1; var pick = DINOS[(n * 48271) % DINOS.length]; var ns = {}; for (var sk in seen) { ns[sk] = seen[sk]; } ns[pick.id] = true; upd({ selected: pick.id, seen: ns, surpriseN: n }); announceToSR('Surprise: ' + pick.common); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: 'transparent', color: T.text } }, '🎲 Surprise me'), el('span', { style: { marginLeft: 'auto', fontSize: 12, color: T.soft } }, list.length + ' of ' + DINOS.length))
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_geological_period', 'Filter by geological period'), style: { marginBottom: 6 } }, periodPills),
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_diet', 'Filter by diet'), style: { marginBottom: 6 } }, dietPills),
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_filter_by_location', 'Filter by location'), style: { marginBottom: 6 } }, continentPills),
+          el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_sort_dinosaurs', 'Sort dinosaurs'), style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, el('span', { 'aria-hidden': 'true', style: { fontSize: 12, color: T.soft } }, 'Sort:'), pill(sortBy === 'name', 'A to Z', function () { upd('sortBy', 'name'); }, 's_name'), pill(sortBy === 'time', 'Oldest first', function () { upd('sortBy', 'time'); }, 's_time'), pill(sortBy === 'length', 'Longest', function () { upd('sortBy', 'length'); }, 's_len'), pill(sortBy === 'weight', 'Heaviest', function () { upd('sortBy', 'weight'); }, 's_wt'), el('button', { key: 'surprise', onClick: function () { var n = (d.surpriseN || 0) + 1; var pick = DINOS[(n * 48271) % DINOS.length]; var ns = {}; for (var sk in seen) { ns[sk] = seen[sk]; } ns[pick.id] = true; upd({ selected: pick.id, seen: ns, surpriseN: n }); announceToSR('Surprise: ' + pick.common); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: 'transparent', color: T.text } }, '🎲 Surprise me'), el('span', { style: { marginLeft: 'auto', fontSize: 12, color: T.soft } }, list.length + ' of ' + DINOS.length))
         );
         var grid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 } }, list.map(function (dn) {
           return el('button', { key: dn.id, onClick: function () { markSeen(dn.id); }, 'aria-label': 'Open ' + dn.common, style: { textAlign: 'left', cursor: 'pointer', background: T.panel, border: '1px solid ' + (selected === dn.id ? '#22c55e' : T.border), borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.30)', padding: 12, color: T.text, position: 'relative' } },
@@ -6717,7 +6717,7 @@ window.StemLab = window.StemLab || {
         var statTeal = mapStatDark ? '#5eead4' : '#115e59';
         var statSky = mapStatDark ? '#7dd3fc' : '#075985';
         var statAmber = mapStatDark ? '#fde68a' : '#92400e';
-        var stats = el('div', { className: 'dinolab-map-stats', 'aria-label': 'Map catalog summary', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '8px 0 10px' } },
+        var stats = el('div', { className: 'dinolab-map-stats', 'aria-label': __alloT('stem.dinolab.a11y_map_catalog_summary', 'Map catalog summary'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '8px 0 10px' } },
           panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: statTeal } }, String(totalMapped)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'dinosaurs plotted')]),
           panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: statSky } }, String(TILES.length)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'continents represented')]),
           panel([el('div', { key: 'v', style: { fontSize: 14, fontWeight: 900, color: statAmber } }, richest.c), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'largest catalog sample')])
@@ -9449,7 +9449,7 @@ var evidenceRoute = [
           evidenceRoute.forEach(function (step, index) { if (step.id === (props.scanTarget || 'skull')) activeRouteIndex = index; });
           var activeRoute = evidenceRoute[activeRouteIndex];
           var activeRouteLogged = !!loggedRoute[activeRoute.id];
-          return el('div', { className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': 'Evidence route', style: { position: 'absolute', top: 96, right: 10, width: 'min(172px, calc(100% - 20px))', padding: 8, borderRadius: 10, background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(245,158,11,0.48)', boxShadow: '0 10px 24px rgba(0,0,0,0.24)', zIndex: 3 } },
+          return el('div', { className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_evidence_route', 'Evidence route'), style: { position: 'absolute', top: 96, right: 10, width: 'min(172px, calc(100% - 20px))', padding: 8, borderRadius: 10, background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(245,158,11,0.48)', boxShadow: '0 10px 24px rgba(0,0,0,0.24)', zIndex: 3 } },
             el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6, color: '#f8fafc', fontSize: 11, fontWeight: 900, letterSpacing: '0.03em', textTransform: 'uppercase' } },
               el('span', null, 'Evidence route'),
               el('span', { style: { color: '#fbbf24', fontSize: 10 } }, (props.loggedCount || 0) + '/' + (props.scanTotal || 3))
@@ -9484,17 +9484,17 @@ var evidenceRoute = [
             props.showEvidence && props.loggedCount != null ? readoutChip('Scan ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Logged ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Path ' + (props.pathLoggedCount || 0) + '/' + (props.pathTotal || 2), 'rgba(34,197,94,0.65)') : null
           ),
           renderEvidenceRoute(),
-          props.orientationCueVisible ? el('div', { className: 'dinolab-3d-orientation-cue', role: 'note', 'aria-label': '3D viewer orientation tips', style: { position: 'absolute', left: 14, top: 52, maxWidth: 'min(330px, calc(100% - 28px))', padding: 10, borderRadius: 10, border: '1px solid rgba(20,184,166,0.48)', background: 'rgba(15,23,42,0.94)', color: '#e2e8f0', boxShadow: '0 10px 28px rgba(0,0,0,0.28)', zIndex: 4 } },
+          props.orientationCueVisible ? el('div', { className: 'dinolab-3d-orientation-cue', role: 'note', 'aria-label': __alloT('stem.dinolab.a11y_3d_viewer_orientation_tips', '3D viewer orientation tips'), style: { position: 'absolute', left: 14, top: 52, maxWidth: 'min(330px, calc(100% - 28px))', padding: 10, borderRadius: 10, border: '1px solid rgba(20,184,166,0.48)', background: 'rgba(15,23,42,0.94)', color: '#e2e8f0', boxShadow: '0 10px 28px rgba(0,0,0,0.28)', zIndex: 4 } },
             el('div', { style: { fontSize: 12.5, fontWeight: 900, marginBottom: 3 } }, 'New to the field station?'),
             el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45, maxWidth: 280 } }, 'Drag to orbit. Use the wheel or Page Up/Page Down to zoom. Start with the amber ' + (props.scanLabel || 'evidence') + ' target.'),
-            el('button', { type: 'button', onClick: props.onOrientationDismiss, 'aria-label': 'Dismiss 3D viewer orientation tips', style: { marginTop: 8, padding: '6px 9px', borderRadius: 7, border: '1px solid #5eead4', background: 'rgba(20,184,166,0.16)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Got it')
+            el('button', { type: 'button', onClick: props.onOrientationDismiss, 'aria-label': __alloT('stem.dinolab.a11y_dismiss_3d_viewer_orientation_tips', 'Dismiss 3D viewer orientation tips'), style: { marginTop: 8, padding: '6px 9px', borderRadius: 7, border: '1px solid #5eead4', background: 'rgba(20,184,166,0.16)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Got it')
           ) : null,
-          el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': 'Current 3D camera view', style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
+          el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
           el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         ),
           el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },
             el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 12.5, fontWeight: 900, padding: '6px 0' } }, 'View controls & layers', el('span', { className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'inline-flex', alignItems: 'center', marginLeft: 8, padding: '2px 7px', borderRadius: 999, border: '1px solid ' + (cameraPreset ? 'rgba(94,234,212,0.55)' : T.border), background: cameraPreset ? 'rgba(20,184,166,0.12)' : 'transparent', color: cameraPreset ? '#5eead4' : T.soft, fontSize: 11.5, fontWeight: 800 } }, cameraPreset ? (cameraPreset === 'reset' ? 'Reset view' : 'Preset: ' + cap(cameraPreset)) : 'Free orbit | drag + wheel')),
-            el('div', { className: 'dinolab-3d-view-controls', role: 'group', 'aria-label': '3D camera viewpoints and body inference opacity', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 4 } },
+            el('div', { className: 'dinolab-3d-view-controls', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_3d_camera_viewpoints_and_body_inference_opacity', '3D camera viewpoints and body inference opacity'), style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 4 } },
             ['front', 'side', 'overhead', 'reset'].map(function (preset) {
               var label = preset === 'overhead' ? 'Overhead' : (preset === 'reset' ? 'Reset view' : cap(preset));
               var active = cameraPreset === preset;
@@ -9502,7 +9502,7 @@ var evidenceRoute = [
             }),
             el('label', { style: { display: 'flex', alignItems: 'center', gap: 7, flex: '1 1 220px', minWidth: 190, paddingLeft: 4, color: T.soft, fontSize: 11.5, fontWeight: 800 } },
               el('span', { style: { whiteSpace: 'nowrap' } }, bodyOpacity >= 98 ? 'Life surface opaque' : 'Body inference ' + bodyOpacity + '%'),
-              el('input', { type: 'range', min: 10, max: 100, step: 1, value: bodyOpacity, disabled: !props.showBody, onChange: updateBodyOpacity, 'aria-label': 'Body inference opacity', 'aria-valuetext': bodyOpacity >= 98 ? 'Opaque life surface' : bodyOpacity + ' percent', style: { flex: 1, minWidth: 90, accentColor: '#14b8a6' } })
+              el('input', { type: 'range', min: 10, max: 100, step: 1, value: bodyOpacity, disabled: !props.showBody, onChange: updateBodyOpacity, 'aria-label': __alloT('stem.dinolab.a11y_body_inference_opacity', 'Body inference opacity'), 'aria-valuetext': bodyOpacity >= 98 ? 'Opaque life surface' : bodyOpacity + ' percent', style: { flex: 1, minWidth: 90, accentColor: '#14b8a6' } })
             )
           )
           )
@@ -9609,7 +9609,7 @@ var evidenceRoute = [
         function nextScanTarget() { setScanTarget(scanTargetIdx + 1); }
         function showScanMarkers() {
           upd({ field3dShowEvidence: true, field3dScanTargetIdx: scanTargetIdx });
-          announceToSR('3D scan markers shown');
+          announceToSR(__alloT('stem.dinolab.sr_3d_scan_markers_shown', '3D scan markers shown'));
         }
         function logScanTarget() {
           var nextLog = {};
@@ -9650,7 +9650,7 @@ var evidenceRoute = [
         }
         function resetAssembly() {
           upd({ field3dAssemblyPlaced: {}, field3dAssemblySpecies: dn.id, field3dAssemblyFocusIdx: 0, field3dShowSkeleton: true, field3dClaimBone: null, field3dClaimBoneSpecies: dn.id });
-          announceToSR('3D fossil assembly reset');
+          announceToSR(__alloT('stem.dinolab.sr_3d_fossil_assembly_reset', '3D fossil assembly reset'));
         }
         function focusFieldControlSoon(id) {
           if (!id || typeof document === 'undefined') return;
@@ -9678,12 +9678,12 @@ var evidenceRoute = [
           var returnFocusId = d.field3dDrawerReturnFocusId || 'dinolab-field-tools-toggle';
           upd({ field3dDrawerOpen: false });
           focusFieldControlSoon(returnFocusId);
-          announceToSR('Field tools closed. 3D model centered.');
+          announceToSR(__alloT('stem.dinolab.sr_field_tools_closed_3d_model_centered', 'Field tools closed. 3D model centered.'));
         }
         function dismissOrientationCue() {
           if (d.field3dOrientationDismissed === true) return;
           upd('field3dOrientationDismissed', true);
-          announceToSR('3D viewer orientation tips dismissed.');
+          announceToSR(__alloT('stem.dinolab.sr_3d_viewer_orientation_tips_dismissed', '3D viewer orientation tips dismissed.'));
         }
         function startFieldScan() {
           openFieldDrawer('evidence', { field3dWorkflowStarted: true, field3dShowEvidence: true, field3dScanTargetIdx: 0 }, 'Field scan started. Skull is the first evidence target.');
@@ -9711,7 +9711,7 @@ var evidenceRoute = [
           if (!workflowStepAvailable(step)) return;
           if (step === 'explore') {
             upd({ field3dDrawerOpen: false, field3dFocusMode: false });
-            announceToSR('Explore step selected. The 3D model is centered.');
+            announceToSR(__alloT('stem.dinolab.sr_explore_step_selected_the_3d_model_is_centered', 'Explore step selected. The 3D model is centered.'));
           } else if (step === 'scan') {
             if (workflowStarted) openFieldDrawer('evidence');
             else startFieldScan();
@@ -9738,7 +9738,7 @@ var evidenceRoute = [
           upd({ field3dReconstructionMode: mode, field3dShowBody: true });
           announceToSR('3D reconstruction hypothesis: ' + nextSet.active.label + '. ' + nextSet.active.status + '.');
         }
-        var hypothesisStrip = el('div', { role: 'group', 'aria-label': 'Reconstruction hypothesis', style: { margin: '0 0 8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(142px, 1fr))', gap: 7 } }, hypothesisSet.options.map(function (hypothesis) {
+        var hypothesisStrip = el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_hypothesis', 'Reconstruction hypothesis'), style: { margin: '0 0 8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(142px, 1fr))', gap: 7 } }, hypothesisSet.options.map(function (hypothesis) {
           var active = activeHypothesis.id === hypothesis.id;
           var statusColor = hypothesis.id === 'classic' ? '#f59e0b' : (hypothesis.available ? '#5eead4' : '#64748b');
           return el('button', {
@@ -9859,7 +9859,7 @@ var evidenceRoute = [
             el('div', { style: { fontSize: 11.5, color: T.soft, fontWeight: 800 } }, 'Assembly ' + assemblyPlacedCount + '/' + assemblyPieces.length)
           ),
           el('div', { key: 'status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, assemblyProgressText),
-          el('div', { key: 'meter', role: 'progressbar', 'aria-label': 'Fossil assembly progress', 'aria-valuemin': 0, 'aria-valuemax': assemblyPieces.length, 'aria-valuenow': assemblyPlacedCount, 'aria-valuetext': assemblyProgressText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 7 } },
+          el('div', { key: 'meter', role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_fossil_assembly_progress', 'Fossil assembly progress'), 'aria-valuemin': 0, 'aria-valuemax': assemblyPieces.length, 'aria-valuenow': assemblyPlacedCount, 'aria-valuetext': assemblyProgressText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 7 } },
             el('div', { style: { height: '100%', width: Math.round((assemblyPlacedCount / assemblyPieces.length) * 100) + '%', background: 'linear-gradient(90deg, #a78bfa, #f59e0b, #22c55e)' } })
           ),
           el('div', { key: 'cue', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, assemblyScanCue),
@@ -10018,7 +10018,7 @@ var evidenceRoute = [
         function downloadFieldInvestigationSummary() {
           var summary = fieldInvestigationSummaryText();
           if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof document === 'undefined') {
-            announceToSR('Summary download is not available in this browser.');
+            announceToSR(__alloT('stem.dinolab.sr_summary_download_is_not_available_in_this_browser', 'Summary download is not available in this browser.'));
             return;
           }
           try {
@@ -10032,16 +10032,16 @@ var evidenceRoute = [
             link.click();
             document.body.removeChild(link);
             if (typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(url);
-            announceToSR('Investigation summary downloaded.');
+            announceToSR(__alloT('stem.dinolab.sr_investigation_summary_downloaded', 'Investigation summary downloaded.'));
           } catch (e) {
-            announceToSR('Summary download failed. The investigation summary remains visible in the share panel.');
+            announceToSR(__alloT('stem.dinolab.sr_summary_download_failed_the_investigation_summary', 'Summary download failed. The investigation summary remains visible in the share panel.'));
           }
         }
         var claimBuilderPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Field claim builder'),
           el('div', { key: 'status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Ready for CER' : ' | Scan more for a stronger claim')),
           el('div', { key: 'readiness', style: { fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 5 } }, 'Claim strength ' + claimReadinessScore + '/5 | ' + claimReadinessLabel),
-          el('div', { key: 'readinessMeter', role: 'progressbar', 'aria-label': 'Claim strength', 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': claimReadinessScore, 'aria-valuetext': claimReadinessText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
+          el('div', { key: 'readinessMeter', role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_claim_strength', 'Claim strength'), 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': claimReadinessScore, 'aria-valuetext': claimReadinessText, style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
           el('div', { key: 'readinessHint', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, claimReadinessHint),
           el('div', { key: 'cerTitle', style: { paddingTop: 8, borderTop: '1px solid ' + T.border, fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 6 } }, 'CER rehearsal | Checklist ' + cerChecklistCount + '/' + cerChecklist.length),
           el('div', { key: 'cerChecks', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 5, marginBottom: 7 } }, cerChecklist.map(function (item) {
@@ -10070,8 +10070,8 @@ var evidenceRoute = [
             el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 11.5, fontWeight: 900 } }, 'Share investigation summary'),
             el('div', { style: { marginTop: 6, color: T.soft, fontSize: 11.5, lineHeight: 1.48 } }, 'Create a plain-text handoff with the species, evidence route, assembled fossils, claim, reasoning, and uncertainty note.'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 8 } },
-              el('button', { type: 'button', onClick: copyFieldInvestigationSummary, 'aria-label': 'Copy Dino Lab investigation summary to clipboard', style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(20,184,166,0.55)', background: 'rgba(20,184,166,0.17)', color: T.text, cursor: 'pointer' } }, 'Copy summary'),
-              el('button', { type: 'button', onClick: downloadFieldInvestigationSummary, 'aria-label': 'Download Dino Lab investigation summary', style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer' } }, 'Download summary')
+              el('button', { type: 'button', onClick: copyFieldInvestigationSummary, 'aria-label': __alloT('stem.dinolab.a11y_copy_dino_lab_investigation_summary_to_clipboar', 'Copy Dino Lab investigation summary to clipboard'), style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(20,184,166,0.55)', background: 'rgba(20,184,166,0.17)', color: T.text, cursor: 'pointer' } }, 'Copy summary'),
+              el('button', { type: 'button', onClick: downloadFieldInvestigationSummary, 'aria-label': __alloT('stem.dinolab.a11y_download_dino_lab_investigation_summary', 'Download Dino Lab investigation summary'), style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer' } }, 'Download summary')
             )
           ) : null
         ], { marginBottom: 12, background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.25)' });
@@ -10116,7 +10116,7 @@ var evidenceRoute = [
         }
         function nextChallenge() {
           upd({ field3dChallengeIdx: challengeIdx + 1, field3dChallengePicked: null });
-          announceToSR('Next reconstruction challenge');
+          announceToSR(__alloT('stem.dinolab.sr_next_reconstruction_challenge', 'Next reconstruction challenge'));
         }
         var anatomyProfilePanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 2 } }, 'Scientific anatomy profile'),
@@ -10209,7 +10209,7 @@ var evidenceRoute = [
             el('div', { style: { fontSize: 13, fontWeight: 900 } }, 'Reconstruction challenge'),
             el('div', { style: { fontSize: 11.5, color: T.soft, fontWeight: 800 } }, challengeCaseLabel + ' | Score: ' + challengeScore + '/' + challengeDone)
           ),
-          el('div', { key: 'meter', role: 'progressbar', 'aria-label': 'Reconstruction challenge progress', 'aria-valuemin': 1, 'aria-valuemax': challengeSteps.length, 'aria-valuenow': challengeIdx + 1, 'aria-valuetext': challengeCaseLabel, style: { height: 6, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 8 } },
+          el('div', { key: 'meter', role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_challenge_progress', 'Reconstruction challenge progress'), 'aria-valuemin': 1, 'aria-valuemax': challengeSteps.length, 'aria-valuenow': challengeIdx + 1, 'aria-valuetext': challengeCaseLabel, style: { height: 6, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 8 } },
             el('div', { style: { height: '100%', width: challengeCyclePct + '%', background: 'linear-gradient(90deg, #14b8a6, #38bdf8)' } })
           ),
           el('div', { key: 'q', style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, marginBottom: 8 } }, challengeStep.prompt),
@@ -10244,14 +10244,14 @@ var evidenceRoute = [
           el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative' } },
             el('div', { key: 'viewer' },
               el('div', { className: 'dinolab-field-toolbar', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
-                focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': 'Choose species for 3D field station', onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
-                el('div', { className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': '3D model view controls', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 'auto' } },
+                focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
+                el('div', { className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_3d_model_view_controls', '3D model view controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 'auto' } },
                   el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin'),
                   focusMode ? null : el('button', { id: 'dinolab-field-tools-toggle', type: 'button', onClick: drawerOpen ? closeFieldDrawer : openCurrentWorkflowTools, 'aria-expanded': drawerOpen ? 'true' : 'false', 'aria-controls': 'dinolab-field-drawer', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (drawerOpen ? '#5eead4' : T.border), background: drawerOpen ? 'rgba(20,184,166,0.16)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, drawerOpen ? 'Close field tools' : 'Open field tools'),
                   el('button', { id: 'dinolab-field-focus-toggle', type: 'button', onClick: toggleFieldFocus, 'aria-pressed': focusMode ? 'true' : 'false', 'aria-keyshortcuts': focusMode ? 'Escape' : null, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (focusMode ? '#5eead4' : '#15803d'), background: focusMode ? 'rgba(20,184,166,0.16)' : '#15803d', color: focusMode ? T.text : '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, focusMode ? 'Exit focus view' : 'Focus model')
                 )
               ),
-              el('div', { className: 'dinolab-field-workflow', hidden: focusMode, role: 'list', 'aria-label': 'Field Station workflow', style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, workflowOrder.map(function (step, index) {
+              el('div', { className: 'dinolab-field-workflow', hidden: focusMode, role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_field_station_workflow', 'Field Station workflow'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, workflowOrder.map(function (step, index) {
                 // teal-300 sits at 1.33:1 on the light "current" card; same
                 // render-time theme sniff the file uses for dinoCueInk.
                 var stepCurrentInk = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]')) ? '#5eead4' : '#115e59';
@@ -10271,7 +10271,7 @@ var evidenceRoute = [
                 );
               })),
               el(DinoFieldStation3DStable, { species: dn, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); }, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
-              el('div', { key: 'evidenceContext', className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': 'Reconstruction evidence context', style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
+              el('div', { key: 'evidenceContext', className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
                 el('div', { key: 'contextHeader', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
                   el('div', { style: { color: T.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Evidence context'),
                   el('div', { style: { color: T.soft, fontSize: 11.5, lineHeight: 1.35 } }, claimEvidenceTrailLabel ? 'Linked trail: ' + claimEvidenceTrailLabel : 'Keep observations separate from inference as you explore')
@@ -10299,7 +10299,7 @@ var evidenceRoute = [
                   )
                 ])
               ),
-              el('div', { className: 'dinolab-field-next', hidden: focusMode, role: 'region', 'aria-label': 'Current field task', style: { marginTop: 10, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', padding: 12, borderRadius: 10, border: '1px solid rgba(20,184,166,0.34)', background: 'rgba(20,184,166,0.08)' } },
+              el('div', { className: 'dinolab-field-next', hidden: focusMode, role: 'region', 'aria-label': __alloT('stem.dinolab.a11y_current_field_task', 'Current field task'), style: { marginTop: 10, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', padding: 12, borderRadius: 10, border: '1px solid rgba(20,184,166,0.34)', background: 'rgba(20,184,166,0.08)' } },
                 el('div', { style: { flex: '1 1 300px' } },
                   el('div', { style: { fontSize: 12.5, fontWeight: 900, color: T.text, marginBottom: 2 } }, !workflowStarted ? 'Begin at the model' : (activeWorkflowStep === 'scan' ? 'Scan ' + scanTarget.label : (activeWorkflowStep === 'assemble' ? 'Assemble the fossil tray' : 'Turn evidence into a claim'))),
                   el('div', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, !workflowStarted ? 'Rotate, zoom, and compare the visible evidence. Start the scan when you are ready.' : (activeWorkflowStep === 'scan' ? scanStatusText : (activeWorkflowStep === 'assemble' ? assemblyProgressText : claimReadinessText)))
@@ -10315,9 +10315,9 @@ var evidenceRoute = [
               el('div', { className: 'dinolab-field-drawer-handle', 'aria-hidden': 'true', style: { display: 'none', width: 44, height: 4, borderRadius: 999, background: 'rgba(148,163,184,0.48)', margin: '-2px auto 10px' } }),
               el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 el('div', { id: 'dinolab-field-drawer-title', style: { fontSize: 14, fontWeight: 900 } }, 'Field tools: ' + (drawerSection === 'reconstruct' ? 'Model' : cap(drawerSection))),
-                el('button', { id: 'dinolab-field-drawer-close', type: 'button', onClick: closeFieldDrawer, 'aria-label': 'Close field tools and return to the 3D model', 'aria-keyshortcuts': 'Escape', style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer', fontWeight: 900 } }, 'Close')
+                el('button', { id: 'dinolab-field-drawer-close', type: 'button', onClick: closeFieldDrawer, 'aria-label': __alloT('stem.dinolab.a11y_close_field_tools_and_return_to_the_3d_model', 'Close field tools and return to the 3D model'), 'aria-keyshortcuts': 'Escape', style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer', fontWeight: 900 } }, 'Close')
               ),
-              el('div', { role: 'group', 'aria-label': 'Field tool section', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, drawerSections.map(function (section) {
+              el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_field_tool_section', 'Field tool section'), style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, drawerSections.map(function (section) {
                 var active = drawerSection === section;
                 var available = fieldDrawerSectionAvailable(section);
                 var label = section === 'reconstruct' ? 'Model' : cap(section);
@@ -10465,7 +10465,7 @@ var evidenceRoute = [
         var digStatusText = 'Site #' + seed + ' | bones found: ' + dugBones + '/' + totalBones + ' | cells dug: ' + revealed.length + '/' + CELLS;
         var digGridDesc = 'Dig grid with ' + ROWS + ' rows and ' + COLS + ' columns. Revealed cells stay focusable so bone and rock results can be reviewed.';
         function dig(i) { if (revealed.indexOf(i) !== -1) return; upd('digRevealed', revealed.concat([i])); announceToSR(boneCells[i] ? 'Bone found' : 'Just rock'); }
-        function newDig() { upd({ digSeed: seed + 1, digRevealed: [], digGuess: null, digSolvedFor: null }); announceToSR('New dig site loaded'); }
+        function newDig() { upd({ digSeed: seed + 1, digRevealed: [], digGuess: null, digSolvedFor: null }); announceToSR(__alloT('stem.dinolab.sr_new_dig_site_loaded', 'New dig site loaded')); }
         function makeGuess(id) { var correct = id === chosen.id; var patch = { digGuess: id }; if (correct && !solved) { patch.digSolvedFor = seed; patch.digsSolved = (d.digsSolved || 0) + 1; } upd(patch); announceToSR(correct ? 'Correct identification' : 'Not quite, keep digging'); }
         var gridCells = [];
         for (var c = 0; c < CELLS; c++) {
@@ -10485,7 +10485,7 @@ var evidenceRoute = [
         return el('div', null, sectionTitle('⛏️', 'Excavate a fossil', 'Dig cells to uncover bones. Clues appear as you go. Then identify what you found.'),
           el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)', gap: 16 } },
             el('div', { key: 'left' }, el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } }, el('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12.5, color: T.soft } }, digStatusText), el('button', { onClick: newDig, style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.text, cursor: 'pointer' } }, '🔄 New dig')), el('div', { role: 'group', 'aria-label': digGridDesc, style: { display: 'grid', gridTemplateColumns: 'repeat(' + COLS + ', 1fr)', gap: 6 } }, gridCells), solved ? panel([el('div', { key: 's', style: { fontWeight: 800, color: T.text, marginBottom: 4 } }, '✅ It is ' + chosen.common + '!'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft } }, chosen.blurb)], { marginTop: 12, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.35)' }) : null),
-            el('div', { key: 'right' }, panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 6 } }, '🔎 Field clues'), clues.length ? el('ul', { key: 'u', style: { margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.6 } }, clues.map(function (cl, i) { return el('li', { key: i }, cl.text); })) : el('div', { key: 'n', style: { fontSize: 12.5, color: T.soft } }, 'Dig at least two cells to reveal your first clue.')]), el('div', { style: { marginTop: 12, fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 6 } }, 'Identify the find'), el('div', { role: 'group', 'aria-label': 'Identify the find choices', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 6, maxHeight: 280, overflowY: 'auto' } }, guessGrid))
+            el('div', { key: 'right' }, panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 6 } }, '🔎 Field clues'), clues.length ? el('ul', { key: 'u', style: { margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.6 } }, clues.map(function (cl, i) { return el('li', { key: i }, cl.text); })) : el('div', { key: 'n', style: { fontSize: 12.5, color: T.soft } }, 'Dig at least two cells to reveal your first clue.')]), el('div', { style: { marginTop: 12, fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 6 } }, 'Identify the find'), el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_identify_the_find_choices', 'Identify the find choices'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 6, maxHeight: 280, overflowY: 'auto' } }, guessGrid))
           )
         );
       }
@@ -10719,7 +10719,7 @@ var evidenceRoute = [
         }
         function clearSavedInvestigation() {
           upd(fieldProgressClearPatch());
-          announceToSR('Saved Dino Lab investigation cleared.');
+          announceToSR(__alloT('stem.dinolab.sr_saved_dino_lab_investigation_cleared', 'Saved Dino Lab investigation cleared.'));
         }
         var seenCount = Object.keys(seen || {}).length;
         var quizCount = d.quizCorrect || 0;
@@ -10733,7 +10733,7 @@ var evidenceRoute = [
         ];
         return el('section', {
           'data-dinolab-command': 'true',
-          'aria-label': 'Dino Lab mission control',
+          'aria-label': __alloT('stem.dinolab.a11y_dino_lab_mission_control', 'Dino Lab mission control'),
           style: { margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(34,197,94,0.34)', background: 'linear-gradient(135deg, #0b3b2e, #0f172a)', boxShadow: '0 18px 38px rgba(0,0,0,0.24)' }
         },
           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
@@ -10741,13 +10741,13 @@ var evidenceRoute = [
               el('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Dino field station'),
               el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: '#f1f5f9' } }, 'Choose a fossil investigation path.'),
               el('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } }, 'Dino Lab has a large catalog. This panel turns it into a guided starting point while keeping every section available above.'),
-              hasSavedProgress ? el('div', { className: 'dinolab-resume-card', role: 'region', 'aria-label': 'Saved Dino Lab investigation', style: { marginTop: 12, padding: 10, borderRadius: 10, border: '1px solid rgba(94,234,212,0.42)', background: 'rgba(20,184,166,0.10)' } },
+              hasSavedProgress ? el('div', { className: 'dinolab-resume-card', role: 'region', 'aria-label': __alloT('stem.dinolab.a11y_saved_dino_lab_investigation', 'Saved Dino Lab investigation'), style: { marginTop: 12, padding: 10, borderRadius: 10, border: '1px solid rgba(94,234,212,0.42)', background: 'rgba(20,184,166,0.10)' } },
                 el('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Saved investigation'),
                 el('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc', marginBottom: 3 } }, savedSpecies.common + ' · ' + savedScanCount + '/3 evidence logged · ' + savedAssemblyCount + '/6 assembled'),
                 el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.4, marginBottom: 8 } }, 'Your evidence path is saved. Continue where you left off or clear it for a fresh investigation.'),
                 el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   el('button', { type: 'button', onClick: resumeFieldInvestigation, 'aria-label': 'Resume Dino Lab investigation for ' + savedSpecies.common, style: { padding: '7px 10px', borderRadius: 7, border: '1px solid #5eead4', background: '#0f766e', color: '#f8fafc', cursor: 'pointer', fontSize: 11.5, fontWeight: 900 } }, 'Resume investigation'),
-                  el('button', { type: 'button', onClick: clearSavedInvestigation, 'aria-label': 'Clear saved Dino Lab investigation', style: { padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.42)', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Clear saved progress')
+                  el('button', { type: 'button', onClick: clearSavedInvestigation, 'aria-label': __alloT('stem.dinolab.a11y_clear_saved_dino_lab_investigation', 'Clear saved Dino Lab investigation'), style: { padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.42)', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Clear saved progress')
                 )
               ) : null,
               el('div', { className: 'dinolab-mission-stats', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },

@@ -77,9 +77,9 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('if (!nextSpawns[org.id] && cel.selectedOrganism === org.id) cel.selectedOrganism = null;');
       expect(source).toContain('if (!nextSpawns[org.id] && cel.playAsOrganism === org.id) cel.playAsOrganism = null;');
       expect(source).toContain('if (cel.playAsOrganism === orgId) cel.playAsOrganism = null;');
-      expect(source).toContain('"aria-label": "Show all cell types in petri dish"');
-      expect(source).toContain('"aria-label": "Clear all cell types from petri dish"');
-      expect(source).toContain('role: "group", "aria-label": "Cell type visibility filters"');
+      expect(source).toContain(`"aria-label": __alloT('stem.cell.a11y_show_all_cell_types_in_petri_dish', 'Show all cell types in petri dish')`);
+      expect(source).toContain(`"aria-label": __alloT('stem.cell.a11y_clear_all_cell_types_from_petri_dish', 'Clear all cell types from petri dish')`);
+      expect(source).toContain(`role: "group", "aria-label": __alloT('stem.cell.a11y_cell_type_visibility_filters', 'Cell type visibility filters')`);
       expect(source).toContain('"aria-pressed": isActive');
       expect(source).toContain('"aria-label": (isActive ? "Hide " : "Show ") + org.label + " in petri dish"');
 
@@ -125,7 +125,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('if (playAsOrg && canvasEl._onZoom) canvasEl._onZoom(cam.zoom);');
 
       expect(source).toContain('canvasEl._cellSimResetView = function () { cam.x = WORLD_W / 2; cam.y = WORLD_H / 2; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };');
-      expect(source).toContain('"aria-label": "Reset microscope view"');
+      expect(source).toContain(`"aria-label": __alloT('stem.cell.a11y_reset_microscope_view', 'Reset microscope view')`);
       expect(source).toContain('if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1);');
 
       expect(source).toContain('canvasEl._cellSimShowOrganelleTooltip = function (orgId, organelleName)');

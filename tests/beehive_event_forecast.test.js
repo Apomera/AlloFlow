@@ -34,7 +34,7 @@ describe('Beehive Beekeeper event impact forecast', () => {
   });
 
   it('keeps the impact metrics labelled for screen readers', () => {
-    expect(source).toContain("'aria-label': 'Observed event impact metrics'");
+    expect(source).toContain(`'aria-label': __alloT('stem.beehive.a11y_observed_event_impact_metrics', 'Observed event impact metrics')`);
     expect(source).toContain("'aria-labelledby': 'beehive-event-forecast-title'");
     expect(source).toContain("'aria-describedby': 'beehive-event-forecast-prompt'");
     expect(source).toContain("'data-beehive-event-prompt': 'true'");

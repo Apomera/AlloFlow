@@ -38,7 +38,7 @@ describe('Beehive Beekeeper causal pathway feedback', () => {
 
   it('keeps the mechanism mapping and accessible pathway semantics in the source', () => {
     expect(source).toContain('function managementCausalPath(label, changes)');
-    expect(source).toContain("'aria-label': 'Intervention causal pathway'");
+    expect(source).toContain(`'aria-label': __alloT('stem.beehive.a11y_intervention_causal_pathway', 'Intervention causal pathway')`);
     expect(source).toContain("'aria-labelledby': 'beehive-management-causal-title'");
     expect(source).toContain('Name the metric you expect to move first');
   });
