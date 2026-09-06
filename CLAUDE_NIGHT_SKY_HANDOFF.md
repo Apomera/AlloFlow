@@ -239,6 +239,46 @@ you had to sweep blind and hope something was under the crosshair.
   identified, that `p` returns to the previous one, and that the camera moved.
 - Unit suite 70; browser suite 16.
 
+## Enhancement slice 15 (2026-09-05): one star, one story
+Slice 12 audited the tool's prose. This audited its data, by asking whether the
+tool says the same thing about the same object in every tab. It did not.
+
+**How the audit ran.** The Sky Map's `BRIGHT_STARS`, the star catalog tab's
+`STARS`, the constellation patterns and the bundled HYG catalogue were compared
+star by star, matching on name and on position. `STARS` lives inside a render
+function so its names can follow the language pack, so the gate lifts the array
+out of the source text with a brace matcher rather than importing it.
+
+**What it found.**
+- Structure was clean: every pattern star exists in the catalogue, sits in the
+  constellation the pattern claims, is drawn by at least one segment, and no
+  segment spans more than 25°.
+- Two stars answered to two names. The guides say **Tsih** and the sky said
+  **Cih** (γ Cas); the guides say **Alpha Centauri** and the sky says **Rigil
+  Kentaurus**. Both spellings are legitimate, which is exactly why a learner
+  cannot resolve it alone.
+- Seven stars carried two brightnesses. Five of them (Rigel, Betelgeuse, Antares,
+  Spica, Regulus) are precisely the stars that **vary or are quoted differently
+  by different catalogues**, and the tool said nothing about it. Mizar disagreed
+  because the Sky Map quotes the naked-eye pair (2.04) and the catalogue measures
+  the brighter component (2.23).
+
+**What changed.** `STAR_NAME_NOTES` applies the IAU-approved spelling to the
+catalogue name map at load (copied, never mutating the shipped asset) and keeps
+the other name as an alias the identify panel shows. `MAGNITUDE_NOTES` records a
+range and a reason for eight stars, and both the observatory panel and the star
+catalog tab read from it, so the range prints beside the magnitude in both. Two
+of those entries are new content rather than reconciliation: **Algol** now says
+it fades for about ten hours every 2.87 days, and **Aldebaran** says it drifts.
+
+**The gate is the point.** A test fails if any star carries two brightnesses the
+tool does not explain, with two thresholds: the tool's own lists must agree to
+0.02 magnitudes, while the independent catalogue may differ by up to 0.15, which
+is photometry between sources rather than a contradiction. A note must bracket
+every figure the tool prints for that star.
+
+- Unit suite 73; browser suite 16; other astronomy suites 155.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.

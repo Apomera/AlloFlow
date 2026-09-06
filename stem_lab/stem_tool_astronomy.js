@@ -1266,11 +1266,46 @@
     if (!(radiantAlt > 0)) return 0;
     return Math.round(zhr * Math.sin(radiantAlt * D2R) / Math.pow(2.2, 6.5 - Math.min(6.5, limit)));
   }
+  // One star, one name. The bundled HYG catalogue spells a couple of proper names
+  // its own way. Where the IAU's Working Group on Star Names has approved a
+  // different spelling the sky uses that, and identifying the star names the
+  // alternative, so the constellation guides and the 3D sky cannot call the same
+  // star two different things without saying so.
+  var STAR_NAME_NOTES = {
+    4427: { name: 'Tsih', also: 'Cih' },              // gamma Cassiopeiae, IAU 2017
+    71683: { also: 'Alpha Centauri A' }               // Rigil Kentaurus is the IAU name
+  };
+  // Where two parts of the tool quote different brightnesses for one star, the
+  // reason is recorded here rather than left as a silent contradiction. low and
+  // high bound every value the tool quotes anywhere, and a test enforces that.
+  var MAGNITUDE_NOTES = {
+    27989: { name: 'Betelgeuse', desig: '\u03B1 Ori', low: 0, high: 1.6, kind: 'semiregular' },
+    24436: { name: 'Rigel', desig: '\u03B2 Ori', low: 0.05, high: 0.18, kind: 'pulsating' },
+    80763: { name: 'Antares', desig: '\u03B1 Sco', low: 0.6, high: 1.6, kind: 'irregular' },
+    65474: { name: 'Spica', desig: '\u03B1 Vir', low: 0.97, high: 1.04, kind: 'ellipsoidal' },
+    49669: { name: 'Regulus', desig: '\u03B1 Leo', low: 1.35, high: 1.4, kind: 'sources' },
+    65378: { name: 'Mizar', desig: '\u03B6 UMa', low: 2.04, high: 2.23, kind: 'combined' },
+    14576: { name: 'Algol', desig: '\u03B2 Per', low: 2.12, high: 3.39, kind: 'eclipsing' },
+    21421: { name: 'Aldebaran', desig: '\u03B1 Tau', low: 0.75, high: 0.95, kind: 'slow' }
+  };
+  function magnitudeNoteByDesig(desig) {
+    var keys = Object.keys(MAGNITUDE_NOTES);
+    for (var i = 0; i < keys.length; i++) if (MAGNITUDE_NOTES[keys[i]].desig === desig) return MAGNITUDE_NOTES[keys[i]];
+    return null;
+  }
+  // The catalogue's own name map with the approved spellings applied, copied so
+  // the loaded asset is never mutated.
+  function catalogNames(source) {
+    var out = {}, key;
+    for (key in source || {}) if (Object.prototype.hasOwnProperty.call(source, key)) out[key] = source[key];
+    Object.keys(STAR_NAME_NOTES).forEach(function(hip) { if (STAR_NAME_NOTES[hip].name) out[hip] = STAR_NAME_NOTES[hip].name; });
+    return out;
+  }
   function normalizeCatalog(json) {
     var rows = json && Array.isArray(json.stars) ? json.stars : [];
     var n = rows.length, scale = Number(json && json.velocityScale) || 1e9;
     var cat = { count: n, hip: new Int32Array(n), ra: new Float64Array(n), dec: new Float64Array(n), mag: new Float32Array(n), ci: new Float32Array(n), con: new Int16Array(n),
-      dist: new Float64Array(n), vx: new Float64Array(n), vy: new Float64Array(n), vz: new Float64Array(n), withMotion: 0, names: json && json.names ? json.names : {}, codes: json && Array.isArray(json.constellationCodes) ? json.constellationCodes : [], byHip: {}, source: json && json.source ? json.source : 'built-in bright stars', license: json && json.license ? json.license : '', epoch: 'J2000' };
+      dist: new Float64Array(n), vx: new Float64Array(n), vy: new Float64Array(n), vz: new Float64Array(n), withMotion: 0, names: catalogNames(json && json.names), codes: json && Array.isArray(json.constellationCodes) ? json.constellationCodes : [], byHip: {}, source: json && json.source ? json.source : 'built-in bright stars', license: json && json.license ? json.license : '', epoch: 'J2000' };
     for (var i = 0; i < n; i++) {
       var r = rows[i];
       cat.hip[i] = r[0] | 0; cat.ra[i] = Number(r[1]); cat.dec[i] = Number(r[2]); cat.mag[i] = Number(r[3]); cat.ci[i] = Number(r[4]); cat.con[i] = r[5] | 0;
@@ -1563,7 +1598,8 @@
     return best;
   }
   if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
-    refractionDeg: refractionDeg, extinctionMag: extinctionMag, atmosphericVisibility: atmosphericVisibility, DEEP_SKY: DEEP_SKY, CONSTELLATION_NAMES: CONSTELLATION_NAMES, starColorClass: starColorClass,
+    refractionDeg: refractionDeg, extinctionMag: extinctionMag, atmosphericVisibility: atmosphericVisibility, DEEP_SKY: DEEP_SKY,
+    STAR_NAME_NOTES: STAR_NAME_NOTES, MAGNITUDE_NOTES: MAGNITUDE_NOTES, magnitudeNoteByDesig: magnitudeNoteByDesig, CONSTELLATION_NAMES: CONSTELLATION_NAMES, starColorClass: starColorClass,
     skyEvents: skyEvents, identifyNearest: identifyNearest, starMotionAt: starMotionAt, diurnalPath: diurnalPath, objectVisibility: objectVisibility,
     normalizeObsTargets: normalizeObsTargets, obsTargetKey: obsTargetKey, MAX_OBS_TARGETS: MAX_OBS_TARGETS, observatoryPositionAt: observatoryPositionAt,
     OBSERVATORY_TRAIL_HOURS: OBSERVATORY_TRAIL_HOURS, SIDEREAL_RATE: SIDEREAL_RATE
@@ -8090,7 +8126,7 @@
                     },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 4, marginBottom: 4 } },
                         h('h4', { id: headingId, style: { margin: 0, color: '#fde047', fontSize: 13 } }, s.name + ' ' + (s.desig ? '(' + s.desig + ')' : '')),
-                        h('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' } }, 'mag ' + s.mag + ' · ' + (typeof s.dist === 'number' ? s.dist + ' ly' : s.dist) + ' · ' + s.spec)
+                        h('span', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' } }, 'mag ' + s.mag + (magnitudeNoteByDesig(s.desig) ? ' (' + magnitudeNoteByDesig(s.desig).low.toFixed(2) + '\u2013' + magnitudeNoteByDesig(s.desig).high.toFixed(2) + ')' : '') + ' · ' + (typeof s.dist === 'number' ? s.dist + ' ly' : s.dist) + ' · ' + s.spec)
                       ),
                       h('div', { style: { fontSize: 10, color: '#a5b4fc', marginBottom: 4 } }, s.con),
                       h('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, s.notes)
@@ -9454,6 +9490,20 @@
           upd({ obsTargets: targets.concat([{ kind: picked.kind, id: picked.id, hip: picked.hip, name: picked.name, ra: picked.ra, dec: picked.dec }]) });
         }
         var pickedAdvice = picked && picked.kind === 'deepsky' ? deepSkyAdvice(picked.id, resolved.bortle) : null;
+        var pickedNameNote = picked && picked.hip ? STAR_NAME_NOTES[picked.hip] : null;
+        function magDetailText(hip) { return String(hip) === '14576' ? ' ' + __alloT('stem.astronomy.obs_mag_detail_algol', 'Algol dips for about ten hours every 2.87 days, which is why it was the first star understood to be an eclipsing pair.') : ''; }
+        var pickedMagNote = picked && picked.hip ? MAGNITUDE_NOTES[picked.hip] : null;
+        // Static keys: a concatenated i18n key is invisible to string extraction.
+        function magKindText(kind) {
+          if (kind === 'semiregular') return __alloT('stem.astronomy.obs_mag_semiregular', 'It is a red supergiant that pulses over months and years, and it dimmed unusually in 2019 and 2020.');
+          if (kind === 'pulsating') return __alloT('stem.astronomy.obs_mag_pulsating', 'It is a blue supergiant with small, restless pulsations.');
+          if (kind === 'irregular') return __alloT('stem.astronomy.obs_mag_irregular', 'It is a red supergiant that wanders slowly and unpredictably.');
+          if (kind === 'ellipsoidal') return __alloT('stem.astronomy.obs_mag_ellipsoidal', 'Two stars orbit so closely that tides pull them out of round, so the pair brightens and fades twice each orbit.');
+          if (kind === 'eclipsing') return __alloT('stem.astronomy.obs_mag_eclipsing', 'A dimmer companion passes in front of it on a strict schedule, and the pair fades for hours at a time before returning.');
+          if (kind === 'slow') return __alloT('stem.astronomy.obs_mag_slow', 'It is a red giant whose brightness drifts a little, slowly.');
+          if (kind === 'combined') return __alloT('stem.astronomy.obs_mag_combined', 'The catalogue measures the brighter star on its own. To the eye the close pair merges into one point, which looks the brighter of the two figures.');
+          return __alloT('stem.astronomy.obs_mag_sources_note', 'The star itself is steady; the measurements differ.');
+        }
         var pickedWhen = null;
         if (picked && !deepTime) {
           var pickedAt = observatoryPositionAt(picked, resolved.lat, resolved.lon);
@@ -9658,6 +9708,12 @@
                   Number.isFinite(picked.extinction) && picked.extinction >= 0.25 ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
                     h('strong', { style: { color: '#fdba74' } }, __alloT('stem.astronomy.obs_extinction_title', 'Through the air') + ': '),
                     __alloT('stem.astronomy.obs_extinction_lead', 'dimmed by about') + ' ' + picked.extinction.toFixed(1) + ' ' + __alloT('stem.astronomy.obs_extinction_tail', 'magnitudes at this altitude. Light from something low crosses far more air than light from overhead, so it fades and reddens. The same object looks brighter once it climbs.')) : null,
+                  pickedNameNote && pickedNameNote.also ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
+                    h('strong', { style: { color: '#fde68a' } }, __alloT('stem.astronomy.obs_also_called', 'Also called') + ': '),
+                    pickedNameNote.also + '. ' + __alloT('stem.astronomy.obs_name_note', 'Catalogues keep different spellings and designations for one star, so you will meet both.')) : null,
+                  pickedMagNote ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
+                    h('strong', { style: { color: '#c4b5fd' } }, __alloT('stem.astronomy.obs_brightness_title', 'Brightness') + ': '),
+                    (pickedMagNote.kind === 'sources' ? __alloT('stem.astronomy.obs_mag_sources', 'catalogues quote anything from') : __alloT('stem.astronomy.obs_mag_varies', 'this star varies, between')) + ' ' + pickedMagNote.low.toFixed(2) + ' ' + __alloT('stem.astronomy.obs_mag_and', 'and') + ' ' + pickedMagNote.high.toFixed(2) + '. ' + magKindText(pickedMagNote.kind) + magDetailText(picked.hip)) : null,
                   pickedWhen ? h('div', { style: { flexBasis: '100%', color: '#cbd5e1', fontSize: 12 } },
                     h('strong', { style: { color: '#a5f3fc' } }, __alloT('stem.astronomy.obs_when_title', 'Tonight') + ': '),
                     pickedWhen.neverRises ? __alloT('stem.astronomy.obs_when_never', 'never rises at this site.')

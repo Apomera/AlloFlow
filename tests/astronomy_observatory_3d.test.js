@@ -1143,6 +1143,128 @@ describe('Observatory tab rendering', () => {
     expect(help).toContain('turning on the spot');
   });
 
+  // --- one star, one story -------------------------------------------------
+  // The star catalog tab's array is built inside a render function so its names
+  // can follow the language pack, so the gate lifts it out of the source text.
+  function liftArray(source, declaration) {
+    const start = source.indexOf(declaration);
+    if (start < 0) throw new Error('cannot find ' + declaration);
+    let depth = 0, end = -1;
+    const open = source.indexOf('[', start);
+    for (let k = open; k < source.length; k++) {
+      const c = source[k];
+      if (c === '[') depth++;
+      else if (c === ']') { depth--; if (depth === 0) { end = k + 1; break; } }
+      else if (c === "'" || c === '"' || c === '`') { const q = c; k++; while (k < source.length && source[k] !== q) { if (source[k] === '\\') k++; k++; } }
+    }
+    if (end < 0) throw new Error('unbalanced array for ' + declaration);
+    // eslint-disable-next-line no-new-func
+    return new Function('__alloT', 'return ' + source.slice(open, end))((key, fallback) => fallback);
+  }
+
+  it('never quotes two brightnesses for one star without saying why', () => {
+    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
+    const starTab = liftArray(source, 'var STARS = [');
+    expect(starTab.length).toBeGreaterThan(30);
+    const catalog = sky.normalizeCatalog(JSON.parse(readFileSync(ASSET, 'utf8')));
+    const catalogByName = new Map();
+    for (const [hip, name] of Object.entries(catalog.names)) {
+      const idx = catalog.byHip[hip];
+      if (idx !== undefined) catalogByName.set(name, { hip: Number(hip), mag: catalog.mag[idx] });
+    }
+    const noteFor = name => Object.values(sky.MAGNITUDE_NOTES).find(n => n.name === name) || null;
+
+    const unexplained = [];
+    for (const star of sky.BRIGHT_STARS) {
+      const values = [{ where: 'sky map', mag: star.mag }];
+      const twin = starTab.find(s => s.name === star.name);
+      if (twin) values.push({ where: 'star catalog', mag: twin.mag });
+      const cat = catalogByName.get(star.name);
+      if (cat) values.push({ where: 'HYG', mag: cat.mag });
+      // The tool's own two lists must agree. The independent catalogue may differ
+      // by the few hundredths that separate photometric sources.
+      const ours = values.filter(v => v.where !== 'HYG').map(v => v.mag);
+      const spread = Math.max(...ours) - Math.min(...ours);
+      const catalogueGap = values.some(v => v.where === 'HYG')
+        ? Math.max(...values.map(v => Math.abs(v.mag - ours[0])))
+        : 0;
+      if (spread <= 0.02 && catalogueGap <= 0.15) continue;
+      const note = noteFor(star.name);
+      if (!note) { unexplained.push(star.name + ': ' + values.map(v => v.where + ' ' + v.mag).join(', ')); continue; }
+      // The note must bracket every figure the tool prints for that star.
+      for (const v of values) {
+        expect(v.mag, star.name + ' from the ' + v.where).toBeGreaterThanOrEqual(note.low - 0.05);
+        expect(v.mag, star.name + ' from the ' + v.where).toBeLessThanOrEqual(note.high + 0.05);
+      }
+    }
+    expect(unexplained).toEqual([]);
+    // Every note is about a star the tool actually shows, keyed by a real HIP.
+    for (const [hip, note] of Object.entries(sky.MAGNITUDE_NOTES)) {
+      expect(catalog.byHip[hip], note.name).toBeDefined();
+      expect(catalog.names[hip]).toBe(note.name);
+      expect(note.high).toBeGreaterThan(note.low);
+      expect(sky.magnitudeNoteByDesig(note.desig)).toBe(note);
+    }
+  });
+
+  it('calls one star by one name across the guides and the sky', () => {
+    const catalog = sky.normalizeCatalog(JSON.parse(readFileSync(ASSET, 'utf8')));
+    // The catalogue spelling the guides use wins, and the other spelling is kept
+    // as an alias rather than silently dropped.
+    expect(catalog.names[4427]).toBe('Tsih');
+    expect(sky.STAR_NAME_NOTES[4427].also).toBe('Cih');
+    const raw = JSON.parse(readFileSync(ASSET, 'utf8'));
+    expect(raw.names['4427']).toBe('Cih');   // the shipped asset is not mutated
+    // Every name the sky map prints is the name the 3D sky prints.
+    const catalogNames = new Set(Object.values(catalog.names));
+    const patternNames = new Set();
+    for (const pattern of Object.values(sky.constellationPatterns)) {
+      for (const star of pattern.stars) if (star[1]) patternNames.add(star[1]);
+    }
+    const disagreements = [];
+    for (const star of sky.BRIGHT_STARS) {
+      if (catalogNames.has(star.name)) continue;
+      const alias = Object.values(sky.STAR_NAME_NOTES).some(n => n.also === star.name || n.name === star.name);
+      if (!alias) disagreements.push(star.name);
+    }
+    for (const name of patternNames) {
+      if (catalogNames.has(name)) continue;
+      const alias = Object.values(sky.STAR_NAME_NOTES).some(n => n.also === name || n.also === name + ' A');
+      if (!alias) disagreements.push('pattern: ' + name);
+    }
+    expect(disagreements).toEqual([]);
+  });
+
+  it('says why a star it draws has more than one brightness', () => {
+    const state = { obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' };
+    const doc = new DOMParser().parseFromString(render({ ...state, obsPicked: { kind: 'star', name: 'Betelgeuse', hip: 27989, mag: 0.45, ci: 1.5, colorClass: 'red', constellation: 'Orion', alt: 40, az: 150 } }), 'text/html');
+    const text = doc.body.textContent;
+    expect(text).toContain('this star varies, between 0.00 and 1.60');
+    expect(text).toContain('dimmed unusually in 2019 and 2020');
+    // Regulus differs between sources rather than in the sky, and says so.
+    const regulus = new DOMParser().parseFromString(render({ ...state, obsPicked: { kind: 'star', name: 'Regulus', hip: 49669, mag: 1.35, alt: 40, az: 150 } }), 'text/html');
+    expect(regulus.body.textContent).toContain('catalogues quote anything from 1.35 and 1.40');
+    expect(regulus.body.textContent).toContain('The star itself is steady');
+    // Gamma Cassiopeiae keeps both names.
+    const tsih = new DOMParser().parseFromString(render({ ...state, obsPicked: { kind: 'star', name: 'Tsih', hip: 4427, mag: 2.15, alt: 40, az: 30 } }), 'text/html');
+    expect(tsih.body.textContent).toContain('Also called');
+    expect(tsih.body.textContent).toContain('Cih');
+    // A steady star says nothing about variability at all.
+    const vega = new DOMParser().parseFromString(render({ ...state, obsPicked: { kind: 'star', name: 'Vega', hip: 91262, mag: 0.03, alt: 40, az: 90 } }), 'text/html');
+    expect(vega.body.textContent).not.toContain('this star varies');
+    expect(vega.body.textContent).not.toContain('Also called');
+
+    // The star catalog tab prints the same range beside the same star.
+    const stars = new DOMParser().parseFromString(renderTool('astronomy', { astronomy: { tab: 'stars', observingList: [] } }), 'text/html');
+    const rows = Array.from(stars.querySelectorAll('[role="listitem"]')).map(el => el.textContent);
+    const betelgeuse = rows.find(r => r.includes('Betelgeuse'));
+    expect(betelgeuse).toContain('mag 0.45 (0.00\u20131.60)');
+    const algol = rows.find(r => r.includes('Algol'));
+    expect(algol).toContain('mag 2.12 (2.12\u20133.39)');
+    const sirius = rows.find(r => r.includes('Sirius'));
+    expect(sirius).not.toMatch(/mag -1.46 \(/);
+  });
+
   it('lists the observatory tab once and keeps the meteor tab intact', () => {
     const doc = new DOMParser().parseFromString(render(), 'text/html');
     const tabs = Array.from(doc.querySelectorAll('[role="tab"]')).map(el => el.textContent.trim());
