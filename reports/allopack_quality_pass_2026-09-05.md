@@ -458,6 +458,25 @@ Two of the three were **internal contradictions** — the pack refuting itself w
 ### The check, stated for reuse
 
 When an authored explanation says *every*, *always* or *never*, do two things: count the cases the text actually demonstrates, and search the rest of the pack for a sentence that contradicts it. The chemistry pass found the first kind (a universal supported three-fifths); this pass found the second kind twice.
+## Twenty-first pass: does each pack deliver what its directions promise?
+
+The previous pass found packs contradicting themselves inside a reading. The same question applies between resources. The directions body is the first thing a student sees and it makes concrete promises — win this game, sort those cards, finish with that. The audit checks that objective references resolve and that the body names at least half the resources. It never checks the other direction.
+
+So the check ran both ways, and reported **160 mismatches across 38 packs**. That is not a defect rate. It is, once again, mostly the checker.
+
+**133 of the 160 were a naming convention, not a fault.** A body says "learn the words in the **Glossary**" while the resource is titled "Revolution Vocabulary". The check called that a broken reference and then, symmetrically, called the resource unmentioned. It is neither: the app labels every resource with its type, so a student reading "the Glossary" finds the Glossary. Two flags per pack, ninety times over, for a house style.
+
+### The 27 that were real
+
+A pack would set up two word games in its objectives while the directions named only one. The student sees a goal — "Win the Memory game" — that the instructions never introduced. The goal still works, because the app renders the objective list either way, so nothing is broken. But the directions were describing a different assignment from the one the pack actually sets.
+
+Twenty-seven objectives across twenty-six packs, now named in the body they belong to: "learn the words in **Sky Words**, then win the **Matching** game and the **Memory** game." Re-running the check leaves zero.
+
+### On keeping the noisy part out
+
+The convention flags were not made into a gate and the packs were not rewritten to satisfy them. Renaming "the **Glossary**" to "the **Revolution Vocabulary**" in ninety places would make a checker happy and every directions body slightly worse to read. The check earned one narrow finding and is worth keeping as a scratch probe rather than a rule.
+
+That is the fifth check this week measured against its own false-positive rate before deciding what to do with it, and the second in two passes where the honest answer was "the checker is wrong about most of this".
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
