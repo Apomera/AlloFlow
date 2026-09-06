@@ -340,6 +340,25 @@ A gloss exists so a teacher can judge the alignment without looking the code up.
 Weather vs. Climate is a grade 5-6 pack citing a grade-3 expectation and a middle-school one. That looked like carelessness and is not: **NGSS places no weather or climate performance expectation at grade 5 at all.** The pack now says so, in the same way the Simple Machines pack already notes that NGSS has no dedicated simple-machines expectation. A gap in the standards is worth stating rather than papering over with the nearest plausible code.
 
 Seed-plan cross-set check 8 is now done for all 38 packs.
+## Fifteenth pass: the answer keys
+
+The previous two passes found fabrications by reading claims against the world. The same exposure exists in a worse place. **A wrong answer key does not merely mislead — it marks the student who understood as wrong.** The shape suite checks that `correctAnswer` is byte-identical to some option, which says nothing at all about whether it is the right one.
+
+Three checks, and this time the result is a clean one.
+
+**All 38 math answers verified arithmetically.** Every problem in all eight math resources, worked independently of the stated answer: the 8-by-5 dog yard at 26 feet of fence and 40 square feet of sod, the 24-foot fence giving 36 square feet as a 6-by-6 and only 20 as a 2-by-10, the slope of 3 through (0,4) and (2,10), 5.76 over 18 ounces coming out dearer per ounce than 3.60 over 12, 120 cubic centimetres over a 30-square-centimetre base standing 4 tall. All correct.
+
+**All 190 multiple-choice items checked for structural ambiguity.** No repeated options, and no item where the correct answer string matches more than one option. Either would make an item unanswerable.
+
+**All 70 answer keys in the fourteen newest packs read by hand**, including a check that no distractor is also defensible. All correct. The closest call was the chemistry item where a beaker starts bubbling: one distractor says "a gas is being produced by new substances", which is tempting until you notice that boiling produces a gas of the *same* substance, so the option is genuinely false and the key — "something worth investigating, and nothing more" — is genuinely right.
+
+Reporting a pass that found nothing matters as much as reporting one that found something. The two previous passes each found a fabrication, and it would be easy to assume the same rate holds everywhere. It does not: the arithmetic and the keys were sound.
+
+### What is now held automatically
+
+`tests/allopack_answer_integrity.test.js` keeps the machine-checkable half: no repeated options, exactly one option equal to the key, a usable expected answer on every short-answer item, and every math problem carrying an answer plus at least two non-empty worked steps. It was calibrated by making two options identical in one pack and confirming the failure, then restoring.
+
+It cannot check truth, and the file says so. That part was done by hand and will need doing again by hand whenever a pack is edited.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
