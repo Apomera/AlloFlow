@@ -262,8 +262,8 @@ describe('Art Studio graphic and form semantics', () => {
 
   it('marks every exposed canvas that lacked semantics with a role and name', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain('role: "img", "aria-label": "Uploaded depth map preview"');
-    expect(source).toContain('role: "img", "aria-label": "AI-generated depth map preview"');
+    expect(source).toContain(`role: "img", "aria-label": __alloT('stem.artstudio.a11y_uploaded_depth_map_preview', 'Uploaded depth map preview')`);
+    expect(source).toContain(`role: "img", "aria-label": __alloT('stem.artstudio.a11y_ai_generated_depth_map_preview', 'AI-generated depth map preview')`);
     expect(source).toContain('"aria-label": \'3D sculpture preview. \' + sculptSummary');
     expect(source).toContain('"aria-describedby": "artstudio-sculpt-touch-help artstudio-sculpt-keyboard-help"');
   });
