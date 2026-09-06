@@ -89,7 +89,7 @@ function drive(n) {
 }
 
 function mount(tab, opts = {}) {
-  let store = { migration: { tab, selectedSpecies: 'canada_goose' } };
+  let store = { migration: Object.assign({ tab, selectedSpecies: 'canada_goose' }, opts.state || {}) };
   let rerender = null;
   const ctx = {
     React,
@@ -112,6 +112,7 @@ function mount(tab, opts = {}) {
   act(() => { root.render(React.createElement(Host)); });
   return {
     ctx,
+    host,
     teardown: () => { act(() => root.unmount()); host.remove(); }
   };
 }
@@ -164,6 +165,52 @@ describe('Migration Lab canvas loops and prefers-reduced-motion', () => {
       });
     }
   }
+});
+
+describe('Migration Lab visible prose reaches the translator', () => {
+  it('renders no untranslated prose on any tab', () => {
+    // 181 visible strings once shipped English to every locale, most of them
+    // because the data tables are built at module scope where t() cannot
+    // reach. A sentinel locale marks everything that went through t(); a text
+    // node that comes back unmarked never did.
+    //
+    // This reads TEXT NODES, which is the only way to see the ones that are
+    // neither attributes nor canvas draws.
+    // Several strings only exist in a state: a species detail card, an expanded
+    // accordion, a running challenge, a recorded trial. Rendering each tab once
+    // in its default state misses them -- three were found only because the
+    // mount happens to select a species.
+    const CASES = [
+      ['flight3d', {}], ['flight3d', { flightSpecies: 'monarch', flightPaused: true, flightSeason: 'spring' }],
+      ['vformation', {}], ['vformation', { expandedFact: 'Upwash Zone', perfectVFormed: true }],
+      ['wind', {}], ['wind', { showStreamlines: true, windSpeed: 44 }],
+      ['routes', {}], ['routes', { selectedSpecies: 'arctic_tern' }],
+      ['world', {}], ['world', { worldFlyway: 'central_asian', worldMigrant: 'globe_skimmer' }],
+      ['aero', {}], ['aero', { aoa: 19, selectedWing: 'hovering' }],
+      ['navigate', {}], ['navigate', { expandedNav: 'magnetic' }],
+      ['navigate', { challengeActive: true, challengeChoices: null, challengeComplete: false }],
+      ['inquiry', {}],
+      ['inquiry', { inquiry: { wingspan: 1.2, mass: 0.8, headwind: 4, vMode: 'V', distance: 4000, testVar: 'mass', understood: true, stuckRevealed: true,
+        trials: [{ n: 1, testVar: 'mass', wingspan: 1.2, mass: 0.4, headwind: 0, vMode: 'V', distance: 4000, ratio: 2.9, state: 'Comfortable', stateKey: 'comfortable', energyPerKm: 0.5, totalKJ: 2000, fatBudget: 5800 },
+                 { n: 2, testVar: 'mass', wingspan: 1.2, mass: 1.6, headwind: 4, vMode: 'V', distance: 4000, ratio: 2.5, state: 'Comfortable', stateKey: 'comfortable', energyPerKm: 1.6, totalKJ: 6300, fatBudget: 18720 }] } }]
+    ];
+    const bad = new Set();
+    for (const [tab, state] of CASES) {
+      const m = mount(tab, { mark: true, state });
+      const walk = document.createTreeWalker(m.host, 4 /* TEXT_NODE */);
+      let n;
+      while ((n = walk.nextNode())) {
+        const txt = (n.nodeValue || '').trim();
+        if (!txt || txt.indexOf(MARK) !== -1) continue;
+        // Prose only: needs two runs of four letters. Numbers, units, symbols
+        // and single short words are not translation targets.
+        if (!/[A-Za-z]{4}[\s\S]*?[A-Za-z]{4}/.test(txt)) continue;
+        bad.add(tab + ': ' + txt.slice(0, 70));
+      }
+      m.teardown();
+    }
+    expect(Array.from(bad)).toEqual([]);
+  });
 });
 
 describe('Migration Lab canvas text reaches the translator', () => {
