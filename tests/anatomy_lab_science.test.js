@@ -667,7 +667,7 @@ describe('Anatomy Lab guided-mode continuity', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('1 + Math.floor(Math.random() * (flashcardPool.length - 1))');
     expect(source).toContain('var randIdx = (flashcardIdx + randomOffset) % flashcardPool.length;');
-    expect(source).toContain("announceToSR('Guided anatomy tour complete. Returning to Explore.')");
+    expect(source).toContain(`announceToSR(__alloT('stem.anatomy.sr_guided_anatomy_tour_complete_returning_to_explore', 'Guided anatomy tour complete. Returning to Explore.'))`);
     expect(source).toContain("announceToSR('Pathway complete: ' + pw.title + '.')");
   });
 });
@@ -696,8 +696,8 @@ describe('Anatomy Lab flashcard interaction semantics', () => {
 
   it('does not nest study content and text-to-speech inside the flip button', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("h('div', { role: 'group', 'aria-label': 'Flashcard '");
-    expect(source).toContain("role: 'toolbar', 'aria-label': 'Flashcard navigation'");
+    expect(source).toContain("h('div', { role: 'group', 'aria-label': formatAnatomyStudyText(t('stem.anatomy.flashcard_group'");
+    expect(source).toContain("role: 'toolbar', 'aria-label': t('stem.anatomy.flashcard_navigation'");
     expect(source).not.toContain("h('button', { 'aria-label': (flashcardPool[flashcardIdx]");
     expect(source).toContain("flashcardPool.length > 0 ? (flashcardIdx + 1) + '/' + flashcardPool.length : '0/0'");
   });

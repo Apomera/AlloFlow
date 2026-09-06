@@ -41,8 +41,9 @@ describe('Anatomy skip navigation', () => {
 
   it.each(ANATOMY_PATHS)('keeps the bypass out of sight until it is focused in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
-    // Off-screen rather than display:none, so it stays in the tab order.
-    expect(source).toContain('.anatomy-skip-link{position:absolute;left:-9999px');
+    // Visually hidden rather than display:none, so it stays in the tab order.
+    expect(source).toContain('.anatomy-skip-link{position:absolute;width:1px;height:1px');
+    expect(source).toContain('clip-path:inset(50%)');
     expect(source).toContain('.anatomy-skip-link:focus{position:static;');
     expect(source).not.toContain('.anatomy-skip-link{display:none');
   });
