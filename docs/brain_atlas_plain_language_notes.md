@@ -165,3 +165,18 @@ The insular card's own example, a fast heartbeat, is used to make the point that
 Three vocabulary entries were added for the new cards: speech, comprehension, and bringing information together. Sources: the two aphasia cards link to the NIDCD aphasia page; the other three fall through to the existing NIMH default.
 
 FOR REVIEW: these are newly authored explanations of language and interoception. The wording was chosen to describe contributions rather than jobs, but the science has not been reviewed by anyone but me.
+
+## Finishing the midline view's plain cards
+
+September 5, 2026. Same slice, one view over. The midline view is second in the rail and holds the memory and limbic structures that the quiz and the case decoders lean on. Six of its twelve regions had an authored card; the cingulate gyrus, basal ganglia, fornix, mammillary bodies, septum pellucidum and pineal gland did not. All twelve now do.
+
+Three of those six are not processing areas at all, and that is the point of authoring them. The fornix is a bundle of nerve fibers, the septum pellucidum a thin membrane, the pineal gland an endocrine gland. A learner reading a truncated slice of anatomy has no way to tell any of them from a region that thinks. Each card now says which kind of structure it is in its first line, and the fornix card states plainly that a bundle carries signals between places while the processing happens at the structures it connects. The septum pellucidum card extends the point the ventricles card already made: a labeled part is not always an area of nerve cells.
+
+The pineal card describes melatonin as a timing signal that follows the light and dark cycle, not as a sleep switch. Its check makes that the whole question, because "the sleep hormone" is the version a learner is most likely to arrive with, and sleep timing depends on tiredness, routine and surroundings as well.
+
+The cingulate card is about noticing that something is not going as expected, with a wrong turn as the example, and carries a note that the front and back parts take part in different things and that it is one contributor to each rather than the source. The basal ganglia card is about practice making an action need less deliberate thought, and says several brain systems change over that time rather than one. Neither card uses reward or pleasure language.
+
+The walk-on chain used to close back on the first card after six steps. Ventricles now leads on into the new cards and the last of them returns to the start, so the chain runs through all twelve. Four vocabulary entries were added: habit, nerve-fiber bundle, membrane, gland. The new cards carry no curated source and fall through to the existing NIMH default rather than inventing a URL.
+
+FOR REVIEW: newly authored explanations again, this time of the memory circuit, habit learning and melatonin. Same caveat as the side view cards.
+

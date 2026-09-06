@@ -8890,6 +8890,61 @@ var d = labToolData.brainAtlas || {};
               question: t('stem.brainatlas.plain_ventricles_question', 'How is a fluid-filled space different from an area that processes nerve signals?'),
               explanation: t('stem.brainatlas.plain_ventricles_explanation', 'A ventricle is a space containing fluid. Nerve cells in brain tissue process and pass along signals; the space itself is not a thinking center.'),
               note: t('stem.brainatlas.plain_ventricles_note', 'The atlas shows both brain tissue and fluid spaces. A labeled structure does not always mean an area of nerve cells.'),
+              next: 'cingulate'
+            },
+            cingulate: {
+              view: 'medial',
+              idea: t('stem.brainatlas.plain_cingulate_idea', 'Contributes to noticing when something is not going as expected, so effort can be adjusted.'),
+              example: t('stem.brainatlas.plain_cingulate_example', 'You notice you have taken a wrong turn and slow down to check the map.'),
+              connection: t('stem.brainatlas.plain_cingulate_connection', 'Noticing a problem and deciding what to do about it draw on connected areas working together.'),
+              question: t('stem.brainatlas.plain_cingulate_question', 'Why is noticing a mistake useful before you can fix it?'),
+              explanation: t('stem.brainatlas.plain_cingulate_explanation', 'Noticing that something has gone off track is what prompts a change of approach. Choosing the new approach draws on planning areas as well.'),
+              note: t('stem.brainatlas.plain_cingulate_note', 'The front and back parts of this region take part in different things, and it is one contributor to each of them rather than the source.'),
+              next: 'basal_ganglia'
+            },
+            basal_ganglia: {
+              view: 'medial',
+              idea: t('stem.brainatlas.plain_basal_ganglia_idea', 'A group of structures deep in the brain that help adjust movements and support habits.'),
+              example: t('stem.brainatlas.plain_basal_ganglia_example', 'After a lot of practice, tying a shoelace takes much less deliberate thought.'),
+              connection: t('stem.brainatlas.plain_basal_ganglia_connection', 'Adjusting a movement is one contribution; planning it and carrying it out involve other areas too.'),
+              question: t('stem.brainatlas.plain_basal_ganglia_question', 'Why can a practised action feel easier than a new one?'),
+              explanation: t('stem.brainatlas.plain_basal_ganglia_explanation', 'With practice, an action can be produced with less step-by-step deliberation. Several brain systems change over that time, not one.'),
+              next: 'fornix'
+            },
+            fornix: {
+              view: 'medial',
+              idea: t('stem.brainatlas.plain_fornix_idea', 'A bundle of nerve fibers that carries information out of the hippocampus.'),
+              example: t('stem.brainatlas.plain_fornix_example', 'Information about a new experience travels along this route toward other memory structures.'),
+              connection: t('stem.brainatlas.plain_fornix_connection', 'A bundle of fibers is a connection between areas rather than an area that processes on its own.'),
+              question: t('stem.brainatlas.plain_fornix_question', 'How is a fiber bundle different from a region that processes information?'),
+              explanation: t('stem.brainatlas.plain_fornix_explanation', 'A bundle carries signals between places. The processing happens at the structures it connects.'),
+              next: 'mammillary'
+            },
+            mammillary: {
+              view: 'medial',
+              idea: t('stem.brainatlas.plain_mammillary_idea', 'A pair of small structures that form one stop on a memory circuit.'),
+              example: t('stem.brainatlas.plain_mammillary_example', 'Information from the hippocampus passes through here on its way toward the thalamus.'),
+              connection: t('stem.brainatlas.plain_mammillary_connection', 'Memory for events depends on a loop of connected structures rather than on one place.'),
+              question: t('stem.brainatlas.plain_mammillary_question', 'Why can damage at more than one place cause similar memory problems?'),
+              explanation: t('stem.brainatlas.plain_mammillary_explanation', 'These structures form a connected circuit. A break at different points along it can interrupt the same flow of information.'),
+              next: 'septum_pell'
+            },
+            septum_pell: {
+              view: 'medial',
+              idea: t('stem.brainatlas.plain_septum_pell_idea', 'A thin membrane between the two large fluid-filled spaces in the middle of the brain.'),
+              example: t('stem.brainatlas.plain_septum_pell_example', 'On a scan it appears as a thin line separating the two lateral ventricles.'),
+              connection: t('stem.brainatlas.plain_septum_pell_connection', 'A labeled part is not always an area of nerve cells; some are membranes and some are spaces.'),
+              question: t('stem.brainatlas.plain_septum_pell_question', 'Why is it useful to know whether a labeled part is tissue, a membrane, or a space?'),
+              explanation: t('stem.brainatlas.plain_septum_pell_explanation', 'Different kinds of structure do different things. Naming which kind it is keeps a divider or a fluid space from being read as a processing area.'),
+              next: 'pineal_brain'
+            },
+            pineal_brain: {
+              view: 'medial',
+              idea: t('stem.brainatlas.plain_pineal_brain_idea', 'A small gland that releases melatonin, a signal that follows the daily cycle of light and dark.'),
+              example: t('stem.brainatlas.plain_pineal_brain_example', 'As evening light fades, melatonin release rises, which is one of the signals linked with sleep timing.'),
+              connection: t('stem.brainatlas.plain_pineal_brain_connection', 'Sleep timing depends on light, routine and other body signals together, not on one gland alone.'),
+              question: t('stem.brainatlas.plain_pineal_brain_question', 'Why is melatonin better described as a timing signal than as a sleep switch?'),
+              explanation: t('stem.brainatlas.plain_pineal_brain_explanation', 'Melatonin rises with darkness and forms part of the body timing information. Falling asleep also depends on how tired you are, on routine, and on the surroundings.'),
               next: 'corpus_callosum'
             },
             brocas: {
@@ -8962,6 +9017,10 @@ var d = labToolData.brainAtlas || {};
             speech: { term: t('stem.brainatlas.word_speech', 'Speech'), definition: t('stem.brainatlas.word_speech_definition', 'Spoken language. Producing speech involves choosing words and forming their sounds.') },
             comprehension: { term: t('stem.brainatlas.word_comprehension', 'Comprehension'), definition: t('stem.brainatlas.word_comprehension_definition', 'Understanding the meaning of words that are heard or read.') },
             integration: { term: t('stem.brainatlas.word_integration', 'Bringing information together'), definition: t('stem.brainatlas.word_integration_definition', 'Combining information of different kinds, such as what you see and what you hear, so it can be used together.') },
+            habit: { term: t('stem.brainatlas.word_habit', 'Habit'), definition: t('stem.brainatlas.word_habit_definition', 'An action that becomes easier and needs less step-by-step thought after repeated practice.') },
+            tract: { term: t('stem.brainatlas.word_tract', 'Nerve-fiber bundle'), definition: t('stem.brainatlas.word_tract_definition', 'A group of nerve fibers that carries signals between brain areas. The processing happens at the areas it connects.') },
+            membrane: { term: t('stem.brainatlas.word_membrane', 'Membrane'), definition: t('stem.brainatlas.word_membrane_definition', 'A thin sheet of tissue. Here, one that separates two spaces rather than processing signals.') },
+            gland: { term: t('stem.brainatlas.word_gland', 'Gland'), definition: t('stem.brainatlas.word_gland_definition', 'A structure that releases a substance. An endocrine gland releases hormones into the blood.') },
 
           };
           var BRAIN_ATLAS_CARD_WORDS = {
@@ -8983,7 +9042,13 @@ var d = labToolData.brainAtlas || {};
             wernickes: ['comprehension', 'network', 'signal'],
             supramarginal: ['sensory', 'speech', 'network'],
             angular_gyrus: ['visual', 'integration', 'network'],
-            insular: ['sensory', 'network', 'signal']
+            insular: ['sensory', 'network', 'signal'],
+            cingulate: ['cortex', 'network'],
+            basal_ganglia: ['habit', 'coordination', 'network'],
+            fornix: ['tract', 'signal', 'event_memory'],
+            mammillary: ['event_memory', 'network'],
+            septum_pell: ['membrane', 'csf', 'hemisphere'],
+            pineal_brain: ['gland', 'hormone', 'signal']
           };
           var BRAIN_ATLAS_MOVEMENT_WORDS = [
             ['cerebrum', 'lobe', 'cortex'], ['motor', 'signal', 'lobe'], ['cortex', 'voluntary', 'signal'], ['motor', 'cortex', 'network'], ['motor', 'cortex', 'network']
@@ -9106,6 +9171,36 @@ var d = labToolData.brainAtlas || {};
               question: t('stem.brainatlas.check_insular_question', 'A learner notices their heart beating faster before a performance. Which contribution does this example point to?'),
               choices: [t('stem.brainatlas.check_insular_choice_0', 'Noticing a signal from inside the body'), t('stem.brainatlas.check_insular_choice_1', 'Producing the feeling entirely in one brain area'), t('stem.brainatlas.check_insular_choice_2', 'Sending the signal that moves the hands')],
               feedback: [t('stem.brainatlas.check_insular_feedback_0', 'Noticing the heartbeat is a body signal. What the learner makes of it also depends on the situation and on wider networks.'), t('stem.brainatlas.check_insular_feedback_1', 'Feelings involve many brain areas working together. No single area produces one on its own.'), t('stem.brainatlas.check_insular_feedback_2', 'Hand movements need movement signals. This example is about noticing what the body is doing.')]
+            },
+            cingulate: {
+              question: t('stem.brainatlas.check_cingulate_question', 'Halfway through a route a learner realises the directions no longer match the street signs, and slows down. Which contribution does this example point to?'),
+              choices: [t('stem.brainatlas.check_cingulate_choice_0', 'Noticing that something is not going as expected'), t('stem.brainatlas.check_cingulate_choice_1', 'Storing the street names for next week'), t('stem.brainatlas.check_cingulate_choice_2', 'Sending the signals that move the legs')],
+              feedback: [t('stem.brainatlas.check_cingulate_feedback_0', 'Noticing the mismatch is what prompts the change of pace. Choosing what to do next draws on planning areas as well.'), t('stem.brainatlas.check_cingulate_feedback_1', 'Remembering the names later is a different contribution. The example is about noticing a mismatch now.'), t('stem.brainatlas.check_cingulate_feedback_2', 'Movement signals keep the learner walking. They do not explain noticing that the route is wrong.')]
+            },
+            basal_ganglia: {
+              question: t('stem.brainatlas.check_basal_ganglia_question', 'A learner ties a shoelace without thinking through each step, though it took full attention a year ago. Which contribution does this example point to?'),
+              choices: [t('stem.brainatlas.check_basal_ganglia_choice_0', 'Supporting an action that practice has made easier'), t('stem.brainatlas.check_basal_ganglia_choice_1', 'Seeing the color of the lace'), t('stem.brainatlas.check_basal_ganglia_choice_2', 'Understanding the word shoelace')],
+              feedback: [t('stem.brainatlas.check_basal_ganglia_feedback_0', 'Practice changes how much deliberate thought the action needs. Several brain systems change over that time, not one.'), t('stem.brainatlas.check_basal_ganglia_feedback_1', 'Color is visual information. It does not explain why the action now needs less thought.'), t('stem.brainatlas.check_basal_ganglia_feedback_2', 'Understanding the word is a language contribution. The example is about the practised action itself.')]
+            },
+            fornix: {
+              question: t('stem.brainatlas.check_fornix_question', 'A learner sees this structure labeled as a bundle of nerve fibers. What does that tell them about it?'),
+              choices: [t('stem.brainatlas.check_fornix_choice_0', 'It carries signals between structures rather than processing them itself'), t('stem.brainatlas.check_fornix_choice_1', 'It stores memories inside the bundle'), t('stem.brainatlas.check_fornix_choice_2', 'It is a fluid-filled space like a ventricle')],
+              feedback: [t('stem.brainatlas.check_fornix_feedback_0', 'A bundle is a route between places. The processing happens at the structures it connects.'), t('stem.brainatlas.check_fornix_feedback_1', 'Memory involves connected structures. The bundle is the route between them, not a store.'), t('stem.brainatlas.check_fornix_feedback_2', 'A ventricle is a space containing fluid. A fiber bundle is tissue that carries signals.')]
+            },
+            mammillary: {
+              question: t('stem.brainatlas.check_mammillary_question', 'Damage at several different points along one memory circuit can cause similar difficulties. Why?'),
+              choices: [t('stem.brainatlas.check_mammillary_choice_0', 'The structures are connected, so a break anywhere interrupts the same flow'), t('stem.brainatlas.check_mammillary_choice_1', 'Every structure does exactly the same job'), t('stem.brainatlas.check_mammillary_choice_2', 'Memory is stored in only one of them')],
+              feedback: [t('stem.brainatlas.check_mammillary_feedback_0', 'The circuit passes information from one structure to the next, so an interruption at different points can have a similar effect.'), t('stem.brainatlas.check_mammillary_feedback_1', 'The structures contribute in different ways. What they share is being part of one connected route.'), t('stem.brainatlas.check_mammillary_feedback_2', 'Memory for events draws on a connected circuit rather than a single store.')]
+            },
+            septum_pell: {
+              question: t('stem.brainatlas.check_septum_pell_question', 'A learner sees this thin membrane labeled between two ventricles. Which statement fits best?'),
+              choices: [t('stem.brainatlas.check_septum_pell_choice_0', 'It separates two fluid-filled spaces rather than processing signals'), t('stem.brainatlas.check_septum_pell_choice_1', 'It is the area that plans movements'), t('stem.brainatlas.check_septum_pell_choice_2', 'It is a bundle of fibers linking the hemispheres')],
+              feedback: [t('stem.brainatlas.check_septum_pell_feedback_0', 'Naming what kind of structure it is keeps a divider from being read as a processing area.'), t('stem.brainatlas.check_septum_pell_feedback_1', 'Planning draws on nerve-cell networks in the cerebrum. This label marks a thin membrane.'), t('stem.brainatlas.check_septum_pell_feedback_2', 'That describes the corpus callosum. This membrane separates spaces instead of carrying signals across.')]
+            },
+            pineal_brain: {
+              question: t('stem.brainatlas.check_pineal_brain_question', 'Melatonin release rises as evening light fades. Which description fits that best?'),
+              choices: [t('stem.brainatlas.check_pineal_brain_choice_0', 'A timing signal that follows the light and dark cycle'), t('stem.brainatlas.check_pineal_brain_choice_1', 'A switch that decides on its own when sleep begins'), t('stem.brainatlas.check_pineal_brain_choice_2', 'A signal that carries visual detail to the cortex')],
+              feedback: [t('stem.brainatlas.check_pineal_brain_feedback_0', 'Melatonin forms part of the body timing information. Falling asleep also depends on tiredness, routine and surroundings.'), t('stem.brainatlas.check_pineal_brain_feedback_1', 'Sleep timing depends on several things together. One signal does not decide it alone.'), t('stem.brainatlas.check_pineal_brain_feedback_2', 'Visual detail travels along the visual pathway. Melatonin is a hormone released into the blood.')]
             },
 
           };

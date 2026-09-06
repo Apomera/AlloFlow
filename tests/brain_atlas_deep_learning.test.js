@@ -1,6 +1,9 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import { loadTool, resetStemLab, makeCtx, newStore, ReactDOMServer } from './helpers/stem_widgets_smoke_harness.js';
+// the six cards that carry their own curated source URL
 const ids = ['corpus_callosum', 'thalamus', 'hypothalamus', 'hippocampus', 'amygdala', 'ventricles'];
+// every region on the midline view; the walk-on chain must stay inside it
+const MEDIAL = ids.concat(['cingulate', 'basal_ganglia', 'fornix', 'mammillary', 'septum_pell', 'pineal_brain']);
 const sources = ['NBK448209', 'NBK542184', 'NBK525993', 'NBK482171', 'rdoc/units/circuits/150934', 'NBK470578'];
 function flatten(node) {
   if (!node || typeof node !== 'object') return [];
@@ -32,7 +35,7 @@ describe('Brain Atlas deep-structure learning', () => {
       const source = flatten(card).find(el => el.type === 'a');
       expect(source.props.href).toContain(sources[i]); expect(source.props.rel).toBe('noopener noreferrer');
       const next = flatten(card).find(el => el.props?.['data-brainatlas-plain-next']);
-      expect(ids).toContain(next.props['data-brainatlas-plain-next']);
+      expect(MEDIAL).toContain(next.props['data-brainatlas-plain-next']);
       expect(next.props['data-brainatlas-plain-next']).not.toBe(id);
       expect(s.get('data-brainatlas-keywords', 'card-' + id)).toBeTruthy();
       const detailToggle = s.get('data-brainatlas-detail-toggle');
@@ -74,7 +77,9 @@ describe('Brain Atlas deep-structure learning', () => {
     expect(s.store.toolData.brainAtlas).toMatchObject({ plainCheckAnswers: { frontal: 0, hippocampus: 0 }, movementLesson: lesson });
   });
   it('retains the fallback for unsupported medial regions and does not expose a medial card in lateral view', () => {
-    const other = session('cingulate'); expect(other.get('data-brainatlas-authored-plain', 'cingulate')).toBeUndefined();
+    // every midline region is authored now, so the fallback is sampled from a
+    // view that has no plain cards at all
+    const other = session('central_sulcus', { view: 'superior' }); expect(other.get('data-brainatlas-authored-plain', 'central_sulcus')).toBeUndefined();
     expect(other.html()).toContain('Student takeaway'); resetStemLab();
     const wrongView = session('thalamus', { view: 'lateral' });
     expect(wrongView.get('data-brainatlas-plain-lesson', 'thalamus')).toBeUndefined();

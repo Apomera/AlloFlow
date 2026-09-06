@@ -33,7 +33,7 @@ afterEach(() => {
 });
 
 describe('Brain Atlas region discovery', () => {
-  it.each([['lateral', 13], ['medial', 6]])('uses the authored big ideas in %s Plain previews', (view, count) => {
+  it.each([['lateral', 13], ['medial', 12]])('uses the authored big ideas in %s Plain previews', (view, count) => {
     const s = setup({ view });
     const previews = s.previews();
     expect(previews.filter(el => el.dataset.brainatlasRegionPreview === 'idea')).toHaveLength(count);
