@@ -183,6 +183,19 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 14 (2026-09-05)
+
+- **The camera takes the hit.** A short wobble on the look-at and the yaw, scaled by the
+  kilojoules that actually arrived and decaying over 700 ms. It is applied after `fitPts` is
+  set, so the framing does not pump in and out; it is off under reduced motion; and it is off
+  on the static one-tick path, where a shake would freeze part-way through and leave the
+  scene crooked for good.
+- **A moon at night**, sitting inside the glow the sky shader already draws where the light
+  comes from — so the shape and the long blue shadows on the field finally agree.
+- **Rain that lands.** Sixteen rings on the ground during the storm hour, each running its own
+  1.1 s cycle and jumping to a new hashed spot at the start of each one: a splash field with
+  no spawner and nothing to garbage-collect.
+
 ### Wave 13 (2026-09-05)
 
 - **The camp.** Wave 12 gave the castle something to defend; this is what the engine is

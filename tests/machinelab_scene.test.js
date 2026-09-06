@@ -810,3 +810,41 @@ describe('Siege Field wave 13: the camp, and a crew that watches its own shot', 
     expect(guard).toBeGreaterThan(0);
   });
 });
+
+describe('Siege Field wave 14: the camera takes the hit, a moon, rain that lands', () => {
+  it('shakes the camera on impact, scaled by the energy that arrived, and decays it away', () => {
+    const src = source();
+    expect(src).toContain('var shake = Math.max(0, 1 - (now - S.impactAt) / 700);');
+    expect(src).toContain('var mag = shake * shake * Math.min(1.5, 0.2 + (Number(data.impactKJ) || 0) * 0.02);');
+  });
+
+  it('never shakes under reduced motion or on the static one-tick path', () => {
+    const src = source();
+    // A static bay gets one tick per push: a shake there would freeze part-way
+    // through and leave the scene crooked for good.
+    expect(src).toContain('if (!red && !data.static && S.impactAt != null) {');
+  });
+
+  it('shakes the look-at only after the fit points are set, so the framing does not pump', () => {
+    const src = source();
+    const fit = src.indexOf('S.fitPts = goal.pts ? goal.pts.slice() : boxPts(');
+    const shake = src.indexOf('var shake = Math.max(0, 1 - (now - S.impactAt) / 700);');
+    expect(fit).toBeGreaterThan(0);
+    expect(shake).toBeGreaterThan(fit);
+  });
+
+  it('hangs a moon where the light comes from, and only at an hour that has stars', () => {
+    const src = source();
+    expect(src).toContain("if (P.stars && typeof THREE.Sprite === 'function') {");
+    expect(src).toContain('moon.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), 320);');
+  });
+
+  it('gives the storm somewhere to land, on a fixed cycle with no spawner', () => {
+    const src = source();
+    expect(src).toContain('if (P.rain && !contrast) {');
+    expect(src).toContain('var phase = (tSec * 0.9 + rk * 0.37);');
+    expect(src).toContain('rrg.material.opacity = 0.7 * (1 - kk) * (1 - kk);');
+    // Ambient life: with ambient off there is no splash, as with everything else.
+    expect(src).toContain('rrg.visible = ambient;');
+  });
+});

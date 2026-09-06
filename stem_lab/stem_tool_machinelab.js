@@ -3384,6 +3384,34 @@ window.StemLab = window.StemLab || {
         flare.scale.set(P.stars ? 40 : 110, P.stars ? 40 : 110, 1);
         S.model.add(flare);
       }
+      // The moon, sitting inside the glow the sky shader already puts where
+      // the light comes from. At night that light IS the moon, so this is the
+      // shape the long blue shadows on the field have been coming from.
+      if (P.stars && typeof THREE.Sprite === 'function') {
+        var moonTex = makeCanvasTexture(THREE, 128, function (g2, n2) {
+          g2.clearRect(0, 0, n2, n2);
+          var mg2 = g2.createRadialGradient(n2 / 2, n2 / 2, n2 * 0.3, n2 / 2, n2 / 2, n2 / 2);
+          mg2.addColorStop(0, 'rgba(246,248,255,1)');
+          mg2.addColorStop(0.82, 'rgba(226,234,255,1)');
+          mg2.addColorStop(0.94, 'rgba(226,234,255,0.35)');
+          mg2.addColorStop(1, 'rgba(226,234,255,0)');
+          g2.fillStyle = mg2;
+          g2.beginPath(); g2.arc(n2 / 2, n2 / 2, n2 / 2, 0, 6.284); g2.fill();
+          // Maria, so it is a moon and not a bulb.
+          g2.fillStyle = 'rgba(186,198,224,0.55)';
+          [[0.42, 0.38, 0.13], [0.58, 0.55, 0.09], [0.38, 0.62, 0.07], [0.62, 0.34, 0.05]].forEach(function (mm) {
+            g2.beginPath(); g2.arc(n2 * mm[0], n2 * mm[1], n2 * mm[2], 0, 6.284); g2.fill();
+          });
+        });
+        if (moonTex) {
+          moonTex.wrapS = THREE.ClampToEdgeWrapping; moonTex.wrapT = THREE.ClampToEdgeWrapping;
+          var moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, transparent: true, depthWrite: false, depthTest: false, fog: false }));
+          moon.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), 320);
+          moon.scale.set(24, 24, 1);
+          S.model.add(moon);
+        }
+      }
+
       // Clouds: a dozen soft sprites high over the valley, drifting with the
       // wind. Tinted by the hour so a dusk cloud is lit from below.
       var cloudTex = makeCanvasTexture(THREE, 256, function (g2, n2) {
@@ -3461,6 +3489,23 @@ window.StemLab = window.StemLab || {
     var ground = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassTex || null }));
     ground.receiveShadow = !contrast;
     S.model.add(ground);
+
+    // ── Rain rings. A storm that only falls has nothing to land in; these
+    // are where it lands, on a fixed cycle so nothing has to be spawned. ──
+    if (P.rain && !contrast) {
+      var rings = [];
+      for (var rr = 0; rr < 16; rr++) {
+        var ring = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.36, 14), new THREE.MeshBasicMaterial({
+          color: 0xdce8f4, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide, fog: true
+        }));
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.y = 0.09;
+        ring.visible = false;
+        S.model.add(ring);
+        rings.push(ring);
+      }
+      S.rainRings = rings;
+    }
 
     // ── Trees and rocks ──
     if (!contrast && typeof THREE.InstancedMesh === 'function') {
@@ -4851,6 +4896,22 @@ window.StemLab = window.StemLab || {
         });
       }
       // Chaff drifts with the wind, and wraps rather than running out.
+      // Each ring runs its own 1.1 s cycle and jumps to a new hashed spot at
+      // the start of each one, which is a splash field without a spawner.
+      if (S.rainRings) {
+        for (var rk = 0; rk < S.rainRings.length; rk++) {
+          var rrg = S.rainRings[rk];
+          rrg.visible = ambient;
+          if (!ambient) continue;
+          var phase = (tSec * 0.9 + rk * 0.37);
+          var cyc = Math.floor(phase);
+          var kk = phase - cyc;
+          rrg.scale.setScalar(0.4 + kk * 3.1);
+          rrg.material.opacity = 0.7 * (1 - kk) * (1 - kk);
+          rrg.position.x = (hash01(rk, cyc % 101, 161) - 0.5) * (laneHalf * 4);
+          rrg.position.z = 12 - hash01(rk, (cyc * 7) % 97, 162) * (standoff + 20);
+        }
+      }
       if (S.motes) {
         S.motes.points.visible = ambient;
         if (ambient) {
@@ -4957,6 +5018,19 @@ window.StemLab = window.StemLab || {
         S.target.copy(S.camCur.target);
         S.fitPts = goal.pts ? goal.pts.slice() : boxPts(S.camCur.target, S.camCur.half[0], S.camCur.half[1], S.camCur.half[2]);
         S.rotY = S.camCur.rotY; S.rotX = S.camCur.rotX;
+        // The camera takes the hit too: a short decaying wobble scaled by the
+        // energy that arrived. Never under reduced motion, and never on the
+        // static one-tick path, where it would freeze part-way through a shake
+        // and leave the scene permanently crooked.
+        if (!red && !data.static && S.impactAt != null) {
+          var shake = Math.max(0, 1 - (now - S.impactAt) / 700);
+          if (shake > 0) {
+            var mag = shake * shake * Math.min(1.5, 0.2 + (Number(data.impactKJ) || 0) * 0.02);
+            S.target.x += Math.sin(tSec * 47) * mag * 0.28;
+            S.target.y += Math.sin(tSec * 61 + 1.3) * mag * 0.22;
+            S.rotY += Math.sin(tSec * 53 + 0.7) * mag * 0.9;
+          }
+        }
       } else {
         S.camCur = null;
         S.target.copy(fieldTarget);
