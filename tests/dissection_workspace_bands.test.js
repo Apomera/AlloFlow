@@ -999,4 +999,54 @@ describe('dissection workspace bands', () => {
     // Still the node the canvas describes itself with.
     expect(root.querySelector('canvas').getAttribute('aria-describedby')).toBe('diss-canvas-status diss-canvas-equivalent');
   }, 60_000);
+
+  // 2026-09-06 round 31. Round 30 measured every pointer-path message landing 924-1025px below the
+  // canvas, unreadable while the specimen was in view. The durable fix was meant to be a canvas
+  // HUD banner; a 42-state occupancy sweep of painted HUD furniture (588 panel boxes) said no.
+  // Every fully free band is mid-specimen - y360-449 is the largest - and covering the specimen
+  // to explain the specimen is not a fix. The one existing card that suits the message, the
+  // next-step card, only draws when procedureMode is 'guided'. So the echo is a DOM node pinned
+  // directly under the canvas instead: measured at y=855, 15px below the canvas, fully on screen.
+  // It is aria-hidden on purpose - the panel node is already an aria-live region and
+  // setProcedureFeedback also calls announceToSR, so speaking it here would be the third reading.
+  it.each(DISSECTION_PATHS)('shows gesture feedback under the canvas in %s', (filePath) => {
+    const withFeedback = render(filePath, { procedureFeedback: { message: 'Cannot start Scalpel yet. Because reasons.', tone: 'caution', at: Date.now() } });
+    const echo = withFeedback.querySelector('[data-diss-gesture-echo]');
+    expect(echo, 'gesture echo').not.toBeNull();
+    expect(echo.textContent.trim()).toBe('Cannot start Scalpel yet. Because reasons.');
+    expect(echo.getAttribute('data-tone')).toBe('caution');
+    // Never a fourth voice: it is shown, not spoken.
+    expect(echo.getAttribute('aria-hidden')).toBe('true');
+    expect(echo.hasAttribute('aria-live'), 'must not be its own live region').toBe(false);
+    expect(echo.getAttribute('role')).toBeNull();
+    // Directly under the canvas, ahead of the zoom controls that were between them.
+    const zoom = withFeedback.querySelector('.diss-zoom-bar');
+    expect(zoom, 'zoom bar').not.toBeNull();
+    expect(echo.parentElement).toBe(zoom.parentElement);
+    const order = Array.from(echo.parentElement.children);
+    expect(order.indexOf(echo)).toBeLessThan(order.indexOf(zoom));
+    // Nothing to echo before the student has done anything.
+    expect(render(filePath, {}).querySelector('[data-diss-gesture-echo]'), 'no echo without feedback').toBeNull();
+  }, 60_000);
+
+  // 2026-09-06 round 31. Trapped with a textContent setter over the three live regions: moving the
+  // pointer across the specimen rewrote them with text they already showed. The cutting branch
+  // keyed on the intent label and the safety target, but while setup is not ready every one of
+  // those branches renders the same readiness cue; the preview branch keyed on the hovered
+  // structure and the pin count, while every previewMessage is a fixed string. The feedback panel
+  // is aria-atomic, so each rewrite replays the whole sentence - and those rewrites had also
+  // replaced the refusal message the student needed with hover coaching. Measured over the same
+  // 100-move sweep: 3 writes with 2 identical consecutive repeats, now 1 write and 0 repeats.
+  it.each(DISSECTION_PATHS)('keys hover live-region writes on the rendered text in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain("var cuttingSafetyKey = cuttingSafetyTone + '|' + cuttingSafetyMessage;");
+    expect(source).toContain("var previewStateKey = previewTone + '|' + previewMessage;");
+    expect(source).toContain('cuttingSafetyStatus.textContent = cuttingSafetyMessage;');
+    expect(source).toContain("cuttingSafetyStatus.setAttribute('data-tone', cuttingSafetyTone);");
+    // The old keys mixed in state that does not reach the sentence.
+    expect(source).not.toContain("var cuttingSafetyKey = hoverCuttingLabel + '|'");
+    expect(source).not.toContain("var previewStateKey = activeInstrument + '|' + previewIntentLabel");
+    // One derivation of the message: it is built once and both the guard and the write use it.
+    expect(source.split('Projected cutting path clear and aligned with the teaching corridor.').length - 1).toBe(1);
+  }, 60_000);
 });

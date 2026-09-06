@@ -576,6 +576,13 @@
   .diss-stage__telemetry-priority { flex-basis: auto; text-align: left; }
 }
 .diss-stage__live { margin: .55rem .1rem 0; color: #36506f; font-size: .72rem; line-height: 1.4; }
+.diss-stage__gesture { display: flex; align-items: flex-start; gap: .38rem; margin: .42rem .1rem 0; padding: .4rem .55rem; border: 1px solid #b8cde3; border-radius: .6rem; background: #f8fbff; color: #294b70; font-size: .72rem; line-height: 1.35; font-weight: 750; }
+.diss-stage__gesture::before { content: ""; width: .58rem; height: .58rem; flex: 0 0 auto; margin-top: .26rem; border-radius: 999px; background: #0f766e; box-shadow: 0 0 0 3px rgba(15,118,110,.16); }
+.diss-stage__gesture[data-tone="working"]::before { background: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.16); }
+.diss-stage__gesture[data-tone="caution"] { border-color: #e3b478; background: #fffaf2; color: #7c4708; }
+.diss-stage__gesture[data-tone="caution"]::before { background: #b45309; box-shadow: 0 0 0 3px rgba(180,83,9,.16); }
+.diss-stage__gesture[data-tone="restricted"] { border-color: #e0a0a0; background: #fff5f5; color: #8f1d1d; }
+.diss-stage__gesture[data-tone="restricted"]::before { background: #b91c1c; box-shadow: 0 0 0 3px rgba(185,28,28,.16); }
 .diss-stage__live[data-tool-status="true"] { display: flex; align-items: flex-start; gap: .38rem; padding: .42rem .55rem; border: 1px solid #b8cde3; border-radius: .6rem; background: #f8fbff; color: #294b70; font-weight: 750; }
 .diss-stage__live[data-tool-status="true"]::before { content: ""; width: .58rem; height: .58rem; flex: 0 0 auto; margin-top: .28rem; border-radius: 999px; background: #64748b; box-shadow: 0 0 0 3px rgba(100,116,139,.16); }
 .diss-stage__live[data-tool-status="true"][data-tone="ready"]::before,
@@ -14959,7 +14966,24 @@ var d = labToolData.dissection || {};
               var hoverCuttingLabel = !hoverCuttingSequenceReady ? 'WAIT'
                 : (!hoverCuttingSetupReady ? 'ADJUST'
                   : (!hoverCuttingContact.onSpecimen ? 'TRAY' : (hoverCuttingSafety ? 'PROTECT' : (!hoverCuttingAligned ? 'ALIGN' : 'READY'))));
-              var cuttingSafetyKey = hoverCuttingLabel + '|' + (hoverCuttingSafety ? hoverCuttingSafety.organ.id + '|' + (hoverCuttingSafety.critical ? 'stop' : 'ahead') : 'clear');
+              // Guarded on what is actually rendered, not on state that merely correlates with it.
+              // The old key mixed the intent label with the safety target, but while setup is not
+              // ready EVERY one of those branches renders the same readiness cue - so moving the
+              // mouse across the specimen rewrote this node again and again with identical text.
+              // The node is the procedure feedback line: role=status, aria-live=polite AND
+              // aria-atomic=true, so each rewrite replays the whole sentence. Trapped with a
+              // textContent setter on the live regions: one short pointer path produced four
+              // byte-identical writes, and they had also replaced the refusal message the student
+              // needed with hover coaching. Same defect family as the round 28 atomic replay.
+              var cuttingSafetyTone = hoverCuttingValid ? 'working' : 'caution';
+              var cuttingSafetyMessage = !hoverCuttingSequenceReady ? hoverCuttingInstrumentState.instruction
+                : (!hoverCuttingSetupReady ? hoverCuttingReadiness.cue
+                  : (!hoverCuttingContact.onSpecimen
+                    ? 'Cutting tool above the tray; follow the dashed arrow onto the specimen-specific access path.'
+                    : (hoverCuttingSafety
+                      ? (hoverCuttingSafety.critical ? 'Trajectory stop: protect ' : 'Trajectory landmark ahead: ') + hoverCuttingSafety.organ.name + '. Adjust direction before contact.'
+                      : (!hoverCuttingAligned ? 'Align with the ' + procedureProtocol.route + '. The dashed arrow marks the nearest safe path.' : 'Projected cutting path clear and aligned with the teaching corridor.'))));
+              var cuttingSafetyKey = cuttingSafetyTone + '|' + cuttingSafetyMessage;
               canvas._toolIntentState = {
                 tool: activeInstrument,
                 valid: hoverCuttingValid,
@@ -14973,14 +14997,8 @@ var d = labToolData.dissection || {};
                 canvas._cuttingSafetyState = cuttingSafetyKey;
                 var cuttingSafetyStatus = queryDissectionNode('[data-diss-tool-status]');
                 if (cuttingSafetyStatus) {
-                  cuttingSafetyStatus.setAttribute('data-tone', hoverCuttingValid ? 'working' : 'caution');
-                  cuttingSafetyStatus.textContent = !hoverCuttingSequenceReady ? hoverCuttingInstrumentState.instruction
-                    : (!hoverCuttingSetupReady ? hoverCuttingReadiness.cue
-                      : (!hoverCuttingContact.onSpecimen
-                        ? 'Cutting tool above the tray; follow the dashed arrow onto the specimen-specific access path.'
-                        : (hoverCuttingSafety
-                          ? (hoverCuttingSafety.critical ? 'Trajectory stop: protect ' : 'Trajectory landmark ahead: ') + hoverCuttingSafety.organ.name + '. Adjust direction before contact.'
-                          : (!hoverCuttingAligned ? 'Align with the ' + procedureProtocol.route + '. The dashed arrow marks the nearest safe path.' : 'Projected cutting path clear and aligned with the teaching corridor.'))));
+                  cuttingSafetyStatus.setAttribute('data-tone', cuttingSafetyTone);
+                  cuttingSafetyStatus.textContent = cuttingSafetyMessage;
                 }
               }
             }
@@ -15072,7 +15090,10 @@ var d = labToolData.dissection || {};
                 targetLabel: previewTargetLabel,
                 at: Date.now()
               };
-              var previewStateKey = activeInstrument + '|' + previewIntentLabel + '|' + (hit ? hit.id : '') + '|' + hoverPins.length + '|' + previewDetailKey + '|' + hoverReadiness.tone;
+              // Same correction as the cutting branch above: every previewMessage is a fixed
+              // string, so keying on the hovered structure and the pin count rewrote this live
+              // region whenever the pointer crossed a boundary that did not change a word of it.
+              var previewStateKey = previewTone + '|' + previewMessage;
               if (canvas._toolPreviewState !== previewStateKey) {
                 canvas._toolPreviewState = previewStateKey;
                 var previewStatus = queryDissectionNode('#diss-canvas-status');
@@ -17114,6 +17135,26 @@ var d = labToolData.dissection || {};
                       React.createElement("p", null, (referenceEvidence.selectedOrganName ? 'Focused on ' + referenceEvidence.selectedOrganName + ' · ' : '') + (isFinite(Number(referenceEvidence.techniqueScore)) ? 'Technique ' + Math.max(0, Math.min(100, Math.round(Number(referenceEvidence.techniqueScore)))) + '/100' : 'Technique not scored') + (referenceEvidence.opticalQuality != null ? ' · optics ' + referenceEvidence.opticalQuality + '%' : '') + ' · captured ' + (typeof referenceEvidence.capturedAt === 'string' && referenceEvidence.capturedAt ? referenceEvidence.capturedAt.slice(0, 16).replace('T', ' ') : 'earlier'))
                     ) : null
                   ),
+
+                  // Driving the pointer path end to end in round 30 produced six messages, and
+                  // every one landed 924-1025px below the bottom of the canvas: d.procedureFeedback
+                  // has exactly one visible home, deep in the procedure panel, and the canvas draw
+                  // loop never reads it. So a student dragging an instrument could not see why the
+                  // drag did nothing. This is a VISUAL echo only - aria-hidden, because the panel
+                  // node below is already an aria-live region and setProcedureFeedback also calls
+                  // announceToSR, so a third announcement would be the third reading of one line.
+                  // It sits here rather than on the canvas HUD deliberately: a 42-state sweep of
+                  // painted HUD furniture showed the free bands are all mid-specimen, and the one
+                  // existing card that suits the message (the next-step card) only draws in guided
+                  // procedure mode.
+                  d.procedureFeedback && d.procedureFeedback.message
+                    ? React.createElement("p", {
+                      className: "diss-stage__gesture",
+                      "data-tone": d.procedureFeedback.tone || 'success',
+                      "data-diss-gesture-echo": "true",
+                      "aria-hidden": "true",
+                    }, d.procedureFeedback.message)
+                    : null,
 
                   // Zoom control bar
                 React.createElement("div", { className: "diss-zoom-bar flex items-center justify-center gap-2 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400" },
