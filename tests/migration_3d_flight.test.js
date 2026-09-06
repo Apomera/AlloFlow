@@ -19,8 +19,18 @@ describe('Migration Lab 3D flight experience', () => {
     expect(catalog).toContain("{ id: 'migration', icon: '\\uD83E\\uDDED'");
     expect(catalog).not.toContain("{ id: 'migration', icon: '" + String.fromCodePoint(0x1F98B) + "'");
     expect(source).toContain("var tab = d.tab || 'flight3d'");
-    expect(source).toContain("{ id: 'flight3d', label: '3D Flight'");
     expect(source).toContain("'data-migration-3d-flight': 'true'");
+    // The tab label used to be pinned as a source literal, which made
+    // localising it look like a regression. What matters is that the 3D flight
+    // deck is the first tab and still reads "3D Flight", so pin that instead.
+    loadTool('stem_lab/stem_tool_migration.js', 'migration');
+    const bar = renderTool('migration', {});
+    const firstTab = bar.indexOf('id="migration-tab-flight3d"');
+    expect(firstTab).toBeGreaterThan(-1);
+    expect(bar.slice(firstTab, firstTab + 400)).toContain('3D Flight');
+    for (const other of ['vformation', 'wind', 'routes', 'world', 'aero', 'navigate', 'inquiry']) {
+      expect(bar.indexOf('id="migration-tab-' + other + '"')).toBeGreaterThan(firstTab);
+    }
   });
 
   it('renders species, formation, wind, season, camera, pause, and fullscreen controls', () => {

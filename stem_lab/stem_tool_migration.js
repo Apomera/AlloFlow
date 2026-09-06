@@ -538,16 +538,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // gale, and lumped forces 1–2 together as one "Light Breeze". Force numbers
   // are carried so a student can check the label against a published scale.
   var BEAUFORT = [
-    { min: 0, max: 1, force: 0, label: 'Calm' },
-    { min: 1, max: 3, force: 1, label: 'Light Air' },
-    { min: 4, max: 7, force: 2, label: 'Light Breeze' },
-    { min: 8, max: 12, force: 3, label: 'Gentle Breeze' },
-    { min: 13, max: 18, force: 4, label: 'Moderate Breeze' },
-    { min: 19, max: 24, force: 5, label: 'Fresh Breeze' },
-    { min: 25, max: 31, force: 6, label: 'Strong Breeze' },
-    { min: 32, max: 38, force: 7, label: 'Near Gale' },
-    { min: 39, max: 46, force: 8, label: 'Gale' },
-    { min: 47, max: 63, force: 9, label: 'Strong Gale' }
+    { min: 0, max: 1, force: 0, key: 'beaufort_calm', label: 'Calm' },
+    { min: 1, max: 3, force: 1, key: 'beaufort_light_air', label: 'Light Air' },
+    { min: 4, max: 7, force: 2, key: 'beaufort_light_breeze', label: 'Light Breeze' },
+    { min: 8, max: 12, force: 3, key: 'beaufort_gentle_breeze', label: 'Gentle Breeze' },
+    { min: 13, max: 18, force: 4, key: 'beaufort_moderate_breeze', label: 'Moderate Breeze' },
+    { min: 19, max: 24, force: 5, key: 'beaufort_fresh_breeze', label: 'Fresh Breeze' },
+    { min: 25, max: 31, force: 6, key: 'beaufort_strong_breeze', label: 'Strong Breeze' },
+    { min: 32, max: 38, force: 7, key: 'beaufort_near_gale', label: 'Near Gale' },
+    { min: 39, max: 46, force: 8, key: 'beaufort_gale', label: 'Gale' },
+    { min: 47, max: 63, force: 9, key: 'beaufort_strong_gale', label: 'Strong Gale' }
   ];
 
   function getBeaufortEntry(speed) {
@@ -556,11 +556,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     }
     return BEAUFORT[BEAUFORT.length - 1];
   }
-  function getBeaufort(speed) { return getBeaufortEntry(speed).label; }
+  // The translator is handed in rather than reached for: these live at module
+  // scope, above the render closure that owns t().
+  function beaufortLabel(entry, tr) {
+    return tr ? tr('stem.migration.' + entry.key, entry.label) : entry.label;
+  }
+  function getBeaufort(speed, tr) { return beaufortLabel(getBeaufortEntry(speed), tr); }
   // "Force 4 — Moderate Breeze". Used where there is room for the number.
-  function getBeaufortForce(speed) {
+  function getBeaufortForce(speed, tr) {
     var e = getBeaufortEntry(speed);
-    return 'Force ' + e.force + ' \u2014 ' + e.label;
+    return (tr ? tr('stem.migration.force_word', 'Force') : 'Force') + ' ' + e.force + ' \u2014 ' + beaufortLabel(e, tr);
   }
 
   // ── One flight-energy model, read by every surface in this tool ──────────
@@ -825,6 +830,198 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       xy: function(lon, lat) { var p = pt(lon, lat); return { x: p[0], y: p[1] }; }
     };
   })();
+
+  // ── World geography, for the global flyway view ──────────────────────────
+  // The tool's detailed map is a Lambert conformal conic fitted to North
+  // America, which cannot show a flyway that crosses the Sahara or the Yellow
+  // Sea. These rings are a separate, coarser basemap for the world view.
+  //
+  // They are DERIVED, not authored: traced from the Natural Earth 50m land mask
+  // (public domain) that stem_tool_flightsim.js already carries, downsampled to
+  // half a degree and simplified to about 0.7 degrees. Authoring world
+  // coastlines by hand would have been guessing. Rings include enclosed seas
+  // (Mediterranean, Black, Caspian, Red), so the basemap is drawn with an
+  // even-odd fill rule and those punch through as water.
+  var GEO_WORLD = [
+    [[95,81.5],[97.5,81],[97.5,80],[100,80],[99.5,78.5],[103,79.5],[105,79],[104.5,77.5],[107,76.5],[113.5,76.5],[113.5,75],[112,75],[113.5,73.5],[129,73.5],[129.5,71],[132,71],[132.5,72],[139.5,71.5],[139.5,72.5],[142.5,72.5],[140.5,73.5],[141,74.5],[144,72.5],[149,72.5],[152,71],[159.5,71],[160.5,69.5],[179.5,69.5],[180,65],[178.5,64.5],[179.5,62.5],[176,62.5],[170.5,60],[163.5,60],[162,58.5],[163.5,56],[162,56],[162,54.5],[158.5,53],[157.5,51],[156.5,51],[155.5,56.5],[161.5,60.5],[164,61],[164,62.5],[161,60.5],[159.5,62],[156.5,61.5],[154.5,60],[155,59],[143,59.5],[135.5,54.5],[140,54.5],[141.5,52.5],[143,54.5],[144.5,49.5],[142.5,48.5],[143.5,46.5],[142,46],[142,51.5],[141,52],[140.5,48.5],[135.5,43.5],[133.5,42.5],[131.5,43],[129,40],[127.5,40],[129.5,37.5],[129.5,35],[126.5,34.5],[126.5,37.5],[125,38],[125.5,39.5],[123.5,40],[121.5,39],[122,41],[117.5,39],[119,37],[120.5,38],[122.5,37.5],[119.5,35.5],[122,32],[121.5,28],[117.5,23.5],[110.5,21.5],[111,19.5],[110,18],[108.5,18.5],[108.5,19.5],[110,20],[109.5,21.5],[107.5,21.5],[106,20],[106,18],[109,15.5],[109.5,12],[105.5,8.5],[102.5,12.5],[100,13.5],[99.5,9.5],[100.5,7],[103.5,5.5],[104,1.5],[102,1.5],[105,-2.5],[105.5,-1.5],[107,-2.5],[105,-6],[101,-3],[99,1.5],[95,5],[97.5,5.5],[100.5,2],[102,2.5],[98,8.5],[98.5,13.5],[97.5,16.5],[95.5,15.5],[94,16],[94.5,18.5],[92,21],[92,22.5],[87,21.5],[82.5,16.5],[80.5,16],[80,10.5],[77,8],[73,16.5],[72.5,21.5],[70.5,20.5],[69,22],[70,23],[68.5,23],[66.5,25.5],[57.5,25.5],[57,27],[53.5,26.5],[51,28],[50.5,30],[48,30],[50,25.5],[51.5,26],[51.5,24],[54,24],[56.5,26],[56.5,24.5],[60,22],[55.5,17],[53.5,17],[51.5,15],[43,12],[44,10.5],[51,12],[51,9],[48,4],[43.5,1],[39,-5],[39.5,-9.5],[40.5,-10],[40.5,-16],[35,-19.5],[35.5,-24.5],[33,-25.5],[32.5,-28.5],[28.5,-33],[20,-35],[18.5,-34.5],[18,-31],[15,-27.5],[14.5,-22],[11.5,-18],[12.5,-13],[13.5,-12.5],[13.5,-8],[12,-4.5],[9,-1.5],[10,3.5],[9,4.5],[5.5,4.5],[4.5,6.5],[-0.5,5],[-8.5,4.5],[-12.5,7],[-13,9],[-17,12.5],[-16.5,14],[-17.5,15],[-16,17.5],[-17,22],[-14.5,26.5],[-9.5,30],[-9.5,32.5],[-6,35],[-6.5,37],[-9,37],[-9,43.5],[-1.5,43.5],[-1,46],[-4.5,48.5],[-1.5,48.5],[-1.5,49.5],[4,51.5],[4.5,53],[8.5,53.5],[8,56.5],[9.5,57.5],[12.5,56],[11,54],[20,54.5],[21.5,57.5],[24.5,57.5],[23.5,59.5],[29,60],[21.5,60.5],[21,63],[25.5,65],[22.5,66],[21.5,64],[17.5,62.5],[17.5,60.5],[19,59.5],[16.5,58],[17,56.5],[16,56],[13,55.5],[11,59.5],[8.5,58],[5.5,58.5],[5,62],[12,65],[15,67.5],[14.5,69],[17,68.5],[17,69.5],[18.5,70],[29.5,71],[41,68],[41.5,67],[40,66],[44,66],[44,68.5],[46.5,68.5],[45.5,67],[52.5,69],[60,68.5],[60.5,69.5],[59.5,70],[69,68.5],[67,69.5],[67,71.5],[71.5,73.5],[73,72.5],[72.5,69],[73.5,68.5],[71.5,66.5],[73,66.5],[74.5,67.5],[73.5,72],[75,72],[75,73],[75.5,71.5],[79,73],[82,72],[80.5,72.5],[80.5,73.5],[82,74],[86.5,74],[86.5,75],[88,75.5],[98.5,76],[104,77.5],[91.5,79.5],[91.5,80.5],[95,81.5]],
+    [[-124.5,74.5],[-117.5,74.5],[-111.5,72.5],[-109,73],[-108,71.5],[-108,73.5],[-105,74],[-104.5,73],[-105.5,72.5],[-104.5,71],[-101,70],[-103,68.5],[-105.5,69],[-104.5,68],[-98.5,68],[-99,69.5],[-98,70],[-95.5,69],[-96.5,68.5],[-96,67.5],[-94.5,68],[-94.5,69.5],[-96.5,70],[-95.5,74],[-90.5,74],[-92,72.5],[-94,72.5],[-94,71.5],[-93,71.5],[-92,69.5],[-90.5,69.5],[-90.5,68.5],[-89.5,69.5],[-88,69],[-88,67.5],[-85.5,68.5],[-85.5,70],[-88,70],[-90,71.5],[-88,74],[-78.5,74],[-74,71.5],[-67.5,70.5],[-67,69],[-68,68.5],[-61.5,67],[-63.5,65],[-66.5,66.5],[-68,66],[-64.5,64],[-65,62.5],[-67,63],[-66,62],[-71,62.5],[-73,64.5],[-77.5,64],[-77.5,65.5],[-74,65.5],[-74.5,66.5],[-72.5,67.5],[-74.5,67.5],[-73.5,68.5],[-75,68.5],[-75.5,67],[-77,67],[-77.5,68],[-75.5,69],[-77.5,69],[-77.5,70],[-79,70.5],[-79.5,69.5],[-82.5,70],[-81.5,69.5],[-81.5,67],[-84.5,66],[-80.5,63.5],[-87,63.5],[-86,66],[-85,66],[-86,66.5],[-88,64],[-93,62.5],[-94.5,61],[-94.5,59],[-93.5,59],[-92.5,57],[-90.5,57.5],[-86,55.5],[-83,55.5],[-82,55],[-82,52.5],[-79,51.5],[-79.5,55],[-76.5,56],[-76.5,57.5],[-78.5,58.5],[-77.5,59.5],[-78,62.5],[-73,62.5],[-71.5,61],[-69.5,61],[-69.5,59],[-68.5,58.5],[-66.5,58.5],[-64.5,60.5],[-61.5,57.5],[-61.5,56],[-57.5,55],[-57.5,54],[-56,53.5],[-55.5,51],[-56.5,50],[-53.5,49.5],[-54,48.5],[-52.5,47.5],[-53,46.5],[-54,47.5],[-59.5,47.5],[-57,51.5],[-60,50],[-63,50],[-62,49],[-67,50],[-67.5,49],[-64,49],[-65,47],[-62.5,46],[-60.5,47],[-60,45.5],[-64.5,44.5],[-65,43.5],[-66,43.5],[-65,45.5],[-69,44.5],[-70.5,43.5],[-70.5,41.5],[-74,40.5],[-75.5,37.5],[-76.5,38.5],[-75.5,35.5],[-81.5,31.5],[-80,27.5],[-80.5,25],[-82,26],[-82.5,29],[-83.5,30],[-85.5,29.5],[-86,30.5],[-89,30.5],[-89,29],[-95,29.5],[-97.5,27.5],[-97.5,21],[-96.5,19.5],[-95.5,18.5],[-91.5,18.5],[-90,21.5],[-87,21.5],[-88.5,16],[-84,16],[-83,15],[-84,11],[-82,9],[-78,9.5],[-76.5,8.5],[-75.5,11],[-72.5,11.5],[-72,12.5],[-71,12.5],[-72,11],[-70.5,12],[-65.5,10],[-63,11],[-61,8.5],[-58.5,8],[-57.5,6],[-52.5,5.5],[-50,2],[-50,0],[-48.5,0],[-48.5,-1],[-47,-0.5],[-42,-3],[-40,-2.5],[-35,-5.5],[-35,-9],[-37,-10.5],[-37.5,-12.5],[-39,-13],[-39,-18],[-41,-22],[-47,-24],[-48.5,-25.5],[-48.5,-28.5],[-50.5,-31],[-51.5,-30.5],[-54,-35],[-58,-34.5],[-56.5,-36.5],[-57.5,-38.5],[-62,-39],[-62.5,-41],[-65,-41],[-63.5,-43],[-65,-43],[-65,-44.5],[-67.5,-45.5],[-66,-48.5],[-69,-50.5],[-68.5,-53.5],[-65.5,-55],[-71.5,-55],[-73.5,-54],[-73,-53],[-74,-53],[-75,-51],[-74,-49.5],[-75.5,-50.5],[-75.5,-48],[-74.5,-48],[-75,-45.5],[-74.5,-44.5],[-73.5,-45],[-72.5,-42.5],[-73.5,-42],[-73.5,-43.5],[-74.5,-43.5],[-74.5,-42.5],[-73.5,-37],[-71.5,-33],[-72,-30.5],[-70.5,-26.5],[-70,-19.5],[-70.5,-18],[-76,-15],[-79.5,-7],[-81,-6.5],[-81.5,-5],[-81.5,-4],[-80,-3.5],[-81,-1],[-77.5,3],[-77.5,7],[-78.5,8.5],[-79.5,9],[-81,7],[-84,9.5],[-85.5,9.5],[-86,11.5],[-85,11.5],[-86.5,11.5],[-87.5,13.5],[-89,13],[-92,14],[-93.5,16],[-97,15.5],[-103.5,18],[-105.5,19.5],[-105.5,22.5],[-109.5,25.5],[-113.5,31.5],[-115,31.5],[-114.5,30],[-109.5,24],[-109.5,23],[-111.5,24],[-112,26],[-115,27.5],[-114,28.5],[-116,30],[-117.5,33.5],[-120.5,34.5],[-124,39],[-124.5,48.5],[-128,50],[-127.5,51.5],[-130.5,53.5],[-130.5,55],[-132.5,54.5],[-133.5,56.5],[-135,56.5],[-134.5,57.5],[-136,57],[-136.5,58.5],[-139,59.5],[-146.5,61],[-152,59],[-152,61],[-154,59.5],[-154,58],[-152,58.5],[-153,57],[-155.5,58],[-159.5,55.5],[-163,55],[-157.5,57.5],[-157.5,58.5],[-162,58.5],[-162,60],[-164,59.5],[-166,61],[-164.5,63.5],[-161,63.5],[-161,65],[-166.5,64.5],[-168,66],[-162,66],[-162,67],[-166.5,68.5],[-157,71.5],[-138,69],[-128,70.5],[-126.5,69.5],[-121,70],[-116,69],[-117,69.5],[-116.5,70.5],[-119,71.5],[-118.5,72.5],[-122,71],[-125.5,72],[-124,73.5],[-124.5,74.5]],
+    [[131,-11],[131.5,-12],[137,-12],[135.5,-15],[139.5,-17.5],[141,-17.5],[141.5,-12],[143,-11],[143.5,-14],[145.5,-15],[146,-18.5],[149,-20],[149.5,-22.5],[151,-22.5],[151,-23.5],[153.5,-25],[153,-32],[151.5,-33],[149.5,-38],[146.5,-39],[145,-38],[144,-39],[141,-38.5],[138.5,-34.5],[137.5,-35],[138,-33],[135.5,-35],[133.5,-32],[131.5,-31.5],[125,-32.5],[124,-34],[115,-34.5],[115.5,-31],[113.5,-27],[113.5,-22.5],[116.5,-20.5],[121.5,-19.5],[122,-17],[124.5,-16.5],[126,-14],[129.5,-15],[131,-11]],
+    [[-44,83.5],[-26,83.5],[-22,83],[-23,82],[-21,81.5],[-12.5,82],[-12,81],[-16.5,80.5],[-21,78.5],[-20.5,77.5],[-18.5,77.5],[-18.5,76],[-21,77],[-19.5,76],[-19.5,74],[-22,73.5],[-21.5,70.5],[-24,70.5],[-23.5,69.5],[-26,68.5],[-32.5,68],[-35,66],[-40,65.5],[-42.5,60.5],[-45.5,60],[-46,61],[-49,61],[-52,64],[-54,67.5],[-51,69.5],[-55,69.5],[-54.5,71],[-53,71.5],[-55.5,71.5],[-55,73],[-57,75],[-59,76],[-69,76],[-72.5,78.5],[-66,79],[-65,80],[-67,80.5],[-61.5,81],[-61,82],[-51,82],[-44,83.5]],
+    [[100.5,-65.5],[108.5,-67],[112.5,-65.5],[115.5,-67],[129.5,-67],[130,-66],[142,-66.5],[146.5,-67.5],[147,-68.5],[158.5,-69],[161.5,-71],[167.5,-70.5],[171,-72],[71,-72],[71.5,-70.5],[77,-69.5],[78.5,-68],[88,-66.5],[101,-66.5],[100.5,-65.5]],
+    [[13,45.5],[12.5,44],[13.5,44],[14.5,42],[18.5,40.5],[16.5,40],[17,38.5],[15.5,38],[15,36.5],[12.5,38],[15,38],[16,39.5],[8.5,44.5],[6.5,43],[3.5,43.5],[3.5,42],[0,40],[-0.5,37.5],[-5,36.5],[-5.5,35.5],[-1.5,35],[0.5,36.5],[10,37.5],[11,37],[11,34.5],[10,34],[15.5,32.5],[15.5,31.5],[18.5,30.5],[20,30.5],[20,32.5],[21,33],[27.5,31],[34.5,31.5],[36,36.5],[28,36.5],[26,38],[27,38.5],[26,39],[26,41],[23,40],[24,38],[22,36.5],[21,37.5],[21.5,38.5],[19.5,40],[19.5,42],[13,45.5]],
+    [[51,-66],[56,-66],[59,-67.5],[69.5,-67.5],[69.5,-69.5],[67.5,-70],[69,-70.5],[68,-72],[-12,-72],[-10.5,-71],[-7.5,-71.5],[-7.5,-70.5],[0.5,-71.5],[3.5,-71],[4,-70],[12.5,-70.5],[15.5,-69.5],[16.5,-69.5],[16.5,-70.5],[19,-70],[19,-71],[27.5,-71],[33,-70],[33,-68.5],[39,-70],[40,-68.5],[46.5,-67],[48.5,-68],[48.5,-67],[50.5,-67],[51,-66]],
+    [[-81,83],[-63.5,83],[-61.5,82],[-74.5,79.5],[-75.5,78],[-79,77.5],[-78,76.5],[-81,76],[-79.5,75.5],[-80,74.5],[-92,74.5],[-93,76.5],[-90.5,76.5],[-91,77.5],[-90,77.5],[-89.5,75.5],[-81,76.5],[-89.5,76.5],[-87.5,77],[-87.5,78.5],[-92.5,78],[-94,79.5],[-96.5,79.5],[-96,81],[-92,81.5],[-89,80.5],[-91,82],[-82.5,82],[-81,83]],
+    [[131.5,-0.5],[134,-0.5],[135,-3.5],[137.5,-1.5],[144.5,-3.5],[146,-5.5],[148,-6],[147,-7.5],[150.5,-10.5],[147.5,-10],[145,-7.5],[143.5,-8],[143,-9.5],[141,-9.5],[140,-8],[137.5,-8.5],[138.5,-6],[134,-3.5],[133,-4],[132,-3],[132.5,-2],[131,-1.5],[131.5,-0.5]],
+    [[116.5,7],[119,5.5],[117.5,4],[119,1],[117.5,0.5],[116.5,-4],[110,-3],[109,2],[111,1.5],[111,2.5],[115.5,5],[116.5,7]],
+    [[49,-12],[50,-12.5],[50.5,-16],[47.5,-24.5],[44.5,-25.5],[43,-22.5],[44.5,-20],[44,-17],[47,-15.5],[49,-12]],
+    [[37.5,47],[35,46.5],[35,45.5],[36.5,45.5],[35,44.5],[30.5,46.5],[28,43.5],[28,41.5],[31.5,41],[32.5,42],[35.5,42],[37,41],[41,41],[41.5,42.5],[37,45],[38.5,46.5],[37.5,47]],
+    [[-5.5,58.5],[-2,58],[-3,56],[1.5,53],[1.5,51],[-5.5,50],[-4,51],[-5,51.5],[-4,52.5],[-4.5,53.5],[-3,53.5],[-3.5,55],[-5,54.5],[-5,55.5],[-6,55.5],[-5.5,54],[-6.5,52],[-10,51.5],[-10,54.5],[-6,55.5],[-5.5,56.5],[-6.5,57.5],[-5.5,57.5],[-5.5,58.5]],
+    [[51,47],[47.5,45.5],[47,44],[50,40.5],[49,37.5],[52.5,36.5],[54,37],[54,39],[52.5,40.5],[54.5,41.5],[52.5,41.5],[52.5,43],[50.5,44],[51.5,45.5],[53,45.5],[53,47],[51,47]],
+    [[141.5,45.5],[143.5,44],[145.5,44],[145.5,43],[143.5,42],[140.5,42.5],[142,40.5],[140.5,35],[136.5,35],[136,33.5],[134.5,34.5],[133.5,33],[131,34],[132,32.5],[130.5,31],[130.5,33],[129.5,33.5],[132.5,35.5],[136,35.5],[136.5,37],[139.5,38],[140,41],[141,41],[140,43],[141.5,43.5],[141.5,45.5]],
+    [[34,28],[35.5,23],[37,22],[37.5,18.5],[38.5,18.5],[39.5,15.5],[43.5,12.5],[42.5,17.5],[39,21],[39,23],[37,24.5],[35.5,28],[34,28]],
+    [[19.5,80.5],[26.5,80.5],[27,79.5],[24.5,79],[19.5,79.5],[24.5,78],[23,77],[19,78.5],[16,76.5],[11,79],[11,80],[18.5,79.5],[19.5,80.5]],
+    [[-58,-63],[-57,-63],[-57,-64.5],[-62,-65],[-61.5,-66.5],[-62.5,-66],[-65.5,-67.5],[-63.5,-68.5],[-61,-72],[-67.5,-71.5],[-68.5,-70],[-67,-69.5],[-67.5,-67],[-64.5,-66],[-64,-64.5],[-62.5,-65],[-62.5,-64],[-61,-64.5],[-58,-63]],
+    [[66,77],[69,77],[68,76],[61.5,75.5],[56.5,73.5],[55.5,71.5],[57.5,70.5],[51.5,71.5],[56.5,75.5],[66,77]],
+    [[-180,69],[-175.5,68],[-174.5,66.5],[-171.5,67],[-170,66],[-172.5,64.5],[-175.5,64.5],[-178.5,66],[-180,65],[-180,69]],
+    [[-119.5,77.5],[-116,77.5],[-116,76.5],[-114,77],[-111.5,75.5],[-109.5,75.5],[-110,76.5],[-108.5,77],[-105.5,75.5],[-114,74.5],[-117.5,75],[-116,76.5],[-118,75.5],[-119,75.5],[-118,76.5],[-122.5,76],[-119.5,77.5]],
+    [[-23,66.5],[-21.5,65.5],[-15,66.5],[-13.5,65],[-17,63.5],[-22.5,63.5],[-22,64.5],[-23,65],[-22,65.5],[-24,65.5],[-23,66.5]],
+    [[172,-40.5],[174.5,-41],[173,-44],[171.5,-44],[170,-46.5],[167,-46.5],[166.5,-45.5],[171,-43],[172,-40.5]],
+    [[121,1.5],[124.5,1],[124,0],[120,0],[120.5,-1.5],[123.5,-0.5],[122,-1.5],[123,-5.5],[122.5,-4.5],[121.5,-5],[121,-2.5],[120.5,-5.5],[119.5,-5.5],[119,-1.5],[121,1.5]],
+    [[173,-35],[174.5,-35],[176.5,-38],[178.5,-37.5],[176,-41.5],[175,-41.5],[174,-39.5],[175,-37.5],[173,-35]],
+    [[106,-6],[109,-7],[112,-6.5],[115.5,-8.5],[108,-8],[105.5,-7],[106,-6]],
+    [[34.5,66.5],[34.5,65],[36,64],[38,64],[36.5,65],[40,64.5],[40,66],[34.5,66.5]],
+    [[-87.5,49],[-91.5,47],[-90,46.5],[-88,47.5],[-87.5,46.5],[-84.5,46.5],[-85,48],[-87.5,49]],
+    [[125.5,9.5],[126.5,9],[125.5,5.5],[124,6],[124,7.5],[122,7],[122,8],[125.5,9.5]],
+    [[-101,74],[-97,74],[-97.5,73],[-96.5,73],[-96.5,72],[-101.5,72],[-102.5,73],[-101,73],[-101,74]],
+    [[-84,23],[-79.5,23],[-74.5,20],[-77.5,20],[-78.5,21.5],[-82,22.5],[-84.5,22],[-84,23]],
+    [[120.5,18.5],[122.5,18.5],[121.5,15],[124,13],[122,14],[121.5,12.5],[120.5,13],[120.5,18.5]],
+    [[138.5,76.5],[140.5,75.5],[144.5,76],[145,75],[138,74.5],[137,75.5],[138.5,76.5]],
+    [[-71,-68.5],[-68,-72],[-75.5,-72],[-71,-71],[-70.5,-70],[-72,-70],[-71,-68.5]],
+    [[144.5,-41],[148.5,-41],[148.5,-42],[147.5,-43.5],[146,-43.5],[144.5,-41]],
+    [[-105.5,79.5],[-100,79],[-99.5,77.5],[-104.5,78],[-104,79],[-105,78.5],[-105.5,79.5]],
+    [[-104.5,76.5],[-97.5,76.5],[-97.5,75.5],[-100.5,75],[-104.5,76.5]],
+    [[-73.5,20],[-70,20],[-68.5,18.5],[-74.5,18],[-72.5,18.5],[-73.5,20]],
+    [[-84,46],[-82.5,43],[-81.5,45],[-80,44.5],[-80.5,46],[-84,46]],
+    [[80,9.5],[81,9.5],[82,7.5],[81.5,6],[79.5,7],[80,9.5]],
+    [[-86,46],[-87.5,45.5],[-87.5,41.5],[-86.5,42],[-86.5,44.5],[-85,45.5],[-86,46]]
+  ];
+  // Plate Carree. Honest for a schematic flyway map at this scale, and it keeps
+  // latitude bands \u2014 which is what a migration map is actually about \u2014 evenly
+  // spaced. Cut at 84N and 58S: the band migration happens in.
+  var MIG_WORLD = (function() {
+    var W = 620, H = 400, LAT_TOP = 84, LAT_BOT = -72;
+    function pt(lon, lat) {
+      return [(lon + 180) / 360 * W, (LAT_TOP - lat) / (LAT_TOP - LAT_BOT) * H];
+    }
+    // True when a segment jumps the antimeridian rather than actually spanning
+    // most of the planet. No animal here flies 300 degrees of longitude in one
+    // hop, so the jump is always the seam.
+    function wraps(lonA, lonB) { return Math.abs(lonB - lonA) > 180; }
+    return {
+      w: W, h: H, latTop: LAT_TOP, latBot: LAT_BOT, pt: pt, wraps: wraps,
+      path: function(ring, close) {
+        var dstr = '';
+        for (var i = 0; i < ring.length; i++) {
+          var lon = ring[i][0], lat = ring[i][1];
+          if (i > 0 && wraps(ring[i - 1][0], lon)) {
+            // Run to the edge, lift the pen, come back on the other side. Drawn
+            // straight through, a Pacific crossing reads as a flight from Japan
+            // to California the long way round, over Europe.
+            var plon = ring[i - 1][0], plat = ring[i - 1][1];
+            var east = lon - plon < 0;              // leaving toward +180
+            var adj = lon + (east ? 360 : -360);
+            var f = ((east ? 180 : -180) - plon) / (adj - plon);
+            var latEdge = plat + (lat - plat) * f;
+            var e1 = pt(east ? 180 : -180, latEdge);
+            var e2 = pt(east ? -180 : 180, latEdge);
+            var p2 = pt(lon, lat);
+            dstr += 'L' + e1[0].toFixed(1) + ' ' + e1[1].toFixed(1) +
+                    'M' + e2[0].toFixed(1) + ' ' + e2[1].toFixed(1) +
+                    'L' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+            continue;
+          }
+          var p = pt(lon, lat);
+          dstr += (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1);
+        }
+        return dstr + (close ? 'Z' : '');
+      }
+    };
+  })();
+
+  // ── The eight global flyways ────────────────────────────────────────────
+  // The corridors Wetlands International and BirdLife use to organise
+  // waterbird conservation worldwide. The tool's Routes tab knew only the four
+  // North American ones, which is a quarter of the picture and the quarter the
+  // students in front of this tool already live in.
+  //
+  // Each spine is a coarse [lon, lat] centreline of the corridor, not a bird's
+  // track: real routes fan out across a flyway hundreds of kilometres wide.
+  var WORLD_FLYWAYS = [
+    { id: 'pacific_americas', color: '#f58a8a', colorLight: '#cc1111',
+      name: 'Pacific Americas',
+      span: 'Alaska to Tierra del Fuego',
+      note: 'Runs the whole Pacific rim of two continents. Western sandpipers and dunlin funnel through the Copper River Delta in Alaska in flocks of millions, then follow the coast south.',
+      spine: [[-152,68],[-140,60],[-128,52],[-122,42],[-116,32],[-104,20],[-90,12],[-79,5],[-78,-8],[-72,-25],[-71,-40],[-73,-52]] },
+    { id: 'mississippi_americas', color: '#22c45d', colorLight: '#147538',
+      name: 'Mississippi Americas',
+      span: 'Arctic Canada to Patagonia',
+      note: 'The continental funnel: no mountain ranges to cross, one great river valley to follow, and the Gulf of Mexico to get over at the end of it.',
+      spine: [[-100,68],[-97,60],[-95,50],[-91,42],[-90,33],[-90,26],[-84,18],[-77,10],[-70,0],[-62,-10],[-58,-25],[-60,-38]] },
+    { id: 'atlantic_americas', color: '#76a8f9', colorLight: '#0a5adb',
+      name: 'Atlantic Americas',
+      span: 'Canadian Arctic to Argentina',
+      note: 'Red knots time this route to arrive at Delaware Bay exactly when horseshoe crabs spawn. Miss the window and the birds cannot refuel for the rest of the journey.',
+      spine: [[-70,72],[-66,60],[-68,48],[-73,40],[-79,32],[-80,25],[-72,18],[-60,10],[-50,0],[-42,-12],[-48,-25],[-58,-38]] },
+    { id: 'east_atlantic', color: '#c68ffa', colorLight: '#750adb',
+      name: 'East Atlantic',
+      span: 'Arctic Siberia and Greenland to West Africa',
+      note: 'The Wadden Sea is the single most important refuelling stop on it: tidal flats where a bird can put on the fat for the Sahara in a couple of weeks.',
+      spine: [[70,73],[45,70],[20,68],[8,60],[4,53],[-2,48],[-9,40],[-9,33],[-16,20],[-17,14],[-13,8],[-5,5],[6,4]] },
+    { id: 'mediterranean_black_sea', color: '#eb970a', colorLight: '#8e5b06',
+      name: 'Mediterranean / Black Sea',
+      span: 'Siberia and Eastern Europe to sub-Saharan Africa',
+      note: 'Soaring birds cannot use thermals over open water, so storks and raptors on this flyway bottleneck at the Bosphorus and Gibraltar rather than cross the Mediterranean.',
+      spine: [[75,68],[60,62],[45,55],[35,48],[28,42],[24,36],[20,30],[22,20],[28,12],[32,5],[30,-5],[28,-18]] },
+    { id: 'west_asian_east_african', color: '#f282b9', colorLight: '#c4146b',
+      name: 'West Asian / East African',
+      span: 'Western Siberia to southern Africa',
+      note: 'Crosses the Arabian peninsula and the Rift Valley. Millions of birds thread the narrow neck at Bab-el-Mandeb, where Africa and Asia are 30 km apart.',
+      spine: [[80,70],[70,62],[60,52],[54,42],[50,32],[45,22],[42,14],[40,5],[38,-5],[35,-15],[30,-25],[25,-33]] },
+    { id: 'central_asian', color: '#17cfbb', colorLight: '#0c7368',
+      name: 'Central Asian',
+      span: 'Siberia to India and the Maldives',
+      note: 'The only flyway that crosses the Himalaya. Bar-headed geese fly over it at around 7,000 m in air holding a third of the oxygen of sea level.',
+      spine: [[95,72],[88,64],[80,55],[76,46],[75,38],[77,30],[78,22],[79,14],[76,8],[73,4]] },
+    { id: 'east_asian_australasian', color: '#deaa08', colorLight: '#806204',
+      name: 'East Asian / Australasian',
+      span: 'Arctic Siberia and Alaska to Australia and New Zealand',
+      note: 'The most threatened of the eight. Its birds depend on the Yellow Sea tidal flats, and roughly two thirds of those flats have been reclaimed since the 1950s.',
+      spine: [[175,68],[160,65],[145,60],[135,52],[128,44],[122,36],[119,28],[112,20],[108,12],[110,4],[115,-5],[125,-12],[135,-20],[145,-30],[150,-38],[172,-42]] }
+  ];
+
+  // ── Migrants that are not North American birds ───────────────────────────
+  // The tool taught migration almost entirely through eight North American
+  // birds and one butterfly. Migration is a strategy, not a bird thing: it has
+  // been arrived at independently by insects, fish, reptiles and mammals, and
+  // the constraints look different in every one of them.
+  var GLOBAL_MIGRANTS = [
+    { id: 'arctic_tern', kind: 'bird', emoji: '\uD83D\uDD4A\uFE0F', color: '#13b1f7', colorLight: '#056d9b',
+      name: 'Arctic Tern', trip: 'Arctic to Antarctic, about 70,000 km a year',
+      fact: 'Sees more daylight than any other animal alive, because it spends both of its summers inside a polar summer. A tern that lives thirty years has flown roughly the distance to the Moon and back three times.',
+      route: [[-20,78],[-28,62],[-25,40],[-18,12],[-8,-12],[0,-35],[-2,-55],[-12,-67]] },
+    { id: 'bartailed_godwit_world', kind: 'bird', emoji: '\uD83D\uDC26', color: '#f57fbd', colorLight: '#c7106f',
+      name: 'Bar-tailed Godwit', trip: 'Alaska to New Zealand, non-stop',
+      fact: 'Shrinks its own gut and liver before departure to carry more fat, then flies for over a week without eating, drinking or landing. It navigates an ocean with no landmarks at all.',
+      route: [[-160,64],[-170,45],[-178,20],[176,-5],[174,-25],[173,-38]] },
+    { id: 'monarch_world', kind: 'insect', emoji: '\uD83E\uDD8B', color: '#fb8a2d', colorLight: '#a74d03',
+      name: 'Monarch Butterfly', trip: 'Canada to central Mexico, over four generations',
+      fact: 'No individual makes the round trip. The butterfly that arrives in Mexico is the great-grandchild of the one that left, and it has never been there before.',
+      route: [[-80,45],[-85,40],[-90,34],[-96,28],[-99,23],[-100.3,19.6]] },
+    { id: 'globe_skimmer', kind: 'insect', emoji: '\uD83E\uDEB0', color: '#e1a404', colorLight: '#856002',
+      name: 'Globe Skimmer Dragonfly', trip: 'India to East Africa across open ocean',
+      fact: 'A four-centimetre insect crossing the Indian Ocean. It rides the monsoon winds at altitude rather than flying the distance itself, and the round trip spans several generations.',
+      route: [[73,19],[65,14],[57,10],[48,6],[41,2],[37,-1]] },
+    { id: 'humpback', kind: 'mammal', emoji: '\uD83D\uDC0B', color: '#6babfa', colorLight: '#0762d2',
+      name: 'Humpback Whale', trip: 'Alaskan feeding grounds to Hawaiian breeding grounds',
+      fact: 'Fasts for the entire migration and the whole breeding season, living on fat laid down in one Alaskan summer. It swims about 4,800 km each way in roughly six weeks.',
+      route: [[-152,58],[-155,50],[-157,38],[-157,28],[-156,21]] },
+    { id: 'caribou', kind: 'mammal', emoji: '\uD83E\uDD8C', color: '#88cc19', colorLight: '#4c710e',
+      name: 'Porcupine Caribou', trip: 'Yukon forests to the Arctic coastal plain',
+      fact: 'The longest land migration of any animal: up to 2,400 km a year on foot. Calving is timed to the few weeks when the coastal plain greens up and the mosquitoes have not yet arrived.',
+      route: [[-133,64],[-137,66],[-141,68],[-144,69.5],[-146,69.8]] },
+    { id: 'sockeye', kind: 'fish', emoji: '\uD83D\uDC1F', color: '#f98585', colorLight: '#cf0a0a',
+      name: 'Sockeye Salmon', trip: 'North Pacific back to the stream it hatched in',
+      fact: 'Finds one river out of a coastline, then one tributary out of a watershed, apparently by smell. It stops eating on entering fresh water and its body is consumed by the journey.',
+      route: [[-172,52],[-158,54],[-142,53],[-130,50],[-124,49],[-121.5,50.2]] },
+    { id: 'european_eel', kind: 'fish', emoji: '\uD83C\uDF63', color: '#c791fc', colorLight: '#7305e0',
+      name: 'European Eel', trip: 'European rivers to the Sargasso Sea',
+      fact: 'Spawns in the middle of the Atlantic and dies there. Nobody has ever observed a wild European eel spawning; the breeding ground was inferred from where the smallest larvae were found.',
+      route: [[12,55],[0,50],[-12,44],[-30,36],[-50,29],[-65,26]] },
+    { id: 'leatherback', kind: 'reptile', emoji: '\uD83D\uDC22', color: '#27beab', colorLight: '#187469',
+      name: 'Leatherback Turtle', trip: 'Indonesian beaches to the California coast',
+      fact: 'A reptile that keeps itself warmer than the water around it, which lets it feed on jellyfish in seas cold enough to kill other turtles. It crosses the entire Pacific to do it.',
+      route: [[132,-3],[145,8],[168,20],[-175,28],[-150,36],[-128,37]] }
+  ];
 
   // ── Source geography, in real [longitude, latitude] ───────────────────────
   // Simplified coastline: roughly 1-2 degrees of detail, with the capes,
@@ -1278,10 +1475,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // ── Tab state ──
       var tab = d.tab || 'flight3d';
       var TABS = [
-        { id: 'flight3d', label: '3D Flight', icon: '\uD83C\uDF10' },
-        { id: 'vformation', label: 'V-Formation', icon: '\uD83E\uDEBF' },
+        { id: 'flight3d', label: t('stem.migration.tab_3d_flight', '3D Flight'), icon: '\uD83C\uDF10' },
+        { id: 'vformation', label: t('stem.migration.tab_v_formation', 'V-Formation'), icon: '\uD83E\uDEBF' },
         { id: 'wind', label: t('stem.migration.wind_currents', 'Wind Currents'), icon: '\uD83C\uDF2C\uFE0F' },
         { id: 'routes', label: t('stem.migration.migration_routes', 'Migration Routes'), icon: '\uD83D\uDDFA\uFE0F' },
+        { id: 'world', label: t('stem.migration.world_flyways', 'World Flyways'), icon: '\uD83C\uDF0D' },
         { id: 'aero', label: t('stem.migration.aerodynamics', 'Aerodynamics'), icon: '\u2708\uFE0F' },
         { id: 'navigate', label: t('stem.migration.weather_nav', 'Weather & Nav'), icon: '\uD83E\uDDED' },
         { id: 'inquiry', label: t('stem.migration.energy_inquiry', 'Energy Inquiry'), icon: '\uD83D\uDD2C' }
@@ -1363,7 +1561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         flightWind: d.flightWind == null ? 8 : d.flightWind,
         flightPaused: !!d.flightPaused,
         flightSeason: d.flightSeason || 'fall',
-        selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab,
+        selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab, t: t,
         // Read inside deferred canvas callbacks, so they cannot come from the
         // render closure: vLeaderRotations is both DISPLAYED and INCREMENTED
         // there, and thermalRidden gates a one-shot XP award.
@@ -2209,7 +2407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           ? species.breedingRange + ' to ' + species.winterRange
           : species.winterRange + ' to ' + species.breedingRange;
         var formationLabel = resolvedFormation === 'v' ? 'V formation' : (resolvedFormation === 'swarm' ? 'Swarm' : (resolvedFormation === 'solo' ? 'Solo' : 'Loose flock'));
-        var stageLabel = 'Interactive 3D migration flight for ' + species.name + '. ' + formationLabel + ', ' + groundSpeed + ' miles per hour ground speed, traveling ' + direction + '. Press 1 for chase camera, 2 for aerial camera, 3 for side camera, or Space to pause.';
+        var stageLabel = t('stem.migration.aria_stage_intro', 'Interactive 3D migration flight for') + ' ' + species.name + '. ' + formationLabel + ', ' + groundSpeed + ' ' + t('stem.migration.mph_ground_speed', 'miles per hour ground speed') + ', ' + t('stem.migration.traveling_word', 'traveling') + ' ' + direction + '. ' + t('stem.migration.aria_stage_keys', 'Press 1 for chase camera, 2 for aerial camera, 3 for side camera, or Space to pause.');
 
         function chooseCamera(next) {
           upd('flightCamera', next);
@@ -2249,7 +2447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'migration-flight-heading' }, (season === 'fall' ? 'Fall southbound' : 'Spring northbound') + ' - ' + groundSpeed + ' mph over ground')
             )
           ),
-          h('aside', { className: 'migration-flight-controls', 'aria-label': '3D migration flight controls' },
+          h('aside', { className: 'migration-flight-controls', 'aria-label': t('stem.migration.aria_flight_controls', '3D migration flight controls') },
             h('div', null,
               h('h3', null, 'Migration Flight Deck'),
               h('p', null, 'Fly a scientifically grounded corridor in three dimensions. Clouds, terrain, route beacons, wind streaks, flock spacing, and wing motion provide depth cues.')
@@ -2258,7 +2456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('span', null, 'Focus species'),
               h('select', {
                 value: species.id,
-                'aria-label': '3D migration focus species',
+                'aria-label': t('stem.migration.aria_flight_species', '3D migration focus species'),
                 onChange: function(event) {
                   var nextId = event.target.value;
                   updMulti({ flightSpecies: nextId, selectedSpecies: nextId });
@@ -2274,7 +2472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('span', null, 'Flight pattern'),
               h('select', {
                 value: formationMode,
-                'aria-label': '3D migration flight pattern',
+                'aria-label': t('stem.migration.aria_flight_pattern', '3D migration flight pattern'),
                 onChange: function(event) { upd('flightFormation', event.target.value); }
               },
                 h('option', { value: 'natural' }, 'Natural for this species (' + species.formation + ')'),
@@ -2295,7 +2493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 max: 25,
                 step: 1,
                 value: flightWind,
-                'aria-label': 'Along-route wind in meters per second. Negative is headwind and positive is tailwind.',
+                'aria-label': t('stem.migration.aria_route_wind', 'Along-route wind in meters per second. Negative is headwind and positive is tailwind.'),
                 onChange: function(event) { upd('flightWind', parseInt(event.target.value, 10)); }
               })
             ),
@@ -2303,7 +2501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('span', null, 'Season and direction'),
               h('select', {
                 value: season,
-                'aria-label': 'Migration season and direction',
+                'aria-label': t('stem.migration.aria_season', 'Migration season and direction'),
                 onChange: function(event) { upd('flightSeason', event.target.value); }
               },
                 h('option', { value: 'fall' }, 'Fall - toward winter range'),
@@ -2327,7 +2525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 })
               )
             ),
-            h('div', { className: 'migration-flight-stat-grid', 'aria-label': 'Current flight metrics' },
+            h('div', { className: 'migration-flight-stat-grid', 'aria-label': t('stem.migration.aria_flight_metrics', 'Current flight metrics') },
               [
                 { label: 'Ground speed', value: groundSpeed + ' mph' },
                 { label: 'Pattern benefit', value: benefit ? '~' + benefit + '% less drag' : 'No drafting credit' },
@@ -2364,7 +2562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     if (enter) enter.call(deck);
                   }
                 },
-                'aria-label': 'Toggle fullscreen for the 3D migration flight deck'
+                'aria-label': t('stem.migration.aria_flight_fullscreen', 'Toggle fullscreen for the 3D migration flight deck')
               }, 'Fullscreen')
             ),
             h('p', { role: 'note' }, direction + '. ' + species.funFact)
@@ -2958,7 +3156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Birds:'),
               h('input', {
                 type: 'range', min: 5, max: 15, value: birdCount,
-                'aria-label': 'Number of birds in flock: ' + birdCount,
+                'aria-label': t('stem.migration.aria_flock_size', 'Number of birds in flock') + ': ' + birdCount,
                 className: 'w-20 accent-sky-500',
                 onChange: function(e) {
                   var n = parseInt(e.target.value, 10);
@@ -2974,7 +3172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Speed:'),
               h('input', {
                 type: 'range', min: 0.5, max: 3, step: 0.5, value: simSpeed,
-                'aria-label': 'Simulation speed: ' + simSpeed + 'x',
+                'aria-label': t('stem.migration.aria_sim_speed', 'Simulation speed') + ': ' + simSpeed + 'x',
                 className: 'w-16 accent-sky-500',
                 onChange: function(e) { upd('vSpeed', parseFloat(e.target.value)); }
               }),
@@ -3004,7 +3202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   role: 'button',
                   tabIndex: 0,
                   'aria-expanded': isExpanded ? 'true' : 'false',
-                  'aria-label': fact.title + '. ' + (isExpanded ? 'Click to collapse.' : 'Click to expand.'),
+                  'aria-label': fact.title + '. ' + (isExpanded ? t('stem.migration.collapse_hint', 'Collapse.') : t('stem.migration.expand_hint', 'Expand.')),
                   className: 'rounded-lg p-3 border cursor-pointer transition-all ' + (isExpanded ? 'ring-1 ring-sky-400 ' + accentBg + ' border-sky-300' : borderCol + ' ' + cardBg + ' hover:border-sky-200'),
                   onClick: function() { upd('expandedFact', isExpanded ? null : fi); },
                   onKeyDown: function(e) {
@@ -3072,7 +3270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('div', null,
                   h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, 'Distance: ' + ebDist.toLocaleString() + ' mi'),
                   h('input', { type: 'range', min: 100, max: 7000, step: 100, value: ebDist,
-                    'aria-label': 'Migration distance: ' + ebDist + ' miles',
+                    'aria-label': t('stem.migration.aria_eb_distance', 'Migration distance') + ': ' + ebDist + ' ' + t('stem.migration.miles_word', 'miles'),
                     className: 'w-full accent-amber-500',
                     onChange: function(e) { upd('ebDistance', parseInt(e.target.value, 10)); }
                   })
@@ -3081,7 +3279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('div', null,
                   h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, 'Bird weight: ' + ebWeight + 'g'),
                   h('input', { type: 'range', min: 5, max: 5000, step: 5, value: ebWeight,
-                    'aria-label': 'Bird body weight: ' + ebWeight + ' grams',
+                    'aria-label': t('stem.migration.aria_eb_weight', 'Bird body weight') + ': ' + ebWeight + ' ' + t('stem.migration.grams_word', 'grams'),
                     className: 'w-full accent-amber-500',
                     onChange: function(e) { upd('ebWeight', parseInt(e.target.value, 10)); }
                   }),
@@ -3091,7 +3289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('div', null,
                   h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, 'Headwind: ' + ebHeadwind + ' mph'),
                   h('input', { type: 'range', min: 0, max: 25, value: ebHeadwind,
-                    'aria-label': 'Headwind speed: ' + ebHeadwind + ' miles per hour',
+                    'aria-label': t('stem.migration.aria_eb_headwind', 'Headwind speed') + ': ' + ebHeadwind + ' ' + t('stem.migration.mph_word', 'miles per hour'),
                     className: 'w-full accent-red-400',
                     onChange: function(e) { upd('ebHeadwind', parseInt(e.target.value, 10)); }
                   })
@@ -3101,7 +3299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('button', {
                     className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' + (ebVForm ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700')),
                     'aria-pressed': ebVForm ? 'true' : 'false',
-                    'aria-label': t('stem.migration.v_formation_word', 'V-formation') + ': ' + (ebVForm ? t('stem.migration.on_saving_energy', 'on, saving 22% energy') : t('stem.migration.off_word', 'off')),
+                    'aria-label': 'V-Form: ' + (ebVForm ? 'ON (-22%). ' + t('stem.migration.on_saving_energy', 'V-formation on, saving 22% energy') : 'OFF. ' + t('stem.migration.off_saving_nothing', 'V-formation off')),
                     onClick: function() { upd('ebVFormation', !ebVForm); }
                   }, '\uD83E\uDEBF V-Form: ' + (ebVForm ? 'ON (-22%)' : 'OFF'))
                 )
@@ -3148,7 +3346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'mb-3' },
                 h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, '\u2B06\uFE0F Altitude: ' + altFeet.toLocaleString() + ' ft (' + Math.round(altFeet * 0.3048) + ' m)'),
                 h('input', { type: 'range', min: 0, max: 37000, step: 500, value: altFeet,
-                  'aria-label': 'Flight altitude: ' + altFeet + ' feet. Oxygen: ' + Math.round(oxygenPercent) + '%. Temperature: ' + Math.round(tempF) + ' degrees Fahrenheit.',
+                  'aria-label': t('stem.migration.aria_altitude', 'Flight altitude') + ': ' + altFeet + ' ' + t('stem.migration.feet_word', 'feet') + '. ' + t('stem.migration.oxygen_word', 'Oxygen') + ': ' + Math.round(oxygenPercent) + '%. ' + t('stem.migration.temperature_word', 'Temperature') + ': ' + Math.round(tempF) + ' ' + t('stem.migration.degrees_f_word', 'degrees Fahrenheit') + '.',
                   className: 'w-full accent-sky-500',
                   onChange: function(e) { upd('altFeet', parseInt(e.target.value, 10)); }
                 })
@@ -3540,7 +3738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillText(lv.windSpeed + ' mph', W - 122, 101);
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.font = '9px system-ui';
-            c.fillText(getBeaufort(lv.windSpeed) + ' · ' + Math.round(lv.windDir || 0) + '°', W - 122, 114);
+            c.fillText(getBeaufort(lv.windSpeed, lv.t) + ' · ' + Math.round(lv.windDir || 0) + '°', W - 122, 114);
 
             // Speed key, drawn from the SAME ramp function as the particles.
             // The tick marks the ambient wind, so the two halves read as
@@ -3611,7 +3809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('canvas', {
               ref: _wcInitCanvas,
               role: 'img',
-              'aria-label': t('stem.migration.wind_sandbox_aria', 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction.') + ' ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed) + '.',
+              'aria-label': t('stem.migration.wind_sandbox_aria', 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction.') + ' ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed, t) + '.',
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'c' || e.key === 'C') {
@@ -3633,7 +3831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 return h('button', {
                   key: obj.id,
                   className: 'px-2 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'ring-2 ring-sky-400 ' + btnPrimary : btnSecondary),
-                  'aria-label': 'Place ' + obj.label + ': ' + obj.desc,
+                  'aria-label': t('stem.migration.place_word', 'Place') + ' ' + obj.label + ': ' + obj.desc,
                   'aria-pressed': active ? 'true' : 'false',
                   onClick: function() { upd('placingObj', active ? null : obj.id); }
                 }, obj.emoji + ' ' + obj.label);
@@ -3642,7 +3840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             h('button', {
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + btnSecondary,
-              'aria-label': t('stem.migration.add_a_bird_to_ride_the_wind_currents', 'Add a bird to ride the wind currents'),
+              'aria-label': t('stem.migration.add_bird_short', 'Add Bird') + '. ' + t('stem.migration.add_a_bird_to_ride_the_wind_currents', 'Add a bird to ride the wind currents'),
               onClick: function() {
                 var wb = windBirdsRef.current || [];
                 wb.push({ x: 50, y: 100 + Math.random() * 150, vx: 0, vy: 0, phase: Math.random() * 6 });
@@ -3666,7 +3864,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
             h('button', {
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + (showStreamlines ? btnPrimary : btnSecondary),
-              'aria-label': showStreamlines ? 'Switch to dot particles' : 'Switch to streamlines',
+              'aria-label': showStreamlines
+                ? t('stem.migration.streamlines_word', 'Streamlines') + '. ' + t('stem.migration.switch_to_dot_particles', 'Switch to dot particles')
+                : t('stem.migration.dots_word', 'Dots') + '. ' + t('stem.migration.switch_to_streamlines', 'Switch to streamlines'),
               'aria-pressed': showStreamlines ? 'true' : 'false',
               onClick: function() { upd('showStreamlines', !showStreamlines); }
             }, showStreamlines ? '\u2500 Lines' : '\u2022 Dots')
@@ -3699,7 +3899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   key: cd.label,
                   role: 'radio',
                   'aria-checked': active ? 'true' : 'false',
-                  'aria-label': 'Wind from ' + cd.label + (active ? ', selected' : ''),
+                  'aria-label': t('stem.migration.wind_from', 'Wind from') + ' ' + cd.label + (active ? ', ' + t('stem.migration.selected_word', 'selected') : ''),
                   className: 'w-10 h-10 rounded-full text-[0.6875rem] font-bold transition-all ' + (active ? 'bg-sky-700 text-white ring-2 ring-sky-300' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
                   tabIndex: active ? 0 : -1,
                   onClick: function() { upd('windDir', cd.angle); }
@@ -3712,12 +3912,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('label', { className: 'text-xs font-medium ' + textSecondary }, t('stem.migration.wind_2', '\uD83C\uDF2C\uFE0F Wind:')),
               h('input', {
                 type: 'range', min: 0, max: 50, value: windSpeed,
-                'aria-label': t('stem.migration.wind_speed_label', 'Wind speed') + ': ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed),
+                'aria-label': t('stem.migration.wind_speed_label', 'Wind speed') + ': ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed, t),
                 className: 'flex-1 accent-sky-500',
                 onChange: function(e) { upd('windSpeed', parseInt(e.target.value, 10)); }
               }),
               h('span', { className: 'text-xs font-bold min-w-[80px] text-right ' + textPrimary }, windSpeed + ' mph'),
-              h('span', { className: 'text-[0.6875rem] ' + textMuted, title: getBeaufortForce(windSpeed) }, getBeaufort(windSpeed))
+              h('span', { className: 'text-[0.6875rem] ' + textMuted, title: getBeaufortForce(windSpeed, t) }, getBeaufort(windSpeed, t))
             )
           ),
 
@@ -4473,7 +4673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('canvas', {
               ref: _rtInitCanvas,
               role: 'img',
-              'aria-label': 'Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific. ' + (selectedSpecies ? 'Currently tracking ' + getSpeciesById(selectedSpecies).name : 'Select a species to see its route.'),
+              'aria-label': t('stem.migration.aria_routes_map', 'Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific.') + ' ' + (selectedSpecies ? t('stem.migration.currently_tracking', 'Currently tracking') + ' ' + getSpeciesById(selectedSpecies).name : t('stem.migration.select_a_species', 'Select a species to see its route.')),
               tabIndex: 0,
               onKeyDown: function(e) {
                 // Arrow keys to cycle species
@@ -4509,7 +4709,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               return h('button', {
                 key: sp.id,
                 className: 'p-2 rounded-lg text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
-                'aria-label': sp.name + ', ' + sp.flyway + ' flyway, ' + sp.distance + ' miles',
                 'aria-pressed': active ? 'true' : 'false',
                 onClick: function() {
                   updMulti({ selectedSpecies: sp.id, routeAnimProgress: 0, aiExplorerText: '', routesPlanned: (d.routesPlanned || 0) + (active ? 0 : 1) });
@@ -4522,7 +4721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('div', null,
                     h('div', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, sp.name),
                     h('div', { className: 'text-[0.6875rem] ' + textMuted },
-                      h('span', { style: { color: fwColor.stroke } }, '\u25CF'),
+                      h('span', { 'aria-hidden': 'true', style: { color: fwColor.stroke } }, '\u25CF'),
                       ' ' + sp.flyway.charAt(0).toUpperCase() + sp.flyway.slice(1) + ' \u2022 ' + sp.distance.toLocaleString() + ' mi'
                     )
                   )
@@ -4565,7 +4764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'flex items-center gap-2 mt-2' },
                 h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + btnPrimary,
-                  'aria-label': 'Ask AI for more facts about ' + sp.name,
+                  'aria-label': t('stem.migration.aria_ask_ai', 'Ask AI for more facts about') + ' ' + sp.name,
                   disabled: aiExplorerLoading,
                   onClick: handleAIExplorer
                 }, aiExplorerLoading ? '\u23F3 Loading...' : '\u2728 AI Explorer')
@@ -4711,6 +4910,194 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               )
             )
           )
+        );
+      }
+
+
+      // ══════════════════════════════════════════
+      // TAB: WORLD FLYWAYS
+      // ══════════════════════════════════════════
+      function renderWorldFlyways() {
+        var selFlyway = d.worldFlyway || null;
+        var selMigrant = d.worldMigrant || null;
+        var MW = MIG_WORLD;
+        // Two palettes rather than one with opacity: a wash that reads as ocean
+        // on a dark ground reads as haze on a light one.
+        var WP = isDark ? {
+          ocean: '#0b2a3d', land: '#1f5f43', landEdge: '#3f8f6b', grat: 'rgba(148,163,184,.22)',
+          gratInk: '#94a3b8', text: '#e2e8f0', dim: '#94a3b8', soft: '#cbd5e1',
+          panel: '#0f172a', border: '#334155', equator: 'rgba(248,250,252,.35)'
+        } : {
+          ocean: '#dbeafe', land: '#bbe7cd', landEdge: '#3f8f6b', grat: 'rgba(51,65,85,.18)',
+          gratInk: '#475569', text: '#0f172a', dim: '#475569', soft: '#334155',
+          panel: '#f8fafc', border: '#cbd5e1', equator: 'rgba(15,23,42,.35)'
+        };
+        // Every colour on this map exists in two versions. Reading them
+        // through one accessor is what stops a call site from quietly using the
+        // dark-theme colour on the light map, which is how all 17 came to fail.
+        function mgColor(x) { return (isDark ? x.color : x.colorLight) || x.color; }
+        var flyway = null;
+        for (var fi = 0; fi < WORLD_FLYWAYS.length; fi++) if (WORLD_FLYWAYS[fi].id === selFlyway) flyway = WORLD_FLYWAYS[fi];
+        var migrant = null;
+        for (var mi = 0; mi < GLOBAL_MIGRANTS.length; mi++) if (GLOBAL_MIGRANTS[mi].id === selMigrant) migrant = GLOBAL_MIGRANTS[mi];
+
+        // One path for every ring, filled even-odd, so the Mediterranean, Black,
+        // Caspian and Red seas come out as water instead of land.
+        var landD = GEO_WORLD.map(function(r) { return MW.path(r, true); }).join(' ');
+
+        // A direction arrow on the middle segment of a route: a line on a map
+        // does not say which way the animal is going, and for migration that is
+        // the whole point.
+        function arrowAt(pts, frac, color, size) {
+          if (pts.length < 2) return null;
+          var idx = Math.max(1, Math.min(pts.length - 1, Math.round(frac * (pts.length - 1))));
+          // Walk off a seam-crossing segment: its midpoint is nowhere and its
+          // bearing is backwards.
+          var guard = 0;
+          while (MW.wraps(pts[idx - 1][0], pts[idx][0]) && guard++ < pts.length) {
+            idx = idx > 1 ? idx - 1 : pts.length - 1;
+          }
+          if (MW.wraps(pts[idx - 1][0], pts[idx][0])) return null;
+          var a = MW.pt(pts[idx - 1][0], pts[idx - 1][1]);
+          var b = MW.pt(pts[idx][0], pts[idx][1]);
+          var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+          var ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+          var sz = size || 5;
+          return h('polygon', {
+            points: sz + ',0 ' + (-sz * 0.7) + ',' + (sz * 0.72) + ' ' + (-sz * 0.7) + ',' + (-sz * 0.72),
+            fill: color,
+            transform: 'translate(' + mx.toFixed(1) + ' ' + my.toFixed(1) + ') rotate(' + ang.toFixed(1) + ')'
+          });
+        }
+
+        var describe = migrant
+          ? migrant.name + '. ' + migrant.trip + '.'
+          : flyway
+            ? flyway.name + ' flyway, ' + flyway.span + '.'
+            : t('stem.migration.world_map_all', 'All eight global flyways shown at once.');
+
+        var worldMap = h('svg', {
+          viewBox: '0 0 ' + MW.w + ' ' + MW.h, preserveAspectRatio: 'xMidYMid meet', role: 'img',
+          'aria-label': t('stem.migration.world_map_aria', 'World map of the eight global flyways, from 84 degrees north to 72 degrees south.') + ' ' + describe + ' ' +
+            t('stem.migration.world_map_list_note', 'The buttons below the map carry the same information as text.'),
+          style: { width: '100%', height: 'auto', display: 'block', background: WP.ocean }
+        },
+          // Latitude bands, because a migration map is really about latitude.
+          [80, 60, 40, 20, 0, -20, -40, -60].map(function(la) {
+            var y = MW.pt(0, la)[1];
+            return h('g', { key: 'la' + la },
+              h('line', { x1: 0, y1: y, x2: MW.w, y2: y, stroke: la === 0 ? WP.equator : WP.grat, strokeWidth: la === 0 ? 1.2 : 0.8 }),
+              h('text', { x: 3, y: y - 2, fill: WP.gratInk, fontSize: 7 }, la === 0 ? t('stem.migration.equator', 'equator') : (la > 0 ? la + '\u00B0N' : (-la) + '\u00B0S'))
+            );
+          }),
+          [-120, -60, 0, 60, 120].map(function(lo) {
+            var x = MW.pt(lo, 0)[0];
+            return h('line', { key: 'lo' + lo, x1: x, y1: 0, x2: x, y2: MW.h, stroke: WP.grat, strokeWidth: 0.8 });
+          }),
+          h('path', { d: landD, fill: WP.land, fillRule: 'evenodd', stroke: WP.landEdge, strokeWidth: 0.6 }),
+
+          // Flyways. Everything stays visible when one is picked; the rest fade
+          // rather than vanish, so a student can still see where the chosen one
+          // sits among the others.
+          WORLD_FLYWAYS.map(function(f) {
+            var on = !selFlyway || selFlyway === f.id;
+            var muted = !!migrant;
+            return h('g', { key: f.id, opacity: muted ? 0.4 : (on ? 1 : 0.35) },
+              h('path', { d: MW.path(f.spine, false), fill: 'none', stroke: mgColor(f), strokeWidth: selFlyway === f.id ? 3 : 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              selFlyway === f.id && arrowAt(f.spine, 0.55, mgColor(f), 5.5)
+            );
+          }),
+
+          // The selected migrant's route, drawn over everything.
+          migrant && h('g', null,
+            h('path', { d: MW.path(migrant.route, false), fill: 'none', stroke: mgColor(migrant), strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '7 4' }),
+            arrowAt(migrant.route, 0.5, mgColor(migrant), 6.5),
+            (function() {
+              var a = MW.pt(migrant.route[0][0], migrant.route[0][1]);
+              var b = MW.pt(migrant.route[migrant.route.length - 1][0], migrant.route[migrant.route.length - 1][1]);
+              return [
+                h('circle', { key: 'st', cx: a[0], cy: a[1], r: 4, fill: 'none', stroke: mgColor(migrant), strokeWidth: 2 }),
+                h('circle', { key: 'en', cx: b[0], cy: b[1], r: 4.5, fill: mgColor(migrant) })
+              ];
+            })()
+          )
+        );
+
+        return h('div', { className: 'space-y-3' },
+          h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol }, worldMap),
+
+          h('p', { className: 'text-[0.6875rem] leading-relaxed ' + textSecondary },
+            t('stem.migration.world_map_caption', 'Equirectangular projection, so latitudes are evenly spaced and areas near the poles look bigger than they are. Each flyway line is the centre of a corridor hundreds of kilometres wide, not one animal\'s track. Routes that cross the Pacific are drawn to the map edge and continue on the other side.')),
+
+          // Flyway chips
+          h('div', null,
+            h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.the_eight_flyways', '\uD83C\uDF0D The eight global flyways')),
+            h('div', { role: 'group', 'aria-label': t('stem.migration.the_eight_flyways_group', 'Global flyways'), className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+              WORLD_FLYWAYS.map(function(f) {
+                var on = selFlyway === f.id;
+                return h('button', {
+                  key: f.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                  className: 'p-2 rounded-lg text-left border transition-all ' + (on ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
+                  onClick: function() {
+                    updMulti({ worldFlyway: on ? null : f.id, worldMigrant: null });
+                    if (announceToSR) announceToSR(on ? t('stem.migration.all_flyways_shown', 'All flyways shown') : f.name + '. ' + f.span + '.');
+                  }
+                },
+                  h('div', { className: 'flex items-center gap-1.5' },
+                    h('span', { 'aria-hidden': 'true', style: { width: 10, height: 10, borderRadius: 2, background: mgColor(f), flexShrink: 0, display: 'inline-block' } }),
+                    h('span', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, f.name)
+                  ),
+                  h('div', { className: 'text-[0.6875rem] mt-0.5 ' + textMuted }, f.span)
+                );
+              })
+            )
+          ),
+
+          flyway && h('div', { className: 'rounded-xl p-3 border ' + borderCol + ' ' + cardBg },
+            h('div', { className: 'text-xs font-bold mb-1', style: { color: mgColor(flyway) } }, flyway.name),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed ' + textSecondary }, flyway.note)
+          ),
+
+          // Migrants
+          h('div', null,
+            h('h3', { className: 'font-bold text-sm mb-1 ' + textPrimary }, t('stem.migration.not_only_birds', '\uD83E\uDDED Migration is not only a bird thing')),
+            h('p', { className: 'text-[0.6875rem] mb-2 ' + textSecondary },
+              t('stem.migration.not_only_birds_note', 'Insects, fish, reptiles and mammals migrate too, and none of them inherited it from the others. Pick one to draw its route.')),
+            h('div', { role: 'group', 'aria-label': t('stem.migration.global_migrants_group', 'Global migrants'), className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
+              GLOBAL_MIGRANTS.map(function(g) {
+                var on = selMigrant === g.id;
+                return h('button', {
+                  key: g.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                  className: 'p-2 rounded-lg text-left border transition-all ' + (on ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
+                  onClick: function() {
+                    updMulti({ worldMigrant: on ? null : g.id });
+                    if (beep) beep(760, 0.05, 0.07);
+                    if (announceToSR) announceToSR(on ? t('stem.migration.route_cleared', 'Route cleared') : g.name + '. ' + g.trip + '.');
+                  }
+                },
+                  h('div', { className: 'flex items-center gap-1.5' },
+                    h('span', { className: 'text-lg', 'aria-hidden': 'true' }, g.emoji),
+                    h('div', { className: 'min-w-0' },
+                      h('div', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, g.name),
+                      h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.kind_' + g.kind, g.kind))
+                    )
+                  ),
+                  h('div', { className: 'text-[0.6875rem] mt-1 ' + textSecondary }, g.trip)
+                );
+              })
+            )
+          ),
+
+          migrant && h('div', { className: 'rounded-xl p-3 border ' + borderCol + ' ' + cardBg },
+            h('div', { className: 'flex items-center gap-2 mb-1' },
+              h('span', { className: 'text-xl', 'aria-hidden': 'true' }, migrant.emoji),
+              h('span', { className: 'text-xs font-bold', style: { color: mgColor(migrant) } }, migrant.name)
+            ),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed ' + textSecondary }, migrant.fact)
+          ),
+
+          h('p', { className: 'text-[0.6875rem] italic ' + textMuted },
+            t('stem.migration.world_sources', 'Flyway corridors follow the eight-flyway scheme used by Wetlands International and BirdLife International. Coastlines are simplified from Natural Earth public-domain data.'))
         );
       }
 
@@ -5347,7 +5734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('canvas', {
               ref: _arInitCanvas,
               role: 'img',
-              'aria-label': 'Aerodynamics lab showing airfoil cross-section with streamlines. Current angle of attack: ' + aoa + ' degrees. ' + (isStalling ? 'Wing is stalling, flow separation occurring.' : 'Lift coefficient: ' + cl.toFixed(2) + ', Drag coefficient: ' + cd.toFixed(3) + ', L/D ratio: ' + ldRatio.toFixed(1)),
+              'aria-label': t('stem.migration.aria_aero_canvas', 'Aerodynamics lab showing airfoil cross-section with streamlines.') + ' ' + t('stem.migration.aria_aoa', 'Angle of attack') + ': ' + aoa + ' ' + t('stem.migration.degrees_word', 'degrees') + '. ' + (isStalling ? t('stem.migration.wing_is_stalling', 'Wing is stalling, flow separation occurring.') : t('stem.migration.lift_coefficient', 'Lift coefficient') + ': ' + cl.toFixed(2) + ', ' + t('stem.migration.drag_coefficient', 'Drag coefficient') + ': ' + cd.toFixed(3) + ', ' + t('stem.migration.ld_ratio', 'L over D ratio') + ': ' + ldRatio.toFixed(1)),
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'ArrowUp' && aoa < 20) { e.preventDefault(); upd('aoa', aoa + 1); }
@@ -5362,7 +5749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('label', { className: 'text-xs font-bold ' + textPrimary }, t('stem.migration.angle_of_attack', 'Angle of Attack:')),
             h('input', {
               type: 'range', min: 0, max: 20, value: aoa,
-              'aria-label': 'Angle of attack: ' + aoa + ' degrees' + (isStalling ? '. Warning: wing is stalling.' : ''),
+              'aria-label': t('stem.migration.aria_aoa', 'Angle of attack') + ': ' + aoa + ' ' + t('stem.migration.degrees_word', 'degrees') + (isStalling ? '. ' + t('stem.migration.warning_stalling', 'Warning: wing is stalling.') : ''),
               className: 'flex-1 accent-sky-500',
               onChange: function(e) { upd('aoa', parseInt(e.target.value, 10)); }
             }),
@@ -5393,7 +5780,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 return h('button', {
                   key: wt.id,
                   className: 'p-3 rounded-xl text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
-                  'aria-label': wt.name + ' wing type. Aspect ratio: ' + wt.aspectRatio + '. ' + wt.desc,
                   'aria-pressed': active ? 'true' : 'false',
                   onClick: function() { upd('selectedWing', wt.id); }
                 },
@@ -6003,7 +6389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   role: 'button',
                   tabIndex: 0,
                   'aria-expanded': isExpanded ? 'true' : 'false',
-                  'aria-label': nm.name + '. ' + (isExpanded ? 'Click to collapse.' : 'Click to learn more.'),
+                  'aria-label': nm.name + '. ' + (isExpanded ? t('stem.migration.collapse_hint', 'Collapse.') : t('stem.migration.learn_more_hint', 'Learn more.')),
                   onClick: function() { upd('expandedNav', isExpanded ? null : nm.id); },
                   onKeyDown: function(e) {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -6033,7 +6419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.navigate_your_flock', '\uD83C\uDFAE Navigate Your Flock')),
               !challengeActive && h('button', {
                 className: 'px-4 py-2 rounded-lg text-xs font-bold ' + btnPrimary,
-                'aria-label': t('stem.migration.start_the_navigate_your_flock_challeng', 'Start the Navigate Your Flock challenge'),
+                'aria-label': t('stem.migration.start_challenge_short', 'Start Challenge') + '. ' + t('stem.migration.start_the_navigate_your_flock_challeng', 'Navigate Your Flock'),
                 onClick: startChallenge
               }, t('stem.migration.start_challenge', '\uD83E\uDEBF Start Challenge'))
             ),
@@ -6092,7 +6478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     return h('button', {
                       key: ci,
                       className: 'p-3 rounded-lg border text-left transition-all hover:ring-2 hover:ring-sky-300 ' + borderCol + ' ' + cardBg,
-                      'aria-label': 'Choice ' + (ci + 1) + ': ' + ch.label,
+                      'aria-label': t('stem.migration.choice_word', 'Choice') + ' ' + (ci + 1) + ': ' + ch.label,
                       onClick: function() { makeChoice(ci); }
                     },
                       h('div', { className: 'text-xs font-bold ' + textPrimary }, ch.label),
@@ -6272,6 +6658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       else if (tab === 'vformation') tabContent = renderVFormation();
       else if (tab === 'wind') tabContent = renderWindCurrents();
       else if (tab === 'routes') tabContent = renderRoutes();
+      else if (tab === 'world') tabContent = renderWorldFlyways();
       else if (tab === 'aero') tabContent = renderAero();
       else if (tab === 'navigate') tabContent = renderNavigate();
       else if (tab === 'inquiry') tabContent = renderMigrationInquiry();
@@ -6757,6 +7144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: t('stem.migration.v_formation_flying', 'V-formation flying'),         hint: t('stem.migration.trailing_birds_catch_the_upwash_from_t', 'Trailing birds catch the upwash from the bird ahead \u2014 measured savings run about 10\u201330% in real flocks. Lead position rotates because the front bird does the most work.') },
         wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: t('stem.migration.wind_currents_thermals', 'Wind currents + thermals'),   hint: t('stem.migration.birds_read_pressure_gradients_we_canno', 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.') },
         routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: t('stem.migration.migration_routes_flyways', 'Migration routes + flyways'),  hint: t('stem.migration.four_major_north_american_flyways_paci', 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.') },
+        world:      { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83C\uDF0D', title: t('stem.migration.world_flyways_title', 'The eight global flyways'), hint: t('stem.migration.world_flyways_hint', 'Migration is not a North American story and not only a bird story. Eight flyways carry waterbirds across the whole planet, and insects, fish, reptiles and mammals have arrived at the same strategy independently.') },
         aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: t('stem.migration.aerodynamics_of_bird_flight', 'Aerodynamics of bird flight'), hint: t('stem.migration.wing_shape_aspect_ratio_camber_tunes_l', 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 50\u201380 Hz wingbeat.') },
         navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: t('stem.migration.weather_navigation', 'Weather + navigation'),       hint: t('stem.migration.birds_use_multiple_cues_simultaneously', 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.') },
         inquiry:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD2C', title: t('stem.migration.energy_inquiry', 'Energy inquiry'), hint: t('stem.migration.energy_inquiry_hint', 'Test how wingspan, body mass, wind, formation, and distance combine to determine whether a migration leg is feasible.') }
