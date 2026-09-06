@@ -213,6 +213,25 @@ The shape suite checks that resource ids are unique *within* a pack. Nothing che
 It is still worth removing. The packs are a public catalog, an id is the thing a `resourceRef` and a `lessonRef` resolve against, and a prefix collision is invisible to every other check. The grade-1 pack now uses `dn-` throughout, including its concept-sort categories, its memory-aid card ids and its shot-list image slots, so a future author does not find a pack with two prefixes in it.
 
 `tests/allopack_id_uniqueness.test.js` now holds three properties across the whole catalog: no shared resource ids, no shared objective ids, and one prefix per pack owned by that pack alone. It was calibrated by reintroducing the exact collision and confirming two of the three assertions fail, then restoring. The renamed pack was re-checked live in the deployed app, since every internal reference had moved.
+## Tenth pass (same day): every pack, loaded for real
+
+Nine passes of review had verified five packs in the deployed app and reasoned about the other twenty-one. The vitest suite validates shapes against the renderers' contracts, which is not the same as the app accepting the file — the illustrated pilot passed every shape check in July and was still rejected by the Agent Core depth limit. So the last thing worth doing was the dull one: load all of them.
+
+`dev-tools/smoke_allopacks_live.mjs` route-injects each pack over the catalog entry, drives the real launch flow, clicks Load in AlloFlow, and checks four things: no failure toast, a history count equal to the file's, every resource title present in the history list, and no page errors or error boundary. **26 of 26 packs load clean**, from the 9-resource grade-1 pack to the 12-resource Photosynthesis pack.
+
+An opt-in `--deep` mode also opens every resource in turn and checks it renders more than a blank panel. That is QA step 2 of the seed plan in full, and the most expensive manual item on it.
+
+### The first run said 25 of 26 packs were broken. None of them were.
+
+The first attempt reused one Playwright browser context across the loop. AlloFlow keeps the chosen role and the wizard-dismissed flag in localStorage, so from the second pack onward the app skipped the launch pad entirely: "Full Platform" and "Teacher" were not on the page, and every click in the navigation sequence timed out. Twenty-five `locator.click: Timeout` failures, in a loop over content, reading exactly like twenty-five broken packs.
+
+That was checked rather than guessed: drive the onboarding on one page, close it, open a second page in the same context, and read back `{ full: false, teacher: false, keys: 42 }` — forty-two localStorage keys carried over and the launch pad gone. A fresh context per pack, with the route handlers inside the loop and tolerant onboarding clicks, passes all twenty-six.
+
+The general shape is worth keeping: **a harness failure that impersonates the thing under test**. A timeout inside a content loop looks like a content defect, and the report would have been the exact opposite of the truth. The reason is now a comment in the script and a note in the seed plan, because the next person to touch it will be tempted to hoist the context out of the loop for speed.
+
+### What this does and does not settle for publishing
+
+Steps 2 and the load half of step 3 of the seed plan are now automated and green, and step 9 (reading level within the stated band) is covered by the audit. Steps 4 through 7 still need a human: playing a word game to a win and watching the goal tick, the Spanish translation pass, in-app image generation against the shot lists, and the send-home round trip. `catalog/index.json` remains unchanged at two entries.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
