@@ -1,0 +1,605 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Why Cities Grew on the Nile — Surplus, Specialists, and Writing",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th Grade",
+    "standards": "C3 Framework D2.His.14.6-8 (explain multiple causes and effects of events and developments in the past); C3 Framework D2.Geo.5.6-8 (analyze the combinations of cultural and environmental characteristics that make places distinctive); C3 Framework D2.His.10.6-8 (detect possible limitations in the historical record based on evidence collected from different sources); CCSS.ELA-LITERACY.RH.6-8.2 (determine the central ideas of a primary or secondary source)",
+    "createdAt": "2026-09-05T22:50:00.000Z",
+    "imageShotList": "allopacks/ancient_egypt_grade6.IMAGES.md"
+  },
+  "sourceTopic": "Ancient Egypt and the Rise of River Civilizations",
+  "history": [
+    {
+      "id": "eg-directions",
+      "type": "directions",
+      "title": "Follow the Food",
+      "timestamp": "2026-09-05T22:50:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nThe pyramids get the attention. The interesting question is duller and bigger: why did the first cities show up on rivers, in several parts of the world, without those people ever meeting?\n\n1. Read **Follow the Food, Find the City**.\n2. Learn the words in **Nile Words**, then win the **Crossword**.\n3. Study the **From Flood to City** chart — it is the whole argument on one page.\n4. Trace **The Chain** concept map before you take the quiz.\n5. Sort the cards in **Cause or Effect?**\n6. Take **Nile Check**.\n7. Lock it in with **Remember the Chain**.\n8. Read **Egypt Questions Kids Ask** — one answer will annoy you.\n9. Finish with **Investigation: What the Record Leaves Out**.\n\nYour job this week: notice one thing you use that only exists because somebody else grows the food. 🌾",
+        "objectives": [
+          {
+            "id": "eg-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "eg-glossary"
+          },
+          {
+            "id": "eg-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "eg-glossary"
+          },
+          {
+            "id": "eg-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "eg-goal-notice",
+            "label": "I named one thing I use that depends on someone else growing food",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th Grade • 4 goals • notice the chain around you"
+    },
+    {
+      "id": "eg-reading",
+      "type": "simplified",
+      "title": "Follow the Food, Find the City",
+      "timestamp": "2026-09-05T22:50:01.000Z",
+      "data": "## Follow the Food, Find the City\n\nEgypt is mostly desert. Almost nobody lived in the desert. Nearly everyone lived in a green strip a few miles wide, along one river.\n\nThe Greek writer Herodotus called Egypt the gift of the Nile. He was close, though the gift needed a lot of work.\n\nEach year the **Nile** flooded. The water spread across the low ground and left behind dark **silt**, a fine mud carried down from highlands far to the south. Silt is rich. Crops grow in it. And unlike most floods, this one arrived at roughly the same time each year, so people could plan around it.\n\nHere is the chain that follows, and it is the reason this lesson exists.\n\nPredictable floods meant reliable farming. Reliable farming meant a **surplus** — more grain than the farmers themselves needed. A surplus sounds boring. It is the most important idea here.\n\nOnce there is extra food, some people do not have to farm. They can spend their days doing one thing instead. Those are **specialists**: potters, weavers, builders, priests, soldiers. **Specialization** is only possible when somebody else grows your dinner.\n\nSpecialists need organizing, and grain needs counting. So Egyptians developed **hieroglyphs**, a writing system, and much of the earliest writing anywhere is not poetry. It is receipts. Lists of grain. Records of who owed what.\n\nWriting and stored grain made a **bureaucracy** possible: officials, taxes, and a **pharaoh** at the top who claimed to be both king and god.\n\nNow the part worth arguing about. We know this story mostly from tombs, temples, and official records, which were made by and for the powerful. The farmers who made the surplus possible left almost nothing behind. **Archaeologists** work hard on ordinary settlements to fill that gap, and much is still unknown.\n\nSo the pyramids are real, and they are not the point. Follow the food, and you find the city.",
+      "meta": "6th Grade • Leveled reading • ~370 words",
+      "imageSlot": "eg-img-green-strip"
+    },
+    {
+      "id": "eg-glossary",
+      "type": "glossary",
+      "title": "Nile Words",
+      "timestamp": "2026-09-05T22:50:02.000Z",
+      "data": [
+        {
+          "term": "Nile",
+          "def": "The long river Egypt was built along, flowing north to the sea.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Silt",
+          "def": "Fine dark mud left behind by a flood, rich enough for crops.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Surplus",
+          "def": "More food than the people who grew it need for themselves.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Specialist",
+          "def": "Someone who works at one craft or job instead of farming.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Hieroglyph",
+          "def": "One of the picture signs Egyptians used for writing.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Bureaucracy",
+          "def": "A system of officials who keep records and collect taxes.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Pharaoh",
+          "def": "The ruler of Egypt, treated as both king and god.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Irrigation",
+          "def": "Moving river water onto fields through ditches and channels.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Archaeologist",
+          "def": "A person who studies the past from what people left behind.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Evidence",
+          "def": "Observations that support or challenge an explanation.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "eg-anchor",
+      "type": "anchor-chart",
+      "title": "From Flood to City",
+      "timestamp": "2026-09-05T22:50:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "THE CHAIN, ONE LINK AT A TIME",
+        "sections": [
+          {
+            "label": "1 · A PREDICTABLE FLOOD",
+            "bullets": [
+              "The Nile flooded at about the same time each year",
+              "It left dark silt across the low ground",
+              "Predictable beats merely large: people could plan"
+            ],
+            "iconPrompt": "a river spreading across flat ground, dark band along the banks"
+          },
+          {
+            "label": "2 · A SURPLUS",
+            "bullets": [
+              "Rich soil plus irrigation meant reliable harvests",
+              "More grain than the farmers needed",
+              "Grain can be stored, so wealth can be stored"
+            ],
+            "iconPrompt": "a granary with sacks stacked higher than one family could eat"
+          },
+          {
+            "label": "3 · SPECIALISTS",
+            "bullets": [
+              "Some people stop farming and do one thing",
+              "Potters, weavers, builders, priests, soldiers",
+              "Only possible when somebody else grows your food"
+            ],
+            "iconPrompt": "a potter at a wheel and a weaver at a loom, side by side"
+          },
+          {
+            "label": "4 · WRITING AND OFFICIALS",
+            "bullets": [
+              "Grain has to be counted, so records begin",
+              "Much of the earliest writing is receipts, not poetry",
+              "Records make taxes, officials and a pharaoh possible"
+            ],
+            "iconPrompt": "a scribe marking a tally on a clay surface beside grain sacks"
+          },
+          {
+            "label": "WHO IS MISSING",
+            "bullets": [
+              "Tombs and temples were made by and for the powerful",
+              "The farmers left almost nothing behind",
+              "Ask whose evidence survived before you trust the story"
+            ],
+            "iconPrompt": "a grand carved wall beside a plain empty patch of ground"
+          }
+        ]
+      },
+      "meta": "5 parts • the argument on one page"
+    },
+    {
+      "id": "eg-outline",
+      "type": "outline",
+      "title": "The Chain",
+      "timestamp": "2026-09-05T22:50:04.000Z",
+      "data": {
+        "main": "Predictable flood → surplus → specialists → writing → state",
+        "branches": [
+          {
+            "title": "Why a river, and why this river",
+            "items": [
+              "Egypt is mostly desert; nearly everyone lived in a green strip a few miles wide",
+              "The Nile flooded at roughly the same time each year, so people could plan",
+              "The flood left silt: fine dark mud carried down from highlands far to the south",
+              "Irrigation ditches carried the water further than the flood reached"
+            ]
+          },
+          {
+            "title": "Surplus is the hinge",
+            "items": [
+              "Reliable farming produced more grain than the farmers needed",
+              "Grain stores, so for the first time wealth could be stored",
+              "Everything after this point depends on this one step"
+            ]
+          },
+          {
+            "title": "What a surplus buys",
+            "items": [
+              "Some people stop farming: potters, weavers, builders, priests, soldiers",
+              "Specialization is only possible when somebody else grows your dinner",
+              "Skills deepen when a person does one thing all day"
+            ]
+          },
+          {
+            "title": "Why writing appears",
+            "items": [
+              "Stored grain has to be counted and claimed",
+              "Much of the earliest writing anywhere is receipts and lists, not literature",
+              "Hieroglyphs served records before they served poetry"
+            ]
+          },
+          {
+            "title": "What records make possible",
+            "items": [
+              "Officials, taxes and a bureaucracy",
+              "A pharaoh at the top, claiming to be both king and god",
+              "Monuments — which is what survived for us to look at"
+            ]
+          },
+          {
+            "title": "The gap in the evidence",
+            "items": [
+              "Tombs, temples and official records were made by and for the powerful",
+              "The farmers who made the surplus possible left almost nothing",
+              "Archaeologists dig ordinary settlements to fill the gap, and much is still unknown"
+            ]
+          }
+        ]
+      },
+      "meta": "6 branches • concept map • one causal chain plus its blind spot"
+    },
+    {
+      "id": "eg-memory",
+      "type": "memory-aid",
+      "title": "Remember the Chain",
+      "timestamp": "2026-09-05T22:50:05.000Z",
+      "meta": "6th Grade • 2 memory aids • the causal chain, and whose evidence survived",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Chain",
+        "instructions": "Two cards hold the argument. Study the example, build one of your own, then explain what it helps you keep straight.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Predictable floods meant reliable farming. Reliable farming meant a surplus. Once there is extra food, some people do not have to farm. Specialists need organizing, and grain needs counting.",
+        "lessonRef": {
+          "resourceId": "eg-reading",
+          "title": "Follow the Food, Find the City"
+        },
+        "cards": [
+          {
+            "id": "eg-ma-chain",
+            "target": "The chain that turns a flood into a civilization",
+            "essentialFacts": [
+              "A predictable flood left rich silt, so farming was reliable.",
+              "Reliable farming produced a surplus of grain.",
+              "A surplus freed some people to become specialists.",
+              "Counting stored grain is why writing and officials appeared."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "FLOOD, FOOD, FREE, FILE. Flood leaves silt. Food piles up as surplus. Free hands stop farming. File the records that count it all. Four F words in the order the causes actually run.",
+            "mapping": "Each F names one link and the links only make sense in that order, so saying the four words forces the causes into the right sequence rather than a list of facts.",
+            "scaffoldStarter": "First ____, which allows ____, which allows ____, which requires ____.",
+            "scaffoldSteps": [
+              "Name the four links in order.",
+              "Give each a single word you can remember.",
+              "Say the chain without looking."
+            ],
+            "coachPrompts": [
+              "Which link would break the whole chain if you removed it?"
+            ],
+            "studentPrompt": "Build your own four-word chain for the same causes.",
+            "reasoningPrompt": "Why does the order matter more than the list?",
+            "hookFact": {
+              "text": "Much of the earliest writing anywhere is not poetry. It is receipts. Lists of grain.",
+              "sourceTitle": "Follow the Food, Find the City (this lesson)"
+            }
+          },
+          {
+            "id": "eg-ma-record",
+            "target": "Whose evidence survived, and whose did not",
+            "essentialFacts": [
+              "We know this story mostly from tombs, temples and official records.",
+              "Those were made by and for the powerful.",
+              "The farmers who made the surplus possible left almost nothing behind."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Imagine your town in three thousand years, known only from its statues and its bank records. You would learn a lot about the mayor and nothing about lunch.",
+            "mapping": "The comparison keeps the bias visible: the survival of a record depends on who could afford to make it last, not on who mattered.",
+            "scaffoldStarter": "If only ____ survived from my town, people would think ____ and would never know ____.",
+            "scaffoldSteps": [
+              "Pick what would survive from your own town.",
+              "Say what it would show.",
+              "Say who it would leave out."
+            ],
+            "coachPrompts": [
+              "Who in ancient Egypt is hardest to hear from, and why?"
+            ],
+            "studentPrompt": "Make your own comparison for a lopsided record.",
+            "reasoningPrompt": "How does knowing who made the evidence change how you read it?",
+            "hookFact": {
+              "text": "The farmers who made the surplus possible left almost nothing behind.",
+              "sourceTitle": "Follow the Food, Find the City (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "eg-sort",
+      "type": "concept-sort",
+      "title": "Cause or Effect?",
+      "timestamp": "2026-09-05T22:50:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "eg-env",
+            "label": "Came from the land itself",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "eg-choice",
+            "label": "Something people built or chose",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "eg-result",
+            "label": "A result further down the chain",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "eg1",
+            "content": "The yearly flood arriving at about the same time",
+            "categoryId": "eg-env"
+          },
+          {
+            "id": "eg2",
+            "content": "Dark silt spread across the low ground",
+            "categoryId": "eg-env"
+          },
+          {
+            "id": "eg3",
+            "content": "Desert on both sides of a narrow green strip",
+            "categoryId": "eg-env"
+          },
+          {
+            "id": "eg4",
+            "content": "Ditches cut to carry water past the flood line",
+            "categoryId": "eg-choice"
+          },
+          {
+            "id": "eg5",
+            "content": "A writing system for counting stored grain",
+            "categoryId": "eg-choice"
+          },
+          {
+            "id": "eg6",
+            "content": "Officials appointed to collect and record taxes",
+            "categoryId": "eg-choice"
+          },
+          {
+            "id": "eg7",
+            "content": "Potters and weavers who never farm at all",
+            "categoryId": "eg-result"
+          },
+          {
+            "id": "eg8",
+            "content": "Monuments large enough to still be standing",
+            "categoryId": "eg-result"
+          },
+          {
+            "id": "eg9",
+            "content": "A record that says far more about rulers than farmers",
+            "categoryId": "eg-result"
+          }
+        ]
+      },
+      "meta": "3 buckets • 9 cards • the middle bucket is the one people forget"
+    },
+    {
+      "id": "eg-quiz",
+      "type": "quiz",
+      "title": "Nile Check",
+      "timestamp": "2026-09-05T22:50:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What made the Nile's flood so useful to farmers?",
+            "options": [
+              "It was larger than any other river flood on Earth",
+              "It arrived at about the same time each year, so people could plan",
+              "It washed the old soil away and left clean sand behind",
+              "It happened only once in a farmer's lifetime, so it did no harm"
+            ],
+            "correctAnswer": "It arrived at about the same time each year, so people could plan",
+            "conceptLabel": "predictability beats size"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is a surplus the hinge of the whole chain?",
+            "options": [
+              "It let some people stop farming and do one thing instead",
+              "It meant farmers could finally eat as much as they wanted",
+              "It made the soil richer for the following year's planting",
+              "It was the first thing the pharaoh ever asked people for"
+            ],
+            "correctAnswer": "It let some people stop farming and do one thing instead",
+            "conceptLabel": "surplus makes specialists"
+          },
+          {
+            "type": "mcq",
+            "question": "Much of the earliest writing anywhere is best described as what?",
+            "options": [
+              "Poems and stories about gods and heroes",
+              "Letters written between distant family members",
+              "Records and receipts: lists of grain and who owed what",
+              "Instructions carved to teach children their letters"
+            ],
+            "correctAnswer": "Records and receipts: lists of grain and who owed what",
+            "conceptLabel": "writing began as accounting"
+          },
+          {
+            "type": "mcq",
+            "question": "Why do historians say the record of ancient Egypt is lopsided?",
+            "options": [
+              "Most of it was written in a language nobody can read",
+              "Egyptians deliberately destroyed the records of farmers",
+              "Almost all of it was found in the last twenty years",
+              "Tombs and official records were made by and for the powerful"
+            ],
+            "correctAnswer": "Tombs and official records were made by and for the powerful",
+            "conceptLabel": "whose evidence survived"
+          },
+          {
+            "type": "mcq",
+            "question": "A specialist in ancient Egypt could exist only because ______.",
+            "options": [
+              "the pharaoh personally chose them for the work",
+              "somebody else was growing enough food for them",
+              "they had learned to read and write hieroglyphs",
+              "the flood had failed and farming became pointless"
+            ],
+            "correctAnswer": "somebody else was growing enough food for them",
+            "conceptLabel": "surplus makes specialists"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain the chain from the Nile's flood to the first officials, in order, naming each link.",
+            "expectedAnswer": "The flood arrived predictably and left rich silt, so farming was reliable. Reliable farming produced a surplus of grain. The surplus freed some people from farming to become specialists. Stored grain had to be counted, so writing appeared, and records made officials, taxes and a bureaucracy possible.",
+            "conceptLabel": "predictability beats size"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A classmate says we know ancient Egypt well because so much survived. What is the problem with that?",
+            "expectedAnswer": "What survived is mostly tombs, temples and official records, which were made by and for the powerful. The farmers who made the surplus possible left almost nothing, so the record tells us far more about rulers than about ordinary people, and much is still unknown.",
+            "conceptLabel": "whose evidence survived"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Name one thing you used today that only exists because somebody else grows food."
+          },
+          {
+            "text": "If only three objects from your school survived for 3,000 years, what would people get wrong about you?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 write-outs • the last one is the historian's question"
+    },
+    {
+      "id": "eg-faq",
+      "type": "faq",
+      "title": "Egypt Questions Kids Ask",
+      "timestamp": "2026-09-05T22:50:08.000Z",
+      "data": [
+        {
+          "question": "Were the pyramids built by slaves? ⛏️",
+          "answer": "The old story says yes. The evidence says mostly no. Workers' villages near Giza show bread ovens, medical care and burials of honour. Most builders appear to have been paid labourers, many working in the flood season when fields were underwater. Egypt did hold enslaved people, so it is not a clean story either."
+        },
+        {
+          "question": "Did the same thing happen anywhere else?",
+          "answer": "Yes, and that is the striking part. Mesopotamia, the Indus valley and China all grew early cities on rivers, and none of them copied the others. The same conditions produced the same chain more than once."
+        },
+        {
+          "question": "How do we read hieroglyphs? 🪨",
+          "answer": "For centuries nobody could. The Rosetta Stone carried the same message in three scripts, and by working from the known Greek, scholars broke the rest. Champollion published the key in 1822."
+        },
+        {
+          "question": "Why is Egypt so dry if it has a huge river?",
+          "answer": "Almost no rain falls there. The water is entirely the river's, carried in from wetter highlands far to the south. Step a few miles from the bank and you are in desert."
+        },
+        {
+          "question": "Was the pharaoh really thought to be a god?",
+          "answer": "Officially yes, and Egyptians took the claim seriously. Whether ordinary farmers believed it as fully as the temples said is exactly the kind of question the surviving record cannot answer."
+        },
+        {
+          "question": "What happened when the flood failed? 🌾",
+          "answer": "Hunger, and sometimes worse. Low floods are linked to periods of unrest and to the collapse of central rule. The whole chain rested on the river, which makes it strong and also fragile."
+        }
+      ],
+      "meta": "6 questions • the pyramid one corrects a story most kids arrive with"
+    },
+    {
+      "id": "eg-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: What the Record Leaves Out",
+      "timestamp": "2026-09-05T22:50:09.000Z",
+      "meta": "6th Grade • Investigation brief • read a source for its silences",
+      "data": {
+        "schemaVersion": 6,
+        "title": "What the Record Leaves Out",
+        "instructions": "Take one thing that survived from ancient Egypt. Work out what it tells you, what it cannot tell you, and who it leaves out.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The standard asks students to detect limitations in the historical record. Doing that on one real object beats being told the record is biased, because the student has to find the silence themselves.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has images and descriptions of several surviving sources: a tomb painting of a harvest, a scribe's grain tally, a pyramid, a worker's village bread oven, and a temple wall listing a pharaoh's victories. Each team takes one.",
+          "role": "Historians examining a source",
+          "audience": "The rest of the class, who will build a shared list of what the record can and cannot show",
+          "drivingQuestion": "What does this one source let us claim with confidence, what can it only hint at, and whose life does it leave out entirely?",
+          "seedDirection": "Ask who made it, who paid for it, and who it was meant to impress. The answer to those three usually explains the silences.",
+          "lockedLessonFacts": [
+            "We know this story mostly from tombs, temples and official records.",
+            "Those were made by and for the powerful.",
+            "The farmers who made the surplus possible left almost nothing behind.",
+            "Archaeologists dig ordinary settlements to fill the gap, and much is still unknown."
+          ],
+          "openQuestions": [
+            "Who made this source, and for whom?",
+            "What would it have cost to make, and who could afford that?",
+            "What would you need to find, to check a claim this source makes?"
+          ],
+          "stakeholders": [
+            "The class building the shared list",
+            "Your team, who must agree on the confidence rating",
+            "The people the source leaves out"
+          ],
+          "criteria": [
+            "Three claims the source supports, each rated strong, likely or unsure with a reason",
+            "One claim the source appears to make that it cannot actually prove",
+            "A named group whose life this source does not show, and why not",
+            "At least four glossary words used correctly"
+          ],
+          "constraints": [
+            "One source per team",
+            "Two class periods",
+            "No claim without a reason attached to it"
+          ],
+          "deliverable": "A one-page source report: what it is, three rated claims, one claim it cannot prove, and the group it leaves out — plus the single piece of evidence you would most want to find next.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A team took the temple wall listing a pharaoh's victories.",
+            "move": "They rated the fact of the campaign as likely, the size of the enemy army as unsure, and the total victory as weak, because the wall was paid for by the man it praises and no defeat was ever carved.",
+            "whyItHelps": "They separated what happened from what the source wanted people to believe, using who paid for it as the test."
+          },
+          "frameStarter": "This source shows ____. It cannot show ____, because ____. It leaves out ____.",
+          "frameChoices": [
+            "A tomb painting of a harvest",
+            "A scribe's grain tally",
+            "A worker's village bread oven",
+            "A temple wall of victories"
+          ],
+          "coachPrompts": [
+            "Who paid for this to exist?",
+            "What would a defeat or a bad harvest look like in this record?",
+            "Which of your three claims is weakest, and are you willing to say so?"
+          ]
+        },
+        "coachHint": "Who made it. Who paid. Who is missing.",
+        "sourceExcerpt": "We know this story mostly from tombs, temples, and official records, which were made by and for the powerful.",
+        "lessonRef": {
+          "resourceId": "eg-reading",
+          "title": "Follow the Food, Find the City"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,529 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Reading a Map — Every Map Leaves Something Out",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "3rd Grade",
+    "standards": "C3 Framework D2.Geo.1.3-5 (construct maps and other graphic representations of both familiar and unfamiliar places); C3 Framework D2.Geo.2.3-5 (use maps and other geographic representations to explain relationships between the locations of places and regions); CCSS.ELA-LITERACY.RI.3.7 (use information gained from illustrations and the words in a text to demonstrate understanding)",
+    "createdAt": "2026-09-05T22:30:00.000Z",
+    "imageShotList": "allopacks/map_skills_grade3.IMAGES.md"
+  },
+  "sourceTopic": "Map Skills and What Maps Leave Out",
+  "history": [
+    {
+      "id": "mk-directions",
+      "type": "directions",
+      "title": "Find Your Way",
+      "timestamp": "2026-09-05T22:30:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nA map is not a photograph. Somebody decided what to draw and what to leave out. This week you learn to read a map, and to notice the choices behind it.\n\n1. Read **Every Map Leaves Something Out**.\n2. Learn the words in **Map Words**, then win the **Crossword**.\n3. Keep the **Parts of a Map** chart where you can see it.\n4. Sort the cards in **On the Map or Not?**\n5. Take **Map Check**.\n6. Lock it in with **Remember the Map Parts**.\n7. Read **Map Questions Kids Ask** when you get curious.\n8. Finish with **Design: A Map of Somewhere You Know**.\n\nYour job this week: find a real map somewhere — a bus stop, a mall, a park sign — and see which parts it has. 🗺️",
+        "objectives": [
+          {
+            "id": "mk-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "mk-glossary"
+          },
+          {
+            "id": "mk-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "mk-glossary"
+          },
+          {
+            "id": "mk-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "mk-goal-spot",
+            "label": "I found a real map and named which parts it had",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "3rd Grade • 4 goals • find a real map"
+    },
+    {
+      "id": "mk-reading",
+      "type": "simplified",
+      "title": "Every Map Leaves Something Out",
+      "timestamp": "2026-09-05T22:30:01.000Z",
+      "data": "## Every Map Leaves Something Out\n\nDraw a map of your classroom. Did you draw every pencil? Every crumb on the floor? Of course not. You drew the desks and the door.\n\nThat is the first thing to know about maps. A **map** is a drawing of a place from above, and it always leaves things out on purpose. A map that showed everything would be as big and as confusing as the real place.\n\nSo a mapmaker chooses. And once you know that, you can ask a much better question than \"where is it?\" You can ask: what did this person decide to show me?\n\nMaps give you tools for reading them.\n\nA **symbol** is a small picture that stands for something real. A tiny tent means a campground. A blue line means a river. The **key** is the box that tells you what each symbol means. Without a key, a symbol is just a shape.\n\nThe **compass** rose shows you which way is north. Most maps put north at the top, but that is a habit, not a rule. Old maps often put east at the top instead.\n\nThe **scale** tells you how much real distance a small distance on the paper stands for. One inch might mean one mile. Scale is why a whole country can sit on one page.\n\nA **border** is a line showing where one place ends and the next begins. Some borders follow a river. Many were drawn by people, and people argued about them.\n\nA **globe** is different from a flat map. Earth is round, so flattening it always stretches something. On many flat maps Greenland looks about the size of Africa. It is not close. Africa is about fourteen times larger.\n\nSo read a map twice. Once to find your way. Once to ask what got left out.",
+      "meta": "3rd Grade • Leveled reading • ~330 words",
+      "imageSlot": "mk-img-classroom-map"
+    },
+    {
+      "id": "mk-glossary",
+      "type": "glossary",
+      "title": "Map Words",
+      "timestamp": "2026-09-05T22:30:02.000Z",
+      "data": [
+        {
+          "term": "Map",
+          "def": "A drawing of a place as it looks from above.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Symbol",
+          "def": "A small picture that stands for something real.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Key",
+          "def": "The box that tells you what each little picture means.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Compass",
+          "def": "The marker that shows which way is north.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Scale",
+          "def": "How much real distance a small distance on paper stands for.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Border",
+          "def": "A line showing where one place ends and the next begins.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Globe",
+          "def": "A round model of Earth, shaped the way the planet really is.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Distance",
+          "def": "How far it is from one spot to another.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Region",
+          "def": "An area that is grouped together because its parts are alike.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Landmark",
+          "def": "Something easy to spot that helps you know where you are.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "mk-anchor",
+      "type": "anchor-chart",
+      "title": "Parts of a Map",
+      "timestamp": "2026-09-05T22:30:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "FOUR THINGS TO LOOK FOR",
+        "sections": [
+          {
+            "label": "THE KEY",
+            "bullets": [
+              "Tells you what each symbol means",
+              "Usually a box in a corner",
+              "Read it BEFORE you read the map"
+            ],
+            "iconPrompt": "a small boxed list of three simple shapes"
+          },
+          {
+            "label": "THE COMPASS",
+            "bullets": [
+              "Shows which way is north",
+              "North is usually up, but that is a habit",
+              "Old maps often put east at the top"
+            ],
+            "iconPrompt": "a four-point compass rose"
+          },
+          {
+            "label": "THE SCALE",
+            "bullets": [
+              "One small distance stands for a big one",
+              "It is why a country fits on a page",
+              "Two maps of one place can use different scales"
+            ],
+            "iconPrompt": "a short measuring bar beside a long road"
+          },
+          {
+            "label": "WHAT IS MISSING",
+            "bullets": [
+              "Every map leaves things out on purpose",
+              "Ask what the mapmaker chose to show",
+              "A flat map always stretches something"
+            ],
+            "iconPrompt": "a map with one corner lifted showing blank paper beneath"
+          }
+        ]
+      },
+      "meta": "4 parts • the fourth one is the thinking move"
+    },
+    {
+      "id": "mk-memory",
+      "type": "memory-aid",
+      "title": "Remember the Map Parts",
+      "timestamp": "2026-09-05T22:30:04.000Z",
+      "meta": "3rd Grade • 2 memory aids • the parts, and the habit of asking what is missing",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Map Parts",
+        "instructions": "Two cards hold the big ideas. Look at the example, make one your own, then say how it helps you remember.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The key is the box that tells you what each symbol means. The compass rose shows you which way is north. The scale tells you how much real distance a small distance on the paper stands for. A map always leaves things out on purpose.",
+        "lessonRef": {
+          "resourceId": "mk-reading",
+          "title": "Every Map Leaves Something Out"
+        },
+        "cards": [
+          {
+            "id": "mk-ma-parts",
+            "target": "The three tools every map gives you for reading it",
+            "essentialFacts": [
+              "The key tells you what each symbol means.",
+              "The compass shows which way is north.",
+              "The scale tells you what a small distance stands for."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "K-C-S: Key, Compass, Scale. Say it as Kids Can Steer. A kid who can steer knows what the pictures mean, which way is north, and how far it really is.",
+            "mapping": "Each letter starts one tool. The sentence is about steering, which is what all three tools are for, so the phrase and the job match.",
+            "scaffoldStarter": "K is for ____. C is for ____. S is for ____.",
+            "scaffoldSteps": [
+              "Name the three tools.",
+              "Take the first letter of each.",
+              "Make a short sentence from those letters."
+            ],
+            "coachPrompts": [
+              "Which of the three would you miss most on a hiking map?"
+            ],
+            "studentPrompt": "Make your own sentence from K, C and S.",
+            "reasoningPrompt": "How does your sentence help you remember what each tool does?",
+            "hookFact": {
+              "text": "Without a key, a symbol is just a shape.",
+              "sourceTitle": "Every Map Leaves Something Out (this lesson)"
+            }
+          },
+          {
+            "id": "mk-ma-leftout",
+            "target": "A map is a set of choices, not a photograph",
+            "essentialFacts": [
+              "A map always leaves things out on purpose.",
+              "A map that showed everything would be as big as the real place.",
+              "Flattening a round Earth always stretches something."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A map is like a school photo. Everyone is facing the camera and nobody is arguing or eating lunch. It is real, and it is only the part somebody chose to keep.",
+            "mapping": "A school photo is obviously true and obviously incomplete at the same time, which is the exact pair of ideas a map needs you to hold.",
+            "scaffoldStarter": "A map is like a ____, because it shows ____ and leaves out ____.",
+            "scaffoldSteps": [
+              "Think of something that is true but not the whole story.",
+              "Say what it shows.",
+              "Say what it leaves out."
+            ],
+            "coachPrompts": [
+              "What would a map of your school leave out on purpose?"
+            ],
+            "studentPrompt": "Make your own comparison for a map.",
+            "reasoningPrompt": "Why is leaving things out helpful rather than dishonest?",
+            "hookFact": {
+              "text": "On many flat maps Greenland looks about the size of Africa. Africa is about fourteen times larger.",
+              "sourceTitle": "Every Map Leaves Something Out (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "mk-sort",
+      "type": "concept-sort",
+      "title": "On the Map or Not?",
+      "timestamp": "2026-09-05T22:30:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "mk-yes",
+            "label": "A city map WOULD show this",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "mk-no",
+            "label": "A city map would LEAVE THIS OUT",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "mk1",
+            "content": "The main roads through town",
+            "categoryId": "mk-yes"
+          },
+          {
+            "id": "mk2",
+            "content": "Which house has a barking dog",
+            "categoryId": "mk-no"
+          },
+          {
+            "id": "mk3",
+            "content": "The river and the bridges over it",
+            "categoryId": "mk-yes"
+          },
+          {
+            "id": "mk4",
+            "content": "Where the park and the library are",
+            "categoryId": "mk-yes"
+          },
+          {
+            "id": "mk5",
+            "content": "The colour somebody painted their fence",
+            "categoryId": "mk-no"
+          },
+          {
+            "id": "mk6",
+            "content": "The city border with the next town",
+            "categoryId": "mk-yes"
+          },
+          {
+            "id": "mk7",
+            "content": "Every parked car on every street",
+            "categoryId": "mk-no"
+          },
+          {
+            "id": "mk8",
+            "content": "Which way is north",
+            "categoryId": "mk-yes"
+          },
+          {
+            "id": "mk9",
+            "content": "How loud the traffic gets at noon",
+            "categoryId": "mk-no"
+          }
+        ]
+      },
+      "meta": "2 buckets • 9 cards • the left-out ones are all real and all unhelpful"
+    },
+    {
+      "id": "mk-quiz",
+      "type": "quiz",
+      "title": "Map Check",
+      "timestamp": "2026-09-05T22:30:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "You see a small tent drawn on a map. Where do you find out what it means?",
+            "options": [
+              "In the key, which explains every symbol",
+              "In the scale, which measures the distance",
+              "On the compass, which points you north",
+              "Along the border, which marks the edges"
+            ],
+            "correctAnswer": "In the key, which explains every symbol",
+            "conceptLabel": "the key explains symbols"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does a map leave things out?",
+            "options": [
+              "The mapmaker ran out of room on the paper",
+              "Showing everything would be as confusing as the real place",
+              "Some things are secret and are not allowed on maps",
+              "Only the newest maps have room for all of it"
+            ],
+            "correctAnswer": "Showing everything would be as confusing as the real place",
+            "conceptLabel": "maps are choices"
+          },
+          {
+            "type": "mcq",
+            "question": "Is north always at the top of a map?",
+            "options": [
+              "Yes, it is a rule that mapmakers must follow",
+              "Yes, because north is the top of the planet",
+              "No, it is a habit; old maps often put east up",
+              "No, the top changes depending on the season"
+            ],
+            "correctAnswer": "No, it is a habit; old maps often put east up",
+            "conceptLabel": "north on top is a habit"
+          },
+          {
+            "type": "mcq",
+            "question": "On many flat maps Greenland looks about as big as Africa. Why?",
+            "options": [
+              "Greenland really is about that size in real life",
+              "The mapmaker measured the ice instead of the land",
+              "Africa shrank when countries redrew their borders",
+              "Flattening a round Earth stretches some places"
+            ],
+            "correctAnswer": "Flattening a round Earth stretches some places",
+            "conceptLabel": "flat maps stretch the round earth"
+          },
+          {
+            "type": "mcq",
+            "question": "What does the scale on a map tell you?",
+            "options": [
+              "How heavy the paper the map is printed on is",
+              "How old the map is and when it was drawn",
+              "Which places on the map are the most important",
+              "What a small distance on paper means in real life"
+            ],
+            "correctAnswer": "What a small distance on paper means in real life",
+            "conceptLabel": "scale turns paper into real distance"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Name two things a map of your school would leave out, and say why leaving them out helps.",
+            "expectedAnswer": "Answers vary. A full answer names two real things that are true but unhelpful, such as where each backpack is or what is for lunch, and explains that leaving them out keeps the map clear enough to use.",
+            "conceptLabel": "maps are choices"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A friend says a map is just a photo of a place from above. What would you tell them?",
+            "expectedAnswer": "A map is not a photo. Somebody chose what to draw and what to leave out, and used symbols instead of the real things. A photo would show every car and every crumb, which would make it hard to use.",
+            "conceptLabel": "maps are choices"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is a landmark near your home that you would put on a map?"
+          },
+          {
+            "text": "If you drew a map of your day, what would you leave out?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • two ask you to argue back"
+    },
+    {
+      "id": "mk-faq",
+      "type": "faq",
+      "title": "Map Questions Kids Ask",
+      "timestamp": "2026-09-05T22:30:07.000Z",
+      "data": [
+        {
+          "question": "Who decides where a border goes? 🗺️",
+          "answer": "People do. Some borders follow a river or a mountain range. Many were drawn in a room far away, and people have argued about them ever since."
+        },
+        {
+          "question": "Why is north at the top? ⬆️",
+          "answer": "Habit, mostly. Old European mapmakers settled on it and it stuck. Some old maps put east at the top instead. Space has no up, so no direction is the real top."
+        },
+        {
+          "question": "Is a globe better than a flat map?",
+          "answer": "For shape and size, yes. A globe is round like Earth, so nothing gets stretched. But you cannot fold one into a pocket, and you can only see half at a time."
+        },
+        {
+          "question": "How do phone maps know where I am? 📱",
+          "answer": "Your phone listens for signals from satellites far above you. It works out how long each signal took to arrive, and from that it finds your spot."
+        },
+        {
+          "question": "Can a map be wrong?",
+          "answer": "Yes, and in two ways. It can have mistakes. It can also be drawn to make one place look bigger or more important than it is. Both are worth watching for."
+        },
+        {
+          "question": "Are there places left to map?",
+          "answer": "Plenty. Most of the deep ocean floor has never been mapped closely. We have better maps of the surface of Mars than of the bottom of our own sea."
+        }
+      ],
+      "meta": "6 questions • honest answers, including the awkward ones"
+    },
+    {
+      "id": "mk-challenge",
+      "type": "applied-challenge",
+      "title": "Design: A Map of Somewhere You Know",
+      "timestamp": "2026-09-05T22:30:08.000Z",
+      "meta": "3rd Grade • Design brief • one place, one page, one job",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Map of Somewhere You Know",
+        "instructions": "Make a map of one real place for one real purpose. Then say what you left out, and why leaving it out made the map better.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "Drawing a map for a stated purpose forces a student to leave things out on purpose, which is the idea the reading is built on and the part a labeling worksheet never reaches.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "A new student starts next week and does not know the building. Your class is making maps to help. You get one sheet of paper, coloured pencils, and one class period to walk the route.",
+          "role": "Mapmakers",
+          "audience": "The new student, who will use your map alone on their first morning",
+          "drivingQuestion": "What has to be on a map of our school so a new student can find their way alone, and what has to be left off so it stays easy to read?",
+          "seedDirection": "Decide the job first. A map for finding the bathroom is a different map from a map for the fire drill.",
+          "lockedLessonFacts": [
+            "A map is a drawing of a place from above.",
+            "A key tells you what each symbol means.",
+            "A compass shows which way is north.",
+            "Every map leaves things out on purpose."
+          ],
+          "openQuestions": [
+            "What is the one job this map has to do?",
+            "Which symbols will you invent, and how will the key explain them?",
+            "What did you decide to leave off, and why?"
+          ],
+          "stakeholders": [
+            "The new student",
+            "The teacher who hands out the map",
+            "Your partner, who tests it by walking it"
+          ],
+          "criteria": [
+            "The map has a key, and every symbol on the map is in it",
+            "The map has a compass showing north",
+            "A partner can walk the route using the map without being told",
+            "You can name two things you left out, and say why"
+          ],
+          "constraints": [
+            "One sheet of paper",
+            "One class period",
+            "Drawn from above, not from the side"
+          ],
+          "deliverable": "The finished map, plus two sentences: the job this map does, and the two things you left off on purpose.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student mapped the route from the front door to the cafeteria.",
+            "move": "He drew only the hallways on that route and greyed the rest of the building out. He invented three symbols, put them in a key, and his partner walked it without asking a question.",
+            "whyItHelps": "Greying out the rest was a choice, not laziness. The map got easier to use because it showed less."
+          },
+          "frameStarter": "My map is for ____. I put in ____. I left out ____ because ____.",
+          "frameChoices": [
+            "A map for finding one room",
+            "A map for the whole floor",
+            "A map of the playground",
+            "A map of the route from the bus"
+          ],
+          "coachPrompts": [
+            "Could a stranger use this without you?",
+            "Is every symbol on your map also in your key?",
+            "What did you leave out, and are you glad you did?"
+          ]
+        },
+        "coachHint": "One job. One page. Say what you left out.",
+        "sourceExcerpt": "A map is a drawing of a place from above, and it always leaves things out on purpose.",
+        "lessonRef": {
+          "resourceId": "mk-reading",
+          "title": "Every Map Leaves Something Out"
+        }
+      }
+    }
+  ]
+}

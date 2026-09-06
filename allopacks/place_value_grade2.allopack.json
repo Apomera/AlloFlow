@@ -1,0 +1,624 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Ten Is a Bundle — Place Value to 1000",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "2nd Grade",
+    "standards": "CCSS.MATH.CONTENT.2.NBT.A.1 (understand that the three digits of a three-digit number represent amounts of hundreds, tens, and ones); CCSS.MATH.CONTENT.2.NBT.A.3 (read and write numbers to 1000 using base-ten numerals, number names, and expanded form); CCSS.MATH.CONTENT.2.NBT.A.4 (compare two three-digit numbers based on the meanings of the digits); CCSS.MATH.CONTENT.2.NBT.B.5 (fluently add and subtract within 100 using strategies based on place value)",
+    "createdAt": "2026-09-05T22:10:00.000Z",
+    "imageShotList": "allopacks/place_value_grade2.IMAGES.md"
+  },
+  "sourceTopic": "Place Value to 1000",
+  "history": [
+    {
+      "id": "tn-directions",
+      "type": "directions",
+      "title": "Count by Bundles",
+      "timestamp": "2026-09-05T22:10:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nThere are only ten digits. So how do we write a number as big as 900? The answer is a trick with bundles, and once you see it you cannot unsee it.\n\n1. Read **Ten Is a Bundle**.\n2. Learn the words in **Number Words**, then win the **Crossword**.\n3. Keep the **Where a Digit Stands** chart next to you.\n4. Sort the cards in **Worth 4, 40, or 400?**\n5. Work through **Bundle Problems** with a pencil and paper.\n6. Take **Number Check**.\n7. Lock it in with **Remember the Places**.\n8. Read **Number Questions Kids Ask** if something is bugging you.\n9. Finish with **Design: A Number Poster for a Reading Buddy**.\n\nYour job this week: find a three-digit number somewhere at home and say what each digit is worth. 🔢",
+        "objectives": [
+          {
+            "id": "tn-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "tn-glossary"
+          },
+          {
+            "id": "tn-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "tn-glossary"
+          },
+          {
+            "id": "tn-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "tn-goal-find",
+            "label": "I found a three-digit number at home and said what each digit is worth",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "2nd Grade • 4 goals • find a number at home"
+    },
+    {
+      "id": "tn-reading",
+      "type": "simplified",
+      "title": "Ten Is a Bundle",
+      "timestamp": "2026-09-05T22:10:01.000Z",
+      "data": "## Ten Is a Bundle\n\nCount out 24 straws one at a time. Now count them again by tens. Ten. Twenty. Then four more.\n\nThe second way is faster. It is also the whole secret of how we write numbers.\n\nA **digit** is one of the ten symbols: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9. There are only ten of them. So how do we write big numbers? We give each digit a place. The place tells you its **value**.\n\nLook at 245. The 5 sits in the **ones** place. It means five single things. The 4 sits in the **tens** place. It does not mean four. It means four **bundles** of ten, which is forty. The 2 sits in the **hundreds** place. It means two bundles of one hundred.\n\nSo 245 is 200 + 40 + 5. Written that way, it is in **expanded** form.\n\nHere is the surprising part. The digit 2 can mean two. It can mean twenty. It can mean two hundred. Same symbol, different place. In math, where you stand changes what you are worth.\n\nWhat about **zero**? In 305 there are no tens at all. The zero holds that place open. Without it you would write 35, and that is a different number.\n\nSometimes you end up with ten of something in one place. Then you **regroup**. Trade ten ones for one ten. Trade ten tens for one hundred. That trade is how adding works once numbers get big.\n\nTo **compare** 245 and 254, start at the left. The hundreds match. Then look at the tens: 4 or 5. Five tens beats four tens. So 254 is the bigger number.",
+      "meta": "2nd Grade • Leveled reading • ~265 words • read-aloud friendly",
+      "imageSlot": "tn-img-bundles"
+    },
+    {
+      "id": "tn-glossary",
+      "type": "glossary",
+      "title": "Number Words",
+      "timestamp": "2026-09-05T22:10:02.000Z",
+      "data": [
+        {
+          "term": "Digit",
+          "def": "One of the ten number symbols, from 0 to 9.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Ones",
+          "def": "The place at the far right. It counts single things.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Tens",
+          "def": "The next place to the left. Each one stands for a group of ten.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Hundreds",
+          "def": "The next place after tens. Each one stands for ten groups of ten.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Bundle",
+          "def": "A group of ten put together so you can count it as one thing.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Value",
+          "def": "How much a digit is worth, which depends on where it sits.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Regroup",
+          "def": "To trade ten of one place for one of the next place up.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Compare",
+          "def": "To decide which of two numbers is bigger, smaller, or equal.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Expand",
+          "def": "To write a number as its parts added up, like 300 + 40 + 5.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Zero",
+          "def": "A digit that holds a place open when nothing is in it.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "tn-anchor",
+      "type": "anchor-chart",
+      "title": "Where a Digit Stands",
+      "timestamp": "2026-09-05T22:10:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "THE PLACE TELLS YOU THE VALUE",
+        "sections": [
+          {
+            "label": "ONES · the right-hand place",
+            "bullets": [
+              "Single things, not bundled",
+              "The 5 in 245 means 5",
+              "Count them one at a time"
+            ],
+            "iconPrompt": "five loose straws lying separately"
+          },
+          {
+            "label": "TENS · one step left",
+            "bullets": [
+              "Each one is a bundle of ten",
+              "The 4 in 245 means 40, not 4",
+              "Four bundles, not four straws"
+            ],
+            "iconPrompt": "four bundles of straws, each tied with a band"
+          },
+          {
+            "label": "HUNDREDS · one more step left",
+            "bullets": [
+              "Each one is ten bundles of ten",
+              "The 2 in 245 means 200",
+              "A box holding ten bundles"
+            ],
+            "iconPrompt": "two boxes, each holding ten tied bundles"
+          },
+          {
+            "label": "THE TWO MOVES",
+            "bullets": [
+              "Regroup: trade ten of a place for one of the next",
+              "Compare: start at the LEFT and work right",
+              "Zero holds a place open, so 305 is not 35"
+            ],
+            "iconPrompt": "an arrow trading ten small marks for one larger mark"
+          }
+        ]
+      },
+      "meta": "4 parts • place chart for the wall"
+    },
+    {
+      "id": "tn-memory",
+      "type": "memory-aid",
+      "title": "Remember the Places",
+      "timestamp": "2026-09-05T22:10:04.000Z",
+      "meta": "2nd Grade • 2 memory aids • the places, and which way to compare",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Places",
+        "instructions": "Two cards hold what you need for any number. Look at the example, make one your own, then say how it helps you.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "chunking",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The 5 sits in the ones place. The 4 sits in the tens place. It means four bundles of ten. The 2 sits in the hundreds place. To compare 245 and 254, start at the left.",
+        "lessonRef": {
+          "resourceId": "tn-reading",
+          "title": "Ten Is a Bundle"
+        },
+        "cards": [
+          {
+            "id": "tn-ma-places",
+            "target": "The three places, and what each digit is worth",
+            "essentialFacts": [
+              "The ones place is at the far right and counts single things.",
+              "The tens place is next, and each one is a bundle of ten.",
+              "The hundreds place is next, and each one is ten bundles of ten.",
+              "The same digit is worth more the farther left it sits."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "chunking",
+            "mode": "scaffolded",
+            "aiExample": "Three fingers, right to left. Pinky is ones. Ring finger is tens. Middle finger is hundreds. Read a number onto your fingers and each one gets ten times bigger as you move left.",
+            "mapping": "Your hand already goes right to left in a fixed order. That order is the same order the places go, so the fingers hold the sequence for you.",
+            "scaffoldStarter": "Right finger: ____. Next finger: ____. Next finger: ____.",
+            "scaffoldSteps": [
+              "Say the three places in order, right to left.",
+              "Put one on each finger.",
+              "Read 245 onto your fingers."
+            ],
+            "coachPrompts": [
+              "Which finger holds the digit that is worth the most?"
+            ],
+            "studentPrompt": "Make your own way to hold the three places in order.",
+            "reasoningPrompt": "How does your way keep you from mixing up tens and hundreds?",
+            "hookFact": {
+              "text": "The digit 2 can mean two. It can mean twenty. It can mean two hundred. Same symbol, different place.",
+              "sourceTitle": "Ten Is a Bundle (this lesson)"
+            }
+          },
+          {
+            "id": "tn-ma-left",
+            "target": "Start at the left when you compare two numbers",
+            "essentialFacts": [
+              "To compare 245 and 254, start at the left.",
+              "The hundreds match, so move right to the tens.",
+              "Five tens beats four tens, so 254 is bigger."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "BIG SIDE FIRST. The left side holds the biggest places, so you look there first. If the left digits tie, take one step right and look again.",
+            "mapping": "The phrase points at the side of the page, and the side of the page is exactly where the answer usually is, so the words tell you where to put your eyes.",
+            "scaffoldStarter": "I look at the ____ first because ____.",
+            "scaffoldSteps": [
+              "Say which side holds the biggest place.",
+              "Say what to do when those digits tie.",
+              "Try it on 519 and 591."
+            ],
+            "coachPrompts": [
+              "What happens if you start at the right instead?"
+            ],
+            "studentPrompt": "Make your own short phrase for which side to check first.",
+            "reasoningPrompt": "Why does the left side decide it most of the time?",
+            "hookFact": {
+              "text": "The hundreds match. Then look at the tens: 4 or 5. Five tens beats four tens.",
+              "sourceTitle": "Ten Is a Bundle (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "tn-sort",
+      "type": "concept-sort",
+      "title": "Worth 4, 40, or 400?",
+      "timestamp": "2026-09-05T22:10:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "tn-w4",
+            "label": "Worth 4",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "tn-w40",
+            "label": "Worth 40",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "tn-w400",
+            "label": "Worth 400",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "tn1",
+            "content": "the 4 in 254",
+            "categoryId": "tn-w4"
+          },
+          {
+            "id": "tn2",
+            "content": "the 4 in 341",
+            "categoryId": "tn-w40"
+          },
+          {
+            "id": "tn3",
+            "content": "the 4 in 419",
+            "categoryId": "tn-w400"
+          },
+          {
+            "id": "tn4",
+            "content": "the 4 in 84",
+            "categoryId": "tn-w4"
+          },
+          {
+            "id": "tn5",
+            "content": "the 4 in 947",
+            "categoryId": "tn-w40"
+          },
+          {
+            "id": "tn6",
+            "content": "the 4 in 468",
+            "categoryId": "tn-w400"
+          },
+          {
+            "id": "tn7",
+            "content": "the 4 in 604",
+            "categoryId": "tn-w4"
+          },
+          {
+            "id": "tn8",
+            "content": "the 4 in 40",
+            "categoryId": "tn-w40"
+          },
+          {
+            "id": "tn9",
+            "content": "the 4 in 405",
+            "categoryId": "tn-w400"
+          }
+        ]
+      },
+      "meta": "3 buckets • 9 cards • same digit every time, only the place changes"
+    },
+    {
+      "id": "tn-math",
+      "type": "math",
+      "title": "Bundle Problems",
+      "timestamp": "2026-09-05T22:10:06.000Z",
+      "data": {
+        "problems": [
+          {
+            "question": "What is the value of the 7 in 372?",
+            "answer": "70",
+            "steps": [
+              {
+                "explanation": "Find where the 7 sits. Counting from the right: 2 is ones, 7 is tens."
+              },
+              {
+                "explanation": "Each ten is a bundle of ten, so 7 tens is 7 groups of ten."
+              },
+              {
+                "explanation": "Seven groups of ten is 70."
+              }
+            ]
+          },
+          {
+            "question": "Write 406 in expanded form.",
+            "answer": "400 + 6",
+            "steps": [
+              {
+                "explanation": "The 4 is in the hundreds place, so it is worth 400."
+              },
+              {
+                "explanation": "The 0 is in the tens place. There are no tens, so nothing is added there."
+              },
+              {
+                "explanation": "The 6 is in the ones place, so it is worth 6. That gives 400 + 6."
+              }
+            ]
+          },
+          {
+            "question": "Add 38 + 27.",
+            "answer": "65",
+            "steps": [
+              {
+                "explanation": "Add the ones first: 8 + 7 = 15."
+              },
+              {
+                "explanation": "Fifteen ones is more than ten, so regroup. Trade ten of those ones for one ten, leaving 5 ones."
+              },
+              {
+                "explanation": "Now add the tens: 3 tens + 2 tens + the 1 ten you traded for = 6 tens."
+              },
+              {
+                "explanation": "Six tens and 5 ones is 65."
+              }
+            ]
+          },
+          {
+            "question": "Which is bigger, 519 or 591?",
+            "answer": "591",
+            "steps": [
+              {
+                "explanation": "Start at the left. Both have 5 hundreds, so that does not decide it."
+              },
+              {
+                "explanation": "Step right to the tens: 1 ten against 9 tens."
+              },
+              {
+                "explanation": "Nine tens is more than one ten, so 591 is bigger. The ones place never has to be checked."
+              }
+            ]
+          },
+          {
+            "question": "A number has 6 hundreds, 0 tens, and 3 ones. Write it.",
+            "answer": "603",
+            "steps": [
+              {
+                "explanation": "Write the hundreds digit first: 6."
+              },
+              {
+                "explanation": "There are no tens, but the place still has to be held open, so write 0."
+              },
+              {
+                "explanation": "Write the ones digit last: 3. The number is 603, not 63."
+              }
+            ]
+          }
+        ]
+      },
+      "meta": "5 problems • worked steps • pencil and paper"
+    },
+    {
+      "id": "tn-quiz",
+      "type": "quiz",
+      "title": "Number Check",
+      "timestamp": "2026-09-05T22:10:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "In the number 245, what is the 4 really worth?",
+            "options": [
+              "Four single things, one at a time",
+              "Forty, because it sits in the tens place",
+              "Four hundred, since it is near the front",
+              "Nothing at all until you add it up"
+            ],
+            "correctAnswer": "Forty, because it sits in the tens place",
+            "conceptLabel": "a digit is worth its place"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does 305 need the zero?",
+            "options": [
+              "It holds the tens place open so 3 stays in hundreds",
+              "It makes the number look longer on the page",
+              "It is a habit that people just got used to",
+              "It shows the number is meant to be an even one"
+            ],
+            "correctAnswer": "It holds the tens place open so 3 stays in hundreds",
+            "conceptLabel": "zero holds a place"
+          },
+          {
+            "type": "mcq",
+            "question": "What does it mean to regroup?",
+            "options": [
+              "To put the digits in order from big to small",
+              "To count the whole number over again slowly",
+              "To trade ten of one place for one of the next",
+              "To split a number into two smaller numbers"
+            ],
+            "correctAnswer": "To trade ten of one place for one of the next",
+            "conceptLabel": "regrouping is trading"
+          },
+          {
+            "type": "mcq",
+            "question": "To compare 519 and 591, where should you look first?",
+            "options": [
+              "At the ones, because that is where you start counting",
+              "At the left, because that place is worth the most",
+              "At the middle digit, since it is in between",
+              "At whichever digit happens to be the largest"
+            ],
+            "correctAnswer": "At the left, because that place is worth the most",
+            "conceptLabel": "compare from the left"
+          },
+          {
+            "type": "mcq",
+            "question": "Which shows 406 in expanded form?",
+            "options": [
+              "40 + 0 + 6",
+              "4 + 0 + 6",
+              "400 + 6",
+              "4 + 60"
+            ],
+            "correctAnswer": "400 + 6",
+            "conceptLabel": "a digit is worth its place"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend says the 4 in 47 and the 4 in 74 are worth the same. What would you tell them?",
+            "expectedAnswer": "They are not the same. The 4 in 47 is in the tens place, so it is worth 40. The 4 in 74 is in the ones place, so it is worth 4. The place changes what the digit is worth.",
+            "conceptLabel": "a digit is worth its place"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Add 46 + 38 and tell where you had to regroup.",
+            "expectedAnswer": "The answer is 84. The ones added up to 6 + 8 = 14, which is more than ten, so ten of those ones were traded for one ten. That left 4 ones, and 4 tens + 3 tens + 1 traded ten is 8 tens.",
+            "conceptLabel": "regrouping is trading"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Where have you seen a three-digit number this week?"
+          },
+          {
+            "text": "Which was trickier for you: regrouping, or the zero holding a place? Why?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • one asks you to catch a mistake"
+    },
+    {
+      "id": "tn-faq",
+      "type": "faq",
+      "title": "Number Questions Kids Ask",
+      "timestamp": "2026-09-05T22:10:08.000Z",
+      "data": [
+        {
+          "question": "Why ten? Why not bundles of six? 🤔",
+          "answer": "Nothing in math forces ten. We picked it, and most people think it is because we have ten fingers. Computers bundle by two instead, and their numbers work just fine."
+        },
+        {
+          "question": "Is zero really a number?",
+          "answer": "Yes. It means none, and it also does the job of holding a place open. That second job is why 305 is not 35. Zero took a very long time for people to invent."
+        },
+        {
+          "question": "What comes after hundreds? 🔢",
+          "answer": "Thousands. Then ten thousands, then hundred thousands. The pattern never stops. Each new place to the left is worth ten times the one before it."
+        },
+        {
+          "question": "Do I have to regroup every time I add? ",
+          "answer": "No. You only regroup when one place ends up with ten or more. Adding 21 + 34 needs no trade at all, because no place fills up."
+        },
+        {
+          "question": "Why start at the left when comparing?",
+          "answer": "Because the left place is worth the most. If one number has more hundreds, nothing in the tens or ones can catch up. It saves you looking at the rest."
+        },
+        {
+          "question": "Is expanded form the real number? ",
+          "answer": "It is the same number, written to show its parts. 400 + 6 and 406 are two ways to say one thing. Expanded form just makes the places easy to see."
+        }
+      ],
+      "meta": "6 questions • plain answers"
+    },
+    {
+      "id": "tn-challenge",
+      "type": "applied-challenge",
+      "title": "Design: A Number Poster for a Reading Buddy",
+      "timestamp": "2026-09-05T22:10:09.000Z",
+      "meta": "2nd Grade • Design brief • one number, three ways",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Number Poster for a Reading Buddy",
+        "instructions": "Pick one three-digit number. Make a poster that shows what each digit is worth, clear enough for a first grader to read it without you.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "Showing one number three ways forces a student to say what each digit is worth in their own words, which is exactly what 2.NBT.A.1 and 2.NBT.A.3 ask for, and a younger audience stops them hiding behind the words from the lesson.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "Your class visits the first graders on Friday. You get one sheet of paper and markers. You also get straws and rubber bands you can tape down.",
+          "role": "Number designers",
+          "audience": "One first grader who is still learning what a two-digit number means",
+          "drivingQuestion": "How do you show a three-digit number so a first grader can see what each digit is worth? They will not have you there to explain it.",
+          "seedDirection": "Pick a number with a zero in it if you dare. The zero is the part first graders find hardest.",
+          "lockedLessonFacts": [
+            "The ones place counts single things.",
+            "Each ten is a bundle of ten.",
+            "Each hundred is ten bundles of ten.",
+            "A zero holds a place open, so 305 is not 35."
+          ],
+          "openQuestions": [
+            "Do you show the bundles as straws, as boxes, or as drawings?",
+            "Where does the expanded form go on the poster?",
+            "How do you show a zero, when there is nothing to draw?"
+          ],
+          "stakeholders": [
+            "Your first-grade buddy",
+            "The first-grade teacher who keeps the posters",
+            "Your partner, who tests it with you"
+          ],
+          "criteria": [
+            "The poster shows one number three ways: in digits, in bundles, and in expanded form",
+            "Each digit is matched to the bundles it stands for",
+            "A first grader can follow it. Very few words to read.",
+            "You use at least three words from Number Words"
+          ],
+          "constraints": [
+            "One sheet of paper",
+            "Numbers under 1000",
+            "It has to survive being carried down a hallway"
+          ],
+          "deliverable": "The finished poster. Plus one sentence you say to the class. Which part did your buddy understand first? Which part did you have to explain out loud?",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student chose 230 and worried the zero would look like a mistake.",
+            "move": "She drew an empty box in the tens spot with a dotted line around it, and wrote a small nothing here inside. Her buddy pointed at it first and asked about it.",
+            "whyItHelps": "She gave the zero something to look at. An empty place is invisible unless you draw the emptiness."
+          },
+          "frameStarter": "My number is ____. The ____ digit stands for ____ because it sits in the ____ place.",
+          "frameChoices": [
+            "Straws taped in bundles",
+            "Boxes drawn in a row",
+            "One picture for each place",
+            "A number line along the bottom"
+          ],
+          "coachPrompts": [
+            "Can your buddy use it without you reading it aloud?",
+            "Which digit did they get wrong first?",
+            "How did you show the zero?"
+          ]
+        },
+        "coachHint": "One number. Three ways. Test it on a real kid.",
+        "sourceExcerpt": "So 245 is 200 + 40 + 5. Written that way, it is in expanded form.",
+        "lessonRef": {
+          "resourceId": "tn-reading",
+          "title": "Ten Is a Bundle"
+        }
+      }
+    }
+  ]
+}
