@@ -238,6 +238,16 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice'))) {
 
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloTPCtx = null;
+  var __alloTPT = function (k, fb) {
+    var v;
+    try { v = (__alloTPCtx && typeof __alloTPCtx.t === "function") ? __alloTPCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
   // ─────────────────────────────────────────────────────────
   // SECTION 1: DEFAULT STATE SHAPE
@@ -4569,6 +4579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     tags: ['typing', 'keyboarding', 'life-skills', 'accessibility', 'dyslexia', 'dysgraphia', 'motor-planning', 'iep'],
 
     render: function(ctx) {
+      __alloTPCtx = ctx;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       try {
         var React = ctx.React;
@@ -4981,7 +4992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setPauseStartedAt(null);
             setWordPulse({ start: -1, end: -1, key: 0 });
             setStreak(0);
-            if (resumeDraft) setAnnounceText('Saved typing draft restored. Continue when you are ready.');
+            if (resumeDraft) setAnnounceText(__alloTPT('stem.typingpractice.sr_saved_typing_draft_restored_continue_when_you_are', 'Saved typing draft restored. Continue when you are ready.'));
             else setAnnounceText('');
             setMistakeLiveText('');
             mistakeAnnouncementRef.current = { signature: '', at: 0 };
@@ -5143,13 +5154,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 search.focus();
                 if (search.select) search.select();
                 scrollTypingPracticeIntoView(search, 'center');
-                setAnnounceText('Drill search focused. Type to filter the library.');
+                setAnnounceText(__alloTPT('stem.typingpractice.sr_drill_search_focused_type_to_filter_the_library', 'Drill search focused. Type to filter the library.'));
               }
             } else if (key === 'g' || key === 'G') {
               e.preventDefault();
               var library = document.getElementById('tp-drill-library');
               focusTypingPracticeLibrary(library);
-              setAnnounceText('Drill library focused. Use Tab to move through filters, sort, and drill cards.');
+              setAnnounceText(__alloTPT('stem.typingpractice.sr_drill_library_focused_use_tab_to_move_through_fil', 'Drill library focused. Use Tab to move through filters, sort, and drill cards.'));
             } else if (key === 'r' || key === 'R') {
               var all = state.sessions || [];
               if (all.length === 0) return;
@@ -5239,7 +5250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setAnnounceText('Reading time started. Typing begins in ' + sightReadLeft +
               ' seconds. Use Skip to begin now.');
           } else if (previous > 0 && sightReadLeft === 0) {
-            setAnnounceText('Reading time complete. The typing area is ready.');
+            setAnnounceText(__alloTPT('stem.typingpractice.sr_reading_time_complete_the_typing_area_is_ready', 'Reading time complete. The typing area is ready.'));
             setTimeout(function() {
               if (captureRef.current) captureRef.current.focus();
             }, 20);
@@ -5553,7 +5564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (captureRef.current) captureRef.current.focus();
             setCaptureNeedsTap(false);
             setPaused(false);
-            setAnnounceText('Typing resumed.');
+            setAnnounceText(__alloTPT('stem.typingpractice.sr_typing_resumed', 'Typing resumed.'));
           } else {
             // Pause: mark start-of-pause.
             interruptionPauseRef.current = true;
@@ -5561,7 +5572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             latestDrillSnapshotRef.current = Object.assign({}, latestDrillSnapshotRef.current || {}, { pauseStartedAt: manualPauseAt });
             setPauseStartedAt(manualPauseAt);
             setPaused(true);
-            setAnnounceText('Typing paused. Your WPM is not affected.');
+            setAnnounceText(__alloTPT('stem.typingpractice.sr_typing_paused_your_wpm_is_not_affected', 'Typing paused. Your WPM is not affected.'));
           }
         };
 
@@ -5606,7 +5617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var requestDrillExit = function() {
           var hasUnsavedProgress = typedLength > 0 && !drillComplete;
           if (!hasUnsavedProgress) {
-            setAnnounceText('Drill closed. Returning to Typing Practice home.');
+            setAnnounceText(__alloTPT('stem.typingpractice.sr_drill_closed_returning_to_typing_practice_home', 'Drill closed. Returning to Typing Practice home.'));
             upd('view', 'menu');
             return Promise.resolve(true);
           }
@@ -5646,12 +5657,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 interruptionPauseRef.current = false;
                 setPauseStartedAt(null);
                 setPaused(false);
-                setAnnounceText('Exit canceled. Typing resumed; confirmation time was excluded from WPM.');
+                setAnnounceText(__alloTPT('stem.typingpractice.sr_exit_canceled_typing_resumed_confirmation_time_wa', 'Exit canceled. Typing resumed; confirmation time was excluded from WPM.'));
                 setTimeout(function() {
                   if (captureRef.current) captureRef.current.focus();
                 }, 20);
               } else {
-                setAnnounceText('Exit canceled. The drill remains paused.');
+                setAnnounceText(__alloTPT('stem.typingpractice.sr_exit_canceled_the_drill_remains_paused', 'Exit canceled. The drill remains paused.'));
               }
               return false;
             }
@@ -5899,7 +5910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             );
             if (!replacementConfirmed) {
-              setAnnounceText('Saved practice kept. New drill not started.');
+              setAnnounceText(__alloTPT('stem.typingpractice.sr_saved_practice_kept_new_drill_not_started', 'Saved practice kept. New drill not started.'));
               return false;
             }
             // Clear and enter capture in one update so no intermediate render
@@ -6775,14 +6786,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               ),
               h('div', {
                 role: 'group',
-                'aria-label': 'Welcome choices',
+                'aria-label': __alloTPT('stem.typingpractice.a11y_welcome_choices', 'Welcome choices'),
                 style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }
               },
                 h('button', {
                   type: 'button',
                   onClick: function() {
                     upd('onboardingSeen', true);
-                    setAnnounceText('Opening Home Row preparation.');
+                    setAnnounceText(__alloTPT('stem.typingpractice.sr_opening_home_row_preparation', 'Opening Home Row preparation.'));
                     startDrill('home-row');
                   },
                   style: Object.assign({}, primaryBtnStyle(palette), { minHeight: '44px', fontSize: '12px', padding: '9px 14px' })
@@ -6790,7 +6801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('button', {
                   type: 'button',
                   onClick: function() {
-                    setAnnounceText('Opening accommodations.');
+                    setAnnounceText(__alloTPT('stem.typingpractice.sr_opening_accommodations', 'Opening accommodations.'));
                     updMulti({ onboardingSeen: true, view: 'settings' });
                   },
                   style: Object.assign({}, secondaryBtnStyle(palette), { minHeight: '44px', fontSize: '12px', padding: '9px 14px' })
@@ -6799,7 +6810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   type: 'button',
                   onClick: function() {
                     upd('onboardingSeen', true);
-                    setAnnounceText('Welcome dismissed. The full drill library is ready.');
+                    setAnnounceText(__alloTPT('stem.typingpractice.sr_welcome_dismissed_the_full_drill_library_is_ready', 'Welcome dismissed. The full drill library is ready.'));
                     setTimeout(function() {
                       focusTypingPracticeLibrary(document.getElementById('tp-drill-library'));
                     }, 0);
@@ -7058,11 +7069,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               var discardDraft = async function() {
                 if (!(await askTypingPracticeConfirmation('Discard this private resume draft? Completed sessions are unchanged.', { title: 'Discard saved practice?', confirmText: 'Discard draft' }))) return;
                 upd('interruptedDrill', null);
-                setAnnounceText('Saved practice draft discarded. Completed sessions are unchanged.');
+                setAnnounceText(__alloTPT('stem.typingpractice.sr_saved_practice_draft_discarded_completed_sessions', 'Saved practice draft discarded. Completed sessions are unchanged.'));
               };
               return h('div', {
                 role: 'region',
-                'aria-label': 'Resume saved practice',
+                'aria-label': __alloTPT('stem.typingpractice.a11y_resume_saved_practice', 'Resume saved practice'),
                 style: { marginBottom: '16px', padding: '14px 16px', background: palette.surface, border: '1px solid ' + palette.accent, borderLeft: '3px solid ' + palette.accent, borderRadius: '10px', display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }
               },
                 h('div', { 'aria-hidden': 'true', style: { width: '44px', height: '44px', borderRadius: '50%', background: palette.accent + '22', border: '1.5px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0, lineHeight: 1 } }, draftDrill.icon),
@@ -7311,7 +7322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', {
                   role: 'group',
-                  'aria-label': 'Filter drills',
+                  'aria-label': __alloTPT('stem.typingpractice.a11y_filter_drills', 'Filter drills'),
                   'aria-controls': 'tp-drill-results',
                   'aria-description': 'Use Left and Right Arrow, Home, or End to move between filters.',
                   onKeyDown: handleTypingPracticeFilterKeys,
@@ -7349,7 +7360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   h('input', {
                     ref: drillSearchRef,
                     type: 'search',
-                    'aria-label': 'Search drills by name or description',
+                    'aria-label': __alloTPT('stem.typingpractice.a11y_search_drills_by_name_or_description', 'Search drills by name or description'),
                     value: drillQuery,
                     onChange: function(e) { setDrillQuery(e.target.value); },
                     onKeyDown: function(e) {
@@ -7394,7 +7405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   h('select', {
                     value: drillSort,
                     onChange: function(e) { setDrillSort(e.target.value); },
-                    'aria-label': 'Sort drills',
+                    'aria-label': __alloTPT('stem.typingpractice.a11y_sort_drills', 'Sort drills'),
                     'aria-controls': 'tp-drill-results',
                     'aria-describedby': 'tp-drill-results-status',
                     style: {
@@ -7609,7 +7620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Saved library list
             library.length > 0 ? h('div', {
               role: 'list',
-              'aria-label': 'Saved custom drills',
+              'aria-label': __alloTPT('stem.typingpractice.a11y_saved_custom_drills', 'Saved custom drills'),
               style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }
             },
               library.map(function(entry) {
@@ -7830,7 +7841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     setCustomLabelDraft('');
                     setEditingCustomDrillId(null);
                     setCustomTextTouched(false);
-                    setAnnounceText('Custom drill draft cleared.');
+                    setAnnounceText(__alloTPT('stem.typingpractice.sr_custom_drill_draft_cleared', 'Custom drill draft cleared.'));
                     setTimeout(function() {
                       var editor = document.getElementById('tp-custom-text');
                       if (editor && editor.focus) editor.focus();
@@ -8347,12 +8358,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     var reportTtsFailure = function(error) {
                       console.warn('[TypingPractice] TTS failed:', error);
                       addToast('Read aloud was unavailable. You can still review the passage visually.');
-                      setAnnounceText('Read aloud failed. The passage remains available on screen.');
+                      setAnnounceText(__alloTPT('stem.typingpractice.sr_read_aloud_failed_the_passage_remains_available_o', 'Read aloud failed. The passage remains available on screen.'));
                     };
                     try {
                       var ttsRequest = ctx.callTTS(targetStr, null, 1.0, { force: true, language: activeTargetLanguage });
                       addToast('🔊 Reading the passage aloud…');
-                      setAnnounceText('Reading the passage aloud.');
+                      setAnnounceText(__alloTPT('stem.typingpractice.sr_reading_the_passage_aloud', 'Reading the passage aloud.'));
                       if (ttsRequest && typeof ttsRequest.catch === 'function') ttsRequest.catch(reportTtsFailure);
                     } catch (e) {
                       reportTtsFailure(e);
@@ -8476,7 +8487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var generationId = ++passageGenerationRef.current;
           setGenLoading(true);
           setGenError(null);
-          setAnnounceText('Generating a personalized passage. You can cancel and keep your choices.');
+          setAnnounceText(__alloTPT('stem.typingpractice.sr_generating_a_personalized_passage_you_can_cancel', 'Generating a personalized passage. You can cancel and keep your choices.'));
 
           // jsonMode=FALSE is critical — we want plain text.
           Promise.resolve(callGemini(prompt, false, false, 0.8, null))
@@ -8515,7 +8526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 drillRunId: (state.drillRunId || 0) + 1
               });
               setGenLoading(false);
-              setAnnounceText('Passage ready. The preparation screen is open.');
+              setAnnounceText(__alloTPT('stem.typingpractice.sr_passage_ready_the_preparation_screen_is_open', 'Passage ready. The preparation screen is open.'));
             })
             .catch(function(err) {
               if (passageGenerationRef.current !== generationId) return;
@@ -8847,7 +8858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }, getLoadingLabel(state.theme, 'passage') + '. Please wait.') : null,
 
             // Actions
-            h('div', { role: 'group', 'aria-label': 'Passage generation actions', style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } },
+            h('div', { role: 'group', 'aria-label': __alloTPT('stem.typingpractice.a11y_passage_generation_actions', 'Passage generation actions'), style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } },
               h('button', {
                 type: 'button',
                 onClick: genLoading ? null : generatePassage,
@@ -8882,7 +8893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               (cached && !genLoading) ? h('button', {
                 type: 'button',
                 onClick: function() {
-                  setAnnounceText('Last passage selected. Preparation screen opened.');
+                  setAnnounceText(__alloTPT('stem.typingpractice.sr_last_passage_selected_preparation_screen_opened', 'Last passage selected. Preparation screen opened.'));
                   updMulti({ view: 'drill-intro', currentDrill: 'passage', drillRunId: (state.drillRunId || 0) + 1 });
                 },
                 style: Object.assign({}, secondaryBtnStyle(palette), { minHeight: '44px' })
@@ -8891,7 +8902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             // Cached preview
             (cached && !genLoading) ? h('section', {
-              'aria-label': 'Last generated passage',
+              'aria-label': __alloTPT('stem.typingpractice.a11y_last_generated_passage', 'Last generated passage'),
               style: {
                 marginTop: '20px',
                 padding: '14px',
@@ -9060,7 +9071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         onClick: function() {
                           if (allPresent) return;
                           if (libraryFull) {
-                            setAnnounceText('Saved passage library is full. Remove a passage before importing this pack.');
+                            setAnnounceText(__alloTPT('stem.typingpractice.sr_saved_passage_library_is_full_remove_a_passage_be', 'Saved passage library is full. Remove a passage before importing this pack.'));
                             return;
                           }
                           var existing = (state.aiPassageLibrary || []).slice();
@@ -9130,7 +9141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 __alloT('stem.typingpractice.recently_generated_passages_drill_any_', 'Recently generated passages. Drill any of them to reuse. Oldest drops when you generate a 9th.')),
               h('div', {
                 role: 'list',
-                'aria-label': 'Saved passages',
+                'aria-label': __alloTPT('stem.typingpractice.a11y_saved_passages', 'Saved passages'),
                 style: {
                   display: 'flex',
                   flexDirection: 'column',
@@ -9173,7 +9184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       h('button', {
                         type: 'button',
                         onClick: function() {
-                          setAnnounceText('Saved passage selected. Preparation screen opened.');
+                          setAnnounceText(__alloTPT('stem.typingpractice.sr_saved_passage_selected_preparation_screen_opened', 'Saved passage selected. Preparation screen opened.'));
                           updMulti({
                             aiPassage: p,
                             view: 'drill-intro',
@@ -9194,7 +9205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                           // If we're deleting the currently-active passage, clear it too
                           if (state.aiPassage && state.aiPassage.id === p.id) updates.aiPassage = null;
                           updMulti(updates);
-                          setAnnounceText('Saved passage removed.');
+                          setAnnounceText(__alloTPT('stem.typingpractice.sr_saved_passage_removed', 'Saved passage removed.'));
                           addToast('Passage removed.');
                         },
                         'aria-label': __alloT('stem.typingpractice.delete_this_passage', 'Delete this passage'),
@@ -9743,7 +9754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // checkpoints can occur frequently and should not interrupt typing.
                 if (!interruptedDraftMatches(state.interruptedDrill, activeDrill && activeDrill.id, state.drillRunId) || typedLength < 1) return null;
                 return h('span', {
-                  'aria-label': 'Private resume draft saved locally',
+                  'aria-label': __alloTPT('stem.typingpractice.a11y_private_resume_draft_saved_locally', 'Private resume draft saved locally'),
                   title: 'Private resume draft saved locally',
                   style: {
                     display: 'inline-flex',
@@ -10091,7 +10102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (typeof document !== 'undefined' && document.activeElement === captureRef.current && captureRef.current.blur) captureRef.current.blur();
                 captureRef.current.focus();
                 setCaptureNeedsTap(false);
-                setAnnounceText('Typing area focused. The on-screen keyboard is ready.');
+                setAnnounceText(__alloTPT('stem.typingpractice.sr_typing_area_focused_the_on_screen_keyboard_is_rea', 'Typing area focused. The on-screen keyboard is ready.'));
               },
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
             }, 'Show keyboard'),
@@ -10165,7 +10176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 id: 'tp-drill-progress',
                 className: 'tp-progress-track',
                 role: 'progressbar',
-                'aria-label': 'Typing progress',
+                'aria-label': __alloTPT('stem.typingpractice.a11y_typing_progress', 'Typing progress'),
                 'aria-valuemin': 0,
                 'aria-valuemax': targetLength,
                 'aria-valuenow': typedLength,
@@ -10466,7 +10477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (s.isWarmup) return;
             var trimmed = (noteDraft || '').trim();
             if (!trimmed) {
-              setAnnounceText('Enter a session note before saving.');
+              setAnnounceText(__alloTPT('stem.typingpractice.sr_enter_a_session_note_before_saving', 'Enter a session note before saving.'));
               return;
             }
             var sessions = (state.sessions || []).slice();
@@ -10480,7 +10491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setNoteDraft(trimmed);
             setNoteSaved(true);
             setLastSummary(Object.assign({}, s, { note: trimmed }));
-            setAnnounceText('Session note saved. It will appear in progress reports and exports.');
+            setAnnounceText(__alloTPT('stem.typingpractice.sr_session_note_saved_it_will_appear_in_progress_rep', 'Session note saved. It will appear in progress reports and exports.'));
           };
 
           return h('div', {
@@ -10595,7 +10606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
               h('dl', {
                 className: 'tp-stat-stagger',
-                'aria-label': 'Session results',
+                'aria-label': __alloTPT('stem.typingpractice.a11y_session_results', 'Session results'),
                 style: {
                   marginTop: 0,
                   marginLeft: 0,
@@ -11070,7 +11081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       e.preventDefault();
                       setNoteDraft('');
                       setNoteSaved(false);
-                      setAnnounceText('Session note draft cleared.');
+                      setAnnounceText(__alloTPT('stem.typingpractice.sr_session_note_draft_cleared', 'Session note draft cleared.'));
                     }
                   },
                   readOnly: !!s.note,
@@ -11377,7 +11388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
               h('div', {
                 role: 'group',
-                'aria-label': 'Session actions',
+                'aria-label': __alloTPT('stem.typingpractice.a11y_session_actions', 'Session actions'),
                 style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '14px' }
               },
                 h('button', {
@@ -11429,7 +11440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       title: 'Discard this session?', confirmText: 'Discard session'
                     }))) return;
                     var updates = typingPracticeDiscardSessionUpdates(state, s);
-                    setAnnounceText('Session discarded. Returning to Typing Practice home.');
+                    setAnnounceText(__alloTPT('stem.typingpractice.sr_session_discarded_returning_to_typing_practice_ho', 'Session discarded. Returning to Typing Practice home.'));
                     updMulti(updates);
                     addToast('Session discarded.');
                   },
@@ -11608,7 +11619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // returning to top required a scroll-back.
             h('nav', {
               className: 'tp-settings-nav',
-              'aria-label': 'Settings sections',
+              'aria-label': __alloTPT('stem.typingpractice.a11y_settings_sections', 'Settings sections'),
               style: {
                 position: 'sticky',
                 top: '0',
@@ -11699,7 +11710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (tm === 'neutral')   return 'Common-profile bundles. Editable after applying.';
                   return 'One-click common combos. Tap any toggle below to customize after applying.';
                 })()),
-              h('div', { role: 'group', 'aria-label': 'Quick accommodation presets', style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              h('div', { role: 'group', 'aria-label': __alloTPT('stem.typingpractice.a11y_quick_accommodation_presets', 'Quick accommodation presets'), style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
                 ACC_PRESETS.map(function(preset) {
                   return h('button', {
                     key: 'preset-' + preset.id,
@@ -12300,7 +12311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     onClick: function() {
                       upd('dailyGoal', null);
                       clearGoalDraft('dailySessions');
-                      clearGoalDraft('dailyWpm'); setAnnounceText('Today\'s goal cleared.'); },
+                      clearGoalDraft('dailyWpm'); setAnnounceText(__alloTPT('stem.typingpractice.sr_today_s_goal_cleared', 'Today\'s goal cleared.')); },
                     style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '8px 12px' })
                   }, __alloT('stem.typingpractice.clear', 'Clear today\'s goal')) : null
                 ),
@@ -12480,7 +12491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   upd('iepGoal', null);
                   clearGoalDraft('iepWpm');
                   clearGoalDraft('iepAccuracy');
-                  setAnnounceText('IEP goal and notes cleared.');
+                  setAnnounceText(__alloTPT('stem.typingpractice.sr_iep_goal_and_notes_cleared', 'IEP goal and notes cleared.'));
                 },
                 style: Object.assign({}, secondaryBtnStyle(palette), {
                   marginTop: '10px', fontSize: '11px', padding: '6px 10px'
@@ -12538,7 +12549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       document.body.removeChild(a);
                       setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                       addToast('Profile exported.');
-                      setAnnounceText('Typing Practice profile exported.');
+                      setAnnounceText(__alloTPT('stem.typingpractice.sr_typing_practice_profile_exported', 'Typing Practice profile exported.'));
                     } catch (e) {
                       // Fallback: copy JSON to clipboard and report its real outcome.
                       copyTextToClipboard(json, addToast).then(function(copied) {
@@ -12568,7 +12579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                           var parsed = JSON.parse(ev.target.result);
                           if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || parsed._format !== 'alloflow-typing-practice-profile') {
                             addToast('⚠️ Not a Typing Practice profile file.');
-                            setAnnounceText('Import failed. Choose a Typing Practice profile JSON file.');
+                            setAnnounceText(__alloTPT('stem.typingpractice.sr_import_failed_choose_a_typing_practice_profile_js', 'Import failed. Choose a Typing Practice profile JSON file.'));
                             return;
                           }
 
@@ -12598,7 +12609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                           setGoalNumberDrafts({});
                           setGoalNumberTouched({});
                           addToast('✓ Profile imported.');
-                          setAnnounceText('Typing Practice profile imported. Settings have been updated.');
+                          setAnnounceText(__alloTPT('stem.typingpractice.sr_typing_practice_profile_imported_settings_have_be', 'Typing Practice profile imported. Settings have been updated.'));
                         } catch (err) {
                           var profileError = err.message || 'invalid JSON';
                           addToast('⚠️ Could not read profile: ' + profileError);
@@ -12607,7 +12618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       };
                       reader.onerror = function() {
                         addToast('Could not read profile file.');
-                        setAnnounceText('Profile import failed because the file could not be read.');
+                        setAnnounceText(__alloTPT('stem.typingpractice.sr_profile_import_failed_because_the_file_could_not', 'Profile import failed because the file could not be read.'));
                       };
                       reader.readAsText(file);
                     };
@@ -12660,7 +12671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         // until a meaningful amount of new activity accrues.
                         upd('lastBackupDate', nowIso);
                         addToast('Full backup exported.');
-                        setAnnounceText('Full Typing Practice backup exported.');
+                        setAnnounceText(__alloTPT('stem.typingpractice.sr_full_typing_practice_backup_exported', 'Full Typing Practice backup exported.'));
                       } catch (e) {
                         addToast('⚠️ Backup failed: ' + (e.message || 'unknown error'));
                         setAnnounceText('Full backup export failed. ' + (e.message || 'Unknown error.'));
@@ -12687,14 +12698,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                             var parsed = JSON.parse(rawBackup);
                             if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || parsed._format !== 'alloflow-typing-practice-backup') {
                               addToast('⚠️ Not a Typing Practice backup file.');
-                              setAnnounceText('Restore failed. Choose a Typing Practice backup JSON file.');
+                              setAnnounceText(__alloTPT('stem.typingpractice.sr_restore_failed_choose_a_typing_practice_backup_js', 'Restore failed. Choose a Typing Practice backup JSON file.'));
                               return;
                             }
-                            if (!parsed.state || typeof parsed.state !== 'object' || Array.isArray(parsed.state)) { addToast('⚠️ Backup is empty or corrupted.'); setAnnounceText('Restore failed because the backup is empty or corrupted.'); return; }
+                            if (!parsed.state || typeof parsed.state !== 'object' || Array.isArray(parsed.state)) { addToast('⚠️ Backup is empty or corrupted.'); setAnnounceText(__alloTPT('stem.typingpractice.sr_restore_failed_because_the_backup_is_empty_or_cor', 'Restore failed because the backup is empty or corrupted.')); return; }
                             if (parsed._version !== undefined && Number(parsed._version) !== 1) throw new Error('Unsupported backup version.');
                             if (parsed.state.keyboardLayout !== undefined && !Object.prototype.hasOwnProperty.call(KEYBOARD_LAYOUTS, parsed.state.keyboardLayout)) {
                               addToast('⚠️ Backup uses an unknown keyboard layout.');
-                              setAnnounceText('Restore failed because the backup uses an unknown keyboard layout.');
+                              setAnnounceText(__alloTPT('stem.typingpractice.sr_restore_failed_because_the_backup_uses_an_unknown', 'Restore failed because the backup uses an unknown keyboard layout.'));
                               return;
                             }
                             var backupSummary = typingPracticeValidateBackupState(parsed.state);
@@ -12719,7 +12730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         };
                         reader.onerror = function() {
                           addToast('Could not read backup file.');
-                          setAnnounceText('Backup restore failed because the file could not be read.');
+                          setAnnounceText(__alloTPT('stem.typingpractice.sr_backup_restore_failed_because_the_file_could_not', 'Backup restore failed because the file could not be read.'));
                         };
                         reader.readAsText(file);
                       };
@@ -12742,7 +12753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       replaceTypingPracticeState(wiped);
                       resetTypingPracticeLocalLearnerState(wiped);
                       addToast('All data cleared.');
-                      setAnnounceText('All Typing Practice data permanently cleared.');
+                      setAnnounceText(__alloTPT('stem.typingpractice.sr_all_typing_practice_data_permanently_cleared', 'All Typing Practice data permanently cleared.'));
                     },
                     style: Object.assign({}, secondaryBtnStyle(palette), {
                       fontSize: '11px', padding: '7px 12px',
@@ -13020,7 +13031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', fontWeight: 700 } }, __alloT('stem.typingpractice.baseline_current_all_time', 'Baseline → current · all-time')),
                 h('dl', {
-                  'aria-label': 'Baseline and current metrics',
+                  'aria-label': __alloTPT('stem.typingpractice.a11y_baseline_and_current_metrics', 'Baseline and current metrics'),
                   style: { display: 'flex', gap: '12px', flexWrap: 'wrap', margin: 0, marginBottom: thisWk.length > 0 ? '12px' : 0 }
                 },
                   renderMetric('Baseline WPM', state.baseline.wpm, palette, state.theme),
@@ -13282,7 +13293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, 'Report filters ' + (filterRangeInvalid ? '(date range needs correction)' : (filterActive ? ('(' + sessions.length + ' of ' + allSessions.length + ' sessions)') : '(all sessions)'))),
 
               // Quick-date preset chips — one-click ranges for common IEP windows
-              h('div', { role: 'group', 'aria-label': 'Quick date ranges', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' } },
+              h('div', { role: 'group', 'aria-label': __alloTPT('stem.typingpractice.a11y_quick_date_ranges', 'Quick date ranges'), style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' } },
                 [
                   { id: 'all',   label: 'All', compute: function() { return { s: '', e: '' }; } },
                   { id: 'today', label: __alloT('stem.typingpractice.today', 'Today'), compute: function() {
@@ -13466,11 +13477,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         // Exiting compare mode — clear selection
                         setCompareMode(false);
                         setCompareSelections([]);
-                        setAnnounceText('Session comparison mode off.');
+                        setAnnounceText(__alloTPT('stem.typingpractice.sr_session_comparison_mode_off', 'Session comparison mode off.'));
                       } else {
                         setCompareMode(true);
                         setSelectedDetailIdx(null); // avoid two modes at once
-                        setAnnounceText('Session comparison mode on. Select two sessions.');
+                        setAnnounceText(__alloTPT('stem.typingpractice.sr_session_comparison_mode_on_select_two_sessions', 'Session comparison mode on. Select two sessions.'));
                       }
                     },
                     style: {
@@ -13646,7 +13657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }, 'View recent session data table'),
                 h('div', {
                   role: 'region',
-                  'aria-label': 'Recent comparable session data',
+                  'aria-label': __alloTPT('stem.typingpractice.a11y_recent_comparable_session_data', 'Recent comparable session data'),
                   style: { overflowX: 'auto', paddingTop: '6px' }
                 },
                   h('table', {
@@ -13786,7 +13797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   h('div', { style: { color: palette.textMute, fontSize: '11px', marginBottom: '8px' } },
                     new Date(d.date).toLocaleString()
                   ),
-                  h('dl', { 'aria-label': 'Session metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', margin: '0 0 8px' } },
+                  h('dl', { 'aria-label': __alloTPT('stem.typingpractice.a11y_session_metrics', 'Session metrics'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', margin: '0 0 8px' } },
                     [
                       [typingPracticeMetricDisplay(d).unit, typingPracticeMetricDisplay(d).value],
                       ['Accuracy', d.accuracy + '%'],
@@ -13958,7 +13969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                           } else if (e.key === 'Escape') {
                             e.preventDefault();
                             e.currentTarget.value = d.note || '';
-                            setAnnounceText('Session note edit canceled.');
+                            setAnnounceText(__alloTPT('stem.typingpractice.sr_session_note_edit_canceled', 'Session note edit canceled.'));
                           }
                         },
                         style: {
@@ -14109,7 +14120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }, 'View character-rate data table'),
                 h('div', {
                   role: 'region',
-                  'aria-label': 'Character-rate session data',
+                  'aria-label': __alloTPT('stem.typingpractice.a11y_character_rate_session_data', 'Character-rate session data'),
                   style: { overflowX: 'auto', paddingTop: '6px' }
                 },
                   h('table', { style: { width: '100%', minWidth: '420px', borderCollapse: 'collapse', color: palette.text, fontSize: '11px', lineHeight: '1.45' } },
@@ -14333,7 +14344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   h('input', {
                     id: 'tp-history-search',
                     type: 'search',
-                    'aria-label': 'Search drill history notes',
+                    'aria-label': __alloTPT('stem.typingpractice.a11y_search_drill_history_notes', 'Search drill history notes'),
                     'aria-controls': 'tp-history-list',
                     'aria-describedby': 'tp-history-count',
                     value: noteQuery,
@@ -14360,7 +14371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   q ? h('button', {
                     type: 'button',
                     onClick: clearHistoryNoteSearch,
-                    'aria-label': 'Clear history note search',
+                    'aria-label': __alloTPT('stem.typingpractice.a11y_clear_history_note_search', 'Clear history note search'),
                     style: Object.assign({}, secondaryBtnStyle(palette), {
                       minHeight: '44px',
                       padding: '8px 12px',
@@ -14722,7 +14733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // Report actions: copy + download CSV
               h('div', {
                 role: 'group',
-                'aria-label': 'Progress report actions',
+                'aria-label': __alloTPT('stem.typingpractice.a11y_progress_report_actions', 'Progress report actions'),
                 style: { display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }
               },
                 h('button', {
@@ -15278,7 +15289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               return typingPracticePauseBattleClock(current, confirmationStartedAt, false);
             });
           }
-          setAnnounceText('Battle paused while you confirm whether to quit.');
+          setAnnounceText(__alloTPT('stem.typingpractice.sr_battle_paused_while_you_confirm_whether_to_quit', 'Battle paused while you confirm whether to quit.'));
           return askTypingPracticeConfirmation(
             'Quit this Battle match? Current cleared words, combo, and outcome will not be saved.',
             {
@@ -15290,7 +15301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             battleExitPendingRef.current = false;
             if (accepted) {
               battlePauseInterruptionRef.current = false;
-              setAnnounceText('Battle match ended without saving. Returning to the Battle menu.');
+              setAnnounceText(__alloTPT('stem.typingpractice.sr_battle_match_ended_without_saving_returning_to_th', 'Battle match ended without saving. Returning to the Battle menu.'));
               updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) });
               return true;
             }
@@ -15299,13 +15310,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               setBattleSt(function(current) {
                 return typingPracticeResumeBattleClock(current, resumeAt);
               });
-              setAnnounceText('Quit canceled. Battle resumed; confirmation time was excluded from the match clock.');
+              setAnnounceText(__alloTPT('stem.typingpractice.sr_quit_canceled_battle_resumed_confirmation_time_wa', 'Quit canceled. Battle resumed; confirmation time was excluded from the match clock.'));
               setTimeout(function() {
                 var target = wasPickerOpen ? battleAttackOptionRef.current : battleCaptureRef.current;
                 if (target) target.focus();
               }, 20);
             } else {
-              setAnnounceText('Quit canceled. Battle remains paused.');
+              setAnnounceText(__alloTPT('stem.typingpractice.sr_quit_canceled_battle_remains_paused', 'Quit canceled. Battle remains paused.'));
               setTimeout(function() {
                 if (battlePauseButtonRef.current) battlePauseButtonRef.current.focus();
               }, 20);
@@ -16111,7 +16122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           return h('div', {
             className: 'tp-battle-stage tp-battle-stage-' + themeName,
             role: 'region',
-            'aria-label': 'Battle Mode typing play area',
+            'aria-label': __alloTPT('stem.typingpractice.a11y_battle_mode_typing_play_area', 'Battle Mode typing play area'),
             'aria-describedby': 'tp-battle-play-help',
             style: { padding: 24, maxWidth: isVsBot ? 900 : 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh', position: 'relative', overflow: 'hidden' }
           },
@@ -16619,7 +16630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       h('td', { style: { padding: '4px 6px', border: '1px solid #cbd5e1' } }, o.st));
                   }))
                 ),
-                h('textarea', { 'aria-label': 'Typing target hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.typingpractice.hypothesis_free_text_what_is_your_sust', 'Hypothesis (free text): What is your sustainable target? How does accuracy floor change effective WPM?'),
+                h('textarea', { 'aria-label': __alloTPT('stem.typingpractice.a11y_typing_target_hypothesis', 'Typing target hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.typingpractice.hypothesis_free_text_what_is_your_sust', 'Hypothesis (free text): What is your sustainable target? How does accuracy floor change effective WPM?'),
                   style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.typingpractice.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 10 } },
@@ -16630,8 +16641,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     h('li', null, __alloT('stem.typingpractice.a_slower_target_with_high_accuracy_may', 'A slower target with high accuracy may produce more text per session. Test.')))),
                 h('div', { style: { padding: 10, background: '#ecfdf5', border: '1px solid #86efac', borderRadius: 4 } },
                   h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
-                    h('input', { type: 'checkbox', 'aria-label': 'I understand the typing speed and accuracy tradeoff', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), __alloT('stem.typingpractice.i_understand_the_tradeoff_explain_in_o', 'I understand the tradeoff — explain in own words')),
-                  iq.understood && h('textarea', { 'aria-label': 'Explain the typing speed and accuracy tradeoff', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.typingpractice.explain_in_your_own_words_how_do_wpm_a', 'Explain in your own words: how do WPM, accuracy, and momentum interact? What does the Pareto frontier mean for typing practice?'),
+                    h('input', { type: 'checkbox', 'aria-label': __alloTPT('stem.typingpractice.a11y_i_understand_the_typing_speed_and_accuracy_trad', 'I understand the typing speed and accuracy tradeoff'), checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), __alloT('stem.typingpractice.i_understand_the_tradeoff_explain_in_o', 'I understand the tradeoff — explain in own words')),
+                  iq.understood && h('textarea', { 'aria-label': __alloTPT('stem.typingpractice.a11y_explain_the_typing_speed_and_accuracy_tradeoff', 'Explain the typing speed and accuracy tradeoff'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.typingpractice.explain_in_your_own_words_how_do_wpm_a', 'Explain in your own words: how do WPM, accuracy, and momentum interact? What does the Pareto frontier mean for typing practice?'),
                     style: { width: '100%', minHeight: 80, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
                 h('div', { style: { marginTop: 10, padding: 8, background: '#f1f5f9', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#475569' } },
                   __alloT('stem.typingpractice.design_note_discrete_5_zone_marker_par', 'Design note: discrete 5-zone marker; Pareto curve shows tradeoff space; no "correct" target — by design.'))
@@ -17571,7 +17582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   function renderErrorHeatmap(errorMap, maxErr, palette, keyboardLayoutId) {
     var React = window.React;
     var h = React.createElement;
-    return h('div', { 'aria-label': 'Error heatmap', style: { display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' } },
+    return h('div', { 'aria-label': __alloTPT('stem.typingpractice.a11y_error_heatmap', 'Error heatmap'), style: { display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' } },
       typingPracticeKeyboardLayout(keyboardLayoutId).rows.map(function(row, rowIdx) {
         return h('div', {
           key: 'heat-row-' + rowIdx,
@@ -17810,7 +17821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         practicedDays.length > 0 ? h('div', {
           className: 'tp-table-scroll',
           tabIndex: 0,
-          'aria-label': 'Scrollable practice calendar table',
+          'aria-label': __alloTPT('stem.typingpractice.a11y_scrollable_practice_calendar_table', 'Scrollable practice calendar table'),
           style: { marginTop: '6px' }
         },
           h('table', { className: 'tp-calendar-table' },
@@ -19187,7 +19198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // through the AI pipeline (currently just 'passage'). Visually
           // differentiates AI content from structured drills in the grid.
           drill.requiresAI ? h('span', {
-            'aria-label': 'This is an AI-generated drill',
+            'aria-label': __alloTPT('stem.typingpractice.a11y_this_is_an_ai_generated_drill', 'This is an AI-generated drill'),
             style: {
               fontSize: '10px',
               padding: '2px 7px',
@@ -19364,7 +19375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var h = React.createElement;
     return h('button', {
       onClick: onClick,
-      'aria-label': 'Back to menu',
+      'aria-label': __alloTPT('stem.typingpractice.a11y_back_to_menu', 'Back to menu'),
       style: {
         background: 'none',
         border: 'none',

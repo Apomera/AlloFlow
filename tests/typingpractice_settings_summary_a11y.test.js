@@ -56,7 +56,7 @@ describe('Typing Practice settings and summary structure', () => {
 
   it('represents summary and progress metrics as definition lists', () => {
     expect(source).toContain("h('dl', {\n                className: 'tp-stat-stagger'");
-    expect(source).toContain("'aria-label': 'Baseline and current metrics'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_baseline_and_current_metrics', 'Baseline and current metrics'");
     expect(source).toContain("h('dt', { style: labelStyle }, label)");
     expect(source).toContain("h('dd', { style: Object.assign({ margin: 0 }, valueStyle) }, value)");
     expect(source).not.toContain("'aria-label': label + ': ' + value");

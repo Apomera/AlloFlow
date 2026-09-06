@@ -40,11 +40,11 @@ describe('Typing Practice onboarding and summary accessibility', () => {
   it('offers direct, semantic first-run choices with full-size targets', () => {
     expect(source).toContain("'aria-labelledby': 'tp-welcome-title'");
     expect(source).toContain("'aria-describedby': 'tp-welcome-description'");
-    expect(source).toContain("'aria-label': 'Welcome choices'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_welcome_choices', 'Welcome choices'");
     expect(source).toContain("}, 'Start Home Row')");
     expect(source).toContain("}, 'Choose supports')");
     expect(source).toContain("}, 'Browse all drills')");
-    expect(source).toContain("setAnnounceText('Opening Home Row preparation.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_opening_home_row_preparation', 'Opening Home Row preparation.')");
   });
 
   it('gives drill preparation a labelled hierarchy and named quick controls', () => {
@@ -88,7 +88,7 @@ describe('Typing Practice onboarding and summary accessibility', () => {
     expect(source).toContain("htmlFor: 'tp-summary-session-note'");
     expect(source).toContain("'aria-describedby': 'tp-summary-note-help tp-summary-note-count'");
     expect(source).toContain("(e.ctrlKey || e.metaKey) && e.key === 'Enter'");
-    expect(source).toContain("setAnnounceText('Session note draft cleared.')");
-    expect(source).toContain("setAnnounceText('Session note saved. It will appear in progress reports and exports.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_session_note_draft_cleared', 'Session note draft cleared.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_session_note_saved_it_will_appear_in_progress_rep', 'Session note saved. It will appear in progress reports and exports.')");
   });
 });

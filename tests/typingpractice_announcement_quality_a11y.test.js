@@ -89,7 +89,7 @@ describe('Typing Practice announcement quality', () => {
 
     expect(descriptiveStatus).not.toContain("role: 'status'");
     expect(descriptiveStatus).not.toContain("'aria-live'");
-    expect(generatePassage).toContain("setAnnounceText('Generating a personalized passage.");
+    expect(generatePassage).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_generating_a_personalized_passage_you_can_cancel', 'Generating a personalized passage.");
     expect(generatePassage).toContain("setGenError('Could not generate a passage.");
     expect(generatePassage).not.toContain("setAnnounceText('Passage generation failed.");
     expect(generatePassage).not.toContain("setAnnounceText('Passage generation is unavailable.");

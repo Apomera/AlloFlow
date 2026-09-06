@@ -92,10 +92,10 @@ describe('Typing Practice goal form accessibility and data safety', () => {
     expect(validation).toBeGreaterThan(profileStart);
     expect(confirmation).toBeGreaterThan(validation);
     expect(apply).toBeGreaterThan(confirmation);
-    expect(source).toContain("setAnnounceText('Typing Practice profile exported.')");
-    expect(source).toContain("setAnnounceText('Typing Practice profile imported. Settings have been updated.')");
-    expect(source).toContain("setAnnounceText('Full Typing Practice backup exported.')");
-    expect(source).toContain("setAnnounceText('All Typing Practice data permanently cleared.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_typing_practice_profile_exported', 'Typing Practice profile exported.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_typing_practice_profile_imported_settings_have_be', 'Typing Practice profile imported. Settings have been updated.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_full_typing_practice_backup_exported', 'Full Typing Practice backup exported.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_all_typing_practice_data_permanently_cleared', 'All Typing Practice data permanently cleared.')");
   });
 
   it('confirms IEP clearing and resets stale drafts after replacement actions', () => {

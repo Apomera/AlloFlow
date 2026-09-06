@@ -148,7 +148,7 @@ describe('Typing Practice Battle Mode timing and interaction accessibility', () 
   it('restores focus to the native Battle input without disabling controls', () => {
     expect(source).toContain('ref: battleCaptureRef');
     expect(source).toContain("role: 'region'");
-    expect(source).toContain("'aria-label': 'Battle Mode typing play area'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_battle_mode_typing_play_area', 'Battle Mode typing play area'");
     expect(source).toContain("'aria-describedby': 'tp-battle-play-help tp-battle-current-key'");
     expect(source).toContain('if (battleCaptureRef.current) battleCaptureRef.current.focus();');
   });

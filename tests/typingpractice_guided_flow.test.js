@@ -33,9 +33,9 @@ describe('Typing Practice guided flow', () => {
   });
 
   it('provides accessible drill filters and search', () => {
-    expect(source).toContain("'aria-label': 'Filter drills'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_filter_drills', 'Filter drills'");
     expect(source).toContain("'aria-pressed': active ? 'true' : 'false'");
-    expect(source).toContain("'aria-label': 'Search drills by name or description'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_search_drills_by_name_or_description', 'Search drills by name or description'");
     expect(source).toContain("{ id: 'recommended', label: 'For you'");
     expect(source).toContain("{ id: 'access', label: 'One-hand' }");
   });
@@ -43,7 +43,7 @@ describe('Typing Practice guided flow', () => {
   it('keeps drill results, sorting, and empty-state feedback synchronized', () => {
     expect(source).toContain('var visibleDrillIds = Object.keys(DRILLS)');
     expect(source).toContain("h(TypingPracticeDebouncedStatus, {");
-    expect(source).toContain("'aria-label': 'Sort drills'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_sort_drills', 'Sort drills'");
     expect(source).toContain("h('option', { value: 'quickest' }, 'Shortest first')");
     expect(source).toContain("h('option', { value: 'least-practiced' }, 'Least practiced first')");
     expect(source).toContain('No drills match yet');

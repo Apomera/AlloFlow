@@ -86,7 +86,7 @@ describe('Typing Practice calendar accessibility and measurement integrity', () 
 
   it('provides an accessible recent-session trend table', () => {
     expect(source).toContain("id: 'tp-session-trend-table'");
-    expect(source).toContain("'aria-label': 'Recent comparable session data'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_recent_comparable_session_data', 'Recent comparable session data'");
     expect(source).toContain("'Last ' + trend.length + ' WPM-comparable typing sessions.");
     expect(source).toContain("['Date', 'Drill', 'Pace', 'Accuracy', 'Comparability']");
     expect(source).toContain('typingPracticeMetricDisplay(s)');
@@ -96,7 +96,7 @@ describe('Typing Practice calendar accessibility and measurement integrity', () 
     expect(source).toContain("var cpmSessions = filteredSessions.filter");
     expect(source).toContain("id: 'tp-cpm-trend-title'");
     expect(source).toContain("id: 'tp-cpm-trend-table'");
-    expect(source).toContain("'aria-label': 'Character-rate session data'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_character_rate_session_data', 'Character-rate session data'");
     expect(source).toContain("'Not WPM comparable'");
     expect(source).toContain('Character-rate sessions use a separate CPM trend below when available');
   });

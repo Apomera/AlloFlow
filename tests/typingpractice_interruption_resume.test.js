@@ -22,7 +22,7 @@ describe('Typing Practice interruption recovery', () => {
   });
 
   it('surfaces an explicit resume-or-discard choice on the menu', () => {
-    expect(source).toContain("'aria-label': 'Resume saved practice'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_resume_saved_practice', 'Resume saved practice'");
     expect(source).toContain('not counted yet');
     expect(source).toContain('Discard saved practice?');
     expect(source).toContain("setAnnounceText('Resuming saved '");

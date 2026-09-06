@@ -46,7 +46,7 @@ describe('Typing Practice Progress accessibility and UX', () => {
   it('names filter groups and exposes selected quick ranges', () => {
     expect(source).toContain("allSessions.length > 0 ? h('section', {");
     expect(source).toContain("'aria-labelledby': 'tp-report-filters-title'");
-    expect(source).toContain("role: 'group', 'aria-label': 'Quick date ranges'");
+    expect(source).toContain("role: 'group', 'aria-label': __alloTPT('stem.typingpractice.a11y_quick_date_ranges', 'Quick date ranges'");
     const preset = snippetAfter("key: 'fpreset-' + preset.id");
     expect(preset).toContain("type: 'button'");
     expect(preset).toContain("'aria-pressed': isActive ? 'true' : 'false'");
@@ -70,7 +70,7 @@ describe('Typing Practice Progress accessibility and UX', () => {
   it('uses a roving chart entry point with complete keyboard guidance', () => {
     expect(source).toContain("tabIndex: (isSelected || isComparePick || (selectedDetailIdx === null && compareSelections.length === 0 && i === 0)) ? 0 : -1");
     expect(source).toContain('Press Tab once to enter the chart.');
-    expect(source).toContain("setAnnounceText('Session comparison mode on. Select two sessions.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_session_comparison_mode_on_select_two_sessions', 'Session comparison mode on. Select two sessions.')");
     expect(source).toContain("'Two sessions selected. Comparison table ready.'");
     expect(source).toContain("'aria-hidden': 'true'");
     expect(source).not.toContain("'aria-label': 'Baseline reference");
@@ -78,7 +78,7 @@ describe('Typing Practice Progress accessibility and UX', () => {
 
   it('structures session details and names all editing controls', () => {
     expect(source).toContain("'aria-labelledby': 'tp-session-detail-title'");
-    expect(source).toContain("h('dl', { 'aria-label': 'Session metrics'");
+    expect(source).toContain("h('dl', { 'aria-label': __alloTPT('stem.typingpractice.a11y_session_metrics', 'Session metrics'");
     expect(source).toContain("h('dt', { style:");
     expect(source).toContain("h('dd', { style:");
     expect(source).toContain("role: 'group', 'aria-labelledby': 'tp-session-tag-label'");
@@ -96,13 +96,13 @@ describe('Typing Practice Progress accessibility and UX', () => {
     expect(source).toContain("'aria-describedby': 'tp-session-note-help'");
     expect(source).toContain("v ? 'Session note saved.' : 'Session note cleared.'");
     expect(source).toContain("e.currentTarget.value = d.note || '';");
-    expect(source).toContain("setAnnounceText('Session note edit canceled.')");
+    expect(source).toContain("setAnnounceText(__alloTPT('stem.typingpractice.sr_session_note_edit_canceled', 'Session note edit canceled.')");
   });
 
   it('labels comparison and report regions and announces report actions', () => {
     expect(source).toContain("'aria-labelledby': 'tp-session-comparison-title'");
     expect(source).toContain("'aria-describedby': 'tp-session-comparison-legend'");
-    expect(source).toContain("'aria-label': 'Progress report actions'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_progress_report_actions', 'Progress report actions'");
     expect(source).toContain('copyTextToClipboard(report, addToast).then(function(copied)');
     expect(source).toContain("'Progress report copied to the clipboard.'");
     expect(source).toContain("'Progress report copy failed. Select the report text and copy it manually.'");

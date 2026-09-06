@@ -44,7 +44,7 @@ describe('Typing Practice preference control accessibility', () => {
 
     expect(source).toContain("h('nav', {");
     expect(source).toContain("className: 'tp-settings-nav'");
-    expect(source).toContain("'aria-label': 'Settings sections'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_settings_sections', 'Settings sections'");
     expect(source).toContain('focusTypingPracticeSettingsSection(el)');
   });
 

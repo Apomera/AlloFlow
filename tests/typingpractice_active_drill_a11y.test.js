@@ -107,8 +107,8 @@ describe('Typing Practice active drill accessibility', () => {
     expect(source).toContain("'Warmup complete. This session was not saved. '");
     expect(source).toContain("'Goal met on ' + activeDrill.name");
     expect(source).toContain("id: 'tp-summary-title'");
-    expect(source).toContain("'aria-label': 'Session results'");
-    expect(source).toContain("'aria-label': 'Session actions'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_session_results', 'Session results'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_session_actions', 'Session actions'");
     expect(source).toContain("'aria-label': 'Retry ' + s.drillName + ' with the same text'");
     expect(source).toContain("'aria-label': 'Practice the ' + uniqueErrKeys.length + ' keys missed in this session'");
     expect(source).toContain("'Drill exited without saving. Returning to Typing Practice home.'");

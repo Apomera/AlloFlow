@@ -47,8 +47,13 @@ describe('Typing Practice target-size accessibility', () => {
 
   it('gives reusable navigation actions a 44px target', () => {
     const window = mockReactWindow();
-    const nav = Function('window', 'return (' + extractFunction('renderNavButton') + ')')(window);
-    const back = Function('window', 'return (' + extractFunction('renderBackButton') + ')')(window);
+    // renderBackButton names its button through the tool's translator, so the
+    // extracted source needs it the way it already needs window. The stub
+    // returns the English fallback, which is what __alloTPT does before any
+    // render has handed it a ctx.
+    const t = (key, fallback) => (fallback == null ? key : fallback);
+    const nav = Function('window', '__alloTPT', 'return (' + extractFunction('renderNavButton') + ')')(window, t);
+    const back = Function('window', '__alloTPT', 'return (' + extractFunction('renderBackButton') + ')')(window, t);
 
     expect(nav('Next', () => {}, {}, false).props.style.minHeight).toBe('44px');
     expect(back(() => {}, { accent: '#123456' }).props.style).toMatchObject({

@@ -60,7 +60,7 @@ describe('Typing Practice history reflow and accessibility', () => {
   it('supports Escape and a 44-pixel clear control with focus recovery', () => {
     expect(source).toContain("if (e.key === 'Escape' && noteQuery)");
     expect(source).toContain('clearHistoryNoteSearch();');
-    expect(source).toContain("'aria-label': 'Clear history note search'");
+    expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_clear_history_note_search', 'Clear history note search'");
     expect(source).toContain("document.getElementById('tp-history-search')");
     expect(source).toContain("minHeight: '44px'");
   });
