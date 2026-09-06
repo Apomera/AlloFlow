@@ -8811,7 +8811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             .then(function(resp) {
               var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
               upd({ batteryLoading: false, batteryCritique: text });
-              announceSR('Battery critique generated');
+              announceSR(__alloT('stem.assessmentliteracy.sr_battery_critique_generated', 'Battery critique generated'));
             })
             .catch(function(e) {
               upd({ batteryLoading: false, batteryCritique: 'Error: ' + (e && e.message ? e.message : 'unknown') });

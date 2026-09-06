@@ -2104,7 +2104,7 @@ window.StemLab = window.StemLab || {
           }
           return Object.assign({}, prev, { throwlab: next });
         });
-        tlAnnounce('Custom scenario removed.');
+        tlAnnounce(__alloT('stem.throwlab.sr_custom_scenario_removed', 'Custom scenario removed.'));
       }
 
       // ── Trading Card export (engagement layer) ──
@@ -2115,7 +2115,7 @@ window.StemLab = window.StemLab || {
       // shareable artifact a kid would actually pin to their wall.
       async function exportTradingCard() {
         if (!d.lastResult) {
-          tlAnnounce('Throw something first, then export a trading card.');
+          tlAnnounce(__alloT('stem.throwlab.sr_throw_something_first_then_export_a_trading_card', 'Throw something first, then export a trading card.'));
           if (addToast) addToast('Throw first — card needs a result');
           return;
         }
@@ -2402,7 +2402,7 @@ window.StemLab = window.StemLab || {
 
       function saveReference() {
         if (!d.lastResult) {
-          tlAnnounce('Throw a pitch first, then you can save it as a reference.');
+          tlAnnounce(__alloT('stem.throwlab.sr_throw_a_pitch_first_then_you_can_save_it_as_a_ref', 'Throw a pitch first, then you can save it as a reference.'));
           if (addToast) addToast('No throw to save yet');
           return;
         }
@@ -2451,7 +2451,7 @@ window.StemLab = window.StemLab || {
           });
           return Object.assign({}, prev, { throwlab: next });
         });
-        tlAnnounce('All references cleared.');
+        tlAnnounce(__alloT('stem.throwlab.sr_all_references_cleared', 'All references cleared.'));
       }
 
       function removeReferenceAt(idx) {
@@ -2465,7 +2465,7 @@ window.StemLab = window.StemLab || {
           });
           return Object.assign({}, prev, { throwlab: next });
         });
-        tlAnnounce('Reference removed.');
+        tlAnnounce(__alloT('stem.throwlab.sr_reference_removed', 'Reference removed.'));
       }
 
       // ── Coach Mode (Gemini) ──
@@ -2474,7 +2474,7 @@ window.StemLab = window.StemLab || {
       // callGemini isn't available (host harness without API access).
       function askCoach() {
         if (!d.lastResult) {
-          tlAnnounce('Throw a pitch first, then ask the coach for feedback.');
+          tlAnnounce(__alloT('stem.throwlab.sr_throw_a_pitch_first_then_ask_the_coach_for_feedba', 'Throw a pitch first, then ask the coach for feedback.'));
           if (addToast) addToast('Throw something first');
           return;
         }
@@ -2484,7 +2484,7 @@ window.StemLab = window.StemLab || {
               coachError: 'Coach is offline (AI not available in this build).'
             })});
           });
-          tlAnnounce('Coach is offline.');
+          tlAnnounce(__alloT('stem.throwlab.sr_coach_is_offline', 'Coach is offline.'));
           return;
         }
         setLabToolData(function(prev) {
@@ -2901,7 +2901,7 @@ window.StemLab = window.StemLab || {
         if (!launchZone) return;
         if (typeof launchZone.scrollIntoView === 'function') launchZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (typeof launchZone.focus === 'function') launchZone.focus({ preventScroll: true });
-        tlAnnounce('Launch controls. Call the outcome, review the fair-test check, then launch.');
+        tlAnnounce(__alloT('stem.throwlab.sr_launch_controls_call_the_outcome_review_the_fair', 'Launch controls. Call the outcome, review the fair-test check, then launch.'));
       }
 
       function throwPitch() {
@@ -3305,15 +3305,15 @@ window.StemLab = window.StemLab || {
               if (awardXP) awardXP('throwlab', 5, 'Strike thrown');
             } else if (loc === 'borderline') {
               sfxCatch();
-              tlAnnounce('Borderline pitch. Just outside the strike zone.');
+              tlAnnounce(__alloT('stem.throwlab.sr_borderline_pitch_just_outside_the_strike_zone', 'Borderline pitch. Just outside the strike zone.'));
               if (addToast) addToast('⚪ Borderline pitch');
             } else if (loc === 'ball') {
               sfxBall();
-              tlAnnounce('Ball. Pitch missed the strike zone.');
+              tlAnnounce(__alloT('stem.throwlab.sr_ball_pitch_missed_the_strike_zone', 'Ball. Pitch missed the strike zone.'));
               if (addToast) addToast('Ball — outside the zone');
             } else {
               sfxBall();
-              tlAnnounce('Wild pitch. Bounced or sailed past the catcher.');
+              tlAnnounce(__alloT('stem.throwlab.sr_wild_pitch_bounced_or_sailed_past_the_catcher', 'Wild pitch. Bounced or sailed past the catcher.'));
               if (addToast) addToast('Wild pitch!');
             }
             if (newStrikeCount === 3 && (d.strikeCount || 0) < 3 && celebrate) celebrate();
@@ -3328,11 +3328,11 @@ window.StemLab = window.StemLab || {
               if (celebrate) celebrate();
             } else if (loc === 'highpass') {
               sfxBall();
-              tlAnnounce('Sailed high — your teammate had to jump for it.');
+              tlAnnounce(__alloT('stem.throwlab.sr_sailed_high_your_teammate_had_to_jump_for_it', 'Sailed high — your teammate had to jump for it.'));
               if (addToast) addToast('Too high');
             } else if (loc === 'lowpass') {
               sfxBall();
-              tlAnnounce('Worm-burner — pass arrived below the knees.');
+              tlAnnounce(__alloT('stem.throwlab.sr_worm_burner_pass_arrived_below_the_knees', 'Worm-burner — pass arrived below the knees.'));
               if (addToast) addToast('Too low');
             } else if (loc === 'wrongbounce') {
               sfxBall();
@@ -3340,11 +3340,11 @@ window.StemLab = window.StemLab || {
               if (addToast) addToast(d.shotType === 'bouncepass' ? 'Need more downward angle' : 'Don\'t bounce a chest pass');
             } else if (loc === 'short') {
               sfxBall();
-              tlAnnounce('Short — pass didn\'t reach the teammate.');
+              tlAnnounce(__alloT('stem.throwlab.sr_short_pass_didn_t_reach_the_teammate', 'Short — pass didn\'t reach the teammate.'));
               if (addToast) addToast('Short');
             } else if (loc === 'wide') {
               sfxBall();
-              tlAnnounce('Wide of the teammate — adjust horizontal aim.');
+              tlAnnounce(__alloT('stem.throwlab.sr_wide_of_the_teammate_adjust_horizontal_aim', 'Wide of the teammate — adjust horizontal aim.'));
               if (addToast) addToast('Wide');
             } else if (loc === 'swish') {
               sfxStrike(); sfxStrike();
@@ -3354,24 +3354,24 @@ window.StemLab = window.StemLab || {
               if (celebrate) celebrate();
             } else if (loc === 'made') {
               sfxStrike();
-              tlAnnounce('Made it! Ball kissed the rim and dropped through.');
+              tlAnnounce(__alloT('stem.throwlab.sr_made_it_ball_kissed_the_rim_and_dropped_through', 'Made it! Ball kissed the rim and dropped through.'));
               if (addToast) addToast('🏀 SCORE!');
               if (awardXP) awardXP('throwlab', 5, 'Shot made');
             } else if (loc === 'rim') {
               sfxBall();
-              tlAnnounce('Off the rim. Close — adjust your arc.');
+              tlAnnounce(__alloT('stem.throwlab.sr_off_the_rim_close_adjust_your_arc', 'Off the rim. Close — adjust your arc.'));
               if (addToast) addToast('Rim out');
             } else if (loc === 'backboard') {
               sfxCatch();
-              tlAnnounce('Off the backboard. Try a softer shot or shorter arc.');
+              tlAnnounce(__alloT('stem.throwlab.sr_off_the_backboard_try_a_softer_shot_or_shorter_ar', 'Off the backboard. Try a softer shot or shorter arc.'));
               if (addToast) addToast('Off the backboard');
             } else if (loc === 'air') {
               sfxBall();
-              tlAnnounce('Airball — short of the rim entirely.');
+              tlAnnounce(__alloT('stem.throwlab.sr_airball_short_of_the_rim_entirely', 'Airball — short of the rim entirely.'));
               if (addToast) addToast('Airball');
             } else {
               sfxBall();
-              tlAnnounce('Missed the rim.');
+              tlAnnounce(__alloT('stem.throwlab.sr_missed_the_rim', 'Missed the rim.'));
               if (addToast) addToast('Miss');
             }
           } else if (d.mode === 'fieldgoal') {
@@ -3383,23 +3383,23 @@ window.StemLab = window.StemLab || {
               if (celebrate) celebrate();
             } else if (loc === 'doink') {
               sfxStrike();
-              tlAnnounce('Doink! Off the post or crossbar — inches from a make.');
+              tlAnnounce(__alloT('stem.throwlab.sr_doink_off_the_post_or_crossbar_inches_from_a_make', 'Doink! Off the post or crossbar — inches from a make.'));
               if (addToast) addToast('🥁 DOINK');
             } else if (loc === 'shortbar') {
               sfxBall();
-              tlAnnounce('Short. Kick failed to clear the crossbar — needs more power or steeper angle.');
+              tlAnnounce(__alloT('stem.throwlab.sr_short_kick_failed_to_clear_the_crossbar_needs_mor', 'Short. Kick failed to clear the crossbar — needs more power or steeper angle.'));
               if (addToast) addToast('Short — under the bar');
             } else if (loc === 'wideclose') {
               sfxBall();
-              tlAnnounce('No good — wide of the upright by inches.');
+              tlAnnounce(__alloT('stem.throwlab.sr_no_good_wide_of_the_upright_by_inches', 'No good — wide of the upright by inches.'));
               if (addToast) addToast('Wide — barely');
             } else if (loc === 'wide') {
               sfxBall();
-              tlAnnounce('No good — wide of the goalposts.');
+              tlAnnounce(__alloT('stem.throwlab.sr_no_good_wide_of_the_goalposts', 'No good — wide of the goalposts.'));
               if (addToast) addToast('Wide');
             } else {
               sfxBall();
-              tlAnnounce('Short — kick didn\'t reach the goal line.');
+              tlAnnounce(__alloT('stem.throwlab.sr_short_kick_didn_t_reach_the_goal_line', 'Short — kick didn\'t reach the goal line.'));
               if (addToast) addToast('Short of the line');
             }
           } else if (d.mode === 'freekick') {
@@ -3411,23 +3411,23 @@ window.StemLab = window.StemLab || {
               if (celebrate) celebrate();
             } else if (loc === 'post') {
               sfxStrike();
-              tlAnnounce('Off the post! Inches from a goal.');
+              tlAnnounce(__alloT('stem.throwlab.sr_off_the_post_inches_from_a_goal', 'Off the post! Inches from a goal.'));
               if (addToast) addToast('🥅 Off the post');
             } else if (loc === 'over') {
               sfxBall();
-              tlAnnounce('Over the bar. Reduce your launch angle.');
+              tlAnnounce(__alloT('stem.throwlab.sr_over_the_bar_reduce_your_launch_angle', 'Over the bar. Reduce your launch angle.'));
               if (addToast) addToast('Over the bar');
             } else if (loc === 'wide') {
               sfxBall();
-              tlAnnounce('Wide of the goal. Adjust your aim or curl.');
+              tlAnnounce(__alloT('stem.throwlab.sr_wide_of_the_goal_adjust_your_aim_or_curl', 'Wide of the goal. Adjust your aim or curl.'));
               if (addToast) addToast('Wide');
             } else if (loc === 'blocked') {
               sfxCatch();
-              tlAnnounce('Blocked by the wall. Add more curl or arc.');
+              tlAnnounce(__alloT('stem.throwlab.sr_blocked_by_the_wall_add_more_curl_or_arc', 'Blocked by the wall. Add more curl or arc.'));
               if (addToast) addToast('Wall block');
             } else {
               sfxBall();
-              tlAnnounce('Short — kick didn\'t reach the goal line.');
+              tlAnnounce(__alloT('stem.throwlab.sr_short_kick_didn_t_reach_the_goal_line', 'Short — kick didn\'t reach the goal line.'));
               if (addToast) addToast('Short');
             }
           } else if (d.mode === 'bowling') {
@@ -3439,24 +3439,24 @@ window.StemLab = window.StemLab || {
               if (celebrate) celebrate();
             } else if (loc === 'shaved') {
               sfxStrike();
-              tlAnnounce('Bail-trembler! Ball just clipped the stumps — count it.');
+              tlAnnounce(__alloT('stem.throwlab.sr_bail_trembler_ball_just_clipped_the_stumps_count', 'Bail-trembler! Ball just clipped the stumps — count it.'));
               if (addToast) addToast('🏏 Bail-trembler');
               if (awardXP) awardXP('throwlab', 7, 'Wicket (bail-shaver)');
             } else if (loc === 'overhead') {
               sfxBall();
-              tlAnnounce('Over the bails — head-height ball is a no-ball penalty in test cricket. Reduce launch angle.');
+              tlAnnounce(__alloT('stem.throwlab.sr_over_the_bails_head_height_ball_is_a_no_ball_pena', 'Over the bails — head-height ball is a no-ball penalty in test cricket. Reduce launch angle.'));
               if (addToast) addToast('Overhead — no-ball');
             } else if (loc === 'wide') {
               sfxBall();
-              tlAnnounce('Wide. Outside the wide line — adjust your line tighter to off-stump.');
+              tlAnnounce(__alloT('stem.throwlab.sr_wide_outside_the_wide_line_adjust_your_line_tight', 'Wide. Outside the wide line — adjust your line tighter to off-stump.'));
               if (addToast) addToast('Wide call');
             } else if (loc === 'dot') {
               sfxBall();
-              tlAnnounce('Dot ball — passes the bat without hitting stumps. Defensible delivery.');
+              tlAnnounce(__alloT('stem.throwlab.sr_dot_ball_passes_the_bat_without_hitting_stumps_de', 'Dot ball — passes the bat without hitting stumps. Defensible delivery.'));
               if (addToast) addToast('Dot ball');
             } else {
               sfxBall();
-              tlAnnounce('Short of a length — ball bounced too far in front of the batter.');
+              tlAnnounce(__alloT('stem.throwlab.sr_short_of_a_length_ball_bounced_too_far_in_front_o', 'Short of a length — ball bounced too far in front of the batter.'));
               if (addToast) addToast('Short of length');
             }
           } else if (d.mode === 'volleyball') {
@@ -3468,24 +3468,24 @@ window.StemLab = window.StemLab || {
               if (celebrate) celebrate();
             } else if (loc === 'in') {
               sfxStrike();
-              tlAnnounce('Serve in. Receivable, but landed in court — point stays in play.');
+              tlAnnounce(__alloT('stem.throwlab.sr_serve_in_receivable_but_landed_in_court_point_sta', 'Serve in. Receivable, but landed in court — point stays in play.'));
               if (addToast) addToast('🏐 In');
               if (awardXP) awardXP('throwlab', 5, 'Serve in');
             } else if (loc === 'net') {
               sfxBall();
-              tlAnnounce('Net! Hit the tape — service error. Add launch angle by 2-4°.');
+              tlAnnounce(__alloT('stem.throwlab.sr_net_hit_the_tape_service_error_add_launch_angle_b', 'Net! Hit the tape — service error. Add launch angle by 2-4°.'));
               if (addToast) addToast('Net');
             } else if (loc === 'out') {
               sfxBall();
-              tlAnnounce('Out wide of the sideline — adjust horizontal aim.');
+              tlAnnounce(__alloT('stem.throwlab.sr_out_wide_of_the_sideline_adjust_horizontal_aim', 'Out wide of the sideline — adjust horizontal aim.'));
               if (addToast) addToast('Out');
             } else if (loc === 'long') {
               sfxBall();
-              tlAnnounce('Long — past the back line. Reduce speed by 5-8 mph or steepen launch slightly.');
+              tlAnnounce(__alloT('stem.throwlab.sr_long_past_the_back_line_reduce_speed_by_5_8_mph_o', 'Long — past the back line. Reduce speed by 5-8 mph or steepen launch slightly.'));
               if (addToast) addToast('Long');
             } else {
               sfxBall();
-              tlAnnounce('Short — landed on your side of the net. Add power.');
+              tlAnnounce(__alloT('stem.throwlab.sr_short_landed_on_your_side_of_the_net_add_power', 'Short — landed on your side of the net. Add power.'));
               if (addToast) addToast('Short');
             }
           } else if (d.mode === 'golf') {
@@ -3497,28 +3497,28 @@ window.StemLab = window.StemLab || {
               if (celebrate) celebrate();
             } else if (loc === 'fairway') {
               sfxStrike();
-              tlAnnounce('Fairway! Solid strike, in the short grass.');
+              tlAnnounce(__alloT('stem.throwlab.sr_fairway_solid_strike_in_the_short_grass', 'Fairway! Solid strike, in the short grass.'));
               if (addToast) addToast('⛳ Fairway');
               if (awardXP) awardXP('throwlab', 6, 'Fairway hit');
             } else if (loc === 'rough') {
               sfxBall();
-              tlAnnounce('In the rough. Playable, but the next shot is harder out of long grass.');
+              tlAnnounce(__alloT('stem.throwlab.sr_in_the_rough_playable_but_the_next_shot_is_harder', 'In the rough. Playable, but the next shot is harder out of long grass.'));
               if (addToast) addToast('Rough');
             } else if (loc === 'woods') {
               sfxBall();
-              tlAnnounce('In the trees! Way off-line — check your horizontal aim or spin axis.');
+              tlAnnounce(__alloT('stem.throwlab.sr_in_the_trees_way_off_line_check_your_horizontal_a', 'In the trees! Way off-line — check your horizontal aim or spin axis.'));
               if (addToast) addToast('Woods');
             } else if (loc === 'short') {
               sfxBall();
-              tlAnnounce('Short of the green. Need more clubhead speed or a longer club.');
+              tlAnnounce(__alloT('stem.throwlab.sr_short_of_the_green_need_more_clubhead_speed_or_a', 'Short of the green. Need more clubhead speed or a longer club.'));
               if (addToast) addToast('Short');
             } else if (loc === 'long') {
               sfxBall();
-              tlAnnounce('Long — flew the green. Same club, ease back on speed by 5-10 mph.');
+              tlAnnounce(__alloT('stem.throwlab.sr_long_flew_the_green_same_club_ease_back_on_speed', 'Long — flew the green. Same club, ease back on speed by 5-10 mph.'));
               if (addToast) addToast('Over the green');
             } else {
               sfxBall();
-              tlAnnounce('Topped or shanked — barely got airborne.');
+              tlAnnounce(__alloT('stem.throwlab.sr_topped_or_shanked_barely_got_airborne', 'Topped or shanked — barely got airborne.'));
               if (addToast) addToast('Topped');
             }
           }
@@ -4592,7 +4592,7 @@ window.StemLab = window.StemLab || {
       function finishReplayAnalysis() {
         setReplayPaused(false);
         writeReplayState(false, 1);
-        tlAnnounce('Replay analysis finished. Full trajectory shown.');
+        tlAnnounce(__alloT('stem.throwlab.sr_replay_analysis_finished_full_trajectory_shown', 'Replay analysis finished. Full trajectory shown.'));
       }
       React.useEffect(function() {
         if (!d.replayActive || replayPaused) return;
@@ -4600,7 +4600,7 @@ window.StemLab = window.StemLab || {
         try { prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
         if (prefersReduced) {
           writeReplayState(false, 1);
-          tlAnnounce('Replay shown without animation because reduced motion is enabled. Use the timeline or step controls to inspect frames.');
+          tlAnnounce(__alloT('stem.throwlab.sr_replay_shown_without_animation_because_reduced_mo', 'Replay shown without animation because reduced motion is enabled. Use the timeline or step controls to inspect frames.'));
           return;
         }
         var duration = 1 / Math.max(0.25, replaySpeed || 1);
@@ -4611,7 +4611,7 @@ window.StemLab = window.StemLab || {
           var progress = Math.min(1, (performance.now() - startTime) / 1000 / duration);
           if (progress >= 1 || lastPaint < 0 || progress - lastPaint >= 0.025) { lastPaint = progress; upd('replayT', progress); }
           if (progress < 1) raf = requestAnimationFrame(step);
-          else { writeReplayState(false, 1); tlAnnounce('Replay complete.'); }
+          else { writeReplayState(false, 1); tlAnnounce(__alloT('stem.throwlab.sr_replay_complete', 'Replay complete.')); }
         }
         raf = requestAnimationFrame(step);
         return function() { if (raf) cancelAnimationFrame(raf); };
@@ -4779,7 +4779,7 @@ window.StemLab = window.StemLab || {
         var canvas = immersiveCanvasRef.current; if (!canvas) return; var filename = 'throwlab-' + d.mode + '-perspective.png';
         if (typeof canvas.toBlob === 'function') canvas.toBlob(function(blob) { if (blob) triggerThrowLabDownload(filename, blob, '', 'image/png'); else if (addToast) addToast('Snapshot could not be created', 'error'); }, 'image/png');
         else { try { var link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL('image/png'); link.click(); } catch (error) { if (addToast) addToast('Snapshot could not be created', 'error'); } }
-        tlAnnounce('Immersive perspective snapshot prepared.');
+        tlAnnounce(__alloT('stem.throwlab.sr_immersive_perspective_snapshot_prepared', 'Immersive perspective snapshot prepared.'));
       }
       function exportTrajectoryCsv() {
         if (!d.lastResult) return;
@@ -4790,7 +4790,7 @@ window.StemLab = window.StemLab || {
         var blob = typeof Blob === 'function' ? new Blob([csv], { type: 'text/csv;charset=utf-8' }) : null; triggerThrowLabDownload('throwlab-' + d.mode + '-trajectory.csv', blob, csv, 'text/csv'); tlAnnounce('Trajectory CSV prepared with ' + (rows.length - 1) + ' samples.');
       }
       function resetImmersiveAnalysis() {
-        setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(24); setShowImmersiveGuides(true); setShowImmersiveTimeMarkers(false); setShowImmersiveReferences(true); setImmersiveVectors({ velocity: true, gravity: false, wind: false, spin: false, magnus: false }); setReplaySpeed(1); setReplayPaused(false); if (d.replayActive) writeReplayState(false, 1); tlAnnounce('Immersive camera, overlays, vectors, and replay settings reset.');
+        setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(24); setShowImmersiveGuides(true); setShowImmersiveTimeMarkers(false); setShowImmersiveReferences(true); setImmersiveVectors({ velocity: true, gravity: false, wind: false, spin: false, magnus: false }); setReplaySpeed(1); setReplayPaused(false); if (d.replayActive) writeReplayState(false, 1); tlAnnounce(__alloT('stem.throwlab.sr_immersive_camera_overlays_vectors_and_replay_sett', 'Immersive camera, overlays, vectors, and replay settings reset.'));
       }
 
       function launchActionLabel() {
@@ -5700,7 +5700,7 @@ window.StemLab = window.StemLab || {
           return h('button', {
             onClick: function() {
               if (done) {
-                tlAnnounce('Daily Challenge already complete. Come back tomorrow for a new one.');
+                tlAnnounce(__alloT('stem.throwlab.sr_daily_challenge_already_complete_come_back_tomorr', 'Daily Challenge already complete. Come back tomorrow for a new one.'));
                 return;
               }
               applyScenario(daily.id);
@@ -5974,7 +5974,7 @@ window.StemLab = window.StemLab || {
                       drillActive: false, drillTaskIdx: 0
                     })});
                   });
-                  tlAnnounce('Drill stopped.');
+                  tlAnnounce(__alloT('stem.throwlab.sr_drill_stopped', 'Drill stopped.'));
                 },
                 'aria-label': __alloT('stem.throwlab.stop_the_current_drill', 'Stop the current drill'),
                 'data-tl-focusable': 'true',
@@ -6111,10 +6111,10 @@ window.StemLab = window.StemLab || {
                 ),
                 h('output', { 'aria-live': 'polite', style: { color: '#fde68a', fontSize: 11, fontWeight: 800 } }, 'Camera: yaw ' + immersiveYaw + '° · height ' + immersivePitch + '°' + (followImmersiveBall ? ' · following ball' : ''))
               ),
-              h('div', { role: 'group', 'aria-label': '3D view presets', 'data-throwlab-view-presets': 'true', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
-                h('button', { type: 'button', 'aria-pressed': immersiveYaw === 0 && immersivePitch === 18, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(0); setImmersivePitch(18); tlAnnounce('Behind-launch 3D view selected.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersiveYaw === 0 && immersivePitch === 18 ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersiveYaw === 0 && immersivePitch === 18 ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Behind launch'),
-                h('button', { type: 'button', 'aria-pressed': immersiveYaw === -90 && immersivePitch === 22, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-90); setImmersivePitch(22); tlAnnounce('Sideline 3D view selected.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersiveYaw === -90 && immersivePitch === 22 ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersiveYaw === -90 && immersivePitch === 22 ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Sideline'),
-                h('button', { type: 'button', 'aria-pressed': immersivePitch === 55 && !followImmersiveBall, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(55); tlAnnounce('Overhead 3D view selected.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersivePitch === 55 && !followImmersiveBall ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersivePitch === 55 && !followImmersiveBall ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Overhead'),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.throwlab.a11y_3d_view_presets', '3D view presets'), 'data-throwlab-view-presets': 'true', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
+                h('button', { type: 'button', 'aria-pressed': immersiveYaw === 0 && immersivePitch === 18, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(0); setImmersivePitch(18); tlAnnounce(__alloT('stem.throwlab.sr_behind_launch_3d_view_selected', 'Behind-launch 3D view selected.')); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersiveYaw === 0 && immersivePitch === 18 ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersiveYaw === 0 && immersivePitch === 18 ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Behind launch'),
+                h('button', { type: 'button', 'aria-pressed': immersiveYaw === -90 && immersivePitch === 22, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-90); setImmersivePitch(22); tlAnnounce(__alloT('stem.throwlab.sr_sideline_3d_view_selected', 'Sideline 3D view selected.')); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersiveYaw === -90 && immersivePitch === 22 ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersiveYaw === -90 && immersivePitch === 22 ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Sideline'),
+                h('button', { type: 'button', 'aria-pressed': immersivePitch === 55 && !followImmersiveBall, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(55); tlAnnounce(__alloT('stem.throwlab.sr_overhead_3d_view_selected', 'Overhead 3D view selected.')); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersivePitch === 55 && !followImmersiveBall ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersivePitch === 55 && !followImmersiveBall ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Overhead'),
                 h('button', { type: 'button', 'aria-pressed': followImmersiveBall, disabled: !lr, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(!followImmersiveBall); tlAnnounce(followImmersiveBall ? 'Follow-ball camera off.' : 'Follow-ball camera on. Replay to track the ball in flight.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: lr ? 'pointer' : 'not-allowed', border: followImmersiveBall ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: followImmersiveBall ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: lr ? '#e0f2fe' : '#64748b', fontWeight: 800 } }, 'Follow ball')
               ),
               h('canvas', {
@@ -6149,7 +6149,7 @@ window.StemLab = window.StemLab || {
                 h('strong', { style: { color: '#7dd3fc' } }, 'Spatial readout:'),
                 lr ? describeShape(lr).replace(/^ /, '') : 'Launch a trial to measure peak height, flight time, and lateral movement.'
               ),
-              h('fieldset', { 'aria-label': '3D learning overlays', 'data-throwlab-learning-overlays': 'true', style: { margin: '10px 0 0', padding: '8px 9px 9px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.28)' } },
+              h('fieldset', { 'aria-label': __alloT('stem.throwlab.a11y_3d_learning_overlays', '3D learning overlays'), 'data-throwlab-learning-overlays': 'true', style: { margin: '10px 0 0', padding: '8px 9px 9px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.28)' } },
                 h('legend', { style: { padding: '0 5px', color: '#fde68a', fontSize: 11, fontWeight: 800 } }, 'Learning overlays'),
                 h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
                   h('label', { htmlFor: 'throwlab-overlay-guides', style: { minHeight: 44, padding: '7px 10px', flex: '1 1 145px', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 9, cursor: 'pointer', background: showImmersiveGuides ? 'rgba(14,165,233,0.16)' : 'rgba(15,23,42,0.58)', border: showImmersiveGuides ? '1px solid rgba(125,211,252,0.58)' : '1px solid rgba(148,163,184,0.25)', color: '#e2e8f0', fontSize: 11, fontWeight: 700 } },
@@ -6166,12 +6166,12 @@ window.StemLab = window.StemLab || {
                   )
                 )
               ),
-              h('div', { className: 'throwlab-immersive-controls', role: 'group', 'aria-label': '3D camera controls', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 10 } },
-                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(function(v) { return TL_PERSPECTIVE.normalizeYaw(v - 15); }); }, 'aria-label': 'Rotate camera left 15 degrees', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 104px', borderRadius: 9, cursor: 'pointer' } }, '↶ Rotate left'),
-                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(function(v) { return TL_PERSPECTIVE.normalizeYaw(v + 15); }); }, 'aria-label': 'Rotate camera right 15 degrees', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 104px', borderRadius: 9, cursor: 'pointer' } }, 'Rotate right ↷'),
-                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersivePitch(function(v) { return TL_PERSPECTIVE.clampPitch(v - 7); }); }, 'aria-label': 'Lower camera', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, '↓ Lower'),
-                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersivePitch(function(v) { return TL_PERSPECTIVE.clampPitch(v + 7); }); }, 'aria-label': 'Raise camera', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, '↑ Raise'),
-                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(24); tlAnnounce('3D camera reset.'); }, 'aria-label': 'Reset 3D camera', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, 'Reset view')
+              h('div', { className: 'throwlab-immersive-controls', role: 'group', 'aria-label': __alloT('stem.throwlab.a11y_3d_camera_controls', '3D camera controls'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 10 } },
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(function(v) { return TL_PERSPECTIVE.normalizeYaw(v - 15); }); }, 'aria-label': __alloT('stem.throwlab.a11y_rotate_camera_left_15_degrees', 'Rotate camera left 15 degrees'), style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 104px', borderRadius: 9, cursor: 'pointer' } }, '↶ Rotate left'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(function(v) { return TL_PERSPECTIVE.normalizeYaw(v + 15); }); }, 'aria-label': __alloT('stem.throwlab.a11y_rotate_camera_right_15_degrees', 'Rotate camera right 15 degrees'), style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 104px', borderRadius: 9, cursor: 'pointer' } }, 'Rotate right ↷'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersivePitch(function(v) { return TL_PERSPECTIVE.clampPitch(v - 7); }); }, 'aria-label': __alloT('stem.throwlab.a11y_lower_camera', 'Lower camera'), style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, '↓ Lower'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersivePitch(function(v) { return TL_PERSPECTIVE.clampPitch(v + 7); }); }, 'aria-label': __alloT('stem.throwlab.a11y_raise_camera', 'Raise camera'), style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, '↑ Raise'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(24); tlAnnounce(__alloT('stem.throwlab.sr_3d_camera_reset', '3D camera reset.')); }, 'aria-label': __alloT('stem.throwlab.a11y_reset_3d_camera', 'Reset 3D camera'), style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, 'Reset view')
               ),
               h('details', { className: 'throwlab-analysis-details', 'data-throwlab-analysis-details': 'true', open: isWorkspaceFullscreen && !compactAnalysis ? true : undefined, style: { marginTop: 10, borderRadius: 11, border: '1px solid rgba(192,132,252,0.35)', background: 'rgba(15,23,42,0.62)' } },
                 h('summary', { 'data-tl-focusable': 'true', style: { padding: '10px 12px', cursor: 'pointer', color: '#e9d5ff', fontWeight: 900, fontSize: 12 } }, 'Analysis tools · vectors, comparisons, exports'),
@@ -6183,7 +6183,7 @@ window.StemLab = window.StemLab || {
                     h('label', { htmlFor: 'throwlab-camera-pitch', style: { display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: 11 } }, h('span', null, 'Elevation'), h('output', { htmlFor: 'throwlab-camera-pitch', style: { color: '#fde68a' } }, immersivePitch + '°')),
                     h('input', { id: 'throwlab-camera-pitch', type: 'range', min: 10, max: 55, step: 1, value: immersivePitch, 'data-tl-focusable': 'true', 'aria-valuetext': immersivePitch + ' degrees', onChange: function(event) { setFollowImmersiveBall(false); setImmersivePitch(TL_PERSPECTIVE.clampPitch(event.target.value)); }, style: { width: '100%', accentColor: '#38bdf8' } })
                   ),
-                  h('fieldset', { 'aria-label': 'Physics vector overlays', 'data-throwlab-vector-controls': 'true', style: { margin: 0, padding: 9, borderRadius: 9, border: '1px solid rgba(192,132,252,0.3)' } },
+                  h('fieldset', { 'aria-label': __alloT('stem.throwlab.a11y_physics_vector_overlays', 'Physics vector overlays'), 'data-throwlab-vector-controls': 'true', style: { margin: 0, padding: 9, borderRadius: 9, border: '1px solid rgba(192,132,252,0.3)' } },
                     h('legend', { style: { padding: '0 5px', color: '#e9d5ff', fontSize: 11, fontWeight: 800 } }, 'Physics vectors'),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 6 } },
                       [{ key: 'velocity', label: 'Velocity' }, { key: 'gravity', label: 'Gravity' }, { key: 'wind', label: 'Wind' }, { key: 'spin', label: 'Spin axis' }, { key: 'magnus', label: 'Magnus force' }].map(function(item) {
@@ -6204,7 +6204,7 @@ window.StemLab = window.StemLab || {
                     h('h4', { id: 'throwlab-observation-heading', style: { margin: '0 0 5px', color: '#7dd3fc', fontSize: 11 } }, 'Observation prompts'),
                     h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, lineHeight: 1.5 } }, immersiveObservationPrompts().map(function(prompt,index) { return h('li', { key: index }, prompt); }))
                   ),
-                  h('div', { role: 'group', 'aria-label': 'Immersive analysis exports and reset', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+                  h('div', { role: 'group', 'aria-label': __alloT('stem.throwlab.a11y_immersive_analysis_exports_and_reset', 'Immersive analysis exports and reset'), style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
                     h('button', { type: 'button', disabled: !lr, 'data-tl-focusable': 'true', onClick: exportImmersivePng, style: { minHeight: 44, flex: '1 1 110px', borderRadius: 8, cursor: lr ? 'pointer' : 'not-allowed' } }, 'Download PNG'),
                     h('button', { type: 'button', disabled: !lr, 'data-tl-focusable': 'true', onClick: exportTrajectoryCsv, style: { minHeight: 44, flex: '1 1 110px', borderRadius: 8, cursor: lr ? 'pointer' : 'not-allowed' } }, 'Export CSV'),
                     h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: resetImmersiveAnalysis, style: { minHeight: 44, flex: '1 1 110px', borderRadius: 8, cursor: 'pointer' } }, 'Reset immersive')
@@ -6775,15 +6775,15 @@ window.StemLab = window.StemLab || {
             d.lastResult ? h('section', { 'data-throwlab-replay-analysis': 'true', 'aria-labelledby': 'throwlab-replay-heading', style: { marginTop: 8, padding: 9, borderRadius: 10, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(15,23,42,0.5)' } },
               h('h4', { id: 'throwlab-replay-heading', style: { margin: '0 0 7px', color: '#bbf7d0', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Replay analysis'),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': d.replayActive && !replayPaused ? 'Pause trajectory replay' : d.replayActive ? 'Resume trajectory replay' : 'Replay trajectory from start', onClick: function() { if (d.replayActive && !replayPaused) { setReplayPaused(true); tlAnnounce('Replay paused.'); } else startReplayAt(d.replayActive ? (d.replayT || 0) : 0); }, style: { minHeight: 44, flex: '1 1 115px', borderRadius: 8, cursor: 'pointer', border: '1px solid #22c55e', background: d.replayActive && !replayPaused ? 'rgba(34,197,94,0.24)' : '#1e293b', color: '#bbf7d0', fontWeight: 800 } }, d.replayActive && !replayPaused ? 'Pause' : d.replayActive ? 'Resume' : 'Replay'),
-                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': 'Step replay backward one physics sample', onClick: function() { stepReplay(-1); }, style: { minHeight: 44, flex: '1 1 92px', borderRadius: 8, cursor: 'pointer' } }, 'Step back'),
-                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': 'Step replay forward one physics sample', onClick: function() { stepReplay(1); }, style: { minHeight: 44, flex: '1 1 92px', borderRadius: 8, cursor: 'pointer' } }, 'Step ahead'),
-                h('button', { type: 'button', 'data-tl-focusable': 'true', disabled: !d.replayActive, onClick: finishReplayAnalysis, 'aria-label': 'Finish replay analysis and show the full trajectory', style: { minHeight: 44, flex: '1 1 80px', borderRadius: 8, cursor: d.replayActive ? 'pointer' : 'not-allowed' } }, 'Done')
+                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': d.replayActive && !replayPaused ? 'Pause trajectory replay' : d.replayActive ? 'Resume trajectory replay' : 'Replay trajectory from start', onClick: function() { if (d.replayActive && !replayPaused) { setReplayPaused(true); tlAnnounce(__alloT('stem.throwlab.sr_replay_paused', 'Replay paused.')); } else startReplayAt(d.replayActive ? (d.replayT || 0) : 0); }, style: { minHeight: 44, flex: '1 1 115px', borderRadius: 8, cursor: 'pointer', border: '1px solid #22c55e', background: d.replayActive && !replayPaused ? 'rgba(34,197,94,0.24)' : '#1e293b', color: '#bbf7d0', fontWeight: 800 } }, d.replayActive && !replayPaused ? 'Pause' : d.replayActive ? 'Resume' : 'Replay'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': __alloT('stem.throwlab.a11y_step_replay_backward_one_physics_sample', 'Step replay backward one physics sample'), onClick: function() { stepReplay(-1); }, style: { minHeight: 44, flex: '1 1 92px', borderRadius: 8, cursor: 'pointer' } }, 'Step back'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': __alloT('stem.throwlab.a11y_step_replay_forward_one_physics_sample', 'Step replay forward one physics sample'), onClick: function() { stepReplay(1); }, style: { minHeight: 44, flex: '1 1 92px', borderRadius: 8, cursor: 'pointer' } }, 'Step ahead'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', disabled: !d.replayActive, onClick: finishReplayAnalysis, 'aria-label': __alloT('stem.throwlab.a11y_finish_replay_analysis_and_show_the_full_trajec', 'Finish replay analysis and show the full trajectory'), style: { minHeight: 44, flex: '1 1 80px', borderRadius: 8, cursor: d.replayActive ? 'pointer' : 'not-allowed' } }, 'Done')
               ),
               h('label', { htmlFor: 'throwlab-replay-scrubber', style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 7, color: '#cbd5e1', fontSize: 11 } }, h('span', null, 'Timeline'), h('output', { htmlFor: 'throwlab-replay-scrubber', style: { color: '#86efac', fontVariantNumeric: 'tabular-nums', fontWeight: 800 } }, ((d.lastResult.samples[d.lastResult.samples.length - 1].t || 0) * (d.replayActive ? (d.replayT || 0) : 1)).toFixed(2) + ' s')),
-              h('input', { id: 'throwlab-replay-scrubber', type: 'range', min: 0, max: 100, step: 1, value: Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100), 'aria-label': 'Trajectory replay timeline', 'aria-valuetext': Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100) + ' percent of the trajectory', 'data-tl-focusable': 'true', onChange: function(event) { scrubReplay(Number(event.target.value) / 100); }, style: { width: '100%', accentColor: '#22c55e' } }),
-              h('div', { role: 'progressbar', 'aria-label': 'Replay progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100), style: { height: 6, overflow: 'hidden', borderRadius: 999, background: '#334155', border: '1px solid #475569' } }, h('span', { 'aria-hidden': 'true', style: { display: 'block', height: '100%', width: ((d.replayActive ? (d.replayT || 0) : 1) * 100) + '%', background: '#86efac', transition: 'width 80ms linear' } })),
-              h('div', { role: 'group', 'aria-label': 'Replay speed', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 7 } },
+              h('input', { id: 'throwlab-replay-scrubber', type: 'range', min: 0, max: 100, step: 1, value: Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100), 'aria-label': __alloT('stem.throwlab.a11y_trajectory_replay_timeline', 'Trajectory replay timeline'), 'aria-valuetext': Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100) + ' percent of the trajectory', 'data-tl-focusable': 'true', onChange: function(event) { scrubReplay(Number(event.target.value) / 100); }, style: { width: '100%', accentColor: '#22c55e' } }),
+              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.throwlab.a11y_replay_progress', 'Replay progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100), style: { height: 6, overflow: 'hidden', borderRadius: 999, background: '#334155', border: '1px solid #475569' } }, h('span', { 'aria-hidden': 'true', style: { display: 'block', height: '100%', width: ((d.replayActive ? (d.replayT || 0) : 1) * 100) + '%', background: '#86efac', transition: 'width 80ms linear' } })),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.throwlab.a11y_replay_speed', 'Replay speed'), style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 7 } },
                 h('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800 } }, 'Speed'),
                 [0.25, 0.5, 1].map(function(speed) { return h('button', { key: speed, type: 'button', 'aria-pressed': replaySpeed === speed, 'data-tl-focusable': 'true', onClick: function() { setReplaySpeed(speed); tlAnnounce('Replay speed ' + speed + ' times.'); }, style: { minHeight: 44, padding: '7px 11px', borderRadius: 18, cursor: 'pointer', border: replaySpeed === speed ? '2px solid #86efac' : '1px solid #475569', background: replaySpeed === speed ? 'rgba(34,197,94,0.18)' : '#1e293b', color: '#d1fae5', fontWeight: 800 } }, speed + '×'); })
               )
@@ -6844,7 +6844,7 @@ window.StemLab = window.StemLab || {
                 ) : null,
                 refList.length ? h('div', {
                   role: 'list',
-                  'aria-label': 'Saved comparison trajectories',
+                  'aria-label': __alloT('stem.throwlab.a11y_saved_comparison_trajectories', 'Saved comparison trajectories'),
                   style: { marginTop: 5, display: 'flex', flexDirection: 'column', gap: 4 }
                 },
                   refList.map(function(ref, idx) {
@@ -6929,7 +6929,7 @@ window.StemLab = window.StemLab || {
             ) : null,
             // Stats line — mode-aware. Bumped slate-400 → slate-300 (#cbd5e1)
             // for AA contrast on the dark panel background.
-            h('div', { role: 'list', 'aria-label': 'Current Throw Lab session summary',
+            h('div', { role: 'list', 'aria-label': __alloT('stem.throwlab.a11y_current_throw_lab_session_summary', 'Current Throw Lab session summary'),
               style: { marginTop: 12, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px 12px' }
             }, sessionSummaryItems().map(function(item, index) {
               return h('span', { key: 'session-stat-' + index, role: 'listitem' }, item);

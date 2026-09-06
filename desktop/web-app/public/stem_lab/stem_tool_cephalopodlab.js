@@ -1250,7 +1250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   color: openGroup.color, paddingRight: 6, marginRight: 2, borderRight: '1px solid ' + openGroup.color + '33', flexShrink: 0 } },
                 openGroup.label),
               openGroup.tabs.map(function(t, ti) { return renderTab(t, openGroup.color, ti); }))),
-          sectionSearchQuery && h('div', { id: 'cl-section-search-results', role: 'group', 'aria-label': 'Matching Cephalopod Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 8 } },
+          sectionSearchQuery && h('div', { id: 'cl-section-search-results', role: 'group', 'aria-label': __alloT('stem.cephalopodlab.a11y_matching_cephalopod_lab_sections', 'Matching Cephalopod Lab sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 8 } },
             sectionMatches.length ? sectionMatches.map(function(result) {
               return h('button', { key: result.tab.id, type: 'button',
                 onClick: function() { openSearchResult(result); },
@@ -10364,7 +10364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               onClick: function() {
                 setCL({ _threeLoading: true });
                 ensureThreeJSCL(
-                  function() { setCL({ _threeLoaded: true, _threeLoading: false }); clAnnounce('3D engine ready'); },
+                  function() { setCL({ _threeLoaded: true, _threeLoading: false }); clAnnounce(__alloT('stem.cephalopodlab.sr_3d_engine_ready', '3D engine ready')); },
                   function() { setCL({ _threeError: true, _threeLoading: false }); }
                 );
               },
@@ -10579,7 +10579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 }
               }, __alloT('stem.cephalopodlab.3d_hunt_canvas_fallback', 'Interactive 3D octopus hunt. Use WASD to crawl, A and D to rotate, Space to jet, I for ink defense, and G to grab shelters.'))),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { setCL({ hunt3DActive: false }); clAnnounce('Surfaced. Ready to dive again.'); },
+              h('button', { onClick: function() { setCL({ hunt3DActive: false }); clAnnounce(__alloT('stem.cephalopodlab.sr_surfaced_ready_to_dive_again', 'Surfaced. Ready to dive again.')); },
                 style: { padding: '10px 20px', background: 'transparent', color: '#c7d2fe',
                   border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.cephalopodlab.end_run_surface', '◀ End run + surface'))),
@@ -11613,7 +11613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           };
           scene.add(g);
           zonalPredators.push(g);
-          clAnnounce('Sea otter spotted on surface');
+          clAnnounce(__alloT('stem.cephalopodlab.sr_sea_otter_spotted_on_surface', 'Sea otter spotted on surface'));
         }
 
         // 2. Sperm Whale (deep + abyssal) — top cephalopod predator. Eats
@@ -11655,7 +11655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           };
           scene.add(g);
           zonalPredators.push(g);
-          clAnnounce('Sperm whale approaching from depth');
+          clAnnounce(__alloT('stem.cephalopodlab.sr_sperm_whale_approaching_from_depth', 'Sperm whale approaching from depth'));
         }
 
         // 3. Anglerfish (deep + abyssal) — bioluminescent lure dangling
@@ -11709,7 +11709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           };
           scene.add(g);
           zonalPredators.push(g);
-          clAnnounce('Anglerfish lure spotted');
+          clAnnounce(__alloT('stem.cephalopodlab.sr_anglerfish_lure_spotted', 'Anglerfish lure spotted'));
         }
 
         // 4. Giant Squid (deep + abyssal) — Architeuthis dux. Cephalopod
@@ -11765,7 +11765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           };
           scene.add(g);
           zonalPredators.push(g);
-          clAnnounce('Giant squid hunting');
+          clAnnounce(__alloT('stem.cephalopodlab.sr_giant_squid_hunting', 'Giant squid hunting'));
         }
 
         // 5. Barracuda (surface + reef) — speed-attack mid-water predator.
@@ -11810,7 +11810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           };
           scene.add(g);
           zonalPredators.push(g);
-          clAnnounce('Barracuda incoming');
+          clAnnounce(__alloT('stem.cephalopodlab.sr_barracuda_incoming', 'Barracuda incoming'));
         }
 
         // Zonal predator spawn timer (uses different intervals per zone)
@@ -12090,7 +12090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           };
           scene.add(sg);
           shark = sg;
-          clAnnounce('Reef shark approaching');
+          clAnnounce(__alloT('stem.cephalopodlab.sr_reef_shark_approaching', 'Reef shark approaching'));
         }
 
         // ─── Dens (4 rock arches scattered as safe-hide points) ───
@@ -12720,7 +12720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           if (pickAgainBtn) pickAgainBtn.onclick = function() {
             try {
               setCL({ hunt3DActive: false });
-              clAnnounce('Returned to species picker');
+              clAnnounce(__alloT('stem.cephalopodlab.sr_returned_to_species_picker', 'Returned to species picker'));
             } catch (_) {}
           };
         }
@@ -13262,7 +13262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     p.userData.cooldownUntil = now + 6000;
                   }
                 });
-                clAnnounce('Burglar alarm fired — predators startled');
+                clAnnounce(__alloT('stem.cephalopodlab.sr_burglar_alarm_fired_predators_startled', 'Burglar alarm fired — predators startled'));
                 sfxPredatorAlert();
                 unlockAchievement('burglarAlarm');
               }
@@ -13509,7 +13509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 if (skDist < skEffectiveRange && !gameState.inDen && now > sk.cooldownUntil) {
                   sk.state = 'charging';
                   sk.stateTimer = 0;
-                  clAnnounce('Shark charging');
+                  clAnnounce(__alloT('stem.cephalopodlab.sr_shark_charging', 'Shark charging'));
                   sfxPredatorAlert();
                 }
               } else if (sk.state === 'charging') {
@@ -13945,7 +13945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     huntBestRun: Math.max(d.huntBestRun || 0, gameState.score),
                   });
                 } catch(_) {}
-                clAnnounce('Clam cracked — +3 score, hunger refilled');
+                clAnnounce(__alloT('stem.cephalopodlab.sr_clam_cracked_3_score_hunger_refilled', 'Clam cracked — +3 score, hunger refilled'));
                 sfxCatch();
               }
             } else {
@@ -14143,7 +14143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 // Hermit crabs leave their shell behind — drop a usable shelter.
                 if (caughtCfg.dropShelter) {
                   spawnShelter(catchX, catchZ, caughtCfg.dropShelter);
-                  clAnnounce('Caught hermit — its shell remains');
+                  clAnnounce(__alloT('stem.cephalopodlab.sr_caught_hermit_its_shell_remains', 'Caught hermit — its shell remains'));
                 } else {
                   clAnnounce('Caught a ' + caughtType + ' crab — ' + gameState.score + ' total');
                 }
@@ -14200,7 +14200,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             } else {
               if (inkRequested) {
                 // Tried to ink but blocked (no reserves, or cooldown, or already inked)
-                if (gameState.inkReserves <= 0) clAnnounce('Out of ink');
+                if (gameState.inkReserves <= 0) clAnnounce(__alloT('stem.cephalopodlab.sr_out_of_ink', 'Out of ink'));
                 else if (now <= gameState.inkCooldownUntil) {
                   var remCd = Math.ceil((gameState.inkCooldownUntil - now) / 1000);
                   clAnnounce('Ink recharging — ' + remCd + 's');
@@ -14238,7 +14238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               if (mDistHome < morayEffectiveRange && !gameState.isInked && !gameState.inDen && now > me.cooldownUntil) {
                 me.state = 'attacking';
                 me.stateTimer = 0;
-                clAnnounce('Moray eel attacking');
+                clAnnounce(__alloT('stem.cephalopodlab.sr_moray_eel_attacking', 'Moray eel attacking'));
                 sfxPredatorAlert();
               }
             } else if (me.state === 'attacking') {
@@ -14269,7 +14269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 me.state = 'returning';
                 me.stateTimer = 0;
                 me.cooldownUntil = now + 4000;
-                clAnnounce('Bitten by moray');
+                clAnnounce(__alloT('stem.cephalopodlab.sr_bitten_by_moray', 'Bitten by moray'));
               }
               if (gameState.isInked || me.stateTimer > 4.5) {
                 me.state = 'returning';
@@ -14305,7 +14305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 gameState.leaderboardRec = updateLeaderboard(species.id, gameState.runStats, gameState.score, Date.now() - gameState.startTime);
               } catch (_) {}
               renderStatsOverlay();
-              clAnnounce('Game over — health depleted');
+              clAnnounce(__alloT('stem.cephalopodlab.sr_game_over_health_depleted', 'Game over — health depleted'));
             }
           }
 

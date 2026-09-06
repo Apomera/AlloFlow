@@ -78,7 +78,7 @@ describe('Throw Lab deep refinement contracts', () => {
     expect(source).toContain("'Wickets: ' + (d.wicketCount || 0)");
     expect(source).toContain("'Greens: ' + (d.golfGreenCount || 0)");
     expect(source).toContain("'Aces: ' + (d.volleyAceCount || 0)");
-    expect(source).toContain("'aria-label': 'Current Throw Lab session summary'");
+    expect(source).toContain(`'aria-label': __alloT('stem.throwlab.a11y_current_throw_lab_session_summary', 'Current Throw Lab session summary')`);
   });
 
   it('locks background scrolling only while a scenario dialog is open', () => {
@@ -110,7 +110,7 @@ describe('Throw Lab deep refinement contracts', () => {
     expect(source).toContain("'aria-valuenow': Math.round");
     expect(source).toContain("'aria-label': d.replayActive ? 'Replay in progress; wait to launch another trial'");
     expect(source).toContain('disabled: !!d.replayActive');
-    expect(source).toContain("tlAnnounce('Replay complete.')");
+    expect(source).toContain(`tlAnnounce(__alloT('stem.throwlab.sr_replay_complete', 'Replay complete.'))`);
     expect(source).toContain('Replay shown without animation because reduced motion is enabled.');
   });
 
@@ -131,7 +131,7 @@ describe('Throw Lab deep refinement contracts', () => {
     expect(source).toContain('.throwlab-compendium-scroll{overflow-x:auto');
     expect(source).toContain('.throwlab-compendium-scroll:focus-visible{outline:3px solid Highlight');
     expect(source).toContain("'aria-label': 'Scrollable preset comparison for ' + modeMeta.label");
-    expect(source).toContain("'aria-label': 'Saved comparison trajectories'");
+    expect(source).toContain(`'aria-label': __alloT('stem.throwlab.a11y_saved_comparison_trajectories', 'Saved comparison trajectories')`);
     expect(source).toContain("role: 'listitem'");
     expect(source).toContain("'aria-labelledby': 'tl-preset-picker-heading'");
     expect(source).toContain("'aria-labelledby': 'tl-release-controls-heading'");
@@ -178,7 +178,7 @@ describe('Throw Lab deep refinement contracts', () => {
   it('provides a dependency-free immersive projection with equivalent controls and descriptions', () => {
     expect(source).toContain('var immersiveCanvasRef = React.useRef(null)');
     expect(source).toContain("'aria-controls': 'throwlab-immersive-zone'");
-    expect(source).toContain("'aria-label': '3D camera controls'");
+    expect(source).toContain(`'aria-label': __alloT('stem.throwlab.a11y_3d_camera_controls', '3D camera controls')`);
     expect(source).toContain("role: 'img'");
     expect(source).toContain("'3D perspective view. ' + canvasSceneDescription()");
     expect(source).toContain('references.forEach(function(ref){ drawTrajectory');

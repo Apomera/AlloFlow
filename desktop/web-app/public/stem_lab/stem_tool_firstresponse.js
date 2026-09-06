@@ -1813,7 +1813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               onClick: function() {
                 updMulti({ consentAccepted: true, consentDate: new Date().toISOString(), view: 'menu' });
                 awardBadge('first_responder_in_training', 'First Responder in Training');
-                frAnnounceUrgent('Consent accepted. Welcome to First Response Lab.');
+                frAnnounceUrgent(__alloT('stem.firstresponse.sr_consent_accepted_welcome_to_first_response_lab', 'Consent accepted. Welcome to First Response Lab.'));
               },
               style: { padding: '12px 22px', borderRadius: 10, border: 'none', background: '#fff', color: '#7f1d1d', fontSize: 15, fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.firstresponse.i_understand_show_me_the_lab_2', 'I understand — show me the lab'))
@@ -1974,7 +1974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
           h('button', { 'data-fr-focusable': true,
             'aria-label': __alloT('stem.firstresponse.back_to_first_response_lab_menu', 'Back to First Response Lab menu'),
-            onClick: function() { upd('view', 'menu'); frAnnounce('Back to menu'); },
+            onClick: function() { upd('view', 'menu'); frAnnounce(__alloT('stem.firstresponse.sr_back_to_menu', 'Back to menu')); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
           }, __alloT('stem.firstresponse.menu', '← Menu')),
           h('h2', { style: { margin: 0, fontSize: 18, color: T.text, flex: 1 } }, title)
@@ -2026,7 +2026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 'aria-label': __alloT('stem.firstresponse.start_the_5_question_recognition_quiz', 'Start the 5-question recognition quiz'),
                 onClick: function() {
                   updMulti({ recognizeView: 'quiz', quizState: { idx: 0, score: 0, answered: false, lastChoice: null } });
-                  frAnnounce('Quiz started. Question 1 of 5.');
+                  frAnnounce(__alloT('stem.firstresponse.sr_quiz_started_question_1_of_5', 'Quiz started. Question 1 of 5.'));
                 },
                 style: btnPrimary()
               }, __alloT('stem.firstresponse.take_the_5_question_quiz', '🎯 Take the 5-question quiz')),
@@ -2119,18 +2119,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 'aria-label': __alloT('stem.firstresponse.retake_the_recognition_quiz', 'Retake the recognition quiz'),
                 onClick: function() {
                   updMulti({ quizState: { idx: 0, score: 0, answered: false, lastChoice: null }, lastQuizResult: null });
-                  frAnnounce('Quiz restarted. Question 1 of 5.');
+                  frAnnounce(__alloT('stem.firstresponse.sr_quiz_restarted_question_1_of_5', 'Quiz restarted. Question 1 of 5.'));
                 },
                 style: btn()
               }, __alloT('stem.firstresponse.retake', '↺ Retake')),
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.back_to_recognize_cards', 'Back to recognize cards'),
-                onClick: function() { upd('recognizeView', 'cards'); frAnnounce('Back to recognize cards'); },
+                onClick: function() { upd('recognizeView', 'cards'); frAnnounce(__alloT('stem.firstresponse.sr_back_to_recognize_cards', 'Back to recognize cards')); },
                 style: btn()
               }, __alloT('stem.firstresponse.back_to_cards', '← Back to cards')),
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.back_to_menu', 'Back to menu'),
-                onClick: function() { upd('view', 'menu'); frAnnounce('Back to menu'); },
+                onClick: function() { upd('view', 'menu'); frAnnounce(__alloT('stem.firstresponse.sr_back_to_menu', 'Back to menu')); },
                 style: btnPrimary()
               }, __alloT('stem.firstresponse.menu_2', '→ Menu'))
             ),
@@ -2457,12 +2457,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               }, __alloT('stem.firstresponse.metronome_100_120_bpm', '🥁 Metronome (100–120 bpm)')),
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.practice_cpr_rhythm_30_second_window', 'Practice CPR rhythm — 30 second window'),
-                onClick: function() { upd('cprView', 'practice'); frAnnounce('Practice mode'); },
+                onClick: function() { upd('cprView', 'practice'); frAnnounce(__alloT('stem.firstresponse.sr_practice_mode', 'Practice mode')); },
                 style: btn()
               }, __alloT('stem.firstresponse.practice_30_sec', '⏱️ Practice (30 sec)')),
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.walk_through_using_an_aed', 'Walk through using an AED'),
-                onClick: function() { upd('cprView', 'aed'); frAnnounce('AED walkthrough'); },
+                onClick: function() { upd('cprView', 'aed'); frAnnounce(__alloT('stem.firstresponse.sr_aed_walkthrough', 'AED walkthrough')); },
                 style: btn()
               }, __alloT('stem.firstresponse.aed_walkthrough', '⚡ AED walkthrough'))
             )
@@ -2579,7 +2579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
           function startPractice() {
             updMulti({ cprPracticeRunning: true, cprPracticeStart: Date.now(), cprPracticeTaps: [] });
-            frAnnounceUrgent('Begin chest compressions now. 30 second timer started.');
+            frAnnounceUrgent(__alloT('stem.firstresponse.sr_begin_chest_compressions_now_30_second_timer_star', 'Begin chest compressions now. 30 second timer started.'));
           }
           function tapNow() {
             if (!practiceRunning) return;
@@ -2677,7 +2677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               awardBadge('aed_walkthrough', 'AED Operator (walked the steps)');
               upd('aedStep', 0);
               upd('cprView', 'overview');
-              frAnnounceUrgent('AED walkthrough complete.');
+              frAnnounceUrgent(__alloT('stem.firstresponse.sr_aed_walkthrough_complete', 'AED walkthrough complete.'));
             }
           }
           function prev() {
@@ -2685,7 +2685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           }
           function reset() {
             updMulti({ aedStep: 0, aedShockBranch: null });
-            frAnnounce('Reset to step 1.');
+            frAnnounce(__alloT('stem.firstresponse.sr_reset_to_step_1', 'Reset to step 1.'));
           }
 
           var step = STEPS[aedStep];
@@ -2702,12 +2702,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               aedStep === 4 && h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', { 'data-fr-focusable': true,
                   'aria-pressed': aedShockBranch === 'shock' ? 'true' : 'false',
-                  onClick: function() { upd('aedShockBranch', 'shock'); frAnnounce('Shock advised branch.'); },
+                  onClick: function() { upd('aedShockBranch', 'shock'); frAnnounce(__alloT('stem.firstresponse.sr_shock_advised_branch', 'Shock advised branch.')); },
                   style: btn({ background: aedShockBranch === 'shock' ? '#7f1d1d' : T.card, color: aedShockBranch === 'shock' ? '#fde2e2' : T.text, padding: '6px 12px', fontSize: 12 })
                 }, __alloT('stem.firstresponse.shock_advised', '⚡ "Shock advised"')),
                 h('button', { 'data-fr-focusable': true,
                   'aria-pressed': aedShockBranch === 'noshock' ? 'true' : 'false',
-                  onClick: function() { upd('aedShockBranch', 'noshock'); frAnnounce('No shock advised branch.'); },
+                  onClick: function() { upd('aedShockBranch', 'noshock'); frAnnounce(__alloT('stem.firstresponse.sr_no_shock_advised_branch', 'No shock advised branch.')); },
                   style: btn({ background: aedShockBranch === 'noshock' ? '#064e3b' : T.card, color: aedShockBranch === 'noshock' ? '#d1fae5' : T.text, padding: '6px 12px', fontSize: 12 })
                 }, __alloT('stem.firstresponse.no_shock_advised', '🚫 "No shock advised"'))
               )
@@ -2862,12 +2862,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { style: { marginTop: 14 } },
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.see_detailed_protocol_with_step_by_ste', 'See detailed protocol with step-by-step instructions'),
-                onClick: function() { upd('bleedView', 'detail'); frAnnounce('Detailed protocol'); },
+                onClick: function() { upd('bleedView', 'detail'); frAnnounce(__alloT('stem.firstresponse.sr_detailed_protocol', 'Detailed protocol')); },
                 style: btnPrimary()
               }, __alloT('stem.firstresponse.see_detailed_protocol', '📋 See detailed protocol')),
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.see_where_you_can_and_cannot_put_a_tou', 'See where you can and cannot put a tourniquet'),
-                onClick: function() { upd('bleedView', 'tourniquet'); frAnnounce('Tourniquet placement'); },
+                onClick: function() { upd('bleedView', 'tourniquet'); frAnnounce(__alloT('stem.firstresponse.sr_tourniquet_placement', 'Tourniquet placement')); },
                 style: btn({ marginLeft: 8 })
               }, __alloT('stem.firstresponse.tourniquet_placement', '🩹 Tourniquet placement'))
             )
@@ -2937,7 +2937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           next.caseId = caseId;
           next.phase = 'protect';
           bleedPracticeRef.current = next;
-          frAnnounceUrgent('Check scene safety, use gloves if available, call 911, and begin care.');
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_check_scene_safety_use_gloves_if_available_call_9', 'Check scene safety, use gloves if available, call 911, and begin care.'));
           refreshBleedPractice();
         }
         function bleedPracticeMistake(code, message) {
@@ -2951,7 +2951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (p.phase !== 'protect') return;
           p.sequence.push('scene-safety-ppe-911');
           p.phase = 'pressure';
-          frAnnounceUrgent('Apply steady, firm direct pressure now.');
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_apply_steady_firm_direct_pressure_now', 'Apply steady, firm direct pressure now.'));
           refreshBleedPractice();
         }
         function beginBleedPressure(e) {
@@ -2964,7 +2964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (p.holding) return;
           p.holding = true;
           p.holdStartedAt = bleedPracticeNow();
-          frAnnounce('Pressure started. Keep holding steadily.');
+          frAnnounce(__alloT('stem.firstresponse.sr_pressure_started_keep_holding_steadily', 'Pressure started. Keep holding steadily.'));
           refreshBleedPractice();
         }
         function finishBleedPractice() {
@@ -2981,7 +2981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           };
           upd('bleedPracticeBest', p.summary);
           awardBadge('bleed_scenario_ready', 'Bleeding Control Scenario Practice');
-          frAnnounceUrgent('Scenario complete. Keep monitoring breathing, responsiveness, warmth, and signs of shock until EMS arrives.');
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_scenario_complete_keep_monitoring_breathing_respo', 'Scenario complete. Keep monitoring breathing, responsiveness, warmth, and signs of shock until EMS arrives.'));
           refreshBleedPractice();
         }
         function endBleedPressure(e) {
@@ -3002,7 +3002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           }
           p.sequence.push('direct-pressure');
           p.phase = 'choice';
-          frAnnounceUrgent('Pressure hold practiced. Choose the next action for this wound location.');
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_pressure_hold_practiced_choose_the_next_action_fo', 'Pressure hold practiced. Choose the next action for this wound location.'));
           refreshBleedPractice();
         }
         function chooseBleedPracticeAction(action) {
@@ -3012,11 +3012,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (kase.kind === 'limb' && action === 'tourniquet') {
             p.sequence.push('choose-tourniquet');
             p.phase = 'tourniquetPlacement';
-            frAnnounce('Correct. Choose a safe tourniquet position.');
+            frAnnounce(__alloT('stem.firstresponse.sr_correct_choose_a_safe_tourniquet_position', 'Correct. Choose a safe tourniquet position.'));
           } else if (kase.kind === 'junction' && action === 'pack') {
             p.sequence.push('choose-wound-packing');
             p.phase = 'packing';
-            frAnnounce('Correct. Pack the deep wound if trained, then keep firm pressure.');
+            frAnnounce(__alloT('stem.firstresponse.sr_correct_pack_the_deep_wound_if_trained_then_keep', 'Correct. Pack the deep wound if trained, then keep firm pressure.'));
           } else if (action === 'peek') {
             bleedPracticeMistake('peeked', 'Do not lift or remove the original dressing to peek. Keep steady pressure.');
             return;
@@ -3041,7 +3041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           p.tourniquetPlacement = place;
           p.sequence.push('tourniquet-2-3-inches-above-not-joint');
           p.phase = 'tighten';
-          frAnnounceUrgent('Placement correct. Tighten until the bleeding stops.');
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_placement_correct_tighten_until_the_bleeding_stop', 'Placement correct. Tighten until the bleeding stops.'));
           refreshBleedPractice();
         }
         function tightenBleedTourniquet() {
@@ -3051,9 +3051,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (p.windlassTurns >= 3) {
             p.sequence.push('tighten-until-bleeding-stops');
             p.phase = 'noteTime';
-            frAnnounceUrgent('Bleeding stopped. Secure the windlass, note the time, and do not loosen the tourniquet.');
+            frAnnounceUrgent(__alloT('stem.firstresponse.sr_bleeding_stopped_secure_the_windlass_note_the_tim', 'Bleeding stopped. Secure the windlass, note the time, and do not loosen the tourniquet.'));
           } else {
-            frAnnounce('Still bleeding. Keep tightening.');
+            frAnnounce(__alloT('stem.firstresponse.sr_still_bleeding_keep_tightening', 'Still bleeding. Keep tightening.'));
           }
           refreshBleedPractice();
         }
@@ -3070,7 +3070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           p.sequence.push('pack-deep-wound');
           p.phase = 'packPressure';
           p.pressureHoldMs = 0;
-          frAnnounceUrgent('Wound packed. Apply steady, firm pressure on top and keep holding.');
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_wound_packed_apply_steady_firm_pressure_on_top_an', 'Wound packed. Apply steady, firm pressure on top and keep holding.'));
           refreshBleedPractice();
         }
 
@@ -3194,7 +3194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               practiceButton('Place it below the wound, toward the foot', function () { chooseBleedTourniquetPlacement('below'); }, false)),
 
             p.phase === 'tighten' && h('div', null,
-              h('div', { role: 'progressbar', 'aria-label': 'Tourniquet tightening practice', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': p.windlassTurns,
+              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.firstresponse.a11y_tourniquet_tightening_practice', 'Tourniquet tightening practice'), 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': p.windlassTurns,
                 style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                 [0, 1, 2].map(function (i) { return h('span', { key: i, 'aria-hidden': 'true', style: { height: 9, borderRadius: 99, background: i < p.windlassTurns ? T.ok : T.border } }); })),
               practiceButton(p.windlassTurns < 2 ? 'Tighten the windlass — bleeding is still flowing' : 'Tighten until bleeding stops, then secure the windlass', tightenBleedTourniquet, true)),
@@ -3447,7 +3447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function startChokePractice(id) {
           var p = makeChokePracticeState(); p.caseId = id; p.phase = 'recognize';
           chokePracticeRef.current = p;
-          frAnnounceUrgent('Decide whether this is a mild or severe airway obstruction.');
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_decide_whether_this_is_a_mild_or_severe_airway_ob', 'Decide whether this is a mild or severe airway obstruction.'));
           refreshChokePractice();
         }
         function chokeMistake(code, message) {
@@ -3458,16 +3458,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function chooseChokeSeverity(choice) {
           var p = chokePracticeRef.current; if (p.phase !== 'recognize') return;
           if (choice !== 'severe') return chokeMistake('severity', 'They cannot speak, breathe, or cough strongly: this is severe obstruction. Encourage coughing only when the cough is forceful.');
-          p.sequence.push('recognize-severe'); p.phase = 'call'; frAnnounceUrgent('Severe obstruction. Activate 911 while beginning care.'); refreshChokePractice();
+          p.sequence.push('recognize-severe'); p.phase = 'call'; frAnnounceUrgent(__alloT('stem.firstresponse.sr_severe_obstruction_activate_911_while_beginning_c', 'Severe obstruction. Activate 911 while beginning care.')); refreshChokePractice();
         }
         function callChoke911() {
           var p = chokePracticeRef.current; if (p.phase !== 'call') return;
-          p.sequence.push('activate-911'); p.phase = 'back'; frAnnounceUrgent('Give 5 separate back blows.'); refreshChokePractice();
+          p.sequence.push('activate-911'); p.phase = 'back'; frAnnounceUrgent(__alloT('stem.firstresponse.sr_give_5_separate_back_blows', 'Give 5 separate back blows.')); refreshChokePractice();
         }
         function giveChokeBackBlow() {
           var p = chokePracticeRef.current; if (p.phase !== 'back') return;
           p.backBlows++;
-          if (p.backBlows >= 5) { p.sequence.push('five-back-blows'); p.phase = 'placement'; frAnnounceUrgent('Choose the correct thrust placement.'); }
+          if (p.backBlows >= 5) { p.sequence.push('five-back-blows'); p.phase = 'placement'; frAnnounceUrgent(__alloT('stem.firstresponse.sr_choose_the_correct_thrust_placement', 'Choose the correct thrust placement.')); }
           else frAnnounce('Back blow ' + p.backBlows + ' of 5.');
           refreshChokePractice();
         }
@@ -3483,7 +3483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         function giveChokeThrust() {
           var p = chokePracticeRef.current, k = chokePracticeCase(p.caseId); if (!k || p.phase !== 'thrust') return;
           p.thrusts++;
-          if (p.thrusts >= 5) { p.sequence.push('five-thrusts'); p.phase = 'unresponsive'; frAnnounceUrgent('They become unresponsive. Choose the next action.'); }
+          if (p.thrusts >= 5) { p.sequence.push('five-thrusts'); p.phase = 'unresponsive'; frAnnounceUrgent(__alloT('stem.firstresponse.sr_they_become_unresponsive_choose_the_next_action', 'They become unresponsive. Choose the next action.')); }
           else frAnnounce(k.thrust + ' ' + p.thrusts + ' of 5.');
           refreshChokePractice();
         }
@@ -3491,7 +3491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           var p = chokePracticeRef.current; if (p.phase !== 'unresponsive') return;
           if (choice !== 'cpr') return chokeMistake('blind-sweep', 'Do not blindly sweep the mouth. Lower safely and start CPR with compressions.');
           p.sequence.push('start-cpr-compressions'); p.phase = 'mouth';
-          frAnnounceUrgent('Before breaths, open the mouth and look for a visible object.'); refreshChokePractice();
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_before_breaths_open_the_mouth_and_look_for_a_visi', 'Before breaths, open the mouth and look for a visible object.')); refreshChokePractice();
         }
         function finishChokePractice(choice) {
           var p = chokePracticeRef.current; if (p.phase !== 'mouth') return;
@@ -3499,7 +3499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           p.sequence.push('remove-visible-object-only'); p.phase = 'complete';
           p.summary = { caseId: p.caseId, mistakes: p.mistakes.length, sequence: p.sequence.slice(), completedAtISO: new Date().toISOString() };
           upd('chokePracticeBest', p.summary); awardBadge('choking_scenario_ready', 'Choking Scenario Practice');
-          frAnnounceUrgent('Scenario complete. Continue CPR and follow dispatcher or AED prompts until help arrives.'); refreshChokePractice();
+          frAnnounceUrgent(__alloT('stem.firstresponse.sr_scenario_complete_continue_cpr_and_follow_dispatc', 'Scenario complete. Continue CPR and follow dispatcher or AED prompts until help arrives.')); refreshChokePractice();
         }
         function chokingPracticeVisual(k, p) {
           var infant = k && k.kind === 'infant';
@@ -3615,7 +3615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.pick_a_different_person', 'Pick a different person'),
-                onClick: function() { upd('chokeView', 'select'); frAnnounce('Pick someone else'); },
+                onClick: function() { upd('chokeView', 'select'); frAnnounce(__alloT('stem.firstresponse.sr_pick_someone_else', 'Pick someone else')); },
                 style: btn()
               }, __alloT('stem.firstresponse.pick_someone_else', '← Pick someone else')),
               h('button', { 'data-fr-focusable': true,
@@ -4068,7 +4068,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
         function leaveScenario() {
           updMulti({ scenarioPick: null, scenarioStep: 0, scenarioScore: { help: 0, neutral: 0, hurt: 0 }, scenarioAnswered: false, scenarioLastChoice: null });
-          frAnnounce('Back to scenario list');
+          frAnnounce(__alloT('stem.firstresponse.sr_back_to_scenario_list', 'Back to scenario list'));
         }
 
         // ── Scenario picker
@@ -4091,7 +4091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     if (s.contentWarning && !mhAcknowledged) {
                       // Stage the pick; show CW dialog inline before starting
                       upd('scenarioPick', s.id);
-                      frAnnounce('Content warning shown.');
+                      frAnnounce(__alloT('stem.firstresponse.sr_content_warning_shown', 'Content warning shown.'));
                     } else {
                       pickScenario(s.id);
                     }
@@ -4313,11 +4313,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (!callGemini) {
             var fb = pickFallback();
             updMulti({ aiScene: fb, aiResponse: '', aiCritique: null });
-            frAnnounce('New scene loaded.');
+            frAnnounce(__alloT('stem.firstresponse.sr_new_scene_loaded', 'New scene loaded.'));
             return;
           }
           upd('aiLoadingScene', true);
-          frAnnounce('Generating scene...');
+          frAnnounce(__alloT('stem.firstresponse.sr_generating_scene', 'Generating scene...'));
           var prompt = 'Write ONE realistic medical-emergency scene for a teen first-aid trainee. Length: 2–3 short sentences. Difficulty: ' + aiDifficulty + '.\n\n' +
             'Pick from these emergency types: cardiac arrest, anaphylaxis, choking, stroke, seizure, severe bleeding, hypoglycemia, overdose, panic attack, mental-health crisis. Vary across calls.\n\n' +
             'Set in a school, sports field, bus, home, or skate park. Include enough recognition cues that an alert trainee could identify the emergency. Do NOT include the diagnosis, do NOT name the protocol, do NOT include "what should you do?" — just describe the scene.\n\n' +
@@ -4328,14 +4328,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               if (!clean) throw new Error('Empty response');
               var scene = { id: 'ai-' + Date.now(), text: clean, difficulty: aiDifficulty };
               updMulti({ aiScene: scene, aiResponse: '', aiCritique: null, aiLoadingScene: false });
-              frAnnounce('Scene loaded.');
+              frAnnounce(__alloT('stem.firstresponse.sr_scene_loaded', 'Scene loaded.'));
             })
             .catch(function(e) {
               console.warn('[FirstResponse] AI scene generation failed; falling back.', e);
               var fb = pickFallback();
               updMulti({ aiScene: fb, aiResponse: '', aiCritique: null, aiLoadingScene: false });
               addToast('AI unavailable — using a built-in scene.');
-              frAnnounce('AI unavailable. Using a built-in scene.');
+              frAnnounce(__alloT('stem.firstresponse.sr_ai_unavailable_using_a_built_in_scene', 'AI unavailable. Using a built-in scene.'));
             });
         }
 
@@ -4354,11 +4354,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               return (c.ok ? '✓ ' : '✗ ') + c.msg;
             }).join('\n\n');
             updMulti({ aiCritique: { text: critiqueText, source: 'local' } });
-            frAnnounce('Local critique ready.');
+            frAnnounce(__alloT('stem.firstresponse.sr_local_critique_ready', 'Local critique ready.'));
             return;
           }
           upd('aiLoadingCritique', true);
-          frAnnounce('Getting critique...');
+          frAnnounce(__alloT('stem.firstresponse.sr_getting_critique', 'Getting critique...'));
           var prompt = 'You are a first-aid instructor reviewing a student’s response to an emergency scene.\n\n' +
             'SCENE:\n' + aiScene.text + '\n\n' +
             'STUDENT RESPONSE:\n' + aiResponse + '\n\n' +
@@ -4381,7 +4381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               if (!clean) throw new Error('Empty response');
               updMulti({ aiCritique: { text: clean, source: 'ai' }, aiLoadingCritique: false });
               awardBadge('ai_practice', 'AI Practice (got a scene critiqued)');
-              frAnnounce('Critique ready.');
+              frAnnounce(__alloT('stem.firstresponse.sr_critique_ready', 'Critique ready.'));
             })
             .catch(function(e) {
               console.warn('[FirstResponse] AI critique failed; falling back.', e);
@@ -5050,7 +5050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             session.scenarioSteps.push('assessment');
             session.phase = 'call';
             session.phaseStartedAt = frCoachNow();
-            frAnnounceUrgent('No normal response or breathing. Call 911 on speaker.');
+            frAnnounceUrgent(__alloT('stem.firstresponse.sr_no_normal_response_or_breathing_call_911_on_speak', 'No normal response or breathing. Call 911 on speaker.'));
           } else if (action === 'call' && session.phase === 'call') {
             session.callAt = epoch;
             session.scenarioSteps.push('call');
@@ -5059,13 +5059,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             session.startedAtEpoch = epoch;
             session.compressionSegmentEpoch = epoch;
             session.phaseStartedAt = frCoachNow();
-            frAnnounceUrgent('Begin 30 compressions now. Aim for 100 to 120 per minute.');
+            frAnnounceUrgent(__alloT('stem.firstresponse.sr_begin_30_compressions_now_aim_for_100_to_120_per', 'Begin 30 compressions now. Aim for 100 to 120 per minute.'));
           } else if (action === 'aed' && session.phase === 'aed') {
             session.aedAt = epoch;
             session.scenarioSteps.push('aed');
             session.phase = 'resume';
             session.pauseStartedAt = frCoachNow();
-            frAnnounceUrgent('AED step complete. Resume compressions now.');
+            frAnnounceUrgent(__alloT('stem.firstresponse.sr_aed_step_complete_resume_compressions_now', 'AED step complete. Resume compressions now.'));
           } else return;
           refreshFrCoach();
         }
@@ -5143,7 +5143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               session.breathCount = 0;
               session.pauseStartedAt = now;
               session.lastCompressionAt = 0;
-              frAnnounceUrgent('30. Give two breaths, about one second each.');
+              frAnnounceUrgent(__alloT('stem.firstresponse.sr_30_give_two_breaths_about_one_second_each', '30. Give two breaths, about one second each.'));
             }
           }
           refreshFrCoach();
@@ -5160,22 +5160,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           clearFrCoachTimer();
           if (session.breathCount >= CPR_COACH_SPEC.breathsPerCycle) {
             session.phase = 'breathRecovery';
-            frAnnounce('Second breath. Let the chest fall, then resume compressions.');
+            frAnnounce(__alloT('stem.firstresponse.sr_second_breath_let_the_chest_fall_then_resume_comp', 'Second breath. Let the chest fall, then resume compressions.'));
             frCoachTimerRef.current = setTimeout(function () {
               frCoachTimerRef.current = null;
               if (frCoachRef.current !== session || !session.running || session.phase !== 'breathRecovery') return;
               if (session.mode === 'scenario') {
                 session.scenarioSteps.push('breaths');
                 session.phase = 'aed';
-                frAnnounceUrgent('AED arrives. Apply the AED and follow its prompts.');
+                frAnnounceUrgent(__alloT('stem.firstresponse.sr_aed_arrives_apply_the_aed_and_follow_its_prompts', 'AED arrives. Apply the AED and follow its prompts.'));
               } else {
                 session.phase = 'resume';
-                frAnnounceUrgent('Resume compressions now.');
+                frAnnounceUrgent(__alloT('stem.firstresponse.sr_resume_compressions_now', 'Resume compressions now.'));
               }
               refreshFrCoach();
             }, CPR_COACH_SPEC.breathLockMs + 50);
           } else {
-            frAnnounce('First breath. Let the chest fall, then give the second breath.');
+            frAnnounce(__alloT('stem.firstresponse.sr_first_breath_let_the_chest_fall_then_give_the_sec', 'First breath. Let the chest fall, then give the second breath.'));
             frCoachTimerRef.current = setTimeout(function () {
               frCoachTimerRef.current = null;
               if (frCoachRef.current === session && session.running && session.phase === 'breaths') refreshFrCoach();
@@ -5359,7 +5359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.b3d_scope_lead', 'Scope: ')),
             __alloT('stem.firstresponse.b3d_scope', 'lay rescuer, compression-focused, covering adult, child and infant. This is orientation and practice, not certification — it cannot tell you whether your depth is real, which is exactly what an instructor with a manikin can. Take a hands-on course. In a real emergency, call 911 first or send someone to.')),
 
-          h('div', { role: 'tablist', 'aria-label': 'Body position practice sections', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.a11y_body_position_practice_sections', 'Body position practice sections'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
             tabBtn('gate', __alloT('stem.firstresponse.b3d_tab_gate', '1 · Which one do they need?')),
             tabBtn('place', __alloT('stem.firstresponse.b3d_tab_place', '2 · Hand placement')),
             tabBtn('depth', __alloT('stem.firstresponse.b3d_tab_depth', '3 · Depth + recoil')),
@@ -5679,7 +5679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                       h('button', { onClick: function () { scenarioAction(session.phase === 'assessment' ? 'assess' : (session.phase === 'call' ? 'call' : 'aed')); }, style: btnPrimary({ width: '100%', textAlign: 'center' }) },
                         session.phase === 'assessment' ? 'Check response and breathing' : (session.phase === 'call' ? 'Call 911 on speaker' : 'Apply AED and follow prompts'))
                     ),
-                    h('div', { role: 'progressbar', 'aria-label': 'Compressions in this cycle',
+                    h('div', { role: 'progressbar', 'aria-label': __alloT('stem.firstresponse.a11y_compressions_in_this_cycle', 'Compressions in this cycle'),
                       'aria-valuemin': 0, 'aria-valuemax': 30, 'aria-valuenow': Math.min(30, session.compressionCount),
                       style: { display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 4, marginBottom: 10 } },
                       Array.from({ length: 30 }, function (_, i) {

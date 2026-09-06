@@ -1231,9 +1231,9 @@ var d = labToolData || {};
               ev.preventDefault();
               var c = (typeof map.getCenter === 'function') ? map.getCenter() : null;
               if (!c) return;
-              if (!window._geoCountriesGeoJSON) { announceFeedback('The country outlines are still loading.'); return; }
+              if (!window._geoCountriesGeoJSON) { announceFeedback(__alloT('stem.geo.sr_the_country_outlines_are_still_loading', 'The country outlines are still loading.')); return; }
               var hit = countryAtLatLng(c.lat, c.lng);
-              if (!hit) { announceFeedback('The crosshair is over water. Pan with the arrow keys until it is over land, then press Enter.'); return; }
+              if (!hit) { announceFeedback(__alloT('stem.geo.sr_the_crosshair_is_over_water_pan_with_the_arrow_ke', 'The crosshair is over water. Pan with the arrow keys until it is over land, then press Enter.')); return; }
               if (typeof window._geoClickHandler === 'function') window._geoClickHandler(hit.iso, hit.name);
             });
 

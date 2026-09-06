@@ -8688,7 +8688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         } else if (event.key === 'Escape' && libraryOpen && !isTyping) {
           event.preventDefault();
           setLibraryOpen(false);
-          aqAnnounce('Topic library closed');
+          aqAnnounce(__alloT('stem.aquaculture.sr_topic_library_closed', 'Topic library closed'));
         }
       }
       document.addEventListener('keydown', onLabNavigationKeyDown);
@@ -8768,11 +8768,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function startSim() {
       if (guidedMission.active) {
-        aqAnnounce('Close the guided route before launching the 3D mission.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_close_the_guided_route_before_launching_the_3d_mi', 'Close the guided route before launching the 3D mission.'));
         return;
       }
       if (sim.active || sim.loading) {
-        aqAnnounce('The 3D mission is already active or loading.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_the_3d_mission_is_already_active_or_loading', 'The 3D mission is already active or loading.'));
         return;
       }
       setHud({});
@@ -8815,7 +8815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         setSim(function(s) { return Object.assign({}, s, { loading: true }); });
         ensureThreeJS(actuallyStart, function() {
           setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
-          aqAnnounce('3D engine could not load. Use Guided 2D instead.');
+          aqAnnounce(__alloT('stem.aquaculture.sr_3d_engine_could_not_load_use_guided_2d_instead', '3D engine could not load. Use Guided 2D instead.'));
         });
       }
     }
@@ -8830,7 +8830,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function save3DMissionNote() {
       var note = String(missionDebriefNote || '').trim();
       if (!missionDebrief || note.length < 20) {
-        aqAnnounce('Add at least 20 characters before saving the captain’s note.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_add_at_least_20_characters_before_saving_the_capt', 'Add at least 20 characters before saving the captain’s note.'));
         return;
       }
       var savedMissionState = loadState();
@@ -8854,7 +8854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
     function submitFarmDecision() {
       if (!missionDecisionDraft) {
-        aqAnnounce('Choose a verification response before submitting.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_choose_a_verification_response_before_submitting', 'Choose a verification response before submitting.'));
         return;
       }
       if (farmRef.current && farmRef.current.setDecision) farmRef.current.setDecision(missionDecisionDraft);
@@ -9550,7 +9550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function navigateToTopic(topicId, announcement, replaceHistory) {
       if (!isKnownTopicId(topicId)) {
-        aqAnnounce('That aquaculture topic is unavailable.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_that_aquaculture_topic_is_unavailable', 'That aquaculture topic is unavailable.'));
         return;
       }
       setTab(topicId);
@@ -9575,7 +9575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       });
       if (!bookmarkSaved) {
         setLearningNotice({ kind: 'error', message: 'This browser could not save the bookmark. Download a backup and check storage permissions.' });
-        aqAnnounce('Bookmark changed for now, but this browser could not save it.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_bookmark_changed_for_now_but_this_browser_could_n', 'Bookmark changed for now, but this browser could not save it.'));
       } else {
         setLearningNotice({ kind: 'success', message: 'Bookmark saved on this device.' });
         aqAnnounce(getTopicLocation(topicId).topic.label + (nowBookmarked ? ' saved for later.' : ' removed from saved topics.'));
@@ -9613,7 +9613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       });
       if (!completionSaved) {
         setLearningNotice({ kind: 'error', message: 'This browser could not save lesson completion. Download a backup and check storage permissions.' });
-        aqAnnounce('Lesson completion could not be saved.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_lesson_completion_could_not_be_saved', 'Lesson completion could not be saved.'));
       } else {
         aqAnnounce(getTopicLocation(topicId).topic.label + (nowComplete ? ' marked complete.' : ' marked incomplete.'));
       }
@@ -9631,7 +9631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         choiceIndex: typeof existing.choiceIndex === 'number' ? existing.choiceIndex : null,
         reflection: String(existing.reflection || '').slice(0, 600)
       });
-      aqAnnounce('Decision scenario opened.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_decision_scenario_opened', 'Decision scenario opened.'));
     }
 
     function completeScenarioMission(missionId) {
@@ -9639,7 +9639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var choiceIndex = activeScenario.missionId === missionId ? activeScenario.choiceIndex : null;
       var reflection = activeScenario.missionId === missionId ? String(activeScenario.reflection || '').trim() : '';
       if (!scenario || typeof choiceIndex !== 'number' || !scenario.choices[choiceIndex] || reflection.length < 20) {
-        aqAnnounce('Choose a response and add a reflection of at least 20 characters.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_choose_a_response_and_add_a_reflection_of_at_leas', 'Choose a response and add a reflection of at least 20 characters.'));
         return;
       }
       var savedState = loadState();
@@ -9656,16 +9656,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setCompletedMissions(nextCompleted);
       if (missionSaved) {
         setLearningNotice({ kind: 'success', message: 'Mission evidence saved on this device.' });
-        aqAnnounce('Mission completed with decision evidence saved.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_mission_completed_with_decision_evidence_saved', 'Mission completed with decision evidence saved.'));
       } else {
         setLearningNotice({ kind: 'error', message: 'The mission was completed, but this browser could not save the evidence.' });
-        aqAnnounce('Mission evidence could not be saved.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_mission_evidence_could_not_be_saved', 'Mission evidence could not be saved.'));
       }
     }
 
     function selectFieldMissionScenario(id) {
       if (sim.active || sim.loading || guidedMission.active) {
-        aqAnnounce('Finish or exit the current mission before changing field conditions.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_finish_or_exit_the_current_mission_before_changin', 'Finish or exit the current mission before changing field conditions.'));
         return;
       }
       var scenario = aqFieldMissionScenario(id);
@@ -9694,12 +9694,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function closeGuidedMission() {
       setGuidedMission(function(previous) { return Object.assign({}, previous, { active: false }); });
-      aqAnnounce('Guided route closed. Choose another field condition or replay this one.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_guided_route_closed_choose_another_field_conditio', 'Guided route closed. Choose another field condition or replay this one.'));
     }
 
     function startGuidedMission() {
       if (sim.active || sim.loading) {
-        aqAnnounce('Wait for or exit the 3D mission before starting the guided route.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_wait_for_or_exit_the_3d_mission_before_starting_t', 'Wait for or exit the 3D mission before starting the guided route.'));
         return;
       }
       var scenario = aqFieldMissionScenario(missionScenarioId);
@@ -9769,7 +9769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function completeGuidedMission() {
       var reflection = String(guidedMission.reflection || '').trim();
       var guidedDecision = aqEvaluateMissionDecision(guidedMission.scenarioId, guidedMission.surfaceReading, guidedMission.cropDepthReading, guidedMission.decisionId);
-      if (guidedMission.step !== 7 || !guidedDecision || !guidedDecision.recommended || reflection.length < 20) { aqAnnounce('Finish the route, verification response, and at least 20 characters of evidence.'); return; }
+      if (guidedMission.step !== 7 || !guidedDecision || !guidedDecision.recommended || reflection.length < 20) { aqAnnounce(__alloT('stem.aquaculture.sr_finish_the_route_verification_response_and_at_lea', 'Finish the route, verification response, and at least 20 characters of evidence.')); return; }
       var saved = loadState(), nextCompleted = Object.assign({}, saved.completedMissions || {});
       nextCompleted['mission-1'] = {
         completedAt: Date.now(),
@@ -9811,7 +9811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var savedState = loadState(); savedState.learnerProfile = nextProfile;
       var stored = saveState(savedState); setLearnerProfile(nextProfile);
       setLearningNotice(stored ? { kind: 'success', message: 'Your learning route was updated on this device.' } : { kind: 'error', message: 'Your route changed for now, but could not be stored.' });
-      aqAnnounce('Learning route updated.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_learning_route_updated', 'Learning route updated.'));
     }
 
     function profileRecommendation(profile) {
@@ -9858,7 +9858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var reading = summary && (sampleDepth === 'surface' ? summary.surfaceReading : summary.cropDepthReading);
       if (!reading) {
         setMusselHealthNotice('Complete both boat-mission samples before loading field evidence.');
-        aqAnnounce('Paired boat-mission evidence is not available yet.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_paired_boat_mission_evidence_is_not_available_yet', 'Paired boat-mission evidence is not available yet.'));
         return false;
       }
       var mapped = aqMissionReadingToMusselReadings(reading, MUSSEL_HEALTH_PRESETS[0].values);
@@ -9900,12 +9900,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function revealMusselHealthAssessment() {
       if (!musselPrediction) {
         setMusselHealthNotice('Choose the signal you predict will need attention before revealing the model.');
-        aqAnnounce('Choose a prediction first.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_choose_a_prediction_first', 'Choose a prediction first.'));
         return;
       }
       setMusselAssessmentRevealed(true);
       setMusselHealthNotice('Model revealed. Compare its priority signal with your prediction, then explain any difference.');
-      aqAnnounce('Mussel health model revealed.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_mussel_health_model_revealed', 'Mussel health model revealed.'));
       window.setTimeout(function() {
         if (musselAssessmentRef.current && typeof musselAssessmentRef.current.focus === 'function') musselAssessmentRef.current.focus();
       }, 0);
@@ -9932,10 +9932,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function saveMusselHealthCheck() {
       var existingChecks = musselHealthWorkspace.checks || [];
-      if (!musselAssessmentRevealed) { setMusselHealthNotice('Reveal the model before saving field-check evidence.'); aqAnnounce('Reveal the model before saving.'); return; }
-      if (existingChecks.length >= 10) { setMusselHealthNotice('Evidence history is full at 10 checks. Remove a check before saving another; nothing was discarded.'); aqAnnounce('Field-check history is full.'); return; }
+      if (!musselAssessmentRevealed) { setMusselHealthNotice('Reveal the model before saving field-check evidence.'); aqAnnounce(__alloT('stem.aquaculture.sr_reveal_the_model_before_saving', 'Reveal the model before saving.')); return; }
+      if (existingChecks.length >= 10) { setMusselHealthNotice('Evidence history is full at 10 checks. Remove a check before saving another; nothing was discarded.'); aqAnnounce(__alloT('stem.aquaculture.sr_field_check_history_is_full', 'Field-check history is full.')); return; }
       var observation = String(musselHealthWorkspace.observation || '').trim();
-      if (observation.length < 20) { setMusselHealthNotice('Add at least 20 characters explaining what you would verify next.'); aqAnnounce('More field-check evidence is needed.'); return; }
+      if (observation.length < 20) { setMusselHealthNotice('Add at least 20 characters explaining what you would verify next.'); aqAnnounce(__alloT('stem.aquaculture.sr_more_field_check_evidence_is_needed', 'More field-check evidence is needed.')); return; }
       var assessment = aqAssessMusselHealth(musselHealthWorkspace), now = Date.now();
       var record = {
         id: 'mussel-check-' + now + '-' + Math.random().toString(36).slice(2, 7),
@@ -9955,7 +9955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setMusselDeletedCheck(null);
       persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { checks: checks }), 'Field check saved to your learning portfolio. Your explanation remains available to revise.');
       setLearningNotice({ kind: 'success', message: 'Mussel health field check saved to your learning portfolio.' });
-      aqAnnounce('Mussel health field check saved.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_mussel_health_field_check_saved', 'Mussel health field check saved.'));
     }
 
     function deleteMusselHealthCheck(checkId) {
@@ -9965,7 +9965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setMusselDeletedCheck({ record: currentChecks[deletedIndex], index: deletedIndex });
       var checks = currentChecks.filter(function(item) { return item.id !== checkId; });
       persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { checks: checks }), 'Saved mussel field check removed. Undo is available.');
-      aqAnnounce('Saved mussel field check removed. Undo is available.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_saved_mussel_field_check_removed_undo_is_availabl', 'Saved mussel field check removed. Undo is available.'));
     }
 
     function undoMusselHealthDelete() {
@@ -9974,7 +9974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       checks.splice(Math.min(musselDeletedCheck.index, checks.length), 0, musselDeletedCheck.record);
       setMusselDeletedCheck(null);
       persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { checks: checks }), 'Removed field check restored.');
-      aqAnnounce('Removed mussel field check restored.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_removed_mussel_field_check_restored', 'Removed mussel field check restored.'));
     }
 
     function loadMusselHealthCheck(check) {
@@ -9983,7 +9983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setMusselPrediction(check.prediction || '');
       setMusselAssessmentRevealed(true);
       persistMusselHealthWorkspace(next, 'Saved readings loaded. Your current explanation draft and evidence history were kept.');
-      aqAnnounce('Saved mussel readings loaded.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_saved_mussel_readings_loaded', 'Saved mussel readings loaded.'));
       window.setTimeout(function() {
         if (musselAssessmentRef.current && typeof musselAssessmentRef.current.focus === 'function') musselAssessmentRef.current.focus();
       }, 0);
@@ -9997,7 +9997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setMusselAssessmentRevealed(false);
       setMusselDeletedCheck(null);
       persistMusselHealthWorkspace(reset, 'Signals reset to the balanced case. Your draft and saved field checks were kept.');
-      aqAnnounce('Mussel health station reset. Draft and saved checks kept.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_mussel_health_station_reset_draft_and_saved_check', 'Mussel health station reset. Draft and saved checks kept.'));
     }
 
     function selectEcosystemEnvironment(environmentId) {
@@ -10043,48 +10043,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function saveEcosystemExperiment() {
       var observation = String(ecosystemWorkspace.observation || '').trim();
-      if (observation.length < 20) { setEcosystemNotice('Add an observation of at least 20 characters before saving evidence.'); aqAnnounce('More observation evidence is needed.'); return; }
+      if (observation.length < 20) { setEcosystemNotice('Add an observation of at least 20 characters before saving evidence.'); aqAnnounce(__alloT('stem.aquaculture.sr_more_observation_evidence_is_needed', 'More observation evidence is needed.')); return; }
       var model = aqCalculateEcosystem(ecosystemWorkspace), now = Date.now();
       var record = { id: 'ecosystem-' + now, savedAt: now, environmentId: ecosystemWorkspace.environmentId, organisms: Object.assign({}, ecosystemWorkspace.organisms), status: model.status, carryingPressure: model.carryingPressure, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, observation: observation, evidence: aqSanitizeEvidence(ecosystemWorkspace.evidence) };
       var experiments = [record].concat(ecosystemWorkspace.experiments || []).slice(0, 12);
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments, observation: '', evidence: aqSanitizeEvidence(null) }), 'Experiment saved as portfolio evidence.');
-      setLearningNotice({ kind: 'success', message: 'Ecosystem experiment saved to your learning portfolio.' }); aqAnnounce('Ecosystem experiment saved.');
+      setLearningNotice({ kind: 'success', message: 'Ecosystem experiment saved to your learning portfolio.' }); aqAnnounce(__alloT('stem.aquaculture.sr_ecosystem_experiment_saved', 'Ecosystem experiment saved.'));
     }
 
     function captureEcosystemBaseline() {
       var baseline = aqEcosystemScenarioSnapshot(ecosystemWorkspace);
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { baselineScenario: baseline }), 'Baseline A saved. Change the community, water, or disturbance to build scenario B.');
-      aqAnnounce('Baseline scenario A saved for comparison.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_baseline_scenario_a_saved_for_comparison', 'Baseline scenario A saved for comparison.'));
     }
 
     function clearEcosystemBaseline() {
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { baselineScenario: null }), 'Comparison baseline cleared.');
-      aqAnnounce('Comparison baseline cleared.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_comparison_baseline_cleared', 'Comparison baseline cleared.'));
     }
 
     function saveEcosystemComparison() {
       var observation = String(ecosystemWorkspace.observation || '').trim();
-      if (!ecosystemWorkspace.baselineScenario) { setEcosystemNotice('Save scenario A before creating a comparison report.'); aqAnnounce('A baseline scenario is needed.'); return; }
-      if (observation.length < 20) { setEcosystemNotice('Add an evidence reflection of at least 20 characters before saving the comparison.'); aqAnnounce('More comparison evidence is needed.'); return; }
+      if (!ecosystemWorkspace.baselineScenario) { setEcosystemNotice('Save scenario A before creating a comparison report.'); aqAnnounce(__alloT('stem.aquaculture.sr_a_baseline_scenario_is_needed', 'A baseline scenario is needed.')); return; }
+      if (observation.length < 20) { setEcosystemNotice('Add an evidence reflection of at least 20 characters before saving the comparison.'); aqAnnounce(__alloT('stem.aquaculture.sr_more_comparison_evidence_is_needed', 'More comparison evidence is needed.')); return; }
       var baselineRun = aqSimulateEcosystemYear(ecosystemWorkspace.baselineScenario), currentRun = aqSimulateEcosystemYear(ecosystemWorkspace), model = aqCalculateEcosystem(ecosystemWorkspace), now = Date.now();
       var record = { id: 'comparison-' + now, kind: 'comparison', savedAt: now, environmentId: ecosystemWorkspace.environmentId, organisms: Object.assign({}, ecosystemWorkspace.organisms), status: model.status, carryingPressure: model.carryingPressure, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, baselineSummary: baselineRun.summary, currentSummary: currentRun.summary, observation: observation, evidence: aqSanitizeEvidence(ecosystemWorkspace.evidence) };
       var experiments = [record].concat(ecosystemWorkspace.experiments || []).slice(0, 12);
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments, observation: '', evidence: aqSanitizeEvidence(null) }), 'A/B comparison saved as portfolio evidence.');
-      setLearningNotice({ kind: 'success', message: 'Seasonal comparison saved to your learning portfolio.' }); aqAnnounce('Seasonal comparison report saved.');
+      setLearningNotice({ kind: 'success', message: 'Seasonal comparison saved to your learning portfolio.' }); aqAnnounce(__alloT('stem.aquaculture.sr_seasonal_comparison_report_saved', 'Seasonal comparison report saved.'));
     }
     function deleteEcosystemExperiment(experimentId) {
       var experiments = (ecosystemWorkspace.experiments || []).filter(function(item) { return item.id !== experimentId; });
-      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments }), 'Saved experiment removed.'); aqAnnounce('Saved experiment removed.');
+      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments }), 'Saved experiment removed.'); aqAnnounce(__alloT('stem.aquaculture.sr_saved_experiment_removed', 'Saved experiment removed.'));
     }
 
     function resetEcosystemWorkspace() {
       var reset = aqDefaultEcosystemWorkspace(); reset.experiments = ecosystemWorkspace.experiments || [];
-      persistEcosystemWorkspace(reset, 'Builder reset. Saved evidence was kept.'); aqAnnounce('Ecosystem Builder reset.');
+      persistEcosystemWorkspace(reset, 'Builder reset. Saved evidence was kept.'); aqAnnounce(__alloT('stem.aquaculture.sr_ecosystem_builder_reset', 'Ecosystem Builder reset.'));
     }
 
     function persistTeacherPlan(patch) {
       var nextPlan = aqSanitizeTeacherPlan(Object.assign({}, teacherPlan, patch || {})), savedState = loadState();
-      savedState.teacherPlan = nextPlan; saveState(savedState); setTeacherPlan(nextPlan); aqAnnounce('Teacher plan updated.');
+      savedState.teacherPlan = nextPlan; saveState(savedState); setTeacherPlan(nextPlan); aqAnnounce(__alloT('stem.aquaculture.sr_teacher_plan_updated', 'Teacher plan updated.'));
     }
 
     function teacherPlanHtml(plan) {
@@ -10143,7 +10143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         aqAnnounce(downloaded ? 'Printable Aquaculture portfolio downloaded.' : 'Printable portfolio download failed.');
       } catch (_) {
         setLearningNotice({ kind: 'error', message: 'The printable portfolio could not be prepared.' });
-        aqAnnounce('Printable portfolio preparation failed.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_printable_portfolio_preparation_failed', 'Printable portfolio preparation failed.'));
       }
     }
 
@@ -10153,7 +10153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (!file) return;
       if (file.size > 1024 * 1024) {
         setLearningNotice({ kind: 'error', message: 'That backup is larger than 1 MB and was not imported.' });
-        aqAnnounce('Portfolio import rejected because the file is too large.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_portfolio_import_rejected_because_the_file_is_too', 'Portfolio import rejected because the file is too large.'));
         try { input.value = ''; } catch (_) {}
         return;
       }
@@ -10182,18 +10182,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           setTeacherPlan(aqSanitizeTeacherPlan(mergedState.teacherPlan));
           if (tab !== 'home') setNoteDraft(String((mergedState.topicNotes || {})[tab] || '').slice(0, 600));
           setLearningNotice({ kind: 'success', message: 'Backup merged successfully. Existing learning data was preserved.' });
-          aqAnnounce('Aquaculture learning backup merged successfully.');
+          aqAnnounce(__alloT('stem.aquaculture.sr_aquaculture_learning_backup_merged_successfully', 'Aquaculture learning backup merged successfully.'));
         } catch (error) {
           setLearningNotice({ kind: 'error', message: error && error.message === 'storage'
             ? 'The backup was valid, but this browser could not save it.'
             : 'That file is not a valid Aquaculture Lab portfolio backup.' });
-          aqAnnounce('Aquaculture learning backup import failed.');
+          aqAnnounce(__alloT('stem.aquaculture.sr_aquaculture_learning_backup_import_failed', 'Aquaculture learning backup import failed.'));
         }
         try { input.value = ''; } catch (_) {}
       };
       reader.onerror = function() {
         setLearningNotice({ kind: 'error', message: 'The selected backup file could not be read.' });
-        aqAnnounce('Aquaculture learning backup file could not be read.');
+        aqAnnounce(__alloT('stem.aquaculture.sr_aquaculture_learning_backup_file_could_not_be_rea', 'Aquaculture learning backup file could not be read.'));
         try { input.value = ''; } catch (_) {}
       };
       reader.readAsText(file);
@@ -10408,7 +10408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                     if (event.key === 'Escape' && navSearch) {
                       event.preventDefault();
                       setNavSearch('');
-                      aqAnnounce('Topic search cleared');
+                      aqAnnounce(__alloT('stem.aquaculture.sr_topic_search_cleared', 'Topic search cleared'));
                     }
                   },
                   placeholder: 'Search oxygen, startup costs, boat rules, careers…',
@@ -10417,7 +10417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('div', { id: 'aq-topic-search-help', style: { marginTop: 5, color: '#cbd5e1', fontSize: 11.5 } },
                   'Searches topic names, summaries, curriculum keywords, and all 12 topic areas. Use several words to narrow results. Press / to open and Escape to clear or close.')),
               navSearch ? h('button', { type: 'button', className: 'aq-btn aq-topic-search-clear',
-                'aria-label': __alloT('stem.aquaculture.a11y_clear_topic_search', 'Clear topic search'), onClick: function() { setNavSearch(''); aqAnnounce('Topic search cleared'); },
+                'aria-label': __alloT('stem.aquaculture.a11y_clear_topic_search', 'Clear topic search'), onClick: function() { setNavSearch(''); aqAnnounce(__alloT('stem.aquaculture.sr_topic_search_cleared', 'Topic search cleared')); },
                 style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer',
                   background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 800 } }, 'Clear') : null),
             h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '9px 0', color: '#dbeafe', fontSize: 12, fontWeight: 750 } },
@@ -10823,7 +10823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                         setActiveScenario(function(previous) {
                           return Object.assign({}, previous, { missionId: m.id, choiceIndex: choiceIndex });
                         });
-                        aqAnnounce('Response selected. Review its trade-off, then add evidence.');
+                        aqAnnounce(__alloT('stem.aquaculture.sr_response_selected_review_its_trade_off_then_add_e', 'Response selected. Review its trade-off, then add evidence.'));
                       },
                       style: { minHeight: 44, padding: '9px 11px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
                         background: selected ? '#c4b5fd' : '#0b2b28', color: selected ? '#24133f' : '#f8fafc',
@@ -21816,7 +21816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function startQuizCheckpoint(checkpointId) {
       if (!QUIZ_CHECKPOINTS.some(function(checkpoint) { return checkpoint.id === checkpointId; })) return;
       setQuizState({ checkpointId: checkpointId, idx: 0, answers: {}, finished: false, score: 0 });
-      aqAnnounce('Quiz checkpoint started.');
+      aqAnnounce(__alloT('stem.aquaculture.sr_quiz_checkpoint_started', 'Quiz checkpoint started.'));
     }
 
     function quizTab() {
