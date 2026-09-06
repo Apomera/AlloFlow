@@ -519,12 +519,14 @@ describe('dissection workspace bands', () => {
     // The bay must derive its position from the constants the compass uses, not a fixed offset,
     // so the two stay apart at any HUD scale.
     expect(source).not.toContain('instrumentBayY = H - 94');
-    expect(source).toContain('var instrumentBayY = H - 62 * canvasHudScale - 24 - instrumentBayH;');
+    // 2026-09-06: the formula moved to the hoisted box so the lens lift can clamp against it.
+    expect(source).toContain('var hudInstrumentBayY = H - 62 * canvasHudScale - 24 - hudInstrumentBayH;');
+    expect(source).toContain('var instrumentBayY = hudInstrumentBayY;');
     // The compass side of the pair, so a change there is caught against the bay above it.
     expect(source).toContain('compassHeight = 62 * canvasHudScale');
     // Height must be declared before it is used in the Y calculation.
-    const hAt = source.indexOf('var instrumentBayW = 122, instrumentBayH = 57;');
-    const yAt = source.indexOf('var instrumentBayY = H - 62 * canvasHudScale');
+    const hAt = source.indexOf('var hudInstrumentBayH = 57;');
+    const yAt = source.indexOf('var hudInstrumentBayY = H - 62 * canvasHudScale');
     expect(hAt, 'bay size').toBeGreaterThan(-1);
     expect(yAt).toBeGreaterThan(hAt);
   }, 60_000);
@@ -939,5 +941,62 @@ describe('dissection workspace bands', () => {
     expect(bar.querySelectorAll("button").length).toBeGreaterThan(0);
     // The expanded panels stay outside the nav so aria-controls still lands on a sibling.
     expect(root.querySelector(".diss-layer-stepper #diss-view-tools"), "panel must not move into the nav").toBeNull();
+  }, 60_000);
+
+  // 2026-09-06. The scale card lifts by 76 * canvasHudScale when the inspection lens is parked in
+  // its corner, and nothing stopped the lifted card landing on the instrument bay: the bay sits at
+  // H - 62 * hudScale - 24 - 57 and the unclamped lift puts the card at almost exactly that Y.
+  // I could NOT get the lift to fire from a harness hover, so this removes the possibility rather
+  // than fixing an observed collision - the guard is the value, not a reproduction.
+  it.each(DISSECTION_PATHS)('clamps the lens lift above the instrument bay in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain('var hudInstrumentBayY = H - 62 * canvasHudScale - 24 - hudInstrumentBayH;');
+    expect(source).toContain('if (lensNearCompass) compassY = Math.max(82, Math.max(hudInstrumentBayY + hudInstrumentBayH + 8, compassY - 76 * canvasHudScale));');
+    expect(source).not.toContain('if (lensNearCompass) compassY = Math.max(82, compassY - 76 * canvasHudScale);');
+    // One derivation: the scenery reads the published box rather than recomputing it.
+    expect(source).toContain('var instrumentBayY = hudInstrumentBayY;');
+    expect(source).toContain('var instrumentBayW = 122, instrumentBayH = hudInstrumentBayH;');
+    expect(source.split('H - 62 * canvasHudScale - 24').length - 1, 'single derivation').toBe(1);
+  }, 60_000);
+
+  // 2026-09-06. First round to drive the pointer path in a real browser rather than reason about
+  // it. With the scalpel selected and a genuine 18-step press-drag-release across the specimen,
+  // the refusal that survived was "Use the visible pointer mode: press, drag through the planned
+  // motion, then release. A tap does not record technique." - telling the student to do exactly
+  // what they had just done. beginProcedureStroke had set the accurate reason and returned false;
+  // the pointerup then reached canvasClick, whose coaching line assumes a tap, and overwrote it.
+  // Verified after the fix by the same drag: the message is now "Cannot start Scalpel yet. ...".
+  it.each(DISSECTION_PATHS)('keeps a refused gesture reason instead of tap coaching in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain('function canBeginDirectInstrument(toolId, refusalEvent) {');
+    expect(source).toContain('if (refusedCanvas) refusedCanvas._suppressToolClick = true;');
+    // The five gestures whose refusal canvasClick would overwrite hand it the event.
+    ['activeInstrument', "'forceps'", "'pin'", "'dropper'", "'wick'"].forEach((toolArg) => {
+      expect(source, toolArg).toContain('canBeginDirectInstrument(' + toolArg + ', e)');
+    });
+    // canvasClick's own probe call must NOT arm this, or it would swallow its own next click
+    // and with it the probe's structure selection.
+    expect(source).toContain("if (!canBeginDirectInstrument('probe')) return;");
+    expect(source).not.toContain("canBeginDirectInstrument('probe', e)");
+  }, 60_000);
+
+  // 2026-09-06. Measured at 1180x900 with the specimen scrolled into view: the canvas ran to
+  // y=840 and the status line - the one sentence naming the phase and the next action, and the
+  // node the canvas points at through aria-describedby - began at y=974, past the fold, with the
+  // evidence notebook sitting between them. Every message the pointer path produces landed lower
+  // still, 924 to 1025px below the canvas. The status now follows the canvas it describes:
+  // measured again at 913. That is 61px closer and the right reading order; it is NOT yet fully
+  // on screen, because a 780px canvas in a 900px viewport leaves 60px and the status needs 48.
+  it.each(DISSECTION_PATHS)('puts the canvas status before the evidence notebook in %s', (filePath) => {
+    const root = render(filePath, {});
+    const status = root.querySelector('#diss-canvas-status');
+    const notebook = root.querySelector('#diss-evidence-notebook');
+    expect(status, 'status line').not.toBeNull();
+    expect(notebook, 'evidence notebook').not.toBeNull();
+    expect(status.parentElement, 'same parent').toBe(notebook.parentElement);
+    const order = Array.from(status.parentElement.children);
+    expect(order.indexOf(status), 'status precedes the notebook').toBeLessThan(order.indexOf(notebook));
+    // Still the node the canvas describes itself with.
+    expect(root.querySelector('canvas').getAttribute('aria-describedby')).toBe('diss-canvas-status diss-canvas-equivalent');
   }, 60_000);
 });

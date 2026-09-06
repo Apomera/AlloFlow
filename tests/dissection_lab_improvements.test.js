@@ -828,12 +828,17 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("var tone = restricted ? 'restricted'");
       expect(source).toContain("safeToAct: tone === 'ready'");
       expect(source).toContain("var fieldReady = isHydrationTool || next.action === 'inspect'");
-      expect(source).toContain('function canBeginDirectInstrument(toolId)');
+      expect(source).toContain('function canBeginDirectInstrument(toolId, refusalEvent)');
       expect(source).toContain('if (readiness.safeToAct) return true;');
-      expect(source).toContain('if (!canBeginDirectInstrument(activeInstrument)) return false;');
-      for (const tool of ['forceps', 'pin', 'probe', 'dropper', 'wick']) {
-        expect(source).toContain("if (!canBeginDirectInstrument('" + tool + "')) return false;");
+      // 2026-09-06: the gating is unchanged; the gestures now hand the refusal the event so the
+      // follow-on click cannot overwrite the real reason with tap coaching. beginProbeDrag is
+      // deliberately still the bare form - arming it there would swallow the probe's own
+      // selection click, which canvasClick is the only path for.
+      expect(source).toContain('if (!canBeginDirectInstrument(activeInstrument, e)) return false;');
+      for (const tool of ['forceps', 'pin', 'dropper', 'wick']) {
+        expect(source).toContain("if (!canBeginDirectInstrument('" + tool + "', e)) return false;");
       }
+      expect(source).toContain("if (!canBeginDirectInstrument('probe')) return false;");
 
       expect(source).toContain('var actionResult = performProcedureAction(next.action, actionPayload)');
       expect(source).toContain('if (!actionResult || !actionResult.ok) return false;');

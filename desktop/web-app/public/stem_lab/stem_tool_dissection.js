@@ -4952,9 +4952,19 @@ var d = labToolData.dissection || {};
             queueProcedureInstrumentReplay(next.instrument, replayOptions);
             return true;
           }
-          function canBeginDirectInstrument(toolId) {
+          // Driven with a real 18-step press-drag-release, a refused scalpel stroke told the
+          // student "A tap does not record technique" - instructing them to do exactly what
+          // they had just done. The accurate reason is set here, the gesture returns false,
+          // and the pointerup that follows then reaches canvasClick, whose coaching line
+          // assumes a tap and overwrites it. Suppressing that one follow-on click keeps the
+          // real reason. Only the gestures whose refusal canvasClick would overwrite pass the
+          // event; canvasClick's own probe call passes none, so it never arms this against
+          // its own next click, and the probe's selection path stays clickable.
+          function canBeginDirectInstrument(toolId, refusalEvent) {
             var readiness = procedureToolReadinessData(toolId, currentProcedure);
             if (readiness.safeToAct) return true;
+            var refusedCanvas = refusalEvent && (refusalEvent.currentTarget || refusalEvent.target);
+            if (refusedCanvas) refusedCanvas._suppressToolClick = true;
             setProcedureFeedback('Cannot start ' + readiness.tool.label + ' yet. ' + readiness.cue, 'caution');
             return false;
           }
@@ -5028,7 +5038,7 @@ var d = labToolData.dissection || {};
           }
           function beginProcedureStroke(e) {
             var canvas = e.currentTarget, point = canvasPointFromEvent(e);
-            if (!canBeginDirectInstrument(activeInstrument)) return false;
+            if (!canBeginDirectInstrument(activeInstrument, e)) return false;
             if (!canClaimDirectGesture(canvas, e)) return false;
             canvas._toolGestureContext = captureDirectGestureContext(activeInstrument, e);
             canvas._toolDrawing = true; canvas._toolStroke = [point];
@@ -5163,7 +5173,7 @@ var d = labToolData.dissection || {};
           function beginForcepsDrag(e) {
             var canvas = e.currentTarget, point = canvasPointFromEvent(e), guide = procedureGuidePoints();
             if (!canClaimDirectGesture(canvas, e)) return false;
-            if (!canBeginDirectInstrument('forceps')) return false;
+            if (!canBeginDirectInstrument('forceps', e)) return false;
             var instrumentState = procedureInstrumentStatus('forceps'), readiness = procedureToolReadinessData('forceps', currentProcedure);
             var startValid = instrumentState.readiness === 'ready' && readiness.safeToAct && currentProcedure.incisionExtended && !currentProcedure.retracted && distanceToGuide(point, guide) <= 0.11;
             canvas._forcepsDrag = { active: true, pointerId: e.pointerId, gestureContext: captureDirectGestureContext('forceps', e), start: point, current: point, startedAt: Date.now(), lastAt: Date.now(), lastPoint: point, peakSpeed: 0, samples: 1, startValid: startValid, inputType: e.pointerType || 'mouse' };
@@ -5255,7 +5265,7 @@ var d = labToolData.dissection || {};
           function beginPinDrag(e) {
             var canvas = e.currentTarget, point = canvasPointFromEvent(e), guide = procedureGuidePoints();
             if (!canClaimDirectGesture(canvas, e)) return false;
-            if (!canBeginDirectInstrument('pin')) return false;
+            if (!canBeginDirectInstrument('pin', e)) return false;
             var startDistance = procedurePointDistance(point, guide[0]), endDistance = procedurePointDistance(point, guide[guide.length - 1]);
             var pinTarget = startDistance <= endDistance ? guide[0] : guide[guide.length - 1], pinIndex = startDistance <= endDistance ? 0 : guide.length - 1;
             var middle = guide[Math.floor((guide.length - 1) / 2)] || guide[1] || guide[0];
@@ -5460,7 +5470,7 @@ var d = labToolData.dissection || {};
           }
           function beginDropperDrag(e) {
             if ((d.canvasZoom || 1) > 1.01) return false;
-            if (!canBeginDirectInstrument('dropper')) return false;
+            if (!canBeginDirectInstrument('dropper', e)) return false;
             var canvas = e.currentTarget, point = canvasPointFromEvent(e), contact = specimenContactContext(point);
             if (!canClaimDirectGesture(canvas, e)) return false;
             if (!contact.onSpecimen) return false;
@@ -5544,7 +5554,7 @@ var d = labToolData.dissection || {};
           }
           function beginWickDrag(e) {
             if ((d.canvasZoom || 1) > 1.01) return false;
-            if (!canBeginDirectInstrument('wick')) return false;
+            if (!canBeginDirectInstrument('wick', e)) return false;
             var canvas = e.currentTarget, point = canvasPointFromEvent(e), contact = specimenContactContext(point), poolPoint = currentProcedure.dropperPoint, tissue = normalizeTissueState(currentProcedure.tissueState);
             if (!canClaimDirectGesture(canvas, e)) return false;
             if (!poolPoint || tissue.salineDrops <= 2 || !contact.onSpecimen) return false;
@@ -6302,6 +6312,13 @@ var d = labToolData.dissection || {};
                 : Math.max(126, hudCompassTitleWidth + 30 * canvasHudScale);
               var hudCompassH = (hudCompassAxis === 'horizontal' ? 55 : 91) * canvasHudScale;
               var hudCompassBox = (sceneDetail && !d.quizMode) ? { x: 14, y: 14, w: hudCompassW, h: 82 + hudCompassH - 14 } : null;
+              // The instrument bay is bench scenery painted early, and the scale card below it
+              // lifts by 76 * canvasHudScale when the inspection lens is parked in that corner.
+              // Nothing stopped the lifted card landing on the bay; the arithmetic says it would
+              // cover it almost completely. Derive the bay box once, here, so the lift can clamp
+              // against it and the scenery can read the same numbers.
+              var hudInstrumentBayH = 57;
+              var hudInstrumentBayY = H - 62 * canvasHudScale - 24 - hudInstrumentBayH;
               lightDirection = ['overhead', 'left', 'right', 'raking'].indexOf(d.lightDirection) >= 0 ? d.lightDirection : 'overhead';
               anatomicalView = ['dorsal', 'ventral', 'lateral', 'internal'].indexOf(d.anatomicalView) >= 0 ? d.anatomicalView : 'dorsal';
               crossSectionMode = !!d.crossSectionMode;
@@ -6592,7 +6609,7 @@ var d = labToolData.dissection || {};
               // Compact instrument bay: grounded metal tools replace the earlier faint line-art corner icons.
               if (sceneDetail) {
                 ctx.save();
-                var instrumentBayW = 122, instrumentBayH = 57;
+                var instrumentBayW = 122, instrumentBayH = hudInstrumentBayH;
                 // The bay is bench scenery, but it is painted inside the specimen transform. In
                 // the ventral view that transform mirrors x about W/2, so a right-edge anchor
                 // threw the whole tray into the bottom-LEFT corner and reversed its label into
@@ -6601,7 +6618,7 @@ var d = labToolData.dissection || {};
                 var instrumentBayX = specimenScale.x < 0 ? 20 : W - 142;
                 // Clear the scale compass below it: that panel is H - 62 * canvasHudScale - 14
                 // at its top, and it paints later, so anything overlapping here is simply lost.
-                var instrumentBayY = H - 62 * canvasHudScale - 24 - instrumentBayH;
+                var instrumentBayY = hudInstrumentBayY;
                 ctx.shadowColor = 'rgba(2,6,23,0.54)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
                 var instrumentBayGradient = ctx.createLinearGradient(instrumentBayX, instrumentBayY, instrumentBayX, instrumentBayY + instrumentBayH);
                 instrumentBayGradient.addColorStop(0, 'rgba(148,163,184,0.18)');
@@ -12998,7 +13015,10 @@ var d = labToolData.dissection || {};
 
               var liveLensX = Number(canvas._lensDisplayX), liveLensY = Number(canvas._lensDisplayY);
               var lensNearCompass = inspectionLens && isFinite(liveLensX) && isFinite(liveLensY) && liveLensX > compassX - 42 * canvasHudScale && liveLensY > compassY - 42 * canvasHudScale;
-              if (lensNearCompass) compassY = Math.max(82, compassY - 76 * canvasHudScale);
+              // Clamped to just below the instrument bay: unclamped this lift puts the scale card
+              // at the bay's own Y and covers it. I could not get the lift to fire in a harness
+              // hover, so this removes the possibility rather than fixing an observed collision.
+              if (lensNearCompass) compassY = Math.max(82, Math.max(hudInstrumentBayY + hudInstrumentBayH + 8, compassY - 76 * canvasHudScale));
               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)';
               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(compassX, compassY, compassWidth, compassHeight, 8 * canvasHudScale); ctx.fill(); ctx.stroke(); }
               else { ctx.fillRect(compassX, compassY, compassWidth, compassHeight); ctx.strokeRect(compassX, compassY, compassWidth, compassHeight); }
@@ -17138,6 +17158,36 @@ var d = labToolData.dissection || {};
                 // the four-item enumeration and the marker-shape legend do not change and are now
                 // carried, verbatim, by the reachable canvas description instead. 497 -> 100.
                 React.createElement("p", { id: "diss-canvas-equivalent", className: "diss-sr-only" }, 'Every canvas action has a keyboard or button alternative. The specimen canvas description lists them.'),
+                  // Measured at 1180x900 with the specimen scrolled into view: the canvas ran to y=840
+                  // and this line, the one sentence naming the current phase and the next action, began
+                  // at y=974 - 134px below the canvas and 74px past the fold. The evidence notebook sat
+                  // between them. Every message the pointer path produces landed further down still,
+                  // 924 to 1025px below the canvas. So a student dragging an instrument could not see
+                  // what the lab was telling them about the drag. The status now follows the canvas it
+                  // describes, which is also the reading order aria-describedby already implies.
+                  // aria-atomic replayed all 221 characters of this line every time any part of it
+                  // changed. Measured with a MutationObserver on all seven live regions: one
+                  // ArrowRight produced three queued announcements totalling ~382 characters, and
+                  // the one the student needs ("Previewing Ventral Skin") was third, behind a full
+                  // replay of the phase text that had not changed. Without atomic, only the node
+                  // that actually changed is announced, so the selection sentence below is its own
+                  // element. Visible text is byte-identical either way.
+                  React.createElement("p", { id: "diss-canvas-status", className: "diss-stage__live", "data-tool-status": "true", "data-tone": stageHandoffTone, role: "status", "aria-live": "polite" },
+                    d.quizMode
+                      ? (effectiveQuizAnswerMode === 'hotspot'
+                        ? 'Practice assessment: ' + quizPrompt + ' Select a visible structure to submit. Arrow keys preview and Enter submits.'
+                        : 'Practice assessment: ' + quizPrompt + ' Choose an answer in the assessment panel. Canvas selection will not submit in multiple-choice mode.')
+                      : (stageHandoffUsesTool ? ('Tool ' + nextToolDefinition.label + ' · ' + (nextToolReadiness ? nextToolReadiness.label + '. ' + nextToolReadiness.cue : nextActionModel.description) + ' ' + (sel
+                        ? ('Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer. ' + sel.fn.split('.')[0] + '.')
+                        : 'Select a structure on the specimen or use the accessible structure directory. Arrow keys move between structures when the canvas is focused.'))
+                        : [nextActionModel.phase + ': '
+                          + (procedureLearningCheckpointVisible()
+                            ? nextActionModel.description + ' Answer it in the planning checkpoint above the specimen.'
+                            : nextActionModel.title + '. ' + nextActionModel.description),
+                          // Its own node so browsing a structure announces this sentence alone
+                          // instead of replaying the phase that did not change.
+                          sel ? React.createElement("span", { key: 'diss-status-selection' }, ' Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer.') : null])
+                  ),
                 React.createElement("details", { id: "diss-evidence-notebook", className: "diss-evidence", open: splitComparison && !!referenceEvidence },
                   React.createElement("summary", null, 'Evidence notebook · ' + visualEvidence.length + '/' + evidenceFrameLimit + ' frames'),
                   React.createElement("p", { id: "diss-evidence-capacity", className: "diss-evidence__capacity", "data-full": visualEvidence.length >= evidenceFrameLimit ? "true" : "false", role: "status", "aria-live": "polite" },
@@ -17183,29 +17233,6 @@ var d = labToolData.dissection || {};
                   ) : React.createElement("p", null, 'Capture a frame from Lab tools to build a visual record of layers, views, and technique progress.')
                 ),
 
-                  // aria-atomic replayed all 221 characters of this line every time any part of it
-                  // changed. Measured with a MutationObserver on all seven live regions: one
-                  // ArrowRight produced three queued announcements totalling ~382 characters, and
-                  // the one the student needs ("Previewing Ventral Skin") was third, behind a full
-                  // replay of the phase text that had not changed. Without atomic, only the node
-                  // that actually changed is announced, so the selection sentence below is its own
-                  // element. Visible text is byte-identical either way.
-                  React.createElement("p", { id: "diss-canvas-status", className: "diss-stage__live", "data-tool-status": "true", "data-tone": stageHandoffTone, role: "status", "aria-live": "polite" },
-                    d.quizMode
-                      ? (effectiveQuizAnswerMode === 'hotspot'
-                        ? 'Practice assessment: ' + quizPrompt + ' Select a visible structure to submit. Arrow keys preview and Enter submits.'
-                        : 'Practice assessment: ' + quizPrompt + ' Choose an answer in the assessment panel. Canvas selection will not submit in multiple-choice mode.')
-                      : (stageHandoffUsesTool ? ('Tool ' + nextToolDefinition.label + ' · ' + (nextToolReadiness ? nextToolReadiness.label + '. ' + nextToolReadiness.cue : nextActionModel.description) + ' ' + (sel
-                        ? ('Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer. ' + sel.fn.split('.')[0] + '.')
-                        : 'Select a structure on the specimen or use the accessible structure directory. Arrow keys move between structures when the canvas is focused.'))
-                        : [nextActionModel.phase + ': '
-                          + (procedureLearningCheckpointVisible()
-                            ? nextActionModel.description + ' Answer it in the planning checkpoint above the specimen.'
-                            : nextActionModel.title + '. ' + nextActionModel.description),
-                          // Its own node so browsing a structure announces this sentence alone
-                          // instead of replaying the phase that did not change.
-                          sel ? React.createElement("span", { key: 'diss-status-selection' }, ' Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer.') : null])
-                  ),
 
                   React.createElement("details", { className: "diss-shortcuts" },
                     React.createElement("summary", null, 'Keyboard and precision controls'),
