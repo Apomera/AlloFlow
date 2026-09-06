@@ -148,8 +148,8 @@ exports[`brainAtlas render goldens > view: lateral renders + pins a digest 1`] =
   "buttons": 71,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 198,
-  "sha": "c79f0838cfde2d56",
+  "lengthBucket": 195,
+  "sha": "a0e60af801745f4a",
   "svgs": 0,
 }
 `;

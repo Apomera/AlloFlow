@@ -153,3 +153,15 @@ The result line is scoped to the card it belongs to, so a success message from o
 September 5, 2026. A disabled button leaves the tab order. In the headline check and the Stimulation Lab, answering therefore removed the element the keyboard user was standing on, dropped focus to the document, and left the feedback that had just appeared below reachable only by tabbing again from the top of the tool. The authored-card checks in the same file already avoided this by marking answered choices aria-disabled instead, which keeps them focusable and still announces them as unavailable.
 
 Both widgets now use that pattern, with a guard so a second press cannot overwrite a locked answer. Nothing about the questions, the feedback, or the scoring changed. This was a defect in code added earlier in the day, and the Stimulation Lab shared it.
+
+## Finishing the side view's plain cards
+
+September 5, 2026. The side view is the first diagram a learner meets, and Plain is the default reading mode. Eight of its thirteen regions had an authored card; the other five, Broca's area, Wernicke's area, the insular cortex, the angular gyrus and the supramarginal gyrus, fell back to a trimmed slice of the clinical text. That fallback is shorter but it is not plainer: a reader who cannot get through "left inferior frontal gyrus, pars opercularis and triangularis" is no better off with the first hundred characters of it. All thirteen now have a card, so the entry view no longer mixes authored plain language with truncated clinical prose.
+
+Each card carries the same three fields as the existing ones, a question with an explanation behind a disclosure, an ungraded check, and a link on to a related region on the same view. The five new cards are the language and integration areas, which is exactly where single-region language is easiest to slip into, so each says contributes to rather than is responsible for. The language pair says in as many words that producing words and understanding them are different contributions inside one network. The insular card carries an extra note stating that no single region produces a feeling on its own, since that area is the one most often described as the seat of empathy or disgust.
+
+The insular card's own example, a fast heartbeat, is used to make the point that noticing a body signal is not the same as knowing what it means, because the same signal follows exercise, excitement or worry. That is the honest version of interoception for this audience and it avoids naming an emotion the region supposedly owns.
+
+Three vocabulary entries were added for the new cards: speech, comprehension, and bringing information together. Sources: the two aphasia cards link to the NIDCD aphasia page; the other three fall through to the existing NIMH default.
+
+FOR REVIEW: these are newly authored explanations of language and interoception. The wording was chosen to describe contributions rather than jobs, but the science has not been reviewed by anyone but me.

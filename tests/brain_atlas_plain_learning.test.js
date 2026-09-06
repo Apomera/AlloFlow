@@ -41,7 +41,7 @@ describe('Brain Atlas authored plain learning cards', () => {
     expect(advanced.textContent).toContain('Motor coordination');
     expect(advanced.textContent).toContain('Associated Conditions');
     expect(advanced.textContent).toContain('Blood Supply');
-    const other = panel({ selectedRegion: 'brocas' });
+    const other = panel({ view: 'superior', selectedRegion: 'central_sulcus' });
     expect(other.querySelector('[data-brainatlas-authored-plain]')).toBeNull();
     expect(other.textContent).toContain('Student takeaway');
   });

@@ -8892,6 +8892,49 @@ var d = labToolData.brainAtlas || {};
               note: t('stem.brainatlas.plain_ventricles_note', 'The atlas shows both brain tissue and fluid spaces. A labeled structure does not always mean an area of nerve cells.'),
               next: 'corpus_callosum'
             },
+            brocas: {
+              source: 'https://www.nidcd.nih.gov/health/aphasia',
+              idea: t('stem.brainatlas.plain_brocas_idea', 'Contributes to putting words together and producing speech.'),
+              example: t('stem.brainatlas.plain_brocas_example', 'You turn an idea into a spoken sentence when you answer a question out loud.'),
+              connection: t('stem.brainatlas.plain_brocas_connection', 'Producing words and understanding them are different contributions within one language network.'),
+              question: t('stem.brainatlas.plain_brocas_question', 'Why might someone understand a question and still find it hard to say the answer?'),
+              explanation: t('stem.brainatlas.plain_brocas_explanation', 'Understanding words and producing them draw on different contributions. After damage near this area, speech can become effortful while understanding stays much better.'),
+              next: 'wernickes'
+            },
+            wernickes: {
+              source: 'https://www.nidcd.nih.gov/health/aphasia',
+              idea: t('stem.brainatlas.plain_wernickes_idea', 'Contributes to understanding words that are heard or read.'),
+              example: t('stem.brainatlas.plain_wernickes_example', 'You follow what a friend is saying while they explain the rules of a game.'),
+              connection: t('stem.brainatlas.plain_wernickes_connection', 'Areas that help with understanding and areas that help with speaking are linked by nerve-fiber pathways.'),
+              question: t('stem.brainatlas.plain_wernickes_question', 'How is understanding a sentence different from saying one?'),
+              explanation: t('stem.brainatlas.plain_wernickes_explanation', 'Understanding draws on making sense of incoming words. Saying a sentence adds choosing and forming the words. Both draw on a wider network.'),
+              next: 'supramarginal'
+            },
+            supramarginal: {
+              idea: t('stem.brainatlas.plain_supramarginal_idea', 'Contributes to working with the sounds inside words, and to information from touch.'),
+              example: t('stem.brainatlas.plain_supramarginal_example', 'You repeat a new name back to someone right after hearing it.'),
+              connection: t('stem.brainatlas.plain_supramarginal_connection', 'Repeating a word links hearing it to saying it along a shared pathway.'),
+              question: t('stem.brainatlas.plain_supramarginal_question', 'What has to happen between hearing a name and repeating it?'),
+              explanation: t('stem.brainatlas.plain_supramarginal_explanation', 'The sounds are held briefly and then used to produce speech. Pathways connecting understanding and speaking areas contribute to this.'),
+              next: 'angular_gyrus'
+            },
+            angular_gyrus: {
+              idea: t('stem.brainatlas.plain_angular_gyrus_idea', 'Helps bring together information of different kinds, which supports reading.'),
+              example: t('stem.brainatlas.plain_angular_gyrus_example', 'You see a written word and connect it with its sound and its meaning.'),
+              connection: t('stem.brainatlas.plain_angular_gyrus_connection', 'Reading combines seeing, sound, and meaning across several brain areas.'),
+              question: t('stem.brainatlas.plain_angular_gyrus_question', 'Why does reading need more than seeing the letters?'),
+              explanation: t('stem.brainatlas.plain_angular_gyrus_explanation', 'Seeing letters provides visual information. Connecting that information with sounds and meaning draws on additional areas working together.'),
+              next: 'insular'
+            },
+            insular: {
+              idea: t('stem.brainatlas.plain_insular_idea', 'Contributes to noticing signals from inside your body, including taste.'),
+              example: t('stem.brainatlas.plain_insular_example', 'You notice your heart beating faster after running up a flight of stairs.'),
+              connection: t('stem.brainatlas.plain_insular_connection', 'Noticing a body signal and deciding what it means involve several brain areas together.'),
+              question: t('stem.brainatlas.plain_insular_question', 'Why is noticing a body signal not the same as knowing what it means?'),
+              explanation: t('stem.brainatlas.plain_insular_explanation', 'A fast heartbeat can follow exercise, excitement, or worry. Working out which one it is draws on the situation and on wider brain networks.'),
+              note: t('stem.brainatlas.plain_insular_note', 'This area is one contributor to noticing body signals and feelings. No single region produces a feeling on its own.'),
+              next: 'temporal'
+            },
 
           };
 
@@ -8916,6 +8959,9 @@ var d = labToolData.brainAtlas || {};
             event_memory: { term: t('stem.brainatlas.word_event_memory', 'Event memory'), definition: t('stem.brainatlas.word_event_memory_definition', 'Remembering a particular experience, including what happened and where or when it happened.') },
             significance: { term: t('stem.brainatlas.word_significance', 'Emotional significance'), definition: t('stem.brainatlas.word_significance_definition', 'How much something matters emotionally in a situation. Learning what it predicts can change that meaning.') },
             csf: { term: t('stem.brainatlas.word_csf', 'Cerebrospinal fluid (CSF)'), definition: t('stem.brainatlas.word_csf_definition', 'Clear fluid in the ventricles and around the brain and spinal cord. It helps support and cushion these structures.') },
+            speech: { term: t('stem.brainatlas.word_speech', 'Speech'), definition: t('stem.brainatlas.word_speech_definition', 'Spoken language. Producing speech involves choosing words and forming their sounds.') },
+            comprehension: { term: t('stem.brainatlas.word_comprehension', 'Comprehension'), definition: t('stem.brainatlas.word_comprehension_definition', 'Understanding the meaning of words that are heard or read.') },
+            integration: { term: t('stem.brainatlas.word_integration', 'Bringing information together'), definition: t('stem.brainatlas.word_integration_definition', 'Combining information of different kinds, such as what you see and what you hear, so it can be used together.') },
 
           };
           var BRAIN_ATLAS_CARD_WORDS = {
@@ -8932,7 +8978,12 @@ var d = labToolData.brainAtlas || {};
             hypothalamus: ['homeostasis', 'hormone', 'automatic'],
             hippocampus: ['event_memory', 'network'],
             amygdala: ['significance', 'network'],
-            ventricles: ['csf', 'signal']
+            ventricles: ['csf', 'signal'],
+            brocas: ['speech', 'network'],
+            wernickes: ['comprehension', 'network', 'signal'],
+            supramarginal: ['sensory', 'speech', 'network'],
+            angular_gyrus: ['visual', 'integration', 'network'],
+            insular: ['sensory', 'network', 'signal']
           };
           var BRAIN_ATLAS_MOVEMENT_WORDS = [
             ['cerebrum', 'lobe', 'cortex'], ['motor', 'signal', 'lobe'], ['cortex', 'voluntary', 'signal'], ['motor', 'cortex', 'network'], ['motor', 'cortex', 'network']
@@ -9030,6 +9081,31 @@ var d = labToolData.brainAtlas || {};
               question: t('stem.brainatlas.check_ventricles_question', 'A learner sees a ventricle labeled beside brain tissue. Which statement best explains the difference?'),
               choices: [t('stem.brainatlas.check_ventricles_choice_0', 'The ventricle contains fluid; nerve cells in the surrounding tissue process signals.'), t('stem.brainatlas.check_ventricles_choice_1', 'The ventricle is a bundle of nerve fibers linking hemispheres.'), t('stem.brainatlas.check_ventricles_choice_2', 'The ventricle plans movements while the surrounding tissue only supports it.')],
               feedback: [t('stem.brainatlas.check_ventricles_feedback_0', 'Ventricles are fluid-filled spaces. CSF circulates through them and helps support the brain and spinal cord.'), t('stem.brainatlas.check_ventricles_feedback_1', 'A nerve-fiber bundle carries signals. A ventricle is a fluid space rather than that kind of tissue.'), t('stem.brainatlas.check_ventricles_feedback_2', 'Planning draws on nerve-cell networks. The ventricle label identifies a space containing fluid.')]
+            },
+            brocas: {
+              question: t('stem.brainatlas.check_brocas_question', 'A learner knows exactly what they want to say but the words come out slowly, one at a time. Which contribution does this example point to?'),
+              choices: [t('stem.brainatlas.check_brocas_choice_0', 'Putting words together and producing speech'), t('stem.brainatlas.check_brocas_choice_1', 'Understanding what other people say'), t('stem.brainatlas.check_brocas_choice_2', 'Noticing the loudness of a voice')],
+              feedback: [t('stem.brainatlas.check_brocas_feedback_0', 'The difficulty in this example is producing the words, not understanding them. Producing speech draws on a wider language network as well.'), t('stem.brainatlas.check_brocas_feedback_1', 'The learner already knows what they want to say, so understanding is not the difficulty described here.'), t('stem.brainatlas.check_brocas_feedback_2', 'Loudness is one feature of sound. This example is about getting words out.')]
+            },
+            wernickes: {
+              question: t('stem.brainatlas.check_wernickes_question', 'A learner listens to instructions in a language they know, but the meaning does not come through. Which contribution does this example point to?'),
+              choices: [t('stem.brainatlas.check_wernickes_choice_0', 'Understanding the meaning of the words'), t('stem.brainatlas.check_wernickes_choice_1', 'Sending signals to move the mouth'), t('stem.brainatlas.check_wernickes_choice_2', 'Keeping balance while standing still')],
+              feedback: [t('stem.brainatlas.check_wernickes_feedback_0', 'The sounds arrive, but their meaning does not. Understanding language draws on this area within a wider network.'), t('stem.brainatlas.check_wernickes_feedback_1', 'Moving the mouth helps produce speech. This example is about taking meaning from words that are heard.'), t('stem.brainatlas.check_wernickes_feedback_2', 'Balance can matter while listening, but it does not explain the missing meaning.')]
+            },
+            supramarginal: {
+              question: t('stem.brainatlas.check_supramarginal_question', 'A learner hears a new word and repeats it back straight away. What has to happen in between?'),
+              choices: [t('stem.brainatlas.check_supramarginal_choice_0', 'The sounds are held briefly and then used to speak'), t('stem.brainatlas.check_supramarginal_choice_1', 'The word is stored permanently before it can be said'), t('stem.brainatlas.check_supramarginal_choice_2', 'The word is turned into a picture first')],
+              feedback: [t('stem.brainatlas.check_supramarginal_feedback_0', 'Repeating links hearing to speaking. Pathways between the understanding and speaking areas contribute to this.'), t('stem.brainatlas.check_supramarginal_feedback_1', 'A word can be repeated without being remembered later. Long-term memory is a different contribution.'), t('stem.brainatlas.check_supramarginal_feedback_2', 'A picture can help with meaning, but repeating a sound does not require one.')]
+            },
+            angular_gyrus: {
+              question: t('stem.brainatlas.check_angular_gyrus_question', 'A learner reads a written word and knows both how it sounds and what it means. Which contribution is highlighted?'),
+              choices: [t('stem.brainatlas.check_angular_gyrus_choice_0', 'Bringing different kinds of information together'), t('stem.brainatlas.check_angular_gyrus_choice_1', 'Only detecting the brightness of the page'), t('stem.brainatlas.check_angular_gyrus_choice_2', 'Keeping breathing going while reading')],
+              feedback: [t('stem.brainatlas.check_angular_gyrus_feedback_0', 'Reading connects what is seen with sound and meaning. Several areas contribute to that combination.'), t('stem.brainatlas.check_angular_gyrus_feedback_1', 'Brightness is one visual feature. It does not explain connecting a word with its sound and meaning.'), t('stem.brainatlas.check_angular_gyrus_feedback_2', 'Breathing continues during reading, but it does not explain the reading itself.')]
+            },
+            insular: {
+              question: t('stem.brainatlas.check_insular_question', 'A learner notices their heart beating faster before a performance. Which contribution does this example point to?'),
+              choices: [t('stem.brainatlas.check_insular_choice_0', 'Noticing a signal from inside the body'), t('stem.brainatlas.check_insular_choice_1', 'Producing the feeling entirely in one brain area'), t('stem.brainatlas.check_insular_choice_2', 'Sending the signal that moves the hands')],
+              feedback: [t('stem.brainatlas.check_insular_feedback_0', 'Noticing the heartbeat is a body signal. What the learner makes of it also depends on the situation and on wider networks.'), t('stem.brainatlas.check_insular_feedback_1', 'Feelings involve many brain areas working together. No single area produces one on its own.'), t('stem.brainatlas.check_insular_feedback_2', 'Hand movements need movement signals. This example is about noticing what the body is doing.')]
             },
 
           };

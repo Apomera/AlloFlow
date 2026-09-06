@@ -33,7 +33,7 @@ afterEach(() => {
 });
 
 describe('Brain Atlas region discovery', () => {
-  it.each([['lateral', 8], ['medial', 6]])('uses the authored big ideas in %s Plain previews', (view, count) => {
+  it.each([['lateral', 13], ['medial', 6]])('uses the authored big ideas in %s Plain previews', (view, count) => {
     const s = setup({ view });
     const previews = s.previews();
     expect(previews.filter(el => el.dataset.brainatlasRegionPreview === 'idea')).toHaveLength(count);
@@ -45,15 +45,19 @@ describe('Brain Atlas region discovery', () => {
   });
 
   it('retains full function text in Advanced and bounds unsupported Plain previews', () => {
-    const plain = setup(); plain.mount();
-    const preview = host.querySelector('#brainatlas-region-lateral-brocas [data-brainatlas-region-preview]');
+    // Every lateral region is authored now, so the unauthored fallback is
+    // sampled from a view that has no plain cards at all.
+    const plain = setup({ view: 'superior' }); plain.mount();
+    const preview = host.querySelector('#brainatlas-region-superior-central_sulcus [data-brainatlas-region-preview]');
     expect(preview.dataset.brainatlasRegionPreview).toBe('function');
     expect(preview.textContent.length).toBeLessThanOrEqual(191);
     const plainFunctions = new Map([...host.querySelectorAll('[data-brainatlas-region-preview="function"]')].map(el => [el.closest('button').id, el.textContent]));
-    const advanced = setup({ detailMode: 'advanced' }); advanced.mount();
+    const advanced = setup({ view: 'superior', detailMode: 'advanced' }); advanced.mount();
+    expect(host.querySelectorAll('[data-brainatlas-region-preview="idea"]')).toHaveLength(0);
+    expect([...host.querySelectorAll('[data-brainatlas-region-preview="function"]')].some(el => plainFunctions.has(el.closest('button').id) && el.textContent.length > plainFunctions.get(el.closest('button').id).length)).toBe(true);
+    const lateralAdvanced = setup({ detailMode: 'advanced' }); lateralAdvanced.mount();
     expect(host.querySelectorAll('[data-brainatlas-region-preview="idea"]')).toHaveLength(0);
     expect(host.querySelector('#brainatlas-region-lateral-cerebellum').textContent).toContain('~80%');
-    expect([...host.querySelectorAll('[data-brainatlas-region-preview="function"]')].some(el => plainFunctions.has(el.closest('button').id) && el.textContent.length > plainFunctions.get(el.closest('button').id).length)).toBe(true);
   });
 
   it('matches reordered example words and shows why the result fits', () => {

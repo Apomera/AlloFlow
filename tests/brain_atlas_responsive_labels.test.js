@@ -69,7 +69,9 @@ describe('Brain Atlas readable and directly selectable callouts', () => {
         expect(target.x + target.w).toBeLessThanOrEqual(1); expect(target.y + target.h).toBeLessThanOrEqual(1);
       }
     }
-  });
+    // Fifteen full canvas renders per size. This sits above the 5s default on a
+    // cold run, so give it room rather than reading the timeout as a failure.
+  }, 30000);
   it.each(['lateral', 'medial', 'superior', 'inferior'])('keeps %s labels separate and the selected region visible', view => {
     const s = setup(280, { view, diagramLabelDensity: 'all', diagramLabelSize: 'large' });
     const selected = s.targets()[0].id;

@@ -66,6 +66,6 @@ describe('Brain Atlas contextual key words', () => {
   });
   it('leaves Advanced and unsupported cards unchanged', () => {
     expect(session({ detailMode: 'advanced' }).glossary('card-frontal')).toBeUndefined(); resetStemLab();
-    expect(session({ selectedRegion: 'brocas' }).glossary('card-brocas')).toBeUndefined();
+    expect(session({ view: 'superior', selectedRegion: 'central_sulcus' }).glossary('card-central_sulcus')).toBeUndefined();
   });
 });
