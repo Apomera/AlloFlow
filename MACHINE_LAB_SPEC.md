@@ -183,6 +183,18 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 18 (2026-09-05)
+
+- **The Test Range gets the Siege Field instruments.** A bead on the fired arc for every
+  second of flight, and the apex marked with a ring, a dashed drop line to the ground it is
+  measured from, and the number the readouts already give. This is the view that is ABOUT
+  the flight, and it had less physics drawn on it than the siege did.
+- Built with the arc, inside the existing `showPath = valid && revealed` gate, so nothing
+  appears before the learner has committed to a prediction.
+- The ground shadows the Siege Field uses were tried here and removed: that bay has real
+  ground for a shadow to fall on, this one has an abstract grid where a 0.6 m disc at 100 m
+  is two pixels of nothing.
+
 ### Wave 17 (2026-09-05)
 
 - **Every ghost arc says what changed.** The tool asks a learner to change one thing and

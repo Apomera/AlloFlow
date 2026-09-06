@@ -973,3 +973,40 @@ describe('Siege Field wave 17: every ghost arc says what changed', () => {
     expect(fresh).not.toContain('Last shots, newest first');
   });
 });
+
+describe('Siege Field wave 18: the Test Range gets the same instruments', () => {
+  it('beads the fired arc by the second and rings its apex', () => {
+    const src = source();
+    const range = src.slice(src.indexOf('function buildRangeScene'), src.indexOf('// The build bay used to float'));
+    expect(range).toContain('while (second <= 12 && Number(q1.t) >= second) {');
+    expect(range).toContain('var apRing = new THREE.Mesh(');
+    expect(range).toContain("apLabel.draw((m.apexWord || 'apex ') + Math.round(Number(m.apex) || apPt.y) + (m.metresWord || ' m'));");
+  });
+
+  it('shows none of it before the shot is revealed, so the prediction stands', () => {
+    const src = source();
+    const range = src.slice(src.indexOf('function buildRangeScene'), src.indexOf('// The build bay used to float'));
+    const gate = range.indexOf('if (showPath) {\n      var instR');
+    expect(gate).toBeGreaterThan(0);
+    // showPath is itself valid && revealed, which is the existing contract.
+    expect(range).toContain('var showPath = valid && revealed && path.length > 1;');
+  });
+
+  it('drops the ground shadows the Siege Field uses, which have no ground here', () => {
+    const src = source();
+    const range = src.slice(src.indexOf('function buildRangeScene'), src.indexOf('// The build bay used to float'));
+    expect(range).not.toContain('beadShade');
+    expect(range).toContain('// No bead shadows here: the Siege Field has real ground for a shadow to');
+  });
+
+  it('takes the words from the tool rather than hard-coding English in the bay', () => {
+    const src = source();
+    expect(src).toContain("apexWord: __alloT('stem.machinelab.scene_apex_mark', 'apex '),");
+    expect(src).toContain("metresWord: __alloT('stem.machinelab.scene_metres', ' m'),");
+  });
+
+  it('still gives the apex as text in the range readouts', () => {
+    const html = renderTool('machineLab', state({ view: 'range' }));
+    expect(html).toContain('Apex');
+  });
+});

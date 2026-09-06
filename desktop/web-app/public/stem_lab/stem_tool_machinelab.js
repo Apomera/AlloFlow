@@ -2096,6 +2096,57 @@ window.StemLab = window.StemLab || {
       box(0.08, 1.7, 0.08, flagX, 0.85, flagZ, colors.load);
       box(0.7, 0.34, 0.06, flagX + 0.34, 1.5, flagZ, colors.load, true);
     }
+    // Seconds on the arc, and the apex marked where it happens: the same two
+    // instruments the Siege Field carries, in the view that is ABOUT the
+    // flight. Built with the arc, so they appear only once the shot is
+    // revealed and never answer the prediction prompt early.
+    if (showPath) {
+      var instR = Math.max(0.11, maxX * 0.005);
+      var instCol = contrast ? 0xffff00 : 0xfde68a;
+      var beadMat = new THREE.MeshBasicMaterial({ color: instCol, transparent: true, opacity: 0.95, fog: false });
+      var beadGeo = new THREE.SphereGeometry(instR, 10, 8);
+      var second = 1;
+      for (var bp = 1; bp < path.length && second <= 12; bp++) {
+        var q0 = path[bp - 1], q1 = path[bp];
+        if (q0.t == null || q1.t == null) break;
+        while (second <= 12 && Number(q1.t) >= second) {
+          var bf = Math.max(0, Math.min(1, (second - Number(q0.t)) / Math.max(1e-6, Number(q1.t) - Number(q0.t))));
+          var bx = (Number(q0.x) || 0) + (((Number(q1.x) || 0) - (Number(q0.x) || 0)) * bf);
+          var by = (Number(q0.y) || 0) + (((Number(q1.y) || 0) - (Number(q0.y) || 0)) * bf);
+          var bz = (Number(q0.z) || 0) + (((Number(q1.z) || 0) - (Number(q0.z) || 0)) * bf);
+          var bead = new THREE.Mesh(beadGeo, beadMat);
+          bead.position.set(bx, Math.max(0.1, by), bz);
+          S.model.add(bead);
+          second++;
+        }
+      }
+      // No bead shadows here: the Siege Field has real ground for a shadow to
+      // fall on, and this bay has an abstract grid, where a 0.6 m disc at 100 m
+      // is two pixels of nothing.
+      // The apex: a ring on the arc, a dashed drop to the ground it is
+      // measured from, and the number the readouts already give.
+      var apI = 0;
+      for (var ai = 1; ai < path.length; ai++) if ((Number(path[ai].y) || 0) > (Number(path[apI].y) || 0)) apI = ai;
+      if (apI > 0 && apI < path.length - 1 && (Number(path[apI].y) || 0) > 1) {
+        var apPt = worldPoint(path[apI]);
+        line([new THREE.Vector3(apPt.x, 0.04, apPt.z), apPt], instCol, 0.55, true);
+        var apRing = new THREE.Mesh(
+          new THREE.TorusGeometry(Math.max(0.2, maxX * 0.009), Math.max(0.03, maxX * 0.0016), 6, 16),
+          new THREE.MeshBasicMaterial({ color: instCol, transparent: true, opacity: 0.9, fog: false })
+        );
+        apRing.rotation.x = Math.PI / 2;
+        apRing.position.copy(apPt);
+        S.model.add(apRing);
+        var apLabel = makeLabelSprite(THREE, Math.max(1.1, maxX * 0.03), contrast ? '#ffffff' : '#fde68a', true);
+        if (apLabel) {
+          apLabel.draw((m.apexWord || 'apex ') + Math.round(Number(m.apex) || apPt.y) + (m.metresWord || ' m'));
+          apLabel.sprite.position.set(apPt.x, apPt.y + Math.max(1, maxY * 0.14), apPt.z);
+          apLabel.sprite.visible = true;
+          S.model.add(apLabel.sprite);
+        }
+      }
+    }
+
     // Sized to be SEEN: at least ~1% of the lane, so a 100 m throw shows a
     // 1 m marker rather than a true-scale speck. The graph beside it, not
     // this sphere, is the measurement.
@@ -7249,6 +7300,8 @@ window.StemLab = window.StemLab || {
           valid: rangeValid,
           reveal: revealMetrics,
           launchElevation: d.launchElevation,
+          apexWord: __alloT('stem.machinelab.scene_apex_mark', 'apex '),
+          metresWord: __alloT('stem.machinelab.scene_metres', ' m'),
           projDiameter: d.projDiameter,
           dark: isDark, contrast: isContrast
         });
