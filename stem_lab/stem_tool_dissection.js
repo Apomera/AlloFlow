@@ -17053,7 +17053,23 @@ var d = labToolData.dissection || {};
                     if (!d.quizMode && !d.annotateMode && !d.rulerMode && techniquePointerActive && activeInstrument === 'probe') {
                       if (beginProbeDrag(e)) return;
                       if ((d.canvasZoom || 1) <= 1.01) {
-                        if (procedureToolReadinessData('probe', currentProcedure).safeToAct) setProcedureFeedback('Move the probe tip onto a visible structure before tracing.', 'caution');
+                        if (procedureToolReadinessData('probe', currentProcedure).safeToAct) {
+                          // Reproduced on a touch screen at the inspect step: a student drags on a
+                          // structure the tool itself reports as hovered (tympanum), and is told to
+                          // "move the probe tip onto a visible structure before tracing" - the thing
+                          // they just did. Doing it again gives the same line and records nothing,
+                          // because beginProbeDrag needs two pins before tracing exists at all, and
+                          // pins are placed much later in the protocol. The step is committed by a
+                          // press and release, which works on the same pixel. So the message named a
+                          // cause that was not the cause and pointed at an action that was not yet
+                          // available. Same family as the round 30 tap coaching, but worse: following
+                          // this one verbatim reproduced it. Only the pre-pins case changes; once
+                          // tracing is genuinely available the original wording is right.
+                          setProcedureFeedback((currentProcedure.pins || []).length < 2
+                            ? 'Press and release on a visible structure to record it. Probe tracing needs two pins in place and unlocks later in the protocol.'
+                            : 'Move the probe tip onto a visible structure before tracing.',
+                            (currentProcedure.pins || []).length < 2 ? 'working' : 'caution');
+                        }
                         return;
                       }
                       canvas._suppressToolClick = false;

@@ -314,3 +314,9 @@ Two of the four had no guard at all behind the disabled attribute, which is what
 
 Genuinely unavailable controls are left disabled: a zoom button at its limit, or a study set with nothing in it, has nothing to act on. That is not the same thing as a locked answer.
 
+## Playback that narrated twice
+
+September 6, 2026. During guided pathway playback every auto-advance already announces the step through the tool's announcer, as "Step 3, Hippocampus" followed by the step's description, and the manual previous and next buttons do the same. The progress counter beside the transport was also a live region, so each step produced a second announcement, a bare "3 of 12", on top of the first, every 0.9 to 2.6 seconds for as long as playback ran.
+
+The counter is still on screen; it just stops talking. Nothing is lost because the explicit announcement carries the step number and the label already. A test pins that the counter is not live and that the auto-advance still announces, and that no live region sits inside the timer-driven panel at all. Every other live region in the tool changes on a user action, a filter, a slider or a load, which is what live regions are for.
+

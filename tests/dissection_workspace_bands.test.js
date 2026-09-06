@@ -1049,4 +1049,22 @@ describe('dissection workspace bands', () => {
     // One derivation of the message: it is built once and both the guard and the write use it.
     expect(source.split('Projected cutting path clear and aligned with the teaching corridor.').length - 1).toBe(1);
   }, 60_000);
+
+  // 2026-09-06 round 33. Reproduced on a touch screen at the inspect step: a student drags on a
+  // structure the tool itself reports as hovered (the frog's tympanum) and is told to "move the
+  // probe tip onto a visible structure before tracing" - what they just did. Doing it again gives
+  // the same line and records nothing, because beginProbeDrag needs two pins before tracing exists
+  // and pins come much later in the protocol; the step commits through a press and release, which
+  // works on the same pixel. So the message named a cause that was not the cause and pointed at an
+  // action that was not available. Following it verbatim reproduced it. Behaviour is covered in
+  // tests/e2e/69-dissection-pointer-path.spec.ts; this pins the wording in the fast suite.
+  it.each(DISSECTION_PATHS)('tells a dragging probe user the gesture that works in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain("setProcedureFeedback((currentProcedure.pins || []).length < 2");
+    expect(source).toContain("'Press and release on a visible structure to record it. Probe tracing needs two pins in place and unlocks later in the protocol.'");
+    // The old unconditional wording is gone; the same sentence survives only for the case it is
+    // actually true in, once tracing is genuinely available.
+    expect(source).not.toContain("if (procedureToolReadinessData('probe', currentProcedure).safeToAct) setProcedureFeedback('Move the probe tip onto a visible structure before tracing.', 'caution');");
+    expect(source.split('Move the probe tip onto a visible structure before tracing.').length - 1, 'kept for the post-pins case only').toBe(1);
+  }, 60_000);
 });

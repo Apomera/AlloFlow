@@ -11402,7 +11402,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("button", { type: "button", "aria-label": t('stem.brainatlas.d3_previous_pathway_step', "Previous pathway step"), onClick: function () { stepBrainAtlas3DPathway(-1); } }, "\u2190"),
                     React.createElement("button", { type: "button", className: "brainatlas-3d-pathway-play", "data-brainatlas-3d-pathway-play": "true", "aria-pressed": brain3DPathwayPlaying ? "true" : "false", onClick: toggleBrainAtlas3DPathwayPlayback }, brain3DPathwayPlaying ? "Pause" : "Play"),
                     React.createElement("button", { type: "button", "aria-label": t('stem.brainatlas.d3_next_pathway_step', "Next pathway step"), onClick: function () { stepBrainAtlas3DPathway(1); } }, "\u2192"),
-                    React.createElement("span", { className: "brainatlas-3d-pathway-progress", "aria-live": "polite" }, (brain3DPathwayStep + 1) + " / " + brain3DPathwayInfo.steps.length),
+                    React.createElement("span", { className: "brainatlas-3d-pathway-progress", "data-brainatlas-pathway-progress": "true" }, (brain3DPathwayStep + 1) + " / " + brain3DPathwayInfo.steps.length),
                     React.createElement("select", { className: "brainatlas-3d-pathway-speed", value: brain3DPathwaySpeed, "aria-label": t('stem.brainatlas.d3_pathway_playback_speed', "Pathway playback speed"), onChange: function (event) { setBrainAtlas3DPathwaySpeed(event.target.value); } },
                       React.createElement("option", { value: 2600 }, t('stem.brainatlas.d3_slow', "Slow")),
                       React.createElement("option", { value: 1600 }, t('stem.brainatlas.d3_standard', "Standard")),

@@ -241,3 +241,64 @@ test('a touch drag cuts too, once the instrument may act', async () => {
     await browser.close();
   }
 });
+
+test('the probe tells a dragging student something that works', async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({
+    viewport: { width: 420, height: 900 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2,
+  });
+  const page = await context.newPage();
+  try {
+    await harness.mount(page, {}, undefined, { expectCanvas: false });
+    await page.waitForSelector('[data-diss-canvas]', { timeout: 30000 });
+    await clickByText(page, 'Align to ventral view');
+    expect(await reachPerform(page, 'inspect'), 'reach the inspect step').toBe(true);
+    const box = await canvasBox(page);
+
+    // Find a point the tool itself reports as a visible structure - the thing the old message
+    // asked the student to do, which it then refused anyway.
+    let target: { fx: number; fy: number } | null = null;
+    for (let row = 0; row <= 10 && !target; row++) {
+      for (let col = 0; col <= 6 && !target; col++) {
+        const fx = 0.32 + (0.36 * col) / 6;
+        const fy = 0.24 + (0.52 * row) / 10;
+        await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
+        await page.waitForTimeout(28);
+        const organ = await page.evaluate(() => ((window as any).__ctx?.toolData?.dissection || {}).hoveredOrgan || null);
+        if (organ) target = { fx, fy };
+      }
+    }
+    expect(target, 'a visible structure must exist to press on').not.toBeNull();
+
+    const cdp = await context.newCDPSession(page);
+    const x = box.x + box.width * target!.fx;
+    const y = box.y + box.height * target!.fy;
+
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    for (let step = 1; step <= 10; step++) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y + step * 6 }] });
+      await page.waitForTimeout(22);
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.waitForTimeout(800);
+
+    const afterDrag = await page.evaluate(() => {
+      const feedback = ((window as any).__ctx?.toolData?.dissection?.procedureFeedback) || {};
+      return String(feedback.message || '');
+    });
+    // The drag cannot record this step - tracing needs two pins that do not exist yet - so the
+    // message must name the gesture that CAN, not repeat the instruction the student just followed.
+    expect(afterDrag, 'must not ask again for what was just done').not.toContain('Move the probe tip onto a visible structure');
+    expect(afterDrag).toContain('Press and release');
+
+    // And that gesture must actually work, on the same pixel.
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    await page.waitForTimeout(60);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.waitForTimeout(800);
+    expect((await procedure(page)).inspected, 'the advice the lab gives must record the step').toBe(true);
+  } finally {
+    await context.close();
+    await browser.close();
+  }
+});
