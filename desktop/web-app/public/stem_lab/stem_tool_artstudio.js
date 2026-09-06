@@ -7627,7 +7627,7 @@ const d = labToolData.artStudio || {};
                 if (!recipe || !selectedPart || selectedPartLocked) return;
                 var next = P3D.applyMorphProfile ? P3D.applyMorphProfile(recipe, sel, profile) : P3D.updatePart(recipe, sel, { stretch: (profile.stretch || [1, 1, 1]).slice(), deform: Object.assign({}, profile.deform || {}) });
                 setRecipe(next);
-                if (typeof announceToSR === 'function') announceToSR('Applied ' + (profile.label || profile.name || 'custom') + ' form profile to part ' + (sel + 1) + '.');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_applied_form_profile_to_part', 'Applied {value1} form profile to part {value2}.'), { value1: (profile.label || profile.name || __alloT('stem.artstudio.sr_word_custom', 'custom')), value2: (sel + 1) }));
               }
               function saveSelectedMorphProfile() {
                 if (!selectedPart) return;
@@ -7757,14 +7757,14 @@ const d = labToolData.artStudio || {};
                       st.selectedIndex = index;
                       if (st.selectPart) st.selectPart(index);
                       if (targetPart.locked || targetPart.hidden) {
-                        if (typeof announceToSR === 'function') announceToSR('Part ' + (index + 1) + ' is ' + (targetPart.hidden ? 'hidden' : 'locked') + '. Use its part controls before transforming it.');
+                        if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(targetPart.hidden ? __alloT('stem.artstudio.sr_part_is_hidden_use_controls', 'Part {value1} is hidden. Use its part controls before transforming it.') : __alloT('stem.artstudio.sr_part_is_locked_use_controls', 'Part {value1} is locked. Use its part controls before transforming it.'), { value1: (index + 1) }));
                         return;
                       }
                       var transformKind = st.interactionMode;
                       var startField = transformKind === 'move' ? 'position' : transformKind === 'rotate' ? 'rotation' : 'stretch';
                       var start = st.recipe.parts[index][startField].slice();
                       st.drag = { kind: transformKind, x: ev.clientX, y: ev.clientY, index: index, start: start, raw: start.slice(), current: start.slice(), moved: false, mesh: findPartMesh(st.obj, index), resumeAuto: resumeAuto };
-                      if (typeof announceToSR === 'function') announceToSR('Selected part ' + (index + 1) + '. Drag to ' + transformKind + ' it.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_selected_part_drag_to', 'Selected part {value1}. Drag to {value2} it.'), { value1: (index + 1), value2: __alloT('stem.artstudio.sr_mode_' + String(transformKind).toLowerCase().replace(/[^a-z0-9]+/g, '_'), transformKind) }));
                     } else {
                       st.drag = { kind: 'orbit', x: ev.clientX, y: ev.clientY, resumeAuto: resumeAuto };
                     }
@@ -7837,7 +7837,7 @@ const d = labToolData.artStudio || {};
                     var keyboardPart = st.recipe && st.recipe.parts ? st.recipe.parts[st.selectedIndex] : null;
                     if (st.interactionMode !== 'orbit' && isTransformKey && keyboardPart && (keyboardPart.locked || keyboardPart.hidden)) {
                       event.preventDefault();
-                      if (typeof announceToSR === 'function') announceToSR('Part ' + (st.selectedIndex + 1) + ' is ' + (keyboardPart.hidden ? 'hidden' : 'locked') + '. Use its part controls before transforming it.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(keyboardPart.hidden ? __alloT('stem.artstudio.sr_part_is_hidden_use_controls', 'Part {value1} is hidden. Use its part controls before transforming it.') : __alloT('stem.artstudio.sr_part_is_locked_use_controls', 'Part {value1} is locked. Use its part controls before transforming it.'), { value1: (st.selectedIndex + 1) }));
                       return;
                     }
                     if (st.interactionMode === 'move' && st.recipe && P3D.updatePart &&
@@ -7852,7 +7852,9 @@ const d = labToolData.artStudio || {};
                       var movedRecipe = P3D.updatePart(st.recipe, st.selectedIndex, { position: movedPosition });
                       st.recipe = movedRecipe;
                       if (st.commitRecipe) st.commitRecipe(movedRecipe);
-                      if (typeof announceToSR === 'function') announceToSR('Moved part ' + (st.selectedIndex + 1) + (st.transformAxis === 'free' ? ' ' + (event.key === 'PageUp' ? 'closer' : event.key === 'PageDown' ? 'farther' : event.key.replace('Arrow', '').toLowerCase()) : ' along the ' + st.transformAxis.toUpperCase() + ' axis') + '.');
+                      if (typeof announceToSR === 'function') announceToSR(st.transformAxis === 'free'
+                    ? formatArtStudioLearningText(__alloT('stem.artstudio.sr_moved_part_direction', 'Moved part {value1} {value2}.'), { value1: (st.selectedIndex + 1), value2: __alloT('stem.artstudio.sr_dir_' + String((event.key === 'PageUp' ? 'closer' : event.key === 'PageDown' ? 'farther' : event.key.replace('Arrow', '').toLowerCase())).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (event.key === 'PageUp' ? 'closer' : event.key === 'PageDown' ? 'farther' : event.key.replace('Arrow', '').toLowerCase())) })
+                    : formatArtStudioLearningText(__alloT('stem.artstudio.sr_moved_part_along_axis', 'Moved part {value1} along the {value2} axis.'), { value1: (st.selectedIndex + 1), value2: st.transformAxis.toUpperCase() }));
                     } else if (st.interactionMode === 'rotate' && st.recipe && P3D.updatePart &&
                         (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'PageUp' || event.key === 'PageDown')) {
                       event.preventDefault();
@@ -7880,7 +7882,9 @@ const d = labToolData.artStudio || {};
                       var scaledRecipe = P3D.updatePart(st.recipe, st.selectedIndex, { stretch: scaledValues });
                       st.recipe = scaledRecipe;
                       if (st.commitRecipe) st.commitRecipe(scaledRecipe);
-                      if (typeof announceToSR === 'function') announceToSR('Scaled part ' + (st.selectedIndex + 1) + ' ' + (growPart ? 'larger' : 'smaller') + (st.transformAxis === 'free' ? '.' : ' on the ' + st.transformAxis.toUpperCase() + ' axis.'));
+                      if (typeof announceToSR === 'function') announceToSR(st.transformAxis === 'free'
+                    ? formatArtStudioLearningText(__alloT('stem.artstudio.sr_scaled_part', 'Scaled part {value1} {value2}.'), { value1: (st.selectedIndex + 1), value2: (growPart ? __alloT('stem.artstudio.sr_word_larger', 'larger') : __alloT('stem.artstudio.sr_word_smaller', 'smaller')) })
+                    : formatArtStudioLearningText(__alloT('stem.artstudio.sr_scaled_part_on_axis', 'Scaled part {value1} {value2} on the {value3} axis.'), { value1: (st.selectedIndex + 1), value2: (growPart ? __alloT('stem.artstudio.sr_word_larger', 'larger') : __alloT('stem.artstudio.sr_word_smaller', 'smaller')), value3: st.transformAxis.toUpperCase() }));
                     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                       event.preventDefault();
                       var step = event.altKey ? 0.02 : 0.12;
@@ -8035,7 +8039,7 @@ const d = labToolData.artStudio || {};
                     if (!imported || !imported.parts || !imported.parts.length) throw new Error('No valid parts');
                     upd('sculptSel', 0);
                     setRecipe(imported);
-                    if (typeof announceToSR === 'function') announceToSR('Imported ' + (imported.name || 'an editable sculpture') + ' with ' + imported.parts.length + (imported.parts.length === 1 ? ' part.' : ' parts.'));
+                    if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(imported.parts.length === 1 ? __alloT('stem.artstudio.sr_imported_sculpture_one', 'Imported {value1} with {value2} part.') : __alloT('stem.artstudio.sr_imported_sculpture_many', 'Imported {value1} with {value2} parts.'), { value1: (imported.name || __alloT('stem.artstudio.sr_word_an_editable_sculpture', 'an editable sculpture')), value2: imported.parts.length }));
                     if (typeof addToast === 'function') addToast('Sculpture model imported.', 'success');
                     finishImport();
                   } catch (e) {
@@ -8063,7 +8067,7 @@ const d = labToolData.artStudio || {};
                 if (P3D.updatePart) next = P3D.updatePart(next, index, { position: [x, y, 0] });
                 setRecipe(next);
                 upd('sculptSel', index);
-                if (typeof announceToSR === 'function') announceToSR('Added ' + shape + ' at the drop position.');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_added_shape_at_drop', 'Added {value1} at the drop position.'), { value1: __alloT('stem.artstudio.sr_shape_' + String(shape).toLowerCase().replace(/[^a-z0-9]+/g, '_'), shape) }));
               };
               var mirrorSelectedPart = function() {
                 if (!recipe || !selectedPart || !P3D.duplicatePart || !P3D.updatePart) return;
@@ -10772,9 +10776,7 @@ const d = labToolData.artStudio || {};
 
                       updateTessSelection(true);
 
-                      if (typeof announceToSR === 'function') announceToSR('Tile ' + (visibleTiles.indexOf(poly) + 1) +
-
-                        ' of ' + visibleTiles.length + ' changed to ' + clickCycleNames[nextColor] + '.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_tile_changed_to_color', 'Tile {value1} of {value2} changed to {value3}.'), { value1: (visibleTiles.indexOf(poly) + 1), value2: visibleTiles.length, value3: __alloT('stem.artstudio.sr_color_' + String(clickCycleNames[nextColor]).toLowerCase().replace(/[^a-z0-9]+/g, '_'), clickCycleNames[nextColor]) }));
 
                     }
 
@@ -12373,9 +12375,7 @@ const d = labToolData.artStudio || {};
 
                             event.preventDefault(); doBrush(keyboardCursor);
 
-                            if (typeof announceToSR === 'function') announceToSR('Stamped ' + depthLevel + ' depth at x ' +
-
-                              Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_stamped_depth_at', 'Stamped {value1} depth at x {value2}, y {value3}.'), { value1: __alloT('stem.artstudio.sr_depth_' + String(depthLevel).toLowerCase().replace(/[^a-z0-9]+/g, '_'), depthLevel), value2: Math.round(keyboardCursor.x), value3: Math.round(keyboardCursor.y) }));
 
                           }
 
@@ -12880,9 +12880,7 @@ const d = labToolData.artStudio || {};
 
                             event.preventDefault(); paintAt(keyboardCursor.x, keyboardCursor.y);
 
-                            if (typeof announceToSR === 'function') announceToSR('Stamped ' + (d.stereoAnimDrawBrush || 'near') +
-
-                              ' animation depth at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_stamped_animation_depth_at', 'Stamped {value1} animation depth at x {value2}, y {value3}.'), { value1: __alloT('stem.artstudio.sr_depth_' + String((d.stereoAnimDrawBrush || 'near')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoAnimDrawBrush || 'near')), value2: Math.round(keyboardCursor.x), value3: Math.round(keyboardCursor.y) }));
 
                           }
 

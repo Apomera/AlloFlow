@@ -56,13 +56,28 @@ describe('Art Studio screen-reader announcements reach the translator', () => {
     expect(section.sr_pixel_row_column).toBe('Pixel row {value1}, column {value2}.');
   });
 
-  it('records the announcements that still splice English words', () => {
-    const src = readFileSync(copies[0], 'utf8');
-    const concat = src.match(CONCATENATED) || [];
-    // These pick an English word with a ternary ("hidden"/"locked",
-    // "larger"/"smaller", " part."/" parts."), so each needs its own key.
-    // Lower the bound as they are done; at zero, delete this test.
-    expect(concat.length).toBeGreaterThan(0);
-    expect(concat.length).toBeLessThanOrEqual(11);
+  for (const file of copies) {
+    it(file + ' no longer builds any announcement by concatenation', () => {
+      const src = readFileSync(file, 'utf8');
+      expect(src.match(CONCATENATED) || []).toEqual([]);
+    });
+  }
+
+  it('uses full sentences where the word changes the sentence', () => {
+    const section = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.artstudio;
+    // "is hidden" / "is locked" and the singular/plural pair are separate
+    // templates, because splicing the word cannot translate.
+    expect(section.sr_part_is_hidden_use_controls).toContain('is hidden.');
+    expect(section.sr_part_is_locked_use_controls).toContain('is locked.');
+    expect(section.sr_imported_sculpture_one).toContain('{value2} part.');
+    expect(section.sr_imported_sculpture_many).toContain('{value2} parts.');
+  });
+
+  it('registers the enumerated words the announcements name', () => {
+    const section = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.artstudio;
+    expect(section.sr_color_light_gray).toBe('light gray');
+    expect(section.sr_shape_torus).toBe('torus');
+    expect(section.sr_dir_closer).toBe('closer');
+    expect(section.sr_depth_near).toBe('near');
   });
 });
