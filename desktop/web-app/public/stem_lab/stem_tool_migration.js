@@ -209,7 +209,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   }
 
   // Pill-shaped caption that stays readable over sky, map or ocean fills.
+  // Canvas text over a scene has no single background: a place name can
+  // straddle a coastline, a flyway line and an ocean in one word. A halo gives
+  // every glyph its own guaranteed ground, which is why maps have always done
+  // it. The ink must be full alpha -- a translucent ink over a perfect halo
+  // still lands around 1.7:1.
+  var MIGR_HALO_DARK = 'rgba(2,16,32,0.92)';
+  var MIGR_HALO_LIGHT = 'rgba(255,255,255,0.94)';
+  function migrHaloText(c, text, x, y, ink, isDark, lineWidth) {
+    c.save();
+    c.lineJoin = 'round';
+    c.miterLimit = 2;
+    c.lineWidth = lineWidth || 2.6;
+    c.strokeStyle = isDark ? MIGR_HALO_DARK : MIGR_HALO_LIGHT;
+    c.strokeText(text, x, y);
+    c.fillStyle = ink;
+    c.fillText(text, x, y);
+    c.restore();
+  }
+  // Relative luminance of a solid colour, for choosing readable ink over it.
+  // Returns null rather than a guess when the colour cannot be read, so the
+  // caller leaves the ink alone instead of "correcting" it on a coin flip.
+  // migrHexRgb only speaks '#rgb'/'#rrggbb' and returns an object, so rgb()
+  // and rgba() chips are parsed here too.
+  function migrLum(col) {
+    var r, g, b;
+    var hex = migrHexRgb(col);
+    if (hex) { r = hex.r; g = hex.g; b = hex.b; }
+    else {
+      var m = typeof col === 'string' && col.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+      if (!m) return null;
+      r = parseFloat(m[1]); g = parseFloat(m[2]); b = parseFloat(m[3]);
+    }
+    var f = function(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  }
+  function migrContrast(lumA, lumB) {
+    return (Math.max(lumA, lumB) + 0.05) / (Math.min(lumA, lumB) + 0.05);
+  }
   function migrChip(c, x, y, text, fg, bgCol, font) {
+    // A chip is a plate whose whole job is to be readable over an arbitrary
+    // scene, so it is painted opaque. Several callers pass migrAlpha() colours;
+    // a translucent plate takes the luminance of whatever is under it, which is
+    // both unreadable and unknowable from in here.
+    var _rgb = migrHexRgb(bgCol);
+    if (!_rgb) {
+      var _m = typeof bgCol === 'string' && bgCol.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+      if (_m) _rgb = { r: Math.round(parseFloat(_m[1])), g: Math.round(parseFloat(_m[2])), b: Math.round(parseFloat(_m[3])) };
+    }
+    if (_rgb) bgCol = 'rgb(' + _rgb.r + ',' + _rgb.g + ',' + _rgb.b + ')';
+    // Then take whichever ink actually measures higher on it. There is no
+    // threshold to get wrong: black and white cross over at a background
+    // luminance of 0.179, and a fixed guess either side of that picks the
+    // losing ink.
+    var _bgLum = migrLum(bgCol);
+    if (_bgLum != null) {
+      var _fgLum = migrLum(fg);
+      var _best = migrContrast(_bgLum, 0) >= migrContrast(_bgLum, 1) ? '#0b1220' : '#ffffff';
+      var _bestLum = _best === '#0b1220' ? migrLum('#0b1220') : migrLum('#ffffff');
+      if (_fgLum == null || migrContrast(_bgLum, _fgLum) < migrContrast(_bgLum, _bestLum)) fg = _best;
+    }
     c.save();
     c.font = font || 'bold 9px system-ui';
     var w = c.measureText(text).width + 12;
@@ -722,8 +781,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     c.textBaseline = 'middle';
     for (var di = 0; di < 4; di++) {
       var a = -angles[di];
-      c.fillStyle = di === 1 ? '#ef4444' : (isDark ? '#cbd5e1' : '#334155');
-      c.fillText(dirs[di], Math.cos(a) * (R - 13), Math.sin(a) * (R - 13));
+      migrHaloText(c, dirs[di], Math.cos(a) * (R - 13), Math.sin(a) * (R - 13),
+        di === 1 ? (isDark ? '#fca5a5' : '#991b1b') : (isDark ? '#e2e8f0' : '#1e293b'), isDark, 2.6);
     }
 
     // Wind vane
@@ -1155,16 +1214,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     [[-106.5, 37.7], [-104.5, 33.5], [-103.0, 29.5], [-99.5, 27.5], [-97.1, 25.9]]
   ];
   // Place labels, positioned by real coordinates rather than by eye.
+  // These are painted with fillText, which no accessibility or i18n sweep in
+  // this repo reads, so they sat in English on every locale's map. Country and
+  // sea names have real exonyms and belong in the packs.
   var GEO_PLACES = [
-    { text: 'CANADA', lon: -105, lat: 57, kind: 'land' },
-    { text: 'UNITED STATES', lon: -98, lat: 39, kind: 'land' },
-    { text: 'MEXICO', lon: -102, lat: 23, kind: 'land' },
-    { text: 'ALASKA', lon: -152, lat: 65, kind: 'land' },
-    { text: 'Gulf of Mexico', lon: -90, lat: 25, kind: 'water' },
-    { text: 'Hudson Bay', lon: -85.5, lat: 59.5, kind: 'water' },
-    { text: 'Atlantic Ocean', lon: -55, lat: 33, kind: 'water' },
-    { text: 'Pacific Ocean', lon: -140, lat: 38, kind: 'water' },
-    { text: 'Caribbean Sea', lon: -75, lat: 14.5, kind: 'water' }
+    { text: 'CANADA', key: 'place_canada', lon: -105, lat: 57, kind: 'land' },
+    { text: 'UNITED STATES', key: 'place_united_states', lon: -98, lat: 39, kind: 'land' },
+    { text: 'MEXICO', key: 'place_mexico', lon: -102, lat: 23, kind: 'land' },
+    { text: 'ALASKA', key: 'place_alaska', lon: -152, lat: 65, kind: 'land' },
+    { text: 'Gulf of Mexico', key: 'place_gulf_of_mexico', lon: -90, lat: 25, kind: 'water' },
+    { text: 'Hudson Bay', key: 'place_hudson_bay', lon: -85.5, lat: 59.5, kind: 'water' },
+    { text: 'Atlantic Ocean', key: 'place_atlantic_ocean', lon: -55, lat: 33, kind: 'water' },
+    { text: 'Pacific Ocean', key: 'place_pacific_ocean', lon: -140, lat: 38, kind: 'water' },
+    { text: 'Caribbean Sea', key: 'place_caribbean_sea', lon: -75, lat: 14.5, kind: 'water' }
   ];
 
   // ── Per-species routes, in real [lon, lat] ────────────────────────────────
@@ -1208,9 +1270,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   var MAP_RANGES = GEO_RANGES.map(function(r) {
     return { pts: MIG_PROJ.ring(r.pts), step: r.step, hgt: r.hgt };
   });
+  // A tiny helper so canvas code can translate without reaching for a t() that
+  // is not in its scope: the frame loops read the translator off _liveVals.
+  function migrT(tr, key, fallback) {
+    return tr ? tr('stem.migration.' + key, fallback) : fallback;
+  }
   var MAP_PLACES = GEO_PLACES.map(function(p) {
     var xy = MIG_PROJ.pt(p.lon, p.lat);
-    return { text: p.text, x: xy[0], y: xy[1], kind: p.kind };
+    return { text: p.text, key: p.key, x: xy[0], y: xy[1], kind: p.kind };
   });
   // Species routes in design space, plus the point at which an off-map route
   // leaves the sheet, so the "carries on to ..." marker can sit on the edge.
@@ -2705,16 +2772,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             windParts.push({ x: Math.random() * W, y: Math.random() * H, speed: 0.5 + Math.random() * 1.5, size: 1 + Math.random() });
           }
 
+          var _vfStillSig = null;
           function frame() {
             // Always read birds from the ref so Auto-Form V / Scatter take effect immediately
             birds = birdsRef.current || birds;
-            if (reducedMotionRef.current) {
-              c.clearRect(0, 0, W, H);
-              renderFrame(c, W, H, birds, vortices, windParts, 0);
-              return;
-            }
             // Read fresh values from live ref (updated every React render)
             var lv = _liveVals.current;
+            if (reducedMotionRef.current) {
+              // Keep the loop's slot and stop the clock. This used to return
+              // outright, which killed the loop: the canvas never repainted
+              // again, so every control on the tab went inert for precisely
+              // the people who asked for less motion.
+              var _vfSig = [lv.isDark, lv.birdCount, lv.simSpeed].join('|');
+              if (_vfStillSig !== _vfSig) {
+                _vfStillSig = _vfSig;
+                if (birdsRef.current && birdsRef.current.length !== lv.birdCount) {
+                  birdsRef.current = makeFlock(lv.birdCount);
+                  birds = birdsRef.current;
+                }
+                c.clearRect(0, 0, W, H);
+                renderFrame(c, W, H, birds, vortices, windParts, 0);
+              }
+              animRef.current = requestAnimationFrame(frame);
+              return;
+            }
             var simSpeed = lv.simSpeed;
             var isDark = lv.isDark;
             // Dynamically update bird count if changed
@@ -2945,11 +3026,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
               // Leader star
               if (isLead) {
-                c.fillStyle = isDark ? '#fbbf24' : '#b45309';
                 c.font = 'bold 11px system-ui';
                 c.textAlign = 'center';
                 c.textBaseline = 'middle';
-                c.fillText('\u2605', db.x, barY - 6);
+                // Sits over whichever bird happens to be leading, so it gets a
+                // halo rather than a colour picked for one background.
+                migrHaloText(c, '\u2605', db.x, barY - 6, isDark ? '#fde68a' : '#7c2d12', isDark, 2.6);
                 c.textBaseline = 'alphabetic';
               }
             }
@@ -3517,9 +3599,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             return { vx: vx, vy: vy };
           }
 
+          var _wcStillSig = null;
           function frame() {
-            timeRef.current += 0.016;
             var lv = _liveVals.current;
+            if (reducedMotionRef.current) {
+              var _wcSig = [lv.isDark, lv.showStreamlines, lv.windDir, lv.windSpeed,
+                (objectsRef.current || []).length, (_wcBirdsRef.current || []).length].join('|');
+              if (_wcStillSig === _wcSig) { animRef.current = requestAnimationFrame(frame); return; }
+              _wcStillSig = _wcSig;
+            } else {
+              timeRef.current += 0.016;
+            }
             // Shadow the frozen render-scope copies with the live ones.
             var isDark = lv.isDark;
             var showStreamlines = lv.showStreamlines;
@@ -4082,6 +4172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var scaleY = mapScale;
 
           var _flyIdlePainted = false;
+          var _rtStillSig = null;
           function frame() {
             // The _rtInit guard means this closure is the FIRST render's, so
             // anything read from render scope is frozen at mount. Shadow the
@@ -4094,7 +4185,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // previously the idle guard read a frozen null and never did.
             if (!selectedSpecies && _flyIdlePainted) { animRef.current = requestAnimationFrame(frame); return; }
             _flyIdlePainted = !selectedSpecies;
-            timeRef.current += 0.016;
+            if (reducedMotionRef.current) {
+              var _rtSig = [lv.isDark, selectedSpecies].join('|');
+              if (_rtStillSig === _rtSig) { animRef.current = requestAnimationFrame(frame); return; }
+              _rtStillSig = _rtSig;
+              // Park the clock mid-route rather than at zero: the bird rides
+              // this value, and at zero it sits on the start line with the
+              // journey undrawn.
+              timeRef.current = 5.5;
+            } else {
+              timeRef.current += 0.016;
+            }
             c.clearRect(0, 0, W, H);
 
             // ── Ocean ──
@@ -4146,7 +4247,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             c.font = '7px system-ui';
             c.textBaseline = 'alphabetic';
-            c.fillStyle = isDark ? 'rgba(186,230,253,0.42)' : 'rgba(3,105,161,0.42)';
+            // Was 0.42 alpha, which no halo can rescue: a translucent ink over
+            // a solid halo still measures under 2:1.
+            c.fillStyle = isDark ? '#bae6fd' : '#02486e';
             // Parallel labels sit ON their own arc at a fixed longitude out in
             // the open Pacific, with a halo so they read over water or land.
             // Labelling them at the canvas edge is geometrically correct and
@@ -4159,7 +4262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             function migrLabelLon(lat) { return lat >= 60 ? -52 : -152; }
             function migrGratLabel(txt, px, py) {
               c.lineWidth = 2.4;
-              c.strokeStyle = isDark ? 'rgba(2,20,40,0.75)' : 'rgba(255,255,255,0.80)';
+              c.strokeStyle = isDark ? MIGR_HALO_DARK : MIGR_HALO_LIGHT;
               c.strokeText(txt, px, py);
               c.fillText(txt, px, py);
             }
@@ -4295,14 +4398,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.textBaseline = 'alphabetic';
             for (var pl = 0; pl < MAP_PLACES.length; pl++) {
               var plc = MAP_PLACES[pl];
+              var plcInk;
               if (plc.kind === 'water') {
                 c.font = 'italic 7.5px system-ui';
-                c.fillStyle = isDark ? 'rgba(125,211,252,0.55)' : 'rgba(3,105,161,0.50)';
+                plcInk = isDark ? '#bae6fd' : '#02486e';
               } else {
                 c.font = 'bold 8px system-ui';
-                c.fillStyle = isDark ? 'rgba(203,213,225,0.50)' : 'rgba(71,85,105,0.48)';
+                plcInk = isDark ? '#e2e8f0' : '#1e293b';
               }
-              c.fillText(plc.text, plc.x * scaleX, plc.y * scaleY);
+              migrHaloText(c, migrT(lv.t, plc.key, plc.text), plc.x * scaleX, plc.y * scaleY, plcInk, isDark, 3.2);
             }
 
             // Arc-length sample along a flyway polyline. u in [0,1] returns the
@@ -4404,7 +4508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // four labels never stack, and kept legible over land or water.
               var lp = flywayPoint(pts, 0.24 + fi * 0.055);
               migrChip(c, lp.x, lp.y,
-                fw.charAt(0).toUpperCase() + fw.slice(1),
+                migrT(lv.t, 'flyway_' + fw, fw.charAt(0).toUpperCase() + fw.slice(1)),
                 isDark ? '#f8fafc' : '#0f172a',
                 migrAlpha(col.stroke, isActive ? 0.62 : 0.30),
                 'bold ' + (isActive ? 9 : 8) + 'px system-ui');
@@ -4626,7 +4730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.font = 'bold 11px system-ui';
             c.textAlign = 'left';
             c.textBaseline = 'alphabetic';
-            c.fillText('\uD83D\uDDFA\uFE0F North American Flyways', 17, H - 17);
+            c.fillText('\uD83D\uDDFA\uFE0F ' + migrT(lv.t, 'north_american_flyways', 'North American Flyways'), 17, H - 17);
 
             animRef.current = requestAnimationFrame(frame);
           }
@@ -5200,12 +5304,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           canvas.style.height = H + 'px';
           c.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+          var _arStillSig = null;
           function frame() {
-            timeRef.current += 0.016;
-            c.clearRect(0, 0, W, H);
-
             // Read fresh values from live ref
             var lv = _liveVals.current;
+            if (reducedMotionRef.current) {
+              var _arSig = [lv.isDark, lv.aoa, lv.selectedWing].join('|');
+              if (_arStillSig === _arSig) { animRef.current = requestAnimationFrame(frame); return; }
+              _arStillSig = _arSig;
+            } else {
+              timeRef.current += 0.016;
+            }
+            c.clearRect(0, 0, W, H);
             var isDark = lv.isDark;
             var _aoa = lv.aoa;
             var _selWing = lv.selectedWing;
@@ -5471,18 +5581,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var dragLen = Math.min(78, 9 + _cd * 300);
             if (_cl > 0.01) {
               migrArrow(c, copPt.x, copPt.y, copPt.x, copPt.y - liftLen, '#2563eb', 3, 9);
-              c.fillStyle = '#2563eb';
               c.font = 'bold 10px system-ui';
               c.textAlign = 'center';
               c.textBaseline = 'alphabetic';
-              c.fillText(t('stem.migration.lift_arrow', 'LIFT'), copPt.x, copPt.y - liftLen - 12);
+              // These land on the airfoil, its pressure field or the sky
+              // depending on the angle of attack, so they get a halo rather
+              // than a colour chosen for one of those.
+              migrHaloText(c, t('stem.migration.lift_arrow', 'LIFT'), copPt.x, copPt.y - liftLen - 12, isDark ? '#93c5fd' : '#1e40af', isDark, 3);
             }
             if (_cd > 0.001) {
               migrArrow(c, copPt.x, copPt.y, copPt.x + dragLen, copPt.y, '#dc2626', 3, 9);
-              c.fillStyle = '#dc2626';
               c.font = 'bold 10px system-ui';
               c.textAlign = 'left';
-              c.fillText(t('stem.migration.drag_arrow', 'DRAG'), copPt.x + dragLen + 8, copPt.y + 4);
+              migrHaloText(c, t('stem.migration.drag_arrow', 'DRAG'), copPt.x + dragLen + 8, copPt.y + 4, isDark ? '#fca5a5' : '#991b1b', isDark, 3);
             }
             // Resultant, so lift and drag read as components of one force
             if (_cl > 0.01 && _cd > 0.001) {
@@ -5639,11 +5750,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.font = '8px system-ui';
             c.textAlign = 'center';
-            c.fillText('Angle of Attack (\u00B0)', graphX + graphW / 2, graphY + graphH + 22);
+            c.fillText(migrT(lv.t, 'angle_of_attack_axis', 'Angle of Attack') + ' (\u00B0)', graphX + graphW / 2, graphY + graphH + 22);
             c.save();
             c.translate(graphX - 14, graphY + graphH / 2);
             c.rotate(-Math.PI / 2);
-            c.fillText('Coefficient', 0, 0);
+            c.fillText(migrT(lv.t, 'coefficient_axis', 'Coefficient'), 0, 0);
             c.restore();
 
             // Legend
@@ -5652,14 +5763,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.font = '8px system-ui';
             c.textAlign = 'left';
-            c.fillText('Lift (C\u2097)', graphX + 16, graphY + 8);
+            c.fillText(migrT(lv.t, 'lift_series', 'Lift') + ' (C\u2097)', graphX + 16, graphY + 8);
             c.fillStyle = '#ef4444';
             c.fillRect(graphX + 4, graphY + 16, 8, 2);
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
             // \u2091 is subscript e: the legend read "C_e" for the drag
             // coefficient, which is C_d. Unicode has no subscript d.
-            c.fillText('Drag (Cd \u00D7 10)', graphX + 16, graphY + 20);
-            c.strokeStyle = '#22c55e';
+            c.fillText(migrT(lv.t, 'drag_series', 'Drag') + ' (Cd \u00D7 10)', graphX + 16, graphY + 20);
+            // Was one #22c55e for both themes. As TEXT on the light panel that
+            // is 2.28:1, so this series carries a value per theme.
+            var _ldCol = isDark ? '#4ade80' : '#15803d';
+            c.strokeStyle = _ldCol;
             c.lineWidth = 1.6;
             c.setLineDash([4, 3]);
             c.beginPath();
@@ -5667,7 +5781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.lineTo(graphX + 13, graphY + 27);
             c.stroke();
             c.setLineDash([]);
-            c.fillStyle = '#22c55e';
+            c.fillStyle = _ldCol;
             c.fillText('L/D \u00F7 10', graphX + 16, graphY + 30);
 
             // ── Lift-to-drag curve, and its true maximum ────────────────
@@ -5682,7 +5796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               if (firstPt) { c.moveTo(plotX3, plotY3); firstPt = false; }
               else c.lineTo(plotX3, plotY3);
             }
-            c.strokeStyle = '#22c55e';
+            c.strokeStyle = _ldCol;
             c.lineWidth = 1.6;
             c.setLineDash([4, 3]);
             c.stroke();
@@ -5692,7 +5806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var _best = migrBestLD(_wing);
             var bestX = graphX + (_best.angle / 20) * graphW;
             var bestY = graphY + graphH - ((_best.ld / 10) / AXIS_MAX) * graphH;
-            c.strokeStyle = migrAlpha('#22c55e', 0.5);
+            c.strokeStyle = migrAlpha(_ldCol, 0.5);
             c.lineWidth = 1;
             c.setLineDash([2, 3]);
             c.beginPath();
@@ -5702,15 +5816,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.setLineDash([]);
             c.beginPath();
             c.arc(bestX, bestY, 3.4, 0, Math.PI * 2);
-            c.fillStyle = '#22c55e';
+            c.fillStyle = _ldCol;
             c.fill();
             c.strokeStyle = isDark ? '#0b1120' : '#ffffff';
             c.lineWidth = 1.2;
             c.stroke();
-            c.fillStyle = '#22c55e';
+            // The marker's label is text on the panel, so it takes the same
+            // per-theme green as the series it belongs to.
+            c.fillStyle = _ldCol;
             c.font = 'bold 7px system-ui';
             c.textAlign = 'center';
-            c.fillText('Best L/D ' + _best.ld.toFixed(1) + ' @ ' + _best.angle.toFixed(1) + '\u00B0',
+            c.fillText(migrT(lv.t, 'best_ld_marker', 'Best L/D') + ' ' + _best.ld.toFixed(1) + ' @ ' + _best.angle.toFixed(1) + '\u00B0',
               Math.min(graphX + graphW - 34, bestX + 30), bestY - 6);
 
             animRef.current = requestAnimationFrame(frame);
@@ -5951,8 +6067,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             });
           }
 
+          var _nvStillSig = null;
           function frame() {
-            navTimeRef.current += 0.016;
+            if (reducedMotionRef.current) {
+              var _nvLv = _liveVals.current;
+              var _nvSig = [_nvLv.isDark, _nvLv.tab].join('|');
+              if (_nvStillSig === _nvSig) { navAnimRef.current = requestAnimationFrame(frame); return; }
+              _nvStillSig = _nvSig;
+            } else {
+              navTimeRef.current += 0.016;
+            }
             var t2 = navTimeRef.current;
             c.clearRect(0, 0, W, H);
 
@@ -6099,7 +6223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.beginPath();
             c.arc(polarisX, polarisY, 3, 0, Math.PI * 2);
             c.fill();
-            migrChip(c, polarisX, polarisY - 15, 'Polaris', '#0f172a', 'rgba(253,230,138,0.92)', 'bold 8px system-ui');
+            migrChip(c, polarisX, polarisY - 15, migrT(_liveVals.current.t, 'polaris', 'Polaris'), '#0f172a', 'rgba(253,230,138,0.92)', 'bold 8px system-ui');
 
             // ── Moon ──
             var moonX = W * 0.9;
@@ -6188,7 +6312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillStyle = 'rgba(255,255,255,0.5)';
             c.font = '9px system-ui';
             c.textAlign = 'left';
-            c.fillText('Nocturnal migration \u2014 birds navigate by stars, magnetic field, and moon', 10, H - 4);
+            c.fillText(migrT(_liveVals.current.t, 'nocturnal_caption', 'Nocturnal migration \u2014 birds navigate by stars, magnetic field, and moon'), 10, H - 4);
 
             navAnimRef.current = requestAnimationFrame(frame);
           }
