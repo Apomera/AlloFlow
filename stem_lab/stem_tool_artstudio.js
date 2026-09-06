@@ -446,7 +446,19 @@ window.StemLab = window.StemLab || {
     ensureSourcebook: ensureArtistSourcebookProviders
   };
 
-  window.StemLab.registerTool('artStudio', {
+  window.StemLab.artStudioPure = Object.assign(window.StemLab.artStudioPure || {}, {
+  // Validates a sculpture handed back by Print Lab. Returns null for anything
+  // that is not the expected schema with a normalisable primitive recipe.
+  readPendingSculpt: function (candidate) {
+    var pending = arguments.length ? candidate : window.__alloArtStudioPendingSculpt;
+    if (!pending || typeof pending !== 'object' || pending.schema !== 'alloflow-artstudio-sculpt/1' || !pending.recipe || typeof pending.recipe !== 'object') return null;
+    var P = window.AlloModules && window.AlloModules.Prim3D;
+    var clean = P && typeof P.normalizeRecipe === 'function' ? P.normalizeRecipe(pending.recipe) : null;
+    if (!clean || !Array.isArray(clean.parts) || !clean.parts.length) return null;
+    return { id: String(pending.id || '').slice(0, 80), recipe: clean };
+  }
+});
+window.StemLab.registerTool('artStudio', {
     icon: '\uD83D\uDD8C\uFE0F',
     label: "Art & Design Studio",
     desc: "Explore color theory, watercolor, pixel art, symmetry, spirographs, fractals, generative design, and WCAG contrast.",
@@ -628,6 +640,15 @@ const d = labToolData.artStudio || {};
               _stereoAnimRef.timer = null;
               _stereoAnimRef.frames = [];
             };
+          }, []);
+          // A sculpture returning from Print Lab (2026-09-05). Print Lab edits the
+          // same primitive recipe, so it comes back as-is and opens the sculpt tab.
+          React.useEffect(function () {
+            var pending = window.StemLab && window.StemLab.artStudioPure && window.StemLab.artStudioPure.readPendingSculpt ? window.StemLab.artStudioPure.readPendingSculpt() : null;
+            if (!pending) return;
+            delete window.__alloArtStudioPendingSculpt;
+            updMany({ sculptRecipe: pending.recipe, sculptSel: 0, sculptUndo: d.sculptRecipe ? [d.sculptRecipe] : [], sculptRedo: [], tab: 'sculpt3d' });
+            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(pending.recipe.parts.length === 1 ? __alloT('stem.artstudio.sr_sculpture_returned_from_print_lab_one', 'Sculpture returned from Print Lab with {value1} part. Undo restores what was here before.') : __alloT('stem.artstudio.sr_sculpture_returned_from_print_lab_many', 'Sculpture returned from Print Lab with {value1} parts. Undo restores what was here before.'), { value1: pending.recipe.parts.length }));
           }, []);
           const _artistCompareIdsState = React.useState(Array.isArray(d.artistCompareIds) ? d.artistCompareIds.slice(0, 3) : []);
           const artistCompareIds = _artistCompareIdsState[0];
@@ -6676,7 +6697,7 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-col lg:flex-row gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("canvas", { tabIndex: 0, ref: wheelRef, width: 320, height: 320, role: "img",
-                  'aria-label': 'Interactive color wheel. Hue ' + (d.hue || 0) + ' degrees, saturation ' + (d.sat !== undefined ? d.sat : 100) + ' percent, lightness ' + (d.lit !== undefined ? d.lit : 50) + ' percent.',
+                  'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_interactive_color_wheel_hue_degrees_saturation', 'Interactive color wheel. Hue {value1} degrees, saturation {value2} percent, lightness {value3} percent.'), { value1: (d.hue || 0), value2: (d.sat !== undefined ? d.sat : 100), value3: (d.lit !== undefined ? d.lit : 50) }),
                   'aria-describedby': "artstudio-color-wheel-help",
                   'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End",
                   className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2",
@@ -6793,7 +6814,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-600 bg-white" }),
                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
                   WATERCOLOR_PIGMENTS.map(function (swatch) {
-                    return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': 'Choose ' + swatch.label + ' pigment preset, ' + swatch.description, 'aria-pressed': (d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + ((d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
+                    return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_pigment_preset', 'Choose {value1} pigment preset, {value2}'), { value1: swatch.label, value2: swatch.description }), 'aria-pressed': (d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + ((d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
                   })
                 )
               ),
@@ -6834,7 +6855,7 @@ const d = labToolData.artStudio || {};
                 var granulationLabel = granulationValue < 34 ? 'smooth' : (granulationValue < 67 ? 'moderately granulating' : 'granulating');
                 var mobilityLabel = mobilityValue < 34 ? 'low mobility' : (mobilityValue < 67 ? 'medium mobility' : 'high mobility');
                 var character = opacityLabel + ' / ' + stainingLabel + ' / ' + granulationLabel + ' / ' + mobilityLabel;
-                return React.createElement("div", { role: "note", 'aria-label': 'Current pigment character: ' + character, className: "text-[0.6875rem] font-semibold text-teal-900 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2" },
+                return React.createElement("div", { role: "note", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_current_pigment_character', 'Current pigment character: {value1}'), { value1: character }), className: "text-[0.6875rem] font-semibold text-teal-900 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2" },
                   React.createElement("strong", null, __alloT('stem.artstudio.pigment_character', 'Pigment character: ')), character
                 );
               })(),
@@ -6859,7 +6880,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("h4", { id: "artstudio-watercolor-mixing-title", className: "text-xs font-extrabold text-amber-950" }, __alloT('stem.artstudio.watercolor_mixing_tray', 'Pigment mixing tray')),
                       React.createElement("p", { className: "text-[0.6875rem] text-amber-900" }, __alloT('stem.artstudio.watercolor_mixing_help', 'Blend two material profiles using optical absorbance.'))
                     ),
-                    React.createElement("div", { role: "img", 'aria-label': 'Mixture preview: ' + mixtureSummary, title: mixtureSummary, className: "ml-auto h-10 w-16 rounded-lg border-2 border-white shadow-sm", style: { background: mixture.color } })
+                    React.createElement("div", { role: "img", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_mixture_preview', 'Mixture preview: {value1}'), { value1: mixtureSummary }), title: mixtureSummary, className: "ml-auto h-10 w-16 rounded-lg border-2 border-white shadow-sm", style: { background: mixture.color } })
                   ),
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
                     React.createElement("label", { htmlFor: "artstudio-watercolor-mix-a", className: "text-[0.6875rem] font-bold text-amber-950" },
@@ -7101,7 +7122,7 @@ const d = labToolData.artStudio || {};
                     return activePal.map(function (c, i) {
 
                       var selected = pixelColor.h === c[0] && pixelColor.s === c[1] && pixelColor.l === c[2];
-                      return React.createElement("button", { "aria-label": 'Choose color: hue ' + c[0] + ' degrees, saturation ' + c[1] + ' percent, lightness ' + c[2] + ' percent', "aria-pressed": selected, key: i, onClick: function () { updMany({ pixelHue: c[0], pixelSat: c[1], pixelLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_color_hue_degrees_saturation_percent_li', 'Choose color: hue {value1} degrees, saturation {value2} percent, lightness {value3} percent'), { value1: c[0], value2: c[1], value3: c[2] }), "aria-pressed": selected, key: i, onClick: function () { updMany({ pixelHue: c[0], pixelSat: c[1], pixelLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
 
                     });
 
@@ -7276,7 +7297,7 @@ const d = labToolData.artStudio || {};
                     return activePal.map(function (c, i) {
 
                       var selected = symmetryColor.h === c[0] && symmetryColor.s === c[1] && symmetryColor.l === c[2];
-                      return React.createElement("button", { "aria-label": 'Choose color: hue ' + c[0] + ' degrees, saturation ' + c[1] + ' percent, lightness ' + c[2] + ' percent', "aria-pressed": selected, key: i, onClick: function () { updMany({ symHue: c[0], symSat: c[1], symLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_color_hue_degrees_saturation_percent_li', 'Choose color: hue {value1} degrees, saturation {value2} percent, lightness {value3} percent'), { value1: c[0], value2: c[1], value3: c[2] }), "aria-pressed": selected, key: i, onClick: function () { updMany({ symHue: c[0], symSat: c[1], symLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#ec4899' : 'rgba(255,255,255,0.6)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
 
                     });
 
@@ -8191,13 +8212,13 @@ const d = labToolData.artStudio || {};
                   React.createElement("div", null,
                     React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[0.6875rem] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from or morph a preset')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-presets-label" }, (P3D.PRESETS || []).map(function(ps) {
-                      return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": 'Preset: ' + ps.label, onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
+                      return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_preset', 'Preset: {value1}'), { value1: ps.label }), onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
                     }))
                   ),
                   React.createElement("div", null,
                     React.createElement("span", { id: "artstudio-sculpt-add-label", className: "text-[0.6875rem] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part \u2014 click, or drag it onto the preview')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-add-label" }, (P3D.SHAPES || []).map(function(shp) {
-                      return React.createElement("button", { key: shp, className: mini, draggable: true, title: 'Add or drag ' + shp, "aria-label": 'Add ' + shp + '; it can also be dragged onto the preview', onDragStart: function(event) { event.dataTransfer.setData('application/x-artstudio-shape', shp); event.dataTransfer.setData('text/plain', shp); }, onClick: function() { partOp(function(P, r) { return P.addPart(r, shp); }); upd('sculptSel', parts.length); } }, SHAPE_ICONS[shp] || shp);
+                      return React.createElement("button", { key: shp, className: mini, draggable: true, title: 'Add or drag ' + shp, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_add_it_can_also_be_dragged_onto_the_preview', 'Add {value1}; it can also be dragged onto the preview'), { value1: shp }), onDragStart: function(event) { event.dataTransfer.setData('application/x-artstudio-shape', shp); event.dataTransfer.setData('text/plain', shp); }, onClick: function() { partOp(function(P, r) { return P.addPart(r, shp); }); upd('sculptSel', parts.length); } }, SHAPE_ICONS[shp] || shp);
                     }))
                   ),
                   parts.length ? React.createElement("div", null,
@@ -8214,13 +8235,13 @@ const d = labToolData.artStudio || {};
                       React.createElement("p", { className: "mb-1 text-[0.6875rem] font-black text-violet-800" }, 'Morph selected form'),
                       React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_morph_selected_form', 'Morph selected form') }, builtInMorphProfiles.map(function(profile) {
                         var profileActive = selectedMorphSignature === morphSignature(profile);
-                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": 'Apply ' + profile.label + ' form profile', "aria-pressed": profileActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
+                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_form_profile', 'Apply {value1} form profile'), { value1: profile.label }), "aria-pressed": profileActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
                       })),
                       customMorphProfiles.length ? React.createElement("div", { className: "mt-1 flex flex-wrap gap-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_saved_custom_form_profiles', 'Saved custom form profiles') }, customMorphProfiles.map(function(profile, profileIndex) {
                         var customActive = selectedMorphSignature === morphSignature(profile);
                         return React.createElement("span", { key: profile.id || profileIndex, className: "inline-flex overflow-hidden rounded border border-fuchsia-200 bg-white" },
-                          React.createElement("button", { type: "button", className: "px-2 py-1 text-[0.625rem] font-bold " + (customActive ? 'bg-fuchsia-600 text-white' : 'text-fuchsia-700 hover:bg-fuchsia-50'), "aria-label": 'Apply saved ' + profile.label + ' form profile', "aria-pressed": customActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label),
-                          React.createElement("button", { type: "button", className: "border-l border-fuchsia-200 px-1.5 text-[0.625rem] text-fuchsia-700 hover:bg-fuchsia-50", "aria-label": 'Delete custom form profile ' + profile.label, onClick: function() { var remaining = customMorphProfiles.filter(function(_, index) { return index !== profileIndex; }); upd('sculptFormProfiles', remaining); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_deleted_form_profile', 'Deleted form profile {value1}.'), { value1: profile.label })); } }, '\u00D7')
+                          React.createElement("button", { type: "button", className: "px-2 py-1 text-[0.625rem] font-bold " + (customActive ? 'bg-fuchsia-600 text-white' : 'text-fuchsia-700 hover:bg-fuchsia-50'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_saved_form_profile', 'Apply saved {value1} form profile'), { value1: profile.label }), "aria-pressed": customActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label),
+                          React.createElement("button", { type: "button", className: "border-l border-fuchsia-200 px-1.5 text-[0.625rem] text-fuchsia-700 hover:bg-fuchsia-50", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_delete_custom_form_profile', 'Delete custom form profile {value1}'), { value1: profile.label }), onClick: function() { var remaining = customMorphProfiles.filter(function(_, index) { return index !== profileIndex; }); upd('sculptFormProfiles', remaining); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_deleted_form_profile', 'Deleted form profile {value1}.'), { value1: profile.label })); } }, '\u00D7')
                         );
                       })) : null,
                       React.createElement("div", { className: "mt-2 flex gap-1" },
@@ -8239,7 +8260,7 @@ const d = labToolData.artStudio || {};
                     React.createElement("div", { className: "flex items-center gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_mirror_copy_axis', 'Mirror copy axis') },
                       React.createElement("span", { className: "mr-1 text-[0.6875rem] font-bold text-slate-600" }, "Mirror axis:"),
                       ['x', 'y', 'z'].map(function(axis) {
-                        return React.createElement("button", { key: axis, className: mini + " min-h-[32px] px-3", "aria-label": 'Mirror across ' + axis.toUpperCase() + ' axis', "aria-pressed": sculptMirrorAxis === axis, onClick: function() { upd('sculptMirrorAxis', axis); } }, axis.toUpperCase());
+                        return React.createElement("button", { key: axis, className: mini + " min-h-[32px] px-3", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_mirror_across_axis', 'Mirror across {value1} axis'), { value1: axis.toUpperCase() }), "aria-pressed": sculptMirrorAxis === axis, onClick: function() { upd('sculptMirrorAxis', axis); } }, axis.toUpperCase());
                       })
                     ),
                     React.createElement("div", { className: "grid grid-cols-7 gap-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_tools', 'Shape tools') },
@@ -8248,7 +8269,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("button", { className: mini, title: 'Spin', "aria-label": __alloT('stem.artstudio.a11y_spin', 'Spin'), disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, 'rotation', 1, 30); }); } }, '🔄'),
                       React.createElement("button", { className: mini, title: 'Color', "aria-label": __alloT('stem.artstudio.a11y_change_color', 'Change color'), onClick: function() { partOp(function(P, r) { return P.recolorPart(r, sel); }); } }, '🎨'),
                       React.createElement("button", { className: mini, title: 'Duplicate', "aria-label": __alloT('stem.artstudio.a11y_duplicate', 'Duplicate'), onClick: function() { partOp(function(P, r) { return P.duplicatePart(r, sel); }); } }, '⧉'),
-                      React.createElement("button", { className: mini, title: 'Mirror copy on ' + sculptMirrorAxis.toUpperCase() + ' axis', "aria-label": 'Mirror copy on ' + sculptMirrorAxis.toUpperCase() + ' axis', onClick: mirrorSelectedPart }, '↔'),
+                      React.createElement("button", { className: mini, title: 'Mirror copy on ' + sculptMirrorAxis.toUpperCase() + ' axis', "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_mirror_copy_on_axis', 'Mirror copy on {value1} axis'), { value1: sculptMirrorAxis.toUpperCase() }), onClick: mirrorSelectedPart }, '↔'),
                       React.createElement("button", { className: mini, title: 'Remove part', "aria-label": __alloT('stem.artstudio.a11y_remove_part', 'Remove part'), onClick: function() { partOp(function(P, r) { return P.removePart(r, sel); }); upd('sculptSel', Math.max(0, sel - 1)); } }, '✕')
                     ),
                     selectedPart ? React.createElement("details", { className: "mt-2 rounded-xl border border-slate-200 bg-slate-50 p-2" },
@@ -8293,7 +8314,7 @@ const d = labToolData.artStudio || {};
                           ),
                           ['X', 'Y', 'Z'].map(function(axisLabel, axis) {
                             return React.createElement("label", { key: axisLabel, className: "grid grid-cols-[18px_1fr_38px] items-center gap-1 text-[0.625rem] text-slate-600" }, axisLabel,
-                              React.createElement("input", Object.assign({ type: "range", min: 0.1, max: 4, step: 0.05, value: selectedPart.stretch[axis], "aria-label": 'Morph selected part on ' + axisLabel + ' axis', disabled: selectedPartLocked, onChange: function(event) { var stretch = selectedPart.stretch.slice(); stretch[axis] = parseFloat(event.target.value); rangePartOp(function(P, r) { return P.updatePart(r, sel, { stretch: stretch }); }); } }, sculptRangeProps())),
+                              React.createElement("input", Object.assign({ type: "range", min: 0.1, max: 4, step: 0.05, value: selectedPart.stretch[axis], "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_morph_selected_part_on_axis', 'Morph selected part on {value1} axis'), { value1: axisLabel }), disabled: selectedPartLocked, onChange: function(event) { var stretch = selectedPart.stretch.slice(); stretch[axis] = parseFloat(event.target.value); rangePartOp(function(P, r) { return P.updatePart(r, sel, { stretch: stretch }); }); } }, sculptRangeProps())),
                               React.createElement("output", null, Number(selectedPart.stretch[axis]).toFixed(2))
                             );
                           })
@@ -8345,8 +8366,8 @@ const d = labToolData.artStudio || {};
                     ) : null,
                     Object.keys(gallery).length ? React.createElement("ul", { className: "space-y-1" }, Object.keys(gallery).map(function(nm) {
                       return React.createElement("li", { key: nm, className: "flex items-center gap-1 text-xs" },
-                        React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm])); }, "aria-label": 'Load ' + nm }, nm),
-                        React.createElement("button", { className: mini, "aria-label": 'Delete ' + nm, onClick: function() { var g2 = Object.assign({}, gallery); delete g2[nm]; upd('sculptGallery', g2); } }, '✕')
+                        React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm])); }, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load', 'Load {value1}'), { value1: nm })}, nm),
+                        React.createElement("button", { className: mini, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_delete', 'Delete {value1}'), { value1: nm }), onClick: function() { var g2 = Object.assign({}, gallery); delete g2[nm]; upd('sculptGallery', g2); } }, '✕')
                       );
                     })) : React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))
                   )
@@ -8405,7 +8426,7 @@ const d = labToolData.artStudio || {};
                   ),
                   // SVG harmony wheel visualization
                   React.createElement('div', { className: 'flex justify-center p-3 bg-slate-50 rounded border border-slate-200' },
-                    React.createElement('svg', { viewBox: '0 0 240 240', role: 'img', 'aria-label': 'Color harmony wheel showing ' + hMeta.label + ' with ' + iq.paletteSize + ' colors around base hue ' + iq.baseHue + ' degrees.', className: 'w-64 h-64' },
+                    React.createElement('svg', { viewBox: '0 0 240 240', role: 'img', 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_harmony_wheel_showing_with_colors_around', 'Color harmony wheel showing {value1} with {value2} colors around base hue {value3} degrees.'), { value1: hMeta.label, value2: iq.paletteSize, value3: iq.baseHue }), className: 'w-64 h-64' },
                       // Background hue ring (reference)
                       Array.from({ length: 36 }, function(_, i) {
                         var hue = i * 10;
@@ -8556,7 +8577,7 @@ const d = labToolData.artStudio || {};
 
                       [{ label: __alloT('stem.artstudio.star', 'Star'), R: 120, r: 45, p: 55 }, { label: __alloT('stem.artstudio.flower', 'Flower'), R: 150, r: 50, p: 25 }, { label: __alloT('stem.artstudio.lace', 'Lace'), R: 100, r: 73, p: 80 }, { label: __alloT('stem.artstudio.atom', 'Atom'), R: 180, r: 25, p: 90 }, { label: __alloT('stem.artstudio.spiral', 'Spiral'), R: 140, r: 91, p: 60 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' spirograph preset', onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' spirograph preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_spirograph_preset', 'Load {value1} spirograph preset'), { value1: pr.label }), onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' spirograph preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -8692,7 +8713,7 @@ const d = labToolData.artStudio || {};
 
                 [{ id: 'flow', icon: '\uD83C\uDF0A', label: __alloT('stem.artstudio.flow_field', 'Flow Field') }, { id: 'rain', icon: '\uD83C\uDF27', label: __alloT('stem.artstudio.particle_rain', 'Particle Rain') }, { id: 'stars', icon: '\u2728', label: __alloT('stem.artstudio.starfield', 'Starfield') }, { id: 'aurora', icon: '\uD83C\uDF0C', label: __alloT('stem.artstudio.aurora', 'Aurora') }].map(function (s) {
 
-                  return React.createElement("button", { "aria-label": 'Use ' + s.label + ' generative style', "aria-pressed": (d.genStyle || 'flow') === s.id, key: s.id, onClick: function () { resetGenerativeRun({ genStyle: s.id }); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
+                  return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_generative_style', 'Use {value1} generative style'), { value1: s.label }), "aria-pressed": (d.genStyle || 'flow') === s.id, key: s.id, onClick: function () { resetGenerativeRun({ genStyle: s.id }); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
 
                 }),
 
@@ -9276,7 +9297,7 @@ const d = labToolData.artStudio || {};
 
                     [{ id: 'retro', label: __alloT('stem.artstudio.retro_3', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_3', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_3', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_3', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_3', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
-                      return React.createElement("button", { "aria-label": "Use " + pal.label + " palette", "aria-pressed": spinActivePalette === pal.id, key: pal.id, onClick: function () { upd('spinActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (spinActivePalette === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-orange-50') }, pal.label);
+                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_palette', 'Use {value1} palette'), { value1: pal.label }), "aria-pressed": spinActivePalette === pal.id, key: pal.id, onClick: function () { upd('spinActivePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (spinActivePalette === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-orange-50') }, pal.label);
 
                     })
 
@@ -9295,7 +9316,7 @@ const d = labToolData.artStudio || {};
                     return activePal.map(function (c, i) {
 
                       var selected = spinColor.h === c[0] && spinColor.s === c[1] && spinColor.l === c[2];
-                      return React.createElement("button", { "aria-label": "Select color HSL " + c[0] + ", " + c[1] + " percent saturation, " + c[2] + " percent lightness", "aria-pressed": selected, key: i, onClick: function () { updMany({ spinHue: c[0], spinSat: c[1], spinLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#c2410c' : '#64748b', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_select_color_hsl_percent_saturation_percent_li', 'Select color HSL {value1}, {value2} percent saturation, {value3} percent lightness'), { value1: c[0], value2: c[1], value3: c[2] }), "aria-pressed": selected, key: i, onClick: function () { updMany({ spinHue: c[0], spinSat: c[1], spinLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#c2410c' : '#64748b', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
 
                     });
 
@@ -9755,7 +9776,7 @@ const d = labToolData.artStudio || {};
 
                       [{ label: __alloT('stem.artstudio.cardioid', 'Cardioid'), nails: 100, mult: 2 }, { label: __alloT('stem.artstudio.nephroid', 'Nephroid'), nails: 100, mult: 3 }, { label: __alloT('stem.artstudio.star_burst', 'Star Burst'), nails: 72, mult: 37 }, { label: __alloT('stem.artstudio.lace_2', 'Lace'), nails: 150, mult: 71 }, { label: __alloT('stem.artstudio.weave', 'Weave'), nails: 60, mult: 23 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' string-art preset', onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' string-art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_string_art_preset', 'Load {value1} string-art preset'), { value1: pr.label }), onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' string-art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -10019,7 +10040,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.wave_grid', 'Wave Grid'), style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' Op Art preset', onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); if (typeof announceToSR === 'function') announceToSR(pr.label + ' Op Art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-fuchsia-700 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_op_art_preset', 'Load {value1} Op Art preset'), { value1: pr.label }), onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); if (typeof announceToSR === 'function') announceToSR(pr.label + ' Op Art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-fuchsia-700 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -11070,7 +11091,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.spiral_arm', 'Spiral Arm'), type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' fractal preset', onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' fractal preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-300 hover:bg-violet-50 transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_fractal_preset', 'Load {value1} fractal preset'), { value1: pr.label }), onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' fractal preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-300 hover:bg-violet-50 transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -11504,7 +11525,7 @@ const d = labToolData.artStudio || {};
 
                         return stops.map(function (stop, idx) {
 
-                          return React.createElement("div", { key: idx, className: "flex items-end gap-2 mb-2 flex-wrap", role: "group", "aria-label": 'Color stop ' + (idx + 1) + ', hue ' + stop.hue + ' degrees, position ' + stop.pos + ' percent' },
+                          return React.createElement("div", { key: idx, className: "flex items-end gap-2 mb-2 flex-wrap", role: "group", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_stop_hue_degrees_position_percent', 'Color stop {value1}, hue {value2} degrees, position {value3} percent'), { value1: (idx + 1), value2: stop.hue, value3: stop.pos })},
 
                             React.createElement("div", { "aria-hidden": "true", style: { width: 24, height: 24, borderRadius: 4, background: 'hsl(' + stop.hue + ',85%,55%)', border: '2px solid white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', flexShrink: 0 } }),
 
@@ -11540,7 +11561,7 @@ const d = labToolData.artStudio || {};
 
                             ),
 
-                            stops.length > 2 && React.createElement("button", { "aria-label": 'Remove color stop ' + (idx + 1), onClick: function () {
+                            stops.length > 2 && React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_remove_color_stop', 'Remove color stop {value1}'), { value1: (idx + 1) }), onClick: function () {
 
                               var newStops3 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
@@ -11580,7 +11601,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.deep_space', 'Deep Space'), stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": 'Load ' + pr.label + ' gradient preset', onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); if (typeof announceToSR === 'function') announceToSR(pr.label + ' gradient preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_gradient_preset', 'Load {value1} gradient preset'), { value1: pr.label }), onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); if (typeof announceToSR === 'function') announceToSR(pr.label + ' gradient preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -12152,7 +12173,7 @@ const d = labToolData.artStudio || {};
 
                       [{ label: __alloT('stem.artstudio.sphere', 'Sphere'), id: 'sphere' }, { label: __alloT('stem.artstudio.pyramid', 'Pyramid'), id: 'pyramid' }, { label: __alloT('stem.artstudio.heart', 'Heart'), id: 'heart' }, { label: __alloT('stem.artstudio.hi_text', 'HI Text'), id: 'text' }, { label: __alloT('stem.artstudio.rings_2', 'Rings'), id: 'rings' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": 'Use ' + pr.label + ' depth-map preset', "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_depth_map_preset', 'Use {value1} depth-map preset'), { value1: pr.label }), "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
 
                       })
 
@@ -13014,7 +13035,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("div", { key: idx, className: "relative" },
 
-                            React.createElement("canvas", { width: 60, height: 60, role: "img", "aria-label": "Depth-map keyframe " + (idx + 1) + " of " + d.stereoAnimKeyframes.length, className: "rounded border border-purple-200", ref: function(c) {
+                            React.createElement("canvas", { width: 60, height: 60, role: "img", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_depth_map_keyframe_of', 'Depth-map keyframe {value1} of {value2}'), { value1: (idx + 1), value2: d.stereoAnimKeyframes.length }), className: "rounded border border-purple-200", ref: function(c) {
 
                               if (!c) return;
 
@@ -13032,7 +13053,7 @@ const d = labToolData.artStudio || {};
 
                             } }),
 
-                            React.createElement("button", { "aria-label": "Remove keyframe " + (idx + 1), onClick: function() {
+                            React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_remove_keyframe', 'Remove keyframe {value1}'), { value1: (idx + 1) }), onClick: function() {
 
                               var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_keyframe_removed', 'Keyframe {value1} removed.'), { value1: (idx + 1) }));
 

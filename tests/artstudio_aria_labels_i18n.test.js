@@ -53,10 +53,20 @@ describe('Art Studio accessible names reach the translator', () => {
   it('records the labels still assembled from a prefix and a value', () => {
     const src = readFileSync(copies[0], 'utf8');
     const assembled = (src.match(ASSEMBLED) || []).filter(wordy);
-    // These glue a prefix in front of a value, which no translation can
-    // reorder; each needs a placeholder template. Lower the bound as they are
-    // done, and delete this test at zero.
+    // What is left picks an English word inside the expression -- a 'near'
+    // default, a running/paused ternary -- so each needs its own key on top of
+    // a template. Lower the bound as they are done, and delete this test at
+    // zero.
     expect(assembled.length).toBeGreaterThan(0);
-    expect(assembled.length).toBeLessThanOrEqual(47);
+    expect(assembled.length).toBeLessThanOrEqual(17);
+  });
+
+  it('templates the labels that carry only values', () => {
+    const src = readFileSync(copies[0], 'utf8');
+    const templated = src.match(/["']aria-label["']\s*:\s*formatArtStudioLearningText\(/g) || [];
+    expect(templated.length).toBeGreaterThanOrEqual(30);
+    const section = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.artstudio;
+    expect(section.a11y_mixture_preview).toBe('Mixture preview: {value1}');
+    expect(section.a11y_current_pigment_character).toBe('Current pigment character: {value1}');
   });
 });
