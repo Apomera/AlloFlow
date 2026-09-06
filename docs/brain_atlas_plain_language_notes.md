@@ -230,3 +230,23 @@ The sizes above were read off getComputedStyle in Chromium rather than off the s
 
 Checked afterwards at 1280, 390 and 320 CSS px with the stimulation view and its treatment guide open: no clipped box anywhere, and nothing newly outside the viewport. The route cards do sit past the right edge, but they always have; that rail scrolls horizontally by design.
 
+## The 3D surface was English regardless of language
+
+September 6, 2026. The 3D model's own furniture shipped as bare English literals: the control group labels, the camera presets, the clinical lesion explorer, the saved study set, the compare tray, the cutaway panel and the Find It challenge. A learner on a translated pack met all of it in English, because a string that never reaches the translator is never translated for anyone.
+
+Fifty-two labels now go through the translator with their existing wording as the fallback. Nothing was reworded. Rewording during an extraction makes the diff unreviewable and quietly retires strings that translators have already handled, so the clinical disclaimer in particular is wrapped word for word, em dash and all.
+
+Only whole labels were taken. Anything that is glued to a variable, such as a phrase ending in "for " before a structure name, was left alone: wrapping a fragment produces a string no translator can put back together, and the fix for those is to restructure the sentence, which is a separate job. That leaves about fifty short fragments and tokens on this surface, down from about ninety-five, and the tool as a whole goes from roughly 185 unwrapped user-visible strings to 93.
+
+## Where the brain sits on the first screen
+
+September 6, 2026. Measured rather than guessed, in Chromium with the tool's own stylesheet and Tailwind loaded, in the default state.
+
+On a 1366 by 768 laptop the diagram stage begins 696 px down, so 72 px of an 885 px canvas is visible before scrolling. At 1280 by 800 it is 104 px. On a 390 by 844 phone the stage begins at 1119 px, which is 275 px below the fold, and on a 360 by 640 phone it is 547 px below.
+
+What sits above it on a phone: the top bar 111, the sticky section nav 58, the collapsed mission block 97, the view panel 115, the mode card 113, the controls 195, then inside the canvas shell a 236 px header, a 61 px label disclosure and a 63 px status row. The two largest single blocks are the controls and the canvas header.
+
+The compact entry the review asked for already exists, and the overview is collapsed by default. A phone learner also has two one-tap routes to the diagram: a View diagram button and a sticky Jump to nav. So the acceptance criterion for phones is met by an action rather than by the picture being visible, which is what the review allowed.
+
+Closing the remaining gap means either hiding the search controls on phones or shortening the canvas header, and both are product decisions rather than defects, so they are recorded here rather than changed. The numbers above are the baseline to measure any such change against.
+

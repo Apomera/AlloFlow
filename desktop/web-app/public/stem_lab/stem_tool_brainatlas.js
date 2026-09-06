@@ -10957,7 +10957,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("p", { className: "brainatlas-canvas-subtitle" }, useBrain3D ? (brain3DChallengeActive && brain3DChallenge ? ('Challenge: ' + brain3DChallengeClue) : (selected3DLabel ? ('Selected structure: ' + selected3DLabel + (sel ? ' — connected to ' + sel.name : '')) : 'Drag to rotate, scroll to zoom, or choose a structure. Use the controls below to reveal either hemisphere or deep anatomy.')) : (currentView.isPrenatal ? (activePrenatalStage ? ('Selected milestone: ' + activePrenatalStage.name) : 'Move the week slider or choose a milestone.') : (sel ? (t('stem.brainatlas.selected_region', 'Selected region') + ': ' + sel.name) : t('stem.brainatlas.select_a_region_or_switch_views', 'Select a region on the atlas, or switch views to compare systems.'))))
                   ),
                   React.createElement("div", { className: "brainatlas-canvas-actions" },
-                    brain3DAvailable && React.createElement("div", { className: "brainatlas-display-mode-switch", role: "group", "aria-label": "Brain atlas display mode" },
+                    brain3DAvailable && React.createElement("div", { className: "brainatlas-display-mode-switch", role: "group", "aria-label": t('stem.brainatlas.d3_brain_atlas_display_mode', "Brain atlas display mode") },
                       React.createElement("button", { type: "button", "aria-pressed": useBrain3D ? "false" : "true", onClick: function () { setBrainAtlas3DMode('diagram'); } }, React.createElement("span", { "aria-hidden": "true" }, '▧'), '2D Diagram'),
                       React.createElement("button", { type: "button", "aria-pressed": useBrain3D ? "true" : "false", onClick: function () { setBrainAtlas3DMode('3d'); } }, React.createElement("span", { "aria-hidden": "true" }, '⬡'), '3D Model')
                     ),
@@ -11084,7 +11084,7 @@ var d = labToolData.brainAtlas || {};
                   ),
                   React.createElement("span", { className: "brainatlas-status-hint" }, useBrain3D ? (brain3DChallengeActive ? 'Challenge active · Select the structure that matches the clue' : (brain3DPathwayInfo ? (brain3DPathwayInfo.shortLabel + ' pathway · Step ' + (brain3DPathwayStep + 1) + ' of ' + brain3DPathwayInfo.steps.length + (brain3DPathwayPlaying ? ' · Playing' : ' · Paused')) : (brain3DCompareActive ? ('Compare anatomy · ' + brain3DCompareStructures.length + ' of 2 selected') : (brain3DSliceAxis !== 'off' ? brainAtlas3DSliceAxisLabel(brain3DSliceAxis) + ' · Move depth or flip side' : 'Drag to rotate · Scroll to zoom · Click a structure · Arrow keys orbit')))) : (canvasZoom > 1 ? t('stem.brainatlas.diagram_enlarged_scroll_hint', 'Diagram enlarged - scroll to explore every label.') : (d.quizMode ? t('stem.brainatlas.quiz_status_hint', 'Quiz is active - use the diagram and evidence to decide.') : t('stem.brainatlas.canvas_interaction_hint', 'Select a label on the diagram or choose a region below.'))))
                 ),
-                useBrain3D && React.createElement("section", { className: "brainatlas-3d-searchbar", "data-brainatlas-3d-searchbar": "true", "aria-label": "Find and reveal a 3D brain structure" },
+                useBrain3D && React.createElement("section", { className: "brainatlas-3d-searchbar", "data-brainatlas-3d-searchbar": "true", "aria-label": t('stem.brainatlas.d3_find_and_reveal_a_3d_brain_structure', "Find and reveal a 3D brain structure") },
                   React.createElement("div", { className: "brainatlas-3d-search-wrap" },
                     React.createElement("div", { className: "brainatlas-3d-search-field" },
                       React.createElement("span", { className: "brainatlas-3d-search-icon", "aria-hidden": "true" }, '\u2315'),
@@ -11185,11 +11185,11 @@ var d = labToolData.brainAtlas || {};
                     }, React.createElement("span", { "aria-hidden": "true" }, brain3DChallengeActive ? '\u00d7' : '\u25ce'), brain3DChallengeActive ? "End challenge" : "Find It in 3D")
                   )
                 ),
-                useBrain3D && React.createElement("section", { className: "brainatlas-3d-controls", "data-brainatlas-3d-controls": "true", "aria-label": "3D anatomy controls" },
+                useBrain3D && React.createElement("section", { className: "brainatlas-3d-controls", "data-brainatlas-3d-controls": "true", "aria-label": t('stem.brainatlas.d3_3d_anatomy_controls', "3D anatomy controls") },
                   React.createElement("div", { className: "brainatlas-3d-control-groups" },
                     React.createElement("div", { className: "brainatlas-3d-control-group" },
                       React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Anatomy'),
-                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "Visible anatomy layer" },
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": t('stem.brainatlas.d3_visible_anatomy_layer', "Visible anatomy layer") },
                         [{ id: 'all', label: 'Whole brain' }, { id: 'left', label: 'Left side' }, { id: 'right', label: 'Right side' }, { id: 'deep', label: 'Deep structures' }].map(function (option) {
                           return React.createElement("button", { key: option.id, type: "button", "aria-pressed": brain3DLayer === option.id, onClick: function () { upd('brain3DLayer', option.id); } }, option.label);
                         })
@@ -11197,7 +11197,7 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-3d-control-group" },
                       React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Selection'),
-                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "Selection focus style" },
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": t('stem.brainatlas.d3_selection_focus_style', "Selection focus style") },
                         [{ id: 'all', label: 'All visible' }, { id: 'fade', label: 'Fade others' }, { id: 'isolate', label: 'Isolate' }].map(function (option) {
                           return React.createElement("button", { key: option.id, type: "button", "aria-pressed": brain3DFocus === option.id, onClick: function () { upd('brain3DFocus', option.id); } }, option.label);
                         })
@@ -11205,7 +11205,7 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-3d-control-group", "data-brainatlas-3d-cutaway-controls": "true" },
                       React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Cutaway'),
-                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "3D anatomical cutaway plane" },
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": t('stem.brainatlas.d3_3d_anatomical_cutaway_plane', "3D anatomical cutaway plane") },
                         [{ id: 'off', label: 'Off' }, { id: 'sagittal', label: 'Sagittal' }, { id: 'coronal', label: 'Coronal' }, { id: 'axial', label: 'Axial' }].map(function (option) {
                           return React.createElement("button", { key: option.id, type: "button", "aria-pressed": brain3DSliceAxis === option.id ? "true" : "false", onClick: function () { setBrainAtlas3DSliceAxis(option.id); } }, option.label);
                         })
@@ -11213,7 +11213,7 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-3d-control-group", "data-brainatlas-3d-pathway-controls": "true" },
                       React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Pathway'),
-                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "Guided 3D pathway" },
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": t('stem.brainatlas.d3_guided_3d_pathway', "Guided 3D pathway") },
                         [{ id: 'off', label: 'Off' }, { id: 'papez', label: 'Memory' }, { id: 'visual', label: 'Visual' }, { id: 'motor', label: 'Motor' }, { id: 'language', label: 'Language' }].map(function (option) {
                           return React.createElement("button", { key: option.id, type: "button", "aria-pressed": brain3DPathway === option.id ? "true" : "false", onClick: function () { setBrainAtlas3DPathway(option.id); } }, option.label);
                         })
@@ -11221,13 +11221,13 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-3d-control-group", "data-brainatlas-3d-learning-controls": "true" },
                       React.createElement("span", { className: "brainatlas-3d-control-label" }, 'Learning'),
-                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": "3D learning tools" },
-                        React.createElement("button", { type: "button", "aria-pressed": brain3DClinicalActive ? "true" : "false", onClick: function () { setBrainAtlas3DClinicalActive(!brain3DClinicalActive); } }, "Clinical cases"),
+                      React.createElement("div", { className: "brainatlas-3d-segment", role: "group", "aria-label": t('stem.brainatlas.d3_3d_learning_tools', "3D learning tools") },
+                        React.createElement("button", { type: "button", "aria-pressed": brain3DClinicalActive ? "true" : "false", onClick: function () { setBrainAtlas3DClinicalActive(!brain3DClinicalActive); } }, t('stem.brainatlas.d3_clinical_cases', "Clinical cases")),
                         React.createElement("button", { type: "button", "aria-pressed": brain3DStudySetOpen ? "true" : "false", onClick: function () { setBrainAtlas3DStudySetOpen(!brain3DStudySetOpen); } }, "Study set (" + brain3DSavedItems.length + ")")
                       )
                     )
                   ),
-                  React.createElement("div", { className: "brainatlas-3d-camera-controls", role: "group", "aria-label": "3D camera presets" },
+                  React.createElement("div", { className: "brainatlas-3d-camera-controls", role: "group", "aria-label": t('stem.brainatlas.d3_3d_camera_presets', "3D camera presets") },
                     [{ id: 'lateral', label: 'Side' }, { id: 'front', label: 'Front' }, { id: 'top', label: 'Top' }, { id: 'bottom', label: 'Bottom' }, { id: viewKey, label: 'Reset' }].map(function (preset, index) {
                       return React.createElement("button", { key: preset.label + index, type: "button", onClick: function () { setBrainAtlas3DCamera(preset.id); } }, preset.label);
                     })
@@ -11236,14 +11236,14 @@ var d = labToolData.brainAtlas || {};
                 useBrain3D && brain3DClinicalActive && React.createElement("section", { className: "brainatlas-3d-clinical-panel", "data-brainatlas-3d-clinical-panel": "true", role: "region", "aria-labelledby": "brainatlas-3d-clinical-title" },
                   React.createElement("div", { className: "brainatlas-3d-learning-head" },
                     React.createElement("div", { className: "brainatlas-3d-learning-head-copy" },
-                      React.createElement("span", { className: "brainatlas-3d-learning-kicker" }, "Applied anatomy"),
-                      React.createElement("strong", { id: "brainatlas-3d-clinical-title" }, "Clinical lesion explorer"),
+                      React.createElement("span", { className: "brainatlas-3d-learning-kicker" }, t('stem.brainatlas.d3_applied_anatomy', "Applied anatomy")),
+                      React.createElement("strong", { id: "brainatlas-3d-clinical-title" }, t('stem.brainatlas.d3_clinical_lesion_explorer', "Clinical lesion explorer")),
                       React.createElement("p", null, "Connect a symptom pattern to a teaching pathway and one representative structure.")
                     ),
-                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DClinicalActive(false); }, "aria-label": "Close clinical lesion explorer" }, "Close")
+                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DClinicalActive(false); }, "aria-label": t('stem.brainatlas.d3_close_clinical_lesion_explorer', "Close clinical lesion explorer") }, t('stem.brainatlas.d3_close', "Close"))
                   ),
                   React.createElement("div", { className: "brainatlas-3d-clinical-layout" },
-                    React.createElement("div", { className: "brainatlas-3d-clinical-scenarios", role: "list", "aria-label": "Clinical teaching cases" },
+                    React.createElement("div", { className: "brainatlas-3d-clinical-scenarios", role: "list", "aria-label": t('stem.brainatlas.d3_clinical_teaching_cases', "Clinical teaching cases") },
                       BRAIN_3D_CLINICAL_SCENARIOS.map(function (scenario) {
                         return React.createElement("button", { key: scenario.id, type: "button", className: "brainatlas-3d-clinical-scenario", "data-brainatlas-clinical-scenario": scenario.id, "aria-pressed": brain3DClinicalScenario === scenario.id ? "true" : "false", onClick: function () { openBrainAtlas3DClinicalScenario(scenario); } },
                           React.createElement("strong", null, scenario.title),
@@ -11252,10 +11252,10 @@ var d = labToolData.brainAtlas || {};
                       })
                     ),
                     React.createElement("div", { className: "brainatlas-3d-clinical-case" },
-                      React.createElement("div", { className: "brainatlas-3d-clinical-fact", "data-tone": "symptom" }, React.createElement("strong", null, "Pattern"), React.createElement("span", null, brain3DClinicalScenarioInfo.symptom)),
-                      React.createElement("div", { className: "brainatlas-3d-clinical-fact", "data-tone": "evidence" }, React.createElement("strong", null, "Explore"), React.createElement("span", null, brain3DClinicalScenarioInfo.evidence)),
-                      React.createElement("div", { className: "brainatlas-3d-clinical-fact", "data-tone": "caution" }, React.createElement("strong", null, "Keep in mind"), React.createElement("span", null, brain3DClinicalScenarioInfo.caution)),
-                      React.createElement("p", { className: "brainatlas-3d-clinical-disclaimer" }, "Teaching association only—not a diagnosis or a substitute for clinical evaluation. Symptoms can reflect distributed networks and many possible causes.")
+                      React.createElement("div", { className: "brainatlas-3d-clinical-fact", "data-tone": "symptom" }, React.createElement("strong", null, t('stem.brainatlas.d3_pattern', "Pattern")), React.createElement("span", null, brain3DClinicalScenarioInfo.symptom)),
+                      React.createElement("div", { className: "brainatlas-3d-clinical-fact", "data-tone": "evidence" }, React.createElement("strong", null, t('stem.brainatlas.d3_explore', "Explore")), React.createElement("span", null, brain3DClinicalScenarioInfo.evidence)),
+                      React.createElement("div", { className: "brainatlas-3d-clinical-fact", "data-tone": "caution" }, React.createElement("strong", null, t('stem.brainatlas.d3_keep_in_mind', "Keep in mind")), React.createElement("span", null, brain3DClinicalScenarioInfo.caution)),
+                      React.createElement("p", { className: "brainatlas-3d-clinical-disclaimer" }, t('stem.brainatlas.d3_teaching_association_only_not_a_diagnosis_or', "Teaching association only—not a diagnosis or a substitute for clinical evaluation. Symptoms can reflect distributed networks and many possible causes."))
                     )
                   )
                 ),
@@ -11263,14 +11263,14 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("div", { className: "brainatlas-3d-learning-head" },
                     React.createElement("div", { className: "brainatlas-3d-learning-head-copy" },
                       React.createElement("span", { className: "brainatlas-3d-learning-kicker" }, "Your collection · " + brain3DSavedItems.length + "/24"),
-                      React.createElement("strong", { id: "brainatlas-3d-study-title" }, "Saved study set"),
+                      React.createElement("strong", { id: "brainatlas-3d-study-title" }, t('stem.brainatlas.d3_saved_study_set', "Saved study set")),
                       React.createElement("p", null, "Save structures from their guide cards, revisit them, then practice identifying only your selections.")
                     ),
-                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DStudySetOpen(false); }, "aria-label": "Close saved study set" }, "Close")
+                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DStudySetOpen(false); }, "aria-label": t('stem.brainatlas.d3_close_saved_study_set', "Close saved study set") }, t('stem.brainatlas.d3_close', "Close"))
                   ),
                   React.createElement("div", { className: "brainatlas-3d-study-actions" },
-                    React.createElement("button", { type: "button", className: "brainatlas-3d-study-start", disabled: !brain3DSavedItems.length, onClick: startBrainAtlas3DSavedQuiz }, "Start custom quiz"),
-                    React.createElement("button", { type: "button", disabled: !brain3DSavedItems.length, onClick: clearBrainAtlas3DStudySet }, "Clear set")
+                    React.createElement("button", { type: "button", className: "brainatlas-3d-study-start", disabled: !brain3DSavedItems.length, onClick: startBrainAtlas3DSavedQuiz }, t('stem.brainatlas.d3_start_custom_quiz', "Start custom quiz")),
+                    React.createElement("button", { type: "button", disabled: !brain3DSavedItems.length, onClick: clearBrainAtlas3DStudySet }, t('stem.brainatlas.d3_clear_set', "Clear set"))
                   ),
                   brain3DSavedItems.length ? React.createElement("div", { className: "brainatlas-3d-saved-list", "data-brainatlas-saved-count": brain3DSavedItems.length },
                     brain3DSavedItems.map(function (item) {
@@ -11279,22 +11279,22 @@ var d = labToolData.brainAtlas || {};
                         React.createElement("button", { type: "button", "aria-label": "Remove " + item.label + " from study set", onClick: function () { toggleBrainAtlas3DSavedStructure(item.key); } }, "×")
                       );
                     })
-                  ) : React.createElement("div", { className: "brainatlas-3d-study-empty" }, "No structures saved yet. Select anatomy in the model, then choose Save to study set in its learning card.")
+                  ) : React.createElement("div", { className: "brainatlas-3d-study-empty" }, t('stem.brainatlas.d3_no_structures_saved_yet_select_anatomy_in', "No structures saved yet. Select anatomy in the model, then choose Save to study set in its learning card."))
                 ),
                 useBrain3D && brain3DSavedQuizActive && brain3DSavedQuizComplete && React.createElement("section", { className: "brainatlas-3d-saved-quiz", "data-brainatlas-3d-quiz-summary": "true", "aria-labelledby": "brainatlas-3d-saved-quiz-title" },
                   React.createElement("div", { className: "brainatlas-3d-learning-head" },
                     React.createElement("div", { className: "brainatlas-3d-learning-head-copy" },
-                      React.createElement("strong", { id: "brainatlas-3d-saved-quiz-title", tabIndex: -1 }, "Study round complete"),
+                      React.createElement("strong", { id: "brainatlas-3d-saved-quiz-title", tabIndex: -1 }, t('stem.brainatlas.d3_study_round_complete', "Study round complete")),
                       React.createElement("p", null, brain3DSavedQuizFirstTry + " of " + brain3DSavedQuizItems.length + " identified on the first try."),
                       React.createElement("p", { "data-brainatlas-saved-quiz-hinted": String(brain3DSavedQuizHintedItems) }, brain3DSavedQuizHintedItems
                         ? (brain3DSavedQuizHintedItems + " " + (t('stem.brainatlas.saved_quiz_hinted_note', 'of these were answered after the name was shown, so those were locating practice rather than recall. This is a record of the round, not a score.') || 'of these were answered after the name was shown, so those were locating practice rather than recall. This is a record of the round, not a score.'))
                         : t('stem.brainatlas.saved_quiz_no_hint_note', 'Answered from the clue alone. This is a record of the round, not a score.')),
                       React.createElement("p", null, brain3DSavedQuizRetryItems.length ? "Practice again: " + brain3DSavedQuizRetryItems.map(function (item) { return item.label; }).join(', ') : "Round finished. Repeat the set whenever you want more practice.")
                     ),
-                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DSavedQuizActive(false); } }, "Back to atlas")
+                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DSavedQuizActive(false); } }, t('stem.brainatlas.d3_back_to_atlas', "Back to atlas"))
                   ),
                   React.createElement("div", { className: "brainatlas-3d-study-actions" },
-                    brain3DSavedQuizRetryItems.length > 0 && React.createElement("button", { type: "button", onClick: function () { startBrainAtlas3DSavedQuiz(true); focusBrainAtlas3DQuizHeading(); } }, "Retry structures needing practice"),
+                    brain3DSavedQuizRetryItems.length > 0 && React.createElement("button", { type: "button", onClick: function () { startBrainAtlas3DSavedQuiz(true); focusBrainAtlas3DQuizHeading(); } }, t('stem.brainatlas.d3_retry_structures_needing_practice', "Retry structures needing practice")),
                     React.createElement("button", { type: "button", onClick: function () { startBrainAtlas3DSavedQuiz(); focusBrainAtlas3DQuizHeading(); } }, "Practice whole set again")
                   )
                 ),
@@ -11302,11 +11302,11 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("div", { className: "brainatlas-3d-learning-head" },
                     React.createElement("div", { className: "brainatlas-3d-learning-head-copy" },
                       React.createElement("span", { className: "brainatlas-3d-learning-kicker" }, "Custom quiz · " + (brain3DSavedQuizIndex + 1) + " of " + brain3DSavedQuizItems.length),
-                      React.createElement("strong", { id: "brainatlas-3d-saved-quiz-title", tabIndex: -1 }, "Find a saved structure"),
+                      React.createElement("strong", { id: "brainatlas-3d-saved-quiz-title", tabIndex: -1 }, t('stem.brainatlas.d3_find_a_saved_structure', "Find a saved structure")),
                       React.createElement("p", null, "Choose it directly in the model or use the accessible answer list."),
                       React.createElement("p", { className: "brainatlas-3d-saved-quiz-goal", "data-brainatlas-saved-quiz-goal": "true" }, t('stem.brainatlas.saved_quiz_goal', 'Practice goal: connect what a structure does to where it sits. Showing the name turns the round into locating practice instead, which the summary records.'))
                     ),
-                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DSavedQuizActive(false); } }, "End quiz")
+                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DSavedQuizActive(false); } }, t('stem.brainatlas.d3_end_quiz', "End quiz"))
                   ),
                   React.createElement("div", { className: "brainatlas-3d-saved-quiz-main" },
                     React.createElement("div", { className: "brainatlas-3d-saved-quiz-target", "data-brainatlas-saved-quiz-prompt": brain3DSavedQuizNameShown ? "name" : "clue" },
@@ -11324,11 +11324,11 @@ var d = labToolData.brainAtlas || {};
                     ),
                     brain3DSavedQuizFeedback && brain3DSavedQuizFeedback.correct && React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", id: "brainatlas-3d-saved-quiz-next", onClick: advanceBrainAtlas3DSavedQuiz }, brain3DSavedQuizIndex + 1 === brain3DSavedQuizItems.length ? "Finish round" : "Next structure")
                   ),
-                  React.createElement("div", { className: "brainatlas-3d-saved-quiz-options", role: "group", "aria-label": "Accessible saved structure answers" },
+                  React.createElement("div", { className: "brainatlas-3d-saved-quiz-options", role: "group", "aria-label": t('stem.brainatlas.d3_accessible_saved_structure_answers', "Accessible saved structure answers") },
                     brain3DSavedItems.map(function (item) { var locked = !!(brain3DSavedQuizFeedback && brain3DSavedQuizFeedback.correct); return React.createElement("button", { key: item.key, type: "button", "data-brainatlas-saved-answer": item.key, "aria-disabled": locked ? "true" : "false", onClick: function () { if (locked) return; submitBrainAtlas3DSavedQuiz(item.key); } }, item.label); })
                   ),
                   brain3DSavedQuizFeedback && React.createElement("div", { className: "brainatlas-3d-saved-quiz-feedback", "data-correct": brain3DSavedQuizFeedback.correct ? "true" : "false", role: "status" }, brain3DSavedQuizFeedback.correct ? ("Correct—" + brain3DSavedQuizTarget.label + " is highlighted. Continue when ready.") : ("That was " + brain3DSavedQuizFeedback.picked + ". Try again in the model or answer list."))
-                ),                useBrain3D && brain3DCompareActive && React.createElement("section", { className: "brainatlas-3d-compare-tray", "data-brainatlas-3d-compare-tray": "true", "aria-label": "3D anatomy comparison selection" },
+                ),                useBrain3D && brain3DCompareActive && React.createElement("section", { className: "brainatlas-3d-compare-tray", "data-brainatlas-3d-compare-tray": "true", "aria-label": t('stem.brainatlas.d3_3d_anatomy_comparison_selection', "3D anatomy comparison selection") },
                   React.createElement("div", { className: "brainatlas-3d-compare-intro" },
                     React.createElement("strong", null, "Compare anatomy"),
                     React.createElement("span", null, "Choose two structures from search or the model.")
@@ -11345,8 +11345,8 @@ var d = labToolData.brainAtlas || {};
                       compareGuide && React.createElement("button", { type: "button", className: "brainatlas-3d-compare-remove", "aria-label": "Remove " + compareGuide.title + " from comparison", onClick: function () { removeBrainAtlas3DComparison(compareGuide.key); } }, "\u00d7")
                     );
                   }),
-                  React.createElement("button", { type: "button", className: "brainatlas-3d-compare-close", onClick: function () { setBrainAtlas3DCompareActive(false); } }, "Close"),
-                  React.createElement("div", { className: "brainatlas-3d-compare-presets", "data-brainatlas-3d-compare-presets": "true", "aria-label": "Suggested structure comparisons" },
+                  React.createElement("button", { type: "button", className: "brainatlas-3d-compare-close", onClick: function () { setBrainAtlas3DCompareActive(false); } }, t('stem.brainatlas.d3_close', "Close")),
+                  React.createElement("div", { className: "brainatlas-3d-compare-presets", "data-brainatlas-3d-compare-presets": "true", "aria-label": t('stem.brainatlas.d3_suggested_structure_comparisons', "Suggested structure comparisons") },
                     React.createElement("span", null, "Suggested pairs"),
                     BRAIN_3D_COMPARE_PRESETS.map(function (preset) {
                       return React.createElement("button", { key: preset.id, type: "button", className: "brainatlas-3d-compare-preset", onClick: function () { applyBrainAtlas3DComparisonPreset(preset); } },
@@ -11362,12 +11362,12 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("strong", null, brain3DPathwayInfo.title),
                     React.createElement("p", null, brain3DPathwayInfo.summary)
                   ),
-                  React.createElement("div", { className: "brainatlas-3d-pathway-transport", "data-brainatlas-3d-pathway-transport": "true", role: "group", "aria-label": "Pathway playback controls" },
+                  React.createElement("div", { className: "brainatlas-3d-pathway-transport", "data-brainatlas-3d-pathway-transport": "true", role: "group", "aria-label": t('stem.brainatlas.d3_pathway_playback_controls', "Pathway playback controls") },
                     React.createElement("button", { type: "button", "aria-label": "Previous pathway step", onClick: function () { stepBrainAtlas3DPathway(-1); } }, "\u2190"),
                     React.createElement("button", { type: "button", className: "brainatlas-3d-pathway-play", "data-brainatlas-3d-pathway-play": "true", "aria-pressed": brain3DPathwayPlaying ? "true" : "false", onClick: toggleBrainAtlas3DPathwayPlayback }, brain3DPathwayPlaying ? "Pause" : "Play"),
                     React.createElement("button", { type: "button", "aria-label": "Next pathway step", onClick: function () { stepBrainAtlas3DPathway(1); } }, "\u2192"),
                     React.createElement("span", { className: "brainatlas-3d-pathway-progress", "aria-live": "polite" }, (brain3DPathwayStep + 1) + " / " + brain3DPathwayInfo.steps.length),
-                    React.createElement("select", { className: "brainatlas-3d-pathway-speed", value: brain3DPathwaySpeed, "aria-label": "Pathway playback speed", onChange: function (event) { setBrainAtlas3DPathwaySpeed(event.target.value); } },
+                    React.createElement("select", { className: "brainatlas-3d-pathway-speed", value: brain3DPathwaySpeed, "aria-label": t('stem.brainatlas.d3_pathway_playback_speed', "Pathway playback speed"), onChange: function (event) { setBrainAtlas3DPathwaySpeed(event.target.value); } },
                       React.createElement("option", { value: 2600 }, "Slow"),
                       React.createElement("option", { value: 1600 }, "Standard"),
                       React.createElement("option", { value: 900 }, "Fast")
@@ -11395,7 +11395,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("strong", null, brainAtlas3DSliceAxisLabel(brain3DSliceAxis))
                   ),
                   React.createElement("label", { className: "brainatlas-3d-slice-range-wrap", htmlFor: "brainatlas-3d-slice-depth" },
-                    React.createElement("span", { className: "brainatlas-3d-slice-range-label" }, "Cut depth"),
+                    React.createElement("span", { className: "brainatlas-3d-slice-range-label" }, t('stem.brainatlas.d3_cut_depth', "Cut depth")),
                     React.createElement("input", {
                       id: "brainatlas-3d-slice-depth",
                       className: "brainatlas-3d-slice-range",
@@ -11413,7 +11413,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("button", { type: "button", "data-brainatlas-3d-slice-flip": "true", onClick: flipBrainAtlas3DSlice }, brain3DSliceFlip ? "Show first side" : "Flip side"),
                     React.createElement("button", { type: "button", onClick: function () { setBrainAtlas3DSliceAxis('off'); } }, "Close")
                   ),
-                  React.createElement("p", { className: "brainatlas-3d-slice-help" }, "Drag the plane through the model to expose deep anatomy. Flip side changes which half remains visible; search and challenges automatically restore the whole model before revealing an answer."),
+                  React.createElement("p", { className: "brainatlas-3d-slice-help" }, t('stem.brainatlas.d3_drag_the_plane_through_the_model_to', "Drag the plane through the model to expose deep anatomy. Flip side changes which half remains visible; search and challenges automatically restore the whole model before revealing an answer.")),
                   React.createElement("div", { className: "brainatlas-3d-slice-navigator", "data-brainatlas-3d-slice-navigator": brain3DSliceAxis },
                     React.createElement("button", { type: "button", className: "brainatlas-3d-slice-map", onClick: setBrainAtlas3DSliceFromNavigator, onKeyDown: handleBrainAtlas3DSliceNavigatorKey, "aria-label": "Slice orientation map. " + brain3DSliceOrientation.direction + ", depth " + brain3DSlicePosition + " percent. Click or use arrow keys to reposition." },
                       React.createElement("svg", { viewBox: "0 0 180 70", role: "img", "aria-hidden": "true" },
@@ -11426,9 +11426,9 @@ var d = labToolData.brainAtlas || {};
                       )
                     ),
                     React.createElement("div", { className: "brainatlas-3d-slice-context" },
-                      React.createElement("div", { className: "brainatlas-3d-slice-context-card", "data-active": "true" }, React.createElement("span", null, "Orientation"), React.createElement("strong", null, brain3DSliceOrientation.view)),
-                      React.createElement("div", { className: "brainatlas-3d-slice-context-card" }, React.createElement("span", null, "Depth zone"), React.createElement("strong", null, brain3DSliceDepthZone)),
-                      React.createElement("div", { className: "brainatlas-3d-slice-context-card" }, React.createElement("span", null, "Visible side"), React.createElement("strong", null, brain3DSliceFlip ? "Opposite half" : "First half")),
+                      React.createElement("div", { className: "brainatlas-3d-slice-context-card", "data-active": "true" }, React.createElement("span", null, t('stem.brainatlas.d3_orientation', "Orientation")), React.createElement("strong", null, brain3DSliceOrientation.view)),
+                      React.createElement("div", { className: "brainatlas-3d-slice-context-card" }, React.createElement("span", null, t('stem.brainatlas.d3_depth_zone', "Depth zone")), React.createElement("strong", null, brain3DSliceDepthZone)),
+                      React.createElement("div", { className: "brainatlas-3d-slice-context-card" }, React.createElement("span", null, t('stem.brainatlas.d3_visible_side', "Visible side")), React.createElement("strong", null, brain3DSliceFlip ? "Opposite half" : "First half")),
                       React.createElement("p", { className: "brainatlas-3d-slice-context-hint" }, brain3DSliceOrientation.startName + " \u2192 " + brain3DSliceOrientation.endName + ". Select anywhere on the map to move the synchronized 3D cut plane.")
                     )
                   ),
@@ -11437,7 +11437,7 @@ var d = labToolData.brainAtlas || {};
                       React.createElement("strong", null, "Structures in this section"),
                       React.createElement("span", null, brain3DCutawaySection.total ? (brain3DCutawaySection.total + " intersect this plane · showing " + brain3DCutawaySection.items.length) : "Move the plane to identify intersecting anatomy")
                     ),
-                    React.createElement("div", { className: "brainatlas-3d-section-items", role: "list", "aria-label": "Structures intersecting the current cutaway" },
+                    React.createElement("div", { className: "brainatlas-3d-section-items", role: "list", "aria-label": t('stem.brainatlas.d3_structures_intersecting_the_current_cutaway', "Structures intersecting the current cutaway") },
                       brain3DCutawaySection.items.map(function (item) {
                         return h('div', { key: item.key, role: 'listitem' }, React.createElement("button", { type: "button", className: "brainatlas-3d-section-item", "aria-pressed": selected3DStructure === item.key ? "true" : "false", title: item.label + " · " + item.family, onClick: function () { selectBrainAtlas3DCutawayStructure(item); } },
                           React.createElement("span", { "aria-hidden": "true" }, item.icon || "A"),
@@ -11457,17 +11457,17 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("div", { className: "brainatlas-3d-challenge-head" },
                     React.createElement("div", null,
                       React.createElement("p", { className: "brainatlas-3d-challenge-kicker" }, "Active learning challenge · Round " + ((brain3DChallengeRound % BRAIN_3D_CHALLENGE_POOL.length) + 1) + " of " + BRAIN_3D_CHALLENGE_POOL.length),
-                      React.createElement("h3", { id: "brainatlas-3d-challenge-title", className: "brainatlas-3d-challenge-title" }, "Find It in 3D"),
-                      React.createElement("p", { className: "brainatlas-3d-challenge-instruction" }, "Rotate the model and select the structure that best matches the clue. Hints reduce the available points, but retrying is always encouraged.")
+                      React.createElement("h3", { id: "brainatlas-3d-challenge-title", className: "brainatlas-3d-challenge-title" }, t('stem.brainatlas.d3_find_it_in_3d', "Find It in 3D")),
+                      React.createElement("p", { className: "brainatlas-3d-challenge-instruction" }, t('stem.brainatlas.d3_rotate_the_model_and_select_the_structure', "Rotate the model and select the structure that best matches the clue. Hints reduce the available points, but retrying is always encouraged."))
                     ),
-                    React.createElement("div", { className: "brainatlas-3d-challenge-stats", "aria-label": "3D challenge progress" },
-                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, "Score", React.createElement("strong", { "data-brainatlas-3d-challenge-score": "true" }, brain3DChallengeScore)),
-                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, "Mastered", React.createElement("strong", null, brain3DChallengeCorrect)),
-                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, "Streak", React.createElement("strong", null, brain3DChallengeStreak))
+                    React.createElement("div", { className: "brainatlas-3d-challenge-stats", "aria-label": t('stem.brainatlas.d3_3d_challenge_progress', "3D challenge progress") },
+                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, t('stem.brainatlas.d3_score', "Score"), React.createElement("strong", { "data-brainatlas-3d-challenge-score": "true" }, brain3DChallengeScore)),
+                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, t('stem.brainatlas.d3_mastered', "Mastered"), React.createElement("strong", null, brain3DChallengeCorrect)),
+                      React.createElement("span", { className: "brainatlas-3d-challenge-stat" }, t('stem.brainatlas.d3_streak', "Streak"), React.createElement("strong", null, brain3DChallengeStreak))
                     )
                   ),
                   React.createElement("div", { className: "brainatlas-3d-challenge-main" },
-                    React.createElement("div", { className: "brainatlas-3d-difficulty", role: "group", "aria-label": "3D challenge difficulty" },
+                    React.createElement("div", { className: "brainatlas-3d-difficulty", role: "group", "aria-label": t('stem.brainatlas.d3_3d_challenge_difficulty', "3D challenge difficulty") },
                       [{ id: 'learn', label: 'Learn' }, { id: 'explore', label: 'Explore' }, { id: 'challenge', label: 'Challenge' }].map(function (level) {
                         return React.createElement("button", { key: level.id, type: "button", "aria-pressed": brain3DChallengeDifficulty === level.id ? "true" : "false", onClick: function () { setBrainAtlas3DChallengeDifficulty(level.id); } }, level.label);
                       })
@@ -11478,8 +11478,8 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-3d-challenge-actions" },
                       (!brain3DChallengeFeedback || brain3DChallengeFeedback.status === 'retry') && React.createElement("button", { type: "button", disabled: brain3DChallengeHintLevel >= 2, onClick: requestBrainAtlas3DChallengeHint }, brain3DChallengeHintLevel ? "Another hint" : "Hint"),
-                      (!brain3DChallengeFeedback || brain3DChallengeFeedback.status === 'retry') && React.createElement("button", { type: "button", onClick: revealBrainAtlas3DChallengeAnswer }, "Show answer"),
-                      brain3DChallengeFeedback && (brain3DChallengeFeedback.status === 'correct' || brain3DChallengeFeedback.status === 'revealed') && React.createElement("button", { type: "button", className: "brainatlas-3d-next", onClick: advanceBrainAtlas3DChallenge }, "Next structure \u2192")
+                      (!brain3DChallengeFeedback || brain3DChallengeFeedback.status === 'retry') && React.createElement("button", { type: "button", onClick: revealBrainAtlas3DChallengeAnswer }, t('stem.brainatlas.d3_show_answer', "Show answer")),
+                      brain3DChallengeFeedback && (brain3DChallengeFeedback.status === 'correct' || brain3DChallengeFeedback.status === 'revealed') && React.createElement("button", { type: "button", className: "brainatlas-3d-next", onClick: advanceBrainAtlas3DChallenge }, t('stem.brainatlas.d3_next_structure', "Next structure \u2192"))
                     )
                   ),
                   brain3DChallengeHintLevel > 0 && React.createElement("div", { className: "brainatlas-3d-challenge-hint", role: "status", "data-brainatlas-3d-challenge-hint": brain3DChallengeHintLevel },
@@ -11501,7 +11501,7 @@ var d = labToolData.brainAtlas || {};
                   ),
                   React.createElement("details", { className: "brainatlas-3d-challenge-access" },
                     React.createElement("summary", null, "Use model-free answer choices"),
-                    React.createElement("div", { className: "brainatlas-3d-challenge-options", role: "group", "aria-label": "Accessible answer choices for the 3D challenge" },
+                    React.createElement("div", { className: "brainatlas-3d-challenge-options", role: "group", "aria-label": t('stem.brainatlas.d3_accessible_answer_choices_for_the_3d_challenge', "Accessible answer choices for the 3D challenge") },
                       brain3DChallengeOptions.map(function (option) {
                         var terminalFeedback = brain3DChallengeFeedback && (brain3DChallengeFeedback.status === 'correct' || brain3DChallengeFeedback.status === 'revealed');
                         return React.createElement("button", { key: option.id, type: "button", disabled: !!terminalFeedback, onClick: function () { chooseBrainAtlas3DChallengeOption(option); } }, option.label);
@@ -11637,7 +11637,7 @@ var d = labToolData.brainAtlas || {};
               useBrain3D && brain3DCompareActive && brain3DCompareGuides.length > 0 && React.createElement("section", { className: "brainatlas-3d-compare-panel", "data-brainatlas-3d-compare": "true", role: "region", "aria-labelledby": "brainatlas-3d-compare-title" },
                 React.createElement("div", { className: "brainatlas-3d-compare-panel-head" },
                   React.createElement("div", null,
-                    React.createElement("h3", { id: "brainatlas-3d-compare-title" }, "Structure comparison"),
+                    React.createElement("h3", { id: "brainatlas-3d-compare-title" }, t('stem.brainatlas.d3_structure_comparison', "Structure comparison")),
                     React.createElement("p", null, brain3DCompareGuides.length < 2 ? "Choose one more structure to compare function, connections, and clinical relevance." : "Read across matching categories to find shared roles and meaningful differences.")
                   ),
                   React.createElement("span", { className: "brainatlas-3d-guide-family" }, brain3DCompareGuides.length + " of 2 selected")
@@ -11668,7 +11668,7 @@ var d = labToolData.brainAtlas || {};
               },
                 React.createElement("div", { className: "brainatlas-3d-guide-head" },
                   React.createElement("div", null,
-                    React.createElement("p", { className: "brainatlas-3d-guide-kicker" }, "Guided learning · selected anatomy"),
+                    React.createElement("p", { className: "brainatlas-3d-guide-kicker" }, t('stem.brainatlas.d3_guided_learning_selected_anatomy', "Guided learning · selected anatomy")),
                     React.createElement("h3", { id: "brainatlas-3d-guide-title", className: "brainatlas-3d-guide-title" }, selected3DGuide.title),
                     React.createElement("p", { className: "brainatlas-3d-guide-pronunciation" }, selected3DGuide.pronunciation ? ("Say it: " + selected3DGuide.pronunciation) : "Use Hear name for an audio pronunciation.")
                   ),
