@@ -439,6 +439,25 @@ This is a different species from the earlier defects. Nothing here was false. Th
 ### A note on the test run
 
 One vitest invocation during this pass reported "1 error" with **zero tests executed** in 62 seconds. That is the worker-start stall this tree produces when a suite is launched alongside a browser run, not a failure. Re-running the three suites alone: 385 passed. Worth recording because the output looks like a red result and is not one.
+## Twentieth pass: every sentence that says "every"
+
+The chemistry overclaim suggested a mechanical check worth running across the whole catalog. Universal quantifiers are where overclaiming hides, and they are trivially greppable. So: every sentence in all 38 readings containing *every, all, always, never, none, nobody, only, must, cannot, impossible, entirely* or *completely* — read against what the pack actually establishes.
+
+Most survive, and several are the best sentences in their packs. Magnetism's "you cannot make a magnet with only one pole" is followed by the honest "physicists have searched hard for a single isolated pole and have never confirmed one", which is exactly right. The Moon "always shows us the same face" because "it rotates once for every orbit". "Earth is round, so flattening it always stretches something" is true and is the point of the map pack.
+
+### Three were not universal
+
+**Ecosystems: "Follow that energy far enough back and it always ends in the same place: sunlight."** Not always. Deep-sea hydrothermal vent communities run on chemical energy from inside the Earth, where no sunlight reaches. The reading now says *nearly always*, and the pack gained the FAQ that earns the hedge — bacteria building food from dissolved chemicals, with tube worms, crabs and clams living off them. That is a better fact than the overclaim it replaces, and it suits a pack that already tells students scientists still argue about how much the Yellowstone wolves caused.
+
+**Linear Equations: "Every straight line can be written as y = mx + b."** A vertical line cannot. The pack contradicts itself two paragraphs later, where it says every linear model is a function because each input produces exactly one output — which a vertical line does not. Now "every straight line except a vertical one".
+
+**Moon Phases: "Earth's shadow never touches the ball."** The very next sentence asks "So when does Earth's shadow matter? During a lunar eclipse." The absolute was fighting its own follow-up. It now reads "Earth's shadow plays no part in it", which is true of the phases and leaves the pivot intact.
+
+Two of the three were **internal contradictions** — the pack refuting itself within a few sentences — which is a specific and findable kind of error. The reader most likely to notice is the attentive student, and being contradicted by your own textbook is corrosive in a way that a simple mistake is not.
+
+### The check, stated for reuse
+
+When an authored explanation says *every*, *always* or *never*, do two things: count the cases the text actually demonstrates, and search the rest of the pack for a sentence that contradicts it. The chemistry pass found the first kind (a universal supported three-fifths); this pass found the second kind twice.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
