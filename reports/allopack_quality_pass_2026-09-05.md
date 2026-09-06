@@ -418,6 +418,27 @@ Most hold. The pyramids answer and its workers' village evidence, the Rosetta St
 **"If I enjoy both options equally, is the cost zero?" — "No, but it is small."** This one contradicted itself in the next sentence and inverted the pack's central concept. If the two options were nearly equal, you gave up something nearly as good, so the opportunity cost is **high**, not small. What is small is how much better off you ended up. The answer now says so.
 
 The third is the one worth dwelling on. It is not a slip of fact but a slip of *reasoning*, in the pack built to teach that exact reasoning, and it read plausibly enough to survive being written, reviewed at authoring time, levelled for readability, and rendered live. Only reading it slowly, against the definition three paragraphs above it, exposed the inversion.
+## Nineteenth pass: reading the readings
+
+The FAQ pass found an inverted piece of *reasoning*, not just wrong facts. The readings are longer, denser, and the one thing every student is certain to read. So they were read end to end rather than mined for extractable claims.
+
+The four densest — Volume, Chemical Reactions, Scarcity and Says Who? — plus Map Skills, Ancient Egypt, Local Government and Context Clues. The primary-grade readings had already been read repeatedly during the FAQ and glossary passes.
+
+Seven of the eight hold up under a slow read. The volume reading's distinction between volume and capacity is correct and carefully hedged. The scarcity reading's sand example, opportunity-cost definition and sunk-cost trap are all sound. The argument reading is careful to say that adolescent body clocks shifting later is what *sleep research finds*, rather than asserting it flatly, which is the right register for a pack about evidence.
+
+### The one that overclaimed
+
+The Chemical Reactions reading builds its whole case on one sentence: **"Every one of those five has a physical impostor."** It then demonstrates three — bubbles that are boiling, colour change that is dilution, temperature change that is dissolving — and moves on.
+
+The claim is true. Light can be an object glowing because it is hot; a solid can appear because something merely suspended settled out. But the reading asserted a universal and supported three fifths of it, in a lesson whose subject is not accepting a claim on the strength of appearances. A grade-8 reader is entitled to ask what the impostor is for light, and the text did not say.
+
+Both missing impostors are now named in the reading. The anchor chart, titled "EVERY SIGN HAS A LOOKALIKE", also listed only four of the five signs; it now has a LIGHT section, so the chart covers what its own title promises.
+
+This is a different species from the earlier defects. Nothing here was false. The failure was **an argument that did not carry its own weight** — the kind of gap the packs teach students to look for, sitting in a pack that teaches it.
+
+### A note on the test run
+
+One vitest invocation during this pass reported "1 error" with **zero tests executed** in 62 seconds. That is the worker-start stall this tree produces when a suite is launched alongside a browser run, not a failure. Re-running the three suites alone: 385 passed. Worth recording because the output looks like a red result and is not one.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
