@@ -1,0 +1,617 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Ten Is a Friendly Number — Making Ten to Add",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "1st Grade",
+    "standards": "CCSS.MATH.CONTENT.1.OA.C.6 (add and subtract within 20, using strategies such as making ten and decomposing a number leading to a ten); CCSS.MATH.CONTENT.1.OA.B.3 (apply properties of operations as strategies to add and subtract); CCSS.MATH.CONTENT.1.NBT.B.2.B (understand that the numbers from 11 to 19 are composed of a ten and some further ones)",
+    "createdAt": "2026-09-06T00:50:00.000Z",
+    "imageShotList": "allopacks/making_ten_grade1.IMAGES.md"
+  },
+  "sourceTopic": "Making Ten as an Addition Strategy",
+  "history": [
+    {
+      "id": "mn-directions",
+      "type": "directions",
+      "title": "Find the Ten",
+      "timestamp": "2026-09-06T00:50:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nSome sums are hard. But there is a trick. If you can make a ten first, the rest is easy.\n\n1. Read **Ten Is a Friendly Number** with a grown-up or a partner.\n2. Learn the words in **Number Words**, then win the **Matching** game.\n3. Look at the **Ways to Make Ten** chart.\n4. Sort the cards in **Makes Ten or Not?**\n5. Try **Ten Problems** with counters.\n6. Take **Number Check** — say each answer out loud first.\n7. Lock it in with **Remember the Partners**.\n8. Read **Number Questions Kids Ask**.\n9. Finish with **Investigation: The Ten Frame Hunt**.\n\nYour job this week: find ten of something at home and show two ways to split it. 🔟",
+        "objectives": [
+          {
+            "id": "mn-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "mn-glossary"
+          },
+          {
+            "id": "mn-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "mn-glossary"
+          },
+          {
+            "id": "mn-goal-xp",
+            "label": "Earn 15 XP",
+            "kind": "xp",
+            "amount": 15
+          },
+          {
+            "id": "mn-goal-find",
+            "label": "I found ten things at home and split them two ways",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "1st Grade • 4 goals • find ten things at home"
+    },
+    {
+      "id": "mn-reading",
+      "type": "simplified",
+      "title": "Ten Is a Friendly Number",
+      "timestamp": "2026-09-06T00:50:01.000Z",
+      "data": "## Ten Is a Friendly Number\n\nHold up your hands. You have **ten** fingers. Ten is easy to see. Ten is easy to **count**. That is why we like it.\n\nEvery number has a **partner** that makes ten. Six and four are partners. Seven and three are partners. Five and five are partners too. Those pairs are called **bonds**.\n\nNow here is the trick.\n\nTry 8 + 5. That one feels hard. But look what happens if you make a ten first.\n\nEight needs two more to be ten. So **break** the five into 2 and 3. Give the 2 to the eight. Now you have 10 and 3 **left**. And 10 + 3 is 13. Easy.\n\nYou did not change the answer. You just moved a little bit across. The **sum** is still the same.\n\nTry another one. 9 + 6. Nine needs one more. Break the six into 1 and 5. That makes 10 and 5. So the answer is 15.\n\nSome sums are already easy. A **double** like 6 + 6 is one you can just know. So is any sum with a 1 in it.\n\nWhen you meet a hard one, ask yourself a question. Can I make a ten?\n\nThe more you know your partners, the faster this gets. Soon you will not even stop to think.",
+      "meta": "1st Grade • Leveled reading • ~230 words • read-aloud friendly",
+      "imageSlot": "mn-img-make-ten"
+    },
+    {
+      "id": "mn-glossary",
+      "type": "glossary",
+      "title": "Number Words",
+      "timestamp": "2026-09-06T00:50:02.000Z",
+      "data": [
+        {
+          "term": "Ten",
+          "def": "The number of fingers on two hands.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Add",
+          "def": "To put two amounts together.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Sum",
+          "def": "The number you get when you add.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Partner",
+          "def": "The number you need to reach ten.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Bond",
+          "def": "A pair of numbers that make ten.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Break",
+          "def": "To split a number into two parts.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Double",
+          "def": "The same number twice, like 4 and 4.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Left",
+          "def": "What is still there after some move away.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Count",
+          "def": "To say numbers in order to find how many.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Equal",
+          "def": "The same amount as something else.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, good for games"
+    },
+    {
+      "id": "mn-anchor",
+      "type": "anchor-chart",
+      "title": "Ways to Make Ten",
+      "timestamp": "2026-09-06T00:50:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "PARTNERS THAT MAKE TEN",
+        "sections": [
+          {
+            "label": "THE PARTNERS",
+            "bullets": [
+              "9 and 1",
+              "8 and 2",
+              "7 and 3",
+              "6 and 4",
+              "5 and 5"
+            ],
+            "iconPrompt": "a ten frame with counters split into two colours"
+          },
+          {
+            "label": "THE TRICK",
+            "bullets": [
+              "Look at the bigger number",
+              "Ask what it needs to make ten",
+              "Break the other number and give it over"
+            ],
+            "iconPrompt": "two counters moving from one ten frame into another"
+          },
+          {
+            "label": "THEN IT IS EASY",
+            "bullets": [
+              "You have ten and some left",
+              "Ten and 3 is 13",
+              "Ten and 5 is 15"
+            ],
+            "iconPrompt": "one full ten frame beside three loose counters"
+          },
+          {
+            "label": "ONES YOU CAN JUST KNOW",
+            "bullets": [
+              "Doubles, like 6 and 6",
+              "Any sum with a 1 in it",
+              "Save the trick for the hard ones"
+            ],
+            "iconPrompt": "two matching rows of three counters each"
+          }
+        ]
+      },
+      "meta": "4 parts • partner chart for the wall"
+    },
+    {
+      "id": "mn-memory",
+      "type": "memory-aid",
+      "title": "Remember the Partners",
+      "timestamp": "2026-09-06T00:50:04.000Z",
+      "meta": "1st Grade • 2 memory aids • the partners, and the trick",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Partners",
+        "instructions": "Two cards hold the big ideas. Look at the example. Make one your own. Then say how it helps you.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "sequence-cue"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Every number has a partner that makes ten. Six and four are partners. Eight needs two more to be ten. So break the five into 2 and 3.",
+        "lessonRef": {
+          "resourceId": "mn-reading",
+          "title": "Ten Is a Friendly Number"
+        },
+        "cards": [
+          {
+            "id": "mn-ma-hands",
+            "target": "Your hands already hold every partner for ten",
+            "essentialFacts": [
+              "You have ten fingers on two hands.",
+              "Six and four are partners. Seven and three are partners.",
+              "Every number has a partner that makes ten."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Hold up ten fingers. Fold down six. Look at what is still up. That is four. Six and four are partners.",
+            "mapping": "Your hands are always with you and they always hold ten. Folding some down shows the partner without any counting.",
+            "scaffoldStarter": "I folded down ____. I can still see ____.",
+            "scaffoldSteps": [
+              "Hold up ten fingers.",
+              "Fold some down.",
+              "Say what is left up."
+            ],
+            "coachPrompts": [
+              "What is the partner for seven?"
+            ],
+            "studentPrompt": "Show me two partners on your hands.",
+            "reasoningPrompt": "How do your hands help you find a partner fast?",
+            "hookFact": {
+              "text": "Hold up your hands. You have ten fingers. Ten is easy to see.",
+              "sourceTitle": "Ten Is a Friendly Number (this lesson)"
+            }
+          },
+          {
+            "id": "mn-ma-trick",
+            "target": "The three steps for making a ten first",
+            "essentialFacts": [
+              "Look at the bigger number first.",
+              "Ask what it needs to make ten.",
+              "Break the other number and give that part over."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Say it in three beats. LOOK. NEED. GIVE. Look at the big number. Ask what it needs. Give it that much from the other one.",
+            "mapping": "Three short words in a fixed order. Saying them keeps the steps from getting mixed up.",
+            "scaffoldStarter": "Look: ____. Need: ____. Give: ____.",
+            "scaffoldSteps": [
+              "Say the three beats out loud.",
+              "Try them on 8 + 5.",
+              "Try them on 9 + 4."
+            ],
+            "coachPrompts": [
+              "What did the bigger number need?"
+            ],
+            "studentPrompt": "Make your own three words for the trick.",
+            "reasoningPrompt": "Why do you look at the bigger number first?",
+            "hookFact": {
+              "text": "You did not change the answer. You just moved a little bit across.",
+              "sourceTitle": "Ten Is a Friendly Number (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "mn-sort",
+      "type": "concept-sort",
+      "title": "Makes Ten or Not?",
+      "timestamp": "2026-09-06T00:50:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "mn-yes",
+            "label": "These two make TEN",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "mn-no",
+            "label": "These two do NOT make ten",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "mn1",
+            "content": "6 and 4",
+            "categoryId": "mn-yes"
+          },
+          {
+            "id": "mn2",
+            "content": "7 and 3",
+            "categoryId": "mn-yes"
+          },
+          {
+            "id": "mn3",
+            "content": "5 and 5",
+            "categoryId": "mn-yes"
+          },
+          {
+            "id": "mn4",
+            "content": "8 and 2",
+            "categoryId": "mn-yes"
+          },
+          {
+            "id": "mn5",
+            "content": "9 and 1",
+            "categoryId": "mn-yes"
+          },
+          {
+            "id": "mn6",
+            "content": "6 and 3",
+            "categoryId": "mn-no"
+          },
+          {
+            "id": "mn7",
+            "content": "7 and 4",
+            "categoryId": "mn-no"
+          },
+          {
+            "id": "mn8",
+            "content": "8 and 4",
+            "categoryId": "mn-no"
+          },
+          {
+            "id": "mn9",
+            "content": "5 and 4",
+            "categoryId": "mn-no"
+          }
+        ]
+      },
+      "meta": "2 buckets • 9 cards • the wrong ones are all close on purpose"
+    },
+    {
+      "id": "mn-math",
+      "type": "math",
+      "title": "Ten Problems",
+      "timestamp": "2026-09-06T00:50:06.000Z",
+      "data": {
+        "problems": [
+          {
+            "question": "What is 8 + 5?",
+            "answer": "13",
+            "steps": [
+              {
+                "explanation": "Look at the 8. It needs 2 more to make ten."
+              },
+              {
+                "explanation": "Break the 5 into 2 and 3. Give the 2 to the 8."
+              },
+              {
+                "explanation": "Now you have 10 and 3 left. 10 and 3 is 13."
+              }
+            ]
+          },
+          {
+            "question": "What is 9 + 6?",
+            "answer": "15",
+            "steps": [
+              {
+                "explanation": "Look at the 9. It needs 1 more to make ten."
+              },
+              {
+                "explanation": "Break the 6 into 1 and 5. Give the 1 to the 9."
+              },
+              {
+                "explanation": "Now you have 10 and 5 left. That is 15."
+              }
+            ]
+          },
+          {
+            "question": "What is 7 + 5?",
+            "answer": "12",
+            "steps": [
+              {
+                "explanation": "Look at the 7. It needs 3 more to make ten."
+              },
+              {
+                "explanation": "Break the 5 into 3 and 2. Give the 3 to the 7."
+              },
+              {
+                "explanation": "Now you have 10 and 2 left. That is 12."
+              }
+            ]
+          },
+          {
+            "question": "What is the partner of 6?",
+            "answer": "4",
+            "steps": [
+              {
+                "explanation": "Hold up ten fingers."
+              },
+              {
+                "explanation": "Fold down 6 of them."
+              },
+              {
+                "explanation": "Count what is still up. There are 4. So 6 and 4 are partners."
+              }
+            ]
+          },
+          {
+            "question": "What is 6 + 6?",
+            "answer": "12",
+            "steps": [
+              {
+                "explanation": "This one is a double. You may already know it."
+              },
+              {
+                "explanation": "If not, use the trick. The 6 needs 4 more to make ten."
+              },
+              {
+                "explanation": "Break the other 6 into 4 and 2. That gives 10 and 2, which is 12."
+              }
+            ]
+          }
+        ]
+      },
+      "meta": "5 problems • use counters • steps read aloud"
+    },
+    {
+      "id": "mn-quiz",
+      "type": "quiz",
+      "title": "Number Check",
+      "timestamp": "2026-09-06T00:50:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which two numbers are partners that make ten?",
+            "options": [
+              "6 and 3",
+              "7 and 3",
+              "8 and 4",
+              "5 and 4"
+            ],
+            "correctAnswer": "7 and 3",
+            "conceptLabel": "partners make ten"
+          },
+          {
+            "type": "mcq",
+            "question": "For 8 + 5, how much does the 8 need to make ten?",
+            "options": [
+              "It needs 1 more",
+              "It needs 3 more",
+              "It needs 2 more",
+              "It needs 5 more"
+            ],
+            "correctAnswer": "It needs 2 more",
+            "conceptLabel": "ask what it needs"
+          },
+          {
+            "type": "mcq",
+            "question": "You break 5 into 2 and 3, and give the 2 away. What is left?",
+            "options": [
+              "3",
+              "2",
+              "5",
+              "7"
+            ],
+            "correctAnswer": "3",
+            "conceptLabel": "break and give"
+          },
+          {
+            "type": "mcq",
+            "question": "What is 9 + 4?",
+            "options": [
+              "12",
+              "14",
+              "11",
+              "13"
+            ],
+            "correctAnswer": "13",
+            "conceptLabel": "ask what it needs"
+          },
+          {
+            "type": "mcq",
+            "question": "When you move some over to make a ten, what happens to the answer?",
+            "options": [
+              "It stays the same",
+              "It gets bigger",
+              "It gets smaller",
+              "It goes to ten"
+            ],
+            "correctAnswer": "It stays the same",
+            "conceptLabel": "the sum does not change"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Show how to work out 7 + 6 by making a ten.",
+            "expectedAnswer": "The 7 needs 3 more to make ten. Break the 6 into 3 and 3. Give one 3 to the 7 to make ten. That leaves 3. Ten and 3 is 13.",
+            "conceptLabel": "break and give"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend says 8 and 3 make ten. What would you tell them?",
+            "expectedAnswer": "They do not make ten. 8 and 3 make 11. The partner of 8 is 2, because 8 and 2 make ten.",
+            "conceptLabel": "partners make ten"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which partner is easiest for you to remember?"
+          },
+          {
+            "text": "Was the trick fun or tricky? Tell why."
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • read-aloud friendly"
+    },
+    {
+      "id": "mn-faq",
+      "type": "faq",
+      "title": "Number Questions Kids Ask",
+      "timestamp": "2026-09-06T00:50:08.000Z",
+      "data": [
+        {
+          "question": "Why is ten so special? ✋",
+          "answer": "Mostly because we have ten fingers. People counted on their hands for a very long time. So we built our numbers around ten."
+        },
+        {
+          "question": "Can I just count on my fingers?",
+          "answer": "Yes! Fingers are a real tool. The trick is faster once you know it. But counting is never cheating."
+        },
+        {
+          "question": "Does the trick work for big numbers too? 🔢",
+          "answer": "It does. Later you will make a hundred the same way. The same idea grows with you."
+        },
+        {
+          "question": "What if I forget a partner?",
+          "answer": "Hold up ten fingers. Fold down the number you have. What is still up is the partner. Your hands remember for you."
+        },
+        {
+          "question": "Is there more than one way to add? 🤔",
+          "answer": "Lots of ways. You can count on. You can use a double. You can make a ten. They all give the same answer."
+        },
+        {
+          "question": "Do I have to use the trick every time?",
+          "answer": "No. Save it for the hard ones. If you already know the answer, just say it."
+        }
+      ],
+      "meta": "6 questions • one says counting is never cheating"
+    },
+    {
+      "id": "mn-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Ten Frame Hunt",
+      "timestamp": "2026-09-06T00:50:09.000Z",
+      "meta": "1st Grade • Investigation brief • find ten, split it, show it",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Ten Frame Hunt",
+        "instructions": "Find ten small things. Split them into two piles. Do it again a different way. Show what you found.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "Splitting a real ten many ways is how a first grader meets every number bond at once. Doing it with objects they chose makes the partners theirs instead of a list to memorise.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has counters, blocks, buttons and a ten frame mat. You may also use small things you find, as long as you can hold them all in two hands.",
+          "role": "Number hunters",
+          "audience": "The class, who will build one big wall of all the ways to make ten",
+          "drivingQuestion": "How many different ways can you split ten things into two piles?",
+          "seedDirection": "Start with all ten in one pile. Move one across at a time. Do not skip.",
+          "lockedLessonFacts": [
+            "You have ten fingers on two hands.",
+            "Every number has a partner that makes ten.",
+            "Six and four are partners. Seven and three are partners.",
+            "Moving some across does not change how many there are."
+          ],
+          "openQuestions": [
+            "What do you notice when you move one across each time?",
+            "Is 6 and 4 the same as 4 and 6?",
+            "How do you know when you have found them all?"
+          ],
+          "stakeholders": [
+            "The class building the wall",
+            "Your partner who checks your counting",
+            "The teacher who puts the wall up"
+          ],
+          "criteria": [
+            "You always have ten things in total",
+            "Each way is drawn or shown with the two piles",
+            "You find at least four different ways",
+            "You say one thing you noticed"
+          ],
+          "constraints": [
+            "Ten things, no more and no fewer",
+            "Two piles each time",
+            "Count out loud with a partner"
+          ],
+          "deliverable": "A page with your ways to make ten, each one drawn as two piles, and one sentence about something you noticed.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student used ten buttons and kept losing count.",
+            "move": "She put all ten in a line first. Then she moved one button across at a time and drew each step. She found every way and never lost count.",
+            "whyItHelps": "Moving one at a time meant she never had to start over, and the line kept all ten in sight."
+          },
+          "frameStarter": "I have ____ in this pile and ____ in that pile. Together that is ____.",
+          "frameChoices": [
+            "Ten counters",
+            "Ten blocks",
+            "Ten buttons",
+            "Ten things I found"
+          ],
+          "coachPrompts": [
+            "Do you still have ten?",
+            "What changed when you moved one across?",
+            "Have you found a way you have not drawn yet?"
+          ]
+        },
+        "coachHint": "Ten things. Two piles. Move one at a time.",
+        "sourceExcerpt": "Every number has a partner that makes ten. Six and four are partners.",
+        "lessonRef": {
+          "resourceId": "mn-reading",
+          "title": "Ten Is a Friendly Number"
+        }
+      }
+    }
+  ]
+}
