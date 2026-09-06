@@ -46,11 +46,23 @@ describe('Art Studio screen-reader announcements reach the translator', () => {
     }
   });
 
-  it('records the concatenated announcements that are still English', () => {
+  it('interpolates value-only announcements through the translator', () => {
+    const src = readFileSync(copies[0], 'utf8');
+    const formatted = src.match(/announceToSR\(formatArtStudioLearningText\(__alloT\('stem\.artstudio\.[a-z0-9_]+'/g) || [];
+    expect(formatted.length).toBeGreaterThanOrEqual(19);
+    const section = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.artstudio;
+    // Templates keep their placeholders, or the value would never appear.
+    expect(section.sr_watercolor_cursor_at_column_row).toBe('Watercolor cursor at column {value1}, row {value2}.');
+    expect(section.sr_pixel_row_column).toBe('Pixel row {value1}, column {value2}.');
+  });
+
+  it('records the announcements that still splice English words', () => {
     const src = readFileSync(copies[0], 'utf8');
     const concat = src.match(CONCATENATED) || [];
-    // If this drops to zero, that pass is done: delete this test.
+    // These pick an English word with a ternary ("hidden"/"locked",
+    // "larger"/"smaller", " part."/" parts."), so each needs its own key.
+    // Lower the bound as they are done; at zero, delete this test.
     expect(concat.length).toBeGreaterThan(0);
-    expect(concat.length).toBeLessThanOrEqual(30);
+    expect(concat.length).toBeLessThanOrEqual(11);
   });
 });

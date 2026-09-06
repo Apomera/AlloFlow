@@ -4000,13 +4000,13 @@ const d = labToolData.artStudio || {};
               else if (event.key === 'End') { keyboardX = SIM_W - 1; keyboardY = SIM_H - 1; moved = true; }
               if (moved) {
                 event.preventDefault();
-                if (typeof announceToSR === 'function') announceToSR('Watercolor cursor at column ' + Math.round(keyboardX + 1) + ', row ' + Math.round(keyboardY + 1) + '.');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_cursor_at_column_row', 'Watercolor cursor at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
                 return;
               }
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
                 engine.dabAt(keyboardX, keyboardY, 0.7);
-                if (typeof announceToSR === 'function') announceToSR('Watercolor dab placed at column ' + Math.round(keyboardX + 1) + ', row ' + Math.round(keyboardY + 1) + '.');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_dab_placed_at_column_row', 'Watercolor dab placed at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
               }
             };
 
@@ -4215,7 +4215,7 @@ const d = labToolData.artStudio || {};
                 canvas._pixelKeyboardCursor = keyboardCursor;
                 drawPixelGrid();
                 if (typeof announceToSR === 'function') {
-                  announceToSR('Pixel row ' + (keyboardCursor.y + 1) + ', column ' + (keyboardCursor.x + 1) + '.');
+                  announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_pixel_row_column', 'Pixel row {value1}, column {value2}.'), { value1: (keyboardCursor.y + 1), value2: (keyboardCursor.x + 1) }));
                 }
               }
             };
@@ -4741,7 +4741,7 @@ const d = labToolData.artStudio || {};
                 drawSymmetric(keyboardCursor.x, keyboardCursor.y, true);
                 recordSymmetryChange(stampBefore);
                 if (typeof announceToSR === 'function') {
-                  announceToSR('Placed symmetric marks at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                  announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_placed_symmetric_marks_at_x_y', 'Placed symmetric marks at x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
                 }
               }
             };
@@ -6472,7 +6472,7 @@ const d = labToolData.artStudio || {};
                   });
                 });
                 if (typeof addToast === 'function') addToast('Saved to the Sourcebook palette with rights and source metadata.', 'success');
-                if (typeof announceToSR === 'function') announceToSR('Saved ' + item.title + ' to the Sourcebook palette');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_saved_to_the_sourcebook_palette', 'Saved {value1} to the Sourcebook palette'), { value1: item.title }));
               }
               function continueInSourcebook(profile) {
                 setLabToolData(function (prev) {
@@ -6852,7 +6852,7 @@ const d = labToolData.artStudio || {};
                 var loadMixture = function () {
                   upd('watercolorColor', mixture.color);
                   Object.keys(mixture.values).forEach(function (key) { upd(key, mixture.values[key]); });
-                  if (typeof announceToSR === 'function') announceToSR('Mixed pigment loaded: ' + mixtureSummary + '.');
+                  if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_mixed_pigment_loaded', 'Mixed pigment loaded: {value1}.'), { value1: mixtureSummary }));
                 };
                 return React.createElement("div", { id: "artstudio-watercolor-mixing-tray", role: "group", 'aria-labelledby': "artstudio-watercolor-mixing-title", className: "rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2" },
                   React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
@@ -7637,7 +7637,7 @@ const d = labToolData.artStudio || {};
                 if (P3D.normalizeMorphProfile) profile = P3D.normalizeMorphProfile(profile);
                 var nextProfiles = customMorphProfiles.slice(-19).concat([profile]);
                 updMany({ sculptFormProfiles: nextProfiles, sculptProfileName: '' });
-                if (typeof announceToSR === 'function') announceToSR('Saved reusable form profile ' + name + '.');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_saved_reusable_form_profile', 'Saved reusable form profile {value1}.'), { value1: name }));
               }
               var undoSculpt = function() {
                 if (!sculptUndo.length) return;
@@ -7864,7 +7864,7 @@ const d = labToolData.artStudio || {};
                       var rotatedRecipe = P3D.updatePart(st.recipe, st.selectedIndex, { rotation: rotatedValues });
                       st.recipe = rotatedRecipe;
                       if (st.commitRecipe) st.commitRecipe(rotatedRecipe);
-                      if (typeof announceToSR === 'function') announceToSR('Rotated part ' + (st.selectedIndex + 1) + ' by ' + rotationDirection * rotationStep + ' degrees.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_rotated_part_by_degrees', 'Rotated part {value1} by {value2} degrees.'), { value1: (st.selectedIndex + 1), value2: rotationDirection * rotationStep }));
                     } else if (st.interactionMode === 'scale' && st.recipe && P3D.updatePart &&
                         (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'PageUp' || event.key === 'PageDown')) {
                       event.preventDefault();
@@ -8081,7 +8081,7 @@ const d = labToolData.artStudio || {};
                 next = P3D.updatePart(next, mirroredIndex, { position: mirroredPosition, rotation: mirroredRotation });
                 setRecipe(next);
                 upd('sculptSel', mirroredIndex);
-                if (typeof announceToSR === 'function') announceToSR('Created a mirrored copy of part ' + (sel + 1) + ' on the ' + sculptMirrorAxis.toUpperCase() + ' axis.');
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_created_a_mirrored_copy_of_part_on_the_axis', 'Created a mirrored copy of part {value1} on the {value2} axis.'), { value1: (sel + 1), value2: sculptMirrorAxis.toUpperCase() }));
               };
               return React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
                 // preview column
@@ -8189,7 +8189,7 @@ const d = labToolData.artStudio || {};
                         var customActive = selectedMorphSignature === morphSignature(profile);
                         return React.createElement("span", { key: profile.id || profileIndex, className: "inline-flex overflow-hidden rounded border border-fuchsia-200 bg-white" },
                           React.createElement("button", { type: "button", className: "px-2 py-1 text-[0.625rem] font-bold " + (customActive ? 'bg-fuchsia-600 text-white' : 'text-fuchsia-700 hover:bg-fuchsia-50'), "aria-label": 'Apply saved ' + profile.label + ' form profile', "aria-pressed": customActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label),
-                          React.createElement("button", { type: "button", className: "border-l border-fuchsia-200 px-1.5 text-[0.625rem] text-fuchsia-700 hover:bg-fuchsia-50", "aria-label": 'Delete custom form profile ' + profile.label, onClick: function() { var remaining = customMorphProfiles.filter(function(_, index) { return index !== profileIndex; }); upd('sculptFormProfiles', remaining); if (typeof announceToSR === 'function') announceToSR('Deleted form profile ' + profile.label + '.'); } }, '\u00D7')
+                          React.createElement("button", { type: "button", className: "border-l border-fuchsia-200 px-1.5 text-[0.625rem] text-fuchsia-700 hover:bg-fuchsia-50", "aria-label": 'Delete custom form profile ' + profile.label, onClick: function() { var remaining = customMorphProfiles.filter(function(_, index) { return index !== profileIndex; }); upd('sculptFormProfiles', remaining); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_deleted_form_profile', 'Deleted form profile {value1}.'), { value1: profile.label })); } }, '\u00D7')
                         );
                       })) : null,
                       React.createElement("div", { className: "mt-2 flex gap-1" },
@@ -9031,9 +9031,7 @@ const d = labToolData.artStudio || {};
 
                       event.preventDefault(); burstAt(keyboardCursor.x, keyboardCursor.y);
 
-                      if (typeof announceToSR === 'function') announceToSR('Created particle burst at x ' +
-
-                        Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_created_particle_burst_at_x_y', 'Created particle burst at x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
 
                     }
 
@@ -9514,9 +9512,7 @@ const d = labToolData.artStudio || {};
 
                       spawnDrip(keyboardCursor.x, keyboardCursor.y);
 
-                      if (typeof announceToSR === 'function') announceToSR('Added paint at x ' +
-
-                        Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_added_paint_at_x_y', 'Added paint at x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
 
                     }
 
@@ -10848,9 +10844,7 @@ const d = labToolData.artStudio || {};
 
                           updateTessSelection(true);
 
-                          if (typeof announceToSR === 'function') announceToSR('Selected tile ' +
-
-                            (visibleTiles.indexOf(selectedPoly) + 1) + ' of ' + visibleTiles.length + '.');
+                          if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_selected_tile_of', 'Selected tile {value1} of {value2}.'), { value1: (visibleTiles.indexOf(selectedPoly) + 1), value2: visibleTiles.length }));
 
                         }
 
@@ -11367,7 +11361,7 @@ const d = labToolData.artStudio || {};
 
                       var newZoom = Math.min(500, Math.round(zoom * 2));
 
-                      upd('fractalPanX', newPanX); upd('fractalPanY', newPanY); upd('fractalZoom', newZoom); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Fractal view zoomed to ' + newZoom + ' times at horizontal pan ' + newPanX + ' and vertical pan ' + newPanY + '.');
+                      upd('fractalPanX', newPanX); upd('fractalPanY', newPanY); upd('fractalZoom', newZoom); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_fractal_view_zoomed_to_times_at_horizontal_pan', 'Fractal view zoomed to {value1} times at horizontal pan {value2} and vertical pan {value3}.'), { value1: newZoom, value2: newPanX, value3: newPanY }));
 
                     };
 
@@ -11381,7 +11375,7 @@ const d = labToolData.artStudio || {};
 
                       var newZoom2 = Math.max(1, Math.min(500, Math.round(zoom * factor)));
 
-                      upd('fractalZoom', newZoom2); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR('Fractal zoom ' + newZoom2 + ' times.');
+                      upd('fractalZoom', newZoom2); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_fractal_zoom_times', 'Fractal zoom {value1} times.'), { value1: newZoom2 }));
 
                     };
 
@@ -11469,7 +11463,7 @@ const d = labToolData.artStudio || {};
 
                             upd('gradStops', stops);
 
-                            if (typeof announceToSR === 'function') announceToSR('Color stop added. ' + stops.length + ' stops total.');
+                            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_color_stop_added_stops_total', 'Color stop added. {value1} stops total.'), { value1: stops.length }));
 
                           }
 
@@ -11529,7 +11523,7 @@ const d = labToolData.artStudio || {};
 
                               upd('gradStops', newStops3);
 
-                              if (typeof announceToSR === 'function') announceToSR('Color stop removed. ' + newStops3.length + ' stops remain.');
+                              if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_color_stop_removed_stops_remain', 'Color stop removed. {value1} stops remain.'), { value1: newStops3.length }));
 
                             }, className: "transition-colors text-sm font-bold text-red-700 hover:text-red-800 flex-shrink-0 w-6 h-6 rounded focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, "\u00D7")
 
@@ -12939,7 +12933,7 @@ const d = labToolData.artStudio || {};
                         upd('stereoAnimKeyframes', kf);
 
                         if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Keyframe ' + kf.length + ' captured!', 'success');
-                        if (typeof announceToSR === 'function') announceToSR('Keyframe ' + kf.length + ' captured.');
+                        if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_keyframe_captured', 'Keyframe {value1} captured.'), { value1: kf.length }));
 
                       }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-800 hover:to-emerald-800 shadow-sm" }, __alloT('stem.artstudio.capture_keyframe_2', "\uD83D\uDCF8 Capture Keyframe")),
 
@@ -13023,7 +13017,7 @@ const d = labToolData.artStudio || {};
 
                             React.createElement("button", { "aria-label": "Remove keyframe " + (idx + 1), onClick: function() {
 
-                              var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs); if (typeof announceToSR === 'function') announceToSR('Keyframe ' + (idx + 1) + ' removed.');
+                              var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_keyframe_removed', 'Keyframe {value1} removed.'), { value1: (idx + 1) }));
 
                             }, className: "transition-colors absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-700 text-white text-sm font-bold flex items-center justify-center hover:bg-red-600 cursor-pointer focus-visible:ring-4 focus-visible:ring-purple-600 focus-visible:ring-offset-2", style: { lineHeight: '1' } }, "\u00D7")
 
