@@ -3920,9 +3920,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 bg-cyan-500', style: { height: Math.min(100, windAtAlt / 80 * 100) + '%' } })
                   ),
                   h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, windAtAlt + ' mph'),
-                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.wind', 'Wind'))
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + textMuted }, t('stem.migration.typical_wind', 'Typical wind'))
                 )
               ),
+              // This readout said just "Wind", which reads as THE wind at that
+              // height -- and the Jet Streams card below puts 30,000 ft at
+              // 100-200 mph while this model gives 70. Both are true of
+              // different things: the model is the broad flow, a jet core is a
+              // narrow ribbon inside it. Saying so is the fix; changing either
+              // number would make one of them wrong.
+              h('p', { className: 'mt-2 text-[0.6875rem] italic ' + textMuted },
+                t('stem.migration.typical_wind_note', 'Typical wind is the broad flow at that height. Jet-stream cores are narrow ribbons inside it running two to three times faster — which is the range the Jet Streams card describes.')),
               // Science context
               h('div', { className: 'mt-3 text-[0.6875rem] leading-relaxed ' + textSecondary },
                 altFeet > 25000 ? h('p', null, '\u{1F9EC} ', h('strong', null, t('stem.migration.extreme_altitude', 'Extreme altitude! ')), t('stem.migration.bar_headed_geese_survive_here_thanks_t', 'Bar-headed Geese survive here thanks to hemoglobin that binds oxygen more tightly, larger lungs, and more efficient mitochondria. Most mammals would be unconscious at this altitude. Their blood has a special hemoglobin mutation (Pro\u2192Ala at position 119) that increases oxygen affinity by 50%.')) :

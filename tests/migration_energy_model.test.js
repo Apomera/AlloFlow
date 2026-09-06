@@ -213,6 +213,35 @@ describe('Migration Lab flight-energy model', () => {
     }
   });
 
+  it('names the same force the Beaufort card names', () => {
+    // The wind tab's Beaufort card states force numbers with their names, and
+    // the wind readout resolves a speed to a name from the table. These had
+    // drifted: before the bands were rebuilt on the real mph ranges, a 25 mph
+    // wind displayed "Fresh" while the card called force 6 "Strong Breeze".
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    const card = (src.match(/Admiral Sir Francis Beaufort[^']*/) || [''])[0];
+    expect(card, 'the Beaufort card is present').toBeTruthy();
+    const b = tool._testing.beaufort;
+    const labelForForce = (f) => {
+      for (let mph = 0; mph <= 70; mph++) if (b(mph).force === f) return b(mph).label;
+      return null;
+    };
+    const claims = [...card.matchAll(/Force (\d+)(?:-(\d+))? (?:winds )?\(([^)]+)\)/g)];
+    expect(claims.length).toBeGreaterThanOrEqual(3);
+    for (const [, lo, hi, names] of claims) {
+      for (const f of [Number(lo), hi ? Number(hi) : null].filter((x) => x != null)) {
+        const label = labelForForce(f);
+        // Forces above the wind slider's range are general knowledge, not a
+        // claim the table has to back.
+        if (!label) continue;
+        // The card contracts "Light Breeze to Moderate Breeze" to "Light to
+        // Moderate Breeze", so match on the distinguishing first word.
+        const key = label.split(' ')[0].toLowerCase();
+        expect(names.toLowerCase(), 'force ' + f + ' is "' + label + '" in the table').toContain(key);
+      }
+    }
+  });
+
   it('reads the true Beaufort force bands', () => {
     const b = tool._testing.beaufort;
     expect(b(0).force).toBe(0);
