@@ -1,0 +1,790 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "What the Story Is Really Saying — Tracing Theme",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "8th Grade",
+    "standards": "CCSS.ELA-LITERACY.RL.8.2 (determine a theme or central idea of a text and analyze its development over the course of the text, including its relationship to the characters, setting, and plot; provide an objective summary of the text); CCSS.ELA-LITERACY.RL.8.3 (analyze how particular lines of dialogue or incidents in a story or drama propel the action, reveal aspects of a character, or provoke a decision); CCSS.ELA-LITERACY.RL.8.1 (cite the textual evidence that most strongly supports an analysis of what the text says explicitly as well as inferences drawn from the text)",
+    "createdAt": "2026-09-06T03:40:00.000Z",
+    "imageShotList": "allopacks/theme_development_grade8.IMAGES.md"
+  },
+  "sourceTopic": "Theme and How It Develops Across a Text",
+  "history": [
+    {
+      "id": "th-directions",
+      "type": "directions",
+      "title": "Tracing Theme",
+      "timestamp": "2026-09-06T03:40:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nA theme is not hidden in a story like a key under a mat. It is built, slowly, out of what happens. This unit is about learning to watch it get built.\n\n1. Read **What the Story Is Really Saying**. Mark every place the writer says what theme is *not*.\n2. Learn the words in **Theme Vocabulary**, then win the **Matching** game and the **Memory** game.\n3. Work through **How a Theme Gets Built** to see the shape of the argument.\n4. Study the **Topic, Theme, Moral** chart. The differences are the whole unit.\n5. Sort the cards in **Topic, Theme, or Advice?** — several are close calls.\n6. Fill in **Theme Tracker Notes** as you read your own text.\n7. Draft with **Theme Statement Frames**, then check yourself against the rubric.\n8. Take **Theme Check**.\n9. Lock it in with **Remember the Theme Test**.\n10. Read **Questions Readers Ask About Theme**.\n11. Finish with **Argument: The Disputed Theme**.\n\nBring a text you have actually read and can argue about. 📖",
+        "objectives": [
+          {
+            "id": "th-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "th-glossary"
+          },
+          {
+            "id": "th-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "th-glossary"
+          },
+          {
+            "id": "th-goal-xp",
+            "label": "Earn 40 XP",
+            "kind": "xp",
+            "amount": 40
+          },
+          {
+            "id": "th-goal-statement",
+            "label": "I wrote a theme statement and found three moments that support it",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "8th Grade • 4 goals • bring a text you can argue about"
+    },
+    {
+      "id": "th-reading",
+      "type": "simplified",
+      "title": "What the Story Is Really Saying",
+      "timestamp": "2026-09-06T03:40:01.000Z",
+      "data": "## What the Story Is Really Saying\n\nAsk a class for the theme of a story and someone will say \"survival\" or \"friendship.\" That is a **topic**, not a theme. A topic is what the story is about. A theme is what the story *says* about it.\n\nThe test is simple. Can you disagree with it? Nobody can disagree with \"friendship.\" Plenty of people could disagree with \"Friendship survives distance only when both people keep choosing it.\" That second one is a claim, and a claim is what a theme has to be.\n\n### Theme is not a moral either\n\nA **moral** tells you what to do. The tortoise beats the hare, so slow and steady wins the race. Fables work that way on purpose. Most stories do not. A theme describes what the story shows, and it may show something uncomfortable that no one would recommend.\n\nThis matters because students who look for a moral tend to bend the story toward a lesson, and end up writing about the story they expected instead of the one they read.\n\n### Themes are built, not stated\n\nHere is the part that gives this standard its name: theme **develops**. That **development**, stage by stage, is the point: it accumulates. Almost no good story announces its theme, and when a character does state it aloud, you should get suspicious, because writers often put a neat statement in the mouth of someone the story is about to prove wrong.\n\nSo where does it actually accumulate? Four places are worth watching.\n\n**What changes.** Compare who the character was at the start with who they are at the end. The distance between those two is where the story is arguing.\n\n**What they choose under pressure.** A choice with nothing at stake reveals nothing. A choice that costs something supports an **inference** about what a character actually values, which is often not what they said they valued.\n\n**What repeats.** An image, an object, a phrase that comes back three times is not an accident. A recurring detail like that is a **motif**. Repetition is a writer pointing.\n\n**What the ending withholds.** Sometimes the strongest evidence is a **resolution** the story refuses to give you. If a character never gets the apology, that absence is doing work.\n\n### More than one theme can be right\n\nA long text supports several themes at once, and two careful readers can land in different places without either being wrong. That does not make theme a matter of taste. A theme statement is an argument, and arguments can be weak.\n\nA weak theme statement is one that rests on a single line. A strong one accounts for the whole text, including the parts that seem to cut against it. In fact the fastest way to test your statement is to hunt for the **counterevidence**: the moment that fits it worst. If you can explain that moment, you have something. If you have to ignore it, you do not.\n\n### Summary is a different job\n\nWhen you are asked for an **objective summary**, you are being asked to leave yourself out. No opinions, no favourite parts, no \"I think.\" Just what happens, in order, in your own words. Save the argument for the theme statement, where it belongs.",
+      "meta": "8th Grade • Leveled reading • ~540 words",
+      "imageSlot": "th-img-theme-build"
+    },
+    {
+      "id": "th-glossary",
+      "type": "glossary",
+      "title": "Theme Vocabulary",
+      "timestamp": "2026-09-06T03:40:02.000Z",
+      "data": [
+        {
+          "term": "Theme",
+          "def": "A claim a text makes about human life, built up across the whole work rather than stated outright.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Topic",
+          "def": "The subject a text is about, named in a word or two, with no claim attached.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Moral",
+          "def": "A lesson telling the reader how to behave, common in fables and rare in complex fiction.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Development",
+          "def": "The way an idea is built up in stages across a text instead of appearing all at once.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Motif",
+          "def": "An image, object or phrase that recurs and gathers meaning each time it returns.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Objective",
+          "def": "Reporting what is there without opinion or personal reaction.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Inference",
+          "def": "A conclusion drawn from evidence in the text rather than from a direct statement.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Evidence",
+          "def": "The specific words, moments or details cited to support a claim.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Turning point",
+          "def": "A moment where a decision or event changes the direction of the story.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Counterevidence",
+          "def": "A detail that cuts against your claim and has to be explained rather than ignored.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Resolution",
+          "def": "How a story settles its conflict, including what it deliberately leaves unsettled.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Summary",
+          "def": "A short objective account of what happens, in order, without interpretation.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "12 terms • Tiered • counterevidence is the one most students skip"
+    },
+    {
+      "id": "th-outline",
+      "type": "outline",
+      "title": "How a Theme Gets Built",
+      "timestamp": "2026-09-06T03:40:03.000Z",
+      "data": {
+        "main": "Theme is a claim the whole text accumulates, not a lesson it announces",
+        "branches": [
+          {
+            "title": "First, rule out what theme is not",
+            "items": [
+              "Not a topic: a topic cannot be disagreed with",
+              "Not a moral: a moral tells you what to do",
+              "Not a quotation: a stated line may be one the story disproves"
+            ]
+          },
+          {
+            "title": "The disagreement test",
+            "items": [
+              "State it as a full sentence making a claim",
+              "Ask whether a thoughtful person could argue the opposite",
+              "If nobody could disagree, you have written a topic"
+            ]
+          },
+          {
+            "title": "Four places theme accumulates",
+            "items": [
+              "What changes between the beginning and the end",
+              "What a character chooses when the choice costs something",
+              "What repeats: an image, an object, a phrase",
+              "What the ending withholds or refuses to resolve"
+            ]
+          },
+          {
+            "title": "Characters carry the argument",
+            "items": [
+              "Dialogue reveals what a character will admit to",
+              "Incidents reveal what they do when admitting is not an option",
+              "The gap between the two is usually where the theme lives"
+            ]
+          },
+          {
+            "title": "Testing a theme statement",
+            "items": [
+              "Weak: rests on one line, ignores the rest",
+              "Strong: accounts for the whole text",
+              "Strongest: names the moment that fits worst and explains it"
+            ]
+          },
+          {
+            "title": "Two right answers are possible",
+            "items": [
+              "A long text supports several themes at once",
+              "This does not make theme a matter of taste",
+              "A theme statement is an argument, and arguments can be weak"
+            ]
+          },
+          {
+            "title": "Keep summary separate",
+            "items": [
+              "An objective summary leaves the writer out entirely",
+              "What happens, in order, in your own words",
+              "The argument belongs in the theme statement"
+            ]
+          }
+        ]
+      },
+      "meta": "7 branches • the shape of the whole unit"
+    },
+    {
+      "id": "th-anchor",
+      "type": "anchor-chart",
+      "title": "Topic, Theme, Moral",
+      "timestamp": "2026-09-06T03:40:04.000Z",
+      "data": {
+        "chartType": "comparison",
+        "title": "THREE THINGS PEOPLE CALL THEME",
+        "sections": [
+          {
+            "label": "TOPIC — what it is about",
+            "bullets": [
+              "One or two words",
+              "Courage. Loyalty. Loss.",
+              "Nobody can disagree with it"
+            ],
+            "iconPrompt": "a single closed book on a plain surface"
+          },
+          {
+            "label": "MORAL — what you should do",
+            "bullets": [
+              "An instruction to the reader",
+              "Common in fables",
+              "Bends the story toward a lesson"
+            ],
+            "iconPrompt": "a pointing hand with a raised index finger"
+          },
+          {
+            "label": "THEME — what the text argues",
+            "bullets": [
+              "A full sentence making a claim",
+              "Someone could argue the opposite",
+              "Built across the whole text"
+            ],
+            "iconPrompt": "several loose pages layering into a single stack"
+          },
+          {
+            "label": "WHERE TO LOOK",
+            "bullets": [
+              "What changed from start to end",
+              "What was chosen under pressure",
+              "What repeated",
+              "What the ending withheld"
+            ],
+            "iconPrompt": "a magnifying glass over an open book with one recurring shape marked in the margin"
+          }
+        ]
+      },
+      "meta": "4 parts • the disagreement test is the fast one"
+    },
+    {
+      "id": "th-memory",
+      "type": "memory-aid",
+      "title": "Remember the Theme Test",
+      "timestamp": "2026-09-06T03:40:05.000Z",
+      "meta": "8th Grade • 2 memory aids • the disagreement test, and the four places",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Theme Test",
+        "instructions": "Two cards carry the moves you will use every time you read. Read the example, build your own, then explain why yours works.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "standard",
+        "reasoningRequired": true,
+        "sourceExcerpt": "Nobody can disagree with friendship. Plenty of people could disagree with the claim that friendship survives distance only when both people keep choosing it.",
+        "lessonRef": {
+          "resourceId": "th-reading",
+          "title": "What the Story Is Really Saying"
+        },
+        "cards": [
+          {
+            "id": "th-ma-disagree",
+            "target": "If nobody could disagree with it, it is a topic and not a theme",
+            "essentialFacts": [
+              "A topic is what the story is about; a theme is what the story says about it.",
+              "A theme has to be a claim someone could argue against.",
+              "A theme statement is a full sentence, not a word."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Say your statement out loud and then say \"...and I disagree.\" If that sounds absurd, you wrote a topic. Nobody can disagree with \"loyalty.\" Somebody can absolutely disagree with the claim that loyalty to a person can put you at odds with what is right.",
+            "mapping": "Attaching the objection out loud turns an abstract test into something your ear does for you in one second.",
+            "scaffoldStarter": "My statement is ____. Someone could disagree by saying ____.",
+            "scaffoldSteps": [
+              "Write your statement as one full sentence.",
+              "Say it aloud, then add the objection.",
+              "If no objection exists, rewrite it as a claim."
+            ],
+            "coachPrompts": [
+              "What would a reader who disagreed with you actually say?"
+            ],
+            "studentPrompt": "Build your own quick test for telling a topic from a theme.",
+            "reasoningPrompt": "Why is being arguable a sign of strength here, when in most writing it sounds like a weakness?",
+            "hookFact": {
+              "text": "The test is simple. Can you disagree with it?",
+              "sourceTitle": "What the Story Is Really Saying (this lesson)"
+            }
+          },
+          {
+            "id": "th-ma-four-places",
+            "target": "The four places a theme accumulates",
+            "essentialFacts": [
+              "What changes between the beginning and the end.",
+              "What a character chooses when the choice costs something.",
+              "What repeats across the text.",
+              "What the ending withholds."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture four margins around a page. Left margin: what changed. Right margin: what it cost. Top margin: what came back again. Bottom margin: what never came at all. Every piece of evidence you need is written in one of those four margins.",
+            "mapping": "The page is the object you are already looking at, so the four places sit where you would physically annotate them, and the bottom margin being for an absence is a useful oddity that sticks.",
+            "scaffoldStarter": "In the ____ margin I would write ____, because ____.",
+            "scaffoldSteps": [
+              "Draw the four margins.",
+              "Fill each one from the text you are reading.",
+              "Circle the margin that gave you the strongest evidence."
+            ],
+            "coachPrompts": [
+              "Which margin is still empty, and is that telling you something?"
+            ],
+            "studentPrompt": "Make your own four-part picture for where evidence hides.",
+            "reasoningPrompt": "Why can an absence at the end count as evidence at all?",
+            "hookFact": {
+              "text": "If a character never gets the apology, that absence is doing work.",
+              "sourceTitle": "What the Story Is Really Saying (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "th-sort",
+      "type": "concept-sort",
+      "title": "Topic, Theme, or Advice?",
+      "timestamp": "2026-09-06T03:40:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "th-topic",
+            "label": "TOPIC — names a subject, makes no claim",
+            "color": "bg-slate-500"
+          },
+          {
+            "id": "th-theme",
+            "label": "THEME — a claim you could argue against",
+            "color": "bg-indigo-500"
+          },
+          {
+            "id": "th-moral",
+            "label": "ADVICE — tells the reader what to do",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "ths1",
+            "content": "Courage",
+            "categoryId": "th-topic"
+          },
+          {
+            "id": "ths2",
+            "content": "Growing up in a small town",
+            "categoryId": "th-topic"
+          },
+          {
+            "id": "ths3",
+            "content": "The cost of loyalty",
+            "categoryId": "th-topic"
+          },
+          {
+            "id": "ths4",
+            "content": "Friendship and distance",
+            "categoryId": "th-topic"
+          },
+          {
+            "id": "ths5",
+            "content": "Courage is usually indistinguishable from fear until afterwards, when someone names it",
+            "categoryId": "th-theme"
+          },
+          {
+            "id": "ths6",
+            "content": "Loyalty to a person can put someone at odds with what they believe is right",
+            "categoryId": "th-theme"
+          },
+          {
+            "id": "ths7",
+            "content": "People forgive far more easily when they are the ones who need forgiving",
+            "categoryId": "th-theme"
+          },
+          {
+            "id": "ths8",
+            "content": "Leaving a place does not release a person from it",
+            "categoryId": "th-theme"
+          },
+          {
+            "id": "ths9",
+            "content": "Always tell the truth, even when it is difficult",
+            "categoryId": "th-moral"
+          },
+          {
+            "id": "ths10",
+            "content": "Never judge someone before you know their story",
+            "categoryId": "th-moral"
+          },
+          {
+            "id": "ths11",
+            "content": "Slow and steady wins the race",
+            "categoryId": "th-moral"
+          },
+          {
+            "id": "ths12",
+            "content": "You should stand up for your friends no matter what it costs you",
+            "categoryId": "th-moral"
+          }
+        ]
+      },
+      "meta": "3 buckets • 12 cards • the advice cards are the ones students write by accident"
+    },
+    {
+      "id": "th-notes",
+      "type": "note-taking",
+      "title": "Theme Tracker Notes",
+      "timestamp": "2026-09-06T03:40:07.000Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "title": "Tracing a Theme Across a Text",
+        "cues": [
+          {
+            "id": "cue-th-1",
+            "text": "Topic vs theme — what is the difference?"
+          },
+          {
+            "id": "cue-th-2",
+            "text": "The disagreement test — how does it work?"
+          },
+          {
+            "id": "cue-th-3",
+            "text": "Why is a moral a trap?"
+          },
+          {
+            "id": "cue-th-4",
+            "text": "Who was the character at the start?"
+          },
+          {
+            "id": "cue-th-5",
+            "text": "Who are they at the end?"
+          },
+          {
+            "id": "cue-th-6",
+            "text": "A choice that cost something — which one?"
+          },
+          {
+            "id": "cue-th-7",
+            "text": "What repeats? (image, object, phrase)"
+          },
+          {
+            "id": "cue-th-8",
+            "text": "What does the ending withhold?"
+          },
+          {
+            "id": "cue-th-9",
+            "text": "My theme statement, in one sentence"
+          },
+          {
+            "id": "cue-th-10",
+            "text": "The moment that fits it WORST — and my explanation"
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-th-1",
+            "text": ""
+          },
+          {
+            "id": "note-th-2",
+            "text": ""
+          },
+          {
+            "id": "note-th-3",
+            "text": ""
+          },
+          {
+            "id": "note-th-4",
+            "text": ""
+          },
+          {
+            "id": "note-th-5",
+            "text": ""
+          },
+          {
+            "id": "note-th-6",
+            "text": ""
+          },
+          {
+            "id": "note-th-7",
+            "text": ""
+          },
+          {
+            "id": "note-th-8",
+            "text": ""
+          },
+          {
+            "id": "note-th-9",
+            "text": ""
+          },
+          {
+            "id": "note-th-10",
+            "text": ""
+          }
+        ]
+      },
+      "meta": "10 cues • blank note rows • the last cue is the one that makes the essay work"
+    },
+    {
+      "id": "th-frames",
+      "type": "sentence-frames",
+      "title": "Theme Statement Frames",
+      "timestamp": "2026-09-06T03:40:08.000Z",
+      "meta": "7 frames • draft with these, then check the rubric • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The topic of this text is ____, but the claim it makes about that topic is that ____."
+          },
+          {
+            "text": "At the start, ____ believes ____. By the end, ____."
+          },
+          {
+            "text": "The clearest evidence is the moment when ____, because it shows ____ rather than simply stating it."
+          },
+          {
+            "text": "____ repeats ____ times, and each time it carries more weight because ____."
+          },
+          {
+            "text": "The ending withholds ____, and that absence supports the theme because ____."
+          },
+          {
+            "text": "The moment that fits my statement worst is ____. I can account for it because ____."
+          },
+          {
+            "text": "A reader could reasonably argue instead that ____; my claim is stronger because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Analytical |\n|---|---|---|---|\n| The statement | Names a topic in a word or two | Writes a full sentence, but it is advice or an obvious truth | Writes an arguable claim a thoughtful reader could dispute |\n| Development | Cites one moment | Cites several moments from across the text | Traces the idea in stages and shows how it accumulates |\n| Counterevidence | Not mentioned | Notes a detail that does not fit | Names the worst-fitting moment and explains it without ignoring it |"
+      }
+    },
+    {
+      "id": "th-quiz",
+      "type": "quiz",
+      "title": "Theme Check",
+      "timestamp": "2026-09-06T03:40:09.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which of these is a theme statement rather than a topic?",
+            "options": [
+              "The cost of loyalty in a family under pressure",
+              "Loyalty to a person can conflict with doing what is right",
+              "Loyalty, family, and the choices they force",
+              "Always stay loyal to your family no matter what"
+            ],
+            "correctAnswer": "Loyalty to a person can conflict with doing what is right",
+            "conceptLabel": "topic vs theme"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the quickest test for whether you have written a theme and not a topic?",
+            "options": [
+              "Whether it is longer than five words",
+              "Whether it appears in the text word for word",
+              "Whether it applies to more than one book",
+              "Whether a thoughtful reader could disagree with it"
+            ],
+            "correctAnswer": "Whether a thoughtful reader could disagree with it",
+            "conceptLabel": "the disagreement test"
+          },
+          {
+            "type": "mcq",
+            "question": "According to the reading, why should you be suspicious when a character states the theme aloud?",
+            "options": [
+              "Writers often hand a neat statement to a character the story disproves",
+              "Characters are never reliable narrators about anything at all",
+              "A stated theme is always the exact opposite of the real one",
+              "It is a sign the writer could not think of an ending"
+            ],
+            "correctAnswer": "Writers often hand a neat statement to a character the story disproves",
+            "conceptLabel": "themes are built, not stated"
+          },
+          {
+            "type": "mcq",
+            "question": "Which is the strongest kind of evidence for a theme?",
+            "options": [
+              "The first line of the story",
+              "A choice the character makes with nothing at stake",
+              "A choice the character makes when it costs them something",
+              "The number of pages the story runs"
+            ],
+            "correctAnswer": "A choice the character makes when it costs them something",
+            "conceptLabel": "where theme accumulates"
+          },
+          {
+            "type": "mcq",
+            "question": "What does the reading say makes a theme statement weak?",
+            "options": [
+              "That it is longer than one sentence",
+              "That it rests on a single line and ignores the rest",
+              "That other careful readers disagree with it",
+              "That it is about an uncomfortable subject"
+            ],
+            "correctAnswer": "That it rests on a single line and ignores the rest",
+            "conceptLabel": "testing your statement"
+          },
+          {
+            "type": "mcq",
+            "question": "What belongs in an objective summary?",
+            "options": [
+              "What happens plus which part you liked best",
+              "Your argument about what the text means",
+              "The theme statement and its evidence",
+              "What happens, in order, in your own words"
+            ],
+            "correctAnswer": "What happens, in order, in your own words",
+            "conceptLabel": "summary is a different job"
+          },
+          {
+            "type": "mcq",
+            "question": "Two students write different theme statements for the same novel and both defend them well. What follows?",
+            "options": [
+              "One of them must have misread the book",
+              "Theme is a matter of personal taste, so any statement is fine",
+              "A long text can support several themes, and both arguments can be strong",
+              "The teacher has to pick the more popular one"
+            ],
+            "correctAnswer": "A long text can support several themes, and both arguments can be strong",
+            "conceptLabel": "more than one theme can be right"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Turn this topic into a theme statement: \"growing up in a small town.\" Then explain what makes your version a claim.",
+            "expectedAnswer": "Any arguable full sentence works, such as the claim that leaving a place does not release a person from it. What makes it a claim is that a thoughtful reader could argue the opposite, whereas nobody can disagree with the phrase growing up in a small town, because it only names a subject.",
+            "conceptLabel": "topic vs theme"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "The reading says the fastest way to test a theme statement is to hunt for the moment that fits it worst. Why would deliberately looking for evidence against yourself make an argument stronger?",
+            "expectedAnswer": "Because a statement that only survives when you ignore part of the text is not actually supported by the text. Finding the worst-fitting moment either forces you to sharpen the statement so it accounts for that moment, or shows you the claim does not hold. Either result leaves you with an argument built on the whole work rather than a selected piece of it.",
+            "conceptLabel": "testing your statement"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Have you ever written what you now recognise as advice and called it a theme? What would you change about it?"
+          },
+          {
+            "text": "Which of the four places — change, cost, repetition, absence — do you notice least when you read?"
+          }
+        ]
+      },
+      "meta": "7 picks + 2 explain • the two-students question is the one that separates taste from argument"
+    },
+    {
+      "id": "th-faq",
+      "type": "faq",
+      "title": "Questions Readers Ask About Theme",
+      "timestamp": "2026-09-06T03:40:10.000Z",
+      "data": [
+        {
+          "question": "Can a story have no theme at all? 📖",
+          "answer": "Some writing is not really trying to make a claim about human life, such as a procedure or a straight news report. But almost any narrative someone bothered to shape will carry one, even if the writer never planned it, because choosing what to include is already an argument about what matters."
+        },
+        {
+          "question": "Does the author decide the theme, or does the reader? 🤔",
+          "answer": "Neither one alone. The text sets the limits: a reading that contradicts what actually happens is simply wrong. Within those limits, readers do the interpreting, which is why two careful people can land in different places. Author intention is interesting evidence but it does not settle it, and plenty of writers have been surprised by what their own books turned out to say."
+        },
+        {
+          "question": "What if I find a theme my teacher disagrees with?",
+          "answer": "Argue it. That is the assignment. Bring three moments from different parts of the text and name the moment that fits worst, then explain it. A well-defended unusual reading is worth far more than the expected one asserted without evidence."
+        },
+        {
+          "question": "Is the theme always about the main character? 👥",
+          "answer": "Usually the main character carries most of it, since they get the most pages and the hardest choices. But not always. Sometimes a minor character exists mainly to show the cost of something the protagonist gets away with, and that contrast is where the claim actually lives."
+        },
+        {
+          "question": "Why do teachers care so much about theme? 🎯",
+          "answer": "Because it is the one reading skill that does not stay in English class. Working out what someone is arguing when they never say it directly is what you do with an advertisement, a speech, a news story and a person telling you their side of an argument."
+        },
+        {
+          "question": "How long should a theme statement be?",
+          "answer": "One sentence, and usually a fairly plain one. If yours needs a semicolon and three clauses, you are probably arguing two different themes at once. Pick the one you have more evidence for."
+        },
+        {
+          "question": "Can the theme change partway through a book? ↔️",
+          "answer": "The theme does not switch, but your reading of it should develop as you go, and it usually gets more precise rather than more general. What you thought at chapter three should look a little naive by the end. If it does not, you may have decided early and stopped noticing."
+        }
+      ],
+      "meta": "7 questions • one says a well-defended unusual reading beats the expected one"
+    },
+    {
+      "id": "th-challenge",
+      "type": "applied-challenge",
+      "title": "Argument: The Disputed Theme",
+      "timestamp": "2026-09-06T03:40:11.000Z",
+      "meta": "8th Grade • Argument brief • argue a theme against a real rival reading",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Disputed Theme",
+        "instructions": "Pair up with someone who read the same text. Each of you writes a different theme statement. Then argue them against each other in front of the class, using evidence rather than volume.",
+        "selectionMode": "manual",
+        "family": "propose",
+        "fitReason": "Theme only stops feeling like a guessing game when a student has to defend a reading against a real person holding a different one. The disagreement supplies the counterevidence step that students otherwise skip, and it makes the difference between argument and taste concrete rather than abstract.",
+        "agencyMode": "student-led",
+        "scope": "standard",
+        "brief": {
+          "family": "propose",
+          "context": "You and a partner have read the same text: a short story, a novel, a film or a play your teacher approves. You will deliberately write different theme statements for it and then defend them side by side.",
+          "role": "Opposing readers",
+          "audience": "The class, who will hear both cases and decide which was better argued, not which they prefer",
+          "drivingQuestion": "When two readings of the same text disagree, what makes one of them the stronger argument?",
+          "seedDirection": "Do not pick a statement because it is easy to defend. Pick the one you actually believe, then go looking for what damages it.",
+          "lockedLessonFacts": [
+            "A theme is a claim a thoughtful reader could disagree with, not a topic or a piece of advice.",
+            "Theme develops across a text rather than being stated in one line.",
+            "Evidence gathers in what changes, what is chosen under pressure, what repeats and what the ending withholds.",
+            "A long text can support several themes, but a theme statement is still an argument and arguments can be weak."
+          ],
+          "openQuestions": [
+            "Did the two statements turn out to be genuinely opposed, or two parts of one larger claim?",
+            "Which piece of evidence did both of you want?",
+            "Did arguing it change what you actually think the text is saying?"
+          ],
+          "stakeholders": [
+            "Your partner, who is arguing the other reading in good faith",
+            "The class, who have to judge the arguments and not the personalities",
+            "A reader coming to this text for the first time"
+          ],
+          "criteria": [
+            "A theme statement in one arguable sentence that passes the disagreement test",
+            "Three moments cited from three different parts of the text, quoted accurately",
+            "The strongest moment against your own reading, named and explained rather than skipped",
+            "One sentence granting what is genuinely right about your partner's reading",
+            "An objective summary of the text, with no opinion in it, so the class can follow the evidence"
+          ],
+          "constraints": [
+            "One sentence for the theme statement, no semicolons",
+            "Three minutes of speaking each, plus two minutes of reply",
+            "Every quotation must be findable in the text and quoted exactly",
+            "You may not argue that the other reading is simply wrong unless it contradicts what happens in the text"
+          ],
+          "deliverable": "A one-page case containing your theme statement, your objective summary, your three cited moments, your account of the worst-fitting moment, and your concession to your partner — plus the three-minute spoken argument you make from it.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "Two students argued opposite readings of a story about a character who returns home after years away.",
+            "move": "One argued that leaving a place does not release a person from it. The other argued that the character had genuinely changed and the town simply refused to see it. Instead of hunting for more quotations, the second student took the first student's strongest moment — the character falling back into an old family role at dinner — and reread it, showing the character noticing themselves doing it. Same moment, different reading.",
+            "whyItHelps": "Taking the opponent's best evidence rather than avoiding it is what an argument looks like when it is actually about the text. It also demonstrated the concession requirement without weakening the case."
+          },
+          "frameStarter": "My claim is that ____. The moment that damages it most is ____, and I can account for it because ____.",
+          "frameChoices": [
+            "Argue from what changed",
+            "Argue from a costly choice",
+            "Argue from something that repeats",
+            "Argue from what the ending refuses to give"
+          ],
+          "coachPrompts": [
+            "Could a thoughtful reader disagree with your sentence as written?",
+            "Which moment in the text fits your claim worst?",
+            "What is your partner genuinely right about?",
+            "Are your three moments from three different parts, or all from the ending?"
+          ]
+        },
+        "coachHint": "One arguable sentence, three moments from three parts, and the evidence against you named out loud.",
+        "sourceExcerpt": "The fastest way to test your statement is to hunt for the moment that fits it worst. If you can explain that moment, you have something. If you have to ignore it, you do not.",
+        "lessonRef": {
+          "resourceId": "th-reading",
+          "title": "What the Story Is Really Saying"
+        }
+      }
+    }
+  ]
+}

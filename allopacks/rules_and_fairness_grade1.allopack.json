@@ -1,0 +1,524 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Why We Have Rules — Fair, Safe, and Together",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "1st Grade",
+    "standards": "C3 Framework D2.Civ.1.K-2 (describe roles and responsibilities of people in authority); C3 Framework D2.Civ.6.K-2 (describe how communities work to accomplish common tasks, establish responsibilities, and fulfill roles of authority); C3 Framework D2.Civ.12.K-2 (identify and explain how rules function in public settings)",
+    "createdAt": "2026-09-06T03:10:00.000Z",
+    "imageShotList": "allopacks/rules_and_fairness_grade1.IMAGES.md"
+  },
+  "sourceTopic": "Rules, Fairness, and Living Together",
+  "history": [
+    {
+      "id": "rf-directions",
+      "type": "directions",
+      "title": "Rules Week",
+      "timestamp": "2026-09-06T03:10:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nEvery place you go has rules. This week you find out why.\n\n1. Read **Why We Have Rules** with a grown-up or a partner.\n2. Learn the words in **Rule Words**, then win the **Matching** game and the **Memory** game.\n3. Look at the **A Good Rule** chart.\n4. Sort the cards in **Safe or Fair?**\n5. Take **Rules Check** — say each answer out loud first.\n6. Lock it in with **Remember the Rule Test**.\n7. Read **Rule Questions Kids Ask**.\n8. Finish with **Investigation: One Better Rule**.\n\nYour job this week: watch for one rule that helps and one rule you want to ask about. 📋",
+        "objectives": [
+          {
+            "id": "rf-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "rf-glossary"
+          },
+          {
+            "id": "rf-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "rf-glossary"
+          },
+          {
+            "id": "rf-goal-xp",
+            "label": "Earn 15 XP",
+            "kind": "xp",
+            "amount": 15
+          },
+          {
+            "id": "rf-goal-watch",
+            "label": "I found one rule that helps and one rule I want to ask about",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "1st Grade • 4 goals • watch for rules all week"
+    },
+    {
+      "id": "rf-reading",
+      "type": "simplified",
+      "title": "Why We Have Rules",
+      "timestamp": "2026-09-06T03:10:01.000Z",
+      "data": "## Why We Have Rules\n\nThink about your day. You line up. You raise a hand. You walk in the hall. Those are **rules**.\n\nA rule is something we all agree to do. It is not just one person telling you what to do. It is a plan we **share**.\n\nWhy do we need them? Try to picture a game with no rules. Everyone grabs the ball. Nobody knows whose **turn** it is. The game stops being fun very fast.\n\nMost rules do one of two jobs.\n\nSome rules keep us **safe**. We hold the rail on the stairs. We stop at the curb. Those rules are about bodies.\n\nSome rules keep things **fair**. We take turns on the swing. We **share** the markers. Those rules are about people getting the same chance.\n\nHere is a good question to ask about any rule. Who does this rule help?\n\nSometimes a rule helps everyone. Sometimes a rule only helps one person. That second kind is worth asking about.\n\nRules can change. Grown-ups change them. Kids can ask for a change too. In a lot of places, people **vote** to decide.\n\nAsking about a rule is not the same as breaking it. You can follow a rule today and still ask for a better one tomorrow.",
+      "meta": "1st Grade • Leveled reading • ~215 words • read-aloud friendly",
+      "imageSlot": "rf-img-rules"
+    },
+    {
+      "id": "rf-glossary",
+      "type": "glossary",
+      "title": "Rule Words",
+      "timestamp": "2026-09-06T03:10:02.000Z",
+      "data": [
+        {
+          "term": "Rule",
+          "def": "Something we all agree to do.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Fair",
+          "def": "Everyone gets the same chance.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Safe",
+          "def": "Away from getting hurt.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Share",
+          "def": "To let someone else use it too.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Turn",
+          "def": "Your time to go.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Agree",
+          "def": "To say yes to the same plan.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Vote",
+          "def": "To pick, and count who picked what.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Change",
+          "def": "To make something different.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Group",
+          "def": "People doing something together.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Ask",
+          "def": "To say a question out loud.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, good for games"
+    },
+    {
+      "id": "rf-anchor",
+      "type": "anchor-chart",
+      "title": "A Good Rule",
+      "timestamp": "2026-09-06T03:10:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "WHAT RULES DO",
+        "sections": [
+          {
+            "label": "RULES KEEP US SAFE",
+            "bullets": [
+              "Hold the rail",
+              "Stop at the curb",
+              "Walk in the hall"
+            ],
+            "iconPrompt": "a child's hand resting on a stair rail"
+          },
+          {
+            "label": "RULES KEEP IT FAIR",
+            "bullets": [
+              "Take turns",
+              "Share the markers",
+              "One at a time"
+            ],
+            "iconPrompt": "two children beside a swing, one waiting"
+          },
+          {
+            "label": "THE BIG QUESTION",
+            "bullets": [
+              "Who does this rule help?",
+              "Does it help everyone?",
+              "Or does it help just one?"
+            ],
+            "iconPrompt": "a large question mark beside a small group of children"
+          },
+          {
+            "label": "RULES CAN CHANGE",
+            "bullets": [
+              "Ask about it",
+              "Say why",
+              "Sometimes a group votes"
+            ],
+            "iconPrompt": "hands raised in a circle of seated children"
+          }
+        ]
+      },
+      "meta": "4 parts • rule chart for the wall"
+    },
+    {
+      "id": "rf-memory",
+      "type": "memory-aid",
+      "title": "Remember the Rule Test",
+      "timestamp": "2026-09-06T03:10:04.000Z",
+      "meta": "1st Grade • 2 memory aids • the two jobs, and the big question",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Rule Test",
+        "instructions": "Two cards hold the big ideas. Look at the example. Make one your own. Then say how it helps you.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "sequence-cue"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Some rules keep us safe. Some rules keep things fair. Here is a good question to ask about any rule. Who does this rule help?",
+        "lessonRef": {
+          "resourceId": "rf-reading",
+          "title": "Why We Have Rules"
+        },
+        "cards": [
+          {
+            "id": "rf-ma-two-jobs",
+            "target": "Most rules do one of two jobs: safe or fair",
+            "essentialFacts": [
+              "Some rules keep us safe, like holding the rail.",
+              "Some rules keep things fair, like taking turns.",
+              "A rule is something we all agree to do."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture two doors. One door has a stair rail on it. That is the SAFE door. One door has a swing on it. That is the FAIR door. Every rule walks in one of those two doors.",
+            "mapping": "Two doors means only two choices, so you never have to hunt through a long list. You just ask which door this rule walks in.",
+            "scaffoldStarter": "This rule goes in the ____ door because ____.",
+            "scaffoldSteps": [
+              "Say a rule from your day.",
+              "Ask if it is about bodies or about turns.",
+              "Put it in that door."
+            ],
+            "coachPrompts": [
+              "Is that rule about getting hurt, or about getting a turn?"
+            ],
+            "studentPrompt": "Draw your own two doors and put one rule in each.",
+            "reasoningPrompt": "Can a rule go in both doors? Tell why you think so.",
+            "hookFact": {
+              "text": "Try to picture a game with no rules. The game stops being fun very fast.",
+              "sourceTitle": "Why We Have Rules (this lesson)"
+            }
+          },
+          {
+            "id": "rf-ma-who-helps",
+            "target": "The three words for asking about a rule",
+            "essentialFacts": [
+              "Ask who the rule helps.",
+              "Say why you think so.",
+              "Asking about a rule is not the same as breaking it."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Say it in three beats. WHO. WHY. ASK. Who does it help? Why do I think that? Then ask a grown-up.",
+            "mapping": "Three short words in a fixed order. The order matters, because asking works better after you have a reason ready.",
+            "scaffoldStarter": "Who: ____. Why: ____. Ask: ____.",
+            "scaffoldSteps": [
+              "Say the three beats out loud.",
+              "Try them on a rule at school.",
+              "Try them on a rule at home."
+            ],
+            "coachPrompts": [
+              "Who did you decide it helps?"
+            ],
+            "studentPrompt": "Make your own three words for asking about a rule.",
+            "reasoningPrompt": "Why is it better to have a reason before you ask?",
+            "hookFact": {
+              "text": "You can follow a rule today and still ask for a better one tomorrow.",
+              "sourceTitle": "Why We Have Rules (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rf-sort",
+      "type": "concept-sort",
+      "title": "Safe or Fair?",
+      "timestamp": "2026-09-06T03:10:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "rf-safe",
+            "label": "This rule keeps us SAFE",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "rf-fair",
+            "label": "This rule keeps it FAIR",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "rf1",
+            "content": "Hold the rail on the stairs",
+            "categoryId": "rf-safe"
+          },
+          {
+            "id": "rf2",
+            "content": "Stop at the curb",
+            "categoryId": "rf-safe"
+          },
+          {
+            "id": "rf3",
+            "content": "Walk in the hall",
+            "categoryId": "rf-safe"
+          },
+          {
+            "id": "rf4",
+            "content": "Wash your hands before snack",
+            "categoryId": "rf-safe"
+          },
+          {
+            "id": "rf5",
+            "content": "Take turns on the swing",
+            "categoryId": "rf-fair"
+          },
+          {
+            "id": "rf6",
+            "content": "Share the markers",
+            "categoryId": "rf-fair"
+          },
+          {
+            "id": "rf7",
+            "content": "One person talks at a time",
+            "categoryId": "rf-fair"
+          },
+          {
+            "id": "rf8",
+            "content": "Everyone gets one turn before anyone gets two",
+            "categoryId": "rf-fair"
+          }
+        ]
+      },
+      "meta": "2 buckets • 8 cards • some could be argued, and that is worth talking about"
+    },
+    {
+      "id": "rf-quiz",
+      "type": "quiz",
+      "title": "Rules Check",
+      "timestamp": "2026-09-06T03:10:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is a rule?",
+            "options": [
+              "Something one person likes",
+              "Something we all agree to do",
+              "Something only grown-ups do",
+              "Something you say very loudly"
+            ],
+            "correctAnswer": "Something we all agree to do",
+            "conceptLabel": "what a rule is"
+          },
+          {
+            "type": "mcq",
+            "question": "Holding the rail on the stairs is mostly a rule about what?",
+            "options": [
+              "Keeping us safe",
+              "Taking turns",
+              "Sharing",
+              "Being quiet"
+            ],
+            "correctAnswer": "Keeping us safe",
+            "conceptLabel": "the two jobs"
+          },
+          {
+            "type": "mcq",
+            "question": "Taking turns on the swing is mostly a rule about what?",
+            "options": [
+              "Keeping us safe",
+              "Going fast",
+              "Keeping it fair",
+              "Being first"
+            ],
+            "correctAnswer": "Keeping it fair",
+            "conceptLabel": "fair rules"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the big question to ask about any rule?",
+            "options": [
+              "Who made it up?",
+              "Who does this rule help?",
+              "How old is it?",
+              "Is it long or short?"
+            ],
+            "correctAnswer": "Who does this rule help?",
+            "conceptLabel": "the big question"
+          },
+          {
+            "type": "mcq",
+            "question": "Can rules change?",
+            "options": [
+              "Yes, and people can ask for a change",
+              "No, a rule always stays the same",
+              "Only if nobody notices the change",
+              "Only on the last day of school"
+            ],
+            "correctAnswer": "Yes, and people can ask for a change",
+            "conceptLabel": "rules can change"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Tell about one rule at your school and say what job it does.",
+            "expectedAnswer": "Any real school rule works. A strong answer names the rule and then says whether it keeps people safe or keeps things fair, and why the student thinks so.",
+            "conceptLabel": "the two jobs"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A friend says the biggest kid should always go first. Is that rule fair? Tell why.",
+            "expectedAnswer": "It is not fair, because it does not give everyone the same chance. It only helps one person, the biggest kid. A fair rule would give every person a turn.",
+            "conceptLabel": "who does it help"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which rule at school makes the most sense to you?"
+          },
+          {
+            "text": "Is there a rule you would like to ask about? Say it out loud."
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • read-aloud friendly"
+    },
+    {
+      "id": "rf-faq",
+      "type": "faq",
+      "title": "Rule Questions Kids Ask",
+      "timestamp": "2026-09-06T03:10:07.000Z",
+      "data": [
+        {
+          "question": "Why do grown-ups get to make the rules? 🤔",
+          "answer": "Often it is their job to keep kids safe. But not always. A class can make rules together. A team can too. And kids can ask for a rule to change."
+        },
+        {
+          "question": "What if a rule feels unfair?",
+          "answer": "Say so. Then say why. A reason helps a lot. Follow the rule while you ask. That way people hear the reason and not the fuss."
+        },
+        {
+          "question": "Are there rules everywhere? 🌍",
+          "answer": "Yes, in every place we share. Homes and buses have them. So do parks, pools and libraries. Even a game you make up has rules."
+        },
+        {
+          "question": "What if someone breaks a rule?",
+          "answer": "Then something happens next. Maybe a reminder. Maybe a turn missed. The point is not to be mean. It is to keep the rule working for all of us."
+        },
+        {
+          "question": "Can a rule be fair to one person and not to another? ⚖️",
+          "answer": "Yes. That is the tricky part. It is why we ask who a rule helps. If it helps just one kid, we should talk about it."
+        },
+        {
+          "question": "Do rules ever go away?",
+          "answer": "They do. A rule can end when the reason for it ends. We do not need a rule about a broken door once the door is fixed."
+        }
+      ],
+      "meta": "6 questions • one is about a rule that helps only one person"
+    },
+    {
+      "id": "rf-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: One Better Rule",
+      "timestamp": "2026-09-06T03:10:08.000Z",
+      "meta": "1st Grade • Investigation brief • find a rule, test it, ask for one change",
+      "data": {
+        "schemaVersion": 6,
+        "title": "One Better Rule",
+        "instructions": "Find one rule in your classroom. Ask who it helps. Then say one way to make it better, and tell the class.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "A first grader learns what a rule is by testing a real one they live under, not by hearing a definition. Asking who a rule helps, out loud, in their own room, is the whole civic move in miniature.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your classroom already has rules. Some are on a chart. Some are just things everybody does. You may walk around and look, and you may ask your teacher what a rule is for.",
+          "role": "Rule checkers",
+          "audience": "The class, who will vote on which better rule to try for a week",
+          "drivingQuestion": "Does this rule help everyone, or does it help just some people?",
+          "seedDirection": "Pick a rule you actually follow every day, not a made-up one. Real rules are easier to test.",
+          "lockedLessonFacts": [
+            "A rule is something we all agree to do.",
+            "Some rules keep us safe. Some rules keep things fair.",
+            "Asking about a rule is not the same as breaking it.",
+            "Rules can change, and people can ask for a change."
+          ],
+          "openQuestions": [
+            "Who does this rule help the most?",
+            "Is anybody left out by it?",
+            "What is one small change that would help more people?"
+          ],
+          "stakeholders": [
+            "Everyone in your class who follows the rule",
+            "Your teacher, who has to make the rule work",
+            "A new student who does not know the rule yet"
+          ],
+          "criteria": [
+            "You name one real rule from your room",
+            "You say whether it keeps people safe or keeps things fair",
+            "You say who it helps",
+            "You say one change and one reason for it"
+          ],
+          "constraints": [
+            "One rule only",
+            "The rule has to be a real one from your room",
+            "Your change has to still be safe"
+          ],
+          "deliverable": "A short talk to the class, with a drawing of the rule, that names the rule, says who it helps, and asks for one change.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A class had a rule that the first person to the door held it for everyone.",
+            "move": "One student noticed the same fast kid always got there first and never got to walk through with a friend. She asked for a change: the door holder switches every day, by the class list.",
+            "whyItHelps": "She did not say the rule was bad. She found who it left out, and changed one small part so it helped more people."
+          },
+          "frameStarter": "Our rule is ____. It helps ____. One way to make it better is ____.",
+          "frameChoices": [
+            "A lining-up rule",
+            "A sharing rule",
+            "A talking rule",
+            "A cleaning-up rule"
+          ],
+          "coachPrompts": [
+            "Who does that rule help?",
+            "Is anybody left out?",
+            "Would your change still keep people safe?"
+          ]
+        },
+        "coachHint": "One real rule. Who does it help? One small change.",
+        "sourceExcerpt": "Here is a good question to ask about any rule. Who does this rule help?",
+        "lessonRef": {
+          "resourceId": "rf-reading",
+          "title": "Why We Have Rules"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,564 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Then and Now — How Life Changes Over Time",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "2nd Grade",
+    "standards": "C3 Framework D2.His.1.K-2 (create a chronological sequence of multiple events); C3 Framework D2.His.2.K-2 (compare life in the past to life today); C3 Framework D2.His.3.K-2 (generate questions about individuals and groups who have shaped a significant historical change)",
+    "createdAt": "2026-09-06T03:20:00.000Z",
+    "imageShotList": "allopacks/then_and_now_grade2.IMAGES.md"
+  },
+  "sourceTopic": "Then and Now: How Communities and Everyday Life Change",
+  "history": [
+    {
+      "id": "tw-directions",
+      "type": "directions",
+      "title": "Then and Now Week",
+      "timestamp": "2026-09-06T03:20:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nThings around you have not always been this way. This week you find out what changed.\n\n1. Read **Life Was Different Then** with a partner.\n2. Learn the words in **Time Words**, then win the **Matching** game and the **Memory** game.\n3. Walk through **A Hundred and Fifty Years** and look at the order.\n4. Look at the **Then and Now** chart.\n5. Sort the cards in **Long Ago or Today?**\n6. Take **Time Check**.\n7. Lock it in with **Remember the Order**.\n8. Read **Time Questions Kids Ask**.\n9. Finish with **Investigation: Ask Someone Older**.\n\nYour job this week: ask one grown-up what was different when they were your age. 🕰️",
+        "objectives": [
+          {
+            "id": "tw-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "tw-glossary"
+          },
+          {
+            "id": "tw-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "tw-glossary"
+          },
+          {
+            "id": "tw-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "tw-goal-ask",
+            "label": "I asked a grown-up what was different when they were my age",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "2nd Grade • 4 goals • ask someone older"
+    },
+    {
+      "id": "tw-reading",
+      "type": "simplified",
+      "title": "Life Was Different Then",
+      "timestamp": "2026-09-06T03:20:01.000Z",
+      "data": "## Life Was Different Then\n\nLook around your room. Almost none of it was here when your great-grandparents were kids.\n\nThat is **history**. It is the story of how things got to be the way they are. The **past** is the time that already went by. The **present** is right now.\n\nThink about talking to someone far away. Long ago, you wrote a letter. It went on a horse, then a train. It took days. Then someone **invented** the telephone. You could hear a voice from another town. Now a phone fits in a pocket and shows a face.\n\nThink about getting places. People walked. They rode horses. Then came trains, then cars, then planes. Each one made the world feel a little smaller.\n\nA **timeline** puts all of that in **order**. It shows what came first and what came next.\n\nSome things did **change** a lot. Kitchens changed. Schools changed. What people did for work changed.\n\nBut some things stayed the **same**. Kids still play. Families still eat together. People still tell stories and make music and want friends.\n\nHere is something to notice. Change does not happen all at once. It happens one step at a time. Each step builds on the one before. The car needed the road. The phone in your pocket needed the telephone first.\n\nSo how do we know any of this? We look for **clues**. Old photos. Old tools. Things kept in a museum. And people. Someone in your family has a **memory** of a time you never saw.\n\nSo ask them. A memory is a kind of evidence, and it will not be there forever.",
+      "meta": "2nd Grade • Leveled reading • ~270 words",
+      "imageSlot": "tw-img-then-now"
+    },
+    {
+      "id": "tw-glossary",
+      "type": "glossary",
+      "title": "Time Words",
+      "timestamp": "2026-09-06T03:20:02.000Z",
+      "data": [
+        {
+          "term": "Past",
+          "def": "The time that already went by.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Present",
+          "def": "The time that is going on now.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Change",
+          "def": "When a thing gets different.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Same",
+          "def": "Not different from before.",
+          "tier": "Academic"
+        },
+        {
+          "term": "History",
+          "def": "The story of what happened before now.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Timeline",
+          "def": "A line that shows what came first.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Order",
+          "def": "What came first, next, and last.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Memory",
+          "def": "A thing a person still remembers.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Clue",
+          "def": "A small thing that helps you find out.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Invent",
+          "def": "To make a thing that was never made before.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, good for games"
+    },
+    {
+      "id": "tw-timeline",
+      "type": "timeline",
+      "title": "A Hundred and Fifty Years",
+      "timestamp": "2026-09-06T03:20:03.000Z",
+      "data": {
+        "progressionLabel": "TIMELINE: The first voice down a wire (1876) → A phone in your pocket (2007)",
+        "items": [
+          {
+            "date": "1876",
+            "event": "Alexander Graham Bell patents the telephone. For the first time, a voice can travel down a wire to another town."
+          },
+          {
+            "date": "1886",
+            "event": "Karl Benz patents a gasoline car with three wheels. Almost nobody has one yet."
+          },
+          {
+            "date": "1903",
+            "event": "Orville and Wilbur Wright fly a powered plane at Kitty Hawk. The first flight lasts about twelve seconds."
+          },
+          {
+            "date": "1927",
+            "event": "Philo Farnsworth sends the first electronic television picture. It is a single straight line."
+          },
+          {
+            "date": "1969",
+            "event": "Neil Armstrong and Buzz Aldrin walk on the Moon while people all over the world watch on television."
+          },
+          {
+            "date": "1991",
+            "event": "Tim Berners-Lee puts the first website online and opens the World Wide Web to anyone outside his lab."
+          },
+          {
+            "date": "2007",
+            "event": "Touch-screen smartphones go on sale. A phone, a camera, a map and the web all fit in one pocket."
+          }
+        ]
+      },
+      "meta": "7 events • each one needed the ones before it"
+    },
+    {
+      "id": "tw-anchor",
+      "type": "anchor-chart",
+      "title": "Then and Now",
+      "timestamp": "2026-09-06T03:20:04.000Z",
+      "data": {
+        "chartType": "comparison",
+        "title": "WHAT CHANGED, WHAT STAYED",
+        "sections": [
+          {
+            "label": "CHANGED: TALKING",
+            "bullets": [
+              "Letters on a train",
+              "A telephone on the wall",
+              "A phone in your pocket"
+            ],
+            "iconPrompt": "three objects in a row: a sealed envelope, a wall telephone, a small rectangular phone"
+          },
+          {
+            "label": "CHANGED: GOING PLACES",
+            "bullets": [
+              "Walking and horses",
+              "Trains, then cars",
+              "Planes"
+            ],
+            "iconPrompt": "a horse, a train engine and an aeroplane silhouette in a row"
+          },
+          {
+            "label": "STAYED THE SAME",
+            "bullets": [
+              "Kids play",
+              "Families eat together",
+              "People tell stories"
+            ],
+            "iconPrompt": "two children playing with a ball, drawn simply"
+          },
+          {
+            "label": "HOW WE KNOW",
+            "bullets": [
+              "Old photos",
+              "Old tools in a museum",
+              "Ask someone who was there"
+            ],
+            "iconPrompt": "a stack of old photographs beside a magnifying glass"
+          }
+        ]
+      },
+      "meta": "4 parts • then-and-now chart for the wall"
+    },
+    {
+      "id": "tw-memory",
+      "type": "memory-aid",
+      "title": "Remember the Order",
+      "timestamp": "2026-09-06T03:20:05.000Z",
+      "meta": "2nd Grade • 2 memory aids • change builds in steps, and how we know",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Order",
+        "instructions": "Two cards hold the big ideas. Look at the example. Make one your own. Then say how it helps you.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Change does not happen all at once. It happens one step at a time, and each step builds on the one before. The car needed the road.",
+        "lessonRef": {
+          "resourceId": "tw-reading",
+          "title": "Life Was Different Then"
+        },
+        "cards": [
+          {
+            "id": "tw-ma-steps",
+            "target": "Change happens in steps, and each step needs the one before",
+            "essentialFacts": [
+              "Change does not happen all at once.",
+              "Each step builds on the one before it.",
+              "The phone in your pocket needed the telephone first."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Think of stairs. You cannot jump from the bottom to the top. The telephone is one stair. The pocket phone is a higher one. Somebody had to build every stair in between.",
+            "mapping": "Stairs only work in order, which is exactly how inventions work. It also shows why nothing skips ahead.",
+            "scaffoldStarter": "First came ____. That made ____ possible.",
+            "scaffoldSteps": [
+              "Pick two things from the timeline.",
+              "Say which came first.",
+              "Say how the first one helped the second."
+            ],
+            "coachPrompts": [
+              "What had to exist before that could work?"
+            ],
+            "studentPrompt": "Draw your own stairs for something that changed.",
+            "reasoningPrompt": "Why can't a step be skipped?",
+            "hookFact": {
+              "text": "The first flight at Kitty Hawk lasts about twelve seconds.",
+              "sourceTitle": "A Hundred and Fifty Years (this lesson)"
+            }
+          },
+          {
+            "id": "tw-ma-clues",
+            "target": "Three places to find out about the past",
+            "essentialFacts": [
+              "Old photos are a clue.",
+              "Old tools kept in a museum are a clue.",
+              "A person who was there remembers, and a memory is evidence."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a shoebox with three things inside. A photo. An old tool. And a chair, for the person who tells you about it. Those three things are how we know.",
+            "mapping": "One box you can picture, holding all three kinds of clue. The empty chair is the reminder that people are evidence too.",
+            "scaffoldStarter": "I could find out by looking at ____ or by asking ____.",
+            "scaffoldSteps": [
+              "Picture the box.",
+              "Name what is in it.",
+              "Say which clue you could actually go find this week."
+            ],
+            "coachPrompts": [
+              "Who in your family could tell you about that?"
+            ],
+            "studentPrompt": "Draw your own box of clues about the past.",
+            "reasoningPrompt": "Why is asking a person different from looking at a photo?",
+            "hookFact": {
+              "text": "A memory is a kind of evidence, and it will not be there forever.",
+              "sourceTitle": "Life Was Different Then (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "tw-sort",
+      "type": "concept-sort",
+      "title": "Long Ago or Today?",
+      "timestamp": "2026-09-06T03:20:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "tw-changed",
+            "label": "This CHANGED a lot",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "tw-same",
+            "label": "This stayed mostly the SAME",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "tws1",
+            "content": "How a message gets to someone far away",
+            "categoryId": "tw-changed"
+          },
+          {
+            "id": "tws2",
+            "content": "How people travel across the country",
+            "categoryId": "tw-changed"
+          },
+          {
+            "id": "tws3",
+            "content": "How food is kept cold",
+            "categoryId": "tw-changed"
+          },
+          {
+            "id": "tws4",
+            "content": "How clothes get washed",
+            "categoryId": "tw-changed"
+          },
+          {
+            "id": "tws5",
+            "content": "Children playing games together",
+            "categoryId": "tw-same"
+          },
+          {
+            "id": "tws6",
+            "content": "Families eating a meal together",
+            "categoryId": "tw-same"
+          },
+          {
+            "id": "tws7",
+            "content": "Telling stories out loud",
+            "categoryId": "tw-same"
+          },
+          {
+            "id": "tws8",
+            "content": "Wanting to have friends",
+            "categoryId": "tw-same"
+          }
+        ]
+      },
+      "meta": "2 buckets • 8 cards • the tools changed, the people did not"
+    },
+    {
+      "id": "tw-quiz",
+      "type": "quiz",
+      "title": "Time Check",
+      "timestamp": "2026-09-06T03:20:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does a timeline show you?",
+            "options": [
+              "How long something took",
+              "What order things happened in",
+              "Who was the most important",
+              "Where things happened"
+            ],
+            "correctAnswer": "What order things happened in",
+            "conceptLabel": "order of events"
+          },
+          {
+            "type": "mcq",
+            "question": "Which came first, the telephone or the pocket smartphone?",
+            "options": [
+              "The pocket smartphone",
+              "They came at the same time",
+              "The telephone",
+              "Neither one is older"
+            ],
+            "correctAnswer": "The telephone",
+            "conceptLabel": "order of events"
+          },
+          {
+            "type": "mcq",
+            "question": "The reading says change happens how?",
+            "options": [
+              "All at once",
+              "One step at a time",
+              "Only when someone is famous",
+              "Only in big cities"
+            ],
+            "correctAnswer": "One step at a time",
+            "conceptLabel": "change builds in steps"
+          },
+          {
+            "type": "mcq",
+            "question": "Which of these has stayed mostly the same over a very long time?",
+            "options": [
+              "How people wash clothes",
+              "How people travel far",
+              "Kids playing together",
+              "How food is kept cold"
+            ],
+            "correctAnswer": "Kids playing together",
+            "conceptLabel": "what stayed the same"
+          },
+          {
+            "type": "mcq",
+            "question": "Which of these is a clue about the past?",
+            "options": [
+              "An old photo",
+              "A good guess",
+              "A wish about it",
+              "A rule at school"
+            ],
+            "correctAnswer": "An old photo",
+            "conceptLabel": "how we know"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Name one thing that changed and one thing that stayed the same. Tell how you know.",
+            "expectedAnswer": "Any correct pair works. A strong answer names something like travel or telephones as changed, names something like playing or eating together as the same, and points to a clue such as an old photo or something a grown-up said.",
+            "conceptLabel": "changed and same"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Why does the reading say to ask someone older soon?",
+            "expectedAnswer": "Because a person's memory is evidence about a time you never saw, and it will not be there forever. Once someone is gone, what they remembered is gone too.",
+            "conceptLabel": "memory is evidence"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is one thing you hope is still the same when you are a grown-up?"
+          },
+          {
+            "text": "What do you think will change next?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me"
+    },
+    {
+      "id": "tw-faq",
+      "type": "faq",
+      "title": "Time Questions Kids Ask",
+      "timestamp": "2026-09-06T03:20:08.000Z",
+      "data": [
+        {
+          "question": "How do we know what happened before cameras? 📷",
+          "answer": "From other clues. People wrote things down and drew pictures. They left behind tools, buildings and rubbish. Digging those up tells us a lot."
+        },
+        {
+          "question": "Was life better then or now? 🤔",
+          "answer": "That is a real question, and people disagree about it. Some things got easier, like getting a doctor. Some things got harder. It is fair to think both at once."
+        },
+        {
+          "question": "Who decides what goes in a museum?",
+          "answer": "People who work there choose. They cannot keep everything, so they keep things that help tell a story. That means some things get left out."
+        },
+        {
+          "question": "Do memories ever get things wrong? 🧠",
+          "answer": "Yes, sometimes. People forget bits or mix up the order. That is why we check a memory against other clues, like a photo or a date."
+        },
+        {
+          "question": "Is history only about famous people?",
+          "answer": "No. Most of history is ordinary people going about their day. Your family is part of history too, even though nobody wrote a book about it."
+        },
+        {
+          "question": "Will right now be history one day? ⏳",
+          "answer": "It already is on the way there. Someone your age in a hundred years may look at a photo of your classroom and think it looks very old-fashioned."
+        }
+      ],
+      "meta": "6 questions • one says people disagree about better or worse"
+    },
+    {
+      "id": "tw-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: Ask Someone Older",
+      "timestamp": "2026-09-06T03:20:09.000Z",
+      "meta": "2nd Grade • Investigation brief • interview one person, find one change",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Ask Someone Older",
+        "instructions": "Ask one grown-up what was different when they were your age. Find one thing that changed and one thing that stayed the same. Show the class.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "A second grader meets history as something that happened to a person they know, not as a page of dates. Collecting one memory from a real interview makes them the one holding the evidence.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "You will talk to one grown-up you know: a parent, a grandparent, a neighbour, or a grown-up at school. Your teacher can help you set up the talk if you need it.",
+          "role": "Memory collectors",
+          "audience": "The class, who will put every answer together into one big then-and-now wall",
+          "drivingQuestion": "What was different when this person was my age, and what was just the same?",
+          "seedDirection": "Ask about one ordinary thing, like school, dinner or playing. Ordinary things give better answers than big ones.",
+          "lockedLessonFacts": [
+            "History is the story of how things got to be the way they are.",
+            "Some things changed a lot and some things stayed the same.",
+            "A memory is a kind of evidence.",
+            "Change happens one step at a time."
+          ],
+          "openQuestions": [
+            "What surprised you most in their answer?",
+            "Was the change good, bad, or a bit of both?",
+            "What would you want to still be the same when you are old?"
+          ],
+          "stakeholders": [
+            "The person you interview, who is trusting you with a memory",
+            "Your class, who will read what you found",
+            "Kids in the future who might read this wall"
+          ],
+          "criteria": [
+            "You name who you talked to, using a first name or a title like Grandpa",
+            "You write down one thing that changed",
+            "You write down one thing that stayed the same",
+            "You say one thing that surprised you"
+          ],
+          "constraints": [
+            "One person only",
+            "Three questions or fewer, so it stays a talk and not a test",
+            "Write their words the way they said them"
+          ],
+          "deliverable": "One page for the class wall with a drawing, the person's first name or title, one change, one thing that stayed the same, and one sentence about what surprised you.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student asked his grandmother about school lunches.",
+            "move": "He asked just one question and let her talk. She said the food was different but the arguing about who sat where was exactly the same. He wrote both parts down.",
+            "whyItHelps": "One question and a lot of listening gave him more than a list of questions would have, and he caught the thing that stayed the same by accident."
+          },
+          "frameStarter": "I talked to ____. They said ____ was different, but ____ was the same.",
+          "frameChoices": [
+            "Ask about school",
+            "Ask about dinner",
+            "Ask about playing outside",
+            "Ask about music"
+          ],
+          "coachPrompts": [
+            "What did they say first?",
+            "Did anything they said surprise you?",
+            "What stayed the same?"
+          ]
+        },
+        "coachHint": "One person. One change. One thing that stayed.",
+        "sourceExcerpt": "Someone in your family remembers a time you never saw. So ask them.",
+        "lessonRef": {
+          "resourceId": "tw-reading",
+          "title": "Life Was Different Then"
+        }
+      }
+    }
+  ]
+}

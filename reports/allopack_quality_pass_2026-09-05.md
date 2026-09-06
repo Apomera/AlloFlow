@@ -6,23 +6,23 @@ The passes below are in the order they were run. **Start with "Where this stands
 
 ## Where this stands
 
-**The catalog holds 38 packs covering grades 1 to 8.** Every grade has Science, ELA and Math; Social Studies covers grades 3 to 8. All 38 pass the shape suite, report zero audit flags, and load clean in the deployed app.
+**The catalog holds 42 packs covering grades 1 to 8, and the grade-by-subject matrix is now complete.** Every grade from 1 to 8 has Science, ELA, Math and Social Studies. All 42 pass the shape suite, report zero audit flags, and load clean in the deployed app.
 
-`catalog/index.json` is **unchanged, at two entries**. Publishing the other 36 is a deliberate decision and remains open — see "Catalog" below and the seed plan.
+`catalog/index.json` is **unchanged, at two entries**. Publishing the other 40 is a deliberate decision and remains open — see "Catalog" below and the seed plan.
 
 ### What is now verified, and how
 
 | Surface | Method | Result |
 | --- | --- | --- |
-| Structure and shapes | `tests/allopack_catalog.test.js` | 38 packs green |
+| Structure and shapes | `tests/allopack_catalog.test.js` | 42 packs green |
 | Reading level of every student-facing text | `dev-tools/audit_allopacks.cjs` | 0 flags |
-| Loads in the real app | `dev-tools/smoke_allopacks_live.mjs` | 38 of 38 |
-| Answer keys | 38 math answers re-worked, 190 MCQ items, 70 keys read | all correct |
-| Concept-sort placements | 354 cards read | 1 fixed |
+| Loads in the real app | `dev-tools/smoke_allopacks_live.mjs` | 42 of 42, one only on a retry |
+| Answer keys | 44 math answers re-worked, 216 MCQ items, 78 keys read | all correct |
+| Concept-sort placements | 394 cards read | 1 fixed |
 | Facts, dates, names | 57 claims + all 84 new FAQ answers + 8 readings | 6 fixed |
-| Standards codes and glosses | all 38 against the official text | 2 unearned alignments dropped |
+| Standards codes and glosses | all 42 against the official text | 2 unearned alignments dropped |
 | Universal claims | every *every/always/never* sentence | 3 fixed |
-| Timelines, briefs, frames, rubrics | read in full | 2 fixed |
+| Timelines, briefs, frames, rubrics | read in full | 3 fixed |
 | Ids across the catalog | `tests/allopack_id_uniqueness.test.js` | green |
 
 ### What the gates hold now
@@ -33,11 +33,11 @@ Beyond the original shape suite: grade-aware reading-level targets for every stu
 
 - **Publishing.** The user's call. `node dev-tools/build_allopack_catalog_entries.cjs --apply` writes the manifest entries, and because raw main is the live catalog, that publishes on the next deploy.
 - **Seed-plan checks 4 to 7**, which need a human: playing a word game to a win and watching the goal tick, the Spanish translation pass, in-app image generation against the shot lists, and the send-home round trip. Checks 2, 3 (load half), 8 and 9 are done.
-- **Illustration.** All 38 packs ship text-only with an `.IMAGES.md` shot list. 17 use the full Water Cycle pilot format; the other 21 use the earlier short format and now carry the text-free policy header.
+- **Illustration.** All 42 packs ship text-only with an `.IMAGES.md` shot list. 21 use the full Water Cycle pilot format; the other 21 use the earlier short format and now carry the text-free policy header.
 
 ### The one lesson worth carrying forward
 
-Every defect that mattered was **well-formed**. An invented statistic with a year and a percentage. A standards gloss reworded by one word to fit the pack. A sort bucket whose label excluded its own card. "A cube has three edges." An opportunity cost that came out backwards. A constraint that forbade its own deliverable. None of them could be caught by a schema, a reading-level estimate or a render, because all of them are perfectly valid content that happens to be wrong. They were found by reading slowly, and the largest single category — six of them — was **a pack contradicting itself**.
+Every defect that mattered was **well-formed**. An invented statistic with a year and a percentage. A standards gloss reworded by one word to fit the pack. A sort bucket whose label excluded its own card. "A cube has three edges." An opportunity cost that came out backwards. A constraint that forbade its own deliverable. None of them could be caught by a schema, a reading-level estimate or a render, because all of them are perfectly valid content that happens to be wrong. They were found by reading slowly, and the largest single category — now eight of them — is **a pack contradicting itself**: a label against its own data, a constraint against its own deliverable, a checklist against a title that is not there.
 
 The corollary held just as consistently on the tooling side: **a high flag count is a hypothesis about the checker, not the content.** Three checks this week reported 63, 138 and 160 problems. In each case most of the output was the checker misunderstanding a format, a contract, or a house style, and the real yield was between one and twenty-seven.
 ## What was checked
@@ -555,6 +555,64 @@ One more was ambiguous rather than contradictory and was tightened anyway. Main 
 Everything else holds: two weeks of growing time against a two-week data table, "one page plus the table and graph" against exactly that, an annotated map plus a one-page case inside a two-page budget.
 
 Both findings are the same species as the last several — **a pack contradicting itself**, this time between a label and its data, and between a constraint and its own deliverable. That now accounts for five of the defects found this week, and it is the one category that reading reliably catches and no gate does.
+## Twenty-seventh pass: closing the grade-by-subject matrix
+
+The catalog had 38 packs and looked evenly spread, but laying grade against subject showed four empty cells and no others: **grade 1 Social Studies, grade 2 Social Studies, grade 3 Math, grade 8 ELA.** Filling exactly those four completes an 8 x 4 matrix, so every grade from 1 to 8 now has Science, ELA, Math and Social Studies. That is the reason these four topics and not four others.
+
+| Pack | Cell | Standards | Resources |
+| --- | --- | --- | --- |
+| `rules_and_fairness_grade1` | G1 Social Studies | C3 D2.Civ.1, D2.Civ.6, D2.Civ.12 | 9 |
+| `then_and_now_grade2` | G2 Social Studies | C3 D2.His.1, D2.His.2, D2.His.3 | 10, with a timeline |
+| `equal_groups_grade3` | G3 Math | CCSS 3.OA.A.1, 3.OA.A.3, 3.OA.B.5 | 10, with math problems |
+| `theme_development_grade8` | G8 ELA | CCSS RL.8.2, RL.8.3, RL.8.1 | 12, the fullest in the catalog |
+
+All four ship text-only with a full-format `.IMAGES.md` shot list. The catalog is now **42 packs**, all at zero audit flags, 425 tests green.
+
+### What the gates caught
+
+The first audit run flagged ten things across the four packs, and all ten were real: two texts reading above their grade band (a grade-1 FAQ at 3.1 and a grade-2 glossary at 4.4), a grade-3 challenge brief at 5.6, two packs where fewer than two-thirds of glossary terms were bolded on first use, two packs with no repeated `conceptLabel` and therefore no retention pairing, and six quiz items with an option-length tell. The length tells are worth naming: in each case the correct answer was the only full explanation among four options, which makes the item answerable without reading anything.
+
+Fixing the three worst tells in the grade 8 quiz then produced a **new** flag the audit had not previously had cause to raise: rewriting the options moved five of seven correct answers to position A. The gate caught it immediately. This is the second time this catalog has produced an answer-position skew as a side effect of fixing something else, and it is a good argument for re-running the whole audit after every edit rather than re-checking only the thing you touched.
+
+The shape suite caught one more: the grade 8 challenge was authored with `family: "case-study"`, which the renderer does not know. The five families are investigate, design, decide, propose and explore. Defending a reading to a class that judges the argument is **propose**, the same family `constitution_grade8` uses. The word also appeared in the resource title, the meta line and the directions checklist, so four references moved together.
+
+### What only reading caught
+
+Four defects survived every gate, and three of them are the familiar species.
+
+**A pack contradicting itself, again, in the same place as last time.** The grade 2 timeline axis read "A letter on a train (1876) → A phone in your pocket (2007)" while its own 1876 entry is Bell patenting the telephone. The letter on a train belongs to the era *before* the timeline starts, so the axis promised a starting point the data does not have. This is precisely the Plate Tectonics defect from the twenty-third pass, found in a pack written after that one was fixed, which suggests the axis label is a genuinely error-prone field rather than a one-off slip.
+
+**Directions promising a resource that does not exist.** The grade 1 checklist said "Sort the cards in **Rule or Not a Rule?**" and the sort is called "Safe or Fair?". A six-year-old following the list looks for a title that is not on their screen. Every other title in all four packs checked out.
+
+**An overstated historical claim.** The 1991 timeline entry said anyone with a computer and a phone line could reach the web. The web did open that year, but that sentence describes about 1995. It now says what actually happened in 1991: Berners-Lee put the first website online and opened it outside his lab.
+
+**A sentence addressed to the wrong reader.** The bolding pass on the grade 8 reading introduced "That development is what the standard is asking about." Students do not read standards. It was a small edit that quietly changed who the paragraph was talking to, which is a hazard specific to editing prose for a mechanical reason.
+
+Four reading metas also overstated their own word counts, one by 27 percent, all of them because the meta was written before the prose settled.
+
+### The live smoke test turned out to have a flaky assertion
+
+The deep live run reported `theme_development_grade8` failing with **"resources did not render: What the Story Is Really Saying (Component Error)"**. Rendering the module in isolation to find out why produced two missing-prop errors in a row (`getSideBySideContent`, then `splitTextToSentences`) — the isolated harness was chasing host coupling, not the defect.
+
+Before adding more stubs, the cheaper questions: is anything about this reading unusual? Bold paragraph openings appear in seven packs. Level-three headings appear in `equal_groups_grade3`, which passed. Twelve resources is matched by `photosynthesis_grade7`, which passed. Nothing about the pack was exceptional.
+
+So it was re-run unchanged, and **it passed: 12 resources, all opened.** The first failure was an environment race, not a pack defect. The host drains roughly 140 deferred view modules one at a time, and a view can render before its own module arrives.
+
+That falsifies a premise the smoke test was built on. Its retry policy said a thrown error may be retried because a network timeout impersonates a broken pack, while a failed assertion never may, because an assertion is a real finding. The second half is right about every assertion in the script except one: **a Component Error in the deep-render loop impersonates a broken resource exactly the way a timeout impersonates a broken pack.**
+
+The rule is now narrowed rather than dropped. That single assertion retries once on a clean context; wrong resource counts, missing history entries and page errors still never do. And a pack that only passes the second time is reported as **FLAKY**, never as ok, with a line in the summary — because a retry that silently converts a failure into a pass destroys the evidence that the race exists. The distinction that matters is not retry versus no retry, it is whether the retry is allowed to erase what it found.
+### And the race is reproducible, which is worth saying plainly
+
+With the FLAKY reporting in place the pack was run once more, and it **raced again**: first attempt a Component Error on the reading, clean on the retry. So this is not a one-off. `theme_development_grade8` has twelve resources, the joint-largest in the catalog, and it appears to lose the race often enough to be seen.
+
+That is not a pack defect and nothing in the pack should change because of it. But it is a real user-facing hazard, and it belongs on the record rather than buried inside a passing test: **a student opening a large pack can see a Component Error on the first render of a resource.** The keyed error boundary from the earlier pass means switching views recovers, instead of one early throw poisoning every resource opened afterwards, so the damage is bounded. It is still a student seeing an error where a reading should be.
+
+The reporting change earned its keep within one run of being written. Had the retry simply been made silent, this second occurrence would have been invisible and the conclusion would have been "a flake, once".
+### Two authoring notes worth keeping
+
+The grade 3 shot list had to solve a problem no previous pack has had. **It is a mathematics pack, and mathematics artwork wants to contain numerals**, which the text-free policy forbids. The resolution is that the artwork carries quantity and never notation: four plates each holding six counters, with the numerals living in AlloFlow's native labels anchored over the image. That toggle between picture and symbol is better teaching than a drawn equation would have been, so the constraint improved the pack.
+
+The grade 8 shot list had the same problem in a harder form: **a pack about reading, forbidden from drawing anything readable.** It is solved by drawing the shape of an argument rather than its content, with pages rendered as grey lines at a size where no character resolves. Its anchor panel carries a correctness test that generalises: a stack of translucent sheets whose marks accumulate into an emerging shape, where *removing any one sheet should leave the shape standing*. That is the standard itself, stated as an acceptance criterion for a picture.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`

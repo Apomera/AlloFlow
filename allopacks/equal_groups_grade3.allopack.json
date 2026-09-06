@@ -1,0 +1,647 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Equal Groups — What Multiplication Really Means",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "3rd Grade",
+    "standards": "CCSS.MATH.CONTENT.3.OA.A.1 (interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each); CCSS.MATH.CONTENT.3.OA.A.3 (use multiplication and division within 100 to solve word problems in situations involving equal groups and arrays); CCSS.MATH.CONTENT.3.OA.B.5 (apply properties of operations as strategies to multiply and divide)",
+    "createdAt": "2026-09-06T03:30:00.000Z",
+    "imageShotList": "allopacks/equal_groups_grade3.IMAGES.md"
+  },
+  "sourceTopic": "Multiplication as Equal Groups and Arrays",
+  "history": [
+    {
+      "id": "eq-directions",
+      "type": "directions",
+      "title": "Equal Groups Week",
+      "timestamp": "2026-09-06T03:30:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nMultiplication is not a new kind of number. It is a faster way to count something you already know how to count.\n\n1. Read **What Times Really Means**.\n2. Learn the words in **Multiplication Words**, then win the **Matching** game and the **Memory** game.\n3. Study the **Three Ways to See It** chart.\n4. Sort the cards in **Equal Groups or Not?** — the tricky ones are on purpose.\n5. Work through **Group Problems**. Draw before you multiply.\n6. Take **Multiplication Check**.\n7. Lock it in with **Remember What Times Means**.\n8. Read **Multiplication Questions Kids Ask**.\n9. Finish with **Investigation: The Array Around You**.\n\nBring one photo or drawing of equal groups you found somewhere real. ✖️",
+        "objectives": [
+          {
+            "id": "eq-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "eq-glossary"
+          },
+          {
+            "id": "eq-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "eq-glossary"
+          },
+          {
+            "id": "eq-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "eq-goal-found",
+            "label": "I found equal groups somewhere real and drew them",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "3rd Grade • 4 goals • find equal groups in the real world"
+    },
+    {
+      "id": "eq-reading",
+      "type": "simplified",
+      "title": "What Times Really Means",
+      "timestamp": "2026-09-06T03:30:01.000Z",
+      "data": "## What Times Really Means\n\nYou already know how to find 4 + 4 + 4. Multiplication is just a shorter way to write that.\n\nWhen you see **4 × 3**, read it out loud as **four groups of three**. Not \"four three.\" Four groups of three. The first number tells you how many groups. The second number tells you how many are in each group. The answer, 12, is called the **product**.\n\nThere is one rule that makes all of this work, and it is easy to skip past. **The groups have to be equal.**\n\nImagine three plates. One has 2 crackers, one has 5, and one has 1. Can you multiply? No. You have to add: 2 + 5 + 1 = 8. Multiplication has nothing to grab onto, because there is no \"how many in each group\" to name.\n\nNow imagine three plates with 4 crackers on every one. That you can multiply. 3 × 4 = 12. The equal groups are what let you take the shortcut.\n\n### The same thing, drawn as a rectangle\n\nAn **array** is equal groups lined up in rows and columns. Three rows of 4 chairs is an array. You can count the chairs one at a time and get 12, or you can multiply and get 12 faster.\n\nArrays show you something surprising. Turn the array of 3 rows of 4 on its side. Now it is 4 rows of 3. Nothing was added or taken away, so the total cannot have changed. It is 12 either way.\n\nThat means **3 × 4 and 4 × 3 give the same product.** This is worth more than it looks. If you know 3 × 8, you also know 8 × 3 for free. Every fact you learn comes with a second one attached.\n\n### Using a fact you already know\n\nSay you get stuck on 9 × 6. You may already know 10 × 6 = 60, because tens are easy. Nine groups is one group less than ten groups. So take one group of 6 away: 60 − 6 = 54.\n\nYou did not memorise anything new. You leaned on a fact you had and moved one step.\n\nThat is really the whole idea. Multiplication counts equal groups fast, and the facts you know can carry you to the ones you do not.",
+      "meta": "3rd Grade • Leveled reading • ~330 words",
+      "imageSlot": "eq-img-array"
+    },
+    {
+      "id": "eq-glossary",
+      "type": "glossary",
+      "title": "Multiplication Words",
+      "timestamp": "2026-09-06T03:30:02.000Z",
+      "data": [
+        {
+          "term": "Multiply",
+          "def": "To find the total of equal groups quickly.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Product",
+          "def": "The answer you get when you multiply.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Factor",
+          "def": "One of the numbers you multiply together.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Array",
+          "def": "Objects arranged in equal rows and columns.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Row",
+          "def": "A line of objects going across.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Column",
+          "def": "A line of objects going up and down.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Group",
+          "def": "A set of objects counted together.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Equal",
+          "def": "Exactly the same amount as another.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Total",
+          "def": "How many there are altogether.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Repeat",
+          "def": "To do the same thing again and again.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, good for games"
+    },
+    {
+      "id": "eq-anchor",
+      "type": "anchor-chart",
+      "title": "Three Ways to See It",
+      "timestamp": "2026-09-06T03:30:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "WHAT 4 x 3 MEANS",
+        "sections": [
+          {
+            "label": "SAY IT RIGHT",
+            "bullets": [
+              "Four groups of three",
+              "First number: how many groups",
+              "Second number: how many in each"
+            ],
+            "iconPrompt": "four small circles, each holding three dots"
+          },
+          {
+            "label": "THE ONE RULE",
+            "bullets": [
+              "The groups must be equal",
+              "Not equal? Then you add instead",
+              "No equal groups means no shortcut"
+            ],
+            "iconPrompt": "three plates with matching dots beside three plates with different amounts, crossed out"
+          },
+          {
+            "label": "DRAW IT AS A RECTANGLE",
+            "bullets": [
+              "Rows across, columns down",
+              "Turn it sideways and the total is the same",
+              "So 3 x 4 and 4 x 3 both give 12"
+            ],
+            "iconPrompt": "a grid of dots three across and four down, with a curved rotation arrow"
+          },
+          {
+            "label": "LEAN ON WHAT YOU KNOW",
+            "bullets": [
+              "Tens are easy",
+              "Nine groups is one group less than ten",
+              "Take one group away from the ten answer"
+            ],
+            "iconPrompt": "a row of ten dot-clusters with the last one lifted away"
+          }
+        ]
+      },
+      "meta": "4 parts • meaning first, facts second"
+    },
+    {
+      "id": "eq-memory",
+      "type": "memory-aid",
+      "title": "Remember What Times Means",
+      "timestamp": "2026-09-06T03:30:04.000Z",
+      "meta": "3rd Grade • 2 memory aids • groups of, and the free second fact",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember What Times Means",
+        "instructions": "Two cards hold the ideas that matter most. Read the example, then make one of your own and say why it works.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": true,
+        "sourceExcerpt": "When you see 4 x 3, read it out loud as four groups of three. The first number tells you how many groups. The second number tells you how many are in each group.",
+        "lessonRef": {
+          "resourceId": "eq-reading",
+          "title": "What Times Really Means"
+        },
+        "cards": [
+          {
+            "id": "eq-ma-groups-of",
+            "target": "The times sign is read as the words groups of",
+            "essentialFacts": [
+              "Read 4 x 3 as four groups of three.",
+              "The first number is how many groups.",
+              "The second number is how many in each group."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Cover the times sign with your finger and say the words groups of out loud instead. 6 x 5 becomes six groups of five. The picture shows up on its own once you hear the words.",
+            "mapping": "Replacing a symbol with words you can picture stops it from being a blank spot you read past. The finger makes it a physical habit.",
+            "scaffoldStarter": "____ x ____ means ____ groups of ____.",
+            "scaffoldSteps": [
+              "Cover the times sign.",
+              "Say the sentence with groups of in it.",
+              "Draw the groups before you find the answer."
+            ],
+            "coachPrompts": [
+              "How many groups, and how many in each one?"
+            ],
+            "studentPrompt": "Make your own way to remember which number is the groups.",
+            "reasoningPrompt": "Why does saying it out loud help more than just looking at it?",
+            "hookFact": {
+              "text": "Not four three. Four groups of three.",
+              "sourceTitle": "What Times Really Means (this lesson)"
+            }
+          },
+          {
+            "id": "eq-ma-turn-it",
+            "target": "Every fact you learn comes with a second one attached",
+            "essentialFacts": [
+              "Turning an array on its side does not change the total.",
+              "3 x 4 and 4 x 3 give the same product.",
+              "If you know 3 x 8, you also know 8 x 3."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture turning a carton of eggs sideways on the table. The rows and columns swap places, but not one egg fell out. The total cannot have changed.",
+            "mapping": "You can actually picture the turn, and the reason is right there in the picture: nothing was added or taken away.",
+            "scaffoldStarter": "If I know ____ x ____, I also know ____ x ____ because ____.",
+            "scaffoldSteps": [
+              "Draw an array.",
+              "Turn your paper sideways.",
+              "Write both facts it shows."
+            ],
+            "coachPrompts": [
+              "Did anything get added when you turned it?"
+            ],
+            "studentPrompt": "Find a real thing in rows and write both of its facts.",
+            "reasoningPrompt": "Why does turning it prove the totals must match?",
+            "hookFact": {
+              "text": "Every fact you learn comes with a second one attached.",
+              "sourceTitle": "What Times Really Means (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "eq-sort",
+      "type": "concept-sort",
+      "title": "Equal Groups or Not?",
+      "timestamp": "2026-09-06T03:30:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "eq-yes",
+            "label": "Equal groups — you CAN multiply",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "eq-no",
+            "label": "Not equal — you have to add",
+            "color": "bg-rose-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "eqs1",
+            "content": "4 plates with 3 crackers on every plate",
+            "categoryId": "eq-yes"
+          },
+          {
+            "id": "eqs2",
+            "content": "6 vases with 5 flowers in every vase",
+            "categoryId": "eq-yes"
+          },
+          {
+            "id": "eqs3",
+            "content": "3 rows of 8 chairs, all rows the same",
+            "categoryId": "eq-yes"
+          },
+          {
+            "id": "eqs4",
+            "content": "5 bags with 2 apples in every bag",
+            "categoryId": "eq-yes"
+          },
+          {
+            "id": "eqs5",
+            "content": "A carton of eggs, 2 rows of 6",
+            "categoryId": "eq-yes"
+          },
+          {
+            "id": "eqs6",
+            "content": "3 plates: one with 2 crackers, one with 5, one with 1",
+            "categoryId": "eq-no"
+          },
+          {
+            "id": "eqs7",
+            "content": "One shelf with 4 books and one shelf with 7 books",
+            "categoryId": "eq-no"
+          },
+          {
+            "id": "eqs8",
+            "content": "Rows of chairs: 4, then 4, then 6",
+            "categoryId": "eq-no"
+          },
+          {
+            "id": "eqs9",
+            "content": "2 bags: one with 6 marbles, one with 3",
+            "categoryId": "eq-no"
+          },
+          {
+            "id": "eqs10",
+            "content": "4 boxes that each hold 10 crayons, and one box holding 7",
+            "categoryId": "eq-no"
+          }
+        ]
+      },
+      "meta": "2 buckets • 10 cards • the last one is nearly equal, which is the point"
+    },
+    {
+      "id": "eq-math",
+      "type": "math",
+      "title": "Group Problems",
+      "timestamp": "2026-09-06T03:30:06.000Z",
+      "data": {
+        "problems": [
+          {
+            "question": "There are 4 tables. Each table has 6 markers. How many markers are there in all?",
+            "answer": "24 markers",
+            "steps": [
+              {
+                "explanation": "Check that the groups are equal. Every table has 6, so they are."
+              },
+              {
+                "explanation": "Say it in words: four groups of six. That is 4 x 6."
+              },
+              {
+                "explanation": "4 x 6 = 24. There are 24 markers."
+              }
+            ]
+          },
+          {
+            "question": "A classroom has 3 rows of chairs with 8 chairs in each row. How many chairs is that?",
+            "answer": "24 chairs",
+            "steps": [
+              {
+                "explanation": "Rows and columns that match means this is an array."
+              },
+              {
+                "explanation": "Three groups of eight is 3 x 8."
+              },
+              {
+                "explanation": "3 x 8 = 24. And turning it sideways would give 8 x 3, which is also 24."
+              }
+            ]
+          },
+          {
+            "question": "You know that 5 x 7 = 35. Without counting anything, what is 7 x 5?",
+            "answer": "35",
+            "steps": [
+              {
+                "explanation": "Picture the array for 5 x 7 and turn it on its side."
+              },
+              {
+                "explanation": "Turning it does not add or remove anything, so the total stays put."
+              },
+              {
+                "explanation": "So 7 x 5 = 35, the same answer you already had."
+              }
+            ]
+          },
+          {
+            "question": "Juice boxes come in packs of 4. You buy 6 packs. How many juice boxes do you have?",
+            "answer": "24 juice boxes",
+            "steps": [
+              {
+                "explanation": "Every pack holds the same amount, so the groups are equal."
+              },
+              {
+                "explanation": "Six groups of four is 6 x 4."
+              },
+              {
+                "explanation": "6 x 4 = 24. You have 24 juice boxes."
+              }
+            ]
+          },
+          {
+            "question": "What is 9 x 6? Use a fact you already know instead of counting.",
+            "answer": "54",
+            "steps": [
+              {
+                "explanation": "Tens are easy: 10 x 6 = 60."
+              },
+              {
+                "explanation": "Nine groups is one group fewer than ten groups, and one group here is 6."
+              },
+              {
+                "explanation": "So take that group away: 60 - 6 = 54. So 9 x 6 = 54."
+              }
+            ]
+          },
+          {
+            "question": "There are 3 plates. One has 2 crackers, one has 5, and one has 1. How many crackers are there, and can you multiply to find out?",
+            "answer": "8 crackers, and no, you cannot multiply",
+            "steps": [
+              {
+                "explanation": "Check the groups first. They hold 2, 5 and 1, so they are not equal."
+              },
+              {
+                "explanation": "With unequal groups there is no how-many-in-each-group to multiply by."
+              },
+              {
+                "explanation": "So add instead: 2 + 5 + 1 = 8 crackers."
+              }
+            ]
+          }
+        ]
+      },
+      "meta": "6 problems • draw before you multiply • the last one cannot be multiplied"
+    },
+    {
+      "id": "eq-quiz",
+      "type": "quiz",
+      "title": "Multiplication Check",
+      "timestamp": "2026-09-06T03:30:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does 5 x 3 mean?",
+            "options": [
+              "Five groups of three",
+              "Five plus three",
+              "Three taken away from five",
+              "Five and three side by side"
+            ],
+            "correctAnswer": "Five groups of three",
+            "conceptLabel": "reading the times sign"
+          },
+          {
+            "type": "mcq",
+            "question": "What has to be true before you can multiply to find a total?",
+            "options": [
+              "The numbers have to be small",
+              "The groups have to be equal",
+              "There have to be exactly two groups",
+              "The answer has to be even"
+            ],
+            "correctAnswer": "The groups have to be equal",
+            "conceptLabel": "the one rule"
+          },
+          {
+            "type": "mcq",
+            "question": "In an array, what is a row?",
+            "options": [
+              "A line going up and down",
+              "The total number of objects",
+              "A line going across",
+              "The number left over"
+            ],
+            "correctAnswer": "A line going across",
+            "conceptLabel": "arrays"
+          },
+          {
+            "type": "mcq",
+            "question": "You know 6 x 7 = 42. What is 7 x 6?",
+            "options": [
+              "13",
+              "42",
+              "36",
+              "You cannot tell without counting"
+            ],
+            "correctAnswer": "42",
+            "conceptLabel": "the free second fact"
+          },
+          {
+            "type": "mcq",
+            "question": "Three bags hold 3, 6 and 2 marbles. What should you do to find the total?",
+            "options": [
+              "Multiply 3 x 3",
+              "Multiply 3 x 6",
+              "Add 3 + 6 + 2",
+              "Multiply 3 x 11"
+            ],
+            "correctAnswer": "Add 3 + 6 + 2",
+            "conceptLabel": "the one rule"
+          },
+          {
+            "type": "mcq",
+            "question": "Which is a good way to work out 9 x 4?",
+            "options": [
+              "Find 10 x 4, then take one group of 4 away",
+              "Find 10 x 4, then take just 1 away",
+              "Add 9 + 4 and then double the answer",
+              "Find 5 x 4 and then double the answer"
+            ],
+            "correctAnswer": "Find 10 x 4, then take one group of 4 away",
+            "conceptLabel": "leaning on a known fact"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Draw or describe an array for 4 x 5. Then say what fact you also know for free, and why.",
+            "expectedAnswer": "An array with 4 rows of 5, or 5 rows of 4, totalling 20. The free fact is 5 x 4 = 20, because turning the array on its side swaps the rows and columns without adding or removing anything, so the total has to stay the same.",
+            "conceptLabel": "arrays"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A friend says 6 x 3 means six and three. What would you tell them?",
+            "expectedAnswer": "It means six groups of three, not six and three. Six and three sounds like adding, which would give 9. Six groups of three gives 18, because there are six separate groups with three in each one.",
+            "conceptLabel": "reading the times sign"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which multiplication fact do you know best? Why do you think that one stuck?"
+          },
+          {
+            "text": "Where have you seen an array outside of maths?"
+          }
+        ]
+      },
+      "meta": "6 picks + 2 explain • one distractor is off by one on purpose"
+    },
+    {
+      "id": "eq-faq",
+      "type": "faq",
+      "title": "Multiplication Questions Kids Ask",
+      "timestamp": "2026-09-06T03:30:08.000Z",
+      "data": [
+        {
+          "question": "Do I have to memorise all the facts? 😰",
+          "answer": "Eventually you will know most of them by heart, and that does help. But knowing what the fact means comes first. A student who understands groups can rebuild a forgotten fact. A student who only memorised is stuck when it slips."
+        },
+        {
+          "question": "Why is anything times zero equal to zero? 🤔",
+          "answer": "Read it as groups of. Four groups of zero means four empty plates, so nothing at all. Zero groups of four means you never got any plates out. Either way the total is nothing."
+        },
+        {
+          "question": "Does the order really never matter?",
+          "answer": "For the answer, it never matters: 3 x 8 and 8 x 3 both give 24. For the story, it can matter a lot. Three bags of eight sweets is a different picture from eight bags of three, even though you end up with the same pile."
+        },
+        {
+          "question": "What is the easiest times table? ✋",
+          "answer": "Most people find tens easiest, then fives, then twos. That is useful, because you can reach harder facts from easy ones. Nine groups is just ten groups with one group taken back off."
+        },
+        {
+          "question": "Can you multiply things that are not objects?",
+          "answer": "Yes. Six days of 20 minutes of reading is 6 x 20 minutes. Anything that comes in equal amounts can be multiplied, including time, money and distance."
+        },
+        {
+          "question": "Why do we even need multiplication if we can just add? ⏱️",
+          "answer": "You can always add, and it will work. But adding 20 groups of 7 means writing 20 numbers and making 19 chances to slip. Multiplication does the same job in one step."
+        }
+      ],
+      "meta": "6 questions • one says memorising comes second, not first"
+    },
+    {
+      "id": "eq-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Array Around You",
+      "timestamp": "2026-09-06T03:30:09.000Z",
+      "meta": "3rd Grade • Investigation brief • find real arrays, write both facts",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Array Around You",
+        "instructions": "Find real things arranged in equal groups or rows. Write the multiplication for each one, both ways round. Then find one thing that looks like an array but is not.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "Arrays are genuinely everywhere and students walk past them all day without seeing the maths. Hunting for real ones, and being required to find a near-miss, forces the equal-groups rule to be used as a test rather than repeated as a phrase.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your classroom, your school and your home are full of things in rows and equal groups. Window panes. Floor tiles. Egg cartons. Muffin trays. Lockers. Chairs. You may draw them or take a photo of them.",
+          "role": "Array hunters",
+          "audience": "The class, who will build a wall of real arrays with the facts written under each one",
+          "drivingQuestion": "Where are the equal groups hiding in the places I go every day?",
+          "seedDirection": "Start with something in straight rows. Those are the easiest to count. Then look for the harder kind, where the groups match but are not lined up.",
+          "lockedLessonFacts": [
+            "The first number tells you how many groups, and the second how many are in each group.",
+            "The groups have to be equal or you cannot multiply.",
+            "An array is equal groups lined up in rows and columns.",
+            "Turning an array on its side gives the same product."
+          ],
+          "openQuestions": [
+            "Which was harder to find, an array or a near-miss?",
+            "Did anyone find the same object but count it a different way?",
+            "Is there a shape that is almost an array but has one row wrong?"
+          ],
+          "stakeholders": [
+            "Your class, who will check your counting",
+            "A student who still reads the times sign as and",
+            "Your teacher, who will use your wall next year"
+          ],
+          "criteria": [
+            "At least four real arrays or equal groups, each one drawn or photographed",
+            "Both facts written under every one",
+            "The product worked out, then checked by a partner",
+            "At least one near-miss that is not equal, with a sentence saying why it fails"
+          ],
+          "constraints": [
+            "The things have to be real and findable, not invented",
+            "No array bigger than 10 by 10",
+            "Under 60 words of writing on the whole page"
+          ],
+          "deliverable": "A page for the class wall. Show at least four real arrays. Write both facts and the product under each one. Then add one near-miss, with a sentence on why you cannot multiply it.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student photographed the muffin tray at home, 3 rows of 4.",
+            "move": "She wrote 3 x 4 = 12 and 4 x 3 = 12 under it. Then she found the cutlery drawer, with 6 forks, 5 spoons and 4 knives, and wrote that it looked like groups but could not be multiplied because the groups were different sizes.",
+            "whyItHelps": "The near-miss is what proved she understood the rule. Anyone can spot a grid, but only someone using the rule notices a set of groups that fails it."
+          },
+          "frameStarter": "I found ____ arranged as ____ groups of ____. That is ____ x ____ = ____, and also ____ x ____ = ____.",
+          "frameChoices": [
+            "Something in the kitchen",
+            "Something in the classroom",
+            "Something outside",
+            "Something on a screen"
+          ],
+          "coachPrompts": [
+            "Are the groups really all the same size?",
+            "What is the second fact for that one?",
+            "Could someone count that a different way and still be right?"
+          ]
+        },
+        "coachHint": "Four real arrays, both facts each, and one that fails the rule.",
+        "sourceExcerpt": "An array is equal groups lined up in rows and columns. Turn the array of 3 rows of 4 on its side. Now it is 4 rows of 3.",
+        "lessonRef": {
+          "resourceId": "eq-reading",
+          "title": "What Times Really Means"
+        }
+      }
+    }
+  ]
+}
