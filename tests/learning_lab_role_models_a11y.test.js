@@ -82,12 +82,12 @@ describe('Learning Lab Role Models accessibility', () => {
   });
 
   it('uses definition-list and time semantics for details', () => {
-    expect(models).toContain("hh('dl', { 'aria-label': 'Role model details'");
+    expect(models).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_role_model_details', 'Role model details')`);
     expect(models).toContain("hh('time', { dateTime: textValue(entry.addedAt).trim() || undefined }, relDate(textValue(entry.addedAt).trim()))");
   });
 
   it('presents appreciation text in a named section and preserves whitespace', () => {
-    expect(models).toContain("'aria-label': 'Qualities or actions I appreciate'");
+    expect(models).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_qualities_or_actions_i_appreciate', 'Qualities or actions I appreciate')`);
     expect(models).toContain("whiteSpace: 'pre-wrap'");
   });
 

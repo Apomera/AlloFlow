@@ -57,7 +57,7 @@ describe('Learning Lab Reading Tracker accessibility', () => {
     expect(reading).toContain("'aria-labelledby': 'learning-lab-reading-summary-heading'");
     expect(reading).toContain("hh('dl'");
     expect(reading).toContain("role: 'status', 'aria-live': 'polite'");
-    expect(reading).toContain("hh('ul', { 'aria-label': 'Saved reading entries'");
+    expect(reading).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_reading_entries', 'Saved reading entries')`);
     expect(reading).toContain("hh('article', { 'aria-labelledby': headingId }");
     expect(reading).toContain("hh('time', { dateTime: date.dateTime }");
     expect(reading).toContain("'Date not recorded'");

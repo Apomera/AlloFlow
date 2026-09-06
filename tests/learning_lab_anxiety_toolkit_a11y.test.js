@@ -19,9 +19,9 @@ describe('Learning Lab Anxiety Toolkit accessibility', () => {
 
   it('provides actionable labeled 988 call, text, and chat links', () => {
     expect(toolkit).toContain("href: 'tel:988'");
-    expect(toolkit).toContain("'aria-label': 'Call the 988 Suicide and Crisis Lifeline'");
+    expect(toolkit).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_call_the_988_suicide_and_crisis_lifeline', 'Call the 988 Suicide and Crisis Lifeline')`);
     expect(toolkit).toContain("href: 'sms:988'");
-    expect(toolkit).toContain("'aria-label': 'Text the 988 Suicide and Crisis Lifeline'");
+    expect(toolkit).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_text_the_988_suicide_and_crisis_lifeline', 'Text the 988 Suicide and Crisis Lifeline')`);
     expect(toolkit).toContain("href: 'https://988lifeline.org/chat/'");
   });
 
@@ -32,13 +32,13 @@ describe('Learning Lab Anxiety Toolkit accessibility', () => {
 
   it('provides actionable labeled Maine crisis and relay links', () => {
     expect(toolkit).toContain("href: 'tel:+18885681112'");
-    expect(toolkit).toContain("'aria-label': 'Call the Maine Crisis Line at 1-888-568-1112'");
+    expect(toolkit).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_call_the_maine_crisis_line_at_1_888_568_1112', 'Call the Maine Crisis Line at 1-888-568-1112')`);
     expect(toolkit).toContain("href: 'tel:711'");
-    expect(toolkit).toContain("'aria-label': 'Call Maine Relay at 711'");
+    expect(toolkit).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_call_maine_relay_at_711', 'Call Maine Relay at 711')`);
   });
 
   it('uses a semantic list of named anxiety-tool controls', () => {
-    expect(toolkit).toContain("hh('ul', { 'aria-label': 'Available anxiety tools'");
+    expect(toolkit).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_available_anxiety_tools', 'Available anxiety tools')`);
     expect(toolkit).toContain("return hh('li', { key: 'at-' + tool.id }");
     expect(toolkit).toContain("'aria-label': 'Open ' + tool.label + ', '");
   });
@@ -56,7 +56,7 @@ describe('Learning Lab Anxiety Toolkit accessibility', () => {
   });
 
   it('uses a named action group with native buttons', () => {
-    expect(toolkit).toContain("role: 'group', 'aria-label': 'Anxiety tool actions'");
+    expect(toolkit).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_anxiety_tool_actions', 'Anxiety tool actions')`);
     expect(toolkit).toContain("type: 'button'");
     expect(toolkit).toContain('Finish and log this tool');
   });

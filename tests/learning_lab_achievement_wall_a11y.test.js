@@ -92,12 +92,12 @@ describe('Learning Lab Achievement Wall accessibility', () => {
   });
 
   it('uses definition-list and time semantics for details', () => {
-    expect(wall).toContain("hh('dl', { 'aria-label': 'Achievement details'");
+    expect(wall).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_achievement_details', 'Achievement details')`);
     expect(wall).toContain("hh('time', { dateTime: textValue(entry.date).trim() || undefined }, relDate(textValue(entry.date).trim()))");
   });
 
   it('presents reflections as a named section and preserves whitespace', () => {
-    expect(wall).toContain("textValue(entry.reflection).trim() ? hh('section', { 'aria-label': 'Reflection'");
+    expect(wall).toContain(`textValue(entry.reflection).trim() ? hh('section', { 'aria-label': __alloLLT('stem.learning_lab.a11y_reflection', 'Reflection')`);
     expect(wall).toContain("whiteSpace: 'pre-wrap'");
   });
 

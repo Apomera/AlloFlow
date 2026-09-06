@@ -52,7 +52,7 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   });
 
   it('uses a named native-button group for timer controls', () => {
-    expect(worry).toContain("role: 'group', 'aria-label': 'Worry-time timer controls'");
+    expect(worry).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_worry_time_timer_controls', 'Worry-time timer controls')`);
     expect(worry).toContain("id: 'learning-lab-worry-timer-toggle', type: 'button'");
     expect(worry).toContain("'aria-pressed': running ? 'true' : 'false'");
   });

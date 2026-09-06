@@ -98,7 +98,7 @@ describe('Learning Lab Momentum Calendar accessibility', () => {
   });
 
   it('uses a semantic list of labeled calendar articles', () => {
-    expect(calendar).toContain("hh('ul', { 'aria-label': 'Saved momentum calendars'");
+    expect(calendar).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_momentum_calendars', 'Saved momentum calendars')`);
     expect(calendar).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(calendar).toContain("hh('h3', { id: headingId");
   });

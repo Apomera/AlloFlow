@@ -85,7 +85,7 @@ describe('Learning Lab Sunday Plan accessibility', () => {
   });
 
   it('uses a semantic newest-first list of labeled articles', () => {
-    expect(plan).toContain("hh('ul', { 'aria-label': 'Saved weekly plans, newest first'");
+    expect(plan).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_weekly_plans_newest_first', 'Saved weekly plans, newest first')`);
     expect(plan).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(plan).toContain("hh('h3', { id: headingId");
     expect(plan).not.toContain('plans.slice(0, 10)');
@@ -97,7 +97,7 @@ describe('Learning Lab Sunday Plan accessibility', () => {
 
   it('keeps every nonempty saved response available', () => {
     expect(plan).toContain('function savedAnswers(plan)');
-    expect(plan).toContain("'aria-label': 'Weekly plan responses'");
+    expect(plan).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_weekly_plan_responses', 'Weekly plan responses')`);
     expect(plan).toContain("hh('dt'");
     expect(plan).toContain("hh('dd'");
   });

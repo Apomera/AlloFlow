@@ -71,7 +71,7 @@ describe('Learning Lab Ethical Decision Reflection accessibility', () => {
 
   it('uses a named semantic history list with labeled articles', () => {
     expect(ethical).toContain("'aria-labelledby': 'learning-lab-ethical-history-heading'");
-    expect(ethical).toContain("hh('ul', { 'aria-label': 'Most recent ethical decision reflections'");
+    expect(ethical).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_ethical_decision_reflections', 'Most recent ethical decision reflections')`);
     expect(ethical).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(ethical).toContain("hh('h3', { id: headingId");
   });
@@ -82,7 +82,7 @@ describe('Learning Lab Ethical Decision Reflection accessibility', () => {
 
   it('makes all nonempty saved responses available', () => {
     expect(ethical).toContain('function savedDetails(log)');
-    expect(ethical).toContain("'aria-label': 'Decision reflection responses'");
+    expect(ethical).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_decision_reflection_responses', 'Decision reflection responses')`);
     expect(ethical).toContain("hh('dt'");
     expect(ethical).toContain("hh('dd'");
   });

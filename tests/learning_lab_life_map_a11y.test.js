@@ -72,7 +72,7 @@ describe('Learning Lab Life Map accessibility', () => {
   it('marks the radar chart decorative and provides text values', () => {
     expect(map).toContain("'aria-hidden': 'true', focusable: 'false'");
     expect(map).toContain('The complete text values are listed with each control above.');
-    expect(map).toContain("'aria-label': 'Snapshot ratings'");
+    expect(map).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_snapshot_ratings', 'Snapshot ratings')`);
   });
 
   it('does not draw a misleading radar when areas are excluded', () => {
@@ -87,7 +87,7 @@ describe('Learning Lab Life Map accessibility', () => {
 
   it('uses a named semantic history list with labeled articles', () => {
     expect(map).toContain("'aria-labelledby': 'learning-lab-life-map-history-heading'");
-    expect(map).toContain("hh('ul', { 'aria-label': 'Most recent Life Map snapshots'");
+    expect(map).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_life_map_snapshots', 'Most recent Life Map snapshots')`);
     expect(map).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(map).toContain("hh('h3', { id: headingId");
   });

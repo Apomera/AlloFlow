@@ -69,7 +69,7 @@ describe('Learning Lab Daily Moments accessibility', () => {
 
   it('uses a named semantic history list with labeled articles', () => {
     expect(daily).toContain("'aria-labelledby': 'learning-lab-daily-history-heading'");
-    expect(daily).toContain("hh('ul', { 'aria-label': 'Most recent daily reflections'");
+    expect(daily).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_daily_reflections', 'Most recent daily reflections')`);
     expect(daily).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(daily).toContain("hh('h3', { id: headingId");
   });
@@ -80,7 +80,7 @@ describe('Learning Lab Daily Moments accessibility', () => {
   });
 
   it('renders recorded moments as a semantic list', () => {
-    expect(daily).toContain("'aria-label': 'Recorded moments'");
+    expect(daily).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_recorded_moments', 'Recorded moments')`);
     expect(daily).toContain("moments.map(function(moment, index) { return hh('li'");
   });
 

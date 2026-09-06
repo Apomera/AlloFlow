@@ -74,7 +74,7 @@ describe('Learning Lab Distraction Log accessibility', () => {
   });
 
   it('renders every history record with semantic articles and robust dates', () => {
-    expect(log).toContain("'aria-label': 'All saved attention entries'");
+    expect(log).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_all_saved_attention_entries', 'All saved attention entries')`);
     expect(log).toContain('events.map(function(entry, index)');
     expect(log).not.toContain('events.slice(0, 15)');
     expect(log).toContain("hh('article', { 'aria-labelledby': headingId }");

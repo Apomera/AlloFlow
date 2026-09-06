@@ -56,7 +56,7 @@ describe('Learning Lab Self-Compassion accessibility', () => {
   });
 
   it('renders all history with semantic articles and robust dates', () => {
-    expect(compassion).toContain("'aria-label': 'All personal self-compassion history entries'");
+    expect(compassion).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_all_personal_self_compassion_history_entries', 'All personal self-compassion history entries')`);
     expect(compassion).toContain('sessions.map(function(session, index)');
     expect(compassion).not.toContain('sessions.slice(0, 15)');
     expect(compassion).toContain("hh('article', { 'aria-labelledby': headingId }");

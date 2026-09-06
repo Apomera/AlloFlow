@@ -88,7 +88,7 @@ describe('Learning Lab Transition Planner accessibility', () => {
   });
 
   it('renders saved plans as a semantic list of labeled articles', () => {
-    expect(planner).toContain("hh('ul', { 'aria-label': 'Saved transition plans'");
+    expect(planner).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_transition_plans', 'Saved transition plans')`);
     expect(planner).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(planner).toContain("hh('h3', { id: headingId");
   });
@@ -162,7 +162,7 @@ describe('Learning Lab Transition Planner accessibility', () => {
   });
 
   it('uses native checkboxes in a semantic checklist', () => {
-    expect(planner).toContain("hh('ul', { 'aria-label': 'Transition checklist'");
+    expect(planner).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_transition_checklist', 'Transition checklist')`);
     expect(planner).toContain("type: 'checkbox', checked: !!item.done");
     expect(planner).toContain("htmlFor: itemId");
   });

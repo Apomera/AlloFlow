@@ -79,7 +79,7 @@ describe('Learning Lab Personal Success Log accessibility', () => {
 
   it('uses a named semantic history list with labeled articles', () => {
     expect(successLog).toContain("'aria-labelledby': 'learning-lab-success-history-heading'");
-    expect(successLog).toContain("hh('ul', { 'aria-label': 'Most recent success entries'");
+    expect(successLog).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_success_entries', 'Most recent success entries')`);
     expect(successLog).toContain("return hh('li', { key: 'sl-' + entry.id }");
     expect(successLog).toContain("hh('article', {");
     expect(successLog).toContain("'aria-labelledby': headingId");
@@ -92,7 +92,7 @@ describe('Learning Lab Personal Success Log accessibility', () => {
   });
 
   it('uses definition-list and time semantics for each history item', () => {
-    expect(successLog).toContain("hh('dl', { 'aria-label': 'Success entry details'");
+    expect(successLog).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_success_entry_details', 'Success entry details')`);
     expect(successLog).toContain("hh('time', { dateTime: textValue(entry.date).trim() || undefined }");
     expect(successLog).toContain("relDate(textValue(entry.date).trim())");
   });

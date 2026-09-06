@@ -41,7 +41,7 @@ describe('Learning Lab Mindfulness Practice accessibility', () => {
   });
 
   it('uses a named control group with label-based toggle state', () => {
-    expect(mindfulness).toContain("role: 'group', 'aria-label': 'Mindfulness timer controls'");
+    expect(mindfulness).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_mindfulness_timer_controls', 'Mindfulness timer controls')`);
     expect(mindfulness).toContain("var toggleLabel = seconds <= 0 ? 'Restart timer' : playing ? 'Pause timer' : 'Resume timer'");
     expect(mindfulness).not.toContain("'aria-pressed'");
     expect(mindfulness).toContain("type: 'button'");
@@ -108,7 +108,7 @@ describe('Learning Lab Mindfulness Practice accessibility', () => {
   });
 
   it('uses a semantic list of named practice controls', () => {
-    expect(mindfulness).toContain("hh('ul', { 'aria-label': 'Available mindfulness practices'");
+    expect(mindfulness).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_available_mindfulness_practices', 'Available mindfulness practices')`);
     expect(mindfulness).toContain("return hh('li', { key: 'pr-' + practice.id }");
     expect(mindfulness).toContain("'aria-label': 'Start ' + practice.label + ', '");
   });
@@ -120,7 +120,7 @@ describe('Learning Lab Mindfulness Practice accessibility', () => {
   });
 
   it('provides named totals and hides decorative icons', () => {
-    expect(mindfulness).toContain("'aria-label': 'Mindfulness practice totals'");
+    expect(mindfulness).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_mindfulness_practice_totals', 'Mindfulness practice totals')`);
     expect(mindfulness).toContain("hh('span', { 'aria-hidden': 'true'");
   });
 

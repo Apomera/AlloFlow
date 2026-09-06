@@ -73,7 +73,7 @@ describe('Learning Lab Neurodivergence Journal accessibility', () => {
 
   it('uses a named semantic history list with labeled articles', () => {
     expect(journal).toContain("'aria-labelledby': 'learning-lab-nd-history-heading'");
-    expect(journal).toContain("hh('ul', { 'aria-label': 'Most recent neurodivergence journal entries'");
+    expect(journal).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_neurodivergence_journal_entries', 'Most recent neurodivergence journal entries')`);
     expect(journal).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(journal).toContain("hh('h3', { id: headingId");
   });

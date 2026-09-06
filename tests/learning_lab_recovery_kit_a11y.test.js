@@ -84,7 +84,7 @@ describe('Learning Lab Recovery Kit accessibility', () => {
 
   it('renders a named semantic history list of labeled articles', () => {
     expect(kit).toContain("'aria-labelledby': 'learning-lab-recovery-history-heading'");
-    expect(kit).toContain("hh('ul', { 'aria-label': 'Most recent recovery reflections'");
+    expect(kit).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_recovery_reflections', 'Most recent recovery reflections')`);
     expect(kit).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(kit).toContain("hh('h3', { id: headingId");
   });

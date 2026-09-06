@@ -73,7 +73,7 @@ describe('Learning Lab Knowledge Map accessibility', () => {
   });
 
   it('uses a semantic list of labeled area articles', () => {
-    expect(map).toContain("hh('ul', { 'aria-label': 'Saved knowledge areas'");
+    expect(map).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_knowledge_areas', 'Saved knowledge areas')`);
     expect(map).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(map).toContain("hh('h3', { id: headingId");
   });

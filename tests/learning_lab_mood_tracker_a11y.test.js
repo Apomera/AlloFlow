@@ -53,7 +53,7 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
   });
 
   it('uses a semantic definition list for summary statistics', () => {
-    expect(tracker).toContain("hh('dl', { 'aria-label': 'Mood tracker summary'");
+    expect(tracker).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_mood_tracker_summary', 'Mood tracker summary')`);
     expect(tracker).toContain("hh('dt'");
     expect(tracker).toContain("hh('dd'");
   });
@@ -72,7 +72,7 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
 
   it('uses a named semantic list for the 14-day history', () => {
     expect(tracker).toContain("'aria-labelledby': 'learning-lab-mood-history-heading'");
-    expect(tracker).toContain("hh('ul', { 'aria-label': 'Fourteen-day mood history'");
+    expect(tracker).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_fourteen_day_mood_history', 'Fourteen-day mood history')`);
     expect(tracker).toContain("return hh('li', { key: 'mo-' + day.date");
   });
 

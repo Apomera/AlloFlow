@@ -18,7 +18,7 @@ describe('Learning Lab Personal Identity Map accessibility', () => {
 
   it('uses a named semantic section and list for the identity dimensions', () => {
     expect(map).toContain("hh('section', { 'aria-labelledby': 'learning-lab-identity-dimensions-heading'");
-    expect(map).toContain("hh('ul', { 'aria-label': 'Identity map dimensions'");
+    expect(map).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_identity_map_dimensions', 'Identity map dimensions')`);
     expect(map).toContain("return hh('li', { key: 'id-' + d.id");
   });
 

@@ -106,7 +106,7 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
 
   it('uses a named semantic list for template choices', () => {
     expect(email).toContain("'aria-labelledby': 'learning-lab-email-template-heading'");
-    expect(email).toContain("hh('ul', { 'aria-label': 'Teacher email templates'");
+    expect(email).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_teacher_email_templates', 'Teacher email templates')`);
     expect(email).toContain("return hh('li', { key: 'te-' + template.id }");
     expect(email).toContain("type: 'button', onClick: function() { selectTemplate(template); }");
   });
@@ -119,7 +119,7 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
 
   it('uses a named semantic list and labeled articles for saved drafts', () => {
     expect(email).toContain("'aria-labelledby': 'learning-lab-email-saved-heading'");
-    expect(email).toContain("hh('ul', { 'aria-label': 'Most recent saved email drafts'");
+    expect(email).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_saved_email_drafts', 'Most recent saved email drafts')`);
     expect(email).toContain("return hh('li', { key: 'sd-' + draft.id }");
     expect(email).toContain("hh('article', { 'aria-labelledby': headingId");
   });

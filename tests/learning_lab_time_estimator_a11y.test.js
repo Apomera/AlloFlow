@@ -75,7 +75,7 @@ describe('Learning Lab Time Estimator accessibility', () => {
   });
 
   it('renders every history record with semantic headings and robust dates', () => {
-    expect(estimator).toContain("'aria-label': 'All saved time comparisons'");
+    expect(estimator).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_all_saved_time_comparisons', 'All saved time comparisons')`);
     expect(estimator).toContain('predictions.map(function(prediction, index)');
     expect(estimator).not.toContain('predictions.slice(0, 15)');
     expect(estimator).toContain("hh('article', { 'aria-labelledby': headingId }");

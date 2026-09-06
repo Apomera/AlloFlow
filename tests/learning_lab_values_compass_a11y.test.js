@@ -23,7 +23,7 @@ describe('Learning Lab Values Compass accessibility', () => {
   });
 
   it('uses a named tablist and complete tab roles', () => {
-    expect(compass).toContain("role: 'tablist', 'aria-label': 'Values Compass steps'");
+    expect(compass).toContain(`role: 'tablist', 'aria-label': __alloLLT('stem.learning_lab.a11y_values_compass_steps', 'Values Compass steps')`);
     expect(compass).toContain("role: 'tab'");
     expect(compass).toContain("'aria-selected': active ? 'true' : 'false'");
     expect(compass).toContain("'aria-controls': 'learning-lab-values-panel'");

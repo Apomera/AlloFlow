@@ -30,7 +30,7 @@ describe('Learning Lab Executive Function Reflection accessibility', () => {
     expect(dashboard).not.toContain("'average ' + avg");
     expect(dashboard).not.toContain('ratings.slice(0, 10)');
     expect(dashboard).toContain("ratings.map(function(rating)");
-    expect(dashboard).toContain("'aria-label': 'Rated dimensions'");
+    expect(dashboard).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_rated_dimensions', 'Rated dimensions')`);
     expect(dashboard).toContain("item.label + ': ' + item.value + ' out of 10'");
   });
   it('uses semantic robust timestamps and complete deletion access', () => {

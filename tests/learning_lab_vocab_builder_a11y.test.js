@@ -83,9 +83,9 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('uses semantic lists and labeled articles for lists and words', () => {
-    expect(vocab).toContain("hh('ul', { 'aria-label': 'Vocabulary lists'");
+    expect(vocab).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_vocabulary_lists', 'Vocabulary lists')`);
     expect(vocab).toContain("hh('article', { 'aria-labelledby': 'learning-lab-vocab-list-name-' + list.id }");
-    expect(vocab).toContain("hh('ul', { 'aria-label': 'Vocabulary words'");
+    expect(vocab).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_vocabulary_words', 'Vocabulary words')`);
     expect(vocab).toContain("hh('article', { 'aria-labelledby': 'learning-lab-vocab-word-heading-' + word.id }");
   });
 
@@ -109,7 +109,7 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('uses a named group for recall self-rating', () => {
-    expect(vocab).toContain("role: 'group', 'aria-label': 'Rate your vocabulary recall'");
+    expect(vocab).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_rate_your_vocabulary_recall', 'Rate your vocabulary recall')`);
     expect(vocab).toContain('I did not know it');
     expect(vocab).toContain('I knew it');
   });

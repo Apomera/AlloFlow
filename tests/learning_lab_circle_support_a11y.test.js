@@ -100,12 +100,12 @@ describe('Learning Lab Circle of Support accessibility', () => {
   });
 
   it('uses definition-list and time semantics for contact details', () => {
-    expect(support).toContain("hh('dl', { 'aria-label': 'Support contact details'");
+    expect(support).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_support_contact_details', 'Support contact details')`);
     expect(support).toContain("hh('time', { dateTime: entry.addedAt || undefined }, relDate(entry.addedAt))");
   });
 
   it('presents contact notes in a named section and preserves whitespace', () => {
-    expect(support).toContain("'aria-label': 'Contact note'");
+    expect(support).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_contact_note', 'Contact note')`);
     expect(support).toContain("whiteSpace: 'pre-wrap'");
   });
 

@@ -75,7 +75,7 @@ describe('Learning Lab Quote Collector accessibility', () => {
   });
 
   it('uses a semantic results list with labeled articles', () => {
-    expect(collector).toContain("hh('ul', { 'aria-label': 'Saved quote results'");
+    expect(collector).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_quote_results', 'Saved quote results')`);
     expect(collector).toContain("return hh('li', { key: 'qu-' + q.id");
     expect(collector).toContain("hh('article', { 'aria-labelledby': 'learning-lab-quote-heading-' + q.id }");
   });

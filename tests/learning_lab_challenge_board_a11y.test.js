@@ -77,7 +77,7 @@ describe('Learning Lab Challenge Board accessibility', () => {
   });
 
   it('uses semantic lists, articles, headings, and 44-pixel actions', () => {
-    expect(board).toContain("'aria-label': 'Saved challenges and practices'");
+    expect(board).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_saved_challenges_and_practices', 'Saved challenges and practices')`);
     expect(board).toContain("hh('article', { 'aria-labelledby': headingId }");
     expect(board).toContain("hh('h4', { id: headingId, tabIndex: -1");
     expect(board).toContain("'aria-label': 'Edit challenge or practice: ' + title");

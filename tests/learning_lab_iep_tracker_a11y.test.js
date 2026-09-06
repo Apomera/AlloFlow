@@ -42,9 +42,9 @@ describe('Learning Lab IEP planning notes accessibility', () => {
   });
 
   it('provides semantic goal, progress, and meeting histories with robust dates', () => {
-    expect(tracker).toContain("'aria-label': 'Personal IEP goal notes'");
+    expect(tracker).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_personal_iep_goal_notes', 'Personal IEP goal notes')`);
     expect(tracker).toContain("'aria-labelledby': 'learning-lab-iep-progress-heading-' + goal.id");
-    expect(tracker).toContain("'aria-label': 'Personal IEP meeting notes'");
+    expect(tracker).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_personal_iep_meeting_notes', 'Personal IEP meeting notes')`);
     expect(tracker).toContain("hh('time', { dateTime: meeting.date }");
     expect(tracker).toContain("hh('dl'");
   });

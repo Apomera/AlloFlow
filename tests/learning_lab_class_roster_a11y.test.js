@@ -50,7 +50,7 @@ describe('Learning Lab Class Roster accessibility', () => {
   });
 
   it('uses a semantic class list with labeled articles', () => {
-    expect(roster).toContain("hh('ul', { 'aria-label': 'Class roster'");
+    expect(roster).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_class_roster', 'Class roster')`);
     expect(roster).toContain("return hh('li', { key: 'cl-' + classRecord.id");
     expect(roster).toContain("hh('article', { 'aria-labelledby': 'learning-lab-class-heading-' + classRecord.id }");
   });
@@ -82,7 +82,7 @@ describe('Learning Lab Class Roster accessibility', () => {
   });
 
   it('uses a named native-button group for form actions', () => {
-    expect(roster).toContain("role: 'group', 'aria-label': 'Class form actions'");
+    expect(roster).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_class_form_actions', 'Class form actions')`);
     expect(roster).toContain('Update class');
     expect(roster).toContain('Cancel edit');
   });

@@ -109,13 +109,13 @@ describe('Learning Lab Future-Self Letter accessibility', () => {
   });
 
   it('uses a named native-button group for reading actions', () => {
-    expect(letters).toContain("role: 'group', 'aria-label': 'Letter reading actions'");
+    expect(letters).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_letter_reading_actions', 'Letter reading actions')`);
     expect(letters).toContain("onClick: backToList");
     expect(letters).toContain("onClick: function() { remove(readingLetter); }");
   });
 
   it('uses a semantic list of future-self letters', () => {
-    expect(letters).toContain("hh('ul', { 'aria-label': 'Future-self letters'");
+    expect(letters).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_future_self_letters', 'Future-self letters')`);
     expect(letters).toContain("return hh('li', { key: 'fl-' + letter.id }");
     expect(letters).toContain("writtenOn ? hh('time', { dateTime: writtenOn }, writtenOn) : 'on an unrecorded date'");
   });

@@ -125,7 +125,7 @@ describe('Learning Lab Screen-Time Tracker accessibility', () => {
 
   it('sorts saved entries by date and does not hide older records', () => {
     expect(tracker).toContain("logs.slice().sort(function(a, b)");
-    expect(tracker).toContain("hh('ul', { 'aria-label': 'Saved screen-time entries, newest first'");
+    expect(tracker).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_screen_time_entries_newest_first', 'Saved screen-time entries, newest first')`);
     expect(tracker).not.toContain('logs.slice(0, 14)');
   });
 
@@ -136,7 +136,7 @@ describe('Learning Lab Screen-Time Tracker accessibility', () => {
   });
 
   it('makes every saved metric available in a semantic description list', () => {
-    expect(tracker).toContain("'aria-label': 'Screen-time estimates'");
+    expect(tracker).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_screen_time_estimates', 'Screen-time estimates')`);
     expect(tracker).toContain("{ label: 'Total', value: hourText(entry.total) }");
     expect(tracker).toContain("{ label: 'Scrolling or feeds', value: hourText(entry.scrolling) }");
     expect(tracker).toContain("{ label: 'Intentional or task-focused', value: hourText(entry.productive) }");

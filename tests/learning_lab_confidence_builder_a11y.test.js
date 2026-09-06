@@ -88,7 +88,7 @@ describe('Learning Lab Confidence Builder accessibility', () => {
   });
 
   it('uses a semantic newest-first list without hiding older records', () => {
-    expect(confidence).toContain("hh('ul', { 'aria-label': 'Saved confidence reflections, newest first'");
+    expect(confidence).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_confidence_reflections_newest_first', 'Saved confidence reflections, newest first')`);
     expect(confidence).toContain('moments.map(function(moment)');
     expect(confidence).not.toContain('moments.slice(0, 15)');
   });
@@ -108,7 +108,7 @@ describe('Learning Lab Confidence Builder accessibility', () => {
 
   it('makes every nonempty optional response available', () => {
     expect(confidence).toContain('function detailsFor(moment)');
-    expect(confidence).toContain("'aria-label': 'Confidence reflection details'");
+    expect(confidence).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_confidence_reflection_details', 'Confidence reflection details')`);
     expect(confidence).toContain("hh('dt'");
     expect(confidence).toContain("hh('dd'");
   });

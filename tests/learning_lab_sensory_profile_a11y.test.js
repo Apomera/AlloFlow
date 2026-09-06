@@ -66,7 +66,7 @@ describe('Learning Lab Sensory Preferences accessibility', () => {
 
   it('uses a named semantic observation list with labeled articles', () => {
     expect(sensory).toContain("'aria-labelledby': 'learning-lab-sensory-observations-heading'");
-    expect(sensory).toContain("hh('ul', { 'aria-label': 'Most recent sensory observations'");
+    expect(sensory).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_sensory_observations', 'Most recent sensory observations')`);
     expect(sensory).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(sensory).toContain("hh('h3', { id: headingId");
   });

@@ -46,7 +46,7 @@ describe('Learning Lab optional appreciation notes accessibility', () => {
   it('uses semantic summary, today status, complete history, and robust dates', () => {
     expect(gratitude).toContain("hh('dl'");
     expect(gratitude).toContain("role: 'status', 'aria-labelledby': 'learning-lab-gratitude-today-heading'");
-    expect(gratitude).toContain("'aria-label': 'All optional appreciation entries'");
+    expect(gratitude).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_all_optional_appreciation_entries', 'All optional appreciation entries')`);
     expect(gratitude).toContain('entries.map(function(entry, index)');
     expect(gratitude).not.toContain('entries.slice(0, 30)');
     expect(gratitude).toContain("hh('time', { dateTime: safeDateTime(entry) }");

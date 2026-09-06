@@ -60,7 +60,7 @@ describe('Learning Lab Life Skills and Supports accessibility', () => {
   it('provides a textual status and named native progress element', () => {
     expect(skills).toContain("role: 'status'");
     expect(skills).toContain("hh('progress', { value: doneSkills, max: totalSkills");
-    expect(skills).toContain("'aria-label': 'Tracked Life Skills and Supports examples'");
+    expect(skills).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_tracked_life_skills_and_supports_examples', 'Tracked Life Skills and Supports examples')`);
   });
 
   it('uses semantic category sections and headings', () => {

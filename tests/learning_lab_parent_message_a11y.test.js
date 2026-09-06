@@ -92,7 +92,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
   });
 
   it('uses a semantic list of named template buttons with decorative icons hidden', () => {
-    expect(messages).toContain("hh('ul', { 'aria-label': 'Parent or guardian message templates'");
+    expect(messages).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_parent_or_guardian_message_templates', 'Parent or guardian message templates')`);
     expect(messages).toContain("return hh('li', { key: 'pm-' + template.id }");
     expect(messages).toContain("type: 'button', onClick: function() { selectTemplate(template); }");
     expect(messages).toContain("hh('span', { 'aria-hidden': 'true'");
@@ -105,7 +105,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
 
   it('renders saved drafts as a named semantic list of labeled articles', () => {
     expect(messages).toContain("'aria-labelledby': 'learning-lab-message-saved-heading'");
-    expect(messages).toContain("hh('ul', { 'aria-label': 'Most recent saved message drafts'");
+    expect(messages).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_saved_message_drafts', 'Most recent saved message drafts')`);
     expect(messages).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(messages).toContain("hh('h3', { id: headingId");
   });

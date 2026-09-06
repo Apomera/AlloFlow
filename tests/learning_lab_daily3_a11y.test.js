@@ -104,7 +104,7 @@ describe('Learning Lab Daily 3 accessibility', () => {
   });
 
   it('uses a semantic newest-first list without hiding older entries', () => {
-    expect(daily3).toContain("hh('ul', { 'aria-label': 'Past Daily 3 entries, newest first'");
+    expect(daily3).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_past_daily_3_entries_newest_first', 'Past Daily 3 entries, newest first')`);
     expect(daily3).toContain('pastDates.map(function(date)');
     expect(daily3).not.toContain('slice(0, 14)');
   });
@@ -116,7 +116,7 @@ describe('Learning Lab Daily 3 accessibility', () => {
   });
 
   it('provides completion state in text for every historical priority', () => {
-    expect(daily3).toContain("'aria-label': 'Priorities and completion status'");
+    expect(daily3).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_priorities_and_completion_status', 'Priorities and completion status')`);
     expect(daily3).toContain("item.done ? 'Marked complete: ' : 'Not marked complete: '");
   });
 

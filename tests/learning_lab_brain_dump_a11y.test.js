@@ -75,7 +75,7 @@ describe('Learning Lab Personal Brain Dump accessibility', () => {
   });
 
   it('renders category filters as a named pressed-button group', () => {
-    expect(brain).toContain("role: 'group', 'aria-label': 'Filter brain dump items by category'");
+    expect(brain).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_filter_brain_dump_items_by_category', 'Filter brain dump items by category')`);
     expect(brain).toContain("key: 'fi-' + option.id, type: 'button', 'aria-pressed': active ? 'true' : 'false'");
   });
 

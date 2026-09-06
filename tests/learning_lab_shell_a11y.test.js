@@ -55,13 +55,13 @@ describe('Learning Lab shell and cross-tool navigation accessibility', () => {
   });
 
   it('provides named shell navigation and a page-level heading for standard modules', () => {
-    expect(shell).toContain("h('nav', { 'aria-label': 'Learning Lab navigation'");
+    expect(shell).toContain(`h('nav', { 'aria-label': __alloLLT('stem.learning_lab.a11y_learning_lab_navigation', 'Learning Lab navigation')`);
     expect(shell).toContain("h('h1', { id: 'learning-lab-view-heading', tabIndex: -1");
     expect(shell).toContain("setView('menu', 'Learning Lab menu')");
   });
 
   it('provides named navigation and a page-level heading inside My Toolkit', () => {
-    expect(shell).toContain("h('nav', { 'aria-label': 'My Toolkit navigation'");
+    expect(shell).toContain(`h('nav', { 'aria-label': __alloLLT('stem.learning_lab.a11y_my_toolkit_navigation', 'My Toolkit navigation')`);
     expect(shell).toContain("setView('mytkHub', 'My Toolkit')");
     expect(shell).toContain('}, currentViewLabel)');
   });

@@ -62,15 +62,15 @@ describe('Learning Lab Memory Palace accessibility', () => {
   });
 
   it('uses semantic lists and labeled articles for palaces and stops', () => {
-    expect(palace).toContain("hh('ul', { 'aria-label': 'Memory palaces'");
+    expect(palace).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_memory_palaces', 'Memory palaces')`);
     expect(palace).toContain("hh('article', { 'aria-labelledby': 'learning-lab-palace-name-' + palace.id }");
-    expect(palace).toContain("hh('ol', { 'aria-label': 'Memory palace route'");
+    expect(palace).toContain(`hh('ol', { 'aria-label': __alloLLT('stem.learning_lab.a11y_memory_palace_route', 'Memory palace route')`);
     expect(palace).toContain("hh('article', { 'aria-labelledby': 'learning-lab-palace-locus-' + locus.id }");
   });
 
   it('exposes memory-walk progress with complete value semantics', () => {
     expect(palace).toContain("role: 'progressbar'");
-    expect(palace).toContain("'aria-label': 'Memory walk progress'");
+    expect(palace).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_memory_walk_progress', 'Memory walk progress')`);
     expect(palace).toContain("'aria-valuemin': 1, 'aria-valuemax': loci.length, 'aria-valuenow': safeIndex + 1");
     expect(palace).toContain("'aria-valuetext': 'Stop ' + (safeIndex + 1) + ' of ' + loci.length");
   });
@@ -92,7 +92,7 @@ describe('Learning Lab Memory Palace accessibility', () => {
   });
 
   it('uses a named native-button group for walk controls', () => {
-    expect(palace).toContain("role: 'group', 'aria-label': 'Memory walk controls'");
+    expect(palace).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_memory_walk_controls', 'Memory walk controls')`);
     expect(palace).toContain('Complete walk');
     expect(palace).toContain('Next stop');
   });
@@ -118,7 +118,7 @@ describe('Learning Lab Memory Palace accessibility', () => {
   });
 
   it('exposes method guidance as a named aside', () => {
-    expect(palace).toContain("hh('aside', { 'aria-label': 'About the method of loci'");
+    expect(palace).toContain(`hh('aside', { 'aria-label': __alloLLT('stem.learning_lab.a11y_about_the_method_of_loci', 'About the method of loci')`);
   });
 
   it('handles malformed legacy palace data without crashing', () => {

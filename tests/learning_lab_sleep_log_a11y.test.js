@@ -63,7 +63,7 @@ describe('Learning Lab personal Sleep Log accessibility', () => {
     expect(sleepLog).toContain("hh('dl'");
     expect(sleepLog).toContain("hh('table'");
     expect(sleepLog).toContain("hh('th', { scope: 'col'");
-    expect(sleepLog).toContain("'aria-label': 'All personal sleep logs'");
+    expect(sleepLog).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_all_personal_sleep_logs', 'All personal sleep logs')`);
     expect(sleepLog).toContain('entries.map(function(entry, index)');
     expect(sleepLog).not.toContain('entries.slice(0, 14)');
     expect(sleepLog).toContain("hh('time', { dateTime: safeDateTime(entry.date) }");

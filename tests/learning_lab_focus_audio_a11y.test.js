@@ -12,7 +12,7 @@ describe('Learning Lab Personal Focus Audio accessibility', () => {
   const audio = source.slice(start, end);
 
   it('uses a named semantic list for audio conditions', () => {
-    expect(audio).toContain("hh('ul', { 'aria-label': 'Focus audio conditions'");
+    expect(audio).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_focus_audio_conditions', 'Focus audio conditions')`);
     expect(audio).toContain("return hh('li', { key: 'pl-' + playlist.id");
   });
 

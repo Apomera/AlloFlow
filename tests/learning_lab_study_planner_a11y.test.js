@@ -120,7 +120,7 @@ describe('Learning Lab Personal Study Planner accessibility', () => {
   });
 
   it('renders weekly summary metrics as a named semantic list', () => {
-    expect(planner).toContain("hh('ul', { 'aria-label': 'Weekly study summary'");
+    expect(planner).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_weekly_study_summary', 'Weekly study summary')`);
     expect(planner).toContain("return hh('li', { key: 'ws-' + index");
   });
 

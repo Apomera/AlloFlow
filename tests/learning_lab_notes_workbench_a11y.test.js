@@ -52,7 +52,7 @@ describe('Learning Lab Notes Workbench accessibility', () => {
   });
 
   it('provides semantic notebook and note collections with meaningful dates', () => {
-    expect(notes).toContain("hh('ul', { 'aria-label': 'Notebooks'");
+    expect(notes).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_notebooks', 'Notebooks')`);
     expect(notes).toContain("hh('article', { 'aria-labelledby': 'learning-lab-note-card-title-' + note.id");
     expect(notes).toContain("hh('time', { dateTime: note.updatedAt || note.createdAt");
     expect(notes).toContain("'aria-labelledby': 'learning-lab-note-results-heading'");

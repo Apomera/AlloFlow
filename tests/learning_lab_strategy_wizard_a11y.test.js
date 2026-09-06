@@ -52,7 +52,7 @@ describe('Learning Lab Strategy Wizard revised accessibility', () => {
   });
 
   it('uses semantic context and recommendation lists without dimming lower ranks', () => {
-    expect(wizard).toContain("hh('dl', { 'aria-label': 'Inputs used for this comparison'");
+    expect(wizard).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_inputs_used_for_this_comparison', 'Inputs used for this comparison')`);
     expect(wizard).toContain("hh('ol', { 'aria-describedby': 'learning-lab-strategy-results-help'");
     expect(wizard).toContain("return hh('li', { key: 'rec-' + strategy.id");
     expect(wizard).not.toContain('opacity: rank > 6 ? 0.5 : 1');

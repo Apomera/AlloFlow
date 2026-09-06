@@ -132,7 +132,7 @@ describe('Learning Lab Life Deck accessibility', () => {
   });
 
   it('uses a semantic list of labeled response articles', () => {
-    expect(deck).toContain("hh('ul', { 'aria-label': 'Saved Life Deck responses'");
+    expect(deck).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_life_deck_responses', 'Saved Life Deck responses')`);
     expect(deck).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(deck).toContain("hh('h3', { id: headingId");
   });

@@ -31,15 +31,15 @@ describe('Learning Lab Personal Crisis Plan accessibility', () => {
   });
 
   it('gives every crisis link a descriptive accessible name', () => {
-    expect(plan).toContain("'aria-label': 'Call the 988 Suicide and Crisis Lifeline'");
-    expect(plan).toContain("'aria-label': 'Text the 988 Suicide and Crisis Lifeline'");
-    expect(plan).toContain("'aria-label': 'Call the Maine Crisis Line at 1-888-568-1112'");
-    expect(plan).toContain("'aria-label': 'Text HOME to Crisis Text Line at 741741'");
-    expect(plan).toContain("'aria-label': 'Call 911 for immediate danger'");
+    expect(plan).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_call_the_988_suicide_and_crisis_lifeline', 'Call the 988 Suicide and Crisis Lifeline')`);
+    expect(plan).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_text_the_988_suicide_and_crisis_lifeline', 'Text the 988 Suicide and Crisis Lifeline')`);
+    expect(plan).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_call_the_maine_crisis_line_at_1_888_568_1112', 'Call the Maine Crisis Line at 1-888-568-1112')`);
+    expect(plan).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_text_home_to_crisis_text_line_at_741741', 'Text HOME to Crisis Text Line at 741741')`);
+    expect(plan).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_call_911_for_immediate_danger', 'Call 911 for immediate danger')`);
   });
 
   it('groups crisis options in a semantic list', () => {
-    expect(plan).toContain("hh('ul', { 'aria-label': 'Crisis contact options'");
+    expect(plan).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_crisis_contact_options', 'Crisis contact options')`);
     expect(plan).toContain("hh('li', null, hh('a'");
   });
 
@@ -49,7 +49,7 @@ describe('Learning Lab Personal Crisis Plan accessibility', () => {
   });
 
   it('uses a semantic ordered list for the six planning steps', () => {
-    expect(plan).toContain("hh('ol', { 'aria-label': 'Six-step personal crisis plan'");
+    expect(plan).toContain(`hh('ol', { 'aria-label': __alloLLT('stem.learning_lab.a11y_six_step_personal_crisis_plan', 'Six-step personal crisis plan')`);
     expect(plan).toContain("return hh('li', { key: 'cs-' + s.id");
   });
 

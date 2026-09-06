@@ -83,7 +83,7 @@ describe('Learning Lab Self-Assessment accessibility', () => {
 
   it('uses a named semantic history list with labeled articles', () => {
     expect(assessment).toContain("'aria-labelledby': 'learning-lab-assessment-history-heading'");
-    expect(assessment).toContain("hh('ul', { 'aria-label': 'Most recent learning reflection snapshots'");
+    expect(assessment).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_learning_reflection_snapshots', 'Most recent learning reflection snapshots')`);
     expect(assessment).toContain("return hh('li', { key: 'sa-' + entry.id }");
     expect(assessment).toContain("hh('article', { 'aria-labelledby': headingId");
   });
@@ -94,7 +94,7 @@ describe('Learning Lab Self-Assessment accessibility', () => {
 
   it('exposes every saved response in a definition list', () => {
     expect(assessment).toContain("'Review all responses'");
-    expect(assessment).toContain("hh('dl', { 'aria-label': 'Learning reflection responses'");
+    expect(assessment).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_learning_reflection_responses', 'Learning reflection responses')`);
     expect(assessment).toContain("textValue((entry.answers && typeof entry.answers === 'object' ? entry.answers : {})[question.id]).trim() || 'No response recorded'");
     expect(assessment).not.toContain("'Top: '");
   });

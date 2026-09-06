@@ -92,7 +92,7 @@ describe('Learning Lab Body Awareness accessibility', () => {
 
   it('uses a named semantic history list with labeled articles', () => {
     expect(body).toContain("'aria-labelledby': 'learning-lab-body-history-heading'");
-    expect(body).toContain("hh('ul', { 'aria-label': 'Most recent body comfort checks'");
+    expect(body).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_body_comfort_checks', 'Most recent body comfort checks')`);
     expect(body).toContain("return hh('li', { key: 'bc-' + entry.id }");
     expect(body).toContain("hh('article', { 'aria-labelledby': headingId");
   });
@@ -109,7 +109,7 @@ describe('Learning Lab Body Awareness accessibility', () => {
 
   it('makes complete area ratings available in a definition list', () => {
     expect(body).toContain("'Review area ratings'");
-    expect(body).toContain("hh('dl', { 'aria-label': 'Body area comfort ratings'");
+    expect(body).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_body_area_comfort_ratings', 'Body area comfort ratings')`);
     expect(body).toContain("value + ' out of 10'");
   });
 

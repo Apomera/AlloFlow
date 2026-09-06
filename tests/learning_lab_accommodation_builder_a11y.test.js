@@ -78,7 +78,7 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
 
   it('renders contexts as a named semantic list of buttons', () => {
     expect(builder).toContain("'aria-labelledby': 'learning-lab-accom-template-heading'");
-    expect(builder).toContain("hh('ul', { 'aria-label': 'Accommodation request drafting contexts'");
+    expect(builder).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_accommodation_request_drafting_contexts', 'Accommodation request drafting contexts')`);
     expect(builder).toContain("id: 'learning-lab-accom-template-' + template.id, type: 'button'");
     expect(builder).toContain("'aria-describedby': descId");
   });
@@ -213,7 +213,7 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
   });
 
   it('renders every saved draft as a semantic list article', () => {
-    expect(builder).toContain("hh('ul', { 'aria-label': 'Saved accommodation request drafts'");
+    expect(builder).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_accommodation_request_drafts', 'Saved accommodation request drafts')`);
     expect(builder).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(builder).toContain("hh('h3', { id: headingId");
   });

@@ -86,13 +86,13 @@ describe('Learning Lab Search Hub accessibility', () => {
   });
 
   it('provides a clear action that restores input focus', () => {
-    expect(search).toContain("'aria-label': 'Clear toolkit search'");
+    expect(search).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_clear_toolkit_search', 'Clear toolkit search')`);
     expect(search).toContain("queueFocus('learning-lab-toolkit-search')");
     expect(search).toContain('setSourceFilter(\'all\')');
   });
 
   it('uses semantic result headings, lists, and articles', () => {
-    expect(search).toContain("'aria-label': 'All matching toolkit search results'");
+    expect(search).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_all_matching_toolkit_search_results', 'All matching toolkit search results')`);
     expect(search).toContain("hh('article', { 'aria-labelledby': headingId }");
     expect(search).toContain("hh('h4', { id: headingId");
     expect(search).toContain("id: 'learning-lab-search-results-heading'");

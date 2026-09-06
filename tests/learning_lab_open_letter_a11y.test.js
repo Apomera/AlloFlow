@@ -65,7 +65,7 @@ describe('Learning Lab Open Letter accessibility', () => {
 
   it('uses a named semantic letter list with labeled articles', () => {
     expect(letters).toContain("'aria-labelledby': 'learning-lab-open-letter-history-heading'");
-    expect(letters).toContain("hh('ul', { 'aria-label': 'Most recent saved unsent letters'");
+    expect(letters).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_saved_unsent_letters', 'Most recent saved unsent letters')`);
     expect(letters).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(letters).toContain("hh('h3', { id: headingId");
   });

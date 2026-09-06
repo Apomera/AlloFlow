@@ -76,7 +76,7 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
 
   it('uses a named semantic list for the 24-hour chart', () => {
     expect(tracker).toContain("'aria-labelledby': 'learning-lab-energy-chart-heading'");
-    expect(tracker).toContain("hh('ul', { 'aria-label': 'Average energy across all 24 hours'");
+    expect(tracker).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_average_energy_across_all_24_hours', 'Average energy across all 24 hours')`);
     expect(tracker).toContain("return hh('li', { key: 'eh-' + item.hour");
   });
 

@@ -87,7 +87,7 @@ describe('Learning Lab Friendship Tracker accessibility', () => {
   });
 
   it('uses a semantic list of labeled reminder articles', () => {
-    expect(tracker).toContain("hh('ul', { 'aria-label': 'Saved check-in reminders'");
+    expect(tracker).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_check_in_reminders', 'Saved check-in reminders')`);
     expect(tracker).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(tracker).toContain("hh('h3', { id: headingId");
   });

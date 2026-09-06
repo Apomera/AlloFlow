@@ -90,7 +90,7 @@ describe('Learning Lab Day Pattern Reflection accessibility', () => {
 
   it('uses a named semantic history list of labeled articles', () => {
     expect(pattern).toContain("'aria-labelledby': 'learning-lab-day-pattern-history-heading'");
-    expect(pattern).toContain("hh('ul', { 'aria-label': 'Most recent day reflections'");
+    expect(pattern).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_most_recent_day_reflections', 'Most recent day reflections')`);
     expect(pattern).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(pattern).toContain("hh('h3', { id: headingId");
   });
@@ -101,7 +101,7 @@ describe('Learning Lab Day Pattern Reflection accessibility', () => {
   });
 
   it('renders optional notes as a named definition list', () => {
-    expect(pattern).toContain("hh('dl', { 'aria-label': 'Optional notes for this day reflection'");
+    expect(pattern).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_optional_notes_for_this_day_reflection', 'Optional notes for this day reflection')`);
     expect(pattern).toContain("hh('dt'");
     expect(pattern).toContain("hh('dd'");
     expect(pattern).toContain('No optional notes were saved with this rating.');

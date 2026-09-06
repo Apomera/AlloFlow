@@ -32,7 +32,7 @@ describe('Learning Lab Weekly Reflection revised accessibility', () => {
     expect(reflection).toContain("'aria-invalid': formError ? 'true' : undefined");
     expect(reflection).toContain("'aria-describedby': 'learning-lab-reflection-overall-help'");
     expect(reflection).toContain("'aria-valuetext': form.overall + ' out of 10'");
-    expect(reflection).toContain("hh('ol', { 'aria-label': 'Reflection prompts'");
+    expect(reflection).toContain(`hh('ol', { 'aria-label': __alloLLT('stem.learning_lab.a11y_reflection_prompts', 'Reflection prompts')`);
   });
 
   it('preserves sibling state on save and delete', () => {
@@ -56,7 +56,7 @@ describe('Learning Lab Weekly Reflection revised accessibility', () => {
   });
 
   it('uses semantic summaries, responses, dates, units, and history controls', () => {
-    expect(reflection).toContain("hh('ul', { 'aria-label': 'Reflection summary'");
+    expect(reflection).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_reflection_summary', 'Reflection summary')`);
     expect(reflection).toContain("hh('dl', { style:");
     expect(reflection).toContain("hh('dt', { style:");
     expect(reflection).toContain("hh('dd', { style:");

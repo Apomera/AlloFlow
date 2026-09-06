@@ -124,7 +124,7 @@ describe('Learning Lab Optional Support Request Notes accessibility', () => {
 
   it('uses semantic history structure with labeled articles and timestamps', () => {
     expect(tracker).toContain("'aria-labelledby': 'learning-lab-ask-history-heading'");
-    expect(tracker).toContain("hh('ul', { 'aria-label': 'All saved support notes'");
+    expect(tracker).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_all_saved_support_notes', 'All saved support notes')`);
     expect(tracker).toContain("hh('article', { 'aria-labelledby': headingId }");
     expect(tracker).toContain("'Support note ' + (visibleIndex + 1)");
   });
@@ -136,7 +136,7 @@ describe('Learning Lab Optional Support Request Notes accessibility', () => {
   });
 
   it('frames possible uses without evidentiary or normative claims', () => {
-    expect(tracker).toContain("hh('aside', { 'aria-label': 'Possible uses for support request notes'");
+    expect(tracker).toContain(`hh('aside', { 'aria-label': __alloLLT('stem.learning_lab.a11y_possible_uses_for_support_request_notes', 'Possible uses for support request notes')`);
     expect(tracker).toContain('A saved note is not evidence that support was requested, received, effective, or required.');
     expect(tracker).not.toContain('normalizing');
     expect(tracker).not.toContain('destigmatiz');

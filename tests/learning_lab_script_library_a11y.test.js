@@ -25,7 +25,7 @@ describe('Learning Lab Script Library accessibility', () => {
   });
 
   it('uses a named complete tablist', () => {
-    expect(library).toContain("role: 'tablist', 'aria-label': 'Script categories'");
+    expect(library).toContain(`role: 'tablist', 'aria-label': __alloLLT('stem.learning_lab.a11y_script_categories', 'Script categories')`);
     expect(library).toContain("role: 'tab'");
     expect(library).toContain("'aria-selected': active ? 'true' : 'false'");
     expect(library).toContain("'aria-controls': 'learning-lab-script-panel'");

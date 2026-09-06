@@ -61,7 +61,7 @@ describe('Learning Lab Personal Career Explorer accessibility', () => {
   });
 
   it('uses a semantic result list with labeled articles', () => {
-    expect(explorer).toContain("hh('ul', { 'aria-label': 'Career suggestions'");
+    expect(explorer).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_career_suggestions', 'Career suggestions')`);
     expect(explorer).toContain("return hh('li', { key: 'cr-' + career.id");
     expect(explorer).toContain("hh('article', { 'aria-labelledby': headingId }");
     expect(explorer).toContain("hh('h4', { id: headingId");

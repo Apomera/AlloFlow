@@ -141,16 +141,16 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   });
 
   it('uses definition-list and time semantics for dates and status', () => {
-    expect(contracts).toContain("hh('dl', { 'aria-label': 'Contract dates and status'");
+    expect(contracts).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_contract_dates_and_status', 'Contract dates and status')`);
     expect(contracts).toContain("hh('time', { dateTime: textValue(entry.startDate).trim() || undefined }");
     expect(contracts).toContain("hh('time', { dateTime: textValue(entry.endDate).trim() }");
     expect(contracts).toContain("hh('time', { dateTime: textValue(entry.signedAt).trim() }");
   });
 
   it('presents commitments and optional details in named sections', () => {
-    expect(contracts).toContain("hh('section', { 'aria-label': 'Commitments' }");
-    expect(contracts).toContain("'aria-label': 'Reward or encouragement'");
-    expect(contracts).toContain("'aria-label': 'Support or check-in person'");
+    expect(contracts).toContain(`hh('section', { 'aria-label': __alloLLT('stem.learning_lab.a11y_commitments', 'Commitments') }`);
+    expect(contracts).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_reward_or_encouragement', 'Reward or encouragement')`);
+    expect(contracts).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_support_or_check_in_person', 'Support or check-in person')`);
     expect(contracts).toContain("whiteSpace: 'pre-wrap'");
   });
 

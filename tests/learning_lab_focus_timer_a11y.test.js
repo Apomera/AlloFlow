@@ -18,7 +18,7 @@ describe('Learning Lab Personal Focus Timer accessibility', () => {
   });
 
   it('renders summary statistics as a named description list', () => {
-    expect(timer).toContain("hh('dl', { 'aria-label': 'Focus summary'");
+    expect(timer).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_focus_summary', 'Focus summary')`);
     expect(timer).toContain("hh('dt'");
     expect(timer).toContain("hh('dd'");
     expect(timer.indexOf("hh('dt'")).toBeLessThan(timer.indexOf("hh('dd'"));
@@ -141,7 +141,7 @@ describe('Learning Lab Personal Focus Timer accessibility', () => {
   it('renders session history as a named section and ordered list', () => {
     expect(timer).toContain("hh('section', { 'aria-labelledby': 'learning-lab-focus-history-heading'");
     expect(timer).toContain("hh('h3', { id: 'learning-lab-focus-history-heading'");
-    expect(timer).toContain("hh('ol', { 'aria-label': \"Today's focus sessions\"");
+    expect(timer).toContain(`hh('ol', { 'aria-label': __alloLLT('stem.learning_lab.a11y_today_s_focus_sessions', 'Today\\'s focus sessions')`);
     expect(timer).toContain("return hh('li', { key: 's-' + session.id");
   });
 

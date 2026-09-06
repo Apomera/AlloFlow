@@ -83,7 +83,7 @@ describe('Learning Lab My Toolkit Hub accessibility', () => {
   });
 
   it('renders the tool grid as a semantic list', () => {
-    expect(hub).toContain("hh('ul', { 'aria-label': 'Toolkit tools'");
+    expect(hub).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_toolkit_tools', 'Toolkit tools')`);
     expect(hub).toContain("return hh('li', { key: tool.id }");
   });
 

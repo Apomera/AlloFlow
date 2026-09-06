@@ -65,7 +65,7 @@ describe('Learning Lab personal Learning Journal accessibility', () => {
 
   it('uses semantic summaries, entries, tags, and robust dates', () => {
     expect(journal).toContain("hh('dl'");
-    expect(journal).toContain("'aria-label': 'Learning journal entries'");
+    expect(journal).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_learning_journal_entries', 'Learning journal entries')`);
     expect(journal).toContain("hh('article', { 'aria-labelledby': 'learning-lab-journal-entry-heading-' + entryId");
     expect(journal).toContain("hh('time', { dateTime: safeDateTime(entry) }");
     expect(journal).toContain("'aria-label': 'Tags for ' + entryLabel");

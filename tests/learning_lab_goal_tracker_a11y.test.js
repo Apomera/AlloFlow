@@ -94,7 +94,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('exposes detail progress as a named progressbar', () => {
-    expect(goal).toContain("role: 'progressbar', 'aria-label': 'Goal progress'");
+    expect(goal).toContain(`role: 'progressbar', 'aria-label': __alloLLT('stem.learning_lab.a11y_goal_progress', 'Goal progress')`);
     expect(goal).toContain("'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': g.progress || 0");
     expect(goal).toContain("'aria-valuetext': (g.progress || 0) + ' percent'");
   });
@@ -106,7 +106,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('renders check-in history as an ordered list with machine-readable dates', () => {
-    expect(goal).toContain("hh('ol', { 'aria-label': 'Goal check-in history'");
+    expect(goal).toContain(`hh('ol', { 'aria-label': __alloLLT('stem.learning_lab.a11y_goal_check_in_history', 'Goal check-in history')`);
     expect(goal).toContain("return hh('li', { key: 'ci-' + i");
     expect(goal).toContain("hh('time', { dateTime: c.date");
   });
@@ -117,7 +117,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('renders goal statistics as a named description list', () => {
-    expect(goal).toContain("hh('dl', { 'aria-label': 'Goal status summary'");
+    expect(goal).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_goal_status_summary', 'Goal status summary')`);
     expect(goal).toContain("hh('dt'");
     expect(goal).toContain("hh('dd'");
     expect(goal.indexOf("hh('dt'")).toBeLessThan(goal.indexOf("hh('dd'"));
@@ -128,7 +128,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('uses a named pressed-button group instead of incomplete tab semantics', () => {
-    expect(goal).toContain("role: 'group', 'aria-label': 'Filter goals by status'");
+    expect(goal).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_filter_goals_by_status', 'Filter goals by status')`);
     expect(goal).toContain("type: 'button', 'aria-pressed': active ? 'true' : 'false'");
     expect(goal).not.toContain("role: 'tablist'");
     expect(goal).not.toContain("role: 'tab'");
@@ -144,7 +144,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('renders goals as a named semantic list', () => {
-    expect(goal).toContain("hh('ul', { 'aria-label': 'Goals'");
+    expect(goal).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_goals', 'Goals')`);
     expect(goal).toContain("return hh('li', { key: 'g-' + g.id }, hh('button'");
   });
 

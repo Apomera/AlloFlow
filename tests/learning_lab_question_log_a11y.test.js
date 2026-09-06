@@ -118,13 +118,13 @@ describe('Learning Lab Personal Question Log accessibility', () => {
   });
 
   it('uses definition-list and time semantics for question details', () => {
-    expect(questionLog).toContain("hh('dl', { 'aria-label': 'Question details'");
+    expect(questionLog).toContain(`hh('dl', { 'aria-label': __alloLLT('stem.learning_lab.a11y_question_details', 'Question details')`);
     expect(questionLog).toContain("hh('time', { dateTime: textValue(q.createdAt).trim() || undefined }");
     expect(questionLog).toContain("hh('time', { dateTime: textValue(q.answeredAt).trim() }");
   });
 
   it('presents recorded answers as a named section without losing whitespace', () => {
-    expect(questionLog).toContain("hh('section', { 'aria-label': 'Answer'");
+    expect(questionLog).toContain(`hh('section', { 'aria-label': __alloLLT('stem.learning_lab.a11y_answer', 'Answer')`);
     expect(questionLog).toContain("whiteSpace: 'pre-wrap'");
     expect(questionLog).toContain("textValue(q.answer).trim() || 'No answer recorded.'");
   });

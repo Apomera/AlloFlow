@@ -71,7 +71,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
   });
 
   it('uses a semantic list of labeled curriculum articles', () => {
-    expect(curriculum).toContain("hh('ul', { 'aria-label': 'Saved curricula'");
+    expect(curriculum).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_curricula', 'Saved curricula')`);
     expect(curriculum).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(curriculum).toContain("hh('h3', { id: headingId");
   });
@@ -154,7 +154,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
   });
 
   it('uses a semantic ordered list for ordered learning steps', () => {
-    expect(curriculum).toContain("hh('ol', { 'aria-label': 'Learning steps in order'");
+    expect(curriculum).toContain(`hh('ol', { 'aria-label': __alloLLT('stem.learning_lab.a11y_learning_steps_in_order', 'Learning steps in order')`);
     expect(curriculum).toContain("hh('article', { 'aria-labelledby': headingId");
     expect(curriculum).toContain("hh('h4', { id: headingId");
   });

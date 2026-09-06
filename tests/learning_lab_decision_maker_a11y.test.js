@@ -127,7 +127,7 @@ describe('Learning Lab Decision Maker accessibility', () => {
   it('uses semantic lists for editable and saved decision structures', () => {
     expect(decision).toContain("'aria-labelledby': 'learning-lab-decision-options-heading'");
     expect(decision).toContain("'aria-labelledby': 'learning-lab-decision-criteria-heading'");
-    expect(decision).toContain("hh('ul', { 'aria-label': 'Saved decisions'");
+    expect(decision).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_decisions', 'Saved decisions')`);
   });
 
   it('moves focus into the editor and back to the saved decision', () => {
