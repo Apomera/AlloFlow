@@ -41,7 +41,12 @@ const SELFTEST = args.includes('--selftest');
 const only = args.find((a) => !a.startsWith('--'));
 
 // Strip text that is already keyed, then look for prose that remains.
-const stripKeyed = (s) => s.replace(/(?:__alloT|ctx\.t|\bt)\(\s*'[^']*'\s*,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*\)/g, '_T_');
+// __allo<Anything>T covers the tool-unique translators as well as __alloT.
+// learning_lab's is __alloLLT, because that file has no IIFE and a plain
+// __alloT there would be a global shared with 146 other tools. Matching only
+// the exact name __alloT reported all 258 of its freshly keyed announcements as
+// still English - the same name-blindness as the helper list, on the other side.
+const stripKeyed = (s) => s.replace(/(?:__allo[A-Za-z0-9_]*T|ctx\.t|\bt)\(\s*'[^']*'\s*,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*\)/g, '_T_');
 const PROSE = /'([A-Z][A-Za-z0-9 ,.\-]{3,})'|"([A-Z][A-Za-z0-9 ,.\-]{3,})"/g;
 const isProse = (lit) => / |\.$/.test(lit.slice(1, -1));
 
@@ -134,6 +139,10 @@ if (SELFTEST) {
       'per-tool helper declared as a var is discovered too'],
     ["function llAnnounce(m) {} llAnnounce(__alloT('stem.x.k', 'Field measurements cleared.'))", 0, 0,
       'a keyed call through a discovered helper is clean'],
+    ["function llAnnounce(m) {} llAnnounce(__alloLLT('stem.x.k', 'Field measurements cleared.'))", 0, 0,
+      'a tool-unique translator name counts as keyed'],
+    ["{ 'aria-label': __alloLLT('stem.x.k', 'Magnet controls') }", 0, 0,
+      'a label keyed through a tool-unique translator is clean'],
     ["llAnnounce('Field measurements cleared.')", 0, 0,
       'an undeclared name is NOT a helper - only declarations in this file count'],
     ["announceToSR(paused ? 'Drying paused.' : 'Drying resumed.')", 1, 0, 'conditional announcement'],
