@@ -235,7 +235,7 @@ Steps 2 and the load half of step 3 of the seed plan are now automated and green
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
-- Tools: `dev-tools/audit_allopacks.cjs`, `dev-tools/build_allopack_catalog_entries.cjs`, `dev-tools/report_shared_glossary_terms.cjs`
+- Tools: `dev-tools/audit_allopacks.cjs`, `dev-tools/build_allopack_catalog_entries.cjs`, `dev-tools/report_shared_glossary_terms.cjs`, `dev-tools/smoke_allopacks_live.mjs`
 - Tests: `tests/allopack_catalog.test.js`, `tests/content_viewer_boundary_key.test.js`, `tests/allopack_id_uniqueness.test.js`
 - Host fix: `AlloFlowANTI.txt` and its two paired copies (content-viewer boundary key)
 - Docs: `docs/ALLOPACK_FORMAT_SPEC.md`, `docs/ALLOPACK_AUTHORING_PROMPT.md`, `docs/COMMUNITY_CATALOG_SEED_PLAN.md`
