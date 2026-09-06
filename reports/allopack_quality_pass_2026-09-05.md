@@ -1,6 +1,6 @@
 # AlloPack quality pass and enrichment, September 5, 2026
 
-Claude. Scope: every pack in `allopacks/` (21 at the start, 24 at the end). Nothing in this pass changes `catalog/index.json`; publication of the text-only packs is a separate decision (see "Catalog" below).
+Claude. Scope: every pack in `allopacks/` (21 at the start, 38 at the end). Nothing in this pass changes `catalog/index.json`; publication of the text-only packs is a separate decision (see "Catalog" below).
 
 ## What was checked
 
@@ -253,6 +253,45 @@ The Egypt FAQ corrects the story most students arrive with. The evidence from th
 **The shot lists carry the hard part.** Two of these topics fight the no-raster-text policy directly. A place-value pack is about numerals, and a map pack is made of writing. Both shot lists resolve it the same way and say so explicitly: the picture supplies the quantity or the place, and AlloFlow's native labels supply the symbol or the name — which is the lesson in both cases. A key box is rendered empty with blank space beside each symbol; a scale bar has tick marks and no numbers. The Egypt list adds a rule of its own: no invented hieroglyphs, because plausible-looking nonsense script is the historical equivalent of raster text.
 
 The catalog now holds 29 packs across grades 1 to 8: Science 14, ELA 6, Math 6, Social Studies 4 (counting the American Revolution pack, whose standards are half literacy).
+## Twelfth pass (into September 6): filling the coverage grid to 38 packs
+
+Counting the catalog as a grade-by-subject grid, rather than as a list, made the remaining work obvious. Nine more packs were written across three rounds, each aimed at an empty or near-empty cell.
+
+| Pack | Grade | Subject | The cell it filled |
+| --- | --- | --- | --- |
+| The Words Around the Word | 3 | ELA | ELA had nothing at grade 3 |
+| Filling Space | 5 | Math | math jumped from 3-4 straight to 6 |
+| Why Windows Are Not Wool | 2 | Science | science had nothing at grade 2 |
+| Did Anything New Actually Form? | 8 | Science | grade 8 had no science at all |
+| Says Who? | 6 | ELA | grade 6 had no ELA |
+| Ten Is a Friendly Number | 1 | Math | grade 1 had one pack in total |
+| Learn One, Read Many | 1 | ELA | no decoding pack anywhere in the catalog |
+| Who Decided That? | 4 | Social Studies | no civics below grade 8 |
+| Everything Has a Cost | 7 | Social Studies | economics was entirely absent |
+
+**Every grade from 1 to 8 now has Science, ELA and Math.** Social Studies covers grades 3, 4, 6 and 7 directly, plus 5 and 8 through the two history packs whose standards are literacy-coded.
+
+Each pack carries an argument rather than a topic. Volume builds the formula out of countable cubes so that `l x w x h` reads as *cubes in a layer, times layers* rather than a rule handed down. The grade-8 chemistry pack turns on the fact that all five textbook indicators of a reaction have physical impostors, so appearance settles nothing and only a properties comparison does. The grade-6 ELA pack argues that most weak arguments are not lies but true facts stapled to a claim they do not reach, and its hardest exercise is running that test on a conclusion you already agree with. The economics pack defines opportunity cost as the runner-up specifically, not everything turned down.
+
+### The symbol collision, five times over
+
+A pattern emerged that is worth stating for anyone authoring the next pack. **The no-raster-text policy collides head-on with any topic whose subject matter is symbols**, and by now that has happened five times: numerals (place value, making ten), place names (map skills), sentences (context clues, argument), and letters themselves (word families).
+
+Every one resolves the same way, and each shot list now says so explicitly: **the image carries the quantity, the place, or the structure; AlloFlow's native labels carry the symbol.** A key box renders empty with blank space beside each symbol. A scale bar gets tick marks and no numbers. A sentence is drawn as a line of grey word-bars with one highlighted. Word Families is the sharpest case, because the topic *is* letters: the artwork shows a cat, a hat and a bat, and the words are labels the child has to decode. A picture with "cat" painted into it does the decoding for them and teaches nothing.
+
+### Three subject-specific art traps
+
+- **Chemistry.** The impostor pairs must be genuinely indistinguishable — reaction bubbles beside boiling bubbles, same glassware, same angle, same light. A dramatic fizzing beaker captioned "reaction" would teach the exact reflex the pack exists to break.
+- **Civics.** Stock government imagery is domes, flags, gavels and suits at podiums, all of which teach that this is remote and not for you. The reading argues the opposite, so the set is deliberately unimpressive: folding chairs, a noticeboard, a microphone anyone can step up to. The one grand building appears in the distance on purpose.
+- **Economics.** No currency anywhere. The pack's first move is that economics is about scarcity rather than money, and a coin would undo it in one image. Cost is shown as the thing not taken: a closed door, an empty wedge, a shaded third place on a podium.
+
+### What the gates caught, on new work
+
+The checks built in passes two through nine earned their keep against content written after them. The grade-2 challenge brief came in at FK 4.4 against a band of 2; the Context Clues memory aid at 5.5 against a band of 3; the grade-1 glossary at 3.1 against a band of 1. All three were rewritten before commit. The civics quiz tripped the option-length check with a correct answer of 21 characters against distractors of 39 to 44 — **a correct answer much shorter than its distractors gives itself away exactly as a longer one does**, and the audit tests both directions.
+
+One defect got through every gate and was caught by eye: a `bublets` typo sitting beside `bullets` in an anchor chart. The JSON stayed valid and every shape check passed, because an unknown extra key is not something any of them look for.
+
+All nine packs pass the audit at zero flags and load clean in the deployed app.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
