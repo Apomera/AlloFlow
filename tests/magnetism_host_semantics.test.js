@@ -17,7 +17,7 @@ describe.each(MAGNETISM_PATHS)('Magnetism host semantics in %s', (filePath) => {
   });
 
   it('gives every named visual key an ARIA role that supports its label', () => {
-    expect(source).toContain("className: 'mag-pole-key', role: 'group', 'aria-label': 'Magnetic pole key'");
+    expect(source).toContain(`className: 'mag-pole-key', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_magnetic_pole_key', 'Magnetic pole key')`);
     const namedLegends = source.match(/className: 'mag-legend', role: 'group', 'aria-label':/g) || [];
     expect(namedLegends).toHaveLength(4);
     expect(source).not.toMatch(/className: 'mag-(?:pole-key|legend)', 'aria-label':/);
