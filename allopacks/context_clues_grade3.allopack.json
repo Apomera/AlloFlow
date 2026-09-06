@@ -1,0 +1,575 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "The Words Around the Word — Working Out What It Means",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "3rd Grade",
+    "standards": "CCSS.ELA-LITERACY.L.3.4.A (use sentence-level context as a clue to the meaning of a word or phrase); CCSS.ELA-LITERACY.L.3.4.B (determine the meaning of a new word formed when a known affix is added to a known word); CCSS.ELA-LITERACY.L.3.4.C (use a known root word as a clue to the meaning of an unknown word with the same root); CCSS.ELA-LITERACY.RI.3.4 (determine the meaning of general academic and domain-specific words and phrases in a text)",
+    "createdAt": "2026-09-05T23:10:00.000Z",
+    "imageShotList": "allopacks/context_clues_grade3.IMAGES.md"
+  },
+  "sourceTopic": "Context Clues and Word Parts",
+  "history": [
+    {
+      "id": "cc-directions",
+      "type": "directions",
+      "title": "Read Around the Word",
+      "timestamp": "2026-09-05T23:10:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nYou already do this. When you hit a word you do not know, you keep reading and you often work it out. This week you learn the moves you were already making, so you can use them on purpose.\n\n1. Read **The Words Around the Word**.\n2. Learn the words in **Clue Words**, then win the **Crossword**.\n3. Keep the **Four Kinds of Clue** chart where you can see it.\n4. Sort the cards in **Which Clue Is It?**\n5. Say the **Word Detective Frames** out loud with a partner.\n6. Take **Word Check**.\n7. Lock it in with **Remember the Four Clues**.\n8. Read **Word Questions Kids Ask** — one answer says when to give up and look it up.\n9. Finish with **Design: A Clue Hunt for a Reading Buddy**.\n\nYour job this week: catch yourself working out one real word while reading, and tell somebody how you did it. 🔍",
+        "objectives": [
+          {
+            "id": "cc-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "cc-glossary"
+          },
+          {
+            "id": "cc-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "cc-glossary"
+          },
+          {
+            "id": "cc-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cc-goal-catch",
+            "label": "I caught myself working out a real word and said how I did it",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "3rd Grade • 4 goals • catch yourself doing it"
+    },
+    {
+      "id": "cc-reading",
+      "type": "simplified",
+      "title": "The Words Around the Word",
+      "timestamp": "2026-09-05T23:10:01.000Z",
+      "data": "## The Words Around the Word\n\nRead this: *The path was so narrow that we had to walk single file.*\n\nSuppose you did not know **narrow**. You would still have a good guess. If people have to walk one behind the other, the path must be thin. You did not look anything up. The sentence told you.\n\nThat is what a **context** **clue** is. The words around a word hint at what it means. You have been doing it since you were small.\n\nThere are four kinds worth knowing by name.\n\nSometimes the writer just tells you. *A glacier, a huge slow-moving river of ice, carved this valley.* That is a **definition** clue, and it is the easiest one.\n\nSometimes you get cases instead. *She packed produce: apples, carrots, and lettuce.* Nobody defined produce, but the **example** clue shows you it means fruits and vegetables.\n\nSometimes a nearby word means almost the same thing. *He was furious. I had never seen him so angry.* Angry is a **synonym**, and it hands you the meaning.\n\nSometimes the sentence swings the other way. *The room was not tidy; it was a shambles.* The little word not tells you a shambles is the opposite of tidy. That is an **antonym** clue.\n\nWatch for **signal** words. Or, that is, and such as often bring a definition or an example. But, however and instead often bring an opposite.\n\nThe word itself can help too. A **prefix** is a word part on the front. Un- means not, so unhappy is not happy. A **suffix** is a word part on the end. -ful means full of, so joyful is full of joy. Underneath is the **root**, the main part carrying the meaning.\n\nNow the honest part. Sometimes there is no clue at all. The sentence gives you nothing, and guessing harder will not help. That is the moment to ask someone or use a dictionary. Knowing when to stop guessing is a reading skill too.",
+      "meta": "3rd Grade • Leveled reading • ~350 words",
+      "imageSlot": "cc-img-four-clues"
+    },
+    {
+      "id": "cc-glossary",
+      "type": "glossary",
+      "title": "Clue Words",
+      "timestamp": "2026-09-05T23:10:02.000Z",
+      "data": [
+        {
+          "term": "Context",
+          "def": "The words and sentences around a word that hint at what it means.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Clue",
+          "def": "A hint that helps you work something out.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Definition",
+          "def": "A sentence that tells you straight out what a word means.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Example",
+          "def": "A case given to show what a word covers.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Synonym",
+          "def": "A word that means nearly the same as another word.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Antonym",
+          "def": "A word that means the opposite of another word.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Prefix",
+          "def": "A word part added to the front that changes the meaning.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Suffix",
+          "def": "A word part added to the end that changes the meaning.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Root",
+          "def": "The main part of a word, the part that carries its meaning.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Signal",
+          "def": "A small word like or, but, or such as that tells you a hint is coming.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "cc-anchor",
+      "type": "anchor-chart",
+      "title": "Four Kinds of Clue",
+      "timestamp": "2026-09-05T23:10:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "WHAT THE SENTENCE IS DOING",
+        "sections": [
+          {
+            "label": "DEFINITION · it just tells you",
+            "bullets": [
+              "The meaning is right there in the sentence",
+              "Watch for: or, that is, which means",
+              "\"A glacier, a huge slow river of ice, …\""
+            ],
+            "iconPrompt": "a sentence with a middle section set off by commas, highlighted"
+          },
+          {
+            "label": "EXAMPLE · it shows you cases",
+            "bullets": [
+              "A list stands in for the meaning",
+              "Watch for: such as, like, including",
+              "\"produce: apples, carrots, and lettuce\""
+            ],
+            "iconPrompt": "one word with three small pictures branching from it"
+          },
+          {
+            "label": "SYNONYM · a word that matches",
+            "bullets": [
+              "A nearby word means nearly the same",
+              "Often in the very next sentence",
+              "\"furious … so angry\""
+            ],
+            "iconPrompt": "two puzzle pieces that fit each other"
+          },
+          {
+            "label": "ANTONYM · a word that flips it",
+            "bullets": [
+              "A nearby word means the opposite",
+              "Watch for: but, however, not, instead",
+              "\"not tidy; it was a shambles\""
+            ],
+            "iconPrompt": "an arrow that turns back on itself"
+          },
+          {
+            "label": "AND WHEN THERE IS NO CLUE",
+            "bullets": [
+              "Sometimes the sentence gives you nothing",
+              "Guessing harder does not help",
+              "Ask someone, or look it up. That is a skill too."
+            ],
+            "iconPrompt": "an open dictionary beside a shrugging figure"
+          }
+        ]
+      },
+      "meta": "4 clue types + the honest fifth section"
+    },
+    {
+      "id": "cc-memory",
+      "type": "memory-aid",
+      "title": "Remember the Four Clues",
+      "timestamp": "2026-09-05T23:10:04.000Z",
+      "meta": "3rd Grade • 2 memory aids • the four clues, and the word parts",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Four Clues",
+        "instructions": "Two cards hold the moves. Look at the example, make one your own, then say how it helps you.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "chunking"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Sometimes the writer just tells you. Sometimes you get cases instead. Sometimes a nearby word means almost the same thing. Sometimes the sentence swings the other way.",
+        "lessonRef": {
+          "resourceId": "cc-reading",
+          "title": "The Words Around the Word"
+        },
+        "cards": [
+          {
+            "id": "cc-ma-four",
+            "target": "The four kinds of context clue a sentence can give you",
+            "essentialFacts": [
+              "A definition clue tells you the meaning straight out.",
+              "An example clue shows you cases instead.",
+              "A synonym clue puts a word nearby that means nearly the same.",
+              "An antonym clue puts a word nearby that means the opposite."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "D-E-S-A: Dogs Eat Some Apples. Definition, Example, Synonym, Antonym. Silly on purpose, because silly sticks.",
+            "mapping": "Each first letter is one kind of clue. Saying the four-word sentence walks you through all four, so you never leave one out.",
+            "scaffoldStarter": "D is for ____. E is for ____. S is for ____. A is for ____.",
+            "scaffoldSteps": [
+              "Name the four clue types.",
+              "Take the first letter of each.",
+              "Build a short silly sentence."
+            ],
+            "coachPrompts": [
+              "Which of the four do you spot most easily?"
+            ],
+            "studentPrompt": "Make your own sentence from D, E, S and A.",
+            "reasoningPrompt": "How does your sentence stop you forgetting one of the four?",
+            "hookFact": {
+              "text": "If people have to walk one behind the other, the path must be thin. You did not look anything up.",
+              "sourceTitle": "The Words Around the Word (this lesson)"
+            }
+          },
+          {
+            "id": "cc-ma-parts",
+            "target": "Breaking a long word into its front, middle and end",
+            "essentialFacts": [
+              "A prefix is a word part on the front, like un- meaning not.",
+              "A suffix is a word part on the end, like -ful meaning full of.",
+              "The root is the main part in the middle that carries the meaning."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "chunking",
+            "mode": "scaffolded",
+            "aiExample": "Cover the ends with two fingers. Whatever is left is the root. Now take one finger off at a time. Ask what that piece did. Un-happy: cover un-, find happy, then put not back on.",
+            "mapping": "Covering the ends turns a long scary word into a short familiar one. Uncovering them one at a time shows what each part changed.",
+            "scaffoldStarter": "Cover the front: ____. Cover the end: ____. What is left is ____.",
+            "scaffoldSteps": [
+              "Find a long word with a prefix or suffix.",
+              "Cover the ends and read what is left.",
+              "Say what each end did to the meaning."
+            ],
+            "coachPrompts": [
+              "What does the root mean on its own, before the parts go back on?"
+            ],
+            "studentPrompt": "Make your own way to break a long word into parts.",
+            "reasoningPrompt": "Why is finding the root first easier than reading the whole word at once?",
+            "hookFact": {
+              "text": "Un- means not, so unhappy is not happy. -ful means full of, so joyful is full of joy.",
+              "sourceTitle": "The Words Around the Word (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "cc-sort",
+      "type": "concept-sort",
+      "title": "Which Clue Is It?",
+      "timestamp": "2026-09-05T23:10:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cc-def",
+            "label": "Definition clue",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "cc-ex",
+            "label": "Example clue",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "cc-syn",
+            "label": "Synonym clue",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "cc-ant",
+            "label": "Antonym clue",
+            "color": "bg-rose-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cc1",
+            "content": "A drought, which means a long time with no rain, hit the farms.",
+            "categoryId": "cc-def"
+          },
+          {
+            "id": "cc2",
+            "content": "Nocturnal animals, that is, animals awake at night, filled the woods.",
+            "categoryId": "cc-def"
+          },
+          {
+            "id": "cc3",
+            "content": "She loved citrus such as lemons, limes, and oranges.",
+            "categoryId": "cc-ex"
+          },
+          {
+            "id": "cc4",
+            "content": "He packed utensils like a fork, a spoon, and a knife.",
+            "categoryId": "cc-ex"
+          },
+          {
+            "id": "cc5",
+            "content": "The room was immaculate. I had never seen it so clean.",
+            "categoryId": "cc-syn"
+          },
+          {
+            "id": "cc6",
+            "content": "She was weary after the hike, and I was tired too.",
+            "categoryId": "cc-syn"
+          },
+          {
+            "id": "cc7",
+            "content": "The street was not busy; instead it was completely deserted.",
+            "categoryId": "cc-ant"
+          },
+          {
+            "id": "cc8",
+            "content": "He is usually generous, but that day he was stingy.",
+            "categoryId": "cc-ant"
+          }
+        ]
+      },
+      "meta": "4 buckets • 8 cards • two of each, matched for length"
+    },
+    {
+      "id": "cc-frames",
+      "type": "sentence-frames",
+      "title": "Word Detective Frames",
+      "timestamp": "2026-09-05T23:10:06.000Z",
+      "meta": "6 frames • say them out loud • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "I did not know the word ____."
+          },
+          {
+            "text": "The sentence around it said ____."
+          },
+          {
+            "text": "That is a ____ clue, because ____."
+          },
+          {
+            "text": "So I think ____ means ____."
+          },
+          {
+            "text": "I checked by ____, and I was ____."
+          },
+          {
+            "text": "There was no clue here, so I ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Word Detective |\n|---|---|---|---|\n| Naming the clue | Guesses a type | Names the type | Names the type and quotes the words that gave it away |\n| The meaning | A guess with no reason | A reasonable meaning | A meaning that fits the whole sentence when read back |\n| Knowing when to stop | Keeps guessing | Says it was hard | Says there was no clue and names what to do instead |"
+      }
+    },
+    {
+      "id": "cc-quiz",
+      "type": "quiz",
+      "title": "Word Check",
+      "timestamp": "2026-09-05T23:10:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "\"A glacier, a huge slow-moving river of ice, carved this valley.\" Which clue is that?",
+            "options": [
+              "An example clue, since it lists some cases",
+              "A definition clue, since it says what it means",
+              "A synonym clue, since a matching word is near",
+              "An antonym clue, since a flipping word is near"
+            ],
+            "correctAnswer": "A definition clue, since it says what it means",
+            "conceptLabel": "naming the clue type"
+          },
+          {
+            "type": "mcq",
+            "question": "\"The room was not tidy; it was a shambles.\" What does the word not tell you?",
+            "options": [
+              "A shambles means the opposite of tidy",
+              "A shambles means about the same as tidy",
+              "A shambles is a kind of room in a house",
+              "A shambles is a word nobody uses any more"
+            ],
+            "correctAnswer": "A shambles means the opposite of tidy",
+            "conceptLabel": "signal words point the way"
+          },
+          {
+            "type": "mcq",
+            "question": "Which small words most often warn you that an opposite is coming?",
+            "options": [
+              "such as, like, including",
+              "first, next, finally",
+              "but, however, instead",
+              "and, also, as well"
+            ],
+            "correctAnswer": "but, however, instead",
+            "conceptLabel": "signal words point the way"
+          },
+          {
+            "type": "mcq",
+            "question": "The word unbreakable has a prefix and a suffix. What is the root?",
+            "options": [
+              "unbreak",
+              "break",
+              "breakable",
+              "able"
+            ],
+            "correctAnswer": "break",
+            "conceptLabel": "word parts"
+          },
+          {
+            "type": "mcq",
+            "question": "You read a sentence with a hard word and there is no clue anywhere. What is the smart move?",
+            "options": [
+              "Keep re-reading it until a meaning appears",
+              "Skip the whole page and start a new book",
+              "Pick any meaning and carry on regardless",
+              "Ask somebody or look it up in a dictionary"
+            ],
+            "correctAnswer": "Ask somebody or look it up in a dictionary",
+            "conceptLabel": "knowing when to stop guessing"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "\"She packed produce: apples, carrots, and lettuce.\" What does produce mean, and how do you know?",
+            "expectedAnswer": "Produce means fruits and vegetables. Nobody defined it, but the list of apples, carrots and lettuce gives examples, and all three are fruits or vegetables. That is an example clue.",
+            "conceptLabel": "naming the clue type"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Write your own sentence that gives a synonym clue for a hard word.",
+            "expectedAnswer": "Answers vary. A full answer uses a hard word and puts a word nearby that means nearly the same, so a reader could work the hard word out. For example: The trail was treacherous, and the guide warned us it was dangerous.",
+            "conceptLabel": "naming the clue type"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is a word you worked out from a sentence this week?"
+          },
+          {
+            "text": "Is it harder for you to spot a clue, or to admit there is not one? Why?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 write-outs • the last one asks you to build a clue"
+    },
+    {
+      "id": "cc-faq",
+      "type": "faq",
+      "title": "Word Questions Kids Ask",
+      "timestamp": "2026-09-05T23:10:08.000Z",
+      "data": [
+        {
+          "question": "What if my guess is wrong? 🤔",
+          "answer": "That happens to everyone, and it is fine. Read the sentence again with your meaning in it. If it sounds odd, your guess was off. Trying and checking is the whole method."
+        },
+        {
+          "question": "Is it cheating to use a dictionary?",
+          "answer": "No. It is the right move when there is no clue. Good readers do both. They work words out when they can, and they look them up when they cannot."
+        },
+        {
+          "question": "Do prefixes always mean the same thing? ✂️",
+          "answer": "Usually, but not always. Un- almost always means not. In- often means not, as in invisible, yet in include it does not. Check your guess against the sentence."
+        },
+        {
+          "question": "Why do books use hard words at all?",
+          "answer": "Because some ideas need an exact word. Furious is not quite angry. Writers pick the word that fits, and then often plant a clue nearby for you."
+        },
+        {
+          "question": "Does this work for people's names? 📖",
+          "answer": "Not really. A name does not have a meaning you can work out from the sentence. Sound it out, keep going, and let the story tell you who they are."
+        },
+        {
+          "question": "How many times do I need a word before I know it?",
+          "answer": "More than once. Most people need to meet a word several times, in different places, before it sticks. So working it out today and forgetting it is normal, not failure."
+        }
+      ],
+      "meta": "6 questions • two of them give you permission to look it up"
+    },
+    {
+      "id": "cc-challenge",
+      "type": "applied-challenge",
+      "title": "Design: A Clue Hunt for a Reading Buddy",
+      "timestamp": "2026-09-05T23:10:09.000Z",
+      "meta": "3rd Grade • Design brief • write the clue, do not give the answer",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Clue Hunt for a Reading Buddy",
+        "instructions": "Write four sentences, each hiding a hard word with a different kind of clue. Test them on a partner who has never seen them.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "Spotting a clue is easier than building one. Writing a sentence that carries a clue without giving the word away forces a student to know exactly how each clue type works.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "Your class is making a clue-hunt page for the grade below. You get four hard words from your teacher, one card per word, and one partner to test on.",
+          "role": "Clue writers",
+          "audience": "A younger reader who does not know the four words",
+          "drivingQuestion": "How do you write a sentence that lets a reader work out a hard word, without simply telling them the answer?",
+          "seedDirection": "Use a different kind of clue for each of your four sentences. If two of yours are the same kind, swap one.",
+          "lockedLessonFacts": [
+            "A definition clue tells you the meaning straight out.",
+            "An example clue shows cases instead.",
+            "A synonym clue puts a word nearby that means nearly the same.",
+            "An antonym clue puts a word nearby that means the opposite."
+          ],
+          "openQuestions": [
+            "Which clue type is hardest to write, and why?",
+            "How much help is too much help?",
+            "How will you know your partner really worked it out?"
+          ],
+          "stakeholders": [
+            "The younger reader who will use the page",
+            "Your partner, who tests every sentence",
+            "The teacher who collects the cards"
+          ],
+          "criteria": [
+            "Four sentences, each using a different kind of clue",
+            "The hard word is never defined in plain words except in the definition one",
+            "A partner works out at least three of the four without help",
+            "Each card says which clue type it uses on the back"
+          ],
+          "constraints": [
+            "Four words, four cards",
+            "One class period",
+            "One sentence per card"
+          ],
+          "deliverable": "Four finished cards, plus one sentence: which clue your partner found easiest, and which one you had to rewrite.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student had the word drenched and kept writing it means very wet.",
+            "move": "She changed it to: He came in drenched, and a puddle grew under his coat. Her partner got it at once, and nobody had been told the meaning.",
+            "whyItHelps": "She showed the result instead of stating the meaning, which is what an example clue does."
+          },
+          "frameStarter": "My word is ____. My clue is a ____ clue. The part that gives it away is ____.",
+          "frameChoices": [
+            "A definition inside commas",
+            "A short list of examples",
+            "A matching word in the next sentence",
+            "An opposite after the word but"
+          ],
+          "coachPrompts": [
+            "Did your partner work it out, or did they already know the word?",
+            "Which sentence gave too much away?",
+            "Are all four of your clue types different?"
+          ]
+        },
+        "coachHint": "Four words. Four different clues. Test them.",
+        "sourceExcerpt": "That is what a context clue is. The words around a word hint at what it means.",
+        "lessonRef": {
+          "resourceId": "cc-reading",
+          "title": "The Words Around the Word"
+        }
+      }
+    }
+  ]
+}

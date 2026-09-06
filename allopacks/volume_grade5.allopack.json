@@ -1,0 +1,601 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Filling Space — Volume and Why You Multiply Three Numbers",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "5th Grade",
+    "standards": "CCSS.MATH.CONTENT.5.MD.C.3 (recognize volume as an attribute of solid figures and understand concepts of volume measurement); CCSS.MATH.CONTENT.5.MD.C.4 (measure volumes by counting unit cubes); CCSS.MATH.CONTENT.5.MD.C.5 (relate volume to the operations of multiplication and addition, and solve real world problems involving volume); CCSS.MATH.PRACTICE.MP7 (look for and make use of structure)",
+    "createdAt": "2026-09-05T23:30:00.000Z",
+    "imageShotList": "allopacks/volume_grade5.IMAGES.md"
+  },
+  "sourceTopic": "Volume of Rectangular Prisms",
+  "history": [
+    {
+      "id": "vl-directions",
+      "type": "directions",
+      "title": "Count the Cubes",
+      "timestamp": "2026-09-05T23:30:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nEverybody learns to multiply length by width by height. Almost nobody gets told why that works. This week you find out, and after that the formula is something you could rebuild yourself.\n\n1. Read **Filling Space**.\n2. Learn the words in **Volume Words**, then win the **Crossword**.\n3. Keep the **Three Ways to Find Volume** chart beside you.\n4. Sort the cards in **Volume, Area, or Perimeter?**\n5. Work through **Cube Problems** on paper.\n6. Take **Volume Check**.\n7. Lock it in with **Remember Why It Works**.\n8. Read **Volume Questions Kids Ask**.\n9. Finish with **Design: A Box That Wastes the Least**.\n\nYour job this week: find a box at home and work out how many centimetre cubes would fill it. 📦",
+        "objectives": [
+          {
+            "id": "vl-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "vl-glossary"
+          },
+          {
+            "id": "vl-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "vl-glossary"
+          },
+          {
+            "id": "vl-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "vl-goal-box",
+            "label": "I measured a real box and worked out its volume",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "5th Grade • 4 goals • measure a real box"
+    },
+    {
+      "id": "vl-reading",
+      "type": "simplified",
+      "title": "Filling Space",
+      "timestamp": "2026-09-05T23:30:01.000Z",
+      "data": "## Filling Space\n\nHere is a formula you have probably met: volume equals length times width times height. It works. But why should multiplying three numbers tell you anything about a box?\n\nStart somewhere simpler. **Volume** is how much space a solid shape takes up. We measure it by counting how many **unit** cubes fit inside, with no gaps and no overlaps. A unit cube is one centimetre on every edge, or one inch, or one metre. Whichever you pick, the answer comes out in **cubic** units, because you are counting cubes.\n\nNow build a box out of cubes and watch what happens.\n\nLay one row along the bottom, four cubes long. Add rows beside it until the floor is covered. If the floor is 4 cubes by 3 cubes, that layer holds 12 cubes. You just found the **area** of the base, and it is the number of cubes in one **layer**.\n\nNow stack. Put an identical layer on top. Then another. If the box is 5 cubes tall, you have 5 layers of 12, which is 60.\n\nThat is the whole formula. Length times width gives you one layer. Multiplying by the height counts the layers. So l × w × h is not three random numbers multiplied. It is *cubes in a layer, times how many layers*.\n\nOnce you see it that way, a shortcut appears. Volume equals **base** area times height, whatever shape the base is, as long as the shape does not change as you go up.\n\nWhat about an L-shaped solid, or a house-shaped one? Cut it into rectangular **prisms**, find each volume, and add them. Mathematicians call this **decomposing**, and it is the same move you already use with awkward shapes when finding area.\n\nOne last warning worth having. Volume is not the same as **capacity**, quite. Volume is the space a shape takes up. Capacity is how much a container holds. A thick-walled box has less capacity than its outside volume suggests, because the walls take up room too.",
+      "meta": "5th Grade • Leveled reading • ~360 words",
+      "imageSlot": "vl-img-layers"
+    },
+    {
+      "id": "vl-glossary",
+      "type": "glossary",
+      "title": "Volume Words",
+      "timestamp": "2026-09-05T23:30:02.000Z",
+      "data": [
+        {
+          "term": "Volume",
+          "def": "How much space a solid shape takes up.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Unit",
+          "def": "One cube of a chosen size, used as the thing you count.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Cubic",
+          "def": "Measured in cubes, which is why the label carries a small 3.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Prism",
+          "def": "A solid whose cross-section stays the same all the way along.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Base",
+          "def": "The face you start from, whose area gives one layer.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Layer",
+          "def": "One flat sheet of cubes, stacked to build the solid.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Area",
+          "def": "How much flat surface a shape covers.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Height",
+          "def": "How far a solid rises from its base to its top.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Capacity",
+          "def": "How much a container can hold inside it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Decompose",
+          "def": "To cut an awkward shape into simple pieces you can measure.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "vl-anchor",
+      "type": "anchor-chart",
+      "title": "Three Ways to Find Volume",
+      "timestamp": "2026-09-05T23:30:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "SAME ANSWER, THREE ROUTES",
+        "sections": [
+          {
+            "label": "COUNT THE CUBES",
+            "bullets": [
+              "Fill the solid with unit cubes, no gaps",
+              "Count them all",
+              "Slow, always true, and the reason the rest works"
+            ],
+            "iconPrompt": "a small open box packed with identical cubes"
+          },
+          {
+            "label": "LAYERS",
+            "bullets": [
+              "Cubes in one layer = area of the base",
+              "Multiply by how many layers there are",
+              "This is where the formula comes from"
+            ],
+            "iconPrompt": "three identical flat sheets of cubes stacked with gaps between"
+          },
+          {
+            "label": "THE FORMULA",
+            "bullets": [
+              "l × w × h for a rectangular prism",
+              "Or base area × height for any prism",
+              "It is a shortcut for counting, not a separate rule"
+            ],
+            "iconPrompt": "a box with its three edge lengths marked by plain arrows"
+          },
+          {
+            "label": "AWKWARD SHAPES",
+            "bullets": [
+              "Cut it into rectangular prisms",
+              "Find each volume, then add them",
+              "Same move you use for awkward areas"
+            ],
+            "iconPrompt": "an L-shaped solid split by a dotted line into two boxes"
+          },
+          {
+            "label": "WATCH THE UNITS",
+            "bullets": [
+              "Answers are in cubic units, with a small 3",
+              "Every measurement must use the same unit first",
+              "Volume is not quite the same as capacity"
+            ],
+            "iconPrompt": "a single unit cube with its three edges marked"
+          }
+        ]
+      },
+      "meta": "5 parts • the second one is the explanation"
+    },
+    {
+      "id": "vl-memory",
+      "type": "memory-aid",
+      "title": "Remember Why It Works",
+      "timestamp": "2026-09-05T23:30:04.000Z",
+      "meta": "5th Grade • 2 memory aids • layers, and the units",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Why It Works",
+        "instructions": "Two cards hold the reasoning, not just the rule. Study the example, build one of your own, then say what it keeps straight.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Length times width gives you one layer. Multiplying by the height counts the layers. So l x w x h is not three random numbers multiplied. It is cubes in a layer, times how many layers.",
+        "lessonRef": {
+          "resourceId": "vl-reading",
+          "title": "Filling Space"
+        },
+        "cards": [
+          {
+            "id": "vl-ma-layers",
+            "target": "Why multiplying three numbers gives you a volume",
+            "essentialFacts": [
+              "Length times width gives the number of cubes in one layer.",
+              "That is the same as the area of the base.",
+              "Multiplying by the height counts how many layers there are.",
+              "So the formula is cubes in a layer, times layers."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a stack of sliced bread. One slice is the base. The number of slices is the height. Nobody multiplies bread by mystery. You count one slice, then count slices.",
+            "mapping": "A loaf is already made of identical layers, so the picture supplies the two ideas the formula needs and nothing else.",
+            "scaffoldStarter": "One ____ is the base. The number of ____ is the height.",
+            "scaffoldSteps": [
+              "Think of something made of identical layers.",
+              "Say what one layer is.",
+              "Say what counting the layers gives you."
+            ],
+            "coachPrompts": [
+              "What would go wrong if the slices were different sizes?"
+            ],
+            "studentPrompt": "Make your own layered picture for volume.",
+            "reasoningPrompt": "How does your picture show that the formula is really just counting?",
+            "hookFact": {
+              "text": "So l x w x h is not three random numbers multiplied. It is cubes in a layer, times how many layers.",
+              "sourceTitle": "Filling Space (this lesson)"
+            }
+          },
+          {
+            "id": "vl-ma-units",
+            "target": "Why volume answers carry a small three",
+            "essentialFacts": [
+              "Volume is measured by counting unit cubes.",
+              "A unit cube has three edges, so the label is cubic.",
+              "Length is one direction, area is two, volume is three."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "ONE, TWO, THREE: a line, a floor, a room. A line needs one measurement. A floor needs two. A room needs three. The small number is just how many directions you had to measure.",
+            "mapping": "Counting up one, two, three ties the exponent to something physical, so the small 3 stops being decoration and becomes a count of directions.",
+            "scaffoldStarter": "A line needs ____ measurement. A floor needs ____. A room needs ____.",
+            "scaffoldSteps": [
+              "Say how many measurements a line needs.",
+              "Say how many a flat shape needs.",
+              "Say how many a solid needs."
+            ],
+            "coachPrompts": [
+              "Why does area get a small 2 and volume a small 3?"
+            ],
+            "studentPrompt": "Make your own one-two-three phrase for the units.",
+            "reasoningPrompt": "How does your phrase stop you writing cm instead of cubic cm?",
+            "hookFact": {
+              "text": "Whichever you pick, the answer comes out in cubic units, because you are counting cubes.",
+              "sourceTitle": "Filling Space (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "vl-sort",
+      "type": "concept-sort",
+      "title": "Volume, Area, or Perimeter?",
+      "timestamp": "2026-09-05T23:30:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "vl-vol",
+            "label": "Volume",
+            "color": "bg-violet-500"
+          },
+          {
+            "id": "vl-area",
+            "label": "Area",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "vl-per",
+            "label": "Perimeter",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "vl1",
+            "content": "How much sand fills the sandbox",
+            "categoryId": "vl-vol"
+          },
+          {
+            "id": "vl2",
+            "content": "How much soil fills a raised garden bed",
+            "categoryId": "vl-vol"
+          },
+          {
+            "id": "vl3",
+            "content": "How much water a fish tank holds",
+            "categoryId": "vl-vol"
+          },
+          {
+            "id": "vl4",
+            "content": "How much carpet covers the bedroom floor",
+            "categoryId": "vl-area"
+          },
+          {
+            "id": "vl5",
+            "content": "How much paint covers one wall",
+            "categoryId": "vl-area"
+          },
+          {
+            "id": "vl6",
+            "content": "How much glass covers the window pane",
+            "categoryId": "vl-area"
+          },
+          {
+            "id": "vl7",
+            "content": "How much fence goes around the yard",
+            "categoryId": "vl-per"
+          },
+          {
+            "id": "vl8",
+            "content": "How much ribbon goes around the box",
+            "categoryId": "vl-per"
+          },
+          {
+            "id": "vl9",
+            "content": "How much trim goes around the mirror",
+            "categoryId": "vl-per"
+          }
+        ]
+      },
+      "meta": "3 buckets • 9 cards • every card starts the same way on purpose"
+    },
+    {
+      "id": "vl-math",
+      "type": "math",
+      "title": "Cube Problems",
+      "timestamp": "2026-09-05T23:30:06.000Z",
+      "data": {
+        "problems": [
+          {
+            "question": "A box is 6 cm long, 4 cm wide and 3 cm tall. What is its volume?",
+            "answer": "72 cubic cm",
+            "steps": [
+              { "explanation": "Find one layer first. The base is 6 by 4, so one layer holds 6 x 4 = 24 cubes." },
+              { "explanation": "The box is 3 cubes tall, so there are 3 identical layers." },
+              { "explanation": "3 layers of 24 cubes is 72. The answer is 72 cubic cm, because you counted cubes." }
+            ]
+          },
+          {
+            "question": "A prism has a base area of 15 square inches and a height of 4 inches. What is its volume?",
+            "answer": "60 cubic inches",
+            "steps": [
+              { "explanation": "The base area already tells you one layer holds 15 cubes. You do not need the length and width separately." },
+              { "explanation": "There are 4 layers, one for each inch of height." },
+              { "explanation": "4 x 15 = 60 cubic inches." }
+            ]
+          },
+          {
+            "question": "A box holds 120 cubic cm. Its base is 5 cm by 6 cm. How tall is it?",
+            "answer": "4 cm",
+            "steps": [
+              { "explanation": "One layer is 5 x 6 = 30 cubes." },
+              { "explanation": "The question is really: how many layers of 30 make 120?" },
+              { "explanation": "120 divided by 30 is 4, so the box is 4 cm tall." }
+            ]
+          },
+          {
+            "question": "An L-shaped solid is made of a 4 x 2 x 2 block joined to a 3 x 2 x 2 block. What is its volume?",
+            "answer": "28 cubic units",
+            "steps": [
+              { "explanation": "Decompose it. Handle each rectangular prism on its own." },
+              { "explanation": "First block: 4 x 2 x 2 = 16 cubic units." },
+              { "explanation": "Second block: 3 x 2 x 2 = 12 cubic units." },
+              { "explanation": "Add them: 16 + 12 = 28 cubic units. Nothing is counted twice because the blocks do not overlap." }
+            ]
+          },
+          {
+            "question": "Two boxes both hold 36 cubic cm. One is 6 x 3 x 2 and the other is 9 x 2 x 2. Are they the same shape?",
+            "answer": "No, they are different shapes with the same volume",
+            "steps": [
+              { "explanation": "Check the first: 6 x 3 x 2 = 36 cubic cm." },
+              { "explanation": "Check the second: 9 x 2 x 2 = 36 cubic cm. The volumes match." },
+              { "explanation": "But the edge lengths differ, so the boxes look nothing alike. Equal volume does not mean equal shape." }
+            ]
+          }
+        ]
+      },
+      "meta": "5 problems • worked steps • the last one is a trap worth falling into"
+    },
+    {
+      "id": "vl-quiz",
+      "type": "quiz",
+      "title": "Volume Check",
+      "timestamp": "2026-09-05T23:30:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Why does multiplying length by width by height give the volume?",
+            "options": [
+              "Because three measurements always need multiplying together",
+              "Because volume is defined by that formula and cannot be shown",
+              "Because length times width is one layer, and height counts the layers",
+              "Because the three edges of a box are always equal to each other"
+            ],
+            "correctAnswer": "Because length times width is one layer, and height counts the layers",
+            "conceptLabel": "the formula counts layers"
+          },
+          {
+            "type": "mcq",
+            "question": "A prism has a base area of 20 square cm and is 3 cm tall. Its volume is:",
+            "options": [
+              "23 cubic cm",
+              "60 cubic cm",
+              "6.67 cubic cm",
+              "120 cubic cm"
+            ],
+            "correctAnswer": "60 cubic cm",
+            "conceptLabel": "base area times height"
+          },
+          {
+            "type": "mcq",
+            "question": "Why are volume answers written in cubic units?",
+            "options": [
+              "Because you are counting cubes that fit inside",
+              "Because cubes are the only solid shape in math",
+              "Because the answer is usually a very large number",
+              "Because it stops people confusing it with weight"
+            ],
+            "correctAnswer": "Because you are counting cubes that fit inside",
+            "conceptLabel": "units come from what you count"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the best first move with an L-shaped solid?",
+            "options": [
+              "Measure the longest edge and cube that number",
+              "Cut it into rectangular prisms and add their volumes",
+              "Find its perimeter and multiply that by the height",
+              "Round the shape to the nearest box and estimate"
+            ],
+            "correctAnswer": "Cut it into rectangular prisms and add their volumes",
+            "conceptLabel": "decompose awkward shapes"
+          },
+          {
+            "type": "mcq",
+            "question": "Two boxes have the same volume. What must also be true?",
+            "options": [
+              "They must have the same edge lengths",
+              "They must have the same shape as each other",
+              "They must have the same base area exactly",
+              "Nothing else has to be true; only the space matches"
+            ],
+            "correctAnswer": "Nothing else has to be true; only the space matches",
+            "conceptLabel": "same volume, different shape"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A box holds 90 cubic cm and its base is 5 cm by 6 cm. How tall is it? Show how you know.",
+            "expectedAnswer": "It is 3 cm tall. One layer is 5 x 6 = 30 cubes. The question is how many layers of 30 make 90, and 90 divided by 30 is 3.",
+            "conceptLabel": "the formula counts layers"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain the difference between the volume of a box and its capacity.",
+            "expectedAnswer": "Volume is the space the box itself takes up. Capacity is how much it can hold inside. A box with thick walls has less capacity than its outside volume suggests, because the walls take up room too.",
+            "conceptLabel": "volume is not capacity"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Where have you seen volume matter outside of math class?"
+          },
+          {
+            "text": "Did knowing why the formula works change how you feel about it? How?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 write-outs • one asks you to explain, not compute"
+    },
+    {
+      "id": "vl-faq",
+      "type": "faq",
+      "title": "Volume Questions Kids Ask",
+      "timestamp": "2026-09-05T23:30:08.000Z",
+      "data": [
+        {
+          "question": "Does the formula work for a cylinder? 🥫",
+          "answer": "Yes, in the layer form. Base area times height still holds, because a cylinder is the same circle all the way up. You just need the area of a circle first, which comes later."
+        },
+        {
+          "question": "What if the sides slant, like a pyramid? 🔺",
+          "answer": "Then base times height is too big, because the layers shrink as you go up. A pyramid holds exactly one third of the box around it. That is a fact worth remembering and a proof worth waiting for."
+        },
+        {
+          "question": "Can two different boxes hold the same amount?",
+          "answer": "Easily. A 6 by 3 by 2 box and a 9 by 2 by 2 box both hold 36 cubic cm and look nothing alike. Same volume does not mean same shape."
+        },
+        {
+          "question": "Why do the units have that little 3? 🔢",
+          "answer": "It counts directions. A line needs one measurement, a flat shape needs two, a solid needs three. The small 3 is a record of that, not decoration."
+        },
+        {
+          "question": "Is a litre a volume?",
+          "answer": "Yes. One litre is exactly 1000 cubic centimetres. Litres and millilitres are just friendlier names for volumes you meet in a kitchen."
+        },
+        {
+          "question": "What if my measurements are in different units?",
+          "answer": "Convert first, always. Multiplying centimetres by metres gives a number that means nothing. Pick one unit, change everything into it, then multiply."
+        }
+      ],
+      "meta": "6 questions • the pyramid answer promises a proof rather than hiding one"
+    },
+    {
+      "id": "vl-challenge",
+      "type": "applied-challenge",
+      "title": "Design: A Box That Wastes the Least",
+      "timestamp": "2026-09-05T23:30:09.000Z",
+      "meta": "5th Grade • Design brief • fixed volume, least cardboard",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Box That Wastes the Least",
+        "instructions": "Find every whole-number box that holds exactly the volume you are given. Then work out which one uses the least cardboard, and say why.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "Fixing the volume and varying the shape forces a student to separate volume from surface area, which is the confusion the standard is really guarding against, and it makes the answer arguable rather than looked up.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "design",
+          "context": "A school club ships 48 small cubes of soap to a fundraiser. Each soap is one cubic unit. The club wants one box that fits them exactly, with no empty space, and wants to spend as little on cardboard as possible.",
+          "role": "Packaging designers",
+          "audience": "The club treasurer, who will approve the cheapest workable box",
+          "drivingQuestion": "Of all the whole-number boxes that hold exactly 48 unit cubes, which one uses the least cardboard, and is that the box the club should actually pick?",
+          "seedDirection": "List every whole-number set of three edges that multiplies to 48 before you calculate any surface area. There are fewer than you expect.",
+          "lockedLessonFacts": [
+            "Volume is the number of unit cubes that fit inside with no gaps.",
+            "Length times width gives one layer, and height counts the layers.",
+            "Equal volume does not mean equal shape.",
+            "Every measurement must be in the same unit before you multiply."
+          ],
+          "openQuestions": [
+            "How many different whole-number boxes hold exactly 48?",
+            "Does the box with the least cardboard have any other problem?",
+            "Would your answer change if the soaps were fragile?"
+          ],
+          "stakeholders": [
+            "The club treasurer paying for cardboard",
+            "Whoever has to pack the soaps by hand",
+            "The person carrying the finished box"
+          ],
+          "criteria": [
+            "A table of every whole-number box with volume 48, with its surface area",
+            "The volume of each box is shown to be 48, not just asserted",
+            "A recommendation with a reason, naming any tradeoff",
+            "At least four glossary words used correctly"
+          ],
+          "constraints": [
+            "Whole-number edge lengths only",
+            "Exactly 48 cubic units, no empty space",
+            "One recommendation, not a list"
+          ],
+          "deliverable": "A table of every box that works with its surface area, a marked sketch of the one you recommend, and two sentences: why it wastes the least, and what you would give up by choosing it.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A team worked the same problem with 24 cubes instead of 48.",
+            "move": "They listed six boxes, found 2 x 3 x 4 had the smallest surface area, then noticed the long thin 1 x 1 x 24 box would not fit any shelf and said so in their recommendation.",
+            "whyItHelps": "They answered the maths question and then checked it against the real one, which is where the tradeoff lives."
+          },
+          "frameStarter": "There are ____ boxes that hold 48. The one with the least cardboard is ____, because ____.",
+          "frameChoices": [
+            "A long, thin box",
+            "A flat, wide box",
+            "A box as close to a cube as possible",
+            "A tall, narrow box"
+          ],
+          "coachPrompts": [
+            "Have you found every set of three whole numbers that multiplies to 48?",
+            "Did you show the volume, or only claim it?",
+            "Is the cheapest box also the sensible one?"
+          ]
+        },
+        "coachHint": "List them all. Then measure the cardboard.",
+        "sourceExcerpt": "Length times width gives you one layer. Multiplying by the height counts the layers.",
+        "lessonRef": {
+          "resourceId": "vl-reading",
+          "title": "Filling Space"
+        }
+      }
+    }
+  ]
+}

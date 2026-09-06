@@ -1,0 +1,535 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Why Windows Are Not Wool — Matching Materials to Jobs",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "2nd Grade",
+    "standards": "NGSS 2-PS1-1 (plan and conduct an investigation to describe and classify different kinds of materials by their observable properties); NGSS 2-PS1-2 (analyze data obtained from testing different materials to determine which materials have the properties that are best suited for an intended purpose); CCSS.ELA-LITERACY.RI.2.1 (ask and answer such questions as who, what, where, when, why, and how to demonstrate understanding of key details in a text)",
+    "createdAt": "2026-09-05T23:50:00.000Z",
+    "imageShotList": "allopacks/materials_grade2.IMAGES.md"
+  },
+  "sourceTopic": "Properties of Materials and Their Uses",
+  "history": [
+    {
+      "id": "mt-directions",
+      "type": "directions",
+      "title": "Look at What Things Are Made Of",
+      "timestamp": "2026-09-05T23:50:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nNobody makes a window out of wool. Nobody makes a sweater out of glass. This week you find out why, and it turns out there is a rule behind it.\n\n1. Read **Why Windows Are Not Wool** with a partner.\n2. Learn the words in **Material Words**, then win the **Matching** game.\n3. Look at the **Pick the Right Stuff** chart.\n4. Play **Which Job Is It For?** and sort the cards.\n5. Take **Material Check** — say each answer out loud first.\n6. Lock it in with **Remember the Rule**.\n7. Read **Material Questions Kids Ask**.\n8. Finish with **Investigation: The Spill Test** — find out for yourself which cloth soaks up most.\n\nYour job this week: pick one thing in your home and say why it is made of what it is made of. 🧱",
+        "objectives": [
+          {
+            "id": "mt-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "mt-glossary"
+          },
+          {
+            "id": "mt-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "mt-glossary"
+          },
+          {
+            "id": "mt-goal-xp",
+            "label": "Earn 15 XP",
+            "kind": "xp",
+            "amount": 15
+          },
+          {
+            "id": "mt-goal-home",
+            "label": "I picked one thing at home and said why it is made of that",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "2nd Grade • 4 goals • look around your home"
+    },
+    {
+      "id": "mt-reading",
+      "type": "simplified",
+      "title": "Why Windows Are Not Wool",
+      "timestamp": "2026-09-05T23:50:01.000Z",
+      "data": "## Why Windows Are Not Wool\n\nLook at a window. Now look at a sweater. Nobody ever mixed those up. Why not?\n\nEvery thing is made of some **material**. Glass. Wool. Wood. Metal. Plastic. Each one has its own **properties** — the things you can notice about it.\n\nGlass is **hard**. It is **smooth**. You can see straight through it. Those are exactly what a window needs.\n\nWool is **soft**. It is **rough** to touch. It traps warm air near your skin. Those are exactly what a sweater needs.\n\nSo here is the rule. Somebody picked the material to fit the job.\n\nA raincoat is **waterproof**, so the rain runs off. A towel is the opposite. A towel needs to **absorb** water, which means soak it up. Same water. Two jobs. Two very different materials.\n\nA rubber band is **bendy**, so it stretches and springs back. A brick is not bendy at all, and that is good. You would not want a bendy wall.\n\nHow do people know which material to pick? They **test** it. They try each one at the same job and watch what happens. A fair test changes one thing only.\n\nHere is something to notice. One material can be right for one job and wrong for another. Paper is great for drawing. Paper is terrible for a raincoat. The material is not good or bad on its own. It only fits, or does not fit, the job.\n\nNext time you pick something up, ask what it is made of. Then ask why.",
+      "meta": "2nd Grade • Leveled reading • ~255 words • read-aloud friendly",
+      "imageSlot": "mt-img-window-sweater"
+    },
+    {
+      "id": "mt-glossary",
+      "type": "glossary",
+      "title": "Material Words",
+      "timestamp": "2026-09-05T23:50:02.000Z",
+      "data": [
+        {
+          "term": "Material",
+          "def": "What a thing is made of.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Property",
+          "def": "Something you can notice about a thing, like hard or soft.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Hard",
+          "def": "Not easy to squash, bend, or scratch.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Soft",
+          "def": "Easy to press in with your finger.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Bendy",
+          "def": "Able to bend without snapping.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Rough",
+          "def": "Bumpy to touch, not even.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Smooth",
+          "def": "Even to touch, with no bumps.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Waterproof",
+          "def": "Keeps water out instead of letting it soak in.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Absorb",
+          "def": "To soak up a liquid.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Test",
+          "def": "A fair try that helps you find out which one works best.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "mt-anchor",
+      "type": "anchor-chart",
+      "title": "Pick the Right Stuff",
+      "timestamp": "2026-09-05T23:50:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "THE MATERIAL FITS THE JOB",
+        "sections": [
+          {
+            "label": "A WINDOW NEEDS",
+            "bullets": [
+              "Hard, so it does not squash",
+              "Smooth, so it stays clear",
+              "See-through, so light gets in"
+            ],
+            "iconPrompt": "a plain window pane with light coming through"
+          },
+          {
+            "label": "A SWEATER NEEDS",
+            "bullets": [
+              "Soft, so it feels nice",
+              "Traps warm air near your skin",
+              "Bendy, so you can move"
+            ],
+            "iconPrompt": "a folded knitted sweater"
+          },
+          {
+            "label": "WATER JOBS GO TWO WAYS",
+            "bullets": [
+              "A raincoat is waterproof: water runs off",
+              "A towel absorbs: water soaks in",
+              "Same water, opposite jobs"
+            ],
+            "iconPrompt": "a drop rolling off one cloth and sinking into another"
+          },
+          {
+            "label": "HOW PEOPLE DECIDE",
+            "bullets": [
+              "Test each material at the same job",
+              "Change one thing only, so it is fair",
+              "No material is good or bad on its own"
+            ],
+            "iconPrompt": "three squares of cloth in a row with one drop on each"
+          }
+        ]
+      },
+      "meta": "4 parts • picture reference for the wall"
+    },
+    {
+      "id": "mt-memory",
+      "type": "memory-aid",
+      "title": "Remember the Rule",
+      "timestamp": "2026-09-05T23:50:04.000Z",
+      "meta": "2nd Grade • 2 memory aids • the rule, and the two water jobs",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Rule",
+        "instructions": "Two cards hold the big ideas. Look at the example, make one your own, then say how it helps you.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Somebody picked the material to fit the job. One material can be right for one job and wrong for another. The material is not good or bad on its own.",
+        "lessonRef": {
+          "resourceId": "mt-reading",
+          "title": "Why Windows Are Not Wool"
+        },
+        "cards": [
+          {
+            "id": "mt-ma-fit",
+            "target": "The material was picked to fit the job",
+            "essentialFacts": [
+              "Every thing is made of some material.",
+              "Each material has its own properties.",
+              "Somebody picked the material to fit the job.",
+              "A material is not good or bad on its own."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "FIT THE JOB. Say it while you tap the thing. Tap a window: hard and clear, fit the job. Tap a sweater: soft and warm, fit the job.",
+            "mapping": "Three short words, and you say them while touching a real object. The touching is what ties the rule to the thing in your hand.",
+            "scaffoldStarter": "This is made of ____. The job needs ____.",
+            "scaffoldSteps": [
+              "Pick up something near you.",
+              "Say what it is made of.",
+              "Say what the job needs."
+            ],
+            "coachPrompts": [
+              "What would go wrong if it were made of wool?"
+            ],
+            "studentPrompt": "Make your own short phrase for the rule.",
+            "reasoningPrompt": "How does your phrase help you when you meet a new object?",
+            "hookFact": {
+              "text": "Paper is great for drawing. Paper is terrible for a raincoat.",
+              "sourceTitle": "Why Windows Are Not Wool (this lesson)"
+            }
+          },
+          {
+            "id": "mt-ma-water",
+            "target": "The two opposite jobs water can give a material",
+            "essentialFacts": [
+              "A raincoat is waterproof, so rain runs off.",
+              "A towel absorbs, which means it soaks water up.",
+              "Same water, two opposite jobs."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture one drop landing twice. On the raincoat it rolls off and keeps going. On the towel it stops and sinks in. Roll off, or sink in.",
+            "mapping": "One drop and two endings. Because the drop is the same both times, the only thing that changed is the material, which is the whole idea.",
+            "scaffoldStarter": "On a ____ the drop ____. On a ____ the drop ____.",
+            "scaffoldSteps": [
+              "Picture a drop landing on a raincoat.",
+              "Picture the same drop on a towel.",
+              "Say what each one did."
+            ],
+            "coachPrompts": [
+              "Which one would you want for a spill on the floor?"
+            ],
+            "studentPrompt": "Make your own picture for the two water jobs.",
+            "reasoningPrompt": "Why is it useful that the drop is the same in both pictures?",
+            "hookFact": {
+              "text": "Same water. Two jobs. Two very different materials.",
+              "sourceTitle": "Why Windows Are Not Wool (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "mt-sort",
+      "type": "concept-sort",
+      "title": "Which Job Is It For?",
+      "timestamp": "2026-09-05T23:50:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "mt-water-out",
+            "label": "The job is to KEEP WATER OUT",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "mt-water-in",
+            "label": "The job is to SOAK WATER UP",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "mt-strong",
+            "label": "The job is to BE STRONG AND HARD",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "mt1",
+            "content": "A raincoat",
+            "categoryId": "mt-water-out"
+          },
+          {
+            "id": "mt2",
+            "content": "Rubber boots",
+            "categoryId": "mt-water-out"
+          },
+          {
+            "id": "mt3",
+            "content": "An umbrella",
+            "categoryId": "mt-water-out"
+          },
+          {
+            "id": "mt4",
+            "content": "A bath towel",
+            "categoryId": "mt-water-in"
+          },
+          {
+            "id": "mt5",
+            "content": "A kitchen sponge",
+            "categoryId": "mt-water-in"
+          },
+          {
+            "id": "mt6",
+            "content": "A paper napkin",
+            "categoryId": "mt-water-in"
+          },
+          {
+            "id": "mt7",
+            "content": "A brick wall",
+            "categoryId": "mt-strong"
+          },
+          {
+            "id": "mt8",
+            "content": "A metal hammer",
+            "categoryId": "mt-strong"
+          },
+          {
+            "id": "mt9",
+            "content": "A concrete step",
+            "categoryId": "mt-strong"
+          }
+        ]
+      },
+      "meta": "3 buckets • 9 cards • the first two buckets are opposites on purpose"
+    },
+    {
+      "id": "mt-quiz",
+      "type": "quiz",
+      "title": "Material Check",
+      "timestamp": "2026-09-05T23:50:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Why are windows made of glass and not wool?",
+            "options": [
+              "Glass costs less money than wool does",
+              "Glass is hard and clear, which is what a window needs",
+              "Wool had not been invented when windows were made",
+              "Glass is the only material anyone knows how to shape"
+            ],
+            "correctAnswer": "Glass is hard and clear, which is what a window needs",
+            "conceptLabel": "the material fits the job"
+          },
+          {
+            "type": "mcq",
+            "question": "A towel and a raincoat both meet water. What is different?",
+            "options": [
+              "A towel soaks water up; a raincoat keeps it out",
+              "A towel keeps water out; a raincoat soaks it up",
+              "They both soak up water, just at different speeds",
+              "They both keep water out, so either one works"
+            ],
+            "correctAnswer": "A towel soaks water up; a raincoat keeps it out",
+            "conceptLabel": "two opposite water jobs"
+          },
+          {
+            "type": "mcq",
+            "question": "What is a property of a material?",
+            "options": [
+              "The place where somebody first found it",
+              "The price a shop asks you to pay for it",
+              "Something you can notice about it, like hard or soft",
+              "The name of the person who made it first"
+            ],
+            "correctAnswer": "Something you can notice about it, like hard or soft",
+            "conceptLabel": "properties are what you notice"
+          },
+          {
+            "type": "mcq",
+            "question": "Is paper a good material or a bad one?",
+            "options": [
+              "Good, because you can draw and write on it",
+              "Bad, because it tears and gets wet so easily",
+              "Neither; it fits some jobs and not others",
+              "Good, because it can be made into almost anything"
+            ],
+            "correctAnswer": "Neither; it fits some jobs and not others",
+            "conceptLabel": "the material fits the job"
+          },
+          {
+            "type": "mcq",
+            "question": "You test three cloths to see which soaks up most. What makes it fair?",
+            "options": [
+              "Use the same amount of water on each cloth",
+              "Use more water on the cloth you like best",
+              "Use a different sized cloth for every test",
+              "Do the test once and trust what you saw"
+            ],
+            "correctAnswer": "Use the same amount of water on each cloth",
+            "conceptLabel": "a fair test changes one thing"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Pick something in the room. Say what it is made of and why that material fits its job.",
+            "expectedAnswer": "Answers vary. A full answer names the object, names the material, and names at least one property that matches what the object has to do, such as a chair being made of hard wood so it holds you up.",
+            "conceptLabel": "the material fits the job"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend wants to make an umbrella out of paper towels. What would you tell them?",
+            "expectedAnswer": "Paper towels absorb water instead of keeping it out. An umbrella needs to be waterproof so the rain runs off. The paper would soak through and fall apart, so it is the wrong material for that job.",
+            "conceptLabel": "two opposite water jobs"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is one thing you touched today, and what is it made of?"
+          },
+          {
+            "text": "What material would you like to test, and what job would you test it for?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • read-aloud friendly"
+    },
+    {
+      "id": "mt-faq",
+      "type": "faq",
+      "title": "Material Questions Kids Ask",
+      "timestamp": "2026-09-05T23:50:07.000Z",
+      "data": [
+        {
+          "question": "Can something be hard AND bendy? 🤔",
+          "answer": "Yes. A metal spoon is hard, but a long thin metal wire bends easily. Shape matters too, not just what it is made of. Thin things bend more than thick ones."
+        },
+        {
+          "question": "Where does plastic come from?",
+          "answer": "Mostly from oil, which comes out of the ground. People made the first plastics about a hundred years ago. That is why old toys are wood or metal."
+        },
+        {
+          "question": "Why do we still use wood? 🌳",
+          "answer": "It is strong, it is light, it is easy to cut, and trees grow back. For a lot of jobs nothing beats it, which is why houses still use it."
+        },
+        {
+          "question": "Is glass really see-through all the way?",
+          "answer": "Most of it is. Some glass is made cloudy on purpose, for a bathroom window. Same material, changed a little, for a different job."
+        },
+        {
+          "question": "What is the strongest material? 💪",
+          "answer": "There is no single winner. Some materials resist squashing best, some resist pulling best, and some bounce back best. Strong at what, is the better question."
+        },
+        {
+          "question": "Can a material be used again?",
+          "answer": "Often, yes. Glass, metal and paper can be melted or mashed and made into new things. That is what recycling means, and it saves digging up more."
+        }
+      ],
+      "meta": "6 questions • the strongest-material answer refuses the question on purpose"
+    },
+    {
+      "id": "mt-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Spill Test",
+      "timestamp": "2026-09-05T23:50:08.000Z",
+      "meta": "2nd Grade • Investigation brief • three cloths, one spoon of water",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Spill Test",
+        "instructions": "Test three cloths to see which one soaks up the most water. Guess first. Keep it fair. Then say which one you would want by the sink.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The standard asks students to plan an investigation and to use the data to pick a material for a purpose. A spill is a job second graders already understand, so the test is about the material and not about the setup.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has three cloths: a paper towel, a cotton rag, and a piece of plastic tablecloth. You also have a spoon, a cup of water, and a tray to work on.",
+          "role": "Material testers",
+          "audience": "The school office, who need to know which cloth to keep by the sink",
+          "drivingQuestion": "If you spill the same spoonful of water on each cloth, which one soaks up the most, and how will you know?",
+          "seedDirection": "Use the same spoonful every time. If you use more water on one cloth, you will not know if the cloth or the water made the difference.",
+          "lockedLessonFacts": [
+            "A material that absorbs soaks a liquid up.",
+            "A waterproof material keeps water out instead.",
+            "A fair test changes one thing only.",
+            "A material is not good or bad on its own; it fits a job or it does not."
+          ],
+          "openQuestions": [
+            "How will you tell which cloth soaked up the most?",
+            "What will you keep exactly the same for all three?",
+            "Do you need to test each cloth more than once?"
+          ],
+          "stakeholders": [
+            "The school office choosing a cloth",
+            "Your partner who pours the water",
+            "Whoever cleans up after you"
+          ],
+          "criteria": [
+            "The same spoonful of water on every cloth",
+            "A guess written or said before the first test",
+            "What happened to each cloth is drawn or written down",
+            "You use the word absorb or the word waterproof when you explain"
+          ],
+          "constraints": [
+            "Three cloths",
+            "One spoon of water each",
+            "Work over the tray"
+          ],
+          "deliverable": "A picture chart with the three cloths and what each one did, your guess at the top, and one sentence: which cloth belongs by the sink, and why.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student tested three cloths but poured a different amount on each.",
+            "move": "He noticed his own mistake and started again, using one level spoonful every time. This time the paper towel and the rag came out close, and the plastic soaked up nothing at all.",
+            "whyItHelps": "Once the water was the same, the only thing left to explain the difference was the cloth itself."
+          },
+          "frameStarter": "I think ____ will soak up the most, because ____. What really happened was ____.",
+          "frameChoices": [
+            "The paper towel",
+            "The cotton rag",
+            "The plastic tablecloth",
+            "Two of them about the same"
+          ],
+          "coachPrompts": [
+            "Did every cloth get the same amount of water?",
+            "How can you tell which soaked up more?",
+            "Did anything surprise you?"
+          ]
+        },
+        "coachHint": "Same spoonful. Three cloths. Guess first.",
+        "sourceExcerpt": "How do people know which material to pick? They test it. A fair test changes one thing only.",
+        "lessonRef": {
+          "resourceId": "mt-reading",
+          "title": "Why Windows Are Not Wool"
+        }
+      }
+    }
+  ]
+}

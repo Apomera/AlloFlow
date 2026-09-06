@@ -46,6 +46,12 @@ for (const slug of slugs) {
   const served = fs.readFileSync(file, 'utf8');
   const pack = JSON.parse(served.replace(/^\ufeff/, ''));
   const titles = pack.history.map((r) => r.title);
+  // ONE retry, and only for a THROWN error. Navigating the real app over the network under load
+  // times out occasionally, and a timeout inside a content loop reads like a broken pack \u2014 the
+  // failure mode impersonates the thing under test. A failed ASSERTION (wrong count, missing
+  // resource, page error) is never retried: that is a real finding and must not be papered over.
+  let attempt = 0;
+  while (++attempt <= 2) {
   const ctx = await browser.newContext({ viewport: { width: 1400, height: 950 }, serviceWorkers: 'block' });
   await ctx.route(CATALOG_URL, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: catalog }));
   await ctx.route(PACK_URL, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: served }));
@@ -82,8 +88,9 @@ for (const slug of slugs) {
     await page.evaluate(() => { const b = [...document.querySelectorAll("button")].find((x) => x.innerText.trim() === "History"); if (b) b.click(); });
     await page.waitForTimeout(1600);
     const body = await page.evaluate(() => document.body.innerText);
-    if (/Failed to load lesson/i.test(body)) { fail('toast: failed to load lesson'); await ctx.close(); continue; }
-    if (/Component Error/i.test(body)) { fail('Component Error on screen after load'); await ctx.close(); continue; }
+    // break, not continue: these are real findings, so they must not enter the retry.
+    if (/Failed to load lesson/i.test(body)) { fail('toast: failed to load lesson'); await ctx.close(); break; }
+    if (/Component Error/i.test(body)) { fail('Component Error on screen after load'); await ctx.close(); break; }
     const count = await page.evaluate(() => {
       const m = document.body.innerText.match(/Resource Pack History\s+(\d+)/);
       return m ? Number(m[1]) : -1;
@@ -114,9 +121,12 @@ for (const slug of slugs) {
     }
     else { results.push({ slug, ok: true, n: count }); console.log('ok    ' + slug.padEnd(36) + count + ' resources'); }
   } catch (e) {
-    fail('threw: ' + String(e).split('\n')[0].slice(0, 140));
+    if (attempt < 2) { await ctx.close(); continue; } // transient: try once more, clean context
+    fail('threw twice: ' + String(e).split('\n')[0].slice(0, 140));
   }
   await ctx.close();
+  break; // reached only when the pack was judged, pass or fail — never retry a verdict
+  }
 }
 await browser.close();
 const bad = results.filter((r) => !r.ok);
