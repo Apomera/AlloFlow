@@ -34,6 +34,20 @@ first), then 7, 10 (image-heavy + inter-tool pilot last, most new surface).
    glossary-present-for-game-goals, privacy scan, size cap, no embedded images, meta =
    display strings, standards present in the allopack block, Agent Core validateArtifact OK.
 
+**Automated import smoke (per pack, ~1 min each, no human):**
+`node dev-tools/smoke_allopacks_live.mjs` loads every pack into the DEPLOYED app through the
+catalog and checks it arrives whole: no failure toast, history count equal to the file, every
+resource title present, no page errors, no error boundary. Add `--deep` and it also opens each
+resource and checks it renders more than a blank panel, which is step 2 below in full.
+Run 2026-09-05: **26 of 26 packs loaded clean.**
+
+This covers step 2 and the load half of step 3. It does NOT cover steps 4-7 (playing a game to
+a win, translation, in-app image generation, send-home round trip) — those still need a human.
+
+Note for whoever maintains it: use a FRESH browser context per pack. A shared one keeps
+localStorage, so the app skips the launch pad and every navigation click times out — that
+failed 25 of 26 packs once and looked exactly like 25 broken packs.
+
 **Manual import smoke (per pack, ~10 min, Aaron or pilot teacher):**
 2. Load Project → every resource opens and renders (no blanks — the directions lesson).
 3. Directions open first; quest map draws; goals list matches the pack's objectives.
