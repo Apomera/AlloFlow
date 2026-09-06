@@ -13,7 +13,7 @@
   "sourceTopic": "Day and Night, and Patterns in the Sky",
   "history": [
     {
-      "id": "sk-directions",
+      "id": "dn-directions",
       "type": "directions",
       "title": "Watch the Sky",
       "timestamp": "2026-09-05T21:10:00.000Z",
@@ -21,27 +21,27 @@
         "body": "**Due:** (your teacher will tell you)\n\nThe sky looks different in the morning than it does at bedtime. This week you find out why — and the answer is not what most people guess.\n\n1. Read **Day Sky, Night Sky** with a grown-up or a partner.\n2. Learn the words in **Sky Words**, then win the **Matching** game.\n3. Look at the **What the Sky Does** chart.\n4. Play **True or Not True?** and put each card in the right pile.\n5. Take **Sky Check** — say each answer out loud before you pick it.\n6. Lock the big idea in with **Remember Why the Sky Changes**.\n7. Read **Sky Questions Kids Ask** if you are wondering about something.\n8. Finish with **Investigation: The Shadow Watch** — go outside and find out for yourself.\n\nYour job this week: look up at least once in the morning and once at night, and tell someone one thing you saw. ☀️🌙",
         "objectives": [
           {
-            "id": "sk-goal-matching",
+            "id": "dn-goal-matching",
             "label": "Win the Matching game",
             "kind": "game",
             "gameType": "matching",
-            "resourceRef": "sk-glossary"
+            "resourceRef": "dn-glossary"
           },
           {
-            "id": "sk-goal-memory",
+            "id": "dn-goal-memory",
             "label": "Win the Memory game",
             "kind": "game",
             "gameType": "memory",
-            "resourceRef": "sk-glossary"
+            "resourceRef": "dn-glossary"
           },
           {
-            "id": "sk-goal-xp",
+            "id": "dn-goal-xp",
             "label": "Earn 15 XP",
             "kind": "xp",
             "amount": 15
           },
           {
-            "id": "sk-goal-look",
+            "id": "dn-goal-look",
             "label": "I looked at the sky in the morning and at night and told someone",
             "kind": "manual"
           }
@@ -50,16 +50,16 @@
       "meta": "1st Grade • 4 goals • look up twice a day"
     },
     {
-      "id": "sk-reading",
+      "id": "dn-reading",
       "type": "simplified",
       "title": "Day Sky, Night Sky",
       "timestamp": "2026-09-05T21:10:01.000Z",
       "data": "## Day Sky, Night Sky\n\nLook up in the morning. The sky is blue and bright. Look up at bedtime. The sky is dark. Why does the sky change?\n\nHere is the secret. **Earth** is turning. Our whole planet goes around and around, like a very slow top. It makes one full **spin** every day.\n\nWhen your side of Earth faces the **Sun**, you have **day**. The sky is bright. When your side turns away, you have **night**. The sky goes dark.\n\nSo the Sun does not really walk across the sky. You are the one who is moving! Earth turns you toward the Sun at **sunrise**. Later it turns you away at **sunset**.\n\nThe Sun is a **star**. It looks big and bright because it is much closer to us than the other stars are. Those far stars do not leave in the morning. They are still up there. The bright blue sky just hides them.\n\nAt night you may see the **Moon**. The Moon does not make its own light. Light from the Sun lands on it and bounces to your eyes. That is why it glows.\n\nHere is a surprise. You can see the Moon in the daytime too! Look for a pale white curve up in the blue.\n\nDay, night, day, night. It goes in the same order every time. That is a **pattern**. A pattern lets you guess what comes next.",
       "meta": "1st Grade • Leveled reading • ~245 words • read-aloud friendly",
-      "imageSlot": "sk-img-earth-turning"
+      "imageSlot": "dn-img-earth-turning"
     },
     {
-      "id": "sk-glossary",
+      "id": "dn-glossary",
       "type": "glossary",
       "title": "Sky Words",
       "timestamp": "2026-09-05T21:10:02.000Z",
@@ -118,7 +118,7 @@
       "meta": "10 terms • Tiered • all one word, good for games"
     },
     {
-      "id": "sk-anchor",
+      "id": "dn-anchor",
       "type": "anchor-chart",
       "title": "What the Sky Does",
       "timestamp": "2026-09-05T21:10:03.000Z",
@@ -167,7 +167,7 @@
       "meta": "4 parts • picture reference for the wall"
     },
     {
-      "id": "sk-memory",
+      "id": "dn-memory",
       "type": "memory-aid",
       "title": "Remember Why the Sky Changes",
       "timestamp": "2026-09-05T21:10:04.000Z",
@@ -186,12 +186,12 @@
         "reasoningRequired": false,
         "sourceExcerpt": "Our whole planet goes around and around, like a very slow top. When your side of Earth faces the Sun, you have day. When your side turns away, you have night. The Moon does not make its own light. Light from the Sun lands on it and bounces to your eyes.",
         "lessonRef": {
-          "resourceId": "sk-reading",
+          "resourceId": "dn-reading",
           "title": "Day Sky, Night Sky"
         },
         "cards": [
           {
-            "id": "sk-ma-turn",
+            "id": "dn-ma-turn",
             "target": "Earth turns, and that is what makes day and night",
             "essentialFacts": [
               "Earth makes one full spin every day.",
@@ -222,7 +222,7 @@
             }
           },
           {
-            "id": "sk-ma-moon",
+            "id": "dn-ma-moon",
             "target": "The Moon shines with light it borrows from the Sun",
             "essentialFacts": [
               "The Moon does not make its own light.",
@@ -255,70 +255,70 @@
       }
     },
     {
-      "id": "sk-sort",
+      "id": "dn-sort",
       "type": "concept-sort",
       "title": "True or Not True?",
       "timestamp": "2026-09-05T21:10:05.000Z",
       "data": {
         "categories": [
           {
-            "id": "sk-true",
+            "id": "dn-true",
             "label": "TRUE",
             "color": "bg-emerald-500"
           },
           {
-            "id": "sk-false",
+            "id": "dn-false",
             "label": "NOT TRUE",
             "color": "bg-rose-500"
           }
         ],
         "items": [
           {
-            "id": "sk1",
+            "id": "dn1",
             "content": "Earth spins all the way around once each day",
-            "categoryId": "sk-true"
+            "categoryId": "dn-true"
           },
           {
-            "id": "sk2",
+            "id": "dn2",
             "content": "The Sun walks across the sky and then goes home",
-            "categoryId": "sk-false"
+            "categoryId": "dn-false"
           },
           {
-            "id": "sk3",
+            "id": "dn3",
             "content": "The stars are still up there in the daytime",
-            "categoryId": "sk-true"
+            "categoryId": "dn-true"
           },
           {
-            "id": "sk4",
+            "id": "dn4",
             "content": "The Moon makes its own light",
-            "categoryId": "sk-false"
+            "categoryId": "dn-false"
           },
           {
-            "id": "sk5",
+            "id": "dn5",
             "content": "The Sun is a star",
-            "categoryId": "sk-true"
+            "categoryId": "dn-true"
           },
           {
-            "id": "sk6",
+            "id": "dn6",
             "content": "The Moon can never be seen in the daytime",
-            "categoryId": "sk-false"
+            "categoryId": "dn-false"
           },
           {
-            "id": "sk7",
+            "id": "dn7",
             "content": "Sunrise happens as Earth turns you toward the Sun",
-            "categoryId": "sk-true"
+            "categoryId": "dn-true"
           },
           {
-            "id": "sk8",
+            "id": "dn8",
             "content": "The stars fall down every morning",
-            "categoryId": "sk-false"
+            "categoryId": "dn-false"
           }
         ]
       },
       "meta": "2 piles • 8 cards • four of them are the guesses kids usually make"
     },
     {
-      "id": "sk-quiz",
+      "id": "dn-quiz",
       "type": "quiz",
       "title": "Sky Check",
       "timestamp": "2026-09-05T21:10:06.000Z",
@@ -409,7 +409,7 @@
       "meta": "5 picks + 2 tell-me • read-aloud friendly"
     },
     {
-      "id": "sk-faq",
+      "id": "dn-faq",
       "type": "faq",
       "title": "Sky Questions Kids Ask",
       "timestamp": "2026-09-05T21:10:07.000Z",
@@ -442,7 +442,7 @@
       "meta": "6 questions • honest answers to the ones they really ask"
     },
     {
-      "id": "sk-challenge",
+      "id": "dn-challenge",
       "type": "applied-challenge",
       "title": "Investigation: The Shadow Watch",
       "timestamp": "2026-09-05T21:10:08.000Z",
@@ -516,7 +516,7 @@
         "coachHint": "Same spot. Three times. Chalk it every time.",
         "sourceExcerpt": "So the Sun does not really walk across the sky. You are the one who is moving! Earth turns you toward the Sun at sunrise. Later it turns you away at sunset.",
         "lessonRef": {
-          "resourceId": "sk-reading",
+          "resourceId": "dn-reading",
           "title": "Day Sky, Night Sky"
         }
       }
