@@ -1,0 +1,129 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "neuromyths-what-we-got-wrong",
+    "version": "1.0.0",
+    "language": "en-US",
+    "title": "Neuromyths in Education: What We Got Wrong",
+    "topic": "Learning Science",
+    "summary": "A ~15-minute primer on the brain claims that circulate in schools without evidence behind them — learning styles, left-brain/right-brain, the 10% myth, the Mozart effect — why they persist, and the well-replicated practices to use instead, with a knowledge check and a reflection.",
+    "estMinutes": 15,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-neuromyths",
+          "type": "read",
+          "title": "Why smart, caring educators believe things that are not true",
+          "content": {
+            "body": "A neuromyth is a claim about the brain and learning that sounds scientific, circulates widely in schools, and is not supported by the evidence. Neuromyths are not a sign of a careless profession. When Dekker and colleagues (2012) surveyed teachers in the United Kingdom and the Netherlands, the teachers who read the most about the brain believed slightly MORE myths, not fewer — because most of what reaches schools is popularized, simplified, and sold. Knowing the common ones is a professional skill.\n\nLearning styles. The claim is that students learn best when instruction matches their preferred modality — visual, auditory, kinesthetic. People certainly have preferences. What the evidence does not support is the 'matching' idea: Pashler, McDaniel, Rohrer, and Bjork (2008) found no adequately designed study showing that teaching to a diagnosed style improves learning, and later tests have come up empty too. In Dekker's survey more than 90 percent of teachers believed it. Universal Design for Learning asks for the opposite move: give EVERY learner multiple representations of the same content.\n\nLeft-brain and right-brain people. Hemispheres do specialize for some functions, but the idea that individuals are 'left-brained' (logical) or 'right-brained' (creative) has no support. A 2013 study of over a thousand brain scans (Nielsen and colleagues) found no evidence that people have a dominant hemisphere. Lessons 'for right-brained learners' are teaching to a category that does not exist.\n\nWe only use 10 percent of our brain. False in every version. Imaging shows activity across virtually every region over the course of a day, and damage to almost any area produces some deficit. Programs promising to 'unlock' unused capacity are selling a metaphor.\n\nThe Mozart effect. The original 1993 study found a small, short-lived improvement on one spatial task after listening to a sonata. It was reported as 'music makes children smarter', spawned products and even state policy, and did not replicate as a lasting gain; a 2010 meta-analysis found little beyond a brief arousal effect that other pleasant stimuli also produce. Music education has its own value; it is not a shortcut to intelligence.\n\nTwo that need careful wording rather than dismissal. Multiple intelligences (Gardner) is a useful reminder that talent is broad, but the eight 'intelligences' have not held up as separate, measurable capacities, and planning lessons 'for each intelligence' is a learning-styles claim in a different coat. Growth mindset is real as a belief and modest as an intervention: large trials (Yeager and colleagues, 2019) find small average effects, larger for lower-achieving students in supportive schools; meta-analyses (Sisk and colleagues, 2018) find the same modest picture. Teach effort and strategy; do not expect a mindset poster to move achievement.\n\nWhat to use instead is not mysterious, and it is well replicated: retrieval practice (recalling beats re-reading), spaced practice (spread it out), interleaving (mix problem types), worked examples for novices, and multimedia principles — pairing words with relevant pictures helps most learners, which is a design principle, not a 'visual learner' claim. Each has decades of studies behind it and a module in this library or in the classroom research you already know.",
+            "keyPoints": [
+              "A neuromyth is a brain claim that sounds scientific, spreads in schools, and lacks evidence; believing some is normal, spotting them is a skill.",
+              "Learning-styles MATCHING is unsupported (Pashler et al., 2008); give all learners multiple representations instead.",
+              "No one is left-brained or right-brained (Nielsen et al., 2013); the 10% claim and the lasting Mozart effect are false.",
+              "Multiple intelligences and growth mindset need careful wording: broad talent is real, separate intelligences are not; mindset effects are modest.",
+              "Use what replicates: retrieval practice, spacing, interleaving, worked examples, words paired with pictures."
+            ],
+            "links": [
+              {
+                "label": "Pashler et al. (2008), Learning Styles: Concepts and Evidence",
+                "url": "https://doi.org/10.1111/j.1539-6053.2009.01038.x"
+              },
+              {
+                "label": "Dekker et al. (2012), Neuromyths in education",
+                "url": "https://doi.org/10.3389/fpsyg.2012.00429"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Check your understanding",
+      "activities": [
+        {
+          "id": "quiz-neuromyths",
+          "type": "quiz",
+          "title": "Myth or evidence? (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "A colleague plans to sort the class into visual, auditory, and kinesthetic learners and teach each group in its modality. The evidence says:",
+                "options": [
+                  "Matching instruction to a diagnosed style has not been shown to improve learning; offer multiple representations to everyone",
+                  "The plan works if the diagnosis uses a validated learning-styles inventory administered by a school psychologist rather than student self-report",
+                  "The plan works for visual and auditory learners but kinesthetic instruction needs a separate room",
+                  "Sorting is fine as long as each group also receives the same worksheet at the end of the unit"
+                ],
+                "correctIndex": 0,
+                "explanation": "Preferences exist; the matching hypothesis does not hold up. Multiple representations for all learners is the supported move."
+              },
+              {
+                "prompt": "Which statement about hemispheres is supported by evidence?",
+                "options": [
+                  "Creative students are right-brained and should be given more art time and less mathematics",
+                  "Some functions are lateralized, but individuals do not have a dominant hemisphere",
+                  "Left-brained students learn languages faster than right-brained students do",
+                  "Brain-integration exercises balance the hemispheres and improve reading"
+                ],
+                "correctIndex": 1,
+                "explanation": "Specialization within the brain is real; 'left-brained people' are not. Exercises to 'balance' hemispheres have no support."
+              },
+              {
+                "prompt": "Why did teachers who read MORE about the brain believe MORE neuromyths in the Dekker (2012) survey?",
+                "options": [
+                  "Because reading about the brain is harder for teachers than reading about pedagogy",
+                  "Because neuroscience journals publish the myths first and print the corrections only years later",
+                  "Because most brain information that reaches schools is popularized and sold, not vetted",
+                  "Because the survey counted every uncertain answer as a belief in the myth"
+                ],
+                "correctIndex": 2,
+                "explanation": "Interest in the brain is good; the supply of accurate, school-ready neuroscience is the problem."
+              },
+              {
+                "prompt": "A parent asks whether playing Mozart to a toddler will raise the child's intelligence. The honest answer is:",
+                "options": [
+                  "Yes, about ten IQ points, if the music is played daily during the first three years",
+                  "Yes, but only for spatial reasoning, and only if the child also studies an instrument",
+                  "It is unproven either way, so families should follow their own judgment",
+                  "No; the original effect was small, brief, and did not replicate as a lasting gain"
+                ],
+                "correctIndex": 3,
+                "explanation": "The 1993 finding was a short-lived boost on one task. Music has value; it is not an intelligence shortcut."
+              }
+            ]
+          },
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-neuromyths",
+          "type": "reflect",
+          "title": "Find one in your building",
+          "content": {
+            "prompt": "Name one brain claim you have heard in your school this year — in a staff meeting, a product pitch, a lesson plan, or your own practice. Is it on the list above, or would you need to check? What is the well-replicated practice you would offer in its place, and how would you raise it without making a colleague defensive?"
+          },
+          "gate": {
+            "kind": "none"
+          }
+        }
+      ]
+    }
+  ]
+}

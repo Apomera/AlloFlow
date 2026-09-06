@@ -1,7 +1,7 @@
 {
   "schema_version": "pd-1.0",
   "kind": "pd_catalog",
-  "generated_at": "2026-09-05T22:20:55.325Z",
+  "generated_at": "2026-09-06T00:50:41.585Z",
   "entries": [
     {
       "slug": "udl-representation-quickstart",
@@ -120,9 +120,9 @@
     {
       "slug": "family-conversations-practice",
       "moduleId": "family-conversations-practice",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "language": "en-US",
-      "contentDigest": "sha256:16a88434abfd3f37c7e823c218ebb3e199464cc380e446052aace5c2ccc7450c",
+      "contentDigest": "sha256:a2522af7b57a75c4a360f46646a93340a54613e5be950c357e0256071d0a6394",
       "title": "Hard Conversations with Families: Live Practice",
       "topic": "Communication",
       "summary": "A ~20-minute practice module on difficult family conversations: a short primer on what works, then a live role-play with an AI-played parent to rehearse it, and a reflection. The role-play is formative practice and never graded.",
@@ -146,6 +146,25 @@
       "license": "CC-BY-SA-4.0",
       "audience": "educator",
       "path": "catalog/pd/approved/deescalation-branching-practice.json"
+    },
+    {
+      "slug": "neuromyths-what-we-got-wrong",
+      "moduleId": "neuromyths-what-we-got-wrong",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:3c1099a2d30dcc02bf763220b48187e41123d6cfe2f4d1cbde283d3c0abbab5b",
+      "title": "Neuromyths in Education: What We Got Wrong",
+      "topic": "Learning Science",
+      "summary": "A ~15-minute primer on the brain claims that circulate in schools without evidence behind them — learning styles, left-brain/right-brain, the 10% myth, the Mozart effect — why they persist, and the well-replicated practices to use instead, with a knowledge check and a reflection.",
+      "estMinutes": 15,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/neuromyths-what-we-got-wrong.json",
+      "udlGuidelines": [
+        "rep_1",
+        "rep_2"
+      ]
     }
   ],
   "paths": [

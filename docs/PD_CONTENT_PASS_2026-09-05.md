@@ -47,10 +47,20 @@ udl-action-expression-quickstart, retrieval-practice-quickstart, academic-vocabu
 contentDigest binds to the new bytes. Unchanged: actionable-feedback-quickstart,
 family-conversations-practice, deescalation-branching-practice.
 
+## Second round (same day)
+
+- **New module: Neuromyths in Education: What We Got Wrong** (`neuromyths-what-we-got-wrong`,
+  1.0.0, order 9). Learning-styles matching (Pashler et al., 2008), left/right-brain dominance
+  (Nielsen et al., 2013), the 10% claim, the Mozart effect (Pietschnig et al., 2010 meta-analysis),
+  with multiple intelligences and growth mindset handled as "careful wording, not dismissal"
+  (Yeager et al., 2019; Sisk et al., 2018), and the replicated practices to use instead. Prevalence
+  framing from Dekker et al. (2012). Quiz built without the length tell from the start
+  (0 of 4 uniquely longest or shortest after one correction).
+- **Persona scaffold.** The family-conversation scenario now ends with a model first line and the
+  instruction not to read the data first, for learners who freeze at turn one. Module 1.1.0.
+
 ## Not changed, worth a later look
 
-- Quiz gates are 3 of 4 (75%) and 2 of 3 (66%); with four questions a single slip fails the
-  gate, which is fine for a 15-minute module but worth watching in completion data.
-- The persona module has no worked example of a strong opening line; learners who freeze at the
-  first turn get no scaffold. A one-line model in the scenario text would help.
+- Quiz gates are 3 of 4 (75%) and 2 of 3 (66%), so one slip passes and two fail; fine for a
+  15-minute module, but worth watching in completion data.
 - Users see the library through the GitHub manifest, so these edits reach them only after a push.

@@ -107,7 +107,7 @@ describe('PD prepublish pipeline', () => {
       conformanceClaim: false,
       scope: 'catalog',
       summary: {
-        modules: 8,
+        modules: 9, // seed library: 8 from 2026-08-23 + neuromyths (2026-09-05)
         blockingFailures: 0,
         manualReviewRequired: true,
         readinessStatus: 'ready-for-render-audit',

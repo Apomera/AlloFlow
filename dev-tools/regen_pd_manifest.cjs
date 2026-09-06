@@ -23,6 +23,7 @@ const EDITORIAL = {
   'academic-vocabulary-snapshot': { order: 6, udlGuidelines: ['rep_2'] },
   'family-conversations-practice': { order: 7 },
   'deescalation-branching-practice': { order: 8 },
+  'neuromyths-what-we-got-wrong': { order: 9, udlGuidelines: ['rep_1', 'rep_2'] },
 };
 
 const PATHS = [

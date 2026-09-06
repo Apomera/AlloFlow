@@ -3,7 +3,7 @@
   "kind": "pd_module",
   "metadata": {
     "id": "family-conversations-practice",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "language": "en-US",
     "title": "Hard Conversations with Families: Live Practice",
     "topic": "Communication",
@@ -32,7 +32,9 @@
               "Emotion is protective, not an obstacle; acknowledge it directly."
             ]
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -46,12 +48,14 @@
           "content": {
             "personaName": "Riley",
             "personaRole": "a parent who requested this conference after seeing their child's mid-year reading benchmark results",
-            "scenario": "Riley's third-grader, Sam, scored well below benchmark on the mid-year reading screening. Riley emailed asking for a meeting 'to find out what is going on.' Riley is anxious, a little defensive about earlier suggestions that Sam 'just needs to read more at home,' and deeply loves their kid. You have Sam's screening data, two writing samples, and your own observation that Sam avoids reading aloud but lights up during read-alouds. Open the conversation.",
+            "scenario": "Riley's third-grader, Sam, scored well below benchmark on the mid-year reading screening. Riley emailed asking for a meeting 'to find out what is going on.' Riley is anxious, a little defensive about earlier suggestions that Sam 'just needs to read more at home,' and deeply loves their kid. You have Sam's screening data, two writing samples, and your own observation that Sam avoids reading aloud but lights up during read-alouds. Open the conversation.\n\nIf you are not sure how to begin: a strong first line leads with Sam, not the numbers. For example, 'Thanks for asking to meet. Before we look at the screening, I want to tell you what I see when Sam is in a read-aloud, because it matters for everything else.' Then say the specific thing you have noticed. Do not read the data first.",
             "rubric": "A strong conversation opens with genuine connection and a specific strength of Sam's; translates the screening data into plain, actionable language; treats Riley's knowledge of Sam as expertise and asks for it; acknowledges emotion directly instead of pressing past it; and ends with one concrete school action, one realistic offered (not assigned) home action, and a date to reconnect.",
             "minTurns": 4,
             "maxTurns": 14
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -65,7 +69,9 @@
           "content": {
             "prompt": "Think of a real family conversation you have coming up (or one that went badly in the past). Which of the practices from this module was missing or will matter most — and what is the first sentence you plan to say?"
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     }
