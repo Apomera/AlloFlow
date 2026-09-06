@@ -7787,16 +7787,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var attemptDriveGear = function(nextGear, announce) {
         if (['P', 'R', 'D'].indexOf(nextGear) === -1) return false;
         if (rideAlongControlsLocked()) {
-          if (announce) rrAnnounce('Ride-Along is managing the transmission.');
+          if (announce) rrAnnounce(__alloT('stem.roadready.sr_ride_along_is_managing_the_transmission', 'Ride-Along is managing the transmission.'));
           return false;
         }
         if (startupSequenceActive(seatbeltRef.current.fastened,
             timeRef.current, graceRef.current.until) || graceRef.current.requireNeutral) {
-          if (announce) rrAnnounce('Finish the seatbelt and mirror check before shifting gear.');
+          if (announce) rrAnnounce(__alloT('stem.roadready.sr_finish_the_seatbelt_and_mirror_check_before_shift', 'Finish the seatbelt and mirror check before shifting gear.'));
           return false;
         }
         if (!canShiftDriveGear(carRef.current && carRef.current.speed)) {
-          if (announce) rrAnnounce('Stop the vehicle completely before shifting gear.');
+          if (announce) rrAnnounce(__alloT('stem.roadready.sr_stop_the_vehicle_completely_before_shifting_gear', 'Stop the vehicle completely before shifting gear.'));
           return false;
         }
         gearRef.current = nextGear;
@@ -7964,7 +7964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             e.preventDefault();
             keysRef.current[keyName] = false;
             if (!e.repeat && ['f','g','p'].indexOf(keyName) !== -1) {
-              rrAnnounce('Ride-Along is managing the transmission.');
+              rrAnnounce(__alloT('stem.roadready.sr_ride_along_is_managing_the_transmission', 'Ride-Along is managing the transmission.'));
             }
             return;
           }
@@ -8006,7 +8006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             try {
               if (audioRef.current && audioRef.current.ctx && audioRef.current.ctx.state === 'running') audioRef.current.ctx.suspend();
             } catch (pauseAudioErr) {}
-            rrAnnounce('Drive paused because the simulator lost focus.');
+            rrAnnounce(__alloT('stem.roadready.sr_drive_paused_because_the_simulator_lost_focus', 'Drive paused because the simulator lost focus.'));
           }
         };
         var onWindowBlur = function() { pauseForInterruption(); };
@@ -9934,7 +9934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 liveMission.complete = true;
                 setMissionComplete(liveMission.status);
                 togglePause(true);
-                rrAnnounce('Scenario complete. Review your objectives, then open the drive debrief.');
+                rrAnnounce(__alloT('stem.roadready.sr_scenario_complete_review_your_objectives_then_ope', 'Scenario complete. Review your objectives, then open the drive debrief.'));
               }
             }
           }
@@ -27338,7 +27338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else {
               next = { title: 'Keep skills current', detail: 'Review your logbook and choose one coaching focus for the next drive.', action: function() { upd('view', 'logbook'); } };
             }
-            return h('section', { 'aria-label': 'Recommended next step', style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--rr-cyan, #22d3ee)', borderRadius: '12px', padding: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' } },
+            return h('section', { 'aria-label': __alloT('stem.roadready.a11y_recommended_next_step', 'Recommended next step'), style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--rr-cyan, #22d3ee)', borderRadius: '12px', padding: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' } },
               h('div', { style: { flex: '1 1 320px' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 800, color: 'var(--rr-cyan, #22d3ee)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' } }, 'Recommended next'),
                 h('div', { style: { fontSize: '15px', fontWeight: 850, marginBottom: '3px' } }, next.title),
@@ -28527,7 +28527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dockButton = { minHeight: '36px', padding: '6px 10px', borderRadius: '8px', background: 'rgba(2,6,23,0.84)', color: '#fff', border: '1px solid rgba(255,255,255,0.28)', fontSize: '11px', fontWeight: 800, cursor: 'pointer', backdropFilter: 'blur(6px)' };
             return [
               h('div', { key: 'dock', className: 'rr-drive-dock', style: { position: 'absolute', bottom: 'calc(104px + env(safe-area-inset-bottom, 0px))', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '5px', zIndex: 21, whiteSpace: 'nowrap' } },
-                h('button', { onClick: exitDriving, 'aria-label': 'End drive and open debrief', 'aria-keyshortcuts': 'Escape', 'data-rr-focusable': 'true', style: Object.assign({}, dockButton, { background: 'rgba(185,28,28,0.9)', borderColor: '#fca5a5' }) }, 'End'),
+                h('button', { onClick: exitDriving, 'aria-label': __alloT('stem.roadready.a11y_end_drive_and_open_debrief', 'End drive and open debrief'), 'aria-keyshortcuts': 'Escape', 'data-rr-focusable': 'true', style: Object.assign({}, dockButton, { background: 'rgba(185,28,28,0.9)', borderColor: '#fca5a5' }) }, 'End'),
                 rideAlongActiveUi ? h('span', { className: 'rr-ridealong-state' + (driveControlsOpen ? ' rr-more-open' : ''), role: 'status', 'aria-label': rideAlongEmergencyUi ? 'Ride-Along yielding to an emergency vehicle' : rideAlongPreparingUi ? 'Ride-Along active; safety scan in progress' : 'Ride-Along active; automatic driving in progress', style: { minHeight: '34px', padding: '0 9px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', background: rideAlongEmergencyUi ? 'rgba(185,28,28,0.94)' : rideAlongPreparingUi ? 'rgba(30,64,175,0.9)' : 'rgba(21,128,61,0.9)', color: '#fff', border: '1px solid ' + (rideAlongEmergencyUi ? '#fca5a5' : rideAlongPreparingUi ? '#93c5fd' : '#86efac'), fontSize: '10px', fontWeight: 900, letterSpacing: '0.02em' } },
                   rideAlongEmergencyUi ? '🚨 Yield' : rideAlongPreparingUi ? '🎧 Scan' : '🎧 Auto') : null,
                 h('button', { onClick: function() { togglePause(); }, 'aria-label': isPaused ? 'Resume drive' : 'Pause drive', 'aria-pressed': !!isPaused, 'aria-keyshortcuts': 'Space', 'data-rr-focusable': 'true', style: dockButton }, isPaused ? '▶ Resume' : '⏸ Pause'),
@@ -28621,7 +28621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5', maxWidth: '300px' } }, 'Buckle up first. The car stays in Park during your mirror scan.'),
                   h('button', {
                     onClick: fastenSeatbelt,
-                    'aria-label': 'Fasten seatbelt',
+                    'aria-label': __alloT('stem.roadready.a11y_fasten_seatbelt', 'Fasten seatbelt'),
                     'data-rr-focusable': 'true',
                     style: { marginTop: '10px', minWidth: '160px', minHeight: '44px', padding: '10px 16px', borderRadius: '10px', border: '2px solid #fef2f2', background: '#fff', color: '#991b1b', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 3px 10px rgba(0,0,0,0.25)' }
                   }, '✓ Fasten seatbelt')
@@ -28689,7 +28689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             className: 'touch-controls rr-touch-secondary',
             'data-rr-controls-locked': touchControlsLockedUi ? 'true' : 'false'
           },
-            h('div', { role: 'group', 'aria-label': 'Transmission', style: { display: 'flex', gap: '4px' } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.roadready.a11y_transmission', 'Transmission'), style: { display: 'flex', gap: '4px' } },
               ['P', 'D', 'R'].map(function(touchGear) {
                 return h('button', {
                   key: touchGear,
@@ -28702,7 +28702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }, touchGear);
               })
             ),
-            h('div', { role: 'group', 'aria-label': 'Turn signals', style: { display: 'flex', gap: '4px' } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.roadready.a11y_turn_signals', 'Turn signals'), style: { display: 'flex', gap: '4px' } },
             h('button', { onClick: function() { applyTurnSignal(blinkerRef.current === -1 ? 0 : -1, true); },
               'aria-label': __alloT('stem.roadready.toggle_left_turn_signal', 'Toggle left turn signal'),
               'aria-pressed': turnSignalUi === -1,
@@ -28718,7 +28718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { minWidth: '66px', minHeight: '44px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #22c55e', background: turnSignalUi === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer' }
             }, __alloT('stem.roadready.signal_2', 'Signal ►'))
             ),
-            h('div', { role: 'group', 'aria-label': 'Shoulder checks', style: { display: 'flex', gap: '4px' } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.roadready.a11y_shoulder_checks', 'Shoulder checks'), style: { display: 'flex', gap: '4px' } },
               h('button', Object.assign({}, drivingHoldProps('z', 'Look over left shoulder (touch and hold)', 'Space Enter'), {
                 style: { minWidth: '66px', minHeight: '44px', padding: '5px 7px', borderRadius: '7px', border: '1px solid #38bdf8', background: 'rgba(14,116,144,0.32)', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer', touchAction: 'none', userSelect: 'none' }
               }), '👀 Look L'),
@@ -28732,7 +28732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           !startupOverlayVisibleUi && d.roadTestStage === 'drive' && roadTestRef.current.active ? h('div', {
             className: 'rr-drive-overlay rr-road-test-meter',
             style: { position: 'absolute', top: 'clamp(78px, 24%, 172px)', left: '50%', transform: 'translateX(-50%)', padding: '8px 14px', borderRadius: '10px', background: 'rgba(20,83,45,0.95)', border: '2px solid #4ade80', zIndex: 26, color: '#fff', minWidth: '200px', textAlign: 'center' },
-            role: 'timer', 'aria-live': 'off', 'aria-label': 'Road test time remaining and current score'
+            role: 'timer', 'aria-live': 'off', 'aria-label': __alloT('stem.roadready.a11y_road_test_time_remaining_and_current_score', 'Road test time remaining and current score')
           },
             (function() {
               var elapsed = Math.min(roadTestRef.current.durationSec,
@@ -28792,7 +28792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             return h('div', {
               className: 'rr-drive-overlay rr-trip-progress',
               style: { position: 'absolute', top: 'clamp(78px, 24%, 172px)', left: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(0,0,0,0.88)', border: '2px solid #f59e0b', zIndex: 24, color: '#fff', minWidth: '180px', maxWidth: '240px' },
-              role: 'region', 'aria-label': 'Road trip progress'
+              role: 'region', 'aria-label': __alloT('stem.roadready.a11y_road_trip_progress', 'Road trip progress')
             },
               h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' } }, tr.def.icon + ' ' + tr.def.name),
               // Progress dots — filled for completed, outline for remaining, current with ring.
@@ -28875,10 +28875,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return null;
             })()
           ) : null,
-          d.freeExplore && worldControlsOpen ? h('div', { id: 'rr-world-controls', className: 'rr-world-controls', role: 'region', 'aria-label': 'Free Explore world settings', style: { position: 'absolute', bottom: 'calc(110px + env(safe-area-inset-bottom, 0px))', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.88)', border: '1px solid #a78bfa', zIndex: 19, minWidth: '160px', boxShadow: '0 10px 28px rgba(0,0,0,0.35)' } },
+          d.freeExplore && worldControlsOpen ? h('div', { id: 'rr-world-controls', className: 'rr-world-controls', role: 'region', 'aria-label': __alloT('stem.roadready.a11y_free_explore_world_settings', 'Free Explore world settings'), style: { position: 'absolute', bottom: 'calc(110px + env(safe-area-inset-bottom, 0px))', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.88)', border: '1px solid #a78bfa', zIndex: 19, minWidth: '160px', boxShadow: '0 10px 28px rgba(0,0,0,0.35)' } },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
               h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)', textTransform: 'uppercase' } }, __alloT('stem.roadready.free_explore_4', '🌎 FREE EXPLORE')),
-              h('button', { onClick: function() { setWorldControlsOpen(false); }, 'aria-label': 'Close world settings', 'data-rr-focusable': 'true', style: { width: '26px', height: '26px', borderRadius: '6px', border: '1px solid #64748b', background: 'rgba(15,23,42,0.8)', color: '#fff', cursor: 'pointer', fontSize: '14px', lineHeight: 1 } }, '×')
+              h('button', { onClick: function() { setWorldControlsOpen(false); }, 'aria-label': __alloT('stem.roadready.a11y_close_world_settings', 'Close world settings'), 'data-rr-focusable': 'true', style: { width: '26px', height: '26px', borderRadius: '6px', border: '1px solid #64748b', background: 'rgba(15,23,42,0.8)', color: '#fff', cursor: 'pointer', fontSize: '14px', lineHeight: 1 } }, '×')
             ),
             // Weather row
             h('div', { style: { display: 'flex', gap: '3px', marginBottom: '4px', justifyContent: 'center' } },
@@ -29694,7 +29694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gradeXP > 0 ? h('span', { style: { padding: '4px 12px', borderRadius: '8px', background: '#1e3a5f', border: '1px solid #3b82f6', fontSize: '12px', fontWeight: 700, color: 'var(--rr-blue, #60a5fa)' } }, '+' + gradeXP + ' XP') : null
               )
             ),
-            h('section', { 'aria-label': 'Drive result and next step', style: { background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid ' + gradeColor, borderRadius: '12px', padding: '14px', marginBottom: '14px' } },
+            h('section', { 'aria-label': __alloT('stem.roadready.a11y_drive_result_and_next_step', 'Drive result and next step'), style: { background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid ' + gradeColor, borderRadius: '12px', padding: '14px', marginBottom: '14px' } },
               h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: '10px' } },
                 isFreeExplore ? 'Exploration runs are ungraded. The evidence below can still guide your next practice.' : driveOutcome.detail
               ),

@@ -1503,7 +1503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           if (!rec) { addToast('Voice input not supported in this browser.', 'info'); return; }
           activeRecRef.current = rec;
           setListeningFor(props.id);
-          try { rec.start(); announceToSR('Listening. Speak now.'); }
+          try { rec.start(); announceToSR(__alloT('stem.llm_literacy.sr_listening_speak_now', 'Listening. Speak now.')); }
           catch (e) { setListeningFor(null); activeRecRef.current = null; addToast('Could not start microphone.', 'warn'); }
         }
         return h('button', {
@@ -1548,7 +1548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           if (i >= 0) list[i] = entry; else list.push(entry);
           return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { reflections: list }) });
         });
-        announceToSR('Reflection saved.');
+        announceToSR(__alloT('stem.llm_literacy.sr_reflection_saved', 'Reflection saved.'));
       }
       function deleteReflection(promptId) {
         if (!ctx.setToolData) return;
@@ -1834,7 +1834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         };
       }, [section]);
 
-      function goHome() { setSection('home'); announceToSR('Returned to AI Literacy Lab home'); }
+      function goHome() { setSection('home'); announceToSR(__alloT('stem.llm_literacy.sr_returned_to_ai_literacy_lab_home', 'Returned to AI Literacy Lab home')); }
       function enterSection(id, title) {
         setSection(id);
         markVisited(id);
@@ -2408,7 +2408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               delete next.llmLiteracy;
               return next;
             });
-            announceToSR('Lab state reset');
+            announceToSR(__alloT('stem.llm_literacy.sr_lab_state_reset', 'Lab state reset'));
             addToast('Lab state cleared. Fresh start.', 'info');
           }
         }
@@ -3306,7 +3306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 style: btn(COLORS.warn, '#fff', tempBusy || !hasLiveAI)
               }, tempBusy ? '\u23F3 Running live...' : (hasLiveAI ? (showingLive ? '\u26A1 Re-run live' : '\u26A1 Run live with Gemini') : '\uD83D\uDCC0 Live unavailable')),
               showingLive && h('button', {
-                onClick: function() { setTempLive(null); announceToSR('Showing recorded examples'); },
+                onClick: function() { setTempLive(null); announceToSR(__alloT('stem.llm_literacy.sr_showing_recorded_examples', 'Showing recorded examples')); },
                 style: btn('#e2e8f0', COLORS.text, false),
                 title: __alloT('stem.llm_literacy.show_the_recorded_example_outputs_agai', 'Show the recorded example outputs again')
               }, __alloT('stem.llm_literacy.show_recorded', '\u21BA Show recorded')),
@@ -4183,7 +4183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           if (!userPrompt.trim()) { addToast('Write a prompt first, then click Critique.', 'info'); return; }
           setCritique(critiqueLocally(userPrompt));
           bump('promptIterations', 1);
-          announceToSR('Prompt critique updated');
+          announceToSR(__alloT('stem.llm_literacy.sr_prompt_critique_updated', 'Prompt critique updated'));
         }
 
         // copyToClipboard / fallbackCopy moved up to the render scope (they were
@@ -4375,7 +4375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                           var el = document.getElementById('llm-literacy-workshop');
                           if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 50);
-                        announceToSR('Recipe loaded into the workshop.');
+                        announceToSR(__alloT('stem.llm_literacy.sr_recipe_loaded_into_the_workshop', 'Recipe loaded into the workshop.'));
                       },
                       style: btn('#e0e7ff', COLORS.accent, false)
                     }, __alloT('stem.llm_literacy.load_in_workshop', '\u2193 Load in workshop'))
@@ -4506,7 +4506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                         var el = document.getElementById('llm-literacy-workshop');
                         if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }, 50);
-                      announceToSR('Composed prompt loaded into workshop');
+                      announceToSR(__alloT('stem.llm_literacy.sr_composed_prompt_loaded_into_workshop', 'Composed prompt loaded into workshop'));
                     },
                     disabled: !ready,
                     style: btn(tpl.color, '#fff', !ready),
@@ -4566,7 +4566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                           var el = document.getElementById('llm-literacy-workshop');
                           if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 50);
-                        announceToSR('Strong prompt loaded into the workshop. Press Run with Gemini to try it.');
+                        announceToSR(__alloT('stem.llm_literacy.sr_strong_prompt_loaded_into_the_workshop_press_run', 'Strong prompt loaded into the workshop. Press Run with Gemini to try it.'));
                       },
                       style: { background: COLORS.accent, color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' },
                       title: __alloT('stem.llm_literacy.load_this_prompt_into_the_workshop_bel', 'Load this prompt into the workshop below so you can run it with Gemini')
@@ -4811,7 +4811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                       ),
                       h('div', { style: { display: 'flex', gap: '4px', flexShrink: 0 } },
                         h('button', {
-                          onClick: function() { setUserPrompt(entry.p); setLiveOutput(entry.o || ''); setCritique(null); announceToSR('Loaded prompt from journal'); },
+                          onClick: function() { setUserPrompt(entry.p); setLiveOutput(entry.o || ''); setCritique(null); announceToSR(__alloT('stem.llm_literacy.sr_loaded_prompt_from_journal', 'Loaded prompt from journal')); },
                           title: __alloT('stem.llm_literacy.load_into_workshop_3', 'Load into workshop'),
                           style: { background: '#e0e7ff', border: 'none', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: 600, color: COLORS.accent, cursor: 'pointer' }
                         }, __alloT('stem.llm_literacy.load', '\u2191 Load')),
@@ -5141,7 +5141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           var nextPicks = Object.assign({}, picks); nextPicks[pickIdx] = true;
           setPicks(nextPicks);
           setHintsUsed(hintsUsed + 1);
-          announceToSR('Hint revealed an error.');
+          announceToSR(__alloT('stem.llm_literacy.sr_hint_revealed_an_error', 'Hint revealed an error.'));
         }
 
         var errorsCount = passage.segments.filter(function(s) { return s.error; }).length;
@@ -6184,7 +6184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         return h('div', {
           className: 'llm-lit-no-print',
           role: 'navigation',
-          'aria-label': 'Sub-sections',
+          'aria-label': __alloT('stem.llm_literacy.a11y_sub_sections', 'Sub-sections'),
           style: {
             display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center',
             padding: '8px 12px',

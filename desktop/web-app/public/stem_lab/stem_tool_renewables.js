@@ -1634,7 +1634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
           h('button', { 'data-rn-focusable': true,
             'aria-label': __alloT('stem.renewables.back_to_renewables_lab_menu', 'Back to Renewables Lab menu'),
-            onClick: function() { upd('view', 'menu'); rnAnnounce('Back to menu'); },
+            onClick: function() { upd('view', 'menu'); rnAnnounce(__alloT('stem.renewables.sr_back_to_menu', 'Back to menu')); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
           }, __alloT('stem.renewables.menu', '← Menu')),
           h('h2', { style: { margin: 0, fontSize: 20, color: T.text } }, title)
@@ -2461,7 +2461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               h('div', { style: { fontSize: 14, color: T.accentHi, fontWeight: 700, marginTop: 8 } }, label)),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'data-rn-focusable': true,
-                onClick: function() { upd('quizState', { idx: 0, score: 0, answered: false, lastChoice: null }); rnAnnounce('Quiz reset'); },
+                onClick: function() { upd('quizState', { idx: 0, score: 0, answered: false, lastChoice: null }); rnAnnounce(__alloT('stem.renewables.sr_quiz_reset', 'Quiz reset')); },
                 style: btn() }, __alloT('stem.renewables.try_again', '🔄 Try again')),
               h('button', { 'data-rn-focusable': true,
                 onClick: function() { upd('view', 'menu'); },
@@ -2979,27 +2979,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 0, mixWind: 0, mixHydro: 7, mixGeo: 0, mixNuclear: 19, mixGas: 36 });
-                rnAnnounce('Loaded: 2024 US grid average');
+                rnAnnounce(__alloT('stem.renewables.sr_loaded_2024_us_grid_average', 'Loaded: 2024 US grid average'));
               }, style: btn() }, __alloT('stem.renewables.load_2024_us_grid', 'Load: 2024 US grid')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 30, mixWind: 35, mixHydro: 20, mixGeo: 5, mixNuclear: 5, mixGas: 5 });
-                rnAnnounce('Loaded: 2050 net-zero scenario');
+                rnAnnounce(__alloT('stem.renewables.sr_loaded_2050_net_zero_scenario', 'Loaded: 2050 net-zero scenario'));
               }, style: btn() }, __alloT('stem.renewables.load_2050_net_zero', 'Load: 2050 net-zero')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 0, mixWind: 56, mixHydro: 1, mixGeo: 0, mixNuclear: 0, mixGas: 9 });
-                rnAnnounce('Loaded: Denmark wind-heavy');
+                rnAnnounce(__alloT('stem.renewables.sr_loaded_denmark_wind_heavy', 'Loaded: Denmark wind-heavy'));
               }, style: btn() }, __alloT('stem.renewables.load_denmark_mix', 'Load: Denmark mix')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 0, mixWind: 0, mixHydro: 70, mixGeo: 30, mixNuclear: 0, mixGas: 0 });
-                rnAnnounce('Loaded: Iceland renewable');
+                rnAnnounce(__alloT('stem.renewables.sr_loaded_iceland_renewable', 'Loaded: Iceland renewable'));
               }, style: btn() }, __alloT('stem.renewables.load_iceland', 'Load: Iceland')),
             h('button', { 'data-rn-focusable': true,
               onClick: function() {
                 updMulti({ mixSolar: 30, mixWind: 30, mixHydro: 10, mixGeo: 5, mixNuclear: 10, mixGas: 15 });
-                rnAnnounce('Reset to default');
+                rnAnnounce(__alloT('stem.renewables.sr_reset_to_default', 'Reset to default'));
               }, style: btn() }, __alloT('stem.renewables.reset', '↺ Reset'))
           ),
           (function() { if (renewablesShare >= 60) awardBadge('mix_designer', 'Mix Designer (60%+ renewable)'); return null; })(),
@@ -3121,7 +3121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 h('input', {
                   id: 'grid-batt-soc', 'data-rn-focusable': true, type: 'range',
                   min: 0, max: 100, step: 5, value: battStartSoc,
-                  'aria-label': 'Battery starting state of charge',
+                  'aria-label': __alloT('stem.renewables.a11y_battery_starting_state_of_charge', 'Battery starting state of charge'),
                   'aria-valuetext': battStartSoc.toFixed(0) + ' percent charged at midnight',
                   onChange: function(e) { upd('gridBattStartSoc', parseFloat(e.target.value)); },
                   style: { width: '100%', accentColor: T.accent, cursor: 'pointer' }
@@ -3440,7 +3440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
         function resetInstaller() {
           upd('installerCo', defaultInstallerState());
-          rnAnnounce('Reset to area pick');
+          rnAnnounce(__alloT('stem.renewables.sr_reset_to_area_pick', 'Reset to area pick'));
         }
 
         // Deterministic-ish lead generation from the year + areaId seed.
@@ -3482,7 +3482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             if (l.picked) return Object.assign({}, l, { picked: false });
             var pickedCount = inst.leads.filter(function(x){return x.picked;}).length;
             if (pickedCount >= bidCap) {
-              rnAnnounce('At sales-team bid limit. Hire more sales staff to bid on additional leads.');
+              rnAnnounce(__alloT('stem.renewables.sr_at_sales_team_bid_limit_hire_more_sales_staff_to', 'At sales-team bid limit. Hire more sales staff to bid on additional leads.'));
               return l;
             }
             return Object.assign({}, l, { picked: true });
@@ -4032,7 +4032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
         function selectScenario(id) {
           updMulti({ aiScenarioId: id, aiResponse: '', aiCritique: null });
-          rnAnnounce('Scenario loaded.');
+          rnAnnounce(__alloT('stem.renewables.sr_scenario_loaded', 'Scenario loaded.'));
         }
 
         function getCritique() {
@@ -4052,11 +4052,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               return (c.ok ? '✓ ' : '○ ') + c.msg;
             }).join('\n') + '\n\nThe checks above flag whether your response touched on each rubric criterion. They are crude — a real AI critique would do much better.';
             upd('aiCritique', { text: summary, source: 'local' });
-            rnAnnounce('Local check ready.');
+            rnAnnounce(__alloT('stem.renewables.sr_local_check_ready', 'Local check ready.'));
             return;
           }
           upd('aiLoadingCritique', true);
-          rnAnnounce('Getting critique...');
+          rnAnnounce(__alloT('stem.renewables.sr_getting_critique', 'Getting critique...'));
           var prompt = 'You are a renewable-energy engineering instructor reviewing a student’s system design.\n\n' +
             'SCENARIO:\n' + scenario.prompt + '\n\n' +
             'STUDENT DESIGN:\n' + aiResponse + '\n\n' +
@@ -4076,7 +4076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               if (!clean) throw new Error('Empty response');
               updMulti({ aiCritique: { text: clean, source: 'ai' }, aiLoadingCritique: false });
               awardBadge('ai_designer', 'AI Practice (got a design critiqued)');
-              rnAnnounce('Critique ready.');
+              rnAnnounce(__alloT('stem.renewables.sr_critique_ready', 'Critique ready.'));
             })
             .catch(function(e) {
               console.warn('[Renewables] AI critique failed; falling back.', e);
@@ -5197,7 +5197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             win.document.write(html);
             win.document.close();
             win.focus();
-            rnAnnounce('Print pack opened in a new tab. Use your browser\'s File then Print menu.');
+            rnAnnounce(__alloT('stem.renewables.sr_print_pack_opened_in_a_new_tab_use_your_browser_s', 'Print pack opened in a new tab. Use your browser\'s File then Print menu.'));
           } else {
             // Popup blocker fallback: copy to clipboard.
             try {
@@ -5248,7 +5248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   var allOn = {};
                   PRINT_OPTIONS.forEach(function(o) { allOn[o.kind] = true; });
                   upd('printSel', allOn);
-                  rnAnnounce('All sections selected');
+                  rnAnnounce(__alloT('stem.renewables.sr_all_sections_selected', 'All sections selected'));
                 },
                 style: btn({ padding: '6px 12px', fontSize: 12 })
               }, __alloT('stem.renewables.select_all', 'Select all')),
@@ -5257,7 +5257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   var allOff = {};
                   PRINT_OPTIONS.forEach(function(o) { allOff[o.kind] = false; });
                   upd('printSel', allOff);
-                  rnAnnounce('All sections cleared');
+                  rnAnnounce(__alloT('stem.renewables.sr_all_sections_cleared', 'All sections cleared'));
                 },
                 style: btn({ padding: '6px 12px', fontSize: 12 })
               }, __alloT('stem.renewables.clear_all', 'Clear all'))
@@ -5488,7 +5488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.renewables.reset_2', '↺ Reset')),
             (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
           ),
-          (iq.log || []).length > 0 && h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700 mb-3', 'aria-label': 'Logged grid balance comparisons' },
+          (iq.log || []).length > 0 && h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700 mb-3', 'aria-label': __alloT('stem.renewables.a11y_logged_grid_balance_comparisons', 'Logged grid balance comparisons') },
             h('thead', null, h('tr', { className: 'bg-slate-100' },
               ['gen MW', 'demand MW', 'energy MWh', 'power MW', 'SoC %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
             h('tbody', null, iq.log.map(function(o, idx) {

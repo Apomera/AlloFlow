@@ -1814,5 +1814,21 @@
   "know_your_car_3": "Know Your Car",
   "every_major_system_and_part_what_it_do": "Every major system and part — what it does, why it matters, and what breaks.",
   "loading_roadready": "Loading RoadReady...",
-  "roadready_error": "🚗 RoadReady Error"
+  "roadready_error": "🚗 RoadReady Error",
+  "sr_ride_along_is_managing_the_transmission": "Ride-Along is managing the transmission.",
+  "sr_finish_the_seatbelt_and_mirror_check_before_shift": "Finish the seatbelt and mirror check before shifting gear.",
+  "sr_stop_the_vehicle_completely_before_shifting_gear": "Stop the vehicle completely before shifting gear.",
+  "sr_drive_paused_because_the_simulator_lost_focus": "Drive paused because the simulator lost focus.",
+  "sr_scenario_complete_review_your_objectives_then_ope": "Scenario complete. Review your objectives, then open the drive debrief.",
+  "a11y_recommended_next_step": "Recommended next step",
+  "a11y_end_drive_and_open_debrief": "End drive and open debrief",
+  "a11y_fasten_seatbelt": "Fasten seatbelt",
+  "a11y_transmission": "Transmission",
+  "a11y_turn_signals": "Turn signals",
+  "a11y_shoulder_checks": "Shoulder checks",
+  "a11y_road_test_time_remaining_and_current_score": "Road test time remaining and current score",
+  "a11y_road_trip_progress": "Road trip progress",
+  "a11y_free_explore_world_settings": "Free Explore world settings",
+  "a11y_close_world_settings": "Close world settings",
+  "a11y_drive_result_and_next_step": "Drive result and next step"
 }

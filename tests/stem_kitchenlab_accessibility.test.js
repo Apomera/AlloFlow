@@ -16,7 +16,7 @@ describe('Kitchen Lab accessibility', () => {
     expect(text).toContain('function pauseHandwashTimer()');
     expect(text).toContain('function startOrResumeHandwashTimer()');
     expect(text).toContain('function resetHandwashTimer()');
-    expect(text).toContain("role: 'progressbar', 'aria-label': 'Handwash timer progress'");
+    expect(text).toContain(`role: 'progressbar', 'aria-label': __alloT('stem.kitchenlab.a11y_handwash_timer_progress', 'Handwash timer progress')`);
     expect(text).toContain("started ? '⏸ Pause timer' : paused ? '▶ Resume timer'");
     expect(text).toContain("role: 'timer', 'aria-live': 'off'");
   });
@@ -61,7 +61,7 @@ describe('Kitchen Lab accessibility', () => {
     expect(text.match(/role: 'img', 'aria-label': label/g)).toHaveLength(4);
     expect(text.match(/h\('th', \{ scope: 'col'/g)).toHaveLength(3);
     expect(text).toContain("h('th', { scope: 'row'");
-    expect(text).toContain("'aria-label': 'Maillard reaction hypothesis'");
-    expect(text).toContain("'aria-label': 'Explain the chemistry of Maillard browning'");
+    expect(text).toContain(`'aria-label': __alloT('stem.kitchenlab.a11y_maillard_reaction_hypothesis', 'Maillard reaction hypothesis')`);
+    expect(text).toContain(`'aria-label': __alloT('stem.kitchenlab.a11y_explain_the_chemistry_of_maillard_browning', 'Explain the chemistry of Maillard browning')`);
   });
 });

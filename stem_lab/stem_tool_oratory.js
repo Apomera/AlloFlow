@@ -1755,7 +1755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     upd('sessionStartTime', Date.now());
                   }
 
-                  if (announceToSR) announceToSR('Microphone active. Speak now to see your prosody visualized.');
+                  if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_active_speak_now_to_see_your_prosody_v', 'Microphone active. Speak now to see your prosody visualized.'));
 
                   var bufLen = analyser.fftSize;
                   var buf = new Float32Array(bufLen);
@@ -1866,7 +1866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 onError: function(err) {
                   console.warn('[Oratory] Mic error (shared):', err);
                   setMicError((err && err.message) || 'Could not access microphone. Please allow microphone permissions and try again.');
-                  if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
+                  if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_access_denied_please_allow_microphone', 'Microphone access denied. Please allow microphone permissions.'));
                 }
               });
             } catch (sharedErr) {
@@ -1933,7 +1933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 upd('sessionStartTime', Date.now());
               }
 
-              if (announceToSR) announceToSR('Microphone active. Speak now to see your prosody visualized.');
+              if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_active_speak_now_to_see_your_prosody_v', 'Microphone active. Speak now to see your prosody visualized.'));
 
               // Start the analysis loop
               var bufLen = analyser.fftSize;
@@ -2056,7 +2056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             .catch(function(err) {
               console.warn('[Oratory] Mic error:', err);
               setMicError('Could not access microphone. Please allow microphone permissions and try again.');
-              if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
+              if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_access_denied_please_allow_microphone', 'Microphone access denied. Please allow microphone permissions.'));
             });
         }, [isRecording, sessionStartTime]);
 
@@ -2120,7 +2120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               upd('sessionTimeSpent', (sessionTimeSpent || 0) + elapsedShared);
             }
 
-            if (announceToSR) announceToSR('Microphone stopped.');
+            if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_stopped', 'Microphone stopped.'));
             return;
           }
 
@@ -2180,7 +2180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             upd('sessionTimeSpent', (sessionTimeSpent || 0) + elapsed);
           }
 
-          if (announceToSR) announceToSR('Microphone stopped.');
+          if (announceToSR) announceToSR(__alloT('stem.oratory.sr_microphone_stopped', 'Microphone stopped.'));
         }, [sessionTimeSpent, pitchHistory, volumeHistory]);
 
         // Cleanup on unmount
@@ -2300,7 +2300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           syllableCountRef.current = 0;
           syllableTimestampsRef.current = [];
           if (addToast) addToast('Session reset.', 'info');
-          if (announceToSR) announceToSR('Session data cleared.');
+          if (announceToSR) announceToSR(__alloT('stem.oratory.sr_session_data_cleared', 'Session data cleared.'));
         }
 
         // ════════════════════════════════════
@@ -2339,7 +2339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 curve.push(Math.round(contour));
               }
               setModelCurve(curve);
-              if (announceToSR) announceToSR('Model phrase playing. Listen to the rhythm and pitch, then try to match it.');
+              if (announceToSR) announceToSR(__alloT('stem.oratory.sr_model_phrase_playing_listen_to_the_rhythm_and_pit', 'Model phrase playing. Listen to the rhythm and pitch, then try to match it.'));
             })
             .catch(function(err) {
               setTtsLoading(false);
@@ -2387,7 +2387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   var cached = cachedExercises || {};
                   cached[type] = parsed;
                   upd('cachedExercises', cached);
-                  if (announceToSR) announceToSR('New exercises generated. Pick one to practice.');
+                  if (announceToSR) announceToSR(__alloT('stem.oratory.sr_new_exercises_generated_pick_one_to_practice', 'New exercises generated. Pick one to practice.'));
                   return;
                 }
               } catch(e) {
@@ -2478,7 +2478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           // After a delay, switch to "your turn"
           setTimeout(function() {
             setMultiMode('yourTurn');
-            if (announceToSR) announceToSR('Your turn! Speak the phrase and try to match the model.');
+            if (announceToSR) announceToSR(__alloT('stem.oratory.sr_your_turn_speak_the_phrase_and_try_to_match_the_m', 'Your turn! Speak the phrase and try to match the model.'));
           }, 3000);
         }
 
@@ -2764,7 +2764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
           var text = lines.join('\n');
           setReportText(text);
-          if (announceToSR) announceToSR('Session report generated. You can copy it to share with your S L P.');
+          if (announceToSR) announceToSR(__alloT('stem.oratory.sr_session_report_generated_you_can_copy_it_to_share', 'Session report generated. You can copy it to share with your S L P.'));
         }
 
         function copyReport() {
@@ -3895,7 +3895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   });
                   setReportText(null);
                   if (addToast) addToast('Session data cleared.', 'info');
-                  if (announceToSR) announceToSR('All session data has been reset.');
+                  if (announceToSR) announceToSR(__alloT('stem.oratory.sr_all_session_data_has_been_reset', 'All session data has been reset.'));
                 },
                 'aria-label': t('stem.oratory.clear_all_session_data_and_start_fresh', 'Clear all session data and start fresh')
               }, t('stem.oratory.clear_all_session_data', 'Clear All Session Data')))

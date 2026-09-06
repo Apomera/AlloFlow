@@ -1384,7 +1384,7 @@
             h('button', {
               onClick: function() { setStemLabTool(null); },
               className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]',
-              'aria-label': 'Back to tools'
+              'aria-label': __alloT('stem.decomposer.a11y_back_to_tools', 'Back to tools')
             }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
             h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' + onHostInk }, '\u2697\uFE0F Material Decomposer'),
             h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[0.6875rem] font-bold rounded-full' },
@@ -1401,7 +1401,7 @@
           /* ── Grade-band intro ── */
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 mb-3' },
             h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, gradeBandIntro()),
-            h('button', { 'aria-label': 'Read aloud',
+            h('button', { 'aria-label': __alloT('stem.decomposer.a11y_read_aloud', 'Read aloud'),
               onClick: function() { speakText(gradeBandIntro()); },
               className: 'transition-colors mt-1 text-[0.6875rem] text-amber-600 hover:text-amber-800 font-bold'
             }, '\uD83D\uDD0A Read aloud')
@@ -1437,7 +1437,7 @@
           ),
 
           /* ── Tab bar ── */
-          h('div', { className: 'flex flex-wrap gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
+          h('div', { className: 'flex flex-wrap gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_lab_sections', 'Decomposer Lab sections') },
             TABS.map(function(t, tabIndex) {
               var active = tab === t.id;
               return h('button', { key: t.id,
@@ -1628,7 +1628,7 @@
 
               if (!cmpMode) {
                 return h('div', { className: 'mb-3' },
-                  h('button', { 'aria-label': 'Compare Molecules',
+                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_compare_molecules', 'Compare Molecules'),
                     onClick: function() {
                       SOUNDS.compare();
                       updMulti({ compareMode: true, compareTo: MATERIALS[1].name });
@@ -1654,7 +1654,7 @@
                       return h('option', { key: m.name, value: m.name }, m.emoji + ' ' + m.name);
                     })
                   ),
-                  h('button', { 'aria-label': 'Close',
+                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_close', 'Close'),
                     onClick: function() { upd('compareMode', false); },
                     className: 'transition-colors ml-auto text-xs text-indigo-400 hover:text-indigo-600'
                   }, '\u2715 Close')
@@ -1711,7 +1711,7 @@
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3 mb-3' },
               h('div', { className: 'flex items-center justify-between' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-cyan-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real World'),
-                h('button', { 'aria-label': 'Speak Text',
+                h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
                   onClick: function() { speakText(sel.realUse); },
                   className: 'transition-colors text-[0.6875rem] text-cyan-500 hover:text-cyan-700 font-bold'
                 }, '\uD83D\uDD0A')
@@ -1735,7 +1735,7 @@
               return facts.length > 0 ? h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mb-3' },
                 h('div', { className: 'flex items-center justify-between mb-1' },
                   h('span', { className: 'text-[0.6875rem] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
-                  h('button', { 'aria-label': 'Next',
+                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_next', 'Next'),
                     onClick: function() { upd('_factIdx', factIdx + 1); },
                     className: 'transition-colors text-[0.6875rem] text-violet-500 hover:text-violet-700 font-bold'
                   }, 'Next \u2192')
@@ -1936,7 +1936,7 @@
               return h('div', null,
                 // Scene header
                 h('div', { className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
-                  h('button', { 'aria-label': 'Exit decomposition scene', onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors active:scale-[0.97]' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_exit_decomposition_scene', 'Exit decomposition scene'), onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors active:scale-[0.97]' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   h('div', {
                     className: 'flex items-center justify-center shrink-0 rounded-xl',
                     style: { width: 44, height: 44, background: 'white', border: '2px solid ' + scene.accent + '40', boxShadow: '0 2px 8px ' + scene.accent + '20' }
@@ -2012,7 +2012,7 @@
                 // Scene visual — all objects always visible
                 h('div', { className: 'relative rounded-2xl border-2 overflow-hidden mb-4', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '320px', boxShadow: '0 4px 20px ' + scene.accent + '15' } },
                   // Canvas background
-                  h('canvas', { role: 'img', 'aria-label': 'Decomposer visualization', 
+                  h('canvas', { role: 'img', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_visualization', 'Decomposer visualization'), 
                     ref: function(canvas) {
                       if (!canvas) return;
                       if (canvas._sceneDrawn === scene.id) return;
@@ -2390,9 +2390,9 @@
                       })
                     ),
                     h('div', { className: 'flex gap-2 mt-3' },
-                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
-                      h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
-                      h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all active:scale-[0.97]' }, '\uD83D\uDD0A')
+                      h('button', { 'aria-label': __alloT('stem.decomposer.a11y_explore', 'Explore'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
+                      h('button', { 'aria-label': __alloT('stem.decomposer.a11y_visualize', 'Visualize'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
+                      h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'), onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all active:scale-[0.97]' }, '\uD83D\uDD0A')
                     )
                   )
                 ) : null,
@@ -2433,7 +2433,7 @@
                 reactantA ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantA),
-                  h('button', { 'aria-label': 'Remove', onClick: function() { updMulti({ reactantA: null, activeReaction: null }); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_remove', 'Remove'), onClick: function() { updMulti({ reactantA: null, activeReaction: null }); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-indigo-400 text-center py-4' }, 'Select below \u2193')
               ),
               // Slot B
@@ -2442,7 +2442,7 @@
                 reactantB ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
-                  h('button', { 'aria-label': 'Remove', onClick: function() { updMulti({ reactantB: null, activeReaction: null }); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_remove', 'Remove'), onClick: function() { updMulti({ reactantB: null, activeReaction: null }); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-rose-400 text-center py-4' }, 'Select below \u2193')
               )
             ),
@@ -2478,7 +2478,7 @@
 
               return h('div', null,
                 // Mix button
-                !activeReaction ? h('button', { 'aria-label': 'Mix',
+                !activeReaction ? h('button', { 'aria-label': __alloT('stem.decomposer.a11y_mix', 'Mix'),
                   onClick: function() {
                     SOUNDS.decompose();
                     if (reaction) {
@@ -2519,11 +2519,11 @@
                   ) : null,
                   // TTS + try another
                   h('div', { className: 'flex gap-2' },
-                    h('button', { 'aria-label': 'Listen',
+                    h('button', { 'aria-label': __alloT('stem.decomposer.a11y_listen', 'Listen'),
                       onClick: function() { speakText(activeReaction.name + '. ' + activeReaction.desc); },
                       className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 active:scale-[0.97]'
                     }, '\uD83D\uDD0A Listen'),
-                    h('button', { 'aria-label': 'Try Another Combo',
+                    h('button', { 'aria-label': __alloT('stem.decomposer.a11y_try_another_combo', 'Try Another Combo'),
                       onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); },
                       className: 'transition-colors flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 active:scale-[0.97]'
                     }, '\uD83D\uDD04 Try Another Combo')
@@ -2566,7 +2566,7 @@
                 h('span', { className: 'text-[0.6875rem] font-bold text-red-600' }, '\uD83D\uDD25 Hot')
               ),
               h('input', {
-                type: 'range', 'aria-label': 'Decomposer slider', min: -200, max: 500, step: 5,
+                type: 'range', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_slider', 'Decomposer slider'), min: -200, max: 500, step: 5,
                 value: d._simTemp != null ? d._simTemp : 25,
                 onChange: function(e) { upd('_simTemp', parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: (d._simTemp || 25) < 0 ? '#3b82f6' : (d._simTemp || 25) > 200 ? '#ef4444' : '#f59e0b' }
@@ -2592,7 +2592,7 @@
 
             // Particle canvas
             h('div', { className: 'rounded-xl border-2 border-slate-200 overflow-hidden mb-3' },
-              h('canvas', { role: 'img', 'aria-label': 'Decomposer interactive visualization',
+              h('canvas', { role: 'img', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_interactive_visualization', 'Decomposer interactive visualization'),
                 ref: function(canvas) {
                   if (!canvas) return;
                   var c2 = canvas.getContext('2d');
@@ -2757,7 +2757,7 @@
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
                 'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
               ),
-              h('button', { 'aria-label': 'Listen',
+              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_listen', 'Listen'),
                 onClick: function() { speakText('In a solid, particles vibrate in fixed positions. In a liquid, they slide past each other. In a gas, they fly freely and fill the container. Temperature controls how fast they move.'); },
                 className: 'transition-colors mt-2 text-[0.6875rem] text-sky-700 hover:text-sky-900 font-bold'
               }, '\uD83D\uDD0A Listen')
@@ -2781,7 +2781,7 @@
 
             /* Canvas controls */
             h('div', { className: 'flex items-center gap-3 mb-3' },
-              h('button', { 'aria-label': 'Speak Text',
+              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
                 onClick: function() {
                   var next = !decomposed;
                   if (next) {
@@ -2799,7 +2799,7 @@
                     ? 'transition-colors bg-red-700 text-white shadow-lg hover:bg-red-600 active:scale-[0.97]'
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u26A1 Decompose'),
-              h('button', { 'aria-label': 'Describe',
+              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_describe', 'Describe'),
                 onClick: function() { speakText(sel.name + ' has the formula ' + sel.formula + '. ' + sel.desc); },
                 className: 'transition-colors px-4 py-2.5 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100 active:scale-[0.97]'
               }, '\uD83D\uDD0A Describe')
@@ -2877,7 +2877,7 @@
             (!quizMode || !quizQ) && h('div', { className: 'text-center py-8' },
               h('div', { className: 'text-5xl mb-3' }, '\uD83E\uDDEA'),
               h('p', { className: 'text-sm text-slate-600 mb-4' + onHostInk }, 'Ready to test your chemistry knowledge?'),
-              h('button', { 'aria-label': 'Start Quiz',
+              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_start_quiz', 'Start Quiz'),
                 onClick: function() {
                   updMulti({ quizMode: true, quizQ: makeQuiz() });
                 },
@@ -2976,7 +2976,7 @@
               ),
 
               /* Next question button (after answer) */
-              quizQ.answered && h('button', { 'aria-label': 'Next Question',
+              quizQ.answered && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_next_question', 'Next Question'),
                 onClick: function() { upd('quizQ', makeQuiz()); },
                 className: 'w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-all active:scale-[0.97]'
               }, '\u27A1 Next Question')
@@ -2999,7 +2999,7 @@
             ),
 
             /* Reset quiz */
-            quizScore > 0 && h('button', { 'aria-label': 'Reset Quiz',
+            quizScore > 0 && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_reset_quiz', 'Reset Quiz'),
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
               },
@@ -3037,7 +3037,7 @@
                         : 'bg-white text-slate-700 border border-slate-400 rounded-bl-sm')
                   },
                     msg.text,
-                    !isUser && h('button', { 'aria-label': 'Speak Text',
+                    !isUser && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
                       onClick: function() { speakText(msg.text); },
                       className: 'transition-colors ml-2 text-[0.6875rem] text-purple-400 hover:text-purple-600'
                     }, '\uD83D\uDD0A')
@@ -3055,7 +3055,7 @@
             h('div', { className: 'flex gap-2 mb-3' },
               h('input', {
                 type: 'text',
-                'aria-label': 'Ask the Decomposer tutor',
+                'aria-label': __alloT('stem.decomposer.a11y_ask_the_decomposer_tutor', 'Ask the Decomposer tutor'),
                 value: aiInput,
                 onChange: function(e) { upd('aiInput', e.target.value); },
                 onKeyDown: function(e) {
@@ -3082,7 +3082,7 @@
                 'Where is ' + sel.name + ' found in nature?',
                 band === 'g68' || band === 'g912' ? 'Explain the electron configuration' : 'Is ' + sel.name + ' safe to touch?'
               ].map(function(q, i) {
-                return h('button', { 'aria-label': 'Ask question',
+                return h('button', { 'aria-label': __alloT('stem.decomposer.a11y_ask_question', 'Ask question'),
                   key: i,
                   onClick: function() { handleAiQuestion(q); },
                   className: 'px-2.5 py-1 bg-purple-50 text-purple-700 text-[0.6875rem] font-bold rounded-lg border border-purple-200 hover:bg-purple-100 transition-all active:scale-[0.97]'
@@ -3130,7 +3130,7 @@
                   h('button', { onClick: function() { setIQ({ tempC: 25, humidity: 70, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which condition is most important for decomposition?',
-                  'aria-label': 'Decomposition hypothesis',
+                  'aria-label': __alloT('stem.decomposer.a11y_decomposition_hypothesis', 'Decomposition hypothesis'),
                   className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
@@ -3141,7 +3141,7 @@
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   'I understand — explain in own words'),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how temperature, humidity, and oxygen jointly drive decomposition.',
-                  'aria-label': 'Explain decomposition conditions',
+                  'aria-label': __alloT('stem.decomposer.a11y_explain_decomposition_conditions', 'Explain decomposition conditions'),
                   className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Design note: discrete 4-state decomposition marker; no rate score; no reveal — by design.')
               )
@@ -3183,7 +3183,7 @@
           /* ═══════════════════════════════════════════════════
              Snapshot Button
              ═══════════════════════════════════════════════════ */
-          h('button', { 'aria-label': 'Snapshot',
+          h('button', { 'aria-label': __alloT('stem.decomposer.a11y_snapshot', 'Snapshot'),
             onClick: function() {
               SOUNDS.snapshot();
               setToolSnapshots(function(prev) {

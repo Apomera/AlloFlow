@@ -28,7 +28,7 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain("kTarget.closest('button,a[href],[role=\"button\"],[role=\"link\"]')");
     expect(src).toContain("if (kEditing || (kActionControl && (keyName === ' ' || keyName === 'enter'))) return");
     expect(src).toContain('var pauseForInterruption = function()');
-    expect(src).toContain("rrAnnounce('Drive paused because the simulator lost focus.')");
+    expect(src).toContain(`rrAnnounce(__alloT('stem.roadready.sr_drive_paused_because_the_simulator_lost_focus', 'Drive paused because the simulator lost focus.'))`);
     expect(src).toContain('keysRef.current = clearDrivingMovementInputs(keysRef.current)');
     expect(src).toContain('gamepadNeedsNeutralRef.current = true');
     expect(src).toContain('var rideAlongManagedKeys = [');
@@ -95,7 +95,7 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain("top: 'clamp(78px, 24%, 172px)'");
     expect(src).toContain('.rr-road-test-meter{top:84px!important');
     expect(src).toContain('.touch-controls button{min-width:44px;min-height:44px}');
-    expect(src).toContain("role: 'region', 'aria-label': 'Road trip progress'");
+    expect(src).toContain(`role: 'region', 'aria-label': __alloT('stem.roadready.a11y_road_trip_progress', 'Road trip progress')`);
     expect(src).toContain("d.coachMode && !d.parentRideMode && d.roadTestStage !== 'drive'");
   });
 
@@ -169,7 +169,7 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain('onClick: fastenSeatbelt');
     expect(src).toContain("className: 'rr-seatbelt-prompt'");
     expect(src).toContain('Buckle up first. The car stays in Park during your mirror scan.');
-    expect(src).toContain("'aria-label': 'Fasten seatbelt'");
+    expect(src).toContain(`'aria-label': __alloT('stem.roadready.a11y_fasten_seatbelt', 'Fasten seatbelt')`);
     expect(src).toContain("animation: 'none'");
     expect(src).toContain("}, 'GO')");
     expect(src).toContain("}, 'BRAKE')");

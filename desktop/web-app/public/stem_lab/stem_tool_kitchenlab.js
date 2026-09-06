@@ -1763,7 +1763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           return { handwashStart: null, handwashElapsedSec: 20, handwashPaused: false,
             handwashTickAt: Date.now(), klHandwashCompleted: true };
         });
-        klAnnounce('Handwash complete — 20 seconds reached.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_handwash_complete_20_seconds_reached', 'Handwash complete — 20 seconds reached.'));
         awardXP(5);
       }
       function scheduleHandwashTimers(remainingSec) {
@@ -1790,7 +1790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function resetHandwashTimer() {
         stopHandwashTimers();
         setKL({ handwashStart: null, handwashElapsedSec: 0, handwashPaused: false, handwashTickAt: Date.now() });
-        klAnnounce('Handwash timer reset.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_handwash_timer_reset', 'Handwash timer reset.'));
       }
       var section = d.activeSection || 'safety';
 
@@ -2055,7 +2055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               style: { padding: '10px 14px', background: 'transparent', color: '#fde68a', border: '1px solid rgba(251,146,60,0.5)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.reset_timer', 'Reset timer')) : null,
             h('div', { style: { flex: 1, minWidth: 200 } },
-              h('div', { role: 'progressbar', 'aria-label': 'Handwash timer progress', 'aria-valuemin': 0, 'aria-valuemax': 20, 'aria-valuenow': Math.round(elapsed),
+              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.kitchenlab.a11y_handwash_timer_progress', 'Handwash timer progress'), 'aria-valuemin': 0, 'aria-valuemax': 20, 'aria-valuenow': Math.round(elapsed),
                 style: { height: 12, background: 'rgba(15,23,42,0.6)', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)' } },
                 h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #16a34a, #22c55e)', transition: started ? 'width 0.5s linear' : 'none' } })),
               h('div', { role: 'timer', 'aria-live': 'off', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
@@ -2543,14 +2543,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           if (prior.potState !== 'cold') return {};
           return { potState: 'heating', potStartedAt: Date.now() };
         });
-        klAnnounce('Pasta pot turned on. Water will boil in about 3 minutes.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_pasta_pot_turned_on_water_will_boil_in_about_3_mi', 'Pasta pot turned on. Water will boil in about 3 minutes.'));
       }
       function dropPasta() {
         setKL(function(prior) {
           if (prior.potState !== 'boiling') return {};
           return { potState: 'pasta-in', potPastaInAt: Date.now() };
         });
-        klAnnounce('Pasta dropped into boiling water. About 9 minutes to al dente.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_pasta_dropped_into_boiling_water_about_9_minutes', 'Pasta dropped into boiling water. About 9 minutes to al dente.'));
       }
       function drainPasta(reserveWater) {
         setKL(function(prior) {
@@ -2571,7 +2571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var pausedAt = Date.now();
         stopRecipeTick();
         setKL({ recipePhase: 'paused', recipePausedAt: pausedAt });
-        klAnnounce('Cooking paused. Recipe and competition timers are stopped.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_cooking_paused_recipe_and_competition_timers_are', 'Cooking paused. Recipe and competition timers are stopped.'));
       }
       function resumeRecipe() {
         if (d.recipePhase !== 'paused' || !d.recipePausedAt) return;
@@ -2596,7 +2596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           competitionStartedAt: shiftTimestamp(d.competitionStartedAt),
           competitionDeadline: shiftTimestamp(d.competitionDeadline)
         });
-        klAnnounce('Cooking resumed.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_cooking_resumed', 'Cooking resumed.'));
       }
       // Auto-start/stop the tick based on phase (called from render below)
       function ensureTickMatches(phase) {
@@ -2642,7 +2642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function abortRecipe() {
         setKL({ recipePhase: 'idle', recipeActiveId: null, recipeJudgement: null, recipePausedAt: null,
           competitionActive: false, competitionConstraints: [], competitionDeadline: null, pendingConfirmation: null });
-        klAnnounce('Recipe abandoned.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_recipe_abandoned', 'Recipe abandoned.'));
       }
       function openConfirmation(kind) {
         if (typeof document !== 'undefined') _klConfirmReturnEl = document.activeElement;
@@ -2737,7 +2737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           tournamentScores: [],
           competitionLastResult: null
         });
-        klAnnounce('Tournament started. 3 rounds, escalating difficulty.');
+        klAnnounce(__alloT('stem.kitchenlab.sr_tournament_started_3_rounds_escalating_difficulty', 'Tournament started. 3 rounds, escalating difficulty.'));
         awardXP(15);
         // Start Round 1
         setTimeout(function() { startTournamentRound(0); }, 50);
@@ -3161,7 +3161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           var t = d.recipePanTempF || 0;
           if (t >= step.target.panTempF.min && t <= step.target.panTempF.max) {
             nextStep();
-            klAnnounce('Pan in range — step complete.');
+            klAnnounce(__alloT('stem.kitchenlab.sr_pan_in_range_step_complete', 'Pan in range — step complete.'));
           }
         } else if (auto === 'itemAdded' && step.target.itemAdded) {
           if ((d.recipeItemsInPan || []).indexOf(step.target.itemAdded) !== -1) {
@@ -3170,7 +3170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         } else if (auto === 'heatRemoved') {
           if ((d.recipeBurnerLevel || 0) === 0) {
             nextStep();
-            klAnnounce('Heat removed — carryover cooking begins.');
+            klAnnounce(__alloT('stem.kitchenlab.sr_heat_removed_carryover_cooking_begins', 'Heat removed — carryover cooking begins.'));
           }
         } else if (auto === 'internalTempReached' && step.target.foodInternalF) {
           var ft = d.recipeFoodInternalF || 40;
@@ -3557,7 +3557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               })),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
               step.completeWhen === 'userClick' ? h('button', { disabled: isPaused,
-                onClick: function() { nextStep(); klAnnounce('Step complete.'); },
+                onClick: function() { nextStep(); klAnnounce(__alloT('stem.kitchenlab.sr_step_complete', 'Step complete.')); },
                 style: { padding: '12px 24px', background: '#22c55e', color: '#052e16',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.continue_to_next_step', '✓ Continue to next step')) : h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
@@ -4314,7 +4314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
             h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
           ),
-          h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': 'Maillard reaction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
+          h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': __alloT('stem.kitchenlab.a11y_maillard_reaction_hypothesis', 'Maillard reaction hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
             className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
@@ -4324,7 +4324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             __alloT('stem.kitchenlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-          iq.understood && h('textarea', { id: 'kitchen-maillard-explanation', 'aria-label': 'Explain the chemistry of Maillard browning', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.explain_the_chemistry_of_maillard_brow', 'Explain the chemistry of Maillard browning.'),
+          iq.understood && h('textarea', { id: 'kitchen-maillard-explanation', 'aria-label': __alloT('stem.kitchenlab.a11y_explain_the_chemistry_of_maillard_browning', 'Explain the chemistry of Maillard browning'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.explain_the_chemistry_of_maillard_brow', 'Explain the chemistry of Maillard browning.'),
             className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
           h('div', { className: 'text-[0.625rem] italic text-slate-500' }, __alloT('stem.kitchenlab.design_note_discrete_5_state_browning_', 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.'))
         );

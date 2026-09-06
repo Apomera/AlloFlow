@@ -15,8 +15,8 @@ describe('Decomposer Lab form control accessibility', () => {
     // Pin the invariant (a translated label exists), not the helper's name —
     // the t() helper was renamed to __alloT() after this test was written.
     expect(source).toMatch(/'aria-label': (?:t|__alloT)\('stem\.decomposer\.compare_material', 'Compare with material'\)/);
-    expect(source).toContain("'aria-label': 'Ask the Decomposer tutor'");
-    expect(source).toContain("'aria-label': 'Decomposition hypothesis'");
-    expect(source).toContain("'aria-label': 'Explain decomposition conditions'");
+    expect(source).toContain(`'aria-label': __alloT('stem.decomposer.a11y_ask_the_decomposer_tutor', 'Ask the Decomposer tutor')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.decomposer.a11y_decomposition_hypothesis', 'Decomposition hypothesis')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.decomposer.a11y_explain_decomposition_conditions', 'Explain decomposition conditions')`);
   });
 });

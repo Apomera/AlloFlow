@@ -705,5 +705,15 @@
   "clear_7": "↺ Clear",
   "remove_zero_pairs": "✂ Remove zero pairs",
   "algebra_tiles_make_abstract_algebra_ph": "💡 Algebra tiles make abstract algebra physical. A positive and a negative tile of the same shape make a \"zero pair.\" Solid colored tiles are positive; dashed-bordered white tiles are negative. Use these to model expressions, simplify, and (for older students) factor quadratics by arranging tiles into rectangles.",
-  "select_a_tool_above_to_get_started": "Select a tool above to get started."
+  "select_a_tool_above_to_get_started": "Select a tool above to get started.",
+  "a11y_manipulative_reasoning_pathway": "Manipulative reasoning pathway",
+  "a11y_done": "Done!",
+  "sr_zero_pair_removed_by_drag": "Zero pair removed by drag.",
+  "sr_counters_cleared": "Counters cleared",
+  "a11y_whole_number": "Whole number",
+  "a11y_first_part": "First part",
+  "a11y_grade_level": "Grade level",
+  "a11y_abstractness": "Abstractness",
+  "a11y_scaffold_density": "Scaffold density",
+  "a11y_error_tolerance": "Error tolerance"
 }

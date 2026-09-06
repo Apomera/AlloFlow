@@ -2043,9 +2043,9 @@ window.StemLab = window.StemLab || {
             plAnnounce(unavailable);
             return;
           }
-          if (name === null) { plAnnounce('Trading card export cancelled.'); return; }
+          if (name === null) { plAnnounce(__alloT('stem.playlab.sr_trading_card_export_cancelled', 'Trading card export cancelled.')); return; }
           name = String(name).trim().slice(0, 30);
-          if (!name) { plAnnounce('Enter a player name to create the trading card.'); return; }
+          if (!name) { plAnnounce(__alloT('stem.playlab.sr_enter_a_player_name_to_create_the_trading_card', 'Enter a player name to create the trading card.')); return; }
           setLabToolData(function(prev) {
             return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playerName: name })});
           });
@@ -2262,7 +2262,7 @@ window.StemLab = window.StemLab || {
             customPositions: {}
           })});
         });
-        plAnnounce('Player positions reset to preset.');
+        plAnnounce(__alloT('stem.playlab.sr_player_positions_reset_to_preset', 'Player positions reset to preset.'));
       }
 
       // ── Saved plays ──
@@ -2293,7 +2293,7 @@ window.StemLab = window.StemLab || {
       function commitSavePlay() {
         var name = (d.savePromptName || '').trim();
         if (!name) {
-          plAnnounce('Please give the play a name.');
+          plAnnounce(__alloT('stem.playlab.sr_please_give_the_play_a_name', 'Please give the play a name.'));
           return;
         }
         var entry = {
@@ -2350,7 +2350,7 @@ window.StemLab = window.StemLab || {
           var saved = (prev.playlab.savedPlays || []).filter(function(e) { return e.id !== id; });
           return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { savedPlays: saved })});
         });
-        plAnnounce('Deleted saved play.');
+        plAnnounce(__alloT('stem.playlab.sr_deleted_saved_play', 'Deleted saved play.'));
       }
 
       // ── Coach Mode (Gemini) ──
@@ -2365,7 +2365,7 @@ window.StemLab = window.StemLab || {
               coachError: 'Coach is offline (AI not available in this build).'
             })});
           });
-          plAnnounce('Coach is offline.');
+          plAnnounce(__alloT('stem.playlab.sr_coach_is_offline', 'Coach is offline.'));
           return;
         }
         setLabToolData(function(prev) {
@@ -4088,7 +4088,7 @@ window.StemLab = window.StemLab || {
           return h('button', {
             onClick: function() {
               if (done) {
-                plAnnounce('Daily Challenge already complete. Come back tomorrow.');
+                plAnnounce(__alloT('stem.playlab.sr_daily_challenge_already_complete_come_back_tomorr', 'Daily Challenge already complete. Come back tomorrow.'));
                 return;
               }
               applyPlayLabScenario(daily.id);
@@ -4561,7 +4561,7 @@ window.StemLab = window.StemLab || {
                       drillActive: false, drillTaskIdx: 0
                     })});
                   });
-                  plAnnounce('Drill stopped.');
+                  plAnnounce(__alloT('stem.playlab.sr_drill_stopped', 'Drill stopped.'));
                 },
                 'aria-label': __alloT('stem.playlab.stop_the_current_drill', 'Stop the current drill'),
                 'data-pl-focusable': 'true',
@@ -4664,7 +4664,7 @@ window.StemLab = window.StemLab || {
                   h('h3', { id: 'pl-live-field-heading', className: 'playlab-field-title' },
                     isSoccer ? formationDef.label + ' - ' + concept.label : play.label + ' - ' + coverage.label)
                 ),
-                h('div', { className: 'playlab-chip-row', 'aria-label': 'Visible overlays' },
+                h('div', { className: 'playlab-chip-row', 'aria-label': __alloT('stem.playlab.a11y_visible_overlays', 'Visible overlays') },
                   h('span', { className: 'playlab-chip' }, d.showRoutes === false ? 'Routes off' : 'Routes on'),
                   h('span', { className: 'playlab-chip' }, d.showOpen === false ? 'Open read off' : 'Open read on'),
                   isSoccer ? h('span', { className: 'playlab-chip' }, d.showXG ? 'xG on' : 'xG off') : h('span', { className: 'playlab-chip' }, d.showZones ? 'Zones on' : 'Zones off')
@@ -4970,7 +4970,7 @@ window.StemLab = window.StemLab || {
                           return;
                         }
                         if (confirmed) deleteSavedPlay(entry.id);
-                        else plAnnounce('Saved play kept.');
+                        else plAnnounce(__alloT('stem.playlab.sr_saved_play_kept', 'Saved play kept.'));
                       },                      'aria-label': 'Delete saved play ' + entry.name,
                       'data-pl-focusable': 'true',
                       style: playLabSecondaryButtonStyle({ padding: '4px 8px', minHeight: 28, minWidth: 28, borderRadius: 4, fontSize: 12 })

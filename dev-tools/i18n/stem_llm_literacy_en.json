@@ -523,5 +523,17 @@
   "skip_to_main_content": "Skip to main content",
   "ai_literacy_lab_main_content": "AI Literacy Lab main content",
   "something_went_wrong_rendering_this_se": "Something went wrong rendering this section. Check the console for details.",
-  "back_to_home_2": "← Back to home"
+  "back_to_home_2": "← Back to home",
+  "sr_listening_speak_now": "Listening. Speak now.",
+  "sr_reflection_saved": "Reflection saved.",
+  "sr_returned_to_ai_literacy_lab_home": "Returned to AI Literacy Lab home",
+  "sr_lab_state_reset": "Lab state reset",
+  "sr_showing_recorded_examples": "Showing recorded examples",
+  "sr_prompt_critique_updated": "Prompt critique updated",
+  "sr_recipe_loaded_into_the_workshop": "Recipe loaded into the workshop.",
+  "sr_composed_prompt_loaded_into_workshop": "Composed prompt loaded into workshop",
+  "sr_strong_prompt_loaded_into_the_workshop_press_run": "Strong prompt loaded into the workshop. Press Run with Gemini to try it.",
+  "sr_loaded_prompt_from_journal": "Loaded prompt from journal",
+  "sr_hint_revealed_an_error": "Hint revealed an error.",
+  "a11y_sub_sections": "Sub-sections"
 }

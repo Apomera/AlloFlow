@@ -166,5 +166,14 @@
   "explain_how_prosody_shapes_oratory_imp": "Explain how prosody shapes oratory impact.",
   "design_note_discrete_4_tempo_marker_no": "Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.",
   "this_tool_is_designed_as_a_tier_1_clas": "This tool is designed as a Tier 1 classroom intervention. For individualized speech therapy, please consult a certified Speech-Language Pathologist.",
-  "visualizations_use_web_audio_api_pitch": "Visualizations use Web Audio API pitch detection (autocorrelation) and amplitude analysis. All processing happens locally in the browser — no audio is recorded or transmitted."
+  "visualizations_use_web_audio_api_pitch": "Visualizations use Web Audio API pitch detection (autocorrelation) and amplitude analysis. All processing happens locally in the browser — no audio is recorded or transmitted.",
+  "sr_microphone_active_speak_now_to_see_your_prosody_v": "Microphone active. Speak now to see your prosody visualized.",
+  "sr_microphone_access_denied_please_allow_microphone": "Microphone access denied. Please allow microphone permissions.",
+  "sr_microphone_stopped": "Microphone stopped.",
+  "sr_session_data_cleared": "Session data cleared.",
+  "sr_model_phrase_playing_listen_to_the_rhythm_and_pit": "Model phrase playing. Listen to the rhythm and pitch, then try to match it.",
+  "sr_new_exercises_generated_pick_one_to_practice": "New exercises generated. Pick one to practice.",
+  "sr_your_turn_speak_the_phrase_and_try_to_match_the_m": "Your turn! Speak the phrase and try to match the model.",
+  "sr_session_report_generated_you_can_copy_it_to_share": "Session report generated. You can copy it to share with your S L P.",
+  "sr_all_session_data_has_been_reset": "All session data has been reset."
 }
