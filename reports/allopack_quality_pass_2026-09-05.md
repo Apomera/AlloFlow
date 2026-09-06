@@ -1,7 +1,45 @@
 # AlloPack quality pass and enrichment, September 5, 2026
 
-Claude. Scope: every pack in `allopacks/` (21 at the start, 38 at the end). Nothing in this pass changes `catalog/index.json`; publication of the text-only packs is a separate decision (see "Catalog" below).
+Claude. Scope: every pack in `allopacks/` — 21 at the start, 38 at the end — across 23 passes on 5 and 6 September. Nothing here changes `catalog/index.json`; publication remains a separate decision.
 
+The passes below are in the order they were run. **Start with "Where this stands" for the current state**; the rest is the working record, including the checks that were built, measured and then thrown away.
+
+## Where this stands
+
+**The catalog holds 38 packs covering grades 1 to 8.** Every grade has Science, ELA and Math; Social Studies covers grades 3 to 8. All 38 pass the shape suite, report zero audit flags, and load clean in the deployed app.
+
+`catalog/index.json` is **unchanged, at two entries**. Publishing the other 36 is a deliberate decision and remains open — see "Catalog" below and the seed plan.
+
+### What is now verified, and how
+
+| Surface | Method | Result |
+| --- | --- | --- |
+| Structure and shapes | `tests/allopack_catalog.test.js` | 38 packs green |
+| Reading level of every student-facing text | `dev-tools/audit_allopacks.cjs` | 0 flags |
+| Loads in the real app | `dev-tools/smoke_allopacks_live.mjs` | 38 of 38 |
+| Answer keys | 38 math answers re-worked, 190 MCQ items, 70 keys read | all correct |
+| Concept-sort placements | 354 cards read | 1 fixed |
+| Facts, dates, names | 57 claims + all 84 new FAQ answers + 8 readings | 6 fixed |
+| Standards codes and glosses | all 38 against the official text | 2 unearned alignments dropped |
+| Universal claims | every *every/always/never* sentence | 3 fixed |
+| Timelines, briefs, frames, rubrics | read in full | 2 fixed |
+| Ids across the catalog | `tests/allopack_id_uniqueness.test.js` | green |
+
+### What the gates hold now
+
+Beyond the original shape suite: grade-aware reading-level targets for every student-facing text, word-game playability, an anchor chart in every pack, citation-shaped claims flagged for sourcing, catalog-wide id uniqueness, and answer-key integrity. Two tools are deliberately **reports rather than gates**, because the judgment is semantic: `report_shared_glossary_terms.cjs` and the live smoke test.
+
+### What is still open
+
+- **Publishing.** The user's call. `node dev-tools/build_allopack_catalog_entries.cjs --apply` writes the manifest entries, and because raw main is the live catalog, that publishes on the next deploy.
+- **Seed-plan checks 4 to 7**, which need a human: playing a word game to a win and watching the goal tick, the Spanish translation pass, in-app image generation against the shot lists, and the send-home round trip. Checks 2, 3 (load half), 8 and 9 are done.
+- **Illustration.** All 38 packs ship text-only with an `.IMAGES.md` shot list. 17 use the full Water Cycle pilot format; the other 21 use the earlier short format and now carry the text-free policy header.
+
+### The one lesson worth carrying forward
+
+Every defect that mattered was **well-formed**. An invented statistic with a year and a percentage. A standards gloss reworded by one word to fit the pack. A sort bucket whose label excluded its own card. "A cube has three edges." An opportunity cost that came out backwards. A constraint that forbade its own deliverable. None of them could be caught by a schema, a reading-level estimate or a render, because all of them are perfectly valid content that happens to be wrong. They were found by reading slowly, and the largest single category — six of them — was **a pack contradicting itself**.
+
+The corollary held just as consistently on the tooling side: **a high flag count is a hypothesis about the checker, not the content.** Three checks this week reported 63, 138 and 160 problems. In each case most of the output was the checker misunderstanding a format, a contract, or a house style, and the real yield was between one and twenty-seven.
 ## What was checked
 
 1. **Automated structure.** `tests/allopack_catalog.test.js` runs the same shape checks on every pack file (envelope, unique ids, registered types, student-safe types, directions normalizer, per-type shapes, privacy scan, size, no embedded images, Agent Core contract). Baseline: 128 checks green across 21 packs. Final: 146 checks green across 24 packs, plus 9 illustrated-pack checks and 27 contract checks (182 total).
