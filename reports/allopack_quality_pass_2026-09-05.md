@@ -317,6 +317,29 @@ The audit now flags **citation-shaped claims**: a year next to a percentage, or 
 The false-positive risk is low: one hit across 38 packs, and that hit was the defect. It was calibrated by putting the fabricated sentence back and confirming the flag fires.
 
 This is the fourth check in this report to be judged on its false-positive rate before shipping, and the first to survive because the rate was genuinely near zero. It belongs in the audit for a specific reason: these packs are AI-authored and the catalog has no sourcing mechanism, so a sentence that looks like a citation is a standing liability rather than an occasional slip.
+## Fourteenth pass: the standards audit the seed plan has been waiting for
+
+Cross-set check 8 in `docs/COMMUNITY_CATALOG_SEED_PLAN.md` reads: *standards spot-audit against the official NGSS/CCSS text (codes AND glosses accurate) — scientific-integrity rule: never claim an alignment the content doesn't earn.* It gates the launch of the catalog itself, and it had never been run. Fourteen of these packs were written from recall by the same author who had just been caught inventing a statistic, so it was overdue.
+
+Every code and every gloss across 38 packs, checked one at a time. Most are correct: the CCSS math codes are right in all seven math packs, the ELA codes are right in all eight, the C3 codes are right, and the NGSS performance expectations are right for chemistry, forces, materials, cells, body systems, plate tectonics, ecosystems, moon phases and the water cycle.
+
+### Two alignments were not earned
+
+**Day Sky, Night Sky cited NGSS 1-ESS1-2 with a gloss I had rewritten to fit the pack.** The real expectation is *"make observations at different times of **year** to relate the amount of daylight to the time of year"* — it is about seasonal daylight. The pack said *"make observations at different times of **day** to describe patterns of change."* One word changed, and the standard became something the pack does teach.
+
+That is worse than a wrong code. A wrong code is a typo; a rewritten gloss is a claim dressed up to pass. The pack does not teach seasonal daylight, so 1-ESS1-2 is now dropped, and the envelope says plainly that it covers the daily half of 1-ESS1-1 and does not claim the other expectation.
+
+**Everything Has a Cost cited C3 D2.Eco.3.6-8**, which is about the roles of buyers and sellers in product, labour and financial markets. The pack teaches scarcity, opportunity cost, sunk cost and marginal thinking, and never touches markets at all. The code is real and the gloss was accurate; the alignment simply was not earned. Dropped.
+
+### Ten glosses too thin to check
+
+A gloss exists so a teacher can judge the alignment without looking the code up. "Domain vocabulary" and "cite specific textual evidence" do not do that job. Ten were fragments rather than expectations, and each now carries the official wording — including MS-LS1-1, MS-LS1-7, RST.6-8.1, RST.6-8.3, RST.6-8.4 and RST.6-8.7.
+
+### One honest note added
+
+Weather vs. Climate is a grade 5-6 pack citing a grade-3 expectation and a middle-school one. That looked like carelessness and is not: **NGSS places no weather or climate performance expectation at grade 5 at all.** The pack now says so, in the same way the Simple Machines pack already notes that NGSS has no dedicated simple-machines expectation. A gap in the standards is worth stating rather than papering over with the nearest plausible code.
+
+Seed-plan cross-set check 8 is now done for all 38 packs.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`

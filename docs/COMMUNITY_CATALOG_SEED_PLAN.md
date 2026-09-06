@@ -59,7 +59,11 @@ failed 25 of 26 packs once and looked exactly like 25 broken packs.
 7. Send home → shelf → reopen without session: pack + progress intact.
 
 **Cross-set checks (once):**
-8. Standards spot-audit against the official NGSS/CCSS text (codes AND glosses accurate) —
+8. **Done 2026-09-06 for all 38 packs.** Two unearned alignments dropped (NGSS 1-ESS1-2 in
+   Day Sky Night Sky, whose gloss had been rewritten to fit the pack; C3 D2.Eco.3.6-8 in
+   Everything Has a Cost, which never teaches markets), ten thin glosses replaced with the
+   official wording, and one honest note added where NGSS has no grade-5 weather expectation.
+   Standards spot-audit against the official NGSS/CCSS text (codes AND glosses accurate) —
    scientific-integrity rule: never claim an alignment the content doesn't earn.
 9. Reading-level pass: each pack's leveled text within its stated grade band (in-app level
    check tool).
