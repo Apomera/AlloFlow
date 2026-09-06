@@ -25624,7 +25624,15 @@
       "saved_quiz_no_hint_note": "Answered from the clue alone. This is a record of the round, not a score.",
       "saved_quiz_goal": "Practice goal: connect what a structure does to where it sits. Showing the name turns the round into locating practice instead, which the summary records.",
       "saved_quiz_find_the_structure": "Find the structure that",
-      "saved_quiz_show_name": "Show the name"
+      "saved_quiz_show_name": "Show the name",
+      "mode_3d_selected": "3D brain anatomy mode selected. The model is loading.",
+      "mode_2d_selected": "2D brain diagram mode selected.",
+      "selection_carried": "Your selection came with you.",
+      "selection_no_counterpart": "This one has no matching structure in the other view, so nothing is selected here.",
+      "show_in_2d": "Show this in the 2D diagram",
+      "show_in_3d": "Show this in the 3D model",
+      "no_3d_counterpart": "No single structure in the 3D model matches this region, so the model will open without a selection.",
+      "3d_not_loaded_yet": "The 3D model has not been opened yet in this session, so its structures are not listed. Opening it will load them."
     },
     "bridgelab": {
       "initializing_bridge_lab": "🌉 Initializing Bridge Lab...",
@@ -56547,7 +56555,18 @@
       "trial_thrust": "Thrust faulting",
       "try_a_shorter_word": "Try a shorter word, or clear the search.",
       "tsunami_intro_counted": "Tsunamis are ocean waves triggered by earthquakes, volcanoes, landslides, or impacts. {n} events from 365 CE to 2023 are catalogued here. Sort by deaths, magnitude, or year.",
-      "volcano_intro_counted": "Over 1500 volcanoes have been active in the last 10,000 years. {n} of the most significant and studied volcanoes are here: subduction-zone strato-volcanoes, hotspot shields, and continental calderas."
+      "volcano_intro_counted": "Over 1500 volcanoes have been active in the last 10,000 years. {n} of the most significant and studied volcanoes are here: subduction-zone strato-volcanoes, hotspot shields, and continental calderas.",
+      "quiz_band_all": "Every question, first pass. Try the myth bank next.",
+      "quiz_band_low": "Worth another lap. Read the boundary cards below first, then run it again.",
+      "quiz_band_pass": "Solid pass. The misses below are the ones worth a second look.",
+      "quiz_pass_complete": "Pass complete",
+      "quiz_question_label": "Question",
+      "quiz_review_these": "Concepts to revisit",
+      "quiz_run_it_again": "Run the eight again",
+      "quiz_score_label": "Score",
+      "quiz_shelf_open_now": "The reference cards below are open again now that the pass is done.",
+      "quiz_sr_correct": "Correct.",
+      "quiz_sr_incorrect": "Not quite."
     },
     "playlab": {
       "close_scenario_intro": "Close scenario intro",

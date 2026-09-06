@@ -208,3 +208,13 @@ Layout checked in Chromium at 1280, 390 and 320 CSS px: every answer button 44 p
 
 Worth knowing: the clue is the region's clinical function text, so it reads at the level of the rest of the 3D surface rather than in plain language. Whether that surface should get a plain tier is a separate question from this fix.
 
+## One selection across the diagram and the model
+
+September 6, 2026. Switching between the 2D diagram and the 3D model dropped the learner's place. Picking a structure in the model already opened the matching atlas region, so that direction mostly held, but going the other way left the model with nothing selected, and neither move said anything about what had happened.
+
+The mode switch now carries the selection whenever the two representations have a counterpart, in both directions, and the learning card offers the move itself rather than leaving it to the separate mode buttons. The lookup from a region to a model structure is the inverse of the mapping the tool already used the other way, so there is no second table to keep in step.
+
+The part worth the care is what happens when there is no counterpart. An empty structure index means the 3D model has not been opened yet in this session, which is not the same as a region having nothing to match. The card says which of the two it is, in those words, and the switch still works either way. A screen-reader user hears the same distinction, since a silent move is exactly how a learner loses track of where they are.
+
+Checked in Chromium at 1280, 390 and 320 CSS px: the button stays 44 px, the note wraps under it on a phone, and the row never spills.
+

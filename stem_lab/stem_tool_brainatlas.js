@@ -469,7 +469,7 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-detail-context{margin:4px 0 0;color:var(--ba-muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere;}',
     '.brainatlas-detail-close{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 10px;font-size:13px;font-weight:950;white-space:nowrap;transition:transform .14s ease,border-color .14s ease;}',
     '.brainatlas-detail-close:hover{border-color:var(--ba-purple);background:var(--ba-panel);}',
-    '.brainatlas-detail-close:focus-visible{outline:3px solid var(--ba-focus);outline-offset:2px;}',
+    '.brainatlas-detail-close:focus-visible{outline:3px solid var(--ba-focus);outline-offset:2px;}.brainatlas-detail-representation{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;}.brainatlas-detail-representation button{min-height:44px;box-sizing:border-box;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 10px;font-size:12px;font-weight:700;}.brainatlas-detail-representation button:hover{border-color:var(--ba-purple);color:var(--ba-purple-ink);}.brainatlas-detail-representation button:focus-visible{outline:3px solid var(--ba-focus);outline-offset:2px;}.brainatlas-detail-representation p{flex:1 1 220px;min-width:0;color:var(--ba-muted);font-size:12px;line-height:1.45;margin:0;overflow-wrap:anywhere;}',
     '.brainatlas-detail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1px solid var(--ba-border);border-radius:8px;background:var(--ba-panel);padding:8px;}',
     '.brainatlas-detail-toolbar-copy{flex:1 1 220px;min-width:0;}',
     '.brainatlas-detail-toolbar-title{margin:0;color:var(--ba-text);font-size:12px;line-height:1.25;font-weight:700;text-transform:none;letter-spacing:.05em;}',
@@ -7181,6 +7181,20 @@ var d = labToolData.brainAtlas || {};
             return preferredView && BRAIN_3D_VIEW_KEYS.indexOf(preferredView) >= 0 ? preferredView : 'lateral';
           }
 
+          // The inverse of brainAtlasMap3DRegion: the first model structure that
+          // maps onto this region in this view. The structure index only exists
+          // once the 3D model has loaded at least once in this session, so an
+          // empty index is "not listed yet", not "no counterpart"; callers say
+          // which of the two they mean.
+          function brainAtlasFind3DStructureForRegion(regionId, targetView) {
+            if (!regionId || !Array.isArray(brain3DStructureIndex)) return '';
+            for (var si = 0; si < brain3DStructureIndex.length; si++) {
+              var candidate = brain3DStructureIndex[si] && brain3DStructureIndex[si].key;
+              if (candidate && brainAtlasMap3DRegion(candidate, targetView) === regionId) return candidate;
+            }
+            return '';
+          }
+
           function brainAtlasMap3DRegion(name, targetView) {
             var key = String(name || '').toLowerCase();
             function has(pattern) { return pattern.test(key); }
@@ -7947,8 +7961,34 @@ var d = labToolData.brainAtlas || {};
           }
 
           function setBrainAtlas3DMode(mode) {
-            upd('atlasDisplayMode', mode === '3d' && brain3DAvailable ? '3d' : 'diagram');
-            if (typeof announceToSR === 'function') announceToSR(mode === '3d' && brain3DAvailable ? '3D brain anatomy mode selected. The model is loading.' : '2D brain diagram mode selected.');
+            var to3D = mode === '3d' && brain3DAvailable;
+            upd('atlasDisplayMode', to3D ? '3d' : 'diagram');
+            // Keep the learner's place across the change whenever the two
+            // representations have a counterpart for each other.
+            var carried = '';
+            if (to3D) {
+              if (sel) {
+                carried = (selected3DStructure && brainAtlasMap3DRegion(selected3DStructure, viewKey) === sel.id)
+                  ? selected3DStructure
+                  : brainAtlasFind3DStructureForRegion(sel.id, viewKey);
+                if (carried) upd('selected3DStructure', carried);
+              }
+            } else if (selected3DStructure) {
+              carried = brainAtlasMap3DRegion(selected3DStructure, viewKey) || '';
+              if (carried) upd('selectedRegion', carried);
+            }
+            if (typeof announceToSR === 'function') {
+              var modeSaid = to3D
+                ? (t('stem.brainatlas.mode_3d_selected', '3D brain anatomy mode selected. The model is loading.') || '3D brain anatomy mode selected. The model is loading.')
+                : (t('stem.brainatlas.mode_2d_selected', '2D brain diagram mode selected.') || '2D brain diagram mode selected.');
+              var carrySaid = '';
+              if (carried) {
+                carrySaid = ' ' + (t('stem.brainatlas.selection_carried', 'Your selection came with you.') || 'Your selection came with you.');
+              } else if (to3D ? !!sel : !!selected3DStructure) {
+                carrySaid = ' ' + (t('stem.brainatlas.selection_no_counterpart', 'This one has no matching structure in the other view, so nothing is selected here.') || 'This one has no matching structure in the other view, so nothing is selected here.');
+              }
+              announceToSR(modeSaid + carrySaid);
+            }
           }
 
           function setBrainAtlas3DCamera(preset) {
@@ -9258,6 +9298,10 @@ var d = labToolData.brainAtlas || {};
             }
             return { kind: 'function', text: showAdvancedDetail ? region.fn : brainAtlasShortText(region.fn, 190) };
           }
+          // Does this region have a counterpart in the 3D model, and do we even
+          // know yet? The card says which, rather than offering a dead move.
+          var detail3DIndexReady = Array.isArray(brain3DStructureIndex) && brain3DStructureIndex.length > 0;
+          var detail3DCounterpart = brain3DAvailable && sel ? brainAtlasFind3DStructureForRegion(sel.id, viewKey) : '';
           var selectedPlainLesson = brainAtlasPlainLessonFor(sel);
           var plainLesson = !showAdvancedDetail ? selectedPlainLesson : null;
           var plainCheck = plainLesson ? BRAIN_ATLAS_PLAIN_CHECKS[sel.id] : null;
@@ -12360,6 +12404,19 @@ var d = labToolData.brainAtlas || {};
                           onClick: function () { upd('detailMode', 'advanced'); }
                         }, t('stem.brainatlas.advanced', 'Advanced'))
                       )
+                    ),
+
+                    brain3DAvailable && React.createElement("div", { className: "brainatlas-detail-representation", "data-brainatlas-representation": useBrain3D ? "3d" : "diagram" },
+                      React.createElement("button", {
+                        type: "button",
+                        "data-brainatlas-show-representation": useBrain3D ? "diagram" : "3d",
+                        onClick: function () { setBrainAtlas3DMode(useBrain3D ? 'diagram' : '3d'); }
+                      }, useBrain3D
+                        ? (t('stem.brainatlas.show_in_2d', 'Show this in the 2D diagram') || 'Show this in the 2D diagram')
+                        : (t('stem.brainatlas.show_in_3d', 'Show this in the 3D model') || 'Show this in the 3D model')),
+                      !useBrain3D && !detail3DCounterpart && React.createElement("p", { "data-brainatlas-representation-note": detail3DIndexReady ? "none" : "unloaded" }, detail3DIndexReady
+                        ? (t('stem.brainatlas.no_3d_counterpart', 'No single structure in the 3D model matches this region, so the model will open without a selection.') || 'No single structure in the 3D model matches this region, so the model will open without a selection.')
+                        : (t('stem.brainatlas.3d_not_loaded_yet', 'The 3D model has not been opened yet in this session, so its structures are not listed. Opening it will load them.') || 'The 3D model has not been opened yet in this session, so its structures are not listed. Opening it will load them.'))
                     ),
 
                     React.createElement("div", {
