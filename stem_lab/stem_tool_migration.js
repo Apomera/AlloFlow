@@ -102,6 +102,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '@media (max-width:520px){.migration-tool-shell{padding:0!important;}.migration-command{padding:13px;border-radius:14px;}.migration-command p{font-size:11px;}.migration-route-board{grid-template-columns:repeat(2,minmax(0,1fr));padding:7px;}.migration-route-tab{min-height:44px;}.migration-workspace [style*="grid-template-columns: repeat(3"],.migration-workspace [style*="grid-template-columns: repeat(2"]{grid-template-columns:1fr!important;}}',
       '@media (max-width:520px){.migration-flight-stage{min-height:360px;}.migration-flight-controls{grid-template-columns:1fr;}.migration-flight-controls>*{grid-column:1!important;}.migration-flight-badge{border-radius:9px;}.migration-flight-heading{display:none;}}',
       '@media (prefers-reduced-motion:reduce){.migration-route-tab{transition:none!important;}}',
+      // Touch sizing. Measured on an iPhone 12 viewport, this tool's buttons
+      // came out at 25-28px and its range sliders at 16px tall. 16px is below
+      // even the WCAG 2.5.8 (AA) floor of 24x24, and a 16px slider is close to
+      // unusable with a fingertip. Same rule the SkateLab shell already uses.
+      '@media (any-pointer:coarse){' +
+        '.migration-tool-shell button,.migration-tool-shell summary,.migration-tool-shell select,' +
+        '.migration-tool-shell a[href],.migration-tool-shell [role="button"],.migration-tool-shell [role="tab"]' +
+        // Width as well as height: the compass buttons are a 40px grid and the
+        // formation chips are as narrow as 29px, so a height-only rule leaves
+        // them failing on the other axis.
+        '{min-block-size:44px!important;min-inline-size:44px!important;touch-action:manipulation;}' +
+        '.migration-tool-shell input[type=range]{block-size:44px!important;touch-action:manipulation;}' +
+        '.migration-tool-shell input[type=checkbox]{inline-size:28px;block-size:28px;}' +
+        // Labels that wrap a slider carry the hit area with it.
+        '.migration-tool-shell label{touch-action:manipulation;}' +
+      '}',
       '.theme-contrast .migration-command,.theme-contrast .migration-active-band,.theme-contrast .migration-workspace canvas,.theme-contrast .migration-flight-deck{box-shadow:none;}.theme-contrast .migration-flight-controls{background:#000;}.theme-contrast .migration-flight-control select,.theme-contrast .migration-flight-camera button,.theme-contrast .migration-flight-actions button,.theme-contrast .migration-flight-stat{border-color:#fff;background:#000;color:#fff;}'
     ].join('\n');
     document.head.appendChild(migrationStyle);
