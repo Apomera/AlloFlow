@@ -114,7 +114,7 @@ describe('Learning Lab Achievement Wall accessibility', () => {
   it('names deletion, preserves data, announces removal, and restores focus', () => {
     expect(wall).toContain("'aria-label': 'Remove achievement: ' + (textValue(entry.title).trim() || 'Untitled achievement')");
     expect(wall).toContain("setData(Object.assign({}, data, { achievements: rawAchievements.filter");
-    expect(wall).toContain("llAnnounce('Achievement removed.')");
+    expect(wall).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_achievement_removed', 'Achievement removed.'))");
     expect(wall).toContain("focusById('learning-lab-achievement-history-heading')");
   });
 

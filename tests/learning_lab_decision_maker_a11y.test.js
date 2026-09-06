@@ -138,9 +138,9 @@ describe('Learning Lab Decision Maker accessibility', () => {
 
   it('announces creation and structural changes', () => {
     expect(decision).toContain("llAnnounce('Decision created: '");
-    expect(decision).toContain("llAnnounce('Decision option added.')");
-    expect(decision).toContain("llAnnounce('Decision criterion added.')");
-    expect(decision).toContain("llAnnounce('Decision deleted.')");
+    expect(decision).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_decision_option_added', 'Decision option added.'))");
+    expect(decision).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_decision_criterion_added', 'Decision criterion added.'))");
+    expect(decision).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_decision_deleted', 'Decision deleted.'))");
   });
 
   it('provides named 44-pixel editing and scoring controls', () => {

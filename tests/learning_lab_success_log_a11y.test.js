@@ -116,7 +116,7 @@ describe('Learning Lab Personal Success Log accessibility', () => {
   it('names removal controls, preserves data, announces removal, and restores focus', () => {
     expect(successLog).toContain("'aria-label': 'Remove success entry: ' + (textValue(entry.text).trim() || 'Untitled success')");
     expect(successLog).toContain("setData(Object.assign({}, data, { successes: rawSuccesses.filter");
-    expect(successLog).toContain("llAnnounce('Success entry removed.')");
+    expect(successLog).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_success_entry_removed', 'Success entry removed.'))");
     expect(successLog).toContain("focusById('learning-lab-success-history-heading')");
   });
 

@@ -78,7 +78,7 @@ describe('Learning Lab Future-Self Letter accessibility', () => {
   });
 
   it('announces removal and restores focus to the write action', () => {
-    expect(letters).toContain("llAnnounce('Future-self letter removed.')");
+    expect(letters).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_future_self_letter_removed', 'Future-self letter removed.'))");
     expect(letters).toContain("focusById('learning-lab-future-write-button')");
   });
 
@@ -89,11 +89,11 @@ describe('Learning Lab Future-Self Letter accessibility', () => {
   });
 
   it('announces compose, cancel, open, sealed, and back states', () => {
-    expect(letters).toContain("llAnnounce('New future-self letter form opened.')");
-    expect(letters).toContain("llAnnounce('Letter draft canceled.')");
+    expect(letters).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_new_future_self_letter_form_opened', 'New future-self letter form opened.'))");
+    expect(letters).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_letter_draft_canceled', 'Letter draft canceled.'))");
     expect(letters).toContain("'Letter opened.'");
     expect(letters).toContain("'Letter is sealed until '");
-    expect(letters).toContain("llAnnounce('Returned to future-self letters.')");
+    expect(letters).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_future_self_letters', 'Returned to future-self letters.'))");
   });
 
   it('presents readable letters as labeled articles', () => {

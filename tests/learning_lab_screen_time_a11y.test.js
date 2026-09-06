@@ -76,7 +76,7 @@ describe('Learning Lab Screen-Time Tracker accessibility', () => {
   });
 
   it('announces saving and moves focus to persistent history', () => {
-    expect(tracker).toContain("llAnnounce('Screen-time estimate saved for today.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_screen_time_estimate_saved_for_today', 'Screen-time estimate saved for today.'))");
     expect(tracker).toContain("focusById('learning-lab-screen-time-history-heading')");
   });
 
@@ -156,7 +156,7 @@ describe('Learning Lab Screen-Time Tracker accessibility', () => {
 
   it('names removal, announces it, and restores history focus', () => {
     expect(tracker).toContain("'aria-label': 'Remove screen-time entry from '");
-    expect(tracker).toContain("llAnnounce('Saved screen-time entry removed.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_screen_time_entry_removed', 'Saved screen-time entry removed.'))");
     expect(tracker).toContain("focusById('learning-lab-screen-time-history-heading')");
   });
 

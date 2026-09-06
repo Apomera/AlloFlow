@@ -77,7 +77,7 @@ describe('Learning Lab Transition Planner accessibility', () => {
   });
 
   it('announces creation and transfers focus to the editor heading', () => {
-    expect(planner).toContain("llAnnounce('Transition plan created. The plan editor is open.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_transition_plan_created_the_plan_editor_is_open', 'Transition plan created. The plan editor is open.'))");
     expect(planner).toContain("focusById('learning-lab-transition-editor-heading')");
   });
 
@@ -100,12 +100,12 @@ describe('Learning Lab Transition Planner accessibility', () => {
   });
 
   it('opens plans with an announcement and heading focus', () => {
-    expect(planner).toContain("llAnnounce('Transition plan opened.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_transition_plan_opened', 'Transition plan opened.'))");
     expect(planner).toContain("focusById('learning-lab-transition-editor-heading')");
   });
 
   it('returns focus to the originating Open button', () => {
-    expect(planner).toContain("llAnnounce('Returned to saved transition plans.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_saved_transition_plans', 'Returned to saved transition plans.'))");
     expect(planner).toContain("focusById('learning-lab-transition-open-' + safeDomId(previousId))");
   });
 
@@ -157,7 +157,7 @@ describe('Learning Lab Transition Planner accessibility', () => {
   });
 
   it('announces checklist creation and restores form focus', () => {
-    expect(planner).toContain("llAnnounce('Checklist item added.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_checklist_item_added', 'Checklist item added.'))");
     expect(planner).toContain("focusById('learning-lab-transition-checklist-new')");
   });
 
@@ -178,7 +178,7 @@ describe('Learning Lab Transition Planner accessibility', () => {
   it('confirms checklist removal and returns focus', () => {
     expect(planner).toContain("title: 'Remove checklist item?', confirmText: 'Remove item'");
     expect(planner).toContain("'aria-label': 'Remove checklist item: '");
-    expect(planner).toContain("llAnnounce('Checklist item removed.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_checklist_item_removed', 'Checklist item removed.'))");
     expect(planner).toContain("if (!accepted) return;");
   });
 
@@ -206,7 +206,7 @@ describe('Learning Lab Transition Planner accessibility', () => {
   });
 
   it('announces plan removal and focuses the plan list', () => {
-    expect(planner).toContain("llAnnounce('Transition plan removed.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_transition_plan_removed', 'Transition plan removed.'))");
     expect(planner).toContain("focusById('learning-lab-transition-list-heading')");
   });
 

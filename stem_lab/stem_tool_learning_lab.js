@@ -4716,7 +4716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var title = String(form.title || '').trim();
       if (!title) {
         setFormError('Enter a short goal title before saving.');
-        llAnnounce('Goal title is required.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_goal_title_is_required', 'Goal title is required.'));
         focusGoalView('learning-lab-goal-title');
         return;
       }
@@ -4866,7 +4866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               if (!(await askLearningLabConfirmation('This permanently deletes the goal and its check-in history.', {
                 title: 'Delete this goal?', confirmText: 'Delete goal'
               }))) return;
-              remove(g.id); setDetailId(null); setView('list'); llAnnounce('Goal deleted.');
+              remove(g.id); setDetailId(null); setView('list'); llAnnounce(__alloLLT('stem.learning_lab.sr_goal_deleted', 'Goal deleted.'));
             }, 'bad')
           )
         )
@@ -5072,7 +5072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         } else {
           playCompletionTone();
           setPhase('done');
-          llAnnounce('Break complete. Focus session finished.');
+          llAnnounce(__alloLLT('stem.learning_lab.sr_break_complete_focus_session_finished', 'Break complete. Focus session finished.'));
         }
         return;
       }
@@ -5107,7 +5107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setSecondsLeft(0);
       setTask('');
       setFocusTarget('learning-lab-focus-task');
-      llAnnounce('Focus timer reset.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_focus_timer_reset', 'Focus timer reset.'));
     }
     function setWork(minutes) {
       setData(Object.assign({}, data, { workMin: minutes }));
@@ -5282,7 +5282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!value) {
         setEntryError('Enter something to add to the brain dump.');
         setFocusTarget('learning-lab-brain-dump-entry');
-        llAnnounce('Brain dump text is required.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_brain_dump_text_is_required', 'Brain dump text is required.'));
         return;
       }
       var selectedCategory = categoryFor(category);
@@ -5308,7 +5308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.items || []).filter(function(candidate) { return candidate.id !== item.id; });
       setData(Object.assign({}, data, { items: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-brain-dump-items-heading' : 'learning-lab-brain-dump-entry');
-      llAnnounce('Brain dump item deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_brain_dump_item_deleted', 'Brain dump item deleted.'));
     }
     async function clearAll() {
       if (!(await askLearningLabConfirmation('Clear all brain dump items? This cannot be undone.', {
@@ -5317,7 +5317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { items: [] }));
       setFilter('all');
       setFocusTarget('learning-lab-brain-dump-entry');
-      llAnnounce('All brain dump items cleared.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_all_brain_dump_items_cleared', 'All brain dump items cleared.'));
     }
     async function clearDone() {
       if (!(await askLearningLabConfirmation('Clear all completed brain dump items? This cannot be undone.', {
@@ -5326,7 +5326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.items || []).filter(function(item) { return !item.done; });
       setData(Object.assign({}, data, { items: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-brain-dump-items-heading' : 'learning-lab-brain-dump-entry');
-      llAnnounce('Completed brain dump items cleared.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_completed_brain_dump_items_cleared', 'Completed brain dump items cleared.'));
     }
 
     var items = data.items || [];
@@ -5462,7 +5462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormErrors({ ifPart: '', thenPart: '' });
       setView('list');
       setFocusTarget('learning-lab-ifthen-heading');
-      llAnnounce('New if-then plan canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_new_if_then_plan_canceled', 'New if-then plan canceled.'));
     }
     function savePlan(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -5475,7 +5475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormErrors(errors);
       if (errors.ifPart || errors.thenPart) {
         setFocusTarget(errors.ifPart ? 'learning-lab-ifthen-trigger' : 'learning-lab-ifthen-action');
-        llAnnounce('The if-then plan has missing required information.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_the_if_then_plan_has_missing_required_information', 'The if-then plan has missing required information.'));
         return;
       }
       var plan = { id: tkId(), ifPart: ifPart, thenPart: thenPart, usedCount: 0, createdAt: todayISO() };
@@ -5484,7 +5484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormErrors({ ifPart: '', thenPart: '' });
       setView('list');
       setFocusTarget('learning-lab-ifthen-heading');
-      llAnnounce('If-then plan saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_if_then_plan_saved', 'If-then plan saved.'));
     }
     function markUsed(plan) {
       var plans = (data.plans || []).map(function(candidate) {
@@ -5501,7 +5501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       persistPlans((data.plans || []).filter(function(candidate) { return candidate.id !== plan.id; }));
       setFocusTarget('learning-lab-ifthen-heading');
-      llAnnounce('If-then plan deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_if_then_plan_deleted', 'If-then plan deleted.'));
     }
 
     var plans = data.plans || [];
@@ -5708,7 +5708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!label) {
         setCustomError('Enter a name for the custom accommodation.');
         setFocusTarget('learning-lab-accommodation-custom-name');
-        llAnnounce('A custom accommodation name is required.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_a_custom_accommodation_name_is_required', 'A custom accommodation name is required.'));
         return;
       }
       var custom = (data.custom || []).concat([{ id: tkId(), label: label, why: String(customWhy || '').trim() }]);
@@ -5717,7 +5717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setCustomWhy('');
       setCustomError('');
       setFocusTarget('learning-lab-accommodation-custom-name');
-      llAnnounce('Custom accommodation added to the practice card.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_custom_accommodation_added_to_the_practice_card', 'Custom accommodation added to the practice card.'));
     }
     async function removeCustom(item) {
       if (!(await askLearningLabConfirmation('This permanently removes the custom accommodation from this practice card.', {
@@ -5726,7 +5726,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.custom || []).filter(function(candidate) { return candidate.id !== item.id; });
       setData(Object.assign({}, data, { custom: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-accommodation-custom-heading' : 'learning-lab-accommodation-custom-name');
-      llAnnounce('Custom accommodation deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_custom_accommodation_deleted', 'Custom accommodation deleted.'));
     }
 
     var selected = data.selected || {};
@@ -5904,7 +5904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       persistCards(cards.filter(function(candidate) { return candidate.id !== card.id; }));
       setFocusTarget('learning-lab-flashcards-cards-heading');
-      llAnnounce('Flashcard deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_flashcard_deleted', 'Flashcard deleted.'));
     }
     async function addDeck() {
       var values = await askLearningLabForm({
@@ -5955,7 +5955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormErrors({ front: '', back: '' });
       setView('cards');
       setFocusTarget('learning-lab-flashcards-cards-heading');
-      llAnnounce('Flashcard editing canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_flashcard_editing_canceled', 'Flashcard editing canceled.'));
     }
     function submitCard(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -5968,7 +5968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormErrors(errors);
       if (errors.front || errors.back) {
         setFocusTarget(errors.front ? 'learning-lab-flashcard-front' : 'learning-lab-flashcard-back');
-        llAnnounce('The flashcard has missing required information.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_the_flashcard_has_missing_required_information', 'The flashcard has missing required information.'));
         return;
       }
       saveCard(Object.assign({}, editing || {}, { front: front, back: back, deck: deck }));
@@ -5994,7 +5994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function revealAnswer() {
       setShowBack(true);
       setFocusTarget('learning-lab-flashcards-rating-heading');
-      llAnnounce('Answer shown. Choose a recall rating.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_answer_shown_choose_a_recall_rating', 'Answer shown. Choose a recall rating.'));
     }
     function endReview() {
       setView('cards');
@@ -6002,7 +6002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setRevIdx(0);
       setShowBack(false);
       setFocusTarget('learning-lab-flashcards-cards-heading');
-      llAnnounce('Review session ended.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_review_session_ended', 'Review session ended.'));
     }
 
     // Simplified spaced-repetition scheduling. Ratings change the next review date.
@@ -6234,7 +6234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function cancelAdd() {
       setView('week');
       setFocusTarget('learning-lab-study-heading');
-      llAnnounce('Study block creation canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_study_block_creation_canceled', 'Study block creation canceled.'));
     }
     function addBlock(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -6251,7 +6251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = blocks.filter(function(candidate) { return candidate.id !== block.id; });
       setData(Object.assign({}, data, { blocks: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-study-schedule-heading' : 'learning-lab-study-add-button');
-      llAnnounce('Study block removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_study_block_removed', 'Study block removed.'));
     }
     async function addSubject() {
       var values = await askLearningLabForm({
@@ -6499,7 +6499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setErrors({ name: '', date: '', units: '', dailyMin: '' });
       setView('list');
       setFocusTarget('learning-lab-exam-heading');
-      llAnnounce('Exam plan creation canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_exam_plan_creation_canceled', 'Exam plan creation canceled.'));
     }
     function submitExam(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -6516,7 +6516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var invalidId = nextErrors.name ? 'learning-lab-exam-name' : nextErrors.date ? 'learning-lab-exam-date' : nextErrors.units ? 'learning-lab-exam-units' : nextErrors.dailyMin ? 'learning-lab-exam-minutes' : '';
       if (invalidId) {
         setFocusTarget(invalidId);
-        llAnnounce('The exam plan has invalid or missing information.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_the_exam_plan_has_invalid_or_missing_information', 'The exam plan has invalid or missing information.'));
         return;
       }
       var exam = { id: tkId(), createdAt: todayISO(), completedDays: [], name: name, date: form.date, units: units, dailyMin: dailyMinutes };
@@ -6525,7 +6525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setErrors({ name: '', date: '', units: '', dailyMin: '' });
       setView('list');
       setFocusTarget('learning-lab-exam-heading');
-      llAnnounce('Exam prep plan generated.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_exam_prep_plan_generated', 'Exam prep plan generated.'));
     }
     async function removeExam(exam) {
       if (!(await askLearningLabConfirmation('This permanently removes the selected exam prep plan and its completion history.', {
@@ -6534,7 +6534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.exams || []).filter(function(candidate) { return candidate.id !== exam.id; });
       setData(Object.assign({}, data, { exams: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-exam-plans-heading' : 'learning-lab-exam-new-button');
-      llAnnounce('Exam prep plan deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_exam_prep_plan_deleted', 'Exam prep plan deleted.'));
     }
     function markDay(exam, planDay) {
       var wasDone = (exam.completedDays || []).indexOf(planDay.day) >= 0;
@@ -6712,14 +6712,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setErrors({ title: '', steps: '' });
       setView('list');
       setFocusTarget('learning-lab-task-heading');
-      llAnnounce('Task editing canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_task_editing_canceled', 'Task editing canceled.'));
     }
     function addStep() {
       var step = { id: tkId(), text: '', estMin: 5, done: false };
       setForm(Object.assign({}, form, { steps: (form.steps || []).concat([step]) }));
       if (errors.steps) setErrors(Object.assign({}, errors, { steps: '' }));
       setFocusTarget('learning-lab-task-step-' + step.id);
-      llAnnounce('New step added.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_new_step_added', 'New step added.'));
     }
     function updateStep(index, patch) {
       var steps = (form.steps || []).slice();
@@ -6730,7 +6730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function removeStep(index) {
       var current = form.steps || [];
       if (current.length <= 1) {
-        llAnnounce('A task needs at least one step. Edit the remaining step instead.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_a_task_needs_at_least_one_step_edit_the_remaining', 'A task needs at least one step. Edit the remaining step instead.'));
         setFocusTarget(current[0] ? 'learning-lab-task-step-' + current[0].id : 'learning-lab-task-add-step');
         return;
       }
@@ -6738,7 +6738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var nextIndex = Math.min(index, remaining.length - 1);
       setForm(Object.assign({}, form, { steps: remaining }));
       setFocusTarget('learning-lab-task-step-' + remaining[nextIndex].id);
-      llAnnounce('Step removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_step_removed', 'Step removed.'));
     }
     function saveTask(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -6754,7 +6754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setErrors(nextErrors);
       if (nextErrors.title || nextErrors.steps) {
         setFocusTarget(nextErrors.title ? 'learning-lab-task-title' : 'learning-lab-task-step-' + steps[invalidStepIndex].id);
-        llAnnounce('The task has invalid or missing information.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_the_task_has_invalid_or_missing_information', 'The task has invalid or missing information.'));
         return;
       }
       var existing = (data.tasks || []).filter(function(task) { return task.id === editing; })[0];
@@ -6779,7 +6779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.tasks || []).filter(function(candidate) { return candidate.id !== task.id; });
       setData(Object.assign({}, data, { tasks: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-task-list-heading' : 'learning-lab-task-new-button');
-      llAnnounce('Task deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_task_deleted', 'Task deleted.'));
     }
     function toggleStep(task, step) {
       var nextDone = !step.done;
@@ -6956,13 +6956,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormError('');
       setView('add');
       setFocusTarget(template ? 'learning-lab-habit-name' : 'learning-lab-habit-form-heading');
-      if (template) llAnnounce('Editable habit example loaded. Review it before saving.');
+      if (template) llAnnounce(__alloLLT('stem.learning_lab.sr_editable_habit_example_loaded_review_it_before_sa', 'Editable habit example loaded. Review it before saving.'));
     }
     function cancelAdd() {
       setFormError('');
       setView('today');
       setFocusTarget('learning-lab-habit-heading');
-      llAnnounce('Habit creation canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_habit_creation_canceled', 'Habit creation canceled.'));
     }
     function saveHabit(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -6970,7 +6970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!name) {
         setFormError('Enter a name for the habit.');
         setFocusTarget('learning-lab-habit-name');
-        llAnnounce('A habit name is required.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_a_habit_name_is_required', 'A habit name is required.'));
         return;
       }
       var habit = { id: tkId(), createdAt: todayISO(), name: name, icon: String(form.icon || '').trim() || '✅', target: String(form.target || '').trim() };
@@ -6979,7 +6979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormError('');
       setView('today');
       setFocusTarget('learning-lab-habit-heading');
-      llAnnounce('Habit saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_habit_saved', 'Habit saved.'));
     }
     async function removeHabit(habit) {
       if (!(await askLearningLabConfirmation('This permanently removes the selected habit and its check-in history.', {
@@ -6990,7 +6990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.habits || []).filter(function(candidate) { return candidate.id !== habit.id; });
       setData(Object.assign({}, data, { habits: remaining, logs: logs }));
       setFocusTarget(remaining.length ? 'learning-lab-habit-list-heading' : 'learning-lab-habit-add-button');
-      llAnnounce('Habit deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_habit_deleted', 'Habit deleted.'));
     }
     function toggleDay(habit, day) {
       var logs = Object.assign({}, data.logs || {});
@@ -7212,7 +7212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setFormError('');
       setView('list');
       setFocusTarget('learning-lab-reflection-heading');
-      llAnnounce('Reflection editing canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_editing_canceled', 'Reflection editing canceled.'));
     }
     function saveReflection(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -7220,7 +7220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!hasResponse) {
         setFormError('Write a response to at least one prompt before saving.');
         setFocusTarget('learning-lab-reflection-went_well');
-        llAnnounce('A response to at least one reflection prompt is required.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_a_response_to_at_least_one_reflection_prompt_is_r', 'A response to at least one reflection prompt is required.'));
         return;
       }
       var entries = (data.entries || []).slice();
@@ -7262,7 +7262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setViewing(null);
       setView('list');
       setFocusTarget(remaining.length ? 'learning-lab-reflection-history-heading' : 'learning-lab-reflection-start-button');
-      llAnnounce('Reflection deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_deleted', 'Reflection deleted.'));
     }
 
     var entries = data.entries || [];
@@ -7509,7 +7509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!Number.isFinite(days) || days < 1 || days > 60) {
         setFormError('Enter a number of days from 1 to 60.');
         setFocusTarget('learning-lab-strategy-days');
-        llAnnounce('Days until the assessment must be from 1 to 60.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_days_until_the_assessment_must_be_from_1_to_60', 'Days until the assessment must be from 1 to 60.'));
         return;
       }
       var normalized = Object.assign({}, form, { subject: String(form.subject || '').trim(), days: Math.round(days) });
@@ -7521,7 +7521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setResultSaved(false);
       setFormError('');
       setFocusTarget('learning-lab-strategy-results-title');
-      llAnnounce('Study strategy plan generated. Heuristic matches are ready below.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_study_strategy_plan_generated_heuristic_matches_a', 'Study strategy plan generated. Heuristic matches are ready below.'));
     }
     function savePlan() {
       if (!result || resultSaved) return;
@@ -7532,7 +7532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { savedPlans: [plan].concat(data.savedPlans || []) }));
       setResultSaved(true);
       setFocusTarget('learning-lab-strategy-saved-heading');
-      llAnnounce('Study strategy plan saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_study_strategy_plan_saved', 'Study strategy plan saved.'));
     }
     async function deletePlan(plan) {
       if (!(await askLearningLabConfirmation('This permanently removes the saved strategy plan for “' + plan.subject + '”.', {
@@ -7541,7 +7541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.savedPlans || []).filter(function(candidate) { return candidate.id !== plan.id; });
       setData(Object.assign({}, data, { savedPlans: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-strategy-saved-heading' : 'learning-lab-strategy-form-heading');
-      llAnnounce('Saved strategy plan deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_saved_strategy_plan_deleted', 'Saved strategy plan deleted.'));
     }
 
     return hh('div', { style: { padding: 14 } },
@@ -7717,13 +7717,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       });
       setEditingToday(true);
       setFocusTarget('learning-lab-load-form-heading');
-      llAnnounce('Today\'s check-in opened for editing.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_today_s_check_in_opened_for_editing', 'Today\'s check-in opened for editing.'));
     }
     function cancelEdit() {
       setForm(Object.assign({}, emptyForm));
       setEditingToday(false);
       setFocusTarget('learning-lab-load-today-heading');
-      llAnnounce('Check-in editing canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_check_in_editing_canceled', 'Check-in editing canceled.'));
     }
     function save(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
@@ -7751,7 +7751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         setForm(Object.assign({}, emptyForm));
         setFocusTarget('learning-lab-load-form-heading');
       } else setFocusTarget(remaining.length ? 'learning-lab-load-history-heading' : 'learning-lab-load-form-heading');
-      llAnnounce('Cognitive-load check-in deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_cognitive_load_check_in_deleted', 'Cognitive-load check-in deleted.'));
     }
 
     var currentDay = isoDayNumber(today);
@@ -7927,7 +7927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!activity) {
         setFormError('Enter an activity or context before saving.');
         setFocusTarget('learning-lab-motivation-activity');
-        llAnnounce('An activity or context is required.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_an_activity_or_context_is_required', 'An activity or context is required.'));
         return;
       }
       var entry = {
@@ -7939,7 +7939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setForm(Object.assign({}, emptyForm));
       setFormError('');
       setFocusTarget('learning-lab-motivation-history-heading');
-      llAnnounce('Motivation reflection saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_motivation_reflection_saved', 'Motivation reflection saved.'));
     }
     async function remove(entry) {
       if (!(await askLearningLabConfirmation('This permanently removes the saved reflection for “' + entry.activity + '”.', {
@@ -7948,7 +7948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.audits || []).filter(function(candidate) { return candidate.id !== entry.id; });
       setData(Object.assign({}, data, { audits: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-motivation-history-heading' : 'learning-lab-motivation-activity');
-      llAnnounce('Motivation reflection deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_motivation_reflection_deleted', 'Motivation reflection deleted.'));
     }
 
     var lowestScore = Math.min(form.autonomy, form.competence, form.relatedness);
@@ -8081,11 +8081,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       try {
         window.print();
         setPrintMessage('Print dialog requested. Review the destination and included information before printing or saving.');
-        llAnnounce('Print dialog requested. Review the profile before sharing it.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_print_dialog_requested_review_the_profile_before', 'Print dialog requested. Review the profile before sharing it.'));
       } catch (error) {
         setPrintError(true);
         setPrintMessage('The print dialog could not open. Use Ctrl+P on Windows or Command+P on macOS.');
-        llAnnounce('The print dialog could not open.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_the_print_dialog_could_not_open', 'The print dialog could not open.'));
       }
     }
     async function clearProfile() {
@@ -8096,7 +8096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setPrintMessage('');
       setPrintError(false);
       setFocusTarget('learning-lab-profile-name');
-      llAnnounce('Learning profile cleared.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_learning_profile_cleared', 'Learning profile cleared.'));
     }
 
     var hasContent = FIELDS.some(function(field) { return String(profile[field.id] || '').trim().length > 0; });
@@ -8225,7 +8225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!text) {
         setResponseError('Write a response before saving.');
         setFocusTarget('learning-lab-reflection-response');
-        llAnnounce('A reflection response is required before saving.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_a_reflection_response_is_required_before_saving', 'A reflection response is required before saving.'));
         return;
       }
       var entry = { id: tkId(), promptId: picked.id, promptText: picked.text, text: text, date: todayISO() };
@@ -8239,7 +8239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.responses || []).filter(function(candidate) { return candidate.id !== entry.id; });
       setData(Object.assign({}, data, { responses: remaining }));
       setFocusTarget(remaining.length ? 'learning-lab-reflection-history-heading' : 'learning-lab-reflection-history-back');
-      llAnnounce('Reflection response deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_response_deleted', 'Reflection response deleted.'));
     }
 
     var responses = data.responses || [];
@@ -8435,7 +8435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!map) return;
       if (connectFrom === nodeId) {
         setConnectFrom(null);
-        llAnnounce('Connection cancelled.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_connection_cancelled', 'Connection cancelled.'));
         return;
       }
       if (!connectFrom) {
@@ -8447,13 +8447,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var duplicate = (map.edges || []).some(function(edge) { return edge.from === connectFrom && edge.to === nodeId; });
       if (duplicate) {
         setConnectFrom(null);
-        llAnnounce('That connection already exists.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_that_connection_already_exists', 'That connection already exists.'));
         focusId('learning-lab-concepts-heading');
         return;
       }
       var values = await askLearningLabForm({ title: 'Describe the relationship', description: 'A relationship label is optional.', submitText: 'Create connection', fields: [{ name: 'label', label: 'Relationship label', required: false, maxLength: 80, placeholder: 'e.g., causes or is part of' }] });
       if (!values) {
-        llAnnounce('Connection was not created. The source concept remains selected.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_connection_was_not_created_the_source_concept_rem', 'Connection was not created. The source concept remains selected.'));
         return;
       }
       var fromId = connectFrom;
@@ -8704,7 +8704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (formIsDirty() && !(await askLearningLabConfirmation('Your changes have not been saved.', { title: 'Discard changes to this note?', confirmText: 'Discard changes' }))) return;
       resetEditor();
       setView('notebook');
-      llAnnounce('Note editing closed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_note_editing_closed', 'Note editing closed.'));
       focusId('learning-lab-notebook-heading');
     }
     async function addNotebook() {
@@ -9154,7 +9154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!check) return;
       if (!(await askLearningLabConfirmation('This permanently removes the selected emotion check-in.', { title: 'Delete this emotion check-in?', confirmText: 'Delete check-in' }))) return;
       setData(Object.assign({}, data, { checks: rawChecks.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
-      llAnnounce('Emotion check-in deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_emotion_check_in_deleted', 'Emotion check-in deleted.'));
       focusId(checks.length > 1 ? 'learning-lab-emotion-history-heading' : 'learning-lab-emotion-save');
     }
 
@@ -9387,7 +9387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!rating) return;
       if (!(await askLearningLabConfirmation('This permanently removes the executive function reflection from ' + (rating.date || 'the selected date') + '.', { title: 'Delete this reflection?', confirmText: 'Delete reflection' }))) return;
       setData(Object.assign({}, data, { ratings: ratings.filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Executive function reflection deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_executive_function_reflection_deleted', 'Executive function reflection deleted.'));
       focusId(ratings.length > 1 ? 'learning-lab-ef-history-heading' : 'learning-lab-ef-rating-heading');
     }
     function openDetail(id) { setDetail(id); focusId('learning-lab-ef-detail-heading'); }
@@ -9591,7 +9591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (index >= 0) goals[index] = goal; else goals.unshift(goal);
       setData(Object.assign({}, data, { goals: goals }));
       setGoalForm(EMPTY_GOAL); setEditingGoal(null); setGoalError(''); requestFocus('learning-lab-iep-goals-heading'); setView('list');
-      llAnnounce('Personal IEP goal note saved. This did not change the official IEP.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_iep_goal_note_saved_this_did_not_change', 'Personal IEP goal note saved. This did not change the official IEP.'));
     }
     async function removeGoal(id) {
       var goal = (data.goals || []).filter(function(g) { return g.id === id; })[0];
@@ -9599,7 +9599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = (data.goals || []).filter(function(g) { return g.id !== id; });
       setData(Object.assign({}, data, { goals: remaining }));
       requestFocus(remaining.length ? 'learning-lab-iep-goals-heading' : 'learning-lab-new-iep-goal');
-      llAnnounce('Personal goal note and its progress history deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_goal_note_and_its_progress_history_delet', 'Personal goal note and its progress history deleted.'));
     }
     function toggleSubgoal(goalId, subgoalId) {
       setData(Object.assign({}, data, { goals: (data.goals || []).map(function(goal) {
@@ -9623,7 +9623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return goal.id === goalId ? Object.assign({}, goal, { progress: (goal.progress || []).filter(function(entry) { return progressId ? entry.id !== progressId : entry !== legacyEntry; }) }) : goal;
       }) }));
       requestFocus('learning-lab-iep-progress-heading-' + goalId);
-      llAnnounce('Personal progress entry deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_progress_entry_deleted', 'Personal progress entry deleted.'));
     }
     function saveMeeting(event) {
       if (event) event.preventDefault();
@@ -9631,14 +9631,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var meeting = Object.assign({ id: tkId(), createdAt: Date.now() }, meetForm);
       setData(Object.assign({}, data, { meetings: [meeting].concat(data.meetings || []) }));
       setMeetForm(EMPTY_MEETING); setMeetingError(''); requestFocus('learning-lab-iep-meetings-heading'); setView('list');
-      llAnnounce('Personal meeting note saved. This did not change or notify the official IEP team.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_meeting_note_saved_this_did_not_change_o', 'Personal meeting note saved. This did not change or notify the official IEP team.'));
     }
     async function removeMeeting(id) {
       if (!(await askLearningLabConfirmation('This removes the meeting note from this personal tracker only.', { title: 'Delete meeting note?', confirmText: 'Delete meeting note' }))) return;
       var remaining = (data.meetings || []).filter(function(m) { return m.id !== id; });
       setData(Object.assign({}, data, { meetings: remaining }));
       requestFocus(remaining.length ? 'learning-lab-iep-meetings-heading' : 'learning-lab-new-iep-meeting');
-      llAnnounce('Personal meeting note deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_meeting_note_deleted', 'Personal meeting note deleted.'));
     }
     function progressDateTime(entry) {
       if (entry && entry.time) {
@@ -9659,7 +9659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function removeSubgoal(index) {
       setGoalForm(Object.assign({}, goalForm, { subgoals: (goalForm.subgoals || []).filter(function(_, i) { return i !== index; }) }));
       requestFocus('learning-lab-iep-add-subgoal');
-      llAnnounce('Sub-goal field removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_sub_goal_field_removed', 'Sub-goal field removed.'));
     }
 
     var goals = data.goals || [];
@@ -9904,7 +9904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = subjects.filter(function(item) { return item.id !== id; });
       setData(Object.assign({}, data, { subjects: remaining }));
       requestFocus(remaining.length ? 'learning-lab-subjects-heading' : 'learning-lab-subject-name');
-      llAnnounce('Subject and its topic reflections deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_subject_and_its_topic_reflections_deleted', 'Subject and its topic reflections deleted.'));
     }
     function addTopic(event) {
       if (event) event.preventDefault();
@@ -9938,7 +9938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return item.id === activeSub ? Object.assign({}, item, { topics: (item.topics || []).filter(function(entry) { return entry.id !== topicId; }) }) : item;
       }) }));
       requestFocus(remainingCount ? 'learning-lab-topics-heading' : 'learning-lab-topic-name');
-      llAnnounce('Topic reflection deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_topic_reflection_deleted', 'Topic reflection deleted.'));
     }
 
     if (view === 'subject' && activeSub) {
@@ -10142,7 +10142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { entries: remaining }));
       var removedToday = entry && entry.date === today;
       requestFocus(removedToday || !remaining.length ? 'learning-lab-sleep-form-heading' : 'learning-lab-sleep-history-heading');
-      llAnnounce('Personal sleep log deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_sleep_log_deleted', 'Personal sleep log deleted.'));
     }
 
     var recentDurations = entries.map(validHours).filter(function(hours) { return hours !== null; }).slice(0, 7);
@@ -10352,7 +10352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { entries: nextEntries }));
       var savedEntryVisible = entryMatchesFilters(entry);
       setForm(EMPTY_FORM); setEditing(null); setEntryError(''); requestFocus(savedEntryVisible ? 'learning-lab-journal-entry-heading-' + id : 'learning-lab-journal-entries-heading'); setView('list');
-      llAnnounce('Personal learning journal entry saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_learning_journal_entry_saved', 'Personal learning journal entry saved.'));
     }
     async function remove(id, legacyEntry) {
       var entry = id ? entries.filter(function(item) { return item.id === id; })[0] : legacyEntry;
@@ -10361,7 +10361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var remaining = entries.filter(function(item) { return id ? item.id !== id : item !== legacyEntry; });
       setData(Object.assign({}, data, { entries: remaining }));
       requestFocus(remaining.length ? 'learning-lab-journal-entries-heading' : 'learning-lab-journal-new-entry');
-      llAnnounce('Personal learning journal entry deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_personal_learning_journal_entry_deleted', 'Personal learning journal entry deleted.'));
     }
 
     function entryMatchesFilters(entry) {
@@ -10533,7 +10533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { entries: remaining }));
       var removedToday = entry && entry.date === today;
       requestFocus(removedToday || !remaining.length ? 'learning-lab-gratitude-form-heading' : 'learning-lab-gratitude-history-heading');
-      llAnnounce('Optional appreciation entry deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_optional_appreciation_entry_deleted', 'Optional appreciation entry deleted.'));
     }
 
     var totalNotes = entries.reduce(function(sum, entry) { return sum + gratitudeItems(entry).length; }, 0);
@@ -10672,7 +10672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setTitleError('');
       focusTargetRef.current = 'learning-lab-reading-add';
       setView('list');
-      llAnnounce('Reading Tracker editor closed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_reading_tracker_editor_closed', 'Reading Tracker editor closed.'));
     }
     function save() {
       var title = String(form.title || '').trim();
@@ -10714,7 +10714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { books: books.filter(function(item) { return item !== book; }) }));
       focusTargetRef.current = 'learning-lab-reading-entries-heading';
-      llAnnounce('Reading entry deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_reading_entry_deleted', 'Reading entry deleted.'));
     }
 
     var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
@@ -10932,7 +10932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { sessions: sessions.filter(function(item) { return item !== session; }) }));
       focusTargetRef.current = 'learning-lab-self-compassion-history-heading';
-      llAnnounce('Practice history entry deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_practice_history_entry_deleted', 'Practice history entry deleted.'));
     }
 
     var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
@@ -11233,7 +11233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setTitleError('');
       focusTargetRef.current = 'learning-lab-challenge-add';
       setView('list');
-      llAnnounce('Challenge Board editor closed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_challenge_board_editor_closed', 'Challenge Board editor closed.'));
     }
     function saveChallenge() {
       var title = String(form.title || '').trim();
@@ -11274,7 +11274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { challenges: challenges.filter(function(item) { return item !== challenge; }) }));
       focusTargetRef.current = 'learning-lab-challenge-list-heading';
-      llAnnounce('Challenge or practice deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_challenge_or_practice_deleted', 'Challenge or practice deleted.'));
     }
     function toggleToday(challenge) {
       var index = challenges.indexOf(challenge);
@@ -11469,7 +11469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setActualError('');
       setIsStopping(true);
       queueFocus('learning-lab-time-review-heading');
-      llAnnounce('Timer stopped. Review the recorded duration before saving.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_timer_stopped_review_the_recorded_duration_before', 'Timer stopped. Review the recorded duration before saving.'));
     }
     function saveComparison() {
       if (!activePrediction) return;
@@ -11511,7 +11511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { predictions: predictions.filter(function(item) { return item !== prediction; }) }));
       queueFocus('learning-lab-time-history-heading');
-      llAnnounce('Time comparison deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_time_comparison_deleted', 'Time comparison deleted.'));
     }
 
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid rgba(147,51,234,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
@@ -11681,7 +11681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       resetForm();
       queueFocus(returnId);
-      llAnnounce('Attention-log editor closed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_attention_log_editor_closed', 'Attention-log editor closed.'));
     }
     function saveEntry() {
       var context = String(form.context || '').trim();
@@ -11712,7 +11712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { events: nextEvents }));
       resetForm();
       queueFocus('learning-lab-distraction-entry-heading-' + entry.id);
-      llAnnounce('Optional attention-shift entry saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_optional_attention_shift_entry_saved', 'Optional attention-shift entry saved.'));
     }
     async function removeEntry(entry) {
       var source = sourceFor(entry && entry.source);
@@ -11722,7 +11722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { events: events.filter(function(item) { return item !== entry; }) }));
       queueFocus('learning-lab-distraction-history-heading');
-      llAnnounce('Attention entry deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_attention_entry_deleted', 'Attention entry deleted.'));
     }
 
     var bySource = SOURCES.map(function(source) {
@@ -12066,7 +12066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var focusIndex = nextUsableIndex(remaining, index);
       saveSheets(remaining);
       if (view === 'edit') { setView('list'); setActiveIndex(null); }
-      llAnnounce('Reference sheet deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_reference_sheet_deleted', 'Reference sheet deleted.'));
       focusById(focusIndex === null ? 'learning-lab-cheat-new-title' : 'learning-lab-cheat-open-' + focusIndex);
     }
     function addSection() {
@@ -12075,7 +12075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var sections = sectionsOf(sheet);
       var section = { id: tkId(), title: '', bullets: [''] };
       updateSheet({ sections: sections.concat([section]) });
-      llAnnounce('Section added.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_section_added', 'Section added.'));
       focusById('learning-lab-cheat-section-title-' + activeIndex + '-' + sections.length);
     }
     function updateSection(index, patch) {
@@ -12095,7 +12095,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Delete this section?', confirmText: 'Delete section'
       }))) return;
       updateSheet({ sections: sections.filter(function(_, itemIndex) { return itemIndex !== index; }) });
-      llAnnounce('Reference sheet section deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_reference_sheet_section_deleted', 'Reference sheet section deleted.'));
       focusById('learning-lab-cheat-add-section');
     }
     function updateBullet(sectionIndex, bulletIndex, text) {
@@ -12131,7 +12131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       sections[sectionIndex] = Object.assign({}, section, { bullets: bullets.filter(function(_, itemIndex) { return itemIndex !== bulletIndex; }) });
       updateSheet({ sections: sections });
-      llAnnounce('Bullet deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_bullet_deleted', 'Bullet deleted.'));
       focusById('learning-lab-cheat-add-bullet-' + activeIndex + '-' + sectionIndex);
     }
     function openSheet(index) {
@@ -12313,7 +12313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
       if (typeof editIndex === 'number' && isRecord(rawAsks[editIndex])) {
         saveAsks(rawAsks.map(function(entry, index) { return index === editIndex ? Object.assign({}, entry, cleaned, { updatedAt: Date.now() }) : entry; }));
-        llAnnounce('Support note updated.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_updated', 'Support note updated.'));
         var savedIndex = editIndex;
         clearForm();
         focusById('learning-lab-ask-edit-' + savedIndex);
@@ -12322,7 +12322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, cleaned);
       saveAsks([entry].concat(rawAsks));
       clearForm();
-      llAnnounce('Support note saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_saved', 'Support note saved.'));
       focusById('learning-lab-ask-what');
     }
     function startEdit(index) {
@@ -12338,7 +12338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Discard unsaved changes?', confirmText: 'Discard changes'
       }))) return;
       clearForm();
-      llAnnounce('Support note editing canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_editing_canceled', 'Support note editing canceled.'));
       focusById('learning-lab-ask-edit-' + previousIndex);
     }
     function nextRecordIndex(items, preferred) {
@@ -12362,7 +12362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       saveAsks(remaining);
       if (editIndex === index) clearForm();
       else if (typeof editIndex === 'number' && editIndex > index) setEditIndex(editIndex - 1);
-      llAnnounce('Support note deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_deleted', 'Support note deleted.'));
       focusById(focusIndex === null ? 'learning-lab-ask-what' : 'learning-lab-ask-edit-' + focusIndex);
     }
     function formattedDate(entry) {
@@ -12641,7 +12641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function backToTools(tool) {
       setActive(null);
-      llAnnounce('Returned to the anxiety tool list.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_the_anxiety_tool_list', 'Returned to the anxiety tool list.'));
       focusById('learning-lab-anxiety-start-' + tool.id);
     }
     function logTool(tool) {
@@ -12656,7 +12656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Clear logged uses?', confirmText: 'Clear logged uses'
       }))) return;
       setData(Object.assign({}, data, { logs: [] }));
-      llAnnounce('All logged anxiety-tool uses cleared.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_all_logged_anxiety_tool_uses_cleared', 'All logged anxiety-tool uses cleared.'));
       focusById('learning-lab-anxiety-start-' + TOOLS[0].id);
     }
 
@@ -12797,7 +12797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { decisions: rawDecisions.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
       setView('list');
       setActiveId(null);
-      llAnnounce('Decision deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_decision_deleted', 'Decision deleted.'));
       focusById('learning-lab-decision-new-title');
     }
     function addOption() {
@@ -12805,7 +12805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!decision) return;
       var option = { id: tkId(), name: '' };
       updateDecision({ options: optionsOf(decision).concat([option]) });
-      llAnnounce('Decision option added.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_decision_option_added', 'Decision option added.'));
       focusById('learning-lab-decision-option-' + option.id);
     }
     function addCriterion() {
@@ -12813,7 +12813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!decision) return;
       var criterion = { id: tkId(), name: '', weight: 5 };
       updateDecision({ criteria: criteriaOf(decision).concat([criterion]) });
-      llAnnounce('Decision criterion added.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_decision_criterion_added', 'Decision criterion added.'));
       focusById('learning-lab-decision-criterion-' + criterion.id);
     }
     function updateOption(index, patch) {
@@ -12841,7 +12841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var scores = {};
       Object.keys(decision.scores || {}).forEach(function(key) { if (key.indexOf(option.id + '|') !== 0) scores[key] = decision.scores[key]; });
       updateDecision({ options: optionsOf(decision).filter(function(_, itemIndex) { return itemIndex !== index; }), scores: scores });
-      llAnnounce('Decision option deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_decision_option_deleted', 'Decision option deleted.'));
       focusById('learning-lab-decision-add-option');
     }
     async function removeCriterion(index) {
@@ -12855,7 +12855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var scores = {};
       Object.keys(decision.scores || {}).forEach(function(key) { if (key.slice(-(String(criterion.id).length + 1)) !== '|' + criterion.id) scores[key] = decision.scores[key]; });
       updateDecision({ criteria: criteriaOf(decision).filter(function(_, itemIndex) { return itemIndex !== index; }), scores: scores });
-      llAnnounce('Decision criterion deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_decision_criterion_deleted', 'Decision criterion deleted.'));
       focusById('learning-lab-decision-add-criterion');
     }
     function setScore(optionId, criterionId, value) {
@@ -13097,7 +13097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Delete this vocabulary list?', confirmText: 'Delete list'
       }))) return;
       setData(Object.assign({}, data, { lists: rawLists.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
-      llAnnounce('Vocabulary list deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_vocabulary_list_deleted', 'Vocabulary list deleted.'));
       focusById('learning-lab-vocab-new-list');
     }
     function addWord() {
@@ -13128,7 +13128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Delete this vocabulary word?', confirmText: 'Delete word'
       }))) return;
       updateList({ words: wordsOf(list).filter(function(item) { return item.id !== wordId; }) });
-      llAnnounce('Vocabulary word deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_vocabulary_word_deleted', 'Vocabulary word deleted.'));
       focusById('learning-lab-vocab-word');
     }
     function setMastery(wordId, value) {
@@ -13141,7 +13141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var list = getList();
       var eligibleWords = list ? wordsOf(list).filter(function(word) { return textValue(word.word).trim() && textValue(word.definition).trim(); }) : [];
       if (eligibleWords.length === 0) {
-        llAnnounce('Add a word and definition before starting a quiz.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_add_a_word_and_definition_before_starting_a_quiz', 'Add a word and definition before starting a quiz.'));
         return;
       }
       var shuffled = eligibleWords.slice().sort(function() { return Math.random() - 0.5; });
@@ -13152,7 +13152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function revealAnswer() {
       setQuizState(Object.assign({}, quizState, { showAns: true }));
-      llAnnounce('Definition revealed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_definition_revealed', 'Definition revealed.'));
       focusById('learning-lab-vocab-quiz-answer-heading');
     }
     function quizAnswer(correct) {
@@ -13175,7 +13175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function endQuiz() {
       setQuizState(null);
       setView('words');
-      llAnnounce('Quiz ended.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_quiz_ended', 'Quiz ended.'));
       focusById('learning-lab-vocab-start-quiz');
     }
     function openList(id) {
@@ -13419,7 +13419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Delete this memory palace?', confirmText: 'Delete palace'
       }))) return;
       setData(Object.assign({}, data, { palaces: rawPalaces.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
-      llAnnounce('Memory palace deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_memory_palace_deleted', 'Memory palace deleted.'));
       focusById('learning-lab-palace-new-name');
     }
     function addLocus() {
@@ -13463,7 +13463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setEditingLocusId(null);
       setLocForm({ location: '', item: '', vivid: '' });
       setLocErrors({ location: '', item: '' });
-      llAnnounce('Stop editing cancelled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_stop_editing_cancelled', 'Stop editing cancelled.'));
       focusById('learning-lab-palace-location');
     }
     function moveLocus(id, delta) {
@@ -13498,7 +13498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         setEditingLocusId(null);
         setLocForm({ location: '', item: '', vivid: '' });
       }
-      llAnnounce('Memory palace stop deleted.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_memory_palace_stop_deleted', 'Memory palace stop deleted.'));
       focusById('learning-lab-palace-location');
     }
     function openPalace(id) {
@@ -13908,7 +13908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         setForm(emptyForm());
         setNameError('');
       }
-      llAnnounce('Class removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_class_removed', 'Class removed.'));
       focusById('learning-lab-class-name');
     }
     function startEdit(classRecord) {
@@ -13923,7 +13923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setEditing(null);
       setForm(emptyForm());
       setNameError('');
-      llAnnounce('Class edit canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_class_edit_canceled', 'Class edit canceled.'));
       focusById('learning-lab-class-edit-' + previousId);
     }
 
@@ -14045,7 +14045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var text = form.text.trim();
       if (!text) {
         setQuoteError('Enter the quote you want to save.');
-        llAnnounce('Quote was not saved. Enter the quote text.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_quote_was_not_saved_enter_the_quote_text', 'Quote was not saved. Enter the quote text.'));
         focusById('learning-lab-quote-text');
         return;
       }
@@ -14072,7 +14072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { quotes: rawQuotes.filter(function(item) { return !(isRecord(item) && item.id === quote.id); }) }));
       if (featuredId === quote.id) setFeaturedId(null);
-      llAnnounce('Quote removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_quote_removed', 'Quote removed.'));
       focusById('learning-lab-quote-search');
     }
     function showAnother() {
@@ -14289,10 +14289,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     function print() {
       try {
-        llAnnounce('Opening the browser print dialog for your identity map.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_opening_the_browser_print_dialog_for_your_identit', 'Opening the browser print dialog for your identity map.'));
         window.print();
       } catch (error) {
-        llAnnounce('The print dialog could not be opened in this browser.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_the_print_dialog_could_not_be_opened_in_this_brow', 'The print dialog could not be opened in this browser.'));
       }
     }
 
@@ -14403,17 +14403,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function showResults(event) {
       event.preventDefault();
       if (!completed) {
-        llAnnounce('Answer all five questions before viewing career suggestions.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_answer_all_five_questions_before_viewing_career_s', 'Answer all five questions before viewing career suggestions.'));
         return;
       }
       setView('results');
-      llAnnounce('Career suggestions ready. Showing your top matches.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_career_suggestions_ready_showing_your_top_matches', 'Career suggestions ready. Showing your top matches.'));
       focusById('learning-lab-career-results-heading');
     }
     function retakeQuiz() {
       setAnswers({});
       setView('quiz');
-      llAnnounce('Career quiz reset. Five questions are ready.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_career_quiz_reset_five_questions_are_ready', 'Career quiz reset. Five questions are ready.'));
       focusById('learning-lab-career-q1-people');
     }
     function toggleCareer(career, isSaved) {
@@ -14536,7 +14536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Remove this mood check-in?', confirmText: 'Remove check-in'
       }))) return;
       setData(Object.assign({}, data, { logs: rawMoodLogs.filter(function(item) { return !(isRecord(item) && item.id === log.id); }) }));
-      llAnnounce('Mood check-in removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_mood_check_in_removed', 'Mood check-in removed.'));
       focusById('learning-lab-mood-recent-heading');
     }
 
@@ -14694,7 +14694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var body = form.body.trim();
       if (!body) {
         setBodyError('Write a message to your future self before saving.');
-        llAnnounce('Letter was not saved. Write the letter body.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_letter_was_not_saved_write_the_letter_body', 'Letter was not saved. Write the letter body.'));
         focusById('learning-lab-future-letter-body');
         return;
       }
@@ -14721,7 +14721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { letters: rawLetters.filter(function(item) { return !(isRecord(item) && item.id === letter.id); }) }));
       setReading(null);
       setView('list');
-      llAnnounce('Future-self letter removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_future_self_letter_removed', 'Future-self letter removed.'));
       focusById('learning-lab-future-write-button');
       return true;
     }
@@ -14729,14 +14729,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setForm(emptyForm());
       setBodyError('');
       setView('new');
-      llAnnounce('New future-self letter form opened.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_new_future_self_letter_form_opened', 'New future-self letter form opened.'));
       focusById('learning-lab-future-letter-to');
     }
     function cancelNew() {
       setForm(emptyForm());
       setBodyError('');
       setView('list');
-      llAnnounce('Letter draft canceled.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_letter_draft_canceled', 'Letter draft canceled.'));
       focusById('learning-lab-future-write-button');
     }
     function openLetter(letter) {
@@ -14750,7 +14750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var previousId = reading;
       setReading(null);
       setView('list');
-      llAnnounce('Returned to future-self letters.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_future_self_letters', 'Returned to future-self letters.'));
       focusById('learning-lab-future-letter-' + previousId);
     }
 
@@ -14879,7 +14879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var what = form.what.trim();
       if (!what) {
         setWhatError('Describe what information or need you are considering sharing.');
-        llAnnounce('Disclosure decision was not saved. Complete the required sharing field.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_disclosure_decision_was_not_saved_complete_the_re', 'Disclosure decision was not saved. Complete the required sharing field.'));
         focusById('learning-lab-disclosure-what');
         return;
       }
@@ -14907,7 +14907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Remove this disclosure decision?', confirmText: 'Remove decision'
       }))) return;
       setData(Object.assign({}, data, { logs: rawLogs.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
-      llAnnounce('Disclosure decision removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_disclosure_decision_removed', 'Disclosure decision removed.'));
       focusById('learning-lab-disclosure-history-heading');
     }
 
@@ -15110,7 +15110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var text = newWorry.trim();
       if (!text) {
         setWorryError('Write the worry you want to save for later.');
-        llAnnounce('Worry was not saved. Enter the worry first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_worry_was_not_saved_enter_the_worry_first', 'Worry was not saved. Enter the worry first.'));
         focusById('learning-lab-worry-input');
         return;
       }
@@ -15118,7 +15118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { worries: [worry].concat(rawWorries) }));
       setNewWorry('');
       setWorryError('');
-      llAnnounce('Worry saved for worry time.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_worry_saved_for_worry_time', 'Worry saved for worry time.'));
       focusById('learning-lab-worry-input');
     }
     async function removeWorry(worry) {
@@ -15129,7 +15129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { worries: rawWorries.filter(function(item) { return !(isRecord(item) && item.id === worry.id); }) }));
       if (working === worry.id) setWorking(null);
-      llAnnounce('Worry removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_worry_removed', 'Worry removed.'));
       focusById('learning-lab-worry-input');
     }
     function updateThinking(worryId, patch) {
@@ -15151,12 +15151,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setWorking(worry.id);
       var initial = {}; initial[worry.id] = thinking[worry.id] || { status: '', action: '' };
       setThinking(Object.assign({}, thinking, initial));
-      llAnnounce('Worry processor opened. Choose how much control you have.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_worry_processor_opened_choose_how_much_control_yo', 'Worry processor opened. Choose how much control you have.'));
       focusById('learning-lab-worry-processor-heading');
     }
     function closeProcessor(worryId) {
       setWorking(null);
-      llAnnounce('Returned to open worries without processing.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_open_worries_without_processing', 'Returned to open worries without processing.'));
       focusById('learning-lab-worry-process-' + worryId);
     }
     function toggleTimer() {
@@ -15172,7 +15172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function resetTimer() {
       setSecsLeft(15 * 60);
       setRunning(false);
-      llAnnounce('Worry-time timer reset to 15 minutes.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_worry_time_timer_reset_to_15_minutes', 'Worry-time timer reset to 15 minutes.'));
       focusById('learning-lab-worry-timer-toggle');
     }
 
@@ -15180,7 +15180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!running) return;
       if (secsLeft <= 0) {
         setRunning(false);
-        llAnnounce('Worry time is complete. Pause, ground yourself, and return to the rest of your day.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_worry_time_is_complete_pause_ground_yourself_and', 'Worry time is complete. Pause, ground yourself, and return to the rest of your day.'));
         focusById('learning-lab-worry-timer-toggle');
         return;
       }
@@ -15357,7 +15357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var hour = parseInt(form.hour, 10);
       if (!Number.isFinite(hour) || hour < 0 || hour > 23) {
         setHourError('Enter an hour from 0 through 23.');
-        llAnnounce('Energy log was not saved. Enter a valid hour from 0 through 23.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_energy_log_was_not_saved_enter_a_valid_hour_from', 'Energy log was not saved. Enter a valid hour from 0 through 23.'));
         focusById('learning-lab-energy-hour');
         return;
       }
@@ -15374,7 +15374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         title: 'Remove this energy log?', confirmText: 'Remove log'
       }))) return;
       setData(Object.assign({}, data, { logs: rawEnergyLogs.filter(function(item) { return !(isRecord(item) && item.id === log.id); }) }));
-      llAnnounce('Energy log removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_energy_log_removed', 'Energy log removed.'));
       focusById('learning-lab-energy-history-heading');
     }
 
@@ -15512,7 +15512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var questionText = form.text.trim();
       if (!questionText) {
         setFormError('Enter the question you want to remember.');
-        llAnnounce('Question not saved. Enter the question you want to remember.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_question_not_saved_enter_the_question_you_want_to', 'Question not saved. Enter the question you want to remember.'));
         focusById('learning-lab-question-text');
         return;
       }
@@ -15536,7 +15536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var answerText = String(answerDrafts[q.id] || '').trim();
       if (!answerText) {
         setAnswerErrors(Object.assign({}, answerErrors, { [q.id]: 'Enter the answer before marking this question answered.' }));
-        llAnnounce('Question not marked answered. Enter the answer first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_question_not_marked_answered_enter_the_answer_fir', 'Question not marked answered. Enter the answer first.'));
         focusById('learning-lab-question-answer-' + q.id);
         return;
       }
@@ -15567,7 +15567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         setAnswerErrors(function(current) {
           var next = Object.assign({}, current); delete next[q.id]; return next;
         });
-        llAnnounce('Question removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_question_removed', 'Question removed.'));
         focusById('learning-lab-question-results-heading');
       });
     }
@@ -15786,7 +15786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var successText = form.text.trim();
       if (!successText) {
         setFormError('Describe the progress or success you want to record.');
-        llAnnounce('Success not saved. Describe the progress or success you want to record.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_success_not_saved_describe_the_progress_or_succes', 'Success not saved. Describe the progress or success you want to record.'));
         focusById('learning-lab-success-text');
         return;
       }
@@ -15812,7 +15812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { successes: rawSuccesses.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
-        llAnnounce('Success entry removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_success_entry_removed', 'Success entry removed.'));
         focusById('learning-lab-success-history-heading');
       });
     }
@@ -16048,7 +16048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var body = form.body.trim();
       if (!body) {
         setBodyError('Enter or keep email text before saving the draft.');
-        llAnnounce('Draft not saved. The email body is empty.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_draft_not_saved_the_email_body_is_empty', 'Draft not saved. The email body is empty.'));
         focusById('learning-lab-email-body');
         return;
       }
@@ -16062,23 +16062,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!body) {
         setBodyError('Enter or keep email text before copying it.');
         setCopyStatus('');
-        llAnnounce('Email not copied. The email body is empty.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_email_not_copied_the_email_body_is_empty', 'Email not copied. The email body is empty.'));
         focusById('learning-lab-email-body');
         return;
       }
       setBodyError('');
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
         setCopyStatus('Clipboard access is unavailable. The email body is selected; use Control+C or Command+C to copy it.');
-        llAnnounce('Clipboard access is unavailable. The email body is selected for manual copying.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_email_body_is', 'Clipboard access is unavailable. The email body is selected for manual copying.'));
         focusById('learning-lab-email-body', true);
         return;
       }
       Promise.resolve(navigator.clipboard.writeText(body)).then(function() {
         setCopyStatus('Email copied. Paste it into your email app, review the recipient, and send it there.');
-        llAnnounce('Email copied to the clipboard.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_email_copied_to_the_clipboard', 'Email copied to the clipboard.'));
       }).catch(function() {
         setCopyStatus('The email could not be copied automatically. The body is selected; use Control+C or Command+C.');
-        llAnnounce('Automatic copying failed. The email body is selected for manual copying.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_email_body_is_select', 'Automatic copying failed. The email body is selected for manual copying.'));
         focusById('learning-lab-email-body', true);
       });
     }
@@ -16088,7 +16088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { saved: rawSaved.filter(function(item) { return !(isRecord(item) && item.id === draft.id); }) }));
-        llAnnounce('Saved email draft removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_email_draft_removed', 'Saved email draft removed.'));
         focusById('learning-lab-email-saved-heading');
       });
     }
@@ -16272,7 +16272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { checks: rawChecks.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
-        llAnnounce('Body comfort check removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_body_comfort_check_removed', 'Body comfort check removed.'));
         focusById(entry.date === todayISO() ? 'learning-lab-body-form-heading' : 'learning-lab-body-history-heading');
       });
     }
@@ -16476,7 +16476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { achievements: rawAchievements.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
-        llAnnounce('Achievement removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_achievement_removed', 'Achievement removed.'));
         focusById('learning-lab-achievement-history-heading');
       });
     }
@@ -16658,7 +16658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var text = newOne.trim();
       if (!text) {
         setEntryError('Enter words you want to add to your library.');
-        llAnnounce('Affirmation not added. Enter some words first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_affirmation_not_added_enter_some_words_first', 'Affirmation not added. Enter some words first.'));
         focusById('learning-lab-affirmation-new');
         return;
       }
@@ -16676,7 +16676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         var nextCustom = customEntries.filter(function(item) { return item.id !== entry.id; }).map(function(item) { return item.raw; });
         var nextFavorites = normalizedFavorites.filter(function(id) { return id !== entry.id; });
         setData(Object.assign({}, data, { custom: nextCustom, favorites: nextFavorites }));
-        llAnnounce('Custom affirmation removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_custom_affirmation_removed', 'Custom affirmation removed.'));
         focusById('learning-lab-affirmation-library-heading');
       });
     }
@@ -16785,7 +16785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var name = form.name.trim();
       if (!name) {
         setNameError('Enter the role model’s name or character name.');
-        llAnnounce('Role model not saved. Enter a name first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_role_model_not_saved_enter_a_name_first', 'Role model not saved. Enter a name first.'));
         focusById('learning-lab-role-model-name');
         return;
       }
@@ -16804,7 +16804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { models: rawModels.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
-        llAnnounce('Role model removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_role_model_removed', 'Role model removed.'));
         focusById('learning-lab-role-model-history-heading');
       });
     }
@@ -16926,7 +16926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var entry = { id: tkId(), date: todayISO(), answers: Object.assign({}, answers) };
       setData(Object.assign({}, data, { assessments: [entry].concat(rawAssessments) }));
       setAnswers({}); setMissingIds([]);
-      llAnnounce('Learning reflection snapshot saved.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_learning_reflection_snapshot_saved', 'Learning reflection snapshot saved.'));
       focusById('learning-lab-assessment-history-heading');
     }
     function removeAssessment(entry) {
@@ -16935,7 +16935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { assessments: rawAssessments.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
-        llAnnounce('Learning reflection snapshot removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_learning_reflection_snapshot_removed', 'Learning reflection snapshot removed.'));
         focusById('learning-lab-assessment-history-heading');
       });
     }
@@ -17038,10 +17038,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     function focusById(id) { setPendingFocusId(id); }
     function addCommitment() {
-      if (form.commitments.length >= 20) { llAnnounce('A contract can contain up to 20 commitments.'); return; }
+      if (form.commitments.length >= 20) { llAnnounce(__alloLLT('stem.learning_lab.sr_a_contract_can_contain_up_to_20_commitments', 'A contract can contain up to 20 commitments.')); return; }
       var entry = { id: tkId(), text: '' };
       setForm(Object.assign({}, form, { commitments: form.commitments.concat([entry]) }));
-      llAnnounce('Commitment field added.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_commitment_field_added', 'Commitment field added.'));
       focusById('learning-lab-contract-commitment-' + entry.id);
     }
     function updateCommitment(id, value) {
@@ -17052,7 +17052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var next = form.commitments.filter(function(item) { return item.id !== entry.id; });
       if (next.length === 0) next = [{ id: tkId(), text: '' }];
       setForm(Object.assign({}, form, { commitments: next }));
-      llAnnounce('Commitment field removed.');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_commitment_field_removed', 'Commitment field removed.'));
       focusById(next.length ? 'learning-lab-contract-commitment-' + next[Math.max(0, next.length - 1)].id : 'learning-lab-contract-add-commitment');
     }
     function validate() {
@@ -17067,7 +17067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function save() {
       var nextErrors = validate();
       if (Object.keys(nextErrors).some(function(key) { return !!nextErrors[key]; })) {
-        setErrors(nextErrors); llAnnounce('Contract not saved. Review the highlighted fields.');
+        setErrors(nextErrors); llAnnounce(__alloLLT('stem.learning_lab.sr_contract_not_saved_review_the_highlighted_fields', 'Contract not saved. Review the highlighted fields.'));
         focusById(nextErrors.title ? 'learning-lab-contract-title' : nextErrors.commitments ? 'learning-lab-contract-commitment-' + form.commitments[0].id : nextErrors.startDate ? 'learning-lab-contract-start' : 'learning-lab-contract-end');
         return;
       }
@@ -17090,7 +17090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Return to the contract list and discard this unsaved draft?', { title: 'Discard this contract draft?', confirmText: 'Discard draft' }).then(function(accepted) {
         if (!accepted) return;
         setForm(newContractForm()); setErrors({ title: '', commitments: '', startDate: '', endDate: '' }); setView('list');
-        llAnnounce('Unsaved contract draft discarded.'); focusById('learning-lab-contract-new');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_unsaved_contract_draft_discarded', 'Unsaved contract draft discarded.')); focusById('learning-lab-contract-new');
       });
     }
     function signContract(entry) {
@@ -17104,7 +17104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Delete “' + (textValue(entry.title).trim() || 'this contract') + '”? This cannot be undone.', { title: 'Delete this learning contract?', confirmText: 'Delete contract' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { contracts: rawContracts.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
-        llAnnounce('Learning contract deleted.'); focusById('learning-lab-contract-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_learning_contract_deleted', 'Learning contract deleted.')); focusById('learning-lab-contract-list-heading');
       });
     }
 
@@ -17236,7 +17236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var name = form.name.trim();
       if (!name) {
         setNameError('Enter a name, nickname, service, or relationship label.');
-        llAnnounce('Support contact not saved. Enter a label first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_support_contact_not_saved_enter_a_label_first', 'Support contact not saved. Enter a label first.'));
         focusById('learning-lab-support-name');
         return;
       }
@@ -17250,7 +17250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove “' + String(entry.name || 'this contact') + '” from your support list? This cannot be undone.', { title: 'Remove this support contact?', confirmText: 'Remove contact' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { people: (data.people || []).filter(function(item) { return item.id !== entry.id; }) }));
-        llAnnounce('Support contact removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_support_contact_removed', 'Support contact removed.'));
         focusById('learning-lab-support-list-heading');
       });
     }
@@ -17378,7 +17378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var title = newTitle.trim();
       if (!title) {
         setCreateError('Enter a name for this routine.');
-        llAnnounce('Routine not created. Enter a name first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_routine_not_created_enter_a_name_first', 'Routine not created. Enter a name first.'));
         focusById('learning-lab-routine-title');
         return;
       }
@@ -17402,7 +17402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         if (!accepted) return;
         setData(Object.assign({}, data, { routines: (data.routines || []).filter(function(item) { return item.id !== routine.id; }) }));
         if (activeId === routine.id) { setActiveId(null); setView('list'); }
-        llAnnounce('Routine deleted.'); focusById('learning-lab-routine-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_routine_deleted', 'Routine deleted.')); focusById('learning-lab-routine-list-heading');
       });
     }
     function addStep(routine) {
@@ -17410,7 +17410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var mins = normalizedMinutes(stepForm.mins);
       var nextErrors = { text: text ? '' : 'Enter a description for this step.', mins: mins == null ? 'Enter a whole number from 1 through 240 minutes.' : '' };
       if (nextErrors.text || nextErrors.mins) {
-        setStepErrors(nextErrors); llAnnounce('Step not added. Review the highlighted fields.');
+        setStepErrors(nextErrors); llAnnounce(__alloLLT('stem.learning_lab.sr_step_not_added_review_the_highlighted_fields', 'Step not added. Review the highlighted fields.'));
         focusById(nextErrors.text ? 'learning-lab-routine-step-text' : 'learning-lab-routine-step-minutes');
         return;
       }
@@ -17423,7 +17423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove the step “' + String(step.text || 'Untitled step') + '”? This cannot be undone.', { title: 'Remove this routine step?', confirmText: 'Remove step' }).then(function(accepted) {
         if (!accepted) return;
         updateRoutine(routine.id, { steps: (routine.steps || []).filter(function(item) { return item.id !== step.id; }) });
-        llAnnounce('Routine step removed.'); focusById('learning-lab-routine-steps-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_routine_step_removed', 'Routine step removed.')); focusById('learning-lab-routine-steps-heading');
       });
     }
     function toggleCompletion(routine) {
@@ -17589,7 +17589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var text = form.text.trim();
       if (!text) {
         setFormError('Enter a task name before adding it.');
-        llAnnounce('Task not added. Enter a task name first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_task_not_added_enter_a_task_name_first', 'Task not added. Enter a task name first.'));
         focusById('learning-lab-priorities-task');
         return;
       }
@@ -17615,7 +17615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove “' + String(task.text || 'Untitled task') + '” from the priorities matrix? This cannot be undone.', { title: 'Remove this task?', confirmText: 'Remove task' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { tasks: (data.tasks || []).filter(function(item) { return item.id !== task.id; }) }));
-        llAnnounce('Task removed from the priorities matrix.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_task_removed_from_the_priorities_matrix', 'Task removed from the priorities matrix.'));
         focusById('learning-lab-priorities-matrix-heading');
       });
     }
@@ -17780,7 +17780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var body = form.body.trim();
       if (!body) {
         setBodyError('Enter or keep message text before saving the draft.');
-        llAnnounce('Draft not saved. The message body is empty.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_draft_not_saved_the_message_body_is_empty', 'Draft not saved. The message body is empty.'));
         focusById('learning-lab-message-body');
         return;
       }
@@ -17793,23 +17793,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var body = form.body.trim();
       if (!body) {
         setBodyError('Enter or keep message text before copying it.'); setCopyStatus('');
-        llAnnounce('Message not copied. The message body is empty.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_message_not_copied_the_message_body_is_empty', 'Message not copied. The message body is empty.'));
         focusById('learning-lab-message-body');
         return;
       }
       setBodyError('');
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
         setCopyStatus('Clipboard access is unavailable. The message is selected; use Control+C or Command+C to copy it.');
-        llAnnounce('Clipboard access is unavailable. The message is selected for manual copying.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_message_is_se', 'Clipboard access is unavailable. The message is selected for manual copying.'));
         focusById('learning-lab-message-body', true);
         return;
       }
       Promise.resolve(navigator.clipboard.writeText(body)).then(function() {
         setCopyStatus('Message copied. Paste it into your messaging app, review the recipient and details, and send it there.');
-        llAnnounce('Message copied to the clipboard.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_message_copied_to_the_clipboard', 'Message copied to the clipboard.'));
       }).catch(function() {
         setCopyStatus('The message could not be copied automatically. The text is selected; use Control+C or Command+C.');
-        llAnnounce('Automatic copying failed. The message is selected for manual copying.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_message_is_selected', 'Automatic copying failed. The message is selected for manual copying.'));
         focusById('learning-lab-message-body', true);
       });
     }
@@ -17817,7 +17817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove this saved ' + (textValue(draft.templateLabel).trim() || 'message') + ' draft? This cannot be undone.', { title: 'Remove this saved draft?', confirmText: 'Remove draft' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { drafts: rawDrafts.filter(function(item) { return !(isRecord(item) && item.id === draft.id); }) }));
-        llAnnounce('Saved message draft removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_message_draft_removed', 'Saved message draft removed.'));
         focusById('learning-lab-message-saved-heading');
       });
     }
@@ -17957,7 +17957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var done = completedIds();
       if (done.length === 0) {
         setSaveError('Select at least one idea before saving this reflection.');
-        llAnnounce('Reflection not saved. Select at least one idea first.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_not_saved_select_at_least_one_idea_fir', 'Reflection not saved. Select at least one idea first.'));
         focusById('learning-lab-recovery-step-water-food');
         return;
       }
@@ -17971,7 +17971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove this saved recovery reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { recoveries: (data.recoveries || []).filter(function(item) { return item.id !== entry.id; }) }));
-        llAnnounce('Saved recovery reflection removed.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_recovery_reflection_removed', 'Saved recovery reflection removed.'));
         focusById('learning-lab-recovery-history-heading');
       });
     }
@@ -18096,7 +18096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var checked = validatePages(form.currentPage, form.totalPages);
       var nextErrors = { title: title ? '' : 'Enter a book title.', currentPage: checked.errors.currentPage, totalPages: checked.errors.totalPages };
       if (nextErrors.title || nextErrors.currentPage || nextErrors.totalPages) {
-        setFormErrors(nextErrors); llAnnounce('Book not added. Review the highlighted fields.');
+        setFormErrors(nextErrors); llAnnounce(__alloLLT('stem.learning_lab.sr_book_not_added_review_the_highlighted_fields', 'Book not added. Review the highlighted fields.'));
         focusById(nextErrors.title ? 'learning-lab-reading-title' : (nextErrors.currentPage ? 'learning-lab-reading-current-page' : 'learning-lab-reading-total-pages'));
         return;
       }
@@ -18119,7 +18119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var checked = validatePages(draft.currentPage, draft.totalPages);
       if (checked.errors.currentPage || checked.errors.totalPages) {
         var invalid = Object.assign({}, progressErrors); invalid[book.id] = checked.errors; setProgressErrors(invalid);
-        llAnnounce('Reading progress not saved. Review the highlighted fields.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_reading_progress_not_saved_review_the_highlighted', 'Reading progress not saved. Review the highlighted fields.'));
         focusById('learning-lab-reading-progress-' + book.id + (checked.errors.currentPage ? '-current' : '-total'));
         return;
       }
@@ -18133,7 +18133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove “' + String(book.title || 'Untitled book') + '” and its reading progress? This cannot be undone.', { title: 'Remove this book?', confirmText: 'Remove book' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { books: (data.books || []).filter(function(item) { return item.id !== book.id; }) }));
-        llAnnounce('Book removed from Currently Reading.'); focusById('learning-lab-reading-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_book_removed_from_currently_reading', 'Book removed from Currently Reading.')); focusById('learning-lab-reading-list-heading');
       });
     }
     function pageSummary(book) {
@@ -18259,7 +18259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var rating = normalizedRating(form.rating);
       if (rating == null) {
         setRatingError('Choose a whole-number rating from 1 through 10.');
-        llAnnounce('Day reflection not saved. Choose a rating from 1 through 10.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_day_reflection_not_saved_choose_a_rating_from_1_t', 'Day reflection not saved. Choose a rating from 1 through 10.'));
         focusById('learning-lab-day-pattern-rating');
         return;
       }
@@ -18273,7 +18273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove this saved day reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== entry.id; }) }));
-        llAnnounce('Saved day reflection removed.'); focusById('learning-lab-day-pattern-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_day_reflection_removed', 'Saved day reflection removed.')); focusById('learning-lab-day-pattern-history-heading');
       });
     }
     function entryDetails(entry) {
@@ -18377,20 +18377,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function saveProfile() {
       var normalized = {}; DIMENSIONS.forEach(function(dimension) { normalized[dimension.id] = String(draft[dimension.id] || '').trim(); });
       setData(Object.assign({}, data, { profile: Object.assign({}, data.profile || {}, normalized) }));
-      setDraft(normalized); llAnnounce('Sensory preferences saved in this browser.'); focusById('learning-lab-sensory-profile-heading');
+      setDraft(normalized); llAnnounce(__alloLLT('stem.learning_lab.sr_sensory_preferences_saved_in_this_browser', 'Sensory preferences saved in this browser.')); focusById('learning-lab-sensory-profile-heading');
     }
     function addObservation() {
       var text = observation.trim();
-      if (!text) { setObservationError('Enter an observation before saving it.'); llAnnounce('Observation not saved. Enter some text first.'); focusById('learning-lab-sensory-observation'); return; }
+      if (!text) { setObservationError('Enter an observation before saving it.'); llAnnounce(__alloLLT('stem.learning_lab.sr_observation_not_saved_enter_some_text_first', 'Observation not saved. Enter some text first.')); focusById('learning-lab-sensory-observation'); return; }
       var entry = { id: tkId(), date: todayISO(), text: text };
       setData(Object.assign({}, data, { observations: [entry].concat(data.observations || []) }));
-      setObservation(''); setObservationError(''); llAnnounce('Sensory observation saved.'); focusById('learning-lab-sensory-observation');
+      setObservation(''); setObservationError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_sensory_observation_saved', 'Sensory observation saved.')); focusById('learning-lab-sensory-observation');
     }
     function removeObservation(entry) {
       askLearningLabConfirmation('Remove this sensory observation? This cannot be undone.', { title: 'Remove this observation?', confirmText: 'Remove observation' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { observations: (data.observations || []).filter(function(item) { return item.id !== entry.id; }) }));
-        llAnnounce('Sensory observation removed.'); focusById('learning-lab-sensory-observations-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_sensory_observation_removed', 'Sensory observation removed.')); focusById('learning-lab-sensory-observations-heading');
       });
     }
 
@@ -18473,16 +18473,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function saveEntry() {
       var text = form.text.trim();
-      if (!text) { setTextError('Enter journal text before saving.'); llAnnounce('Journal entry not saved. Enter some text first.'); focusById('learning-lab-nd-entry-text'); return; }
+      if (!text) { setTextError('Enter journal text before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_journal_entry_not_saved_enter_some_text_first', 'Journal entry not saved. Enter some text first.')); focusById('learning-lab-nd-entry-text'); return; }
       var entry = { id: tkId(), date: todayISO(), time: Date.now(), topic: form.topic, text: text };
       setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }));
-      setForm(emptyForm); setTextError(''); llAnnounce('Journal entry saved in this browser.'); focusById('learning-lab-nd-entry-text');
+      setForm(emptyForm); setTextError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_journal_entry_saved_in_this_browser', 'Journal entry saved in this browser.')); focusById('learning-lab-nd-entry-text');
     }
     function removeEntry(entry) {
       askLearningLabConfirmation('Remove this journal entry? This cannot be undone.', { title: 'Remove this journal entry?', confirmText: 'Remove entry' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== entry.id; }) }));
-        llAnnounce('Journal entry removed.'); focusById('learning-lab-nd-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_journal_entry_removed', 'Journal entry removed.')); focusById('learning-lab-nd-history-heading');
       });
     }
     function entryDateTime(entry) { var timestamp = Number(entry.time); return entry.time != null && Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : (entry.date || undefined); }
@@ -18567,7 +18567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function selectedRatings() { var ratings = {}; DIMENSIONS.forEach(function(dimension) { if (included[dimension.id]) ratings[dimension.id] = normalizedRating(form[dimension.id]) == null ? 5 : normalizedRating(form[dimension.id]); }); return ratings; }
     function save() {
       var ratings = selectedRatings();
-      if (Object.keys(ratings).length === 0) { setSaveError('Include at least one area before saving a snapshot.'); llAnnounce('Life Map snapshot not saved. Include at least one area first.'); focusById('learning-lab-life-map-include-school'); return; }
+      if (Object.keys(ratings).length === 0) { setSaveError('Include at least one area before saving a snapshot.'); llAnnounce(__alloLLT('stem.learning_lab.sr_life_map_snapshot_not_saved_include_at_least_one', 'Life Map snapshot not saved. Include at least one area first.')); focusById('learning-lab-life-map-include-school'); return; }
       var entry = { id: tkId(), date: todayISO(), ratings: ratings };
       setData(Object.assign({}, data, { snapshots: [entry].concat(data.snapshots || []) }));
       setForm(initialRatings()); setIncluded(initialIncluded()); setSaveError('');
@@ -18578,7 +18578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove this Life Map snapshot? This cannot be undone.', { title: 'Remove this snapshot?', confirmText: 'Remove snapshot' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { snapshots: (data.snapshots || []).filter(function(item) { return item.id !== snapshot.id; }) }));
-        llAnnounce('Life Map snapshot removed.'); focusById('learning-lab-life-map-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_life_map_snapshot_removed', 'Life Map snapshot removed.')); focusById('learning-lab-life-map-history-heading');
       });
     }
     function ratedDetails(ratings) { ratings = ratings || {}; return DIMENSIONS.map(function(dimension) { var value = normalizedRating(ratings[dimension.id]); return value == null ? null : { id: dimension.id, label: dimension.label, value: value }; }).filter(Boolean); }
@@ -18652,16 +18652,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function focusById(id) { setPendingFocusId(id); }
     function save() {
       var body = form.body.trim();
-      if (!body) { setBodyError('Enter letter text before saving.'); llAnnounce('Letter not saved. Enter some letter text first.'); focusById('learning-lab-open-letter-body'); return; }
+      if (!body) { setBodyError('Enter letter text before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_letter_not_saved_enter_some_letter_text_first', 'Letter not saved. Enter some letter text first.')); focusById('learning-lab-open-letter-body'); return; }
       var letter = { id: tkId(), date: todayISO(), to: form.to.trim(), context: form.context.trim(), body: body };
       setData(Object.assign({}, data, { letters: [letter].concat(data.letters || []) }));
-      setForm(emptyForm); setBodyError(''); llAnnounce('Unsent letter saved in this browser.'); focusById('learning-lab-open-letter-to');
+      setForm(emptyForm); setBodyError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_unsent_letter_saved_in_this_browser', 'Unsent letter saved in this browser.')); focusById('learning-lab-open-letter-to');
     }
     function removeLetter(letter) {
       askLearningLabConfirmation('Remove this saved unsent letter? This cannot be undone.', { title: 'Remove this letter?', confirmText: 'Remove letter' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { letters: (data.letters || []).filter(function(item) { return item.id !== letter.id; }) }));
-        llAnnounce('Saved unsent letter removed.'); focusById('learning-lab-open-letter-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_unsent_letter_removed', 'Saved unsent letter removed.')); focusById('learning-lab-open-letter-history-heading');
       });
     }
 
@@ -18724,16 +18724,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function setMoment(index, value) { var moments = form.moments.slice(); moments[index] = value; setForm(Object.assign({}, form, { moments: moments })); if (formError) setFormError(''); }
     function hasContent() { return form.moments.some(function(moment) { return moment.trim(); }) || form.lesson.trim() || form.tomorrow.trim(); }
     function save() {
-      if (!hasContent()) { setFormError('Enter at least one moment, note, or thought before saving.'); llAnnounce('Daily reflection not saved. Enter at least one note first.'); focusById('learning-lab-daily-moment-1'); return; }
+      if (!hasContent()) { setFormError('Enter at least one moment, note, or thought before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_daily_reflection_not_saved_enter_at_least_one_not', 'Daily reflection not saved. Enter at least one note first.')); focusById('learning-lab-daily-moment-1'); return; }
       var entry = { id: tkId(), date: todayISO(), moments: form.moments.map(function(moment) { return moment.trim(); }), lesson: form.lesson.trim(), tomorrow: form.tomorrow.trim() };
       setData(Object.assign({}, data, { highlights: [entry].concat(data.highlights || []) }));
-      setForm(emptyForm); setFormError(''); llAnnounce('Daily reflection saved in this browser.'); focusById('learning-lab-daily-moment-1');
+      setForm(emptyForm); setFormError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_daily_reflection_saved_in_this_browser', 'Daily reflection saved in this browser.')); focusById('learning-lab-daily-moment-1');
     }
     function removeEntry(entry) {
       askLearningLabConfirmation('Remove this saved daily reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { highlights: (data.highlights || []).filter(function(item) { return item.id !== entry.id; }) }));
-        llAnnounce('Saved daily reflection removed.'); focusById('learning-lab-daily-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_daily_reflection_removed', 'Saved daily reflection removed.')); focusById('learning-lab-daily-history-heading');
       });
     }
 
@@ -18884,17 +18884,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function setField(id, value) { var next = Object.assign({}, form); next[id] = value; setForm(next); if (id === 'situation' && situationError) setSituationError(''); }
     function save() {
       var situation = form.situation.trim();
-      if (!situation) { setSituationError('Describe the situation before saving this reflection.'); llAnnounce('Decision reflection not saved. Describe the situation first.'); focusById('learning-lab-ethical-situation'); return; }
+      if (!situation) { setSituationError('Describe the situation before saving this reflection.'); llAnnounce(__alloLLT('stem.learning_lab.sr_decision_reflection_not_saved_describe_the_situat', 'Decision reflection not saved. Describe the situation first.')); focusById('learning-lab-ethical-situation'); return; }
       var log = { id: tkId(), date: todayISO() };
       STEPS.forEach(function(step) { log[step.id] = String(form[step.id] || '').trim(); });
       setData(Object.assign({}, data, { logs: [log].concat(data.logs || []) }));
-      setForm(emptyForm); setSituationError(''); llAnnounce('Decision reflection saved in this browser.'); focusById('learning-lab-ethical-situation');
+      setForm(emptyForm); setSituationError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_decision_reflection_saved_in_this_browser', 'Decision reflection saved in this browser.')); focusById('learning-lab-ethical-situation');
     }
     function removeLog(log) {
       askLearningLabConfirmation('Remove this saved decision reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== log.id; }) }));
-        llAnnounce('Saved decision reflection removed.'); focusById('learning-lab-ethical-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_decision_reflection_removed', 'Saved decision reflection removed.')); focusById('learning-lab-ethical-history-heading');
       });
     }
     function savedDetails(log) { return STEPS.map(function(step) { return { id: step.id, label: step.label.replace(' (required)', '').replace(' (optional)', ''), value: String(log[step.id] || '').trim() }; }).filter(function(detail) { return detail.value; }); }
@@ -18975,7 +18975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function categoryFor(id) { return CATEGORIES.filter(function(category) { return category.id === id; })[0] || CATEGORIES[6]; }
     function addResource() {
       var name = form.name.trim();
-      if (!name) { setNameError('Enter a resource name.'); llAnnounce('Resource not saved. Enter a name first.'); focusById('learning-lab-resource-name'); return; }
+      if (!name) { setNameError('Enter a resource name.'); llAnnounce(__alloLLT('stem.learning_lab.sr_resource_not_saved_enter_a_name_first', 'Resource not saved. Enter a name first.')); focusById('learning-lab-resource-name'); return; }
       var resource = { id: tkId(), createdAt: todayISO(), name: name, cat: categoryFor(form.cat).id, contact: form.contact.trim(), notes: form.notes.trim() };
       setData(Object.assign({}, data, { resources: [resource].concat(data.resources || []) }));
       setForm(emptyForm); setNameError(''); llAnnounce('Community resource saved: ' + name); focusById('learning-lab-resource-name');
@@ -18984,7 +18984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove “' + String(resource.name || 'this resource') + '” from your personal list? This cannot be undone.', { title: 'Remove this resource?', confirmText: 'Remove resource' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { resources: (data.resources || []).filter(function(item) { return item.id !== resource.id; }) }));
-        llAnnounce('Personal community resource removed.'); focusById('learning-lab-resource-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_personal_community_resource_removed', 'Personal community resource removed.')); focusById('learning-lab-resource-list-heading');
       });
     }
 
@@ -19059,16 +19059,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var answers = {};
       SECTIONS.forEach(function(section) { answers[section.id] = String(form[section.id] || '').trim(); });
       var hasAnswer = SECTIONS.some(function(section) { return !!answers[section.id]; });
-      if (!hasAnswer) { setFormError('Add a response to at least one prompt before saving.'); llAnnounce('Weekly plan not saved. Add a response first.'); focusById('learning-lab-weekly-plan-wins'); return; }
+      if (!hasAnswer) { setFormError('Add a response to at least one prompt before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_weekly_plan_not_saved_add_a_response_first', 'Weekly plan not saved. Add a response first.')); focusById('learning-lab-weekly-plan-wins'); return; }
       var plan = Object.assign({ id: tkId(), date: todayISO() }, answers);
       setData(Object.assign({}, data, { plans: [plan].concat(data.plans || []) }));
-      setForm(emptyForm); setFormError(''); llAnnounce('Weekly plan saved in this browser.'); focusById('learning-lab-weekly-plan-wins');
+      setForm(emptyForm); setFormError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_weekly_plan_saved_in_this_browser', 'Weekly plan saved in this browser.')); focusById('learning-lab-weekly-plan-wins');
     }
     function remove(plan) {
       askLearningLabConfirmation('Remove the saved weekly plan from ' + String(plan.date || 'an unknown date') + '? This cannot be undone.', { title: 'Remove this weekly plan?', confirmText: 'Remove plan' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { plans: (data.plans || []).filter(function(item) { return item.id !== plan.id; }) }));
-        llAnnounce('Saved weekly plan removed.'); focusById('learning-lab-weekly-plan-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_weekly_plan_removed', 'Saved weekly plan removed.')); focusById('learning-lab-weekly-plan-history-heading');
       });
     }
     function savedAnswers(plan) {
@@ -19146,7 +19146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function cadenceFor(id) { return CADENCES.filter(function(cadence) { return cadence.id === id; })[0] || CADENCES[1]; }
     function add() {
       var name = form.name.trim();
-      if (!name) { setNameError('Enter a name before saving.'); llAnnounce('Person not saved. Enter a name first.'); focusById('learning-lab-friend-name'); return; }
+      if (!name) { setNameError('Enter a name before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_person_not_saved_enter_a_name_first', 'Person not saved. Enter a name first.')); focusById('learning-lab-friend-name'); return; }
       var friend = { id: tkId(), addedAt: todayISO(), lastContact: todayISO(), name: name, relationship: form.relationship.trim(), cadence: cadenceFor(form.cadence).id };
       setData(Object.assign({}, data, { friends: [friend].concat(data.friends || []) }));
       setForm(emptyForm); setNameError(''); llAnnounce('Check-in reminder saved for ' + name + '.'); focusById('learning-lab-friend-name');
@@ -19159,7 +19159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove the reminder for “' + String(friend.name || 'this person') + '”? This cannot be undone.', { title: 'Remove this check-in reminder?', confirmText: 'Remove reminder' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { friends: (data.friends || []).filter(function(item) { return item.id !== friend.id; }) }));
-        llAnnounce('Check-in reminder removed.'); focusById('learning-lab-friend-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_check_in_reminder_removed', 'Check-in reminder removed.')); focusById('learning-lab-friend-list-heading');
       });
     }
 
@@ -19363,7 +19363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     function addHabit() {
       var label = form.label.trim();
-      if (!label) { setLabelError('Enter a habit or activity name before saving.'); llAnnounce('Momentum item not saved. Enter a name first.'); focusById('learning-lab-momentum-label'); return; }
+      if (!label) { setLabelError('Enter a habit or activity name before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_momentum_item_not_saved_enter_a_name_first', 'Momentum item not saved. Enter a name first.')); focusById('learning-lab-momentum-label'); return; }
       var habit = { id: tkId(), createdAt: todayISO(), label: label, color: colorFor(form.color).value };
       setData(Object.assign({}, data, { habits: (data.habits || []).concat([habit]) }));
       setForm(emptyForm); setLabelError(''); llAnnounce('Momentum item saved: ' + label); focusById('learning-lab-momentum-label');
@@ -19373,7 +19373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         if (!accepted) return;
         var nextLogs = Object.assign({}, data.logs || {}); delete nextLogs[habit.id];
         setData(Object.assign({}, data, { habits: (data.habits || []).filter(function(item) { return item.id !== habit.id; }), logs: nextLogs }));
-        llAnnounce('Momentum item and its marked dates removed.'); focusById('learning-lab-momentum-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_momentum_item_and_its_marked_dates_removed', 'Momentum item and its marked dates removed.')); focusById('learning-lab-momentum-list-heading');
       });
     }
     function toggleDay(habit, day, wasMarked) {
@@ -19460,13 +19460,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var total = clampNumber(form.total, 0, 24, 0);
       var entry = { id: tkId(), date: todayISO(), total: total, scrolling: clampNumber(form.scrolling, 0, total, 0), productive: clampNumber(form.productive, 0, total, 0), reflective: clampNumber(form.reflective, 1, 10, 5) };
       setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
-      setForm(defaultForm); llAnnounce('Screen-time estimate saved for today.'); focusById('learning-lab-screen-time-history-heading');
+      setForm(defaultForm); llAnnounce(__alloLLT('stem.learning_lab.sr_screen_time_estimate_saved_for_today', 'Screen-time estimate saved for today.')); focusById('learning-lab-screen-time-history-heading');
     }
     function remove(entry) {
       askLearningLabConfirmation('Remove the screen-time entry from ' + String(entry.date || 'an unknown date') + '? This cannot be undone.', { title: 'Remove this screen-time entry?', confirmText: 'Remove entry' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(log) { return log.id !== entry.id; }) }));
-        llAnnounce('Saved screen-time entry removed.'); focusById('learning-lab-screen-time-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_screen_time_entry_removed', 'Saved screen-time entry removed.')); focusById('learning-lab-screen-time-history-heading');
       });
     }
     function rangeField(config) {
@@ -19658,16 +19658,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function focusById(id) { setPendingFocusId(id); }
     function save() {
       var what = form.what.trim();
-      if (!what) { setWhatError('Describe a moment before saving.'); llAnnounce('Confidence reflection not saved. Describe a moment first.'); focusById('learning-lab-confidence-what'); return; }
+      if (!what) { setWhatError('Describe a moment before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_confidence_reflection_not_saved_describe_a_moment', 'Confidence reflection not saved. Describe a moment first.')); focusById('learning-lab-confidence-what'); return; }
       var moment = { id: tkId(), date: todayISO(), what: what, when: form.when.trim(), what_did_it: form.what_did_it.trim(), strength_showed: form.strength_showed.trim() };
       setData(Object.assign({}, data, { moments: [moment].concat(data.moments || []) }));
-      setForm(emptyForm); setWhatError(''); llAnnounce('Confidence reflection saved in this browser.'); focusById('learning-lab-confidence-what');
+      setForm(emptyForm); setWhatError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_confidence_reflection_saved_in_this_browser', 'Confidence reflection saved in this browser.')); focusById('learning-lab-confidence-what');
     }
     function remove(moment) {
       askLearningLabConfirmation('Remove “' + String(moment.what || 'this confidence reflection') + '”? This cannot be undone.', { title: 'Remove this confidence reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { moments: (data.moments || []).filter(function(item) { return item.id !== moment.id; }) }));
-        llAnnounce('Saved confidence reflection removed.'); focusById('learning-lab-confidence-history-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_saved_confidence_reflection_removed', 'Saved confidence reflection removed.')); focusById('learning-lab-confidence-history-heading');
       });
     }
     function detailsFor(moment) {
@@ -19748,14 +19748,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function categoryFor(id) { return CATS.filter(function(category) { return category.id === id; })[0] || CATS[1]; }
     function add() {
       var text = form.text.trim();
-      if (!text) { setTextError('Describe a hope before saving.'); llAnnounce('Hope not saved. Add a description first.'); focusById('learning-lab-hope-text'); return; }
+      if (!text) { setTextError('Describe a hope before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_hope_not_saved_add_a_description_first', 'Hope not saved. Add a description first.')); focusById('learning-lab-hope-text'); return; }
       var hope = { id: tkId(), addedAt: todayISO(), text: text, category: categoryFor(form.category).id, done: false };
       setData(Object.assign({}, data, { hopes: [hope].concat(data.hopes || []) }));
-      setForm(emptyForm); setTextError(''); setFeaturedId(hope.id); llAnnounce('Hope saved in this browser.'); focusById('learning-lab-hope-text');
+      setForm(emptyForm); setTextError(''); setFeaturedId(hope.id); llAnnounce(__alloLLT('stem.learning_lab.sr_hope_saved_in_this_browser', 'Hope saved in this browser.')); focusById('learning-lab-hope-text');
     }
     function showAnother(unfinished, current) {
-      if (unfinished.length < 2) { llAnnounce('There is only one active hope to feature.'); return; }
-      var index = unfinished.indexOf(current); var next = unfinished[(index + 1) % unfinished.length]; setFeaturedId(next.id); llAnnounce('Showing another saved hope.'); focusById('learning-lab-hope-feature-next');
+      if (unfinished.length < 2) { llAnnounce(__alloLLT('stem.learning_lab.sr_there_is_only_one_active_hope_to_feature', 'There is only one active hope to feature.')); return; }
+      var index = unfinished.indexOf(current); var next = unfinished[(index + 1) % unfinished.length]; setFeaturedId(next.id); llAnnounce(__alloLLT('stem.learning_lab.sr_showing_another_saved_hope', 'Showing another saved hope.')); focusById('learning-lab-hope-feature-next');
     }
     function markDone(hope) {
       var nextDone = !hope.done;
@@ -19766,7 +19766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove “' + String(hope.text || 'this hope') + '”? This cannot be undone.', { title: 'Remove this saved hope?', confirmText: 'Remove hope' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { hopes: (data.hopes || []).filter(function(item) { return item.id !== hope.id; }) }));
-        if (featuredId === hope.id) setFeaturedId(null); llAnnounce('Saved hope removed.'); focusById('learning-lab-hope-list-heading');
+        if (featuredId === hope.id) setFeaturedId(null); llAnnounce(__alloLLT('stem.learning_lab.sr_saved_hope_removed', 'Saved hope removed.')); focusById('learning-lab-hope-list-heading');
       });
     }
 
@@ -19911,28 +19911,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function addCustom() {
       var situation = newForm.situation.trim(); var script = newForm.script.trim(); var nextErrors = { situation: situation ? '' : 'Describe the situation.', script: script ? '' : 'Enter the words you want to save.' };
       setErrors(nextErrors);
-      if (!situation || !script) { llAnnounce('Custom script not saved. Complete both required fields.'); focusById(!situation ? 'learning-lab-script-situation' : 'learning-lab-script-text'); return; }
+      if (!situation || !script) { llAnnounce(__alloLLT('stem.learning_lab.sr_custom_script_not_saved_complete_both_required_fi', 'Custom script not saved. Complete both required fields.')); focusById(!situation ? 'learning-lab-script-situation' : 'learning-lab-script-text'); return; }
       var custom = { id: tkId(), category: categoryFor(cat).id, addedAt: todayISO(), situation: situation, script: script };
       setData(Object.assign({}, data, { custom: [custom].concat(data.custom || []) }));
-      setNewForm(emptyForm); setErrors({ situation: '', script: '' }); llAnnounce('Custom script saved in this browser.'); focusById('learning-lab-script-situation');
+      setNewForm(emptyForm); setErrors({ situation: '', script: '' }); llAnnounce(__alloLLT('stem.learning_lab.sr_custom_script_saved_in_this_browser', 'Custom script saved in this browser.')); focusById('learning-lab-script-situation');
     }
     function removeCustom(item) {
       askLearningLabConfirmation('Remove the custom script for “' + String(item.s || 'this situation') + '”? This cannot be undone.', { title: 'Remove this custom script?', confirmText: 'Remove script' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { custom: (data.custom || []).filter(function(custom) { return custom.id !== item.id; }) }));
-        llAnnounce('Custom script removed.'); focusById('learning-lab-script-panel-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_custom_script_removed', 'Custom script removed.')); focusById('learning-lab-script-panel-heading');
       });
     }
     function copyScript(item) {
       var text = String(item.script || '').trim(); var domId = safeDomId(item.id); var textId = 'learning-lab-script-text-' + domId;
-      if (!text) { setCopyStatus({ id: item.id, message: 'This script is empty and was not copied.' }); llAnnounce('Script not copied because it is empty.'); focusById(textId); return; }
+      if (!text) { setCopyStatus({ id: item.id, message: 'This script is empty and was not copied.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_script_not_copied_because_it_is_empty', 'Script not copied because it is empty.')); focusById(textId); return; }
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
-        setCopyStatus({ id: item.id, message: 'Clipboard access is unavailable. The script text is selected; use Control+C or Command+C.' }); llAnnounce('Clipboard access is unavailable. The script text is selected for manual copying.'); focusById(textId, true); return;
+        setCopyStatus({ id: item.id, message: 'Clipboard access is unavailable. The script text is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_script_text_i', 'Clipboard access is unavailable. The script text is selected for manual copying.')); focusById(textId, true); return;
       }
       Promise.resolve(navigator.clipboard.writeText(text)).then(function() {
-        setCopyStatus({ id: item.id, message: 'Script copied. Review and adapt it before using it.' }); llAnnounce('Script copied to the clipboard.');
+        setCopyStatus({ id: item.id, message: 'Script copied. Review and adapt it before using it.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_script_copied_to_the_clipboard', 'Script copied to the clipboard.'));
       }).catch(function() {
-        setCopyStatus({ id: item.id, message: 'The script could not be copied automatically. The text is selected; use Control+C or Command+C.' }); llAnnounce('Automatic copying failed. The script text is selected for manual copying.'); focusById(textId, true);
+        setCopyStatus({ id: item.id, message: 'The script could not be copied automatically. The text is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_script_text_is_selec', 'Automatic copying failed. The script text is selected for manual copying.')); focusById(textId, true);
       });
     }
 
@@ -20020,24 +20020,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function getArea() { return (data.areas || []).filter(function(area) { return area.id === activeId; })[0]; }
     function addArea() {
       var name = form.name.trim();
-      if (!name) { setAreaError('Enter a knowledge-area name before saving.'); llAnnounce('Knowledge area not saved. Enter a name first.'); focusById('learning-lab-knowledge-area-name'); return; }
+      if (!name) { setAreaError('Enter a knowledge-area name before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_knowledge_area_not_saved_enter_a_name_first', 'Knowledge area not saved. Enter a name first.')); focusById('learning-lab-knowledge-area-name'); return; }
       var area = { id: tkId(), topics: [], createdAt: todayISO(), name: name, icon: form.icon.trim() || '📚' };
       setData(Object.assign({}, data, { areas: [area].concat(data.areas || []) }));
       setForm(emptyAreaForm); setAreaError(''); llAnnounce('Knowledge area saved: ' + name); focusById('learning-lab-knowledge-area-name');
     }
     function openArea(area) { setActiveId(area.id); setView('area'); llAnnounce('Opened knowledge area: ' + String(area.name || 'untitled area')); focusById('learning-lab-knowledge-detail-heading'); }
-    function closeArea() { var previous = activeId; setView('list'); setActiveId(null); llAnnounce('Returned to all knowledge areas.'); focusById('learning-lab-knowledge-open-' + safeDomId(previous)); }
+    function closeArea() { var previous = activeId; setView('list'); setActiveId(null); llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_all_knowledge_areas', 'Returned to all knowledge areas.')); focusById('learning-lab-knowledge-open-' + safeDomId(previous)); }
     function updateArea(patch) { setData(Object.assign({}, data, { areas: (data.areas || []).map(function(area) { return area.id === activeId ? Object.assign({}, area, patch) : area; }) })); }
     function removeArea(area) {
       askLearningLabConfirmation('Remove “' + String(area.name || 'this knowledge area') + '” and all of its topics? This cannot be undone.', { title: 'Remove this knowledge area?', confirmText: 'Remove area' }).then(function(accepted) {
         if (!accepted) return;
         setData(Object.assign({}, data, { areas: (data.areas || []).filter(function(item) { return item.id !== area.id; }) }));
-        llAnnounce('Knowledge area and its topics removed.'); focusById('learning-lab-knowledge-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_knowledge_area_and_its_topics_removed', 'Knowledge area and its topics removed.')); focusById('learning-lab-knowledge-list-heading');
       });
     }
     function addTopic() {
       var text = topicForm.text.trim(); var area = getArea();
-      if (!text) { setTopicError('Enter a topic name before saving.'); llAnnounce('Topic not saved. Enter a name first.'); focusById('learning-lab-knowledge-topic-name'); return; }
+      if (!text) { setTopicError('Enter a topic name before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_topic_not_saved_enter_a_name_first', 'Topic not saved. Enter a name first.')); focusById('learning-lab-knowledge-topic-name'); return; }
       if (!area) return;
       var topic = { id: tkId(), addedAt: todayISO(), text: text, status: statusFor(topicForm.status).id };
       updateArea({ topics: (area.topics || []).concat([topic]) }); setTopicForm(emptyTopicForm); setTopicError(''); llAnnounce('Topic saved: ' + text); focusById('learning-lab-knowledge-topic-name');
@@ -20052,7 +20052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var area = getArea(); if (!area) return;
       askLearningLabConfirmation('Remove the topic “' + String(topic.text || 'this topic') + '”? This cannot be undone.', { title: 'Remove this topic?', confirmText: 'Remove topic' }).then(function(accepted) {
         if (!accepted) return;
-        updateArea({ topics: (area.topics || []).filter(function(item) { return item.id !== topic.id; }) }); llAnnounce('Knowledge topic removed.'); focusById('learning-lab-knowledge-topics-heading');
+        updateArea({ topics: (area.topics || []).filter(function(item) { return item.id !== topic.id; }) }); llAnnounce(__alloLLT('stem.learning_lab.sr_knowledge_topic_removed', 'Knowledge topic removed.')); focusById('learning-lab-knowledge-topics-heading');
       });
     }
 
@@ -20172,23 +20172,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function getCurr() { return (data.curricula || []).filter(function(curriculum) { return curriculum.id === activeId; })[0]; }
     function createCurriculum() {
       var title = newC.title.trim();
-      if (!title) { setTitleError('Enter a curriculum title before saving.'); llAnnounce('Curriculum not saved. Enter a title first.'); focusById('learning-lab-curriculum-title'); return; }
+      if (!title) { setTitleError('Enter a curriculum title before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_curriculum_not_saved_enter_a_title_first', 'Curriculum not saved. Enter a title first.')); focusById('learning-lab-curriculum-title'); return; }
       var curriculum = { id: tkId(), createdAt: todayISO(), steps: [], notes: '', title: title, why: newC.why.trim(), timespan: newC.timespan.trim(), selfRating: newC.selfRating };
       setData(Object.assign({}, data, { curricula: [curriculum].concat(data.curricula || []) })); setNewC(emptyCurriculum); setTitleError(''); llAnnounce('Curriculum saved: ' + title);
       setTimeout(function() { setActiveId(curriculum.id); setView('edit'); focusById('learning-lab-curriculum-detail-heading'); }, 0);
     }
     function openCurriculum(curriculum) { setActiveId(curriculum.id); setView('edit'); llAnnounce('Opened curriculum: ' + String(curriculum.title || 'untitled curriculum')); focusById('learning-lab-curriculum-detail-heading'); }
-    function closeCurriculum() { var previous = activeId; setView('list'); setActiveId(null); llAnnounce('Returned to all curricula.'); focusById('learning-lab-curriculum-open-' + safeDomId(previous)); }
+    function closeCurriculum() { var previous = activeId; setView('list'); setActiveId(null); llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_all_curricula', 'Returned to all curricula.')); focusById('learning-lab-curriculum-open-' + safeDomId(previous)); }
     function updateCurr(patch) { setData(Object.assign({}, data, { curricula: (data.curricula || []).map(function(curriculum) { return curriculum.id === activeId ? Object.assign({}, curriculum, patch) : curriculum; }) })); }
     function removeCurriculum(curriculum) {
       askLearningLabConfirmation('Remove “' + String(curriculum.title || 'this curriculum') + '” and all of its steps? This cannot be undone.', { title: 'Remove this curriculum?', confirmText: 'Remove curriculum' }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { curricula: (data.curricula || []).filter(function(item) { return item.id !== curriculum.id; }) })); setView('list'); setActiveId(null); llAnnounce('Curriculum and its steps removed.'); focusById('learning-lab-curriculum-list-heading');
+        setData(Object.assign({}, data, { curricula: (data.curricula || []).filter(function(item) { return item.id !== curriculum.id; }) })); setView('list'); setActiveId(null); llAnnounce(__alloLLT('stem.learning_lab.sr_curriculum_and_its_steps_removed', 'Curriculum and its steps removed.')); focusById('learning-lab-curriculum-list-heading');
       });
     }
     function addStep() {
       var label = stepForm.label.trim(); var curriculum = getCurr();
-      if (!label) { setStepError('Enter a step title before saving.'); llAnnounce('Learning step not saved. Enter a title first.'); focusById('learning-lab-curriculum-step-title'); return; }
+      if (!label) { setStepError('Enter a step title before saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_learning_step_not_saved_enter_a_title_first', 'Learning step not saved. Enter a title first.')); focusById('learning-lab-curriculum-step-title'); return; }
       if (!curriculum) return;
       var step = { id: tkId(), addedAt: todayISO(), type: typeFor(stepForm.type).id, label: label, done: false, resource: '', notes: '' };
       updateCurr({ steps: (curriculum.steps || []).concat([step]) }); setStepForm(emptyStep); setStepError(''); llAnnounce('Learning step saved: ' + label); focusById('learning-lab-curriculum-step-title');
@@ -20199,7 +20199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var curriculum = getCurr(); if (!curriculum) return;
       askLearningLabConfirmation('Remove the step “' + String(step.label || 'this step') + '”? This cannot be undone.', { title: 'Remove this learning step?', confirmText: 'Remove step' }).then(function(accepted) {
         if (!accepted) return;
-        updateCurr({ steps: (curriculum.steps || []).filter(function(item) { return item.id !== step.id; }) }); llAnnounce('Learning step removed.'); focusById('learning-lab-curriculum-steps-heading');
+        updateCurr({ steps: (curriculum.steps || []).filter(function(item) { return item.id !== step.id; }) }); llAnnounce(__alloLLT('stem.learning_lab.sr_learning_step_removed', 'Learning step removed.')); focusById('learning-lab-curriculum-steps-heading');
       });
     }
     function moveStep(step, direction) {
@@ -20368,25 +20368,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var title = String(newT.title || '').trim();
       if (!title) {
         setErrors(Object.assign({}, errors, { title: 'Enter a name for this transition plan.' }));
-        llAnnounce('Transition plan not created. Enter a name.');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_transition_plan_not_created_enter_a_name', 'Transition plan not created. Enter a name.'));
         focusById('learning-lab-transition-title');
         return;
       }
       var transition = Object.assign({ id: tkId(), createdAt: todayISO(), checklist: [], phase: 'pre', reflections: {} }, newT, { title: title, kind: kindFor(newT.kind).id });
       saveTransitions([transition].concat(transitions));
       setActiveId(transition.id); setNewT(emptyTransition); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); setView('edit');
-      llAnnounce('Transition plan created. The plan editor is open.'); focusById('learning-lab-transition-editor-heading');
+      llAnnounce(__alloLLT('stem.learning_lab.sr_transition_plan_created_the_plan_editor_is_open', 'Transition plan created. The plan editor is open.')); focusById('learning-lab-transition-editor-heading');
     }
-    function openTransition(transition) { setActiveId(transition.id); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); setView('edit'); llAnnounce('Transition plan opened.'); focusById('learning-lab-transition-editor-heading'); }
-    function returnToList(previousId) { setView('list'); setActiveId(null); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); llAnnounce('Returned to saved transition plans.'); focusById('learning-lab-transition-open-' + safeDomId(previousId)); }
+    function openTransition(transition) { setActiveId(transition.id); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); setView('edit'); llAnnounce(__alloLLT('stem.learning_lab.sr_transition_plan_opened', 'Transition plan opened.')); focusById('learning-lab-transition-editor-heading'); }
+    function returnToList(previousId) { setView('list'); setActiveId(null); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_saved_transition_plans', 'Returned to saved transition plans.')); focusById('learning-lab-transition-open-' + safeDomId(previousId)); }
     function changePhase(phase) { updateTransition({ phase: phase.id }); llAnnounce('Current reflection phase changed to ' + phase.label + '.'); }
     function addChecklistItem(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
       var text = String(checklistDraft || '').trim(); var transition = activeTransition();
-      if (!text) { setErrors(Object.assign({}, errors, { checklist: 'Enter a checklist item.' })); llAnnounce('Checklist item not added. Enter an item.'); focusById('learning-lab-transition-checklist-new'); return; }
+      if (!text) { setErrors(Object.assign({}, errors, { checklist: 'Enter a checklist item.' })); llAnnounce(__alloLLT('stem.learning_lab.sr_checklist_item_not_added_enter_an_item', 'Checklist item not added. Enter an item.')); focusById('learning-lab-transition-checklist-new'); return; }
       if (!transition) return;
       updateTransition({ checklist: (Array.isArray(transition.checklist) ? transition.checklist : []).concat([{ id: tkId(), text: text, done: false, createdAt: todayISO() }]) });
-      setChecklistDraft(''); setErrors(Object.assign({}, errors, { checklist: '' })); llAnnounce('Checklist item added.'); focusById('learning-lab-transition-checklist-new');
+      setChecklistDraft(''); setErrors(Object.assign({}, errors, { checklist: '' })); llAnnounce(__alloLLT('stem.learning_lab.sr_checklist_item_added', 'Checklist item added.')); focusById('learning-lab-transition-checklist-new');
     }
     function toggleChecklist(item) {
       var transition = activeTransition(); if (!transition) return;
@@ -20398,7 +20398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       askLearningLabConfirmation('Remove the checklist item “' + String(item.text || 'Untitled item') + '”? This cannot be undone.', { title: 'Remove checklist item?', confirmText: 'Remove item' }).then(function(accepted) {
         if (!accepted) return; var transition = activeTransition(); if (!transition) return;
         updateTransition({ checklist: (Array.isArray(transition.checklist) ? transition.checklist : []).filter(function(savedItem) { return savedItem.id !== item.id; }) });
-        llAnnounce('Checklist item removed.'); focusById('learning-lab-transition-checklist-new');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_checklist_item_removed', 'Checklist item removed.')); focusById('learning-lab-transition-checklist-new');
       });
     }
     function updateReflection(phaseId, text) { var transition = activeTransition(); if (!transition) return; var next = Object.assign({}, transition.reflections || {}); next[phaseId] = text; updateTransition({ reflections: next }); }
@@ -20407,7 +20407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         if (!accepted) return;
         saveTransitions(transitions.filter(function(savedTransition) { return savedTransition.id !== transition.id; }));
         if (fromEditor) { setView('list'); setActiveId(null); }
-        llAnnounce('Transition plan removed.'); focusById('learning-lab-transition-list-heading');
+        llAnnounce(__alloLLT('stem.learning_lab.sr_transition_plan_removed', 'Transition plan removed.')); focusById('learning-lab-transition-list-heading');
       });
     }
 
@@ -20609,28 +20609,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function openTemplate(template) { setActiveType(template.id); setForm(emptyForm); setErrors({ request: '' }); setPreviewOverride(null); setCopyStatus(null); llAnnounce('Opened ' + template.label + ' drafting form.'); focusById('learning-lab-accom-editor-heading'); }
     function finishEditor(template) { setActiveType(null); setForm(emptyForm); setErrors({ request: '' }); setPreviewOverride(null); setCopyStatus(null); focusById('learning-lab-accom-template-' + template.id); }
     function cancelEditor(template) {
-      function finish() { finishEditor(template); llAnnounce('Drafting form closed without saving.'); }
+      function finish() { finishEditor(template); llAnnounce(__alloLLT('stem.learning_lab.sr_drafting_form_closed_without_saving', 'Drafting form closed without saving.')); }
       if (!hasFormContent()) { finish(); return; }
       askLearningLabConfirmation('Discard the unsaved accommodation-request draft? This cannot be undone.', { title: 'Discard unsaved draft?', confirmText: 'Discard draft' }).then(function(accepted) { if (accepted) finish(); });
     }
     function save(template, event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
-      if (!form.request.trim()) { setErrors({ request: 'Describe the change or support you want to discuss.' }); llAnnounce('Draft not saved. Complete the required request field.'); focusById('learning-lab-accom-request'); return; }
+      if (!form.request.trim()) { setErrors({ request: 'Describe the change or support you want to discuss.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_draft_not_saved_complete_the_required_request_fie', 'Draft not saved. Complete the required request field.')); focusById('learning-lab-accom-request'); return; }
       var body = currentBody(template).trim();
       var draft = { id: tkId(), date: todayISO(), type: template.id, body: body };
-      saveDrafts([draft].concat(drafts)); finishEditor(template); llAnnounce('Accommodation request draft saved in this browser.'); focusById('learning-lab-accom-saved-heading');
+      saveDrafts([draft].concat(drafts)); finishEditor(template); llAnnounce(__alloLLT('stem.learning_lab.sr_accommodation_request_draft_saved_in_this_browser', 'Accommodation request draft saved in this browser.')); focusById('learning-lab-accom-saved-heading');
     }
     function copyText(text, textId, statusId) {
       var body = String(text || '').trim();
-      if (!body) { setCopyStatus({ id: statusId, message: 'Nothing was copied because this draft is empty.' }); llAnnounce('Nothing was copied because the draft is empty.'); focusById(textId); return; }
+      if (!body) { setCopyStatus({ id: statusId, message: 'Nothing was copied because this draft is empty.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_nothing_was_copied_because_the_draft_is_empty', 'Nothing was copied because the draft is empty.')); focusById(textId); return; }
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
-        setCopyStatus({ id: statusId, message: 'Clipboard access is unavailable. The draft is selected; use Control+C or Command+C.' }); llAnnounce('Clipboard access is unavailable. The draft text is selected for manual copying.'); focusById(textId, true); return;
+        setCopyStatus({ id: statusId, message: 'Clipboard access is unavailable. The draft is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_draft_text_is', 'Clipboard access is unavailable. The draft text is selected for manual copying.')); focusById(textId, true); return;
       }
-      Promise.resolve(navigator.clipboard.writeText(body)).then(function() { setCopyStatus({ id: statusId, message: 'Draft copied. Review it before sharing.' }); llAnnounce('Draft copied to the clipboard.'); }).catch(function() { setCopyStatus({ id: statusId, message: 'Automatic copying failed. The draft is selected; use Control+C or Command+C.' }); llAnnounce('Automatic copying failed. The draft text is selected for manual copying.'); focusById(textId, true); });
+      Promise.resolve(navigator.clipboard.writeText(body)).then(function() { setCopyStatus({ id: statusId, message: 'Draft copied. Review it before sharing.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_draft_copied_to_the_clipboard', 'Draft copied to the clipboard.')); }).catch(function() { setCopyStatus({ id: statusId, message: 'Automatic copying failed. The draft is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_draft_text_is_select', 'Automatic copying failed. The draft text is selected for manual copying.')); focusById(textId, true); });
     }
     function removeDraft(draft) {
       askLearningLabConfirmation('Remove this saved ' + (templateFor(draft.type) || TEMPLATES[0]).label + ' draft? This cannot be undone.', { title: 'Remove saved draft?', confirmText: 'Remove draft' }).then(function(accepted) {
-        if (!accepted) return; saveDrafts(drafts.filter(function(savedDraft) { return savedDraft.id !== draft.id; })); setCopyStatus(null); llAnnounce('Saved accommodation request draft removed.'); focusById('learning-lab-accom-saved-heading');
+        if (!accepted) return; saveDrafts(drafts.filter(function(savedDraft) { return savedDraft.id !== draft.id; })); setCopyStatus(null); llAnnounce(__alloLLT('stem.learning_lab.sr_saved_accommodation_request_draft_removed', 'Saved accommodation request draft removed.')); focusById('learning-lab-accom-saved-heading');
       });
     }
 
@@ -20845,25 +20845,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function poolForMode() { return mode === 'all' ? DECK : DECK.filter(function(question) { return DEEP_PROMPTS.indexOf(question) === -1; }); }
     function chooseCard() {
       var pool = poolForMode(); var recent = pickedQ || (answers[0] && answers[0].question); var choices = pool.filter(function(question) { return question !== recent; }); if (!choices.length) choices = pool;
-      var question = choices[Math.floor(Math.random() * choices.length)]; setPickedQ(question); setText(''); setAnswerError(''); llAnnounce('A reflection prompt was drawn.'); focusById('learning-lab-life-deck-question-heading');
+      var question = choices[Math.floor(Math.random() * choices.length)]; setPickedQ(question); setText(''); setAnswerError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_a_reflection_prompt_was_drawn', 'A reflection prompt was drawn.')); focusById('learning-lab-life-deck-question-heading');
     }
     function confirmDiscard(message, action) {
       if (!text.trim()) { action(); return; }
       askLearningLabConfirmation(message, { title: 'Discard unsaved response?', confirmText: 'Discard response' }).then(function(accepted) { if (accepted) action(); });
     }
     function drawDifferent() { confirmDiscard('Discard this unsaved response and draw a different prompt? This cannot be undone.', chooseCard); }
-    function cancelCard() { confirmDiscard('Discard this unsaved response and close the prompt? This cannot be undone.', function() { setPickedQ(null); setText(''); setAnswerError(''); llAnnounce('Reflection prompt closed without saving.'); focusById('learning-lab-life-deck-draw'); }); }
+    function cancelCard() { confirmDiscard('Discard this unsaved response and close the prompt? This cannot be undone.', function() { setPickedQ(null); setText(''); setAnswerError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_prompt_closed_without_saving', 'Reflection prompt closed without saving.')); focusById('learning-lab-life-deck-draw'); }); }
     function answer(event) {
       if (event && typeof event.preventDefault === 'function') event.preventDefault();
       var response = text.trim();
-      if (!pickedQ || !response) { setAnswerError('Enter a response before saving, or close this prompt without saving.'); llAnnounce('Response not saved. Enter a response or close the prompt.'); focusById('learning-lab-life-deck-response'); return; }
+      if (!pickedQ || !response) { setAnswerError('Enter a response before saving, or close this prompt without saving.'); llAnnounce(__alloLLT('stem.learning_lab.sr_response_not_saved_enter_a_response_or_close_the', 'Response not saved. Enter a response or close the prompt.')); focusById('learning-lab-life-deck-response'); return; }
       var saved = { id: tkId(), date: todayISO(), question: pickedQ, answer: response };
-      saveAnswers([saved].concat(answers)); setText(''); setPickedQ(null); setAnswerError(''); llAnnounce('Reflection response saved in this browser.'); focusById('learning-lab-life-deck-history-heading');
+      saveAnswers([saved].concat(answers)); setText(''); setPickedQ(null); setAnswerError(''); llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_response_saved_in_this_browser', 'Reflection response saved in this browser.')); focusById('learning-lab-life-deck-history-heading');
     }
     function updateAnswer(id, value) { saveAnswers(answers.map(function(answer) { return answer.id === id ? Object.assign({}, answer, { answer: value }) : answer; })); }
     function removeAnswer(answer) {
       askLearningLabConfirmation('Remove the saved response to “' + String(answer.question || 'this prompt') + '”? This cannot be undone.', { title: 'Remove saved response?', confirmText: 'Remove response' }).then(function(accepted) {
-        if (!accepted) return; saveAnswers(answers.filter(function(saved) { return saved.id !== answer.id; })); llAnnounce('Saved reflection response removed.'); focusById('learning-lab-life-deck-history-heading');
+        if (!accepted) return; saveAnswers(answers.filter(function(saved) { return saved.id !== answer.id; })); llAnnounce(__alloLLT('stem.learning_lab.sr_saved_reflection_response_removed', 'Saved reflection response removed.')); focusById('learning-lab-life-deck-history-heading');
       });
     }
 
@@ -20995,8 +20995,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function copySummary() {
       var text = summaryText(); var id = 'learning-lab-communication-summary';
-      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') { setCopyStatus('Clipboard access is unavailable. The summary is selected; use Control+C or Command+C.'); llAnnounce('Clipboard access is unavailable. The summary is selected for manual copying.'); focusById(id, true); return; }
-      Promise.resolve(navigator.clipboard.writeText(text)).then(function() { setCopyStatus('Summary copied. Review and adapt it before sharing.'); llAnnounce('Communication preference summary copied.'); }).catch(function() { setCopyStatus('Automatic copying failed. The summary is selected; use Control+C or Command+C.'); llAnnounce('Automatic copying failed. The summary is selected for manual copying.'); focusById(id, true); });
+      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') { setCopyStatus('Clipboard access is unavailable. The summary is selected; use Control+C or Command+C.'); llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_summary_is_se', 'Clipboard access is unavailable. The summary is selected for manual copying.')); focusById(id, true); return; }
+      Promise.resolve(navigator.clipboard.writeText(text)).then(function() { setCopyStatus('Summary copied. Review and adapt it before sharing.'); llAnnounce(__alloLLT('stem.learning_lab.sr_communication_preference_summary_copied', 'Communication preference summary copied.')); }).catch(function() { setCopyStatus('Automatic copying failed. The summary is selected; use Control+C or Command+C.'); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_summary_is_selected', 'Automatic copying failed. The summary is selected for manual copying.')); focusById(id, true); });
     }
     function resetProfile() {
       askLearningLabConfirmation('Clear all saved communication preferences and custom wording? This cannot be undone.', { title: 'Clear communication preferences?', confirmText: 'Clear preferences' }).then(function(accepted) { if (!accepted) return; saveProfile({}, 'Communication preferences cleared.'); focusById('learning-lab-communication-preferences-heading'); });
@@ -21444,8 +21444,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setPendingFocusId('');
     });
     function focusById(id) { setPendingFocusId(id); }
-    function openTool(tool) { if (typeof navigate !== 'function') { llAnnounce('This toolkit tool could not be opened.'); return; } llAnnounce('Opening ' + tool.label + '.'); navigate(tool.id); }
-    function clearSearch() { setQuery(''); llAnnounce('Toolkit search cleared. All tools are shown.'); focusById('learning-lab-toolkit-hub-search'); }
+    function openTool(tool) { if (typeof navigate !== 'function') { llAnnounce(__alloLLT('stem.learning_lab.sr_this_toolkit_tool_could_not_be_opened', 'This toolkit tool could not be opened.')); return; } llAnnounce('Opening ' + tool.label + '.'); navigate(tool.id); }
+    function clearSearch() { setQuery(''); llAnnounce(__alloLLT('stem.learning_lab.sr_toolkit_search_cleared_all_tools_are_shown', 'Toolkit search cleared. All tools are shown.')); focusById('learning-lab-toolkit-hub-search'); }
 
     return hh('div', { style: { padding: 14 } },
       hh('header', { style: { padding: '18px 16px', borderRadius: 12, marginBottom: 14, background: 'linear-gradient(135deg, rgba(147,51,234,0.20), rgba(15,23,42,0.72))', border: '1px solid #c084fc' } },

@@ -63,7 +63,7 @@ describe('Learning Lab Daily Moments accessibility', () => {
   });
 
   it('announces saving and restores form focus', () => {
-    expect(daily).toContain("llAnnounce('Daily reflection saved in this browser.')");
+    expect(daily).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_daily_reflection_saved_in_this_browser', 'Daily reflection saved in this browser.'))");
     expect(daily).toContain("focusById('learning-lab-daily-moment-1')");
   });
 
@@ -96,7 +96,7 @@ describe('Learning Lab Daily Moments accessibility', () => {
 
   it('names removal controls, announces removal, and restores focus', () => {
     expect(daily).toContain("'aria-label': 'Remove daily reflection with '");
-    expect(daily).toContain("llAnnounce('Saved daily reflection removed.')");
+    expect(daily).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_daily_reflection_removed', 'Saved daily reflection removed.'))");
     expect(daily).toContain("focusById('learning-lab-daily-history-heading')");
   });
 

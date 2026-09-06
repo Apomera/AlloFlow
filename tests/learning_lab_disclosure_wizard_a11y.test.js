@@ -103,7 +103,7 @@ describe('Learning Lab Disclosure Wizard accessibility', () => {
   });
 
   it('announces removal and restores focus to history', () => {
-    expect(wizard).toContain("llAnnounce('Disclosure decision removed.')");
+    expect(wizard).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_disclosure_decision_removed', 'Disclosure decision removed.'))");
     expect(wizard).toContain("focusById('learning-lab-disclosure-history-heading')");
     expect(wizard).toContain("tabIndex: -1");
   });

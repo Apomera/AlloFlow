@@ -63,7 +63,7 @@ describe('Learning Lab optional appreciation notes accessibility', () => {
     expect(gratitude).toContain("setData(Object.assign({}, data, { entries:");
     expect(gratitude).not.toContain('setData({ entries:');
     expect(gratitude).toContain("llAnnounce('Optional appreciation entry saved with '");
-    expect(gratitude).toContain("llAnnounce('Optional appreciation entry deleted.')");
+    expect(gratitude).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_optional_appreciation_entry_deleted', 'Optional appreciation entry deleted.'))");
   });
 
   it('removes coercive cross-tool prompts and updates catalog copy', () => {

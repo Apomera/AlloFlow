@@ -71,8 +71,8 @@ describe('Learning Lab Personal Identity Map accessibility', () => {
   });
 
   it('announces print success and failure states', () => {
-    expect(map).toContain("llAnnounce('Opening the browser print dialog for your identity map.')");
-    expect(map).toContain("llAnnounce('The print dialog could not be opened in this browser.')");
+    expect(map).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_opening_the_browser_print_dialog_for_your_identit', 'Opening the browser print dialog for your identity map.'))");
+    expect(map).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_the_print_dialog_could_not_be_opened_in_this_brow', 'The print dialog could not be opened in this browser.'))");
   });
 
   it('hides decorative icons from assistive technology', () => {

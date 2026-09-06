@@ -125,7 +125,7 @@ describe('Learning Lab Priorities Matrix accessibility', () => {
 
   it('names remove controls, announces removal, and restores focus', () => {
     expect(priorities).toContain("'aria-label': 'Remove task: ' + taskText");
-    expect(priorities).toContain("llAnnounce('Task removed from the priorities matrix.')");
+    expect(priorities).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_task_removed_from_the_priorities_matrix', 'Task removed from the priorities matrix.'))");
     expect(priorities).toContain("focusById('learning-lab-priorities-matrix-heading')");
   });
 

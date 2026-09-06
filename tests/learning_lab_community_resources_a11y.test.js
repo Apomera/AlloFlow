@@ -144,7 +144,7 @@ describe('Learning Lab Community Resources accessibility', () => {
 
   it('names personal removal controls, announces removal, and restores focus', () => {
     expect(resources).toContain("'aria-label': 'Remove personal resource: '");
-    expect(resources).toContain("llAnnounce('Personal community resource removed.')");
+    expect(resources).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_personal_community_resource_removed', 'Personal community resource removed.'))");
     expect(resources).toContain("focusById('learning-lab-resource-list-heading')");
     expect(resources).toContain('resource.builtin ? null');
   });

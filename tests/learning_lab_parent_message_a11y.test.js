@@ -81,7 +81,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
 
   it('uses nonblocking live copy feedback instead of alert', () => {
     expect(messages).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
-    expect(messages).toContain("llAnnounce('Message copied to the clipboard.')");
+    expect(messages).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_message_copied_to_the_clipboard', 'Message copied to the clipboard.'))");
     expect(messages).not.toContain("alert('Copied.');");
   });
 
@@ -120,7 +120,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
   it('confirms removal and restores saved-list focus', () => {
     expect(messages).toContain("title: 'Remove this saved draft?', confirmText: 'Remove draft'");
     expect(messages).toContain("setData(Object.assign({}, data, { drafts: rawDrafts.filter");
-    expect(messages).toContain("llAnnounce('Saved message draft removed.')");
+    expect(messages).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_message_draft_removed', 'Saved message draft removed.'))");
     expect(messages).toContain("focusById('learning-lab-message-saved-heading')");
   });
 

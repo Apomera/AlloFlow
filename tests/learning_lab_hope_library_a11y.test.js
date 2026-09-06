@@ -72,7 +72,7 @@ describe('Learning Lab Hope Library accessibility', () => {
 
   it('announces saving, features the new item, and restores form focus', () => {
     expect(hope).toContain('setFeaturedId(hope.id)');
-    expect(hope).toContain("llAnnounce('Hope saved in this browser.')");
+    expect(hope).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_hope_saved_in_this_browser', 'Hope saved in this browser.'))");
     expect(hope).toContain("focusById('learning-lab-hope-text')");
   });
 
@@ -100,9 +100,9 @@ describe('Learning Lab Hope Library accessibility', () => {
   });
 
   it('announces featured changes and retains button focus', () => {
-    expect(hope).toContain("llAnnounce('Showing another saved hope.')");
+    expect(hope).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_showing_another_saved_hope', 'Showing another saved hope.'))");
     expect(hope).toContain("focusById('learning-lab-hope-feature-next')");
-    expect(hope).toContain("llAnnounce('There is only one active hope to feature.')");
+    expect(hope).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_there_is_only_one_active_hope_to_feature', 'There is only one active hope to feature.'))");
   });
 
   it('always provides named saved content and a non-pressuring empty state', () => {
@@ -156,7 +156,7 @@ describe('Learning Lab Hope Library accessibility', () => {
 
   it('names removal, announces it, and restores list focus', () => {
     expect(hope).toContain("'aria-label': 'Remove saved hope: '");
-    expect(hope).toContain("llAnnounce('Saved hope removed.')");
+    expect(hope).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_hope_removed', 'Saved hope removed.'))");
     expect(hope).toContain("focusById('learning-lab-hope-list-heading')");
   });
 

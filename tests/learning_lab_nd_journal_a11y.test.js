@@ -62,7 +62,7 @@ describe('Learning Lab Neurodivergence Journal accessibility', () => {
 
   it('preserves unrelated data and announces entry saving', () => {
     expect(journal).toContain("setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }))");
-    expect(journal).toContain("llAnnounce('Journal entry saved in this browser.')");
+    expect(journal).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_journal_entry_saved_in_this_browser', 'Journal entry saved in this browser.'))");
   });
 
   it('discloses local sensitive-data storage and lack of monitoring', () => {
@@ -100,7 +100,7 @@ describe('Learning Lab Neurodivergence Journal accessibility', () => {
 
   it('names removal controls, announces removal, and restores focus', () => {
     expect(journal).toContain("'aria-label': 'Remove journal entry: ' + topic.label");
-    expect(journal).toContain("llAnnounce('Journal entry removed.')");
+    expect(journal).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_journal_entry_removed', 'Journal entry removed.'))");
     expect(journal).toContain("focusById('learning-lab-nd-history-heading')");
   });
 

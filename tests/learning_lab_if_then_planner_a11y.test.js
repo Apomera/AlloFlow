@@ -57,7 +57,7 @@ describe('Learning Lab Personal If-Then Planner accessibility', () => {
   });
 
   it('announces validation without using a browser alert', () => {
-    expect(planner).toContain("llAnnounce('The if-then plan has missing required information.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_the_if_then_plan_has_missing_required_information', 'The if-then plan has missing required information.'))");
     expect(planner).not.toContain('alert(');
   });
 
@@ -88,8 +88,8 @@ describe('Learning Lab Personal If-Then Planner accessibility', () => {
   });
 
   it('announces save, cancel, and recorded-use outcomes', () => {
-    expect(planner).toContain("llAnnounce('If-then plan saved.')");
-    expect(planner).toContain("llAnnounce('New if-then plan canceled.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_if_then_plan_saved', 'If-then plan saved.'))");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_new_if_then_plan_canceled', 'New if-then plan canceled.'))");
     expect(planner).toContain("llAnnounce('Use recorded for plan: When ' + plan.ifPart + '.')");
   });
 
@@ -122,7 +122,7 @@ describe('Learning Lab Personal If-Then Planner accessibility', () => {
 
   it('confirms deletion, announces it, and restores heading focus', () => {
     expect(planner).toContain("title: 'Delete this if-then plan?', confirmText: 'Delete plan'");
-    expect(planner).toContain("llAnnounce('If-then plan deleted.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_if_then_plan_deleted', 'If-then plan deleted.'))");
     expect(planner).toContain("setFocusTarget('learning-lab-ifthen-heading')");
   });
 

@@ -37,8 +37,8 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   });
 
   it('announces saved and removed states', () => {
-    expect(worry).toContain("llAnnounce('Worry saved for worry time.')");
-    expect(worry).toContain("llAnnounce('Worry removed.')");
+    expect(worry).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_worry_saved_for_worry_time', 'Worry saved for worry time.'))");
+    expect(worry).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_worry_removed', 'Worry removed.'))");
   });
 
   it('confirms removal through the accessible app dialog', () => {
@@ -60,8 +60,8 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   it('announces timer start, pause, reset, and completion', () => {
     expect(worry).toContain("'Worry-time timer started for '");
     expect(worry).toContain("'Worry-time timer paused with '");
-    expect(worry).toContain("llAnnounce('Worry-time timer reset to 15 minutes.')");
-    expect(worry).toContain("llAnnounce('Worry time is complete.");
+    expect(worry).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_worry_time_timer_reset_to_15_minutes', 'Worry-time timer reset to 15 minutes.'))");
+    expect(worry).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_worry_time_is_complete_pause_ground_yourself_and', 'Worry time is complete.");
   });
 
   it('restores focus after timer reset and completion', () => {
@@ -101,7 +101,7 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   it('moves focus into and back out of the processor', () => {
     expect(worry).toContain("focusById('learning-lab-worry-processor-heading')");
     expect(worry).toContain("focusById('learning-lab-worry-process-' + worryId)");
-    expect(worry).toContain("llAnnounce('Returned to open worries without processing.')");
+    expect(worry).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_open_worries_without_processing', 'Returned to open worries without processing.'))");
   });
 
   it('handles final-worry focus without targeting a removed heading', () => {

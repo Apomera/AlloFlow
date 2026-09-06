@@ -179,7 +179,7 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
 
   it('returns focus to the originating context after closing', () => {
     expect(builder).toContain("focusById('learning-lab-accom-template-' + template.id)");
-    expect(builder).toContain("llAnnounce('Drafting form closed without saving.')");
+    expect(builder).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_drafting_form_closed_without_saving', 'Drafting form closed without saving.'))");
   });
 
   it('saves the reviewed preview text rather than regenerating it', () => {
@@ -188,7 +188,7 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
   });
 
   it('announces saved drafts and focuses the saved section', () => {
-    expect(builder).toContain("llAnnounce('Accommodation request draft saved in this browser.')");
+    expect(builder).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_accommodation_request_draft_saved_in_this_browser', 'Accommodation request draft saved in this browser.'))");
     expect(builder).toContain("focusById('learning-lab-accom-saved-heading')");
   });
 
@@ -236,7 +236,7 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
   it('confirms saved-draft removal before changing data', () => {
     expect(builder).toContain("title: 'Remove saved draft?', confirmText: 'Remove draft'");
     expect(builder).toContain('if (!accepted) return;');
-    expect(builder).toContain("llAnnounce('Saved accommodation request draft removed.')");
+    expect(builder).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_accommodation_request_draft_removed', 'Saved accommodation request draft removed.'))");
   });
 
   it('uses responsive layouts and 44-pixel controls', () => {

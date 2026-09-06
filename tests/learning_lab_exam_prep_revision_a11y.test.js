@@ -64,7 +64,7 @@ describe('Learning Lab Exam Prep revised accessibility', () => {
   it('focuses the first invalid field and announces the validation summary', () => {
     expect(planner).toContain("var invalidId = nextErrors.name ? 'learning-lab-exam-name'");
     expect(planner).toContain('setFocusTarget(invalidId)');
-    expect(planner).toContain("llAnnounce('The exam plan has invalid or missing information.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_the_exam_plan_has_invalid_or_missing_information', 'The exam plan has invalid or missing information.'))");
   });
 
   it('clears individual validation errors during editing', () => {
@@ -82,10 +82,10 @@ describe('Learning Lab Exam Prep revised accessibility', () => {
   });
 
   it('announces create, cancel, completion toggle, and deletion outcomes', () => {
-    expect(planner).toContain("llAnnounce('Exam prep plan generated.')");
-    expect(planner).toContain("llAnnounce('Exam plan creation canceled.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_exam_prep_plan_generated', 'Exam prep plan generated.'))");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_exam_plan_creation_canceled', 'Exam plan creation canceled.'))");
     expect(planner).toContain("(wasDone ? 'Marked incomplete: ' : 'Marked complete: ')");
-    expect(planner).toContain("llAnnounce('Exam prep plan deleted.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_exam_prep_plan_deleted', 'Exam prep plan deleted.'))");
   });
 
   it('uses a qualified named note for the scheduling heuristic', () => {

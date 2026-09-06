@@ -127,7 +127,7 @@ describe('Learning Lab Body Awareness accessibility', () => {
   it('names deletion, preserves data, announces removal, and restores useful focus', () => {
     expect(body).toContain("'aria-label': 'Remove body check from ' + (textValue(entry.date).trim() || 'unknown date')");
     expect(body).toContain("setData(Object.assign({}, data, { checks: rawChecks.filter");
-    expect(body).toContain("llAnnounce('Body comfort check removed.')");
+    expect(body).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_body_comfort_check_removed', 'Body comfort check removed.'))");
     expect(body).toContain("entry.date === todayISO() ? 'learning-lab-body-form-heading' : 'learning-lab-body-history-heading'");
   });
 

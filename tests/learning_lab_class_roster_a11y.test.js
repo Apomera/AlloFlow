@@ -77,8 +77,8 @@ describe('Learning Lab Class Roster accessibility', () => {
   it('announces add, update, edit, cancel, and removal states', () => {
     expect(roster).toContain("index >= 0 ? 'Class updated: '");
     expect(roster).toContain("llAnnounce('Editing class: '");
-    expect(roster).toContain("llAnnounce('Class edit canceled.')");
-    expect(roster).toContain("llAnnounce('Class removed.')");
+    expect(roster).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_class_edit_canceled', 'Class edit canceled.'))");
+    expect(roster).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_class_removed', 'Class removed.'))");
   });
 
   it('uses a named native-button group for form actions', () => {

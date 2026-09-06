@@ -100,7 +100,7 @@ describe('Learning Lab Role Models accessibility', () => {
   it('names deletion, preserves data, announces removal, and restores focus', () => {
     expect(models).toContain("'aria-label': 'Remove role model: ' + (textValue(entry.name).trim() || 'Unnamed role model')");
     expect(models).toContain("setData(Object.assign({}, data, { models: rawModels.filter");
-    expect(models).toContain("llAnnounce('Role model removed.')");
+    expect(models).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_role_model_removed', 'Role model removed.'))");
     expect(models).toContain("focusById('learning-lab-role-model-history-heading')");
   });
 

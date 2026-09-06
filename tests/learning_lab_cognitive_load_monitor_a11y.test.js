@@ -61,10 +61,10 @@ describe('Learning Lab Cognitive Load Monitor revised accessibility', () => {
   });
 
   it('announces edit, save, cancel, and delete outcomes', () => {
-    expect(monitor).toContain("llAnnounce('Today\\'s check-in opened for editing.')");
-    expect(monitor).toContain("llAnnounce('Check-in editing canceled.')");
+    expect(monitor).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_today_s_check_in_opened_for_editing', 'Today\\'s check-in opened for editing.')");
+    expect(monitor).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_check_in_editing_canceled', 'Check-in editing canceled.'))");
     expect(monitor).toContain("llAnnounce(existing ? 'Cognitive-load check-in changes saved.' : 'Cognitive-load check-in saved.')");
-    expect(monitor).toContain("llAnnounce('Cognitive-load check-in deleted.')");
+    expect(monitor).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_cognitive_load_check_in_deleted', 'Cognitive-load check-in deleted.'))");
   });
 
   it('uses date-only UTC-safe history calculations', () => {

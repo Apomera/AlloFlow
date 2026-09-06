@@ -43,9 +43,9 @@ describe('Learning Lab Reflection Prompts revised accessibility', () => {
   });
 
   it('announces validation, save, navigation, and deletion outcomes', () => {
-    expect(prompts).toContain("llAnnounce('A reflection response is required before saving.')");
+    expect(prompts).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_a_reflection_response_is_required_before_saving', 'A reflection response is required before saving.'))");
     expect(prompts).toContain("returnToLibrary('Reflection response saved.')");
-    expect(prompts).toContain("llAnnounce('Reflection response deleted.')");
+    expect(prompts).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_response_deleted', 'Reflection response deleted.'))");
   });
 
   it('uses semantic named category and prompt lists', () => {

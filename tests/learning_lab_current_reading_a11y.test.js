@@ -37,7 +37,7 @@ describe('Learning Lab Current Reading accessibility', () => {
   });
 
   it('reports add errors inline and focuses the first invalid field', () => {
-    expect(reading).toContain("setFormErrors(nextErrors); llAnnounce('Book not added. Review the highlighted fields.')");
+    expect(reading).toContain("setFormErrors(nextErrors); llAnnounce(__alloLLT('stem.learning_lab.sr_book_not_added_review_the_highlighted_fields', 'Book not added. Review the highlighted fields.'))");
     expect(reading).toContain("id: 'learning-lab-reading-title-error', role: 'alert'");
     expect(reading).toContain("id: 'learning-lab-reading-current-error', role: 'alert'");
     expect(reading).toContain("id: 'learning-lab-reading-total-error', role: 'alert'");
@@ -73,7 +73,7 @@ describe('Learning Lab Current Reading accessibility', () => {
   });
 
   it('reports per-book progress errors and focuses the invalid field', () => {
-    expect(reading).toContain("llAnnounce('Reading progress not saved. Review the highlighted fields.')");
+    expect(reading).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reading_progress_not_saved_review_the_highlighted', 'Reading progress not saved. Review the highlighted fields.'))");
     expect(reading).toContain("'-current-error', role: 'alert'");
     expect(reading).toContain("'-total-error', role: 'alert'");
     expect(reading).toContain("focusById('learning-lab-reading-progress-' + book.id");
@@ -126,7 +126,7 @@ describe('Learning Lab Current Reading accessibility', () => {
 
   it('names removal controls, announces removal, and restores list focus', () => {
     expect(reading).toContain("'aria-label': 'Remove book: ' + String(book.title || 'Untitled book')");
-    expect(reading).toContain("llAnnounce('Book removed from Currently Reading.')");
+    expect(reading).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_book_removed_from_currently_reading', 'Book removed from Currently Reading.'))");
     expect(reading).toContain("focusById('learning-lab-reading-list-heading')");
   });
 

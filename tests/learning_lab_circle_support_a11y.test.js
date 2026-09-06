@@ -118,7 +118,7 @@ describe('Learning Lab Circle of Support accessibility', () => {
   it('names deletion, preserves data, announces removal, and restores focus', () => {
     expect(support).toContain("'aria-label': 'Remove support contact: ' + String(entry.name || 'Unnamed contact')");
     expect(support).toContain("setData(Object.assign({}, data, { people: (data.people || []).filter");
-    expect(support).toContain("llAnnounce('Support contact removed.')");
+    expect(support).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_support_contact_removed', 'Support contact removed.'))");
     expect(support).toContain("focusById('learning-lab-support-list-heading')");
   });
 

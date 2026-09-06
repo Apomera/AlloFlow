@@ -97,7 +97,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
   });
 
   it('returns to the originating Open button', () => {
-    expect(curriculum).toContain("llAnnounce('Returned to all curricula.')");
+    expect(curriculum).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_all_curricula', 'Returned to all curricula.'))");
     expect(curriculum).toContain("focusById('learning-lab-curriculum-open-' + safeDomId(previous))");
   });
 
@@ -210,7 +210,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
   it('confirms step removal and restores step-section focus', () => {
     expect(curriculum).toContain("title: 'Remove this learning step?', confirmText: 'Remove step'");
     expect(curriculum).toContain("'aria-label': 'Remove learning step: '");
-    expect(curriculum).toContain("llAnnounce('Learning step removed.')");
+    expect(curriculum).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_learning_step_removed', 'Learning step removed.'))");
     expect(curriculum).toContain("focusById('learning-lab-curriculum-steps-heading')");
   });
 
@@ -233,7 +233,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
   });
 
   it('announces curriculum removal and restores list focus', () => {
-    expect(curriculum).toContain("llAnnounce('Curriculum and its steps removed.')");
+    expect(curriculum).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_curriculum_and_its_steps_removed', 'Curriculum and its steps removed.'))");
     expect(curriculum).toContain("focusById('learning-lab-curriculum-list-heading')");
   });
 

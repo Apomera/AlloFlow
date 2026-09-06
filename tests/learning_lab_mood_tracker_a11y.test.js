@@ -108,7 +108,7 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
   it('names deletion controls and restores focus after removal', () => {
     expect(tracker).toContain("'aria-label': 'Remove mood check-in from ' + logDate");
     expect(tracker).toContain("focusById('learning-lab-mood-recent-heading')");
-    expect(tracker).toContain("llAnnounce('Mood check-in removed.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_mood_check_in_removed', 'Mood check-in removed.'))");
   });
 
   it('provides 44-pixel fields and controls', () => {

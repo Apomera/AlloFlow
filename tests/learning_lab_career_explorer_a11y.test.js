@@ -49,13 +49,13 @@ describe('Learning Lab Personal Career Explorer accessibility', () => {
   });
 
   it('announces and focuses the results view', () => {
-    expect(explorer).toContain("llAnnounce('Career suggestions ready. Showing your top matches.')");
+    expect(explorer).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_career_suggestions_ready_showing_your_top_matches', 'Career suggestions ready. Showing your top matches.'))");
     expect(explorer).toContain("focusById('learning-lab-career-results-heading')");
     expect(explorer).toContain("id: 'learning-lab-career-results-heading', tabIndex: -1");
   });
 
   it('resets the quiz with an announcement and focus restoration', () => {
-    expect(explorer).toContain("llAnnounce('Career quiz reset. Five questions are ready.')");
+    expect(explorer).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_career_quiz_reset_five_questions_are_ready', 'Career quiz reset. Five questions are ready.'))");
     expect(explorer).toContain("focusById('learning-lab-career-q1-people')");
     expect(explorer).toContain("hh('button', { type: 'button', onClick: retakeQuiz");
   });

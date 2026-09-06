@@ -169,7 +169,7 @@ describe('Learning Lab Momentum Calendar accessibility', () => {
 
   it('names removal, announces it, and restores list focus', () => {
     expect(calendar).toContain("'aria-label': 'Remove momentum calendar: '");
-    expect(calendar).toContain("llAnnounce('Momentum item and its marked dates removed.')");
+    expect(calendar).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_momentum_item_and_its_marked_dates_removed', 'Momentum item and its marked dates removed.'))");
     expect(calendar).toContain("focusById('learning-lab-momentum-list-heading')");
   });
 

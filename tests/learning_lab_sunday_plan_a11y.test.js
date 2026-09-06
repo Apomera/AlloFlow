@@ -53,7 +53,7 @@ describe('Learning Lab Sunday Plan accessibility', () => {
   it('reports empty submission inline and focuses the first prompt', () => {
     expect(plan).toContain("id: 'learning-lab-weekly-plan-error', role: 'alert'");
     expect(plan).toContain("'aria-invalid': index === 0 && formError ? 'true' : undefined");
-    expect(plan).toContain("llAnnounce('Weekly plan not saved. Add a response first.')");
+    expect(plan).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_weekly_plan_not_saved_add_a_response_first', 'Weekly plan not saved. Add a response first.'))");
     expect(plan).toContain("focusById('learning-lab-weekly-plan-wins')");
     expect(plan).not.toContain('alert(');
   });
@@ -68,7 +68,7 @@ describe('Learning Lab Sunday Plan accessibility', () => {
 
   it('clears the form, announces saving, and restores focus', () => {
     expect(plan).toContain("setForm(emptyForm); setFormError('')");
-    expect(plan).toContain("llAnnounce('Weekly plan saved in this browser.')");
+    expect(plan).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_weekly_plan_saved_in_this_browser', 'Weekly plan saved in this browser.'))");
     expect(plan).toContain("focusById('learning-lab-weekly-plan-wins')");
   });
 
@@ -121,7 +121,7 @@ describe('Learning Lab Sunday Plan accessibility', () => {
 
   it('provides contextual removal names, announcement, and focus recovery', () => {
     expect(plan).toContain("'aria-label': 'Remove weekly plan from '");
-    expect(plan).toContain("llAnnounce('Saved weekly plan removed.')");
+    expect(plan).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_weekly_plan_removed', 'Saved weekly plan removed.'))");
     expect(plan).toContain("focusById('learning-lab-weekly-plan-history-heading')");
   });
 

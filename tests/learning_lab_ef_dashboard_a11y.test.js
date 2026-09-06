@@ -37,7 +37,7 @@ describe('Learning Lab Executive Function Reflection accessibility', () => {
     expect(dashboard).toContain("hh('time', { dateTime: date.toISOString()");
     expect(dashboard).toContain("return isNaN(date.getTime()) ? new Date() : date");
     expect(dashboard).toContain("title: 'Delete this reflection?', confirmText: 'Delete reflection'");
-    expect(dashboard).toContain("llAnnounce('Executive function reflection deleted.')");
+    expect(dashboard).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_executive_function_reflection_deleted', 'Executive function reflection deleted.'))");
   });
   it('makes the strategy library independent of having a rating and restores launcher focus', () => {
     expect(dashboard).toContain("id: 'learning-lab-ef-dimension-' + item.id");

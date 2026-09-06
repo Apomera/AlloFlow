@@ -52,15 +52,15 @@ describe('Learning Lab Learning Profile revised accessibility', () => {
   it('provides print success status, failure alert, and announcements', () => {
     expect(profile).toContain("role: printError ? 'alert' : 'status'");
     expect(profile).toContain('Print dialog requested. Review the destination and included information');
-    expect(profile).toContain("llAnnounce('Print dialog requested. Review the profile before sharing it.')");
-    expect(profile).toContain("llAnnounce('The print dialog could not open.')");
+    expect(profile).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_print_dialog_requested_review_the_profile_before', 'Print dialog requested. Review the profile before sharing it.'))");
+    expect(profile).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_the_print_dialog_could_not_open', 'The print dialog could not open.'))");
   });
 
   it('provides an accessible clear-data confirmation and focus restoration', () => {
     expect(profile).toContain("title: 'Clear this learning profile?', confirmText: 'Clear profile'");
     expect(profile).toContain("setData(Object.assign({}, data, { profile: {} }))");
     expect(profile).toContain("setFocusTarget('learning-lab-profile-name')");
-    expect(profile).toContain("llAnnounce('Learning profile cleared.')");
+    expect(profile).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_learning_profile_cleared', 'Learning profile cleared.'))");
   });
 
   it('uses consent-based sharing language without directing disclosure', () => {

@@ -58,7 +58,7 @@ describe('Learning Lab Life Deck accessibility', () => {
   });
 
   it('announces a draw and focuses the prompt heading', () => {
-    expect(deck).toContain("llAnnounce('A reflection prompt was drawn.')");
+    expect(deck).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_a_reflection_prompt_was_drawn', 'A reflection prompt was drawn.'))");
     expect(deck).toContain("focusById('learning-lab-life-deck-question-heading')");
   });
 
@@ -101,7 +101,7 @@ describe('Learning Lab Life Deck accessibility', () => {
   });
 
   it('announces saving and focuses the history heading', () => {
-    expect(deck).toContain("llAnnounce('Reflection response saved in this browser.')");
+    expect(deck).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_response_saved_in_this_browser', 'Reflection response saved in this browser.'))");
     expect(deck).toContain("focusById('learning-lab-life-deck-history-heading')");
   });
 
@@ -116,7 +116,7 @@ describe('Learning Lab Life Deck accessibility', () => {
   });
 
   it('announces closing and restores focus to Draw', () => {
-    expect(deck).toContain("llAnnounce('Reflection prompt closed without saving.')");
+    expect(deck).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_prompt_closed_without_saving', 'Reflection prompt closed without saving.'))");
     expect(deck).toContain("focusById('learning-lab-life-deck-draw')");
   });
 
@@ -162,7 +162,7 @@ describe('Learning Lab Life Deck accessibility', () => {
   });
 
   it('announces removal and restores history focus', () => {
-    expect(deck).toContain("llAnnounce('Saved reflection response removed.')");
+    expect(deck).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_reflection_response_removed', 'Saved reflection response removed.'))");
     expect(deck).toContain("focusById('learning-lab-life-deck-history-heading')");
   });
 

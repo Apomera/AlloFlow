@@ -30,7 +30,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   it('requires a meaningful title instead of silently creating an untitled goal', () => {
     expect(goal).toContain("var title = String(form.title || '').trim()");
     expect(goal).toContain("setFormError('Enter a short goal title before saving.')");
-    expect(goal).toContain("llAnnounce('Goal title is required.')");
+    expect(goal).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_goal_title_is_required', 'Goal title is required.'))");
     expect(goal).not.toContain("title: form.title || 'Untitled goal'");
   });
 
@@ -112,7 +112,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('announces deletion and restores list focus', () => {
-    expect(goal).toContain("llAnnounce('Goal deleted.')");
+    expect(goal).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_goal_deleted', 'Goal deleted.'))");
     expect(goal).toContain("setDetailId(null); setView('list')");
   });
 

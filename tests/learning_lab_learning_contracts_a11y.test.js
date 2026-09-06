@@ -43,14 +43,14 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   });
 
   it('adds commitment fields with announcements and focus', () => {
-    expect(contracts).toContain("llAnnounce('Commitment field added.')");
+    expect(contracts).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_commitment_field_added', 'Commitment field added.'))");
     expect(contracts).toContain("focusById('learning-lab-contract-commitment-' + entry.id)");
     expect(contracts).toContain("form.commitments.length >= 20");
   });
 
   it('provides named 44-pixel removal controls for commitment fields', () => {
     expect(contracts).toContain("'aria-label': 'Remove commitment ' + (index + 1)");
-    expect(contracts).toContain("llAnnounce('Commitment field removed.')");
+    expect(contracts).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_commitment_field_removed', 'Commitment field removed.'))");
     expect(contracts).toContain("minWidth: 44, minHeight: 44");
   });
 
@@ -89,7 +89,7 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   it('confirms before discarding a changed draft', () => {
     expect(contracts).toContain("title: 'Discard this contract draft?', confirmText: 'Discard draft'");
     expect(contracts).toContain('Return to the contract list and discard this unsaved draft?');
-    expect(contracts).toContain("llAnnounce('Unsaved contract draft discarded.')");
+    expect(contracts).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_unsaved_contract_draft_discarded', 'Unsaved contract draft discarded.'))");
   });
 
   it('moves focus between the contract list and editor', () => {
@@ -113,7 +113,7 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   it('names deletion, preserves data, announces removal, and restores focus', () => {
     expect(contracts).toContain("'aria-label': 'Delete learning contract: ' + (textValue(entry.title).trim() || 'Untitled contract')");
     expect(contracts).toContain("setData(Object.assign({}, data, { contracts: rawContracts.filter");
-    expect(contracts).toContain("llAnnounce('Learning contract deleted.')");
+    expect(contracts).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_learning_contract_deleted', 'Learning contract deleted.'))");
     expect(contracts).toContain("focusById('learning-lab-contract-list-heading')");
   });
 

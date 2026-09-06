@@ -41,7 +41,7 @@ describe('Learning Lab Sensory Preferences accessibility', () => {
   });
 
   it('announces preference saving and restores heading focus', () => {
-    expect(sensory).toContain("llAnnounce('Sensory preferences saved in this browser.')");
+    expect(sensory).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_sensory_preferences_saved_in_this_browser', 'Sensory preferences saved in this browser.'))");
     expect(sensory).toContain("focusById('learning-lab-sensory-profile-heading')");
   });
 
@@ -61,7 +61,7 @@ describe('Learning Lab Sensory Preferences accessibility', () => {
 
   it('preserves unrelated data when saving observations', () => {
     expect(sensory).toContain("setData(Object.assign({}, data, { observations: [entry].concat(data.observations || []) }))");
-    expect(sensory).toContain("llAnnounce('Sensory observation saved.')");
+    expect(sensory).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_sensory_observation_saved', 'Sensory observation saved.'))");
   });
 
   it('uses a named semantic observation list with labeled articles', () => {
@@ -84,7 +84,7 @@ describe('Learning Lab Sensory Preferences accessibility', () => {
 
   it('names removal controls, announces removal, and restores focus', () => {
     expect(sensory).toContain("'aria-label': 'Remove sensory observation: '");
-    expect(sensory).toContain("llAnnounce('Sensory observation removed.')");
+    expect(sensory).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_sensory_observation_removed', 'Sensory observation removed.'))");
     expect(sensory).toContain("focusById('learning-lab-sensory-observations-heading')");
   });
 

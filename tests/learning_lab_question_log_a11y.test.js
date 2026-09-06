@@ -138,7 +138,7 @@ describe('Learning Lab Personal Question Log accessibility', () => {
   it('names removal controls, preserves data, announces removal, and restores focus', () => {
     expect(questionLog).toContain("'aria-label': 'Remove question: ' + (textValue(q.text).trim() || 'Untitled question')");
     expect(questionLog).toContain("setData(Object.assign({}, data, { questions: rawQuestions.filter");
-    expect(questionLog).toContain("llAnnounce('Question removed.')");
+    expect(questionLog).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_question_removed', 'Question removed.'))");
     expect(questionLog).toContain("focusById('learning-lab-question-results-heading')");
   });
 

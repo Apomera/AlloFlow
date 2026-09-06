@@ -78,7 +78,7 @@ describe('Learning Lab My Toolkit Hub accessibility', () => {
   });
 
   it('announces search clearing and restores search focus', () => {
-    expect(hub).toContain("llAnnounce('Toolkit search cleared. All tools are shown.')");
+    expect(hub).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_toolkit_search_cleared_all_tools_are_shown', 'Toolkit search cleared. All tools are shown.'))");
     expect(hub).toContain("focusById('learning-lab-toolkit-hub-search')");
   });
 
@@ -119,7 +119,7 @@ describe('Learning Lab My Toolkit Hub accessibility', () => {
   it('announces tool navigation and handles an unavailable navigator', () => {
     expect(hub).toContain("llAnnounce('Opening ' + tool.label + '.')");
     expect(hub).toContain("typeof navigate !== 'function'");
-    expect(hub).toContain("llAnnounce('This toolkit tool could not be opened.')");
+    expect(hub).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_this_toolkit_tool_could_not_be_opened', 'This toolkit tool could not be opened.'))");
   });
 
   it('removes the inaccurate duplicate coming-soon teaser', () => {

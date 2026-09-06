@@ -121,7 +121,7 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
 
   it('only quizzes words with both a term and definition', () => {
     expect(vocab).toContain("filter(function(word) { return textValue(word.word).trim() && textValue(word.definition).trim(); })");
-    expect(vocab).toContain("llAnnounce('Add a word and definition before starting a quiz.')");
+    expect(vocab).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_add_a_word_and_definition_before_starting_a_quiz', 'Add a word and definition before starting a quiz.'))");
   });
 
   it('moves focus between list, word, and quiz modes', () => {
@@ -134,7 +134,7 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
     expect(vocab).toContain("llAnnounce('Vocabulary list created: '");
     expect(vocab).toContain("llAnnounce('Vocabulary word added: '");
     expect(vocab).toContain("llAnnounce('Vocabulary quiz started. '");
-    expect(vocab).toContain("llAnnounce('Vocabulary word deleted.')");
+    expect(vocab).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_vocabulary_word_deleted', 'Vocabulary word deleted.'))");
   });
 
   it('provides named 44-pixel controls and fields', () => {

@@ -77,7 +77,7 @@ describe('Learning Lab Self-Assessment accessibility', () => {
   });
 
   it('announces a save and moves focus to history', () => {
-    expect(assessment).toContain("llAnnounce('Learning reflection snapshot saved.')");
+    expect(assessment).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_learning_reflection_snapshot_saved', 'Learning reflection snapshot saved.'))");
     expect(assessment).toContain("focusById('learning-lab-assessment-history-heading')");
   });
 
@@ -113,7 +113,7 @@ describe('Learning Lab Self-Assessment accessibility', () => {
   it('names deletion, preserves data, announces removal, and restores focus', () => {
     expect(assessment).toContain("'aria-label': 'Remove learning reflection from ' + (textValue(entry.date).trim() || 'unknown date')");
     expect(assessment).toContain("setData(Object.assign({}, data, { assessments: rawAssessments.filter");
-    expect(assessment).toContain("llAnnounce('Learning reflection snapshot removed.')");
+    expect(assessment).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_learning_reflection_snapshot_removed', 'Learning reflection snapshot removed.'))");
     expect(assessment).toContain("focusById('learning-lab-assessment-history-heading')");
   });
 

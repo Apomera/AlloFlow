@@ -44,7 +44,7 @@ describe('Learning Lab Task Breaker revised accessibility', () => {
     expect(task).toContain("id: 'learning-lab-task-title-error', role: 'alert'");
     expect(task).toContain("id: 'learning-lab-task-steps-error', role: 'alert'");
     expect(task).toContain("setFocusTarget(nextErrors.title ? 'learning-lab-task-title' : 'learning-lab-task-step-' + steps[invalidStepIndex].id)");
-    expect(task).toContain("llAnnounce('The task has invalid or missing information.')");
+    expect(task).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_the_task_has_invalid_or_missing_information', 'The task has invalid or missing information.'))");
   });
 
   it('requires every step description and a bounded numeric estimate', () => {
@@ -69,9 +69,9 @@ describe('Learning Lab Task Breaker revised accessibility', () => {
   });
 
   it('restores focus after adding or removing a dynamic step', () => {
-    expect(task).toContain("llAnnounce('New step added.')");
+    expect(task).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_new_step_added', 'New step added.'))");
     expect(task).toContain("setFocusTarget('learning-lab-task-step-' + remaining[nextIndex].id)");
-    expect(task).toContain("llAnnounce('Step removed.')");
+    expect(task).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_step_removed', 'Step removed.'))");
   });
 
   it('preserves sibling data on save, toggle, and delete', () => {
@@ -87,9 +87,9 @@ describe('Learning Lab Task Breaker revised accessibility', () => {
 
   it('announces save, update, cancel, toggle, and deletion outcomes', () => {
     expect(task).toContain("llAnnounce(wasEditing ? 'Task updated.' : 'Task saved.')");
-    expect(task).toContain("llAnnounce('Task editing canceled.')");
+    expect(task).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_task_editing_canceled', 'Task editing canceled.'))");
     expect(task).toContain("(nextDone ? 'Completed: ' : 'Marked incomplete: ')");
-    expect(task).toContain("llAnnounce('Task deleted.')");
+    expect(task).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_task_deleted', 'Task deleted.'))");
   });
 
   it('renders saved tasks and their steps as semantic lists', () => {

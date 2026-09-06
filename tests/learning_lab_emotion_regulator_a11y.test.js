@@ -62,7 +62,7 @@ describe('Learning Lab Emotion + Grounding accessibility', () => {
     expect(emotion).toContain("var dateKnown = !isNaN(checkDate.getTime());");
     expect(emotion).toContain("dateKnown ? hh('time', { dateTime: checkDate.toISOString() }, checkDate.toLocaleString()) : 'Date not recorded'");
     expect(emotion).toContain("focusId('learning-lab-emotion-history-heading')");
-    expect(emotion).toContain("llAnnounce('Emotion check-in deleted.')");
+    expect(emotion).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_emotion_check_in_deleted', 'Emotion check-in deleted.'))");
   });
   it('handles malformed legacy check-in data without crashing', () => {
     expect(emotion).toContain('var rawChecks = Array.isArray(data.checks) ? data.checks : [];');

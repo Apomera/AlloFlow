@@ -94,14 +94,14 @@ describe('Learning Lab Anxiety Toolkit accessibility', () => {
   it('lets the user clear logged uses behind an accessible confirmation', () => {
     expect(toolkit).toContain("title: 'Clear logged uses?', confirmText: 'Clear logged uses'");
     expect(toolkit).toContain("setData(Object.assign({}, data, { logs: [] }))");
-    expect(toolkit).toContain("llAnnounce('All logged anxiety-tool uses cleared.')");
+    expect(toolkit).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_all_logged_anxiety_tool_uses_cleared', 'All logged anxiety-tool uses cleared.'))");
     expect(toolkit).toContain("focusById('learning-lab-anxiety-start-' + TOOLS[0].id)");
     expect(toolkit).not.toContain('confirm(');
   });
 
   it('announces open, return, and logged-use state changes', () => {
     expect(toolkit).toContain("llAnnounce(tool.label + ' anxiety tool opened.')");
-    expect(toolkit).toContain("llAnnounce('Returned to the anxiety tool list.')");
+    expect(toolkit).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_the_anxiety_tool_list', 'Returned to the anxiety tool list.'))");
     expect(toolkit).toContain("llAnnounce(tool.label + ' use logged.')");
   });
 

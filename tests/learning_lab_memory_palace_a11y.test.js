@@ -106,7 +106,7 @@ describe('Learning Lab Memory Palace accessibility', () => {
   it('announces creation, stop changes, and walk start', () => {
     expect(palace).toContain("llAnnounce('Memory palace created: '");
     expect(palace).toContain("llAnnounce('Memory palace stop added: '");
-    expect(palace).toContain("llAnnounce('Memory palace stop deleted.')");
+    expect(palace).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_memory_palace_stop_deleted', 'Memory palace stop deleted.'))");
     expect(palace).toContain("llAnnounce('Memory walk started. Stop 1 of '");
   });
 

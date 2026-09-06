@@ -54,13 +54,13 @@ describe('Learning Lab Habit Tracker revised accessibility', () => {
     expect(tracker).toContain("setFormError('Enter a name for the habit.')");
     expect(tracker).toContain("id: 'learning-lab-habit-name-error', role: 'alert'");
     expect(tracker).toContain("setFocusTarget('learning-lab-habit-name')");
-    expect(tracker).toContain("llAnnounce('A habit name is required.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_a_habit_name_is_required', 'A habit name is required.'))");
   });
 
   it('announces template load, save, and cancel outcomes', () => {
-    expect(tracker).toContain("llAnnounce('Editable habit example loaded. Review it before saving.')");
-    expect(tracker).toContain("llAnnounce('Habit saved.')");
-    expect(tracker).toContain("llAnnounce('Habit creation canceled.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_editable_habit_example_loaded_review_it_before_sa', 'Editable habit example loaded. Review it before saving.'))");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_habit_saved', 'Habit saved.'))");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_habit_creation_canceled', 'Habit creation canceled.'))");
   });
 
   it('uses date-only history calculations immune to local UTC rollover', () => {
@@ -110,7 +110,7 @@ describe('Learning Lab Habit Tracker revised accessibility', () => {
 
   it('confirms deletion, announces it, and restores meaningful focus', () => {
     expect(tracker).toContain("title: 'Delete this habit?', confirmText: 'Delete habit'");
-    expect(tracker).toContain("llAnnounce('Habit deleted.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_habit_deleted', 'Habit deleted.'))");
     expect(tracker).toContain("setFocusTarget(remaining.length ? 'learning-lab-habit-list-heading' : 'learning-lab-habit-add-button')");
   });
 

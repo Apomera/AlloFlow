@@ -42,7 +42,7 @@ describe('Learning Lab Concept Map accessibility', () => {
 
   it('supports safe connection creation and prevents duplicates', () => {
     expect(conceptMap).toContain("some(function(edge) { return edge.from === connectFrom && edge.to === nodeId; })");
-    expect(conceptMap).toContain("llAnnounce('That connection already exists.')");
+    expect(conceptMap).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_that_connection_already_exists', 'That connection already exists.'))");
     expect(conceptMap).toContain("title: 'Describe the relationship'");
     expect(conceptMap).toContain("label: 'Relationship label', required: false, maxLength: 80");
   });

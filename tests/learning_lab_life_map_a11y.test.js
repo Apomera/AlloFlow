@@ -105,7 +105,7 @@ describe('Learning Lab Life Map accessibility', () => {
 
   it('names removal controls, announces removal, and restores focus', () => {
     expect(map).toContain("'aria-label': 'Remove Life Map snapshot with '");
-    expect(map).toContain("llAnnounce('Life Map snapshot removed.')");
+    expect(map).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_life_map_snapshot_removed', 'Life Map snapshot removed.'))");
     expect(map).toContain("focusById('learning-lab-life-map-history-heading')");
   });
 

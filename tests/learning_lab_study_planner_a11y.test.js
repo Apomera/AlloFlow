@@ -116,7 +116,7 @@ describe('Learning Lab Personal Study Planner accessibility', () => {
 
   it('announces block creation and cancellation', () => {
     expect(planner).toContain("llAnnounce('Study block added for ' + DAYS[block.day].full");
-    expect(planner).toContain("llAnnounce('Study block creation canceled.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_study_block_creation_canceled', 'Study block creation canceled.'))");
   });
 
   it('renders weekly summary metrics as a named semantic list', () => {
@@ -158,7 +158,7 @@ describe('Learning Lab Personal Study Planner accessibility', () => {
 
   it('confirms removal, announces completion, and restores meaningful focus', () => {
     expect(planner).toContain("title: 'Remove this study block?', confirmText: 'Remove block'");
-    expect(planner).toContain("llAnnounce('Study block removed.')");
+    expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_study_block_removed', 'Study block removed.'))");
     expect(planner).toContain("setFocusTarget(remaining.length ? 'learning-lab-study-schedule-heading' : 'learning-lab-study-add-button')");
   });
 

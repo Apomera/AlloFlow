@@ -73,8 +73,8 @@ describe('Learning Lab Weekly Reflection revised accessibility', () => {
     expect(reflection).toContain("title: 'Delete this reflection?', confirmText: 'Delete reflection'");
     expect(reflection).toContain("'aria-label': 'Delete reflection from ' + detailEntry.date");
     expect(reflection).toContain("llAnnounce(existing ? 'Reflection changes saved.' : 'Reflection saved.')");
-    expect(reflection).toContain("llAnnounce('Reflection editing canceled.')");
-    expect(reflection).toContain("llAnnounce('Reflection deleted.')");
+    expect(reflection).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_editing_canceled', 'Reflection editing canceled.'))");
+    expect(reflection).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_deleted', 'Reflection deleted.'))");
   });
 
   it('qualifies evidence claims and avoids prescriptive timing or guarantees', () => {

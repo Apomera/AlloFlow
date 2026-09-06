@@ -104,7 +104,7 @@ describe('Learning Lab Script Library accessibility', () => {
   });
 
   it('announces copy outcomes', () => {
-    expect(library).toContain("llAnnounce('Script copied to the clipboard.')");
+    expect(library).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_script_copied_to_the_clipboard', 'Script copied to the clipboard.'))");
     expect(library).toContain('Automatic copying failed. The script text is selected for manual copying.');
     expect(library).not.toContain("try { navigator.clipboard.writeText(item.script); } catch(e) {}");
   });
@@ -157,7 +157,7 @@ describe('Learning Lab Script Library accessibility', () => {
   });
 
   it('announces saving and restores form focus', () => {
-    expect(library).toContain("llAnnounce('Custom script saved in this browser.')");
+    expect(library).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_custom_script_saved_in_this_browser', 'Custom script saved in this browser.'))");
     expect(library).toContain("focusById('learning-lab-script-situation')");
   });
 
@@ -175,7 +175,7 @@ describe('Learning Lab Script Library accessibility', () => {
 
   it('names deletion, announces it, and restores panel focus', () => {
     expect(library).toContain("'aria-label': 'Remove custom script for '");
-    expect(library).toContain("llAnnounce('Custom script removed.')");
+    expect(library).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_custom_script_removed', 'Custom script removed.'))");
     expect(library).toContain("focusById('learning-lab-script-panel-heading')");
   });
 

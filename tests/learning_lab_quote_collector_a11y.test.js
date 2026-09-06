@@ -93,9 +93,9 @@ describe('Learning Lab Quote Collector accessibility', () => {
   });
 
   it('announces save, validation, removal, and search state changes', () => {
-    expect(collector).toContain("llAnnounce('Quote was not saved.");
+    expect(collector).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_quote_was_not_saved_enter_the_quote_text', 'Quote was not saved.");
     expect(collector).toContain("llAnnounce('Quote saved'");
-    expect(collector).toContain("llAnnounce('Quote removed.')");
+    expect(collector).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_quote_removed', 'Quote removed.'))");
     expect(collector).toContain("llAnnounce('Quote search cleared.");
   });
 

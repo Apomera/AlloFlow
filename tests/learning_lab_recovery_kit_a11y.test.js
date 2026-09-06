@@ -61,7 +61,7 @@ describe('Learning Lab Recovery Kit accessibility', () => {
 
   it('reports and focuses a zero-selection save error', () => {
     expect(kit).toContain("setSaveError('Select at least one idea before saving this reflection.')");
-    expect(kit).toContain("llAnnounce('Reflection not saved. Select at least one idea first.')");
+    expect(kit).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_not_saved_select_at_least_one_idea_fir', 'Reflection not saved. Select at least one idea first.'))");
     expect(kit).toContain("focusById('learning-lab-recovery-step-water-food')");
     expect(kit).toContain("id: 'learning-lab-recovery-save-error', role: 'alert'");
   });
@@ -107,7 +107,7 @@ describe('Learning Lab Recovery Kit accessibility', () => {
 
   it('names removal controls, announces removal, and restores focus', () => {
     expect(kit).toContain("'aria-label': 'Remove recovery reflection from ' + entryDateLabel(entry)");
-    expect(kit).toContain("llAnnounce('Saved recovery reflection removed.')");
+    expect(kit).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_recovery_reflection_removed', 'Saved recovery reflection removed.'))");
     expect(kit).toContain("focusById('learning-lab-recovery-history-heading')");
   });
 

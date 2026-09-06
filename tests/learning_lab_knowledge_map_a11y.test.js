@@ -100,7 +100,7 @@ describe('Learning Lab Knowledge Map accessibility', () => {
   });
 
   it('announces return navigation and restores the originating Open button', () => {
-    expect(map).toContain("llAnnounce('Returned to all knowledge areas.')");
+    expect(map).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_returned_to_all_knowledge_areas', 'Returned to all knowledge areas.'))");
     expect(map).toContain("focusById('learning-lab-knowledge-open-' + safeDomId(previous))");
   });
 
@@ -176,7 +176,7 @@ describe('Learning Lab Knowledge Map accessibility', () => {
   it('confirms topic removal and restores topic-section focus', () => {
     expect(map).toContain("title: 'Remove this topic?', confirmText: 'Remove topic'");
     expect(map).toContain("'aria-label': 'Remove knowledge topic: '");
-    expect(map).toContain("llAnnounce('Knowledge topic removed.')");
+    expect(map).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_knowledge_topic_removed', 'Knowledge topic removed.'))");
     expect(map).toContain("focusById('learning-lab-knowledge-topics-heading')");
   });
 
@@ -187,7 +187,7 @@ describe('Learning Lab Knowledge Map accessibility', () => {
   });
 
   it('announces area removal and restores list focus', () => {
-    expect(map).toContain("llAnnounce('Knowledge area and its topics removed.')");
+    expect(map).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_knowledge_area_and_its_topics_removed', 'Knowledge area and its topics removed.'))");
     expect(map).toContain("focusById('learning-lab-knowledge-list-heading')");
   });
 

@@ -127,7 +127,7 @@ describe('Learning Lab Friendship Tracker accessibility', () => {
 
   it('provides contextual removal names, announcement, and focus recovery', () => {
     expect(tracker).toContain("'aria-label': 'Remove check-in reminder for '");
-    expect(tracker).toContain("llAnnounce('Check-in reminder removed.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_check_in_reminder_removed', 'Check-in reminder removed.'))");
     expect(tracker).toContain("focusById('learning-lab-friend-list-heading')");
   });
 

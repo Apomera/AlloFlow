@@ -115,7 +115,7 @@ describe('Learning Lab Day Pattern Reflection accessibility', () => {
 
   it('names removal controls, announces removal, and restores focus', () => {
     expect(pattern).toContain("'aria-label': 'Remove day reflection rated ' + rating + ' out of 10'");
-    expect(pattern).toContain("llAnnounce('Saved day reflection removed.')");
+    expect(pattern).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_day_reflection_removed', 'Saved day reflection removed.'))");
     expect(pattern).toContain("focusById('learning-lab-day-pattern-history-heading')");
   });
 

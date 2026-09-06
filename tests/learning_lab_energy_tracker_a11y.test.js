@@ -121,7 +121,7 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
 
   it('names deletion controls and restores focus after removal', () => {
     expect(tracker).toContain("'aria-label': 'Remove energy log from ' + whenText");
-    expect(tracker).toContain("llAnnounce('Energy log removed.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_energy_log_removed', 'Energy log removed.'))");
     expect(tracker).toContain("focusById('learning-lab-energy-history-heading')");
   });
 

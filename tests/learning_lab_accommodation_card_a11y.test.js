@@ -101,7 +101,7 @@ describe('Learning Lab Personal Accommodation Card accessibility', () => {
     expect(card).toContain("id: 'learning-lab-accommodation-custom-error', role: 'alert'");
     expect(card).toContain("'aria-invalid': customError ? 'true' : undefined");
     expect(card).toContain("setFocusTarget('learning-lab-accommodation-custom-name')");
-    expect(card).toContain("llAnnounce('A custom accommodation name is required.')");
+    expect(card).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_a_custom_accommodation_name_is_required', 'A custom accommodation name is required.'))");
   });
 
   it('clears custom validation while the user edits', () => {
@@ -109,7 +109,7 @@ describe('Learning Lab Personal Accommodation Card accessibility', () => {
   });
 
   it('announces a successful custom addition and returns focus to the name field', () => {
-    expect(card).toContain("llAnnounce('Custom accommodation added to the practice card.')");
+    expect(card).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_custom_accommodation_added_to_the_practice_card', 'Custom accommodation added to the practice card.'))");
     expect(card).toContain("setFocusTarget('learning-lab-accommodation-custom-name')");
   });
 
@@ -130,7 +130,7 @@ describe('Learning Lab Personal Accommodation Card accessibility', () => {
 
   it('confirms custom deletion, announces completion, and restores focus', () => {
     expect(card).toContain("title: 'Delete this custom accommodation?', confirmText: 'Delete accommodation'");
-    expect(card).toContain("llAnnounce('Custom accommodation deleted.')");
+    expect(card).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_custom_accommodation_deleted', 'Custom accommodation deleted.'))");
     expect(card).toContain("setFocusTarget(remaining.length ? 'learning-lab-accommodation-custom-heading' : 'learning-lab-accommodation-custom-name')");
   });
 

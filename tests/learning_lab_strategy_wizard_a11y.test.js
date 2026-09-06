@@ -28,7 +28,7 @@ describe('Learning Lab Strategy Wizard revised accessibility', () => {
     expect(wizard).toContain("setFormError('Enter a number of days from 1 to 60.')");
     expect(wizard).toContain("id: 'learning-lab-strategy-days-error', role: 'alert'");
     expect(wizard).toContain("setFocusTarget('learning-lab-strategy-days')");
-    expect(wizard).toContain("llAnnounce('Days until the assessment must be from 1 to 60.')");
+    expect(wizard).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_days_until_the_assessment_must_be_from_1_to_60', 'Days until the assessment must be from 1 to 60.'))");
   });
 
   it('uses non-stigmatizing visible familiarity labels and selected states', () => {
@@ -81,7 +81,7 @@ describe('Learning Lab Strategy Wizard revised accessibility', () => {
   it('confirms deletion, preserves siblings, announces it, and restores focus', () => {
     expect(wizard).toContain("title: 'Delete this saved plan?', confirmText: 'Delete plan'");
     expect(wizard).toContain("setData(Object.assign({}, data, { savedPlans: remaining }))");
-    expect(wizard).toContain("llAnnounce('Saved strategy plan deleted.')");
+    expect(wizard).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_strategy_plan_deleted', 'Saved strategy plan deleted.'))");
     expect(wizard).toContain("remaining.length ? 'learning-lab-strategy-saved-heading' : 'learning-lab-strategy-form-heading'");
   });
 

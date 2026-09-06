@@ -70,7 +70,7 @@ describe('Learning Lab Confidence Builder accessibility', () => {
   });
 
   it('announces saving and restores form focus', () => {
-    expect(confidence).toContain("llAnnounce('Confidence reflection saved in this browser.')");
+    expect(confidence).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_confidence_reflection_saved_in_this_browser', 'Confidence reflection saved in this browser.'))");
     expect(confidence).toContain("setForm(emptyForm); setWhatError('')");
     expect(confidence).toContain("focusById('learning-lab-confidence-what')");
   });
@@ -125,7 +125,7 @@ describe('Learning Lab Confidence Builder accessibility', () => {
 
   it('names removal, announces it, and restores history focus', () => {
     expect(confidence).toContain("'aria-label': 'Remove confidence reflection: '");
-    expect(confidence).toContain("llAnnounce('Saved confidence reflection removed.')");
+    expect(confidence).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_confidence_reflection_removed', 'Saved confidence reflection removed.'))");
     expect(confidence).toContain("focusById('learning-lab-confidence-history-heading')");
   });
 

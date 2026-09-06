@@ -120,7 +120,7 @@ describe('Learning Lab Affirmation Library accessibility', () => {
   it('removes associated favorites, announces deletion, and restores focus', () => {
     expect(affirmations).toContain("var nextFavorites = normalizedFavorites.filter(function(id) { return id !== entry.id; });");
     expect(affirmations).toContain("setData(Object.assign({}, data, { custom: nextCustom, favorites: nextFavorites }))");
-    expect(affirmations).toContain("llAnnounce('Custom affirmation removed.')");
+    expect(affirmations).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_custom_affirmation_removed', 'Custom affirmation removed.'))");
     expect(affirmations).toContain("focusById('learning-lab-affirmation-library-heading')");
   });
 

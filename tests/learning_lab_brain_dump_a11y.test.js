@@ -40,7 +40,7 @@ describe('Learning Lab Personal Brain Dump accessibility', () => {
     expect(brain).toContain("id: 'learning-lab-brain-dump-entry-error', role: 'alert'");
     expect(brain).toContain("'aria-invalid': entryError ? 'true' : undefined");
     expect(brain).toContain("setFocusTarget('learning-lab-brain-dump-entry')");
-    expect(brain).toContain("llAnnounce('Brain dump text is required.')");
+    expect(brain).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_brain_dump_text_is_required', 'Brain dump text is required.'))");
   });
 
   it('clears the validation error while the user edits', () => {
@@ -129,9 +129,9 @@ describe('Learning Lab Personal Brain Dump accessibility', () => {
   });
 
   it('announces destructive-action completion and restores focus', () => {
-    expect(brain).toContain("llAnnounce('Brain dump item deleted.')");
-    expect(brain).toContain("llAnnounce('Completed brain dump items cleared.')");
-    expect(brain).toContain("llAnnounce('All brain dump items cleared.')");
+    expect(brain).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_brain_dump_item_deleted', 'Brain dump item deleted.'))");
+    expect(brain).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_completed_brain_dump_items_cleared', 'Completed brain dump items cleared.'))");
+    expect(brain).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_all_brain_dump_items_cleared', 'All brain dump items cleared.'))");
     expect(brain).toContain("setFocusTarget(remaining.length ? 'learning-lab-brain-dump-items-heading' : 'learning-lab-brain-dump-entry')");
   });
 

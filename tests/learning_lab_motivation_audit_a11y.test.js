@@ -33,7 +33,7 @@ describe('Learning Lab Motivation Reflection revised accessibility', () => {
     expect(audit).toContain("setFormError('Enter an activity or context before saving.')");
     expect(audit).toContain("id: 'learning-lab-motivation-error', role: 'alert'");
     expect(audit).toContain("setFocusTarget('learning-lab-motivation-activity')");
-    expect(audit).toContain("llAnnounce('An activity or context is required.')");
+    expect(audit).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_an_activity_or_context_is_required', 'An activity or context is required.'))");
   });
 
   it('labels and describes subjective rating controls with explicit units', () => {
@@ -75,8 +75,8 @@ describe('Learning Lab Motivation Reflection revised accessibility', () => {
   it('preserves sibling state on save and delete and announces both outcomes', () => {
     expect(audit).toContain("setData(Object.assign({}, data, { audits: [entry].concat(data.audits || []) }))");
     expect(audit).toContain("setData(Object.assign({}, data, { audits: remaining }))");
-    expect(audit).toContain("llAnnounce('Motivation reflection saved.')");
-    expect(audit).toContain("llAnnounce('Motivation reflection deleted.')");
+    expect(audit).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_motivation_reflection_saved', 'Motivation reflection saved.'))");
+    expect(audit).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_motivation_reflection_deleted', 'Motivation reflection deleted.'))");
     expect(audit).not.toContain('setData({ audits:');
   });
 

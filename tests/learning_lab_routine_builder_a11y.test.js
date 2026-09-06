@@ -84,7 +84,7 @@ describe('Learning Lab Routine Builder accessibility', () => {
 
   it('confirms removing a step and restores focus', () => {
     expect(routines).toContain("title: 'Remove this routine step?', confirmText: 'Remove step'");
-    expect(routines).toContain("llAnnounce('Routine step removed.')");
+    expect(routines).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_routine_step_removed', 'Routine step removed.'))");
     expect(routines).toContain("focusById('learning-lab-routine-steps-heading')");
   });
 
@@ -129,7 +129,7 @@ describe('Learning Lab Routine Builder accessibility', () => {
   });
 
   it('announces routine deletion and restores list focus', () => {
-    expect(routines).toContain("llAnnounce('Routine deleted.')");
+    expect(routines).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_routine_deleted', 'Routine deleted.'))");
     expect(routines).toContain("focusById('learning-lab-routine-list-heading')");
   });
 

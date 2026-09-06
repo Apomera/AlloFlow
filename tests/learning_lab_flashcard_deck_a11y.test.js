@@ -105,9 +105,9 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
   });
 
   it('announces form validation, save, update, and cancellation', () => {
-    expect(flashcards).toContain("llAnnounce('The flashcard has missing required information.')");
+    expect(flashcards).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_the_flashcard_has_missing_required_information', 'The flashcard has missing required information.'))");
     expect(flashcards).toContain("llAnnounce(wasEditing ? 'Flashcard updated.' : 'Flashcard saved.')");
-    expect(flashcards).toContain("llAnnounce('Flashcard editing canceled.')");
+    expect(flashcards).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_flashcard_editing_canceled', 'Flashcard editing canceled.'))");
   });
 
   it('renders saved cards as a named semantic list', () => {
@@ -134,7 +134,7 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
 
   it('confirms card deletion, announces it, and restores card-list focus', () => {
     expect(flashcards).toContain("title: 'Delete this flashcard?', confirmText: 'Delete card'");
-    expect(flashcards).toContain("llAnnounce('Flashcard deleted.')");
+    expect(flashcards).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_flashcard_deleted', 'Flashcard deleted.'))");
     expect(flashcards).toContain("setFocusTarget('learning-lab-flashcards-cards-heading')");
   });
 
@@ -152,7 +152,7 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
 
   it('moves focus to the rating question after revealing the answer', () => {
     expect(flashcards).toContain("setFocusTarget('learning-lab-flashcards-rating-heading')");
-    expect(flashcards).toContain("llAnnounce('Answer shown. Choose a recall rating.')");
+    expect(flashcards).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_answer_shown_choose_a_recall_rating', 'Answer shown. Choose a recall rating.'))");
   });
 
   it('groups ratings in a described fieldset with a clear legend', () => {
@@ -182,7 +182,7 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
   it('announces review progress, completion, and early ending', () => {
     expect(flashcards).toContain("llAnnounce('Rating saved. Moving to card '");
     expect(flashcards).toContain("llAnnounce('Review complete. '");
-    expect(flashcards).toContain("llAnnounce('Review session ended.')");
+    expect(flashcards).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_review_session_ended', 'Review session ended.'))");
   });
 
   it('uses a named evidence aside with qualified claims', () => {

@@ -107,10 +107,10 @@ describe('Learning Lab Optional Support Request Notes accessibility', () => {
   });
 
   it('announces save, update, cancel, and delete outcomes', () => {
-    expect(tracker).toContain("llAnnounce('Support note saved.')");
-    expect(tracker).toContain("llAnnounce('Support note updated.')");
-    expect(tracker).toContain("llAnnounce('Support note editing canceled.')");
-    expect(tracker).toContain("llAnnounce('Support note deleted.')");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_saved', 'Support note saved.'))");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_updated', 'Support note updated.'))");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_editing_canceled', 'Support note editing canceled.'))");
+    expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_support_note_deleted', 'Support note deleted.'))");
   });
 
   it('contains no counts-based scoring, percentages, ranking, or streak metrics', () => {

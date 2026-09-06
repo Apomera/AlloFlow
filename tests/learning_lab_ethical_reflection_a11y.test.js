@@ -59,7 +59,7 @@ describe('Learning Lab Ethical Decision Reflection accessibility', () => {
   });
 
   it('announces saving and restores form focus', () => {
-    expect(ethical).toContain("llAnnounce('Decision reflection saved in this browser.')");
+    expect(ethical).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_decision_reflection_saved_in_this_browser', 'Decision reflection saved in this browser.'))");
     expect(ethical).toContain("focusById('learning-lab-ethical-situation')");
   });
 
@@ -105,7 +105,7 @@ describe('Learning Lab Ethical Decision Reflection accessibility', () => {
 
   it('names removal controls, announces removal, and restores focus', () => {
     expect(ethical).toContain("'aria-label': 'Remove decision reflection: '");
-    expect(ethical).toContain("llAnnounce('Saved decision reflection removed.')");
+    expect(ethical).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_decision_reflection_removed', 'Saved decision reflection removed.'))");
     expect(ethical).toContain("focusById('learning-lab-ethical-history-heading')");
   });
 
