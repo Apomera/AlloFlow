@@ -1,5 +1,12 @@
 [
   {
+    "id": "rel_20260906T203157Z_v1_4",
+    "version": "1.4",
+    "canvas_url": "https://share.gemini.google/bfQXl9NTKOKJ",
+    "released": "2026-09-06T20:31:57.249Z",
+    "notes": "Plate Tectonics teaching rebuild: the eight-question quiz now ends with a score and a concepts-to-revisit list, the epicentre widget saves the map you are looking at, the boundary simulator no longer interrupts screen readers once a second, and the glossary carries 172 terms instead of 106. Broad translation coverage across the STEM tools, including screen-reader announcements and the labels drawn onto the figures. Also TreeLab, Galaxy Explorer, School Rewards, geology and test-prep improvements."
+  },
+  {
     "id": "rel_20260902T225232Z_v1_3",
     "version": "1.3",
     "canvas_url": "https://share.gemini.google/IUtuB8gDVOr8",

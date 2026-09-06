@@ -40,8 +40,9 @@ const INDEX_HTML = path.posix.join(REPO_ROOT, "index.html");
 
 const CANVAS_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 const FALLBACK_RE = /const\s+FALLBACK_CANVAS_URL\s*=\s*"[^"]*"\s*;/g;
+const LAUNCH_HREF_RE = /(<a[^>]*\bid="launch-btn"[^>]*\bhref=")[^"]*(")/;
 const VERSION_LABEL_RE =
-  /(<[^>]*\bdata-version-label\b[^>]*>)v?\d+\.\d+(<\/[^>]+>)/;
+  /(<[^>]*\b(?:data-version-label|data-release-version)\b[^>]*>)v?\d+\.\d+(<\/[^>]+>)?/;
 
 // ---------- tiny helpers ----------------------------------------------------
 
@@ -183,6 +184,9 @@ async function rewriteLaunchHtml(newUrl) {
   const updated = original.replace(
     FALLBACK_RE,
     `const FALLBACK_CANVAS_URL = "${newUrl}";`
+  ).replace(
+    LAUNCH_HREF_RE,
+    (_m, before, after) => before + newUrl + after
   );
   if (updated === original) {
     die(6, `launch.html: replacement produced no change (URL already current?).`);
