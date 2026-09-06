@@ -1127,6 +1127,22 @@ describe('Observatory tab rendering', () => {
     expect(legacy.body.textContent).not.toContain('Through the air');
   });
 
+  it('offers a pointer-free way through the sky', () => {
+    const doc = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30' }), 'text/html');
+    const buttons = Array.from(doc.querySelectorAll('button'));
+    const labels = buttons.map(b => b.textContent.trim());
+    expect(labels).toContain('Next object');
+    expect(labels).toContain('Previous object');
+    // Both steppers point at the live region that speaks what they landed on.
+    for (const label of ['Next object', 'Previous object']) {
+      expect(buttons.find(b => b.textContent.trim() === label).getAttribute('aria-describedby')).toBe('astronomy-observatory-described');
+    }
+    const help = doc.getElementById('astronomy-observatory-camera-help').textContent;
+    expect(help).toContain('n and p keys');
+    expect(help).toContain('Home resets the view');
+    expect(help).toContain('turning on the spot');
+  });
+
   it('lists the observatory tab once and keeps the meteor tab intact', () => {
     const doc = new DOMParser().parseFromString(render(), 'text/html');
     const tabs = Array.from(doc.querySelectorAll('[role="tab"]')).map(el => el.textContent.trim());

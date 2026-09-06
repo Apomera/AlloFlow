@@ -215,6 +215,30 @@ views of the same sky disagreed about what you could see. There is now one model
   rather than NaN, which a test pins.
 - Unit suite 69; browser suite 15.
 
+## Enhancement slice 14 (2026-09-05): reaching the sky without a pointer
+The observatory could be panned with the arrow keys and identified at the centre
+with Enter, which sounds like keyboard support until you try to find anything:
+you had to sweep blind and hope something was under the crosshair.
+
+- **Next object / Previous object**, or the `n` and `p` keys on the focused sky,
+  turn from one named object to the next **in azimuth order**, as though you were
+  turning on the spot. Each step aims the camera, runs the ordinary identify path
+  so the full panel appears (name, magnitude, extinction, tonight's times), and
+  speaks "Vega, 61° NE. 4 of 23 named objects up now" into the existing live region.
+- The candidate list is the one `describe()` already built for screen readers,
+  refactored into `skyItems(fieldOnly)`: Sun, Moon, planets, named stars to
+  magnitude 2.6, constellation centroids, deep-sky showpieces, the radiant and the
+  aurora. Anything hidden by a layer toggle or dimmed below its threshold is not in
+  the list, so stepping never lands on something the observer cannot see.
+- Position in the list is held by object key, not index, so a step keeps working
+  as the sky turns; if the object has set, the next press falls back to whatever
+  lies nearest the current heading. Resetting the view clears it.
+- Not every step yields a pick: a constellation centroid is a label, not a target,
+  so `picked` stays null there while the spoken line still lands. The browser test
+  asserts four presses give four different objects, that at least two are
+  identified, that `p` returns to the previous one, and that the camera moved.
+- Unit suite 70; browser suite 16.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
@@ -225,6 +249,7 @@ views of the same sky disagreed about what you could see. There is now one model
 - The Sky Map tab still uses its own 6-site list (now linked to the Observatory); unifying the lists is a small follow-up.
 - Translations for the ~238 `obs_*` keys have not been added to language packs.
 - **Not mine, but found here:** `tests/astronomy_season_sun_path.test.js` fails two tests at HEAD, independent of any observatory work (polar day reports `data-solar-state="normal"`, and a "grazing day" case returns 526 minutes of daylight where the test expects under 5). Verified by running that suite against HEAD's own copy of the tool.
+- The Seasons tab's latitude fixture had been patching the Observatory's Portland since slice 1 (first-match regex, two Portlands in the file). Fixed in 334c65bf4; the tool's polar-day rendering was correct all along. Any future test that instruments this source by name should assume duplicates.
 - Slice 1 (2026-09-04) was swept into another session's deploy commit f238731dd and is live on the CDN; the 34 leftover strings landed in 7c7990f6e (unpushed). Slice 2 is uncommitted at the time of writing.
 
 ## Local tooling notes (this session)

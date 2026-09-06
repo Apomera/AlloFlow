@@ -190,6 +190,38 @@ test('thins the sky near the horizon by atmospheric extinction', async ({ page }
   expect(errors).toEqual([]);
 });
 
+test('steps around the sky from the keyboard and identifies what it lands on', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, EVENING);
+  await expect.poll(async () => (await debug(sky)).catalog, { timeout: 60000 }).toBeGreaterThan(8000);
+  await sky.scrollIntoViewIfNeeded();
+  const spoken = page.locator('#astronomy-observatory-described');
+  const heard: string[] = [];
+  const picks: string[] = [];
+  await sky.focus();
+  for (let i = 0; i < 4; i++) {
+    await page.keyboard.press('n');
+    await expect(spoken).toContainText('named objects up now');
+    const text = (await spoken.textContent())!;
+    if (heard.length) await expect.poll(async () => (await spoken.textContent()) !== heard[heard.length - 1]).toBe(true);
+    heard.push(text);
+    const picked = (await debug(sky)).picked;
+    if (picked) picks.push(picked.name);
+  }
+  // Four presses, four different objects, each with its bearing and altitude spoken.
+  expect(new Set(heard).size).toBe(4);
+  for (const line of heard) expect(line).toMatch(/, -?\d+\u00B0 [NEWS]/);
+  // Most steps land on something the identify path recognises.
+  expect(picks.length).toBeGreaterThanOrEqual(2);
+  // Going back returns to the object before it.
+  await page.keyboard.press('p');
+  await expect.poll(async () => (await spoken.textContent())).toBe(heard[heard.length - 2]);
+  // The camera actually turned: the stepper aims before it identifies.
+  const before = (await debug(sky)).camera.yaw;
+  await page.getByRole('button', { name: 'Next object', exact: true }).click();
+  await expect.poll(async () => (await debug(sky)).camera.yaw).not.toBe(before);
+  expect(errors).toEqual([]);
+});
+
 test('place, hemisphere, daylight and time steps change the computed sky', async ({ page }) => {
   const { sky, errors } = await mountObservatory(page, EVENING);
   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
