@@ -85,6 +85,49 @@ describe('brainAtlas sentences carry their values as placeholders', () => {
     expect(checked).toBeGreaterThanOrEqual(25);
   });
 
+  it('the conditional branches became whole sentences', () => {
+    // each of these chose between several messages by gluing pieces together
+    [
+      ['p_correct_highlighted', 'Correct'],
+      ['p_that_was_try_again', 'That was {name}'],
+      ['p_correct_one_point', '+{points} point'],
+      ['p_correct_points', '+{points} points'],
+      ['p_answer_revealed', 'Answer revealed: {name}'],
+      ['p_not_the_target', '{name} is not the target'],
+      ['p_depth_first_side', 'first side visible'],
+      ['p_depth_opposite_side', 'opposite side visible'],
+      ['p_milestone_count', '{count} milestones'],
+      ['p_target_count', '{count} targets'],
+    ].forEach(([key, part]) => {
+      expect(src, key + ' missing').toContain("stem.brainatlas." + key);
+      expect(src, key + ' lost its wording').toContain(part);
+    });
+  });
+
+  it('the singular and plural point messages are separate strings', () => {
+    // a translator cannot pick a plural form out of a glued-on suffix
+    expect(src).not.toContain('" point. " : " points. "');
+    expect(src).toContain('p_correct_one_point');
+    expect(src).toContain('p_correct_points');
+  });
+
+  it('the Function Match vignettes and definitions reach the translator', () => {
+    const scenarios = src.match(/stem\.brainatlas\.fm_scenario_\d+/g) || [];
+    const whys = src.match(/stem\.brainatlas\.fm_why_\d+/g) || [];
+    const defs = src.match(/stem\.brainatlas\.fm_def_[a-z_0-9]+/g) || [];
+    expect(new Set(scenarios).size).toBe(12);
+    expect(new Set(whys).size).toBe(12);
+    expect(new Set(defs).size).toBe(8);
+    // wrapped in place, so the clinical wording is untouched
+    expect(src).toContain("Broca's aphasia (left frontal lobe, BA 44/45)");
+    expect(src).toContain('Henry Molaison (HM) case');
+  });
+
+  it('leaves the machine-readable key list alone', () => {
+    // aria-keyshortcuts is parsed by assistive tech, not read aloud
+    expect(src).toContain('"aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home Escape"');
+  });
+
   it('the desktop mirror is byte-identical', () => {
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_brainatlas.js', 'utf8')).toBe(src);
   });

@@ -272,3 +272,21 @@ Twenty-four sentences were rewritten as single strings with named placeholders: 
 
 Nine lines still concatenate. Each of those chooses between several messages in a nested conditional and needs the branches separated before it can be wrapped, which changes the shape of the code rather than the words.
 
+## The last concatenations, and the Function Match content
+
+September 6, 2026. The nine remaining joined sentences each chose between several messages inside a conditional, so the branches were separated first and each branch became one whole sentence: the canvas title and its target count, the saved-round feedback, the cutaway hint and its section count, the challenge round line, the hint label, the three challenge verdicts, and the depth readout. Nothing was reworded.
+
+The singular and plural point messages are now two separate strings rather than one string with a glued-on suffix. A translator cannot pick a plural form out of a suffix, and many languages need more than two forms anyway; two whole sentences at least give them something to work with.
+
+The Function Match activity was wholly English and is the tool's clinical reasoning exercise: eight region definitions and twelve case vignettes, each with a scenario and an explanation, covering Broca's and Wernicke's aphasia, Henry Molaison, Kluver-Bucy, Phineas Gage, cerebellar syndrome, hemispatial neglect, prosopagnosia, the reticular activating system, PTSD and early Alzheimer's. All thirty-two strings are wrapped exactly as they were written, so the clinical wording and its punctuation are untouched.
+
+One thing deliberately left alone: the aria-keyshortcuts value listing ArrowLeft, Home and Escape. Assistive technology parses that string rather than reading it aloud, so translating it would break it.
+
+## What is still English, and why it is a decision rather than a defect
+
+September 6, 2026. Every piece of interface furniture in this tool now reaches the translator. The region data does not.
+
+There are 863 bare English fields on the region records, about 123,000 characters: the function text, the associated conditions, the if-damaged text, the pathways, the blood supply and the Brodmann areas. That is the tool's core teaching content, and it is the text the detail panel, the quiz feedback and the AI prompt all draw on.
+
+Wrapping it is mechanical but it is not a small decision. It roughly triples the size of this tool's share of the string catalogue, every language pack has to carry it, and clinical prose is exactly the kind of text where a machine translation error matters. It is written down here with the measurement so the decision can be made deliberately rather than arrived at by a script.
+
