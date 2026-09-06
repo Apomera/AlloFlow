@@ -50,15 +50,22 @@ describe('Art Studio accessible names reach the translator', () => {
     }
   });
 
-  it('records the labels still assembled from a prefix and a value', () => {
-    const src = readFileSync(copies[0], 'utf8');
-    const assembled = (src.match(ASSEMBLED) || []).filter(wordy);
-    // What is left picks an English word inside the expression -- a 'near'
-    // default, a running/paused ternary -- so each needs its own key on top of
-    // a template. Lower the bound as they are done, and delete this test at
-    // zero.
-    expect(assembled.length).toBeGreaterThan(0);
-    expect(assembled.length).toBeLessThanOrEqual(6);
+  for (const file of copies) {
+    it(file + ' assembles no accessible name by concatenation', () => {
+      const src = readFileSync(file, 'utf8');
+      expect((src.match(ASSEMBLED) || []).filter(wordy)).toEqual([]);
+    });
+  }
+
+  it('keeps the mode phrases as whole phrases, not glued words', () => {
+    const section = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.artstudio;
+    // Each canvas description names its mode with a complete noun phrase, so a
+    // translation can inflect or reorder it.
+    expect(section.a11y_sym_pattern_bilateral).toBe('bilateral mirror');
+    expect(section.a11y_sym_stroke_continuous_freehand ?? section.a11y_sym_stroke_freehand).toBe('continuous freehand');
+    expect(section.a11y_op_checkerboard).toBe('a warped checkerboard grid');
+    // Even the list separator is a string, since it is not ', ' everywhere.
+    expect(section.a11y_list_separator).toBe(', ');
   });
 
   it('keys the words it chooses, not just the sentence around them', () => {

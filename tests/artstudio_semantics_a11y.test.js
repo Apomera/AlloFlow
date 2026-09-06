@@ -264,7 +264,11 @@ describe('Art Studio graphic and form semantics', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain(`role: "img", "aria-label": __alloT('stem.artstudio.a11y_uploaded_depth_map_preview', 'Uploaded depth map preview')`);
     expect(source).toContain(`role: "img", "aria-label": __alloT('stem.artstudio.a11y_ai_generated_depth_map_preview', 'AI-generated depth map preview')`);
-    expect(source).toContain('"aria-label": \'3D sculpture preview. \' + sculptSummary');
+    // The name is now a translated template rather than a concatenation; the
+    // point of this pin is that the canvas is named and the name carries the
+    // sculpture summary.
+    expect(source).toContain('stem.artstudio.a11y_sculpture_preview');
+    expect(source).toContain('value1: sculptSummary');
     expect(source).toContain('"aria-describedby": "artstudio-sculpt-touch-help artstudio-sculpt-keyboard-help"');
   });
 });
