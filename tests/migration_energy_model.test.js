@@ -187,6 +187,17 @@ describe('Migration Lab energy inquiry as a controlled investigation', () => {
     expect(html).toContain('0.78x');
   });
 
+  it('describes the model it actually runs, in one place', () => {
+    // The on-screen caveat and the exported notebook's caveat drifted apart:
+    // the export was updated to the two-term drag model while the footer still
+    // described the retired mass^0.67 law. Both read one constant now.
+    const html = render('inquiry', true);
+    expect(html).toContain('induced drag');
+    expect(html).not.toContain('m^0.67 / wingspan');
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    expect((src.match(/inquiry_widget_no_score_no_reveal_no_a/g) || []).length).toBe(1);
+  });
+
   it('offers the notebook export only once there is something to export', () => {
     const empty = render('inquiry', true);
     expect(empty).not.toContain('Download notebook');
