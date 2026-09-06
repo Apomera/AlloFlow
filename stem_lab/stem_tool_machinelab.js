@@ -8168,7 +8168,7 @@ window.StemLab = window.StemLab || {
             message: __alloT('stem.machinelab.imp_ok', 'Imported your build: ') + res.cells +
               __alloT('stem.machinelab.imp_ok2', ' columns of wall.') +
               (res.dropped > 0
-                ? __alloT('stem.machinelab.imp_dropped', ' ') + res.dropped +
+                ? ' ' + res.dropped +
                   __alloT('stem.machinelab.imp_dropped2', ' floating blocks were left out, since they were not standing on anything.')
                 : '') +
               __alloT('stem.machinelab.imp_depth', ' Thickness counts: a wall three deep takes three times the energy to break through.')

@@ -183,6 +183,28 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 25 (2026-09-06) — a gate for the 857 translatable strings
+
+Eighteen waves have added translatable strings and nothing checked them. Four faults are
+invisible to every rendering test, because the English fallback keeps the screen looking right
+while the translated build is broken:
+
+1. a call with no English fallback, which shows a raw key to any learner whose pack lacks it;
+2. a key outside `stem.machinelab.`, which the pack pipeline never collects, so it is never
+   translated;
+3. one key used with two different English strings — a pack holds one, so one of the two
+   screens is wrong in every language;
+4. a blank or whitespace-only fallback: nothing to translate and nothing to show.
+
+- `dev-tools/ml_i18n_hygiene.cjs` checks all four, on the tool and on its desktop mirror, by
+  walking each call's arguments with quote and escape tracking rather than a regex that a
+  comma or an apostrophe inside the English would defeat.
+- `tests/machinelab_i18n_hygiene.test.js` runs the same check in CI **and feeds the checker
+  five samples that are known to be bad**, because a gate that has never failed is not a gate.
+- ★One real finding: `stem.machinelab.imp_dropped` was a translation key whose entire English
+  text was a single space. It is punctuation between two clauses, so it is now a literal.
+  The other 856 keys are namespaced, fallback-bearing, non-blank and unambiguous.
+
 ### Wave 24 (2026-09-06)
 
 - **The work record says HOW the wall was ranged, not only that it fell.** A breach in three
