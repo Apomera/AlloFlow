@@ -1,5 +1,16 @@
 # Image shot-list — Central Idea and Evidence (Grade 7)
 
+> **Text-free policy (applies to every prompt below).** Artwork must contain **no raster text,
+> labels, numbers, captions or watermarks**. Where a prompt below asks for a label or a caption,
+> that text belongs in AlloFlow's native label and caption fields, anchored over the image, not
+> drawn into it. Icons, arrows and diagram marks are fine as long as they carry no characters.
+> Alt text describes the rendered artwork and is reviewed against it before shipping.
+>
+> This list uses the earlier short format. `day_night_sky_grade1.IMAGES.md` shows the fuller one
+> (policy, a glossary picture table, grouped lesson panels, alt-text rules) if a richer pass is
+> wanted for this pack.
+
+
 ## 1. `ci-img-claim-evidence` — attach to "More Than One Thread" (ci-reading)
 **Prompt:** A clean diagram for middle schoolers showing a claim box at the top ('Bike lanes make
 streets safer') with two arrows down to two evidence boxes ('40% fewer injuries in a study',

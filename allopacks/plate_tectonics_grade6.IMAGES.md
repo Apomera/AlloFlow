@@ -1,5 +1,16 @@
 # Image shot-list — Plate Tectonics (Grade 6)
 
+> **Text-free policy (applies to every prompt below).** Artwork must contain **no raster text,
+> labels, numbers, captions or watermarks**. Where a prompt below asks for a label or a caption,
+> that text belongs in AlloFlow's native label and caption fields, anchored over the image, not
+> drawn into it. Icons, arrows and diagram marks are fine as long as they carry no characters.
+> Alt text describes the rendered artwork and is reviewed against it before shipping.
+>
+> This list uses the earlier short format. `day_night_sky_grade1.IMAGES.md` shows the fuller one
+> (policy, a glossary picture table, grouped lesson panels, alt-text rules) if a richer pass is
+> wanted for this pack.
+
+
 ## 1. `pt-img-boundaries` — attach to "The Man Who Was Laughed At" (pt-reading)
 **Prompt:** A three-panel cutaway diagram of plate boundaries for middle schoolers.
 Panel 1 divergent: two plates pulling apart with magma rising to form new crust.

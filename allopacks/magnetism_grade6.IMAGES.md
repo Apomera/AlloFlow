@@ -1,5 +1,16 @@
 # Image shot-list — Magnetism (Grade 6-7)
 
+> **Text-free policy (applies to every prompt below).** Artwork must contain **no raster text,
+> labels, numbers, captions or watermarks**. Where a prompt below asks for a label or a caption,
+> that text belongs in AlloFlow's native label and caption fields, anchored over the image, not
+> drawn into it. Icons, arrows and diagram marks are fine as long as they carry no characters.
+> Alt text describes the rendered artwork and is reviewed against it before shipping.
+>
+> This list uses the earlier short format. `day_night_sky_grade1.IMAGES.md` shows the fuller one
+> (policy, a glossary picture table, grouped lesson panels, alt-text rules) if a richer pass is
+> wanted for this pack.
+
+
 ## 1. `mg-img-field-lines` — attach to "The Push You Can Feel Through Nothing" (mg-reading)
 **Prompt:** A clean educational illustration of a bar magnet with iron filings revealing curved
 field lines arcing from the north pole to the south pole, poles labeled N and S in different

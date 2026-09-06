@@ -1,5 +1,16 @@
 # Image shot-list — Body Systems (Grade 6)
 
+> **Text-free policy (applies to every prompt below).** Artwork must contain **no raster text,
+> labels, numbers, captions or watermarks**. Where a prompt below asks for a label or a caption,
+> that text belongs in AlloFlow's native label and caption fields, anchored over the image, not
+> drawn into it. Icons, arrows and diagram marks are fine as long as they carry no characters.
+> Alt text describes the rendered artwork and is reviewed against it before shipping.
+>
+> This list uses the earlier short format. `day_night_sky_grade1.IMAGES.md` shows the fuller one
+> (policy, a glossary picture table, grouped lesson panels, alt-text rules) if a richer pass is
+> wanted for this pack.
+
+
 ## 1. `bs-img-systems-relay` — attach to "The Relay Race" (bs-reading)
 **Prompt:** A friendly diagram tracing one oxygen molecule through the body: lungs (respiratory)
 to a labeled arrow into the blood, to the heart and vessels (circulatory), to a muscle cell,
