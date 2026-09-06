@@ -19,6 +19,16 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloEvoCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloEvoCtx && typeof __alloEvoCtx.t === "function") ? __alloEvoCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
@@ -111,6 +121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     category: 'biology',
     aliases: ['evolution', 'natural selection', 'Darwin', 'Hardy-Weinberg'],
     render: function(ctx) {
+      __alloEvoCtx = ctx;
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       // The hub screen paints no ground, so its title, subtitle, section
       // labels and footer sit on the HOST surface - white in light and dark,
@@ -284,7 +295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var captureLockKey = moduleId + '|' + sourceRunKey;
         var alreadyCaptured = !!sourceRunKey && (runs.some(function(run) { return run.moduleId === moduleId && run.sourceRunKey === sourceRunKey; }) || _capstoneCaptureLocksRef.current[captureLockKey]);
         if (alreadyCaptured) {
-          announce('This trajectory is already captured. Reset the model or run a fresh lineage batch for another trial.');
+          announce(__alloT('stem.evolab.sr_this_trajectory_is_already_captured_reset_the_mod', 'This trajectory is already captured. Reset the model or run a fresh lineage batch for another trial.'));
           return;
         }
         if (sourceRunKey) _capstoneCaptureLocksRef.current[captureLockKey] = true;
@@ -340,7 +351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             }, t('stem.evolab.return_to_project', '🎓 Return to project'))
           ),
           mission && h('aside', {
-            'aria-label': 'Capstone data mission',
+            'aria-label': __alloT('stem.evolab.a11y_capstone_data_mission', 'Capstone data mission'),
             className: 'evolab-no-print border-b-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 shadow-sm'
           },
             h('div', { className: 'mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-start lg:justify-between' },
@@ -381,7 +392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var planSummary = describeCapstoneTrialPlan(capstone.trialPlan);
         return h('section', {
           'data-evolab-capture': props.moduleId,
-          'aria-label': 'Capture simulator evidence for the Capstone project',
+          'aria-label': __alloT('stem.evolab.a11y_capture_simulator_evidence_for_the_capstone_pro', 'Capture simulator evidence for the Capstone project'),
           className: 'evolab-no-print rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-yellow-50 p-4 shadow-sm'
         },
           h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
@@ -1035,7 +1046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var reset = function() {
           setP(0.5); setSelCoef(0); setMutRate(0); setMigRate(0); setGen(0);
           setHistory([{ gen: 0, p: 0.5, AA: 0.25, Aa: 0.5, aa: 0.25 }]);
-          announce('Hardy-Weinberg reset to equilibrium.');
+          announce(__alloT('stem.evolab.sr_hardy_weinberg_reset_to_equilibrium', 'Hardy-Weinberg reset to equilibrium.'));
         };
 
         var anyForce = selCoef > 0 || mutRate > 0 || migRate > 0;
@@ -5441,7 +5452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var startSelection = function() {
           initPopulation();
           setPhase('choosing');
-          announce('Mate choice begins. Click the bird you find most attractive each round.');
+          announce(__alloT('stem.evolab.sr_mate_choice_begins_click_the_bird_you_find_most_a', 'Mate choice begins. Click the bird you find most attractive each round.'));
         };
 
         if (birdsRef.current.length === 0) initPopulation();
@@ -5834,7 +5845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           initPopulation();
           setPhase('hunting');
           roundStartRef.current = performance.now();
-          announce('Hunt started. Click prey to select against them.');
+          announce(__alloT('stem.evolab.sr_hunt_started_click_prey_to_select_against_them', 'Hunt started. Click prey to select against them.'));
         };
 
         // Init synchronously so canvas has prey on first paint
@@ -6822,7 +6833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var blankProject = { step: 0, scenarioId: null, scenarioTitle: '', studentName: '', predictions: ['', '', ''], reflections: ['', '', ''], notebook: { baseline: '', settings: '', outcome: '', claim: '', surprise: '' }, runs: [], nextRunId: 1, evidenceVerdict: '', trialPlan: null, module: null, moduleLabel: '', moduleHint: '', mechanismCue: '', dataMission: [] };
           upd('evoCapstone', blankProject);
           lsSet('evoLab.capstone.v2', blankProject);
-          announce('Capstone Project reset.');
+          announce(__alloT('stem.evolab.sr_capstone_project_reset', 'Capstone Project reset.'));
         };
 
         var canAdvance = function() {
@@ -6859,11 +6870,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var removeCapturedRun = function(runId) {
           var nextRuns = capturedRuns.filter(function(run) { return run.id !== runId; });
           saveCapstone({ runs: nextRuns, evidenceVerdict: '' });
-          announce('Captured simulator run removed from the evidence notebook.');
+          announce(__alloT('stem.evolab.sr_captured_simulator_run_removed_from_the_evidence', 'Captured simulator run removed from the evidence notebook.'));
         };
         var clearCapturedRuns = function() {
           saveCapstone({ runs: [], evidenceVerdict: '' });
-          announce('All captured simulator runs cleared. Your interpretation notes were kept.');
+          announce(__alloT('stem.evolab.sr_all_captured_simulator_runs_cleared_your_interpre', 'All captured simulator runs cleared. Your interpretation notes were kept.'));
         };
 
         var renderComparisonCoach = function(forReport) {
@@ -6906,7 +6917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
           var claimReady = (notebook.claim || '').trim().length >= 10;
 
-          return h('section', { 'aria-label': 'Evidence comparison coach', className: 'rounded-2xl border-2 border-violet-300 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 space-y-3' },
+          return h('section', { 'aria-label': __alloT('stem.evolab.a11y_evidence_comparison_coach', 'Evidence comparison coach'), className: 'rounded-2xl border-2 border-violet-300 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 space-y-3' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
               h('div', null,
                 h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-violet-800' }, 'Evidence Coach'),
@@ -6914,7 +6925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               ),
               capturedRuns.length >= 2 && h('span', { className: 'rounded-full border px-3 py-1 text-xs font-black ' + (controlledPlanComparison || sameDesign ? 'border-cyan-300 bg-cyan-50 text-cyan-900' : 'border-amber-300 bg-amber-50 text-amber-900') }, controlledPlanComparison ? 'Plan aligned' : sameDesign ? 'Settings match' : Math.max(1, designKeys.length) + ' setting combinations')
             ),
-            !forReport && h('ol', { 'aria-label': 'Evidence-building progress', className: 'grid grid-cols-1 gap-2 sm:grid-cols-3' },
+            !forReport && h('ol', { 'aria-label': __alloT('stem.evolab.a11y_evidence_building_progress', 'Evidence-building progress'), className: 'grid grid-cols-1 gap-2 sm:grid-cols-3' },
               [
                 { label: 'Capture', detail: capturedRuns.length + (capturedRuns.length === 1 ? ' run' : ' runs'), done: capturedRuns.length >= 1 },
                 { label: 'Compare', detail: capturedRuns.length >= 2 ? 'pattern ready' : 'capture 1 more', done: capturedRuns.length >= 2 },
@@ -6953,7 +6964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   onClick: function() {
                     if ((notebook.claim || '').trim()) return;
                     setNotebook('claim', claimStarter);
-                    announce('Claim starter added to the interpretation notebook.');
+                    announce(__alloT('stem.evolab.sr_claim_starter_added_to_the_interpretation_noteboo', 'Claim starter added to the interpretation notebook.'));
                   },
                   'aria-describedby': 'evo-capstone-claim-starter',
                   className: 'mt-3 rounded-lg px-3 py-2 text-xs font-black ' + ((notebook.claim || '').trim().length > 0 ? 'cursor-not-allowed bg-slate-200 text-slate-600' : 'bg-fuchsia-700 text-white hover:bg-fuchsia-800 focus:outline-none focus:ring-4 focus:ring-fuchsia-300')
@@ -6974,14 +6985,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               !forReport && h('button', {
                 type: 'button',
                 onClick: clearCapturedRuns,
-                'aria-label': 'Clear all saved run snapshots',
+                'aria-label': __alloT('stem.evolab.a11y_clear_all_saved_run_snapshots', 'Clear all saved run snapshots'),
                 className: 'rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-bold text-rose-800 transition-colors hover:bg-rose-50'
               }, 'Clear all')
             ),
             h('div', {
               role: 'region',
               tabIndex: 0,
-              'aria-label': 'Captured simulator runs comparison table',
+              'aria-label': __alloT('stem.evolab.a11y_captured_simulator_runs_comparison_table', 'Captured simulator runs comparison table'),
               className: 'overflow-x-auto rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500'
             },
               h('table', { className: 'w-full border-collapse text-left text-xs', style: { minWidth: '760px' } },
@@ -7209,7 +7220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('strong', { className: 'text-sm' }, trialAssessment.title),
                 h('span', { className: 'text-xs font-black' }, Math.min(capturedRuns.length, trialPlanTarget) + ' / ' + trialPlanTarget)
               ),
-              h('progress', { value: Math.min(capturedRuns.length, trialPlanTarget), max: trialPlanTarget, 'aria-label': 'Distinct planned trials captured', className: 'mt-2 h-2 w-full accent-violet-700' }),
+              h('progress', { value: Math.min(capturedRuns.length, trialPlanTarget), max: trialPlanTarget, 'aria-label': __alloT('stem.evolab.a11y_distinct_planned_trials_captured', 'Distinct planned trials captured'), className: 'mt-2 h-2 w-full accent-violet-700' }),
               h('p', { className: 'mt-2 text-xs leading-relaxed' }, trialAssessment.detail),
               capturedRuns.length >= trialPlanTarget && h('p', { className: 'mt-1 text-xs leading-relaxed' }, 'This checks captured endpoint settings only; it cannot verify that a setting stayed unchanged during a trajectory.')
             )
@@ -7245,7 +7256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               }, capturedRuns.length === 0 ? '→ Open ' + scenario.moduleLabel + ' — Run 1 of ' + displayedTrialTarget : capturedRuns.length < displayedTrialTarget ? '→ Run the comparison' : '→ Open another trial'),
               !trialPlanReady && h('p', { id: 'evo-trial-plan-required', className: 'mt-2 text-sm font-bold text-rose-800' }, 'Finish the two comparison levels before opening the simulator.')
             ),
-            h('section', { 'aria-label': 'Scenario data mission', className: 'rounded-xl border-2 border-cyan-300 bg-cyan-50 p-4' },
+            h('section', { 'aria-label': __alloT('stem.evolab.a11y_scenario_data_mission', 'Scenario data mission'), className: 'rounded-xl border-2 border-cyan-300 bg-cyan-50 p-4' },
               h('div', { className: 'text-xs font-black uppercase tracking-wider text-cyan-900' }, '🔎 Your data mission'),
               h('p', { className: 'mt-1 text-sm text-slate-700' }, trialPlan && trialPlan.strategy === 'change-one' ? 'Change only the planned factor. Keep every other tracked setting—including duration—the same.' : 'Use the same settings for each planned trial. Exact values make the result easier to compare, explain, and repeat.'),
               h('ol', { className: 'mt-3 grid grid-cols-1 gap-2 md:grid-cols-3' },
@@ -7314,7 +7325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('h3', { className: 'text-lg font-black text-slate-800' }, t('stem.evolab.step_4_reflect_on_your_findings', 'Step 4: Evaluate the evidence')),
               h('p', { className: 'mt-1 text-sm text-slate-600' }, 'A strong explanation connects what you predicted, what you observed, and why the population changed. An unsupported prediction is still a useful scientific result.')
             ),
-            h('section', { 'aria-label': 'Evidence replay', className: 'overflow-hidden rounded-xl border-2 border-violet-300 bg-violet-50' },
+            h('section', { 'aria-label': __alloT('stem.evolab.a11y_evidence_replay', 'Evidence replay'), className: 'overflow-hidden rounded-xl border-2 border-violet-300 bg-violet-50' },
               h('div', { className: 'border-b border-violet-200 px-4 py-2 text-xs font-black uppercase tracking-wider text-violet-900' }, '↔ Evidence replay'),
               h('div', { className: 'grid grid-cols-1 gap-0 md:grid-cols-2' },
                 h('div', { className: 'border-b border-violet-200 p-4 md:border-b-0 md:border-r' },
@@ -7430,7 +7441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               // Evidence notebook
               h('div', null,
                 h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-emerald-800 mb-2' }, t('stem.evolab.3_evidence_notebook', '3. Evidence Notebook')),
-                trialPlan && h('section', { 'aria-label': 'Trial plan made before testing', className: 'mb-3 rounded-xl border-2 border-violet-300 bg-violet-50 p-4' },
+                trialPlan && h('section', { 'aria-label': __alloT('stem.evolab.a11y_trial_plan_made_before_testing', 'Trial plan made before testing'), className: 'mb-3 rounded-xl border-2 border-violet-300 bg-violet-50 p-4' },
                   h('h4', { className: 'text-sm font-black text-violet-950' }, 'Trial plan — made before testing'),
                   h('dl', { className: 'mt-2 grid grid-cols-1 gap-2 text-sm md:grid-cols-2' },
                     [

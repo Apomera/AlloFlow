@@ -12,7 +12,7 @@ describe('Calculus visualization subtabs accessibility', () => {
 
   it('gives visualization subtabs roving focus and keyboard navigation', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("role: 'tablist', 'aria-label': 'Calculus visualization view'");
+    expect(source).toContain(`role: 'tablist', 'aria-label': __alloT('stem.calculus.a11y_calculus_visualization_view', 'Calculus visualization view')`);
     expect(source).toContain("id: 'calculus-viz-tab-' + v.id");
     expect(source).toContain("'aria-controls': 'calculus-viz-panel-' + v.id");
     expect(source).toContain("'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1");

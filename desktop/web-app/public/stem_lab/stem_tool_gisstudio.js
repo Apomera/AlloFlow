@@ -1,5 +1,15 @@
 // GIS Studio - accessible, Maine-first geographic information systems lab.
 (function () {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloGisCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloGisCtx && typeof __alloGisCtx.t === "function") ? __alloGisCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   window.StemLab = window.StemLab || {
@@ -3107,6 +3117,7 @@
       { id: 'projection_lab', label: 'Compare map projections', icon: '\uD83C\uDF10', check: function (d) { return !!d.gisProjectionCompared; }, progress: function (d) { return d.gisProjectionCompared ? 'Compared' : 'Not yet'; } }
     ],
     render: function (ctx) {
+      __alloGisCtx = ctx;
       var React = ctx.React, h = React.createElement;
       var setToolData = ctx.setToolData || function () {};
       var announce = ctx.announceToSR || function () {};
@@ -3564,7 +3575,7 @@
           setTimeMapReady(false);
           setTimeMapUnavailable(false);
           setLeafletRetry(function (value) { return value + 1; });
-          announce('Retrying the online basemap. The data tables remain available while it loads.');
+          announce(__alloT('stem.gisstudio.sr_retrying_the_online_basemap_the_data_tables_remai', 'Retrying the online basemap. The data tables remain available while it loads.'));
         }
 
         function interactiveMapSurface(ref, label, height, pending, unavailable) {
@@ -3658,26 +3669,26 @@
 
         function undoAnalysis() {
           if (!analysisHistory.length) {
-            announce('There is no spatial analysis change to undo.');
+            announce(__alloT('stem.gisstudio.sr_there_is_no_spatial_analysis_change_to_undo', 'There is no spatial analysis change to undo.'));
             return;
           }
           var previous = analysisHistory[analysisHistory.length - 1];
           setAnalysisHistory(function (items) { return items.slice(0, -1); });
           setAnalysisFuture(function (items) { return items.concat([analysisSnapshot()]).slice(-20); });
           applyAnalysisSnapshot(previous);
-          announce('Last spatial analysis change undone.');
+          announce(__alloT('stem.gisstudio.sr_last_spatial_analysis_change_undone', 'Last spatial analysis change undone.'));
         }
 
         function redoAnalysis() {
           if (!analysisFuture.length) {
-            announce('There is no spatial analysis change to redo.');
+            announce(__alloT('stem.gisstudio.sr_there_is_no_spatial_analysis_change_to_redo', 'There is no spatial analysis change to redo.'));
             return;
           }
           var next = analysisFuture[analysisFuture.length - 1];
           setAnalysisFuture(function (items) { return items.slice(0, -1); });
           setAnalysisHistory(function (items) { return items.concat([analysisSnapshot()]).slice(-20); });
           applyAnalysisSnapshot(next);
-          announce('Spatial analysis change restored.');
+          announce(__alloT('stem.gisstudio.sr_spatial_analysis_change_restored', 'Spatial analysis change restored.'));
         }
         React.useEffect(function () {
           function onAnalysisShortcut(event) {
@@ -4342,7 +4353,7 @@
 
         function downloadImportReport() {
           if (!importDiagnostics.invalidRows && !importDiagnostics.truncatedRows) {
-            announce('There are no rejected or capped CSV rows to report.');
+            announce(__alloT('stem.gisstudio.sr_there_are_no_rejected_or_capped_csv_rows_to_repor', 'There are no rejected or capped CSV rows to report.'));
             return;
           }
           try {
@@ -4366,7 +4377,7 @@
             }));
             if (samples.length < importDiagnostics.invalidRows) reportRows.push([], ['Note', 'Only the first 50 rejected rows are included.']);
             triggerDownload(rowsToCSV(reportRows), safeFileStem(projectTitle, 'gis-import') + '-import-review.csv', 'text/csv;charset=utf-8');
-            announce('CSV import review downloaded.');
+            announce(__alloT('stem.gisstudio.sr_csv_import_review_downloaded', 'CSV import review downloaded.'));
           } catch (reportError) {
             setError('The import review could not be downloaded. ' + reportError.message);
           }
@@ -4559,12 +4570,12 @@
           setAnalysisPoints([]);
           setAnalysisSelection([]);
           setAnalysisSelectionSource('none');
-          announce('Spatial analysis cleared.');
+          announce(__alloT('stem.gisstudio.sr_spatial_analysis_cleared', 'Spatial analysis cleared.'));
         }
 
         function analyzeBoundary() {
           if (!selectedGeoFeature || (selectedGeometryType !== 'Polygon' && selectedGeometryType !== 'MultiPolygon')) {
-            announce('Choose a polygon or multipolygon boundary.');
+            announce(__alloT('stem.gisstudio.sr_choose_a_polygon_or_multipolygon_boundary', 'Choose a polygon or multipolygon boundary.'));
             return;
           }
           pushAnalysisHistory();
@@ -4578,7 +4589,7 @@
 
         function sonifySelection() {
           var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx || !selectedRecords.length) { announce('No selected records are available to sonify.'); return; }
+          if (!Ctx || !selectedRecords.length) { announce(__alloT('stem.gisstudio.sr_no_selected_records_are_available_to_sonify', 'No selected records are available to sonify.')); return; }
           var ac;
           try { ac = new Ctx(); } catch (ignore) { return; }
           selectedRecords.forEach(function (record, index) {
@@ -4609,13 +4620,13 @@
           }).join('; ');
           var prompt = 'Act as an accessible secondary-school GIS coach. In 120 words or fewer, name one spatial pattern, one possible explanation to investigate, one limitation, and one useful follow-up layer. Do not claim causation. Metric: ' + metricLabel + '. Summary: ' + summary + ' Point data: ' + data + ' Polygon data: ' + geoPayload;
           Promise.resolve(callGemini(prompt, false, false, 0.4)).then(function (answer) {
-            setAIText(String(answer || summary)); setAIBusy(false); announce('Pattern explanation ready.');
+            setAIText(String(answer || summary)); setAIBusy(false); announce(__alloT('stem.gisstudio.sr_pattern_explanation_ready', 'Pattern explanation ready.'));
           }).catch(function () { setAIText(summary); setAIBusy(false); });
         }
 
         function sonify() {
           var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx || !records.length) { announce('Audio is unavailable. Use the value column in the table.'); return; }
+          if (!Ctx || !records.length) { announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_value_column_in_the', 'Audio is unavailable. Use the value column in the table.')); return; }
           var ac;
           try { ac = new Ctx(); } catch (ignore) { return; }
           records.slice().sort(function (a, b) { return valueOf(a, metric, imported) - valueOf(b, metric, imported); }).forEach(function (record, index) {
@@ -4627,7 +4638,7 @@
             oscillator.connect(gain); gain.connect(ac.destination);
             oscillator.start(start); oscillator.stop(start + 0.1);
           });
-          announce('Playing values from low pitch to high pitch.');
+          announce(__alloT('stem.gisstudio.sr_playing_values_from_low_pitch_to_high_pitch', 'Playing values from low pitch to high pitch.'));
         }
 
         var panel = { background: '#102536', border: '1px solid #28516a', borderRadius: 14, padding: 14 };
@@ -4648,7 +4659,7 @@
             setTableMaximum('');
             setTableSort('value-desc');
             setTableSelectedOnly(false);
-            announce('Data Explorer controls reset. All mapped records are shown in the table.');
+            announce(__alloT('stem.gisstudio.sr_data_explorer_controls_reset_all_mapped_records_a', 'Data Explorer controls reset. All mapped records are shown in the table.'));
           }
           var resultMessage = tableRangeInvalid
             ? 'Minimum value cannot be greater than maximum value.'
@@ -4656,7 +4667,7 @@
           return h('section', { 'aria-labelledby': 'gis-table-heading', style: Object.assign({}, panel, { overflow: 'hidden' }) },
             h('h2', { id: 'gis-table-heading', style: { margin: '0 0 4px', fontSize: 15, color: '#f0fdfa' } }, 'Accessible data-table twin'),
             h('p', { style: { margin: '0 0 10px', color: '#a7c7d8', fontSize: 11, lineHeight: 1.5 } }, records.length + ' records carry the same values as the map without relying on color or position.'),
-            h('div', { role: 'search', 'aria-label': 'Data Explorer controls', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(165px,1fr))', gap: 9, padding: 10, marginBottom: 9, borderRadius: 9, border: '1px solid #2d5868', background: '#081d29' } },
+            h('div', { role: 'search', 'aria-label': __alloT('stem.gisstudio.a11y_data_explorer_controls', 'Data Explorer controls'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(165px,1fr))', gap: 9, padding: 10, marginBottom: 9, borderRadius: 9, border: '1px solid #2d5868', background: '#081d29' } },
               h('label', { style: { display: 'grid', gap: 4, color: '#dbeafe', fontSize: 11, fontWeight: 700 } }, 'Search locations',
                 h('input', { type: 'search', value: tableQuery, onChange: function (event) { setTableQuery(event.target.value); }, placeholder: 'Name contains...', 'aria-controls': 'gis-data-explorer-table', 'aria-describedby': 'gis-data-explorer-note', style: control })),
               h('label', { style: { display: 'grid', gap: 4, color: '#dbeafe', fontSize: 11, fontWeight: 700 } }, 'Minimum ' + metricLabel,
@@ -4676,7 +4687,7 @@
             h('p', { id: 'gis-data-explorer-status', role: tableRangeInvalid ? 'alert' : 'status', 'aria-live': 'polite', style: { margin: '0 0 4px', color: tableRangeInvalid ? '#fde68a' : '#86efac', fontSize: 11, fontWeight: 700 } }, resultMessage),
             h('p', { id: 'gis-data-explorer-note', style: { margin: '0 0 10px', color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, 'These controls change only this table view. The map, analysis, project, and exports retain the complete mapped dataset.'),
             exploredRecords.length > 0
-              ? h('div', { role: 'region', 'aria-label': 'Scrollable GIS data table', tabIndex: 0, style: { overflowX: 'auto', outlineOffset: 3 } },
+              ? h('div', { role: 'region', 'aria-label': __alloT('stem.gisstudio.a11y_scrollable_gis_data_table', 'Scrollable GIS data table'), tabIndex: 0, style: { overflowX: 'auto', outlineOffset: 3 } },
                   h('table', { id: 'gis-data-explorer-table', style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
                     h('caption', { style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } }, metricLabel + ' by location; ' + resultMessage),
                     h('thead', null, h('tr', null, ['Location', 'Latitude', 'Longitude', metricLabel, 'Class', 'Analysis selection'].map(function (heading) {
@@ -4830,7 +4841,7 @@
             analysisMode === 'buffer' && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 9 } },
               h('span', { style: { fontWeight: 700 } }, 'Buffer radius'),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                h('input', { type: 'number', 'aria-label': 'Buffer radius in kilometers', min: 1, max: 500, step: 1, value: bufferRadiusKm, onChange: function (event) { setBufferRadiusKm(Math.max(1, Math.min(500, Number(event.target.value) || 1))); }, style: Object.assign({}, control, { width: 78 }) }),
+                h('input', { type: 'number', 'aria-label': __alloT('stem.gisstudio.a11y_buffer_radius_in_kilometers', 'Buffer radius in kilometers'), min: 1, max: 500, step: 1, value: bufferRadiusKm, onChange: function (event) { setBufferRadiusKm(Math.max(1, Math.min(500, Number(event.target.value) || 1))); }, style: Object.assign({}, control, { width: 78 }) }),
                 h('span', null, analysisUnit === 'imperial' ? 'km (' + formatDistance(bufferRadiusKm) + ')' : 'km'))),
             h('p', { style: { margin: '5px 0 9px', color: '#a7c7d8', fontSize: 10, lineHeight: 1.45 } },
               analysisMode === 'distance' ? 'Click two or more map locations. Each click adds a path segment.' :
@@ -4838,8 +4849,8 @@
                   'Click anywhere to identify the closest mapped point by straight-line distance.'),
             h('button', { type: 'button', onClick: clearAnalysis, style: Object.assign({}, control, { width: '100%', cursor: 'pointer' }) }, 'Clear map analysis'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8, marginBottom: 2 } },
-              h('button', { type: 'button', onClick: undoAnalysis, disabled: !analysisHistory.length, 'aria-label': 'Undo last spatial analysis change', style: Object.assign({}, control, { cursor: analysisHistory.length ? 'pointer' : 'not-allowed', opacity: analysisHistory.length ? 1 : 0.55 }) }, 'Undo analysis'),
-              h('button', { type: 'button', onClick: redoAnalysis, disabled: !analysisFuture.length, 'aria-label': 'Redo spatial analysis change', style: Object.assign({}, control, { cursor: analysisFuture.length ? 'pointer' : 'not-allowed', opacity: analysisFuture.length ? 1 : 0.55 }) }, 'Redo analysis')),
+              h('button', { type: 'button', onClick: undoAnalysis, disabled: !analysisHistory.length, 'aria-label': __alloT('stem.gisstudio.a11y_undo_last_spatial_analysis_change', 'Undo last spatial analysis change'), style: Object.assign({}, control, { cursor: analysisHistory.length ? 'pointer' : 'not-allowed', opacity: analysisHistory.length ? 1 : 0.55 }) }, 'Undo analysis'),
+              h('button', { type: 'button', onClick: redoAnalysis, disabled: !analysisFuture.length, 'aria-label': __alloT('stem.gisstudio.a11y_redo_spatial_analysis_change', 'Redo spatial analysis change'), style: Object.assign({}, control, { cursor: analysisFuture.length ? 'pointer' : 'not-allowed', opacity: analysisFuture.length ? 1 : 0.55 }) }, 'Redo analysis')),
             h('p', { style: { margin: '5px 0 0', color: '#7dd3fc', fontSize: 10 } },
               analysisHistory.length ? analysisHistory.length + ' undoable analysis change' + (analysisHistory.length === 1 ? '' : 's') + '.' : 'No undoable analysis changes yet.'),
             h('p', { style: { margin: '3px 0 0', color: '#8aa9bb', fontSize: 10 } }, 'Keyboard: Ctrl/Cmd+Z to undo; Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y to redo.'),
@@ -4875,7 +4886,7 @@
                 h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.08em' } }, 'MEASURE • BUFFER • SELECT'),
                 h('h2', { id: 'gis-analysis-results-heading', style: { margin: '3px 0 0', color: '#f0fdfa', fontSize: 16 } }, 'Spatial analysis results')),
               h('button', { type: 'button', onClick: sonifySelection, disabled: !selectedRecords.length, style: Object.assign({}, primary, { background: '#083344', border: '1px solid #22d3ee', opacity: selectedRecords.length ? 1 : 0.55 }) }, '♫ Sonify selection')),
-              h('button', { type: 'button', onClick: copyAnalysisSummary, disabled: !hasAnalysisState(), 'aria-label': 'Copy the current spatial analysis summary', style: Object.assign({}, control, { cursor: hasAnalysisState() ? 'pointer' : 'not-allowed', opacity: hasAnalysisState() ? 1 : 0.55 }) }, 'Copy analysis summary'),
+              h('button', { type: 'button', onClick: copyAnalysisSummary, disabled: !hasAnalysisState(), 'aria-label': __alloT('stem.gisstudio.a11y_copy_the_current_spatial_analysis_summary', 'Copy the current spatial analysis summary'), style: Object.assign({}, control, { cursor: hasAnalysisState() ? 'pointer' : 'not-allowed', opacity: hasAnalysisState() ? 1 : 0.55 }) }, 'Copy analysis summary'),
             analysisCopyStatus && h('p', { role: 'status', style: { margin: '5px 0 0', color: '#86efac', fontSize: 11 } }, analysisCopyStatus),
             h('p', { role: 'status', style: { margin: '10px 0', color: '#cfe8f3', fontSize: 12, lineHeight: 1.55 } }, narrative),
             selectedGeoFeature && h('div', { style: { display: 'flex', gap: 9, flexWrap: 'wrap', padding: 10, borderRadius: 9, background: '#071827', color: '#dbeafe', fontSize: 11 } },
@@ -4986,7 +4997,7 @@
                     return h('span', { key: index, role: 'listitem', style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
                       h('span', { 'aria-hidden': 'true', style: { width: 18, height: 10, display: 'inline-block', background: paletteForClasses(legendBounds.length - 1)[Math.min(index, legendBounds.length - 2)], borderRadius: 2, border: '1px solid rgba(255,255,255,.35)' } }),
                       label);
-                  })) : h('div', { role: 'img', 'aria-label': 'Point values run from low teal to high rose', style: { color: '#b7d2df', fontSize: 10 } }, 'Point legend: low teal \u2192 high rose'))),
+                  })) : h('div', { role: 'img', 'aria-label': __alloT('stem.gisstudio.a11y_point_values_run_from_low_teal_to_high_rose', 'Point values run from low teal to high rose'), style: { color: '#b7d2df', fontSize: 10 } }, 'Point legend: low teal \u2192 high rose'))),
             analysisResults(),
             basemap === 'satellite' && h('section', { 'aria-labelledby': 'gis-imagery-heading', style: panel },
               h('h2', { id: 'gis-imagery-heading', style: { margin: '0 0 5px', color: '#f0fdfa', fontSize: 15 } }, 'Satellite imagery reading routine'),
@@ -5384,7 +5395,7 @@
             document.body.removeChild(link);
             window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
             persist('gisProjectSaved', true);
-            announce('GIS Studio project downloaded.');
+            announce(__alloT('stem.gisstudio.sr_gis_studio_project_downloaded', 'GIS Studio project downloaded.'));
           } catch (saveError) {
             setProjectError('The project could not be saved. ' + saveError.message);
           }
@@ -5397,7 +5408,7 @@
             }));
             triggerDownload(rowsToCSV(rows), safeFileStem(projectTitle, 'gis-project') + '-mapped-points.csv', 'text/csv;charset=utf-8');
             persist('gisMappedDataExported', true);
-            announce('Mapped point data downloaded as CSV.');
+            announce(__alloT('stem.gisstudio.sr_mapped_point_data_downloaded_as_csv', 'Mapped point data downloaded as CSV.'));
           } catch (exportError) {
             setProjectError('The mapped CSV could not be downloaded. ' + exportError.message);
           }
@@ -5406,13 +5417,13 @@
         function downloadGeoJSONLayer() {
           if (!geoData) {
             setProjectError('Load a GeoJSON layer before downloading it.');
-            announce('No GeoJSON layer is available to download.');
+            announce(__alloT('stem.gisstudio.sr_no_geojson_layer_is_available_to_download', 'No GeoJSON layer is available to download.'));
             return;
           }
           try {
             triggerDownload(JSON.stringify(geoData, null, 2), safeFileStem(projectTitle, 'gis-project') + '-layer.geojson', 'application/geo+json;charset=utf-8');
             persist('gisGeoJSONExported', true);
-            announce('GeoJSON layer downloaded.');
+            announce(__alloT('stem.gisstudio.sr_geojson_layer_downloaded', 'GeoJSON layer downloaded.'));
           } catch (exportError) {
             setProjectError('The GeoJSON layer could not be downloaded. ' + exportError.message);
           }
@@ -5452,7 +5463,7 @@
           setRecoveryDraft(null);
           setAutosaveReady(true);
           setAutosaveStatus('Previous local draft discarded; autosave resumed.');
-          announce('Previous local draft discarded.');
+          announce(__alloT('stem.gisstudio.sr_previous_local_draft_discarded', 'Previous local draft discarded.'));
         }
 
         function updateProvenance(key, value) {
@@ -5501,7 +5512,7 @@
 
         function downloadTimeImportReport() {
           if (!timeImportDiagnostics.invalidRows && !timeImportDiagnostics.truncatedRows) {
-            announce('There are no rejected or capped time-series rows to report.');
+            announce(__alloT('stem.gisstudio.sr_there_are_no_rejected_or_capped_time_series_rows', 'There are no rejected or capped time-series rows to report.'));
             return;
           }
           try {
@@ -5517,7 +5528,7 @@
             }));
             if (samples.length < timeImportDiagnostics.invalidRows) reportRows.push([], ['Note', 'Only the first 50 rejected rows are included.']);
             triggerDownload(rowsToCSV(reportRows), safeFileStem(projectTitle, 'gis-project') + '-time-series-import-review.csv', 'text/csv;charset=utf-8');
-            announce('Time-series import review downloaded.');
+            announce(__alloT('stem.gisstudio.sr_time_series_import_review_downloaded', 'Time-series import review downloaded.'));
           } catch (reportError) {
             setTimeError('The time-series import review could not be downloaded. ' + reportError.message);
           }
@@ -5532,7 +5543,7 @@
 
         function sonifyTemporalChange() {
           var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx || !temporalComplete.length) { announce('No complete changes are available to sonify.'); return; }
+          if (!Ctx || !temporalComplete.length) { announce(__alloT('stem.gisstudio.sr_no_complete_changes_are_available_to_sonify', 'No complete changes are available to sonify.')); return; }
           var ac;
           try { ac = new Ctx(); } catch (ignore) { return; }
           var maxAbs = Math.max.apply(Math, temporalComplete.map(function (row) { return Math.abs(row.change); })) || 1;
@@ -5545,7 +5556,7 @@
             oscillator.connect(gain); gain.connect(ac.destination);
             oscillator.start(start); oscillator.stop(start + 0.15);
           });
-          announce('Playing changes from the largest decrease to the largest increase.');
+          announce(__alloT('stem.gisstudio.sr_playing_changes_from_the_largest_decrease_to_the', 'Playing changes from the largest decrease to the largest increase.'));
         }
 
         function timeEvidenceModel() {
@@ -5585,7 +5596,7 @@
           window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           persist('gisTimelineAnalyzed', true);
           persist('gisTimelineExported', true);
-          announce('Accessible change-over-time evidence report downloaded.');
+          announce(__alloT('stem.gisstudio.sr_accessible_change_over_time_evidence_report_downl', 'Accessible change-over-time evidence report downloaded.'));
         }
 
         function saveMissionProgress(missionId, stepId, checked) {
@@ -5734,17 +5745,17 @@
             try {
               triggerDownload(text, safeFileStem(projectTitle, 'gis-analysis') + '-summary.txt', 'text/plain;charset=utf-8');
               setAnalysisCopyStatus('Clipboard unavailable; analysis summary downloaded as a text file.');
-              announce('Clipboard unavailable. Analysis summary downloaded as a text file.');
+              announce(__alloT('stem.gisstudio.sr_clipboard_unavailable_analysis_summary_downloaded', 'Clipboard unavailable. Analysis summary downloaded as a text file.'));
             } catch (downloadError) {
               setAnalysisCopyStatus('The analysis summary could not be copied or downloaded.');
-              announce('The analysis summary could not be copied or downloaded.');
+              announce(__alloT('stem.gisstudio.sr_the_analysis_summary_could_not_be_copied_or_downl', 'The analysis summary could not be copied or downloaded.'));
             }
           }
           try {
             if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
               navigator.clipboard.writeText(text).then(function () {
                 setAnalysisCopyStatus('Analysis summary copied to the clipboard.');
-                announce('Analysis summary copied to the clipboard.');
+                announce(__alloT('stem.gisstudio.sr_analysis_summary_copied_to_the_clipboard', 'Analysis summary copied to the clipboard.'));
               }, fallbackDownload);
             } else {
               fallbackDownload();
@@ -5794,13 +5805,13 @@
           document.body.removeChild(link);
           window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           persist('gisEvidenceExported', true);
-          announce('Accessible GIS evidence report downloaded.');
+          announce(__alloT('stem.gisstudio.sr_accessible_gis_evidence_report_downloaded', 'Accessible GIS evidence report downloaded.'));
         }
 
         function printEvidenceReport() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) {
-            announce('The print window was blocked. Download the accessible report instead.');
+            announce(__alloT('stem.gisstudio.sr_the_print_window_was_blocked_download_the_accessi', 'The print window was blocked. Download the accessible report instead.'));
             return;
           }
           reportWindow.opener = null;
@@ -5810,7 +5821,7 @@
           reportWindow.focus();
           window.setTimeout(function () { reportWindow.print(); }, 250);
           persist('gisEvidenceExported', true);
-          announce('Print-ready GIS evidence report opened.');
+          announce(__alloT('stem.gisstudio.sr_print_ready_gis_evidence_report_opened', 'Print-ready GIS evidence report opened.'));
         }
 
 
@@ -5832,7 +5843,7 @@
 
         function sonifyRemoteChange() {
           var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (!Ctx) { announce('Audio is unavailable. Use the accessible pixel table.'); return; }
+          if (!Ctx) { announce(__alloT('stem.gisstudio.sr_audio_is_unavailable_use_the_accessible_pixel_tab', 'Audio is unavailable. Use the accessible pixel table.')); return; }
           var context;
           try { context = new Ctx(); } catch (ignore) { return; }
           var changes = remoteScene.cells.map(function (cell) {
@@ -5850,7 +5861,7 @@
             oscillator.connect(gain); gain.connect(context.destination);
             oscillator.start(start); oscillator.stop(start + 0.055);
           });
-          announce('Playing clear pixels in row order. Lower rough tones indicate decreases; higher smooth tones indicate increases.');
+          announce(__alloT('stem.gisstudio.sr_playing_clear_pixels_in_row_order_lower_rough_ton', 'Playing clear pixels in row order. Lower rough tones indicate decreases; higher smooth tones indicate increases.'));
         }
 
         function downloadRemoteSensingReport() {
@@ -5865,13 +5876,13 @@
           document.body.removeChild(link);
           window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           persist('gisRemoteSensingCompleted', true);
-          announce('Accessible remote-sensing evidence report downloaded.');
+          announce(__alloT('stem.gisstudio.sr_accessible_remote_sensing_evidence_report_downloa', 'Accessible remote-sensing evidence report downloaded.'));
         }
 
         function printRemoteSensingReport() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) {
-            announce('The print window was blocked. Download the accessible remote-sensing report instead.');
+            announce(__alloT('stem.gisstudio.sr_the_print_window_was_blocked_download_the_accessi_2', 'The print window was blocked. Download the accessible remote-sensing report instead.'));
             return;
           }
           reportWindow.opener = null;
@@ -5881,7 +5892,7 @@
           reportWindow.focus();
           window.setTimeout(function () { reportWindow.print(); }, 250);
           persist('gisRemoteSensingCompleted', true);
-          announce('Print-ready remote-sensing report opened.');
+          announce(__alloT('stem.gisstudio.sr_print_ready_remote_sensing_report_opened', 'Print-ready remote-sensing report opened.'));
         }
 
         function updateComposer(field, value) {
@@ -5903,7 +5914,7 @@
           if (!String(annotationDraft.label || '').trim() || !Number.isFinite(lat) || !Number.isFinite(lon) ||
             lat < -90 || lat > 90 || lon < -180 || lon > 180) {
             setComposerStatus('Add an annotation label and valid latitude and longitude.');
-            announce('Annotation needs a label and valid coordinates.');
+            announce(__alloT('stem.gisstudio.sr_annotation_needs_a_label_and_valid_coordinates', 'Annotation needs a label and valid coordinates.'));
             return;
           }
           if (composer.annotations.length >= 20) {
@@ -5919,7 +5930,7 @@
           updateComposer('annotations', annotations);
           setAnnotationDraft({ label: '', lat: '', lon: '' });
           setComposerStatus('Annotation A' + annotations.length + ' added to the map.');
-          announce('Map annotation added.');
+          announce(__alloT('stem.gisstudio.sr_map_annotation_added', 'Map annotation added.'));
         }
 
         function removeComposerAnnotation(index) {
@@ -5930,7 +5941,7 @@
         function generateComposerDescription() {
           updateComposer('altText', suggestMapAltText(composerModel));
           setComposerStatus('A draft map description was generated. Review it for context and accuracy.');
-          announce('Draft map description generated.');
+          announce(__alloT('stem.gisstudio.sr_draft_map_description_generated', 'Draft map description generated.'));
         }
 
         function downloadComposerPackage() {
@@ -5947,7 +5958,7 @@
           window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           persist('gisMapComposed', true);
           setComposerStatus('Accessible map package downloaded with its table, annotations, provenance, and cartography review.');
-          announce('Accessible map package downloaded.');
+          announce(__alloT('stem.gisstudio.sr_accessible_map_package_downloaded', 'Accessible map package downloaded.'));
         }
 
         function printComposerPackage() {
@@ -5963,7 +5974,7 @@
           reportWindow.focus();
           window.setTimeout(function () { reportWindow.print(); }, 250);
           persist('gisMapComposed', true);
-          announce('Print-ready accessible map package opened.');
+          announce(__alloT('stem.gisstudio.sr_print_ready_accessible_map_package_opened', 'Print-ready accessible map package opened.'));
         }
 
         function updateStoryDraft(field, value) {
@@ -6021,14 +6032,14 @@
           persist('gisStoryMap', next);
           persist('gisStoryMapStarted', true);
           setStoryStatus('Added “' + frame.title + '” to the story map.');
-          announce('Current GIS view added to the story map.');
+          announce(__alloT('stem.gisstudio.sr_current_gis_view_added_to_the_story_map', 'Current GIS view added to the story map.'));
         }
 
         function addCustomStoryFrame() {
           if (storyMap.slides.length >= STORY_FRAME_LIMIT) { setStoryStatus('A story map can contain up to ' + STORY_FRAME_LIMIT + ' frames.'); return; }
           if (!String(storyDraft.title || '').trim() || !String(storyDraft.narrative || '').trim()) {
             setStoryStatus('Add a frame title and observation before saving the custom frame.');
-            announce('Story frame needs a title and observation.');
+            announce(__alloT('stem.gisstudio.sr_story_frame_needs_a_title_and_observation', 'Story frame needs a title and observation.'));
             return;
           }
           var frame = createStoryFrame(Object.assign({}, storyDraft, { view: 'Custom evidence frame', source: provenance.source || 'Classroom learning data' }), storyMap.slides.length);
@@ -6058,14 +6069,14 @@
           var url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = (String(storyMap.title || 'gis-story-map').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-story-map') + '.html';
           document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-          persist('gisStoryMapExported', true); persist('gisStoryMapStarted', true); setStoryStatus('Accessible story-map report downloaded.'); announce('Accessible story map report downloaded.');
+          persist('gisStoryMapExported', true); persist('gisStoryMapStarted', true); setStoryStatus('Accessible story-map report downloaded.'); announce(__alloT('stem.gisstudio.sr_accessible_story_map_report_downloaded', 'Accessible story map report downloaded.'));
         }
 
         function printStoryMapReport() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setStoryStatus('The print window was blocked. Download the story-map report instead.'); return; }
           reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildStoryMapReport({ story: storyMap, rows: composerRows, generated: display.dateTime(new Date()) }, localeInfo)); reportWindow.document.close(); reportWindow.focus();
-          window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisStoryMapExported', true); announce('Print-ready story map opened.');
+          window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisStoryMapExported', true); announce(__alloT('stem.gisstudio.sr_print_ready_story_map_opened', 'Print-ready story map opened.'));
         }
 
         function updateQualityReviewCheck(field, value) {
@@ -6078,13 +6089,13 @@
           var html = buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState }, localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = 'gis-studio-data-quality-review.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-          persist('gisQualityReviewed', true); setQualityStatus('Data quality review downloaded.'); announce('Data quality review downloaded.');
+          persist('gisQualityReviewed', true); setQualityStatus('Data quality review downloaded.'); announce(__alloT('stem.gisstudio.sr_data_quality_review_downloaded', 'Data quality review downloaded.'));
         }
 
         function printDataQualityReport() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setQualityStatus('The print window was blocked. Download the quality review instead.'); return; }
-          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState }, localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisQualityReviewed', true); announce('Print-ready data quality review opened.');
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState }, localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisQualityReviewed', true); announce(__alloT('stem.gisstudio.sr_print_ready_data_quality_review_opened', 'Print-ready data quality review opened.'));
         }
 
         function investigationPacketModel() {
@@ -6095,13 +6106,13 @@
           var html = buildInvestigationPacketReport(investigationPacketModel(), localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = (String(projectTitle || 'gis-investigation').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-investigation') + '-packet.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-          persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); setPacketStatus('Investigation Packet downloaded.'); announce('Investigation Packet downloaded.');
+          persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); setPacketStatus('Investigation Packet downloaded.'); announce(__alloT('stem.gisstudio.sr_investigation_packet_downloaded', 'Investigation Packet downloaded.'));
         }
 
         function printInvestigationPacket() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setPacketStatus('The print window was blocked. Download the packet instead.'); return; }
-          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildInvestigationPacketReport(investigationPacketModel(), localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); announce('Print-ready Investigation Packet opened.');
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildInvestigationPacketReport(investigationPacketModel(), localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); announce(__alloT('stem.gisstudio.sr_print_ready_investigation_packet_opened', 'Print-ready Investigation Packet opened.'));
         }
 
         function updateInquiryPlanField(field, value) {
@@ -6140,13 +6151,13 @@
         function downloadTeacherReview() {
           var html = buildTeacherReviewReport({ review: teacherReview }, localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
-          link.href = url; link.download = 'gis-studio-teacher-review.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000); persist('gisTeacherReviewStarted', true); setTeacherReviewStatus('Teacher review downloaded.'); announce('Teacher review downloaded.');
+          link.href = url; link.download = 'gis-studio-teacher-review.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000); persist('gisTeacherReviewStarted', true); setTeacherReviewStatus('Teacher review downloaded.'); announce(__alloT('stem.gisstudio.sr_teacher_review_downloaded', 'Teacher review downloaded.'));
         }
 
         function printTeacherReview() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setTeacherReviewStatus('The print window was blocked. Download the teacher review instead.'); return; }
-          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildTeacherReviewReport({ review: teacherReview }, localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisTeacherReviewStarted', true); announce('Print-ready teacher review opened.');
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildTeacherReviewReport({ review: teacherReview }, localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisTeacherReviewStarted', true); announce(__alloT('stem.gisstudio.sr_print_ready_teacher_review_opened', 'Print-ready teacher review opened.'));
         }
 
         function comparisonTable(series, side) {
@@ -6193,7 +6204,7 @@
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 10, marginTop: 12 } },
                 sideControls('Left', leftChoice, setCompareLeft, compareLeftBasemap, setCompareLeftBasemap),
                 sideControls('Right', rightChoice, setCompareRight, compareRightBasemap, setCompareRightBasemap))),
-            h('section', { 'aria-label': 'Synchronized comparison maps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 12 } },
+            h('section', { 'aria-label': __alloT('stem.gisstudio.a11y_synchronized_comparison_maps', 'Synchronized comparison maps'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 12 } },
               h('div', null,
                 h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Left: ' + comparisonLabel(leftChoice)),
                 interactiveMapSurface(compareLeftNode, 'Left interactive comparison map showing ' + comparisonLabel(leftChoice), 390, !compareMapReady, compareMapUnavailable),
@@ -6284,7 +6295,7 @@
                 h('input', {
                   type: 'range', min: 0, max: 100, step: 1, value: remoteSensing.swipe,
                   onChange: function (event) { updateRemoteSensing('swipe', Number(event.target.value)); },
-                  'aria-label': 'Before and after imagery swipe position', 'aria-valuetext': remoteSensing.swipe + ' percent'
+                  'aria-label': __alloT('stem.gisstudio.a11y_before_and_after_imagery_swipe_position', 'Before and after imagery swipe position'), 'aria-valuetext': remoteSensing.swipe + ' percent'
                 })),
               h('p', { style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 10 } },
                 remoteIndexName(remoteSensing.analysisIndex) + ': ' + remoteIndexFormula(remoteSensing.analysisIndex) + '. Reflectance values range from 0 to 1.')),
@@ -6296,7 +6307,7 @@
                 h('button', { type: 'button', onClick: sonifyRemoteChange, style: Object.assign({}, primary, { background: '#083344', border: '1px solid #22d3ee' }) }, '♫ Sonify index change')),
               h('div', {
                 role: 'group',
-                'aria-label': 'Illustrative before-and-after remote sensing raster. Select a pixel for exact values.',
+                'aria-label': __alloT('stem.gisstudio.a11y_illustrative_before_and_after_remote_sensing_ra', 'Illustrative before-and-after remote sensing raster. Select a pixel for exact values.'),
                 style: { position: 'relative', width: 'min(100%,620px)', aspectRatio: '1 / 1', margin: '12px auto 0', border: '2px solid #64748b', borderRadius: 10, overflow: 'hidden', background: '#071827' }
               },
                 raster('before'),
@@ -6467,14 +6478,14 @@
                 h('h2', { id: 'gis-composer-preview-heading', style: { margin: '4px 0 2px', color: '#0f3d3a', fontSize: 24 } }, composer.title || 'Untitled map'),
                 composer.subtitle && h('p', { style: { margin: '0 0 9px', color: '#52636f', fontSize: 13 } }, composer.subtitle),
                 schematicMap({ annotations: composer.annotations, altText: composer.altText || suggestMapAltText(composerModel) }),
-                composer.showLegend && h('div', { role: 'group', 'aria-label': 'Map legend', style: { marginTop: 10, padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff' } },
+                composer.showLegend && h('div', { role: 'group', 'aria-label': __alloT('stem.gisstudio.a11y_map_legend', 'Map legend'), style: { marginTop: 10, padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff' } },
                   h('strong', { style: { display: 'block', color: '#0f5f5a', fontSize: 12 } }, composer.legendTitle || metricLabel),
                   h('p', { style: { margin: '4px 0 0', fontSize: 11 } }, 'Low teal → middle green → high rose. Unit: ' + (composerModel.unit || 'not specified') + '.')),
                 composer.claim && h('div', { style: { marginTop: 10, borderLeft: '4px solid #d97706', background: '#fff7ed', padding: 10, fontSize: 12, lineHeight: 1.5 } },
                   h('strong', null, 'Takeaway: '), composer.claim),
                 h('p', { style: { margin: '9px 0 0', color: '#52636f', fontSize: 10 } },
                   'Source: ' + (provenance.source || 'not specified') + '. ' + composerRows.length + ' synchronized table records.'),
-                composer.annotations.length > 0 && h('ol', { 'aria-label': 'Map annotation key', style: { margin: '10px 0 0', paddingLeft: 22, fontSize: 11 } },
+                composer.annotations.length > 0 && h('ol', { 'aria-label': __alloT('stem.gisstudio.a11y_map_annotation_key', 'Map annotation key'), style: { margin: '10px 0 0', paddingLeft: 22, fontSize: 11 } },
                   composer.annotations.map(function (annotation, index) {
                     return h('li', { key: annotation.id }, 'A' + (index + 1) + ': ' + annotation.label);
                   })))),
@@ -6532,7 +6543,7 @@
               h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 } },
                 ['claim', 'evidence', 'limitation'].map(function (key) { return h('label', { key: key, style: { display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: storyMap.checks[key], onChange: function (event) { updateStoryMapField(key, event.target.checked); } }), key.charAt(0).toUpperCase() + key.slice(1) + ' check'); })),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 13 } },
-                h('progress', { max: storyProgress.total, value: storyProgress.complete, style: { width: 190, accentColor: '#5eead4' }, 'aria-label': 'Story Map reflection progress' }),
+                h('progress', { max: storyProgress.total, value: storyProgress.complete, style: { width: 190, accentColor: '#5eead4' }, 'aria-label': __alloT('stem.gisstudio.a11y_story_map_reflection_progress', 'Story Map reflection progress') }),
                 h('strong', { style: { color: storyProgress.complete === storyProgress.total ? '#86efac' : '#fde68a' } }, storyProgress.complete + '/' + storyProgress.total + ' reflection checks complete'),
                 h('span', { style: { color: '#a7c7d8', fontSize: 11 } }, storyProgress.frames + '/' + STORY_FRAME_LIMIT + ' frames')),
               h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, storyStatus)),
@@ -6612,7 +6623,7 @@
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Plan the reasoning before you interpret the map. A strong spatial investigation names a question, a claim, the evidence needed, an alternative explanation, and a next step.'),
               h('label', { style: { display: 'grid', gap: 5, marginTop: 13, fontSize: 12, fontWeight: 800 } }, 'Question type', h('select', { value: inquiryPlan.template, onChange: function (event) { chooseInquiryTemplate(event.target.value); }, style: control }, templateOptions)),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 10, marginTop: 12 } }, [['question', 'Testable spatial question', 500], ['claim', 'Working claim (revise as evidence changes)', 1500], ['evidencePlan', 'Evidence plan: what will you map or compare?', 1500], ['alternative', 'Alternative explanation or confounder', 1500], ['nextStep', 'Next step or additional evidence', 1500]].map(function (field) { return h('label', { key: field[0], style: { display: 'grid', gap: 5, fontSize: 11, fontWeight: 700 } }, field[1], field[0] === 'question' ? h('input', { type: 'text', value: inquiryPlan[field[0]], maxLength: field[2], onChange: function (event) { updateInquiryPlanField(field[0], event.target.value); }, style: control }) : h('textarea', { value: inquiryPlan[field[0]], maxLength: field[2], rows: field[0] === 'claim' ? 4 : 3, onChange: function (event) { updateInquiryPlanField(field[0], event.target.value); }, style: Object.assign({}, control, { resize: 'vertical' }) })); })),
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 13 } }, h('progress', { max: inquiryProgress.total, value: inquiryProgress.complete, style: { width: 190, accentColor: '#5eead4' }, 'aria-label': 'Investigation planning progress' }), h('strong', { style: { color: inquiryProgress.ready ? '#86efac' : '#fde68a' } }, inquiryProgress.complete + '/' + inquiryProgress.total + ' planning checks complete')),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 13 } }, h('progress', { max: inquiryProgress.total, value: inquiryProgress.complete, style: { width: 190, accentColor: '#5eead4' }, 'aria-label': __alloT('stem.gisstudio.a11y_investigation_planning_progress', 'Investigation planning progress') }), h('strong', { style: { color: inquiryProgress.ready ? '#86efac' : '#fde68a' } }, inquiryProgress.complete + '/' + inquiryProgress.total + ' planning checks complete')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, marginTop: 11 } }, [['question', 'Question is specific'], ['evidence', 'Evidence is mapped or compared'], ['alternative', 'Alternative explanation named'], ['nextStep', 'Next evidence step named']].map(function (item) { return h('label', { key: item[0], style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 9, background: '#071827', fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: inquiryPlan.checklist[item[0]], onChange: function (event) { updateInquiryChecklist(item[0], event.target.checked); } }), item[1]); })),
               h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, plannerStatus)),
             h('section', { 'aria-labelledby': 'gis-planner-next-heading', style: panel },
@@ -6794,7 +6805,7 @@
                 h('button', { type: 'button', onClick: function () { setTimeFocusYear(timeYears[Math.min(timeYears.length - 1, focusIndex + 1)]); setTimePlaying(false); }, disabled: focusIndex >= timeYears.length - 1, style: Object.assign({}, control, { cursor: focusIndex >= timeYears.length - 1 ? 'not-allowed' : 'pointer' }) }, 'Next year'),
                 h('button', { type: 'button', onClick: sonifyTemporalChange, disabled: !temporalComplete.length, style: Object.assign({}, primary, { background: '#083344', border: '1px solid #22d3ee', opacity: temporalComplete.length ? 1 : 0.55 }) }, '♫ Sonify changes')),
               h('p', { style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 10 } }, 'Sound orders locations from decrease to increase. Sawtooth tones mark decreases; sine tones mark increases.')),
-            h('section', { 'aria-label': 'Synchronized before and after maps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 12 } },
+            h('section', { 'aria-label': __alloT('stem.gisstudio.a11y_synchronized_before_and_after_maps', 'Synchronized before and after maps'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 12 } },
               h('div', null,
                 h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Baseline: ' + effectiveBaseline),
                 interactiveMapSurface(timeLeftNode, 'Baseline interactive map for ' + effectiveBaseline, 370, !timeMapReady, timeMapUnavailable)),

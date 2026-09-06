@@ -23,7 +23,7 @@ describe('Probability Lab accessibility', () => {
 
   it('exposes a stable pressed-state control for automatic trials', () => {
     const text = source();
-    expect(text).toContain('"aria-label": "Automatic simulation"');
+    expect(text).toContain(`"aria-label": __alloT('stem.probability.a11y_automatic_simulation', 'Automatic simulation')`);
     expect(text).toContain('"aria-pressed": d._autoRunning ? "true" : "false"');
     expect(text).toContain("d._autoRunning ? '\\u23F8 Pause' : '\\u25B6 Auto-Run'");
   });

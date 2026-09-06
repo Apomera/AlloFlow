@@ -44,6 +44,16 @@ window.StemLab = window.StemLab || {
 // ═══ End Guard ═══
 
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloProbCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloProbCtx && typeof __alloProbCtx.t === "function") ? __alloProbCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   // ── Audio + WCAG (auto-injected) ──
@@ -651,6 +661,7 @@ window.StemLab = window.StemLab || {
       { id: 'monte_carlo', label: 'Run a Monte Carlo simulation', icon: '\uD83D\uDCCA', check: function(d) { return (d._piPoints || []).length > 0; }, progress: function(d) { return (d._piPoints || []).length > 0 ? 'Done!' : 'Not yet'; } }
     ],
     render: function(ctx) {
+      __alloProbCtx = ctx;
       // Aliases â€” maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -1822,7 +1833,7 @@ var d = (labToolData.probability) || {};
 
             // Mode selector
 
-            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": "Probability experiment mode" },
+            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": __alloT('stem.probability.a11y_probability_experiment_mode', 'Probability experiment mode') },
 
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board'], ['volume3d', '\uD83E\uDDCA 3D Volume']].map(([m, label]) =>
 
@@ -3401,7 +3412,7 @@ var d = (labToolData.probability) || {};
                 React.createElement("h3", { id: "prob-tree-heading", className: "text-xs font-bold uppercase tracking-wider mb-1", style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.two_event_compound_probability_tree', '\uD83C\uDF33 Two-Event Compound Probability Tree')),
                 React.createElement("p", { className: "text-[0.6875rem] mb-3", style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, 'Compare independent events with dependent draws from a finite bag. Every path records first outcome, second outcome, and its ordered joint probability.'),
                 React.createElement("p", { className: "text-[0.6875rem] font-bold mb-1", style: { color: isDark||isContrast?'#ddd6fe':'#5b21b6' } }, 'Choose a probability tree model'),
-                React.createElement("div", { role: "group", "aria-label": "Choose a probability tree model", className: "flex flex-wrap gap-1 mb-3" },
+                React.createElement("div", { role: "group", "aria-label": __alloT('stem.probability.a11y_choose_a_probability_tree_model', 'Choose a probability tree model'), className: "flex flex-wrap gap-1 mb-3" },
                   _treeModes.map(function(pair){ return React.createElement("button", { type: "button", "aria-pressed": _treeMode===pair[0], key: pair[0], onClick: function(){ upd('treeEventMode', pair[0]); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all", style: { background: _treeMode===pair[0] ? (isDark||isContrast?'#7c3aed':'#6d28d9') : (isDark||isContrast?'rgba(139,92,246,0.1)':'#ede9fe'), color: _treeMode===pair[0] ? '#fff' : (isDark||isContrast?'#c4b5fd':'#6d28d9') } }, pair[1]); })
                 ),
                 _treeMode === 'sports' && React.createElement("p", { className: "text-[0.6875rem] italic mb-2", style: { color: isDark||isContrast?'#a5b4fc':'#6d28d9' } }, '\uD83C\uDFC6 Using: ' + activeSport.label + ' \u2014 ' + activeSport.desc),
@@ -3451,7 +3462,7 @@ var d = (labToolData.probability) || {};
                   ),
                   _treeReady && React.createElement("details", { className: "mt-3" },
                     React.createElement("summary", { className: "cursor-pointer text-[0.6875rem] font-bold", style: { color: isDark||isContrast?'#ddd6fe':'#5b21b6' } }, 'Ordered path data table (' + _pairs.length + ' paths)'),
-                    React.createElement("div", { className: "mt-2 overflow-x-auto", tabIndex: 0, role: "region", "aria-label": "Scrollable ordered probability path table" },
+                    React.createElement("div", { className: "mt-2 overflow-x-auto", tabIndex: 0, role: "region", "aria-label": __alloT('stem.probability.a11y_scrollable_ordered_probability_path_table', 'Scrollable ordered probability path table') },
                       React.createElement("table", { className: "w-full border-collapse text-left text-[0.625rem]", style: { minWidth: '580px', color: isDark||isContrast?'#e2e8f0':'#1e293b' } },
                         React.createElement("caption", { className: "sr-only" }, _treeIsDependent ? 'All ordered outcomes for two draws without replacement' : 'All ordered outcomes for two independent events'),
                         React.createElement("thead", null,
@@ -3556,9 +3567,9 @@ var d = (labToolData.probability) || {};
             })(),
 
             // ── Auto-Run Controls ──
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { role: "group", 'aria-label': "Automatic simulation controls", className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { role: "group", 'aria-label': __alloT('stem.probability.a11y_automatic_simulation_controls', 'Automatic simulation controls'), className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
-              React.createElement("button", { "aria-label": "Automatic simulation", "aria-pressed": d._autoRunning ? "true" : "false",
+              React.createElement("button", { "aria-label": __alloT('stem.probability.a11y_automatic_simulation', 'Automatic simulation'), "aria-pressed": d._autoRunning ? "true" : "false",
 
                 disabled: !customCanRun || !!d._piSlowRunning || (d.trials || 0) >= PROBABILITY_AUTO_TRIAL_LIMIT,
                 onClick: function() {
@@ -3571,14 +3582,14 @@ var d = (labToolData.probability) || {};
                     _autoRun.interval = null;
 
                     upd('_autoRunning', false);
-                    if (typeof announceToSR === 'function') announceToSR('Automatic simulation paused.');
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.probability.sr_automatic_simulation_paused', 'Automatic simulation paused.'));
 
                   } else {
 
                     upd('_autoRunning', true);
 
                     _autoRun.interval = setInterval(runTrialAuto, d._autoSpeed || 250);
-                    if (typeof announceToSR === 'function') announceToSR('Automatic simulation started.');
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.probability.sr_automatic_simulation_started', 'Automatic simulation started.'));
 
                   }
 
@@ -3590,7 +3601,7 @@ var d = (labToolData.probability) || {};
 
               }, d._autoRunning ? '\u23F8 Pause' : '\u25B6 Auto-Run'),
 
-              React.createElement("div", { role: "group", 'aria-label': "Automatic simulation speed", className: "flex flex-wrap gap-1" }, [['Slow', 600], ['Normal', 250], ['Fast', 80], ['Turbo', 20]].map(function(pair) {
+              React.createElement("div", { role: "group", 'aria-label': __alloT('stem.probability.a11y_automatic_simulation_speed', 'Automatic simulation speed'), className: "flex flex-wrap gap-1" }, [['Slow', 600], ['Normal', 250], ['Fast', 80], ['Turbo', 20]].map(function(pair) {
 
                 return React.createElement("button", { "aria-label": "Set simulation speed to " + pair[0], "aria-pressed": (d._autoSpeed || 250) === pair[1] ? "true" : "false", key: pair[0], onClick: function() {
 
@@ -3621,7 +3632,7 @@ var d = (labToolData.probability) || {};
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", disabled: !customCanRun || !!d._autoRunning, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
 
-              React.createElement("button", { "aria-label": "Reset current run", onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset current run")
+              React.createElement("button", { "aria-label": __alloT('stem.probability.a11y_reset_current_run', 'Reset current run'), onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset current run")
 
             ),
 
@@ -4053,7 +4064,7 @@ var d = (labToolData.probability) || {};
                     onClick: beginPiSlowDrop,
                     className: "mt-2 w-full px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition",
                     style: { background: '#7c3aed', color: '#fff' },
-                    'aria-label': 'Slow-drop 100 points one at a time'
+                    'aria-label': __alloT('stem.probability.a11y_slow_drop_100_points_one_at_a_time', 'Slow-drop 100 points one at a time')
                   }, '\uD83D\uDD2C Slow-drop 100 (watch them land)')
                 );
               }

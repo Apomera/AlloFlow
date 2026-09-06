@@ -12,7 +12,7 @@ describe('Calculus Lab main tabs accessibility', () => {
 
   it('gives all six calculus sections roving focus and keyboard navigation', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("role: 'tablist', 'aria-label': 'Calculus Tool sections'");
+    expect(source).toContain(`role: 'tablist', 'aria-label': __alloT('stem.calculus.a11y_calculus_tool_sections', 'Calculus Tool sections')`);
     expect(source).toContain("CALCULUS_TABS.map(function(item, tabIndex){");
     expect(source).toContain("['derivHunt','\\u2753 Inquiry']");
     expect(source).toContain("id:'calculus-tab-'+item[0]");

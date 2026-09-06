@@ -82,9 +82,9 @@ describe('Calculus prediction, estimation, and evidence pedagogy', () => {
     expect(mission).toContain('Evidence differs from your hypothesis.');
     expect(mission).toContain('Agreement is descriptive and ungraded;');
     expect(mission).toContain('Estimated error at n=16:');
-    expect(mission).toContain("'aria-label':'Estimated error at n equals 16'");
+    expect(mission).toContain(`'aria-label':__alloT('stem.calculus.a11y_estimated_error_at_n_equals_16', 'Estimated error at n equals 16')`);
     expect(mission).toContain('Measured error at n=16:');
-    expect(mission).toContain("'aria-label':'Measured error at n equals 16'");
+    expect(mission).toContain(`'aria-label':__alloT('stem.calculus.a11y_measured_error_at_n_equals_16', 'Measured error at n equals 16')`);
     expect(mission).toContain("var pctOff=actual!==0?absDiff/Math.abs(actual)*100:null;");
     expect(mission).toContain("'data-calculus-error-estimate-comparison':'descriptive-ungraded'");
     expect(mission).toContain('doubling n then reduces that error to roughly one quarter.');
@@ -149,7 +149,7 @@ describe('Calculus prediction, estimation, and evidence pedagogy', () => {
   it('keeps the distance extension as a descriptive numerical estimate', () => {
     expect(source).toContain("'data-calculus-distance-estimate-comparison':'descriptive-ungraded'");
     expect(source).toContain('This numerical comparison is descriptive and ungraded;');
-    expect(source).toContain("'aria-label':'Estimated distance in 5 seconds in meters'");
+    expect(source).toContain(`'aria-label':__alloT('stem.calculus.a11y_estimated_distance_in_5_seconds_in_meters', 'Estimated distance in 5 seconds in meters')`);
     expect(source).not.toContain('Did your prediction match?');
   });
 });

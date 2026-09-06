@@ -13,16 +13,16 @@ describe('Calculus guided-mission input accessibility', () => {
   it('names the inline numeric answer fields used by guided missions', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     [
-      "'aria-label':'Exact integral value'",
-      "'aria-label':'Riemann-sum error at n equals 4'",
-      "'aria-label':'Riemann-sum error at n equals 8'",
-      "'aria-label':'Estimated error at n equals 16'",
-      "'aria-label':'Measured error at n equals 16'",
+      "'aria-label':__alloT('stem.calculus.a11y_exact_integral_value', 'Exact integral value')",
+      "'aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_4', 'Riemann-sum error at n equals 4')",
+      "'aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_8', 'Riemann-sum error at n equals 8')",
+      "'aria-label':__alloT('stem.calculus.a11y_estimated_error_at_n_equals_16', 'Estimated error at n equals 16')",
+      "'aria-label':__alloT('stem.calculus.a11y_measured_error_at_n_equals_16', 'Measured error at n equals 16')",
       "'aria-label':'Derivative value at x '+item[0]",
-      "'aria-label':'Derivative at x equals 1 for 2x squared'",
-      "'aria-label':'Triangle area in meters'",
-      "'aria-label':'Definite integral value in meters'",
-      "'aria-label':'Estimated distance in 5 seconds in meters'",
+      "'aria-label':__alloT('stem.calculus.a11y_derivative_at_x_equals_1_for_2x_squared', 'Derivative at x equals 1 for 2x squared')",
+      "'aria-label':__alloT('stem.calculus.a11y_triangle_area_in_meters', 'Triangle area in meters')",
+      "'aria-label':__alloT('stem.calculus.a11y_definite_integral_value_in_meters', 'Definite integral value in meters')",
+      "'aria-label':__alloT('stem.calculus.a11y_estimated_distance_in_5_seconds_in_meters', 'Estimated distance in 5 seconds in meters')",
     ].forEach((label) => expect(source).toContain(label));
   });
 });

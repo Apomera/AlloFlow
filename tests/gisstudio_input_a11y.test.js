@@ -15,6 +15,6 @@ describe('GIS Studio buffer control semantics', () => {
 
   it('names the buffer radius input in kilometers', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("'aria-label': 'Buffer radius in kilometers'");
+    expect(source).toContain(`'aria-label': __alloT('stem.gisstudio.a11y_buffer_radius_in_kilometers', 'Buffer radius in kilometers')`);
   });
 });

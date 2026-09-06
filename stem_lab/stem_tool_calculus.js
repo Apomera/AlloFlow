@@ -1,5 +1,15 @@
 window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloCalcCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloCalcCtx && typeof __alloCalcCtx.t === "function") ? __alloCalcCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
@@ -104,6 +114,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       { id: 'predict_correctly', label: 'Complete an integral estimate comparison', icon: '\uD83D\uDCCF', check: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)); }, progress: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)) ? 'Compared!' : 'Try estimating'; } } // Legacy id retained for saved quest compatibility.
     ],
     render: function(ctx) {
+      __alloCalcCtx = ctx;
       // This tool paints no ground of its own, so its chrome sits on the
       // HOST surface: a white card in light and dark, pure BLACK in the
       // contrast theme, where these slate inks measured 1.4-2.8:1.
@@ -2064,7 +2075,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
                 h('div', { className: 'min-w-0' },
                   h('div', { className: 'flex items-center gap-2' },
-                    h('button', { onClick: function(){setStemLabTool(null);}, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-sky-300', 'aria-label': 'Back to tools' }, h(ArrowLeft, {size:18})),
+                    h('button', { onClick: function(){setStemLabTool(null);}, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-sky-300', 'aria-label': __alloT('stem.calculus.a11y_back_to_tools', 'Back to tools') }, h(ArrowLeft, {size:18})),
                     h('span', { className: 'rounded-full bg-sky-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-sky-100 ring-1 ring-sky-200/30' }, 'Concept studio')
                   ),
                   h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\u222B Calculus Explorer'),
@@ -2087,7 +2098,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   })
                 )
               ),
-              h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Calculus reasoning pathway' },
+              h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': __alloT('stem.calculus.a11y_calculus_reasoning_pathway', 'Calculus reasoning pathway') },
                 [
                   { n: '1', title: 'Represent', detail: 'See the function and interval.' },
                   { n: '2', title: 'Approximate', detail: 'Measure slope or accumulated area.' },
@@ -2103,7 +2114,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // Tab bar
-          h('div', { className: 'flex flex-wrap gap-1 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
+          h('div', { className: 'flex flex-wrap gap-1 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': __alloT('stem.calculus.a11y_calculus_tool_sections', 'Calculus Tool sections') },
             CALCULUS_TABS.map(function(item, tabIndex){
               return h('button',{ key:item[0], id:'calculus-tab-'+item[0], 'aria-controls':'calculus-panel-'+item[0], onClick:function(){upd('tab',item[0]);}, onKeyDown:function(e){calculusTabKeyDown(e, tabIndex);}, role:'tab','aria-selected':tab===item[0], tabIndex:tab===item[0]?0:-1, className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':('text-slate-600 hover:text-slate-700' + onHostInk))},item[1]);
             })
@@ -2160,15 +2171,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 '\uD83E\uDD14 Compare this ' + mode + ' Riemann sum with the exact integral: is it OVER, EXACT, or UNDER?'
               ),
               !overUnderChecked && h('div', { className: 'flex gap-2' },
-                h('button', { "aria-label": "OVERestimate",
+                h('button', { "aria-label": __alloT('stem.calculus.a11y_overestimate', 'OVERestimate'),
                   onClick: function(){ upd('overUnderGuess','over'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
                   className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-red-100 text-red-800 hover:bg-red-200 transition-all border-2 border-red-600'
                 }, '\u2B06 OVERestimate'),
-                h('button', { "aria-label": "UNDERestimate",
+                h('button', { "aria-label": __alloT('stem.calculus.a11y_underestimate', 'UNDERestimate'),
                   onClick: function(){ upd('overUnderGuess','under'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
                   className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all border-2 border-blue-600'
                 }, '\u2B07 UNDERestimate'),
-                h('button', { 'aria-label': 'Exact estimate', onClick: function(){ upd('overUnderGuess','exact'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
+                h('button', { 'aria-label': __alloT('stem.calculus.a11y_exact_estimate', 'Exact estimate'), onClick: function(){ upd('overUnderGuess','exact'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
                   className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-all border-2 border-emerald-600'
                 }, '= EXACT')
               ),
@@ -2189,7 +2200,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     (correct?'✅ Correct! ':'Not quite - ') + comparisonText
                   ),
                   h('p', { className: 'text-xs text-slate-600' }, '💡 ' + reasoningText),
-                  h('button', {"aria-label":"Reset", onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'transition-colors mt-1 text-[0.6875rem] text-slate-600 hover:text-slate-800 font-bold' }, '\u21BA Reset')
+                  h('button', {"aria-label":__alloT('stem.calculus.a11y_reset', 'Reset'), onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'transition-colors mt-1 text-[0.6875rem] text-slate-600 hover:text-slate-800 font-bold' }, '\u21BA Reset')
                 );
               })()
             ),
@@ -2207,8 +2218,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-xs text-violet-600 mb-1 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
               h('p', { className: 'text-[0.6875rem] text-violet-700 mb-3' }, 'This is quantitative calibration practice. The displayed difference is descriptive feedback, not a grade.'),
               h('div', { className: 'flex gap-2' },
-                h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': 'Integral estimate input', className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
-                h('button', {"aria-label":"Compare estimate with exact integral", disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Commit and compare \u2192')
+                h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': __alloT('stem.calculus.a11y_integral_estimate_input', 'Integral estimate input'), className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
+                h('button', {"aria-label":__alloT('stem.calculus.a11y_compare_estimate_with_exact_integral', 'Compare estimate with exact integral'), disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Commit and compare \u2192')
               )
             ),
 
@@ -2238,8 +2249,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   'Use the difference to recalibrate: choose a representative height, multiply by interval width, and try again.'
                 ),
                 h('label', { htmlFor:'calc-estimate-reflection', className: 'block mt-3 text-[0.6875rem] font-bold text-violet-800' }, 'Calibration note (optional): what cue will you use on the next estimate?'),
-                h('input', { id:'calc-estimate-reflection', type:'text', value:d.estimateReflection||'', onChange:function(e){upd('estimateReflection',e.target.value);}, 'aria-label':'Optional integral estimate calibration note', className:'mt-1 w-full px-2 py-1.5 border border-violet-300 rounded-lg text-xs' }),
-                h('button', {"aria-label":"Try another estimate", onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'transition-colors mt-2 text-[0.6875rem] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
+                h('input', { id:'calc-estimate-reflection', type:'text', value:d.estimateReflection||'', onChange:function(e){upd('estimateReflection',e.target.value);}, 'aria-label':__alloT('stem.calculus.a11y_optional_integral_estimate_calibration_note', 'Optional integral estimate calibration note'), className:'mt-1 w-full px-2 py-1.5 border border-violet-300 rounded-lg text-xs' }),
+                h('button', {"aria-label":__alloT('stem.calculus.a11y_try_another_estimate', 'Try another estimate'), onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'transition-colors mt-2 text-[0.6875rem] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
               );
             })(),
 
@@ -2279,7 +2290,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ),
               h('div', { className: 'col-span-2 bg-slate-50 rounded-xl border p-2' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
-                h('svg', { viewBox: '0 0 '+CW+' 60', role: 'img', 'aria-label': 'Calculus error versus rectangle count chart', className: 'w-full' },
+                h('svg', { viewBox: '0 0 '+CW+' 60', role: 'img', 'aria-label': __alloT('stem.calculus.a11y_calculus_error_versus_rectangle_count_chart', 'Calculus error versus rectangle count chart'), className: 'w-full' },
                   h('line',{x1:Cpad,y1:55,x2:CW-Cpad,y2:55,stroke:'#e2e8f0',strokeWidth:0.5}),
                   h('polyline',{points:convData.map(function(cd){return convToX(finiteNum(cd.n, 2))+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#ef4444',strokeWidth:1.5}),
                   h('circle',{cx:convToX(nRects),cy:convToY(err),r:3,fill:'#ef4444',stroke:'white',strokeWidth:1}),
@@ -2297,13 +2308,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-xs text-cyan-800 mb-2' }, 'For f(x) = ' + buildFStr(fa, fb, fc) + ', complete F(x):'),
               h('div', { className: 'flex items-center gap-1 flex-wrap' },
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, 'F(x) = '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiA, onChange:function(e){upd('antiA',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-cubed coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiA, onChange:function(e){upd('antiA',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_cubed_coefficient', 'Antiderivative x-cubed coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B3/3 + '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-squared coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_squared_coefficient', 'Antiderivative x-squared coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B2/2 + '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_coefficient', 'Antiderivative x coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x + C'),
-                h('button', {"aria-label":"Check", disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'transition-colors ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-800' }, 'Check')
+                h('button', {"aria-label":__alloT('stem.calculus.a11y_check', 'Check'), disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'transition-colors ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-800' }, 'Check')
               ),
               h('p', { className: 'mt-1.5 text-[0.6875rem] text-cyan-800 italic' }, 'Every antiderivative also carries a constant + C \u2014 but it cancels in F('+xMax2+') \u2212 F('+xMin+'), so a definite integral never needs it.'),
               antiChecked && (function(){
@@ -2315,7 +2326,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:okB?'text-emerald-600':'text-red-500'},(okB?'\u2713':'\u2717')+' x\u00B2/2 coefficient: should be '+fb),
                     h('p',{className:okC?'text-emerald-600':'text-red-500'},(okC?'\u2713':'\u2717')+' x coefficient: should be '+fc)
                   ),
-                  h('button',{"aria-label":"Clear and try again",onClick:function(){upd('antiChecked',false);upd('antiA','');upd('antiB','');upd('antiC2','');},className:'mt-1 text-[0.6875rem] text-cyan-600 hover:underline font-bold'},'\u21BA Clear and try again')
+                  h('button',{"aria-label":__alloT('stem.calculus.a11y_clear_and_try_again', 'Clear and try again'),onClick:function(){upd('antiChecked',false);upd('antiA','');upd('antiB','');upd('antiC2','');},className:'mt-1 text-[0.6875rem] text-cyan-600 hover:underline font-bold'},'\u21BA Clear and try again')
                 );
               })()
             ),
@@ -2343,7 +2354,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Snapshot
-            h('button',{"aria-label":"Snapshot",onClick:function(){setToolSnapshots(function(prev){return prev.concat([{id:'calc-'+Date.now(),tool:'calculus',label:'\u222B['+xMin+','+xMax2+'] n='+nRects,data:Object.assign({},d),timestamp:Date.now()}]);});addToast('\uD83D\uDCF8 Snapshot!','success');},className:'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full shadow-md transition-all'},'\uD83D\uDCF8 Snapshot')
+            h('button',{"aria-label":__alloT('stem.calculus.a11y_snapshot', 'Snapshot'),onClick:function(){setToolSnapshots(function(prev){return prev.concat([{id:'calc-'+Date.now(),tool:'calculus',label:'\u222B['+xMin+','+xMax2+'] n='+nRects,data:Object.assign({},d),timestamp:Date.now()}]);});addToast('\uD83D\uDCF8 Snapshot!','success');},className:'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full shadow-md transition-all'},'\uD83D\uDCF8 Snapshot')
           ),
 
           // ══════════════════════════════════════════════════════════════
@@ -2375,11 +2386,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('div',{className:'mt-2 grid grid-cols-2 gap-2'},
               h('div',{className:'bg-slate-50 rounded-lg border p-2'},
                 h('label',{className:'text-[0.6875rem] font-bold text-red-600'},'x\u2080 (tangent point): '+x0),
-                h('input',{type:'range','aria-label':'Tangent point x0',min:(xMin-1).toFixed(1),max:(xMax2+1).toFixed(1),step:0.1,value:x0,onChange:function(e){upd('x0',parseFloat(e.target.value));upd('derivInputChecked',false);},className:'w-full accent-red-600'})
+                h('input',{type:'range','aria-label':__alloT('stem.calculus.a11y_tangent_point_x0', 'Tangent point x0'),min:(xMin-1).toFixed(1),max:(xMax2+1).toFixed(1),step:0.1,value:x0,onChange:function(e){upd('x0',parseFloat(e.target.value));upd('derivInputChecked',false);},className:'w-full accent-red-600'})
               ),
               h('div',{className:'bg-slate-50 rounded-lg border p-2'},
                 h('label',{className:'text-[0.6875rem] font-bold text-amber-800'},'h (secant gap): '+dh.toFixed(2)),
-                h('input',{type:'range','aria-label':'Secant gap h',min:'0.02',max:'2',step:'0.02',value:dh,onChange:function(e){upd('secantH',parseFloat(e.target.value));},className:'w-full accent-amber-500'})
+                h('input',{type:'range','aria-label':__alloT('stem.calculus.a11y_secant_gap_h', 'Secant gap h'),min:'0.02',max:'2',step:'0.02',value:dh,onChange:function(e){upd('secantH',parseFloat(e.target.value));},className:'w-full accent-amber-500'})
               )
             ),
 
@@ -2415,10 +2426,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[0.6875rem] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
                 h('div', { className: 'flex items-center gap-1 flex-wrap' },
                   h('span', { className: 'text-sm font-bold text-emerald-900' }, "f\u2032(x) = "),
-                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':'Derivative x coefficient', onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':__alloT('stem.calculus.a11y_derivative_x_coefficient', 'Derivative x coefficient'), onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                   h('span', { className: 'text-sm font-bold text-emerald-900' }, 'x + '),
-                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput2, 'aria-label':'Derivative constant', onChange:function(e){upd('derivInput2',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
-                  h('button', {"aria-label":"Check", disabled:derivInput1===''||derivInput2==='', onClick:function(){upd('derivInputChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, 'Check')
+                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput2, 'aria-label':__alloT('stem.calculus.a11y_derivative_constant', 'Derivative constant'), onChange:function(e){upd('derivInput2',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('button', {"aria-label":__alloT('stem.calculus.a11y_check', 'Check'), disabled:derivInput1===''||derivInput2==='', onClick:function(){upd('derivInputChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, 'Check')
                 ),
                 derivInputChecked && (function(){
                   var ok1=Math.abs(parseFloat(derivInput1)-2*fa)<0.01, ok2=Math.abs(parseFloat(derivInput2)-fb)<0.01, all=ok1&&ok2;
@@ -2428,7 +2439,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('p',{className:ok1?'text-emerald-600':'text-red-500'},(ok1?'\u2713':'\u2717')+' Coefficient of x: '+2*fa+' (d/dx['+fa+'x\u00B2] = 2\u00D7'+fa+'x = '+2*fa+'x)'),
                       h('p',{className:ok2?'text-emerald-600':'text-red-500'},(ok2?'\u2713':'\u2717')+' Constant: '+fb+' (d/dx['+fb+'x] = '+fb+')')
                     ),
-                    h('button',{"aria-label":"Try again",onClick:function(){upd('derivInputChecked',false);upd('derivInput1','');upd('derivInput2','');},className:'mt-1 text-[0.6875rem] text-emerald-600 hover:underline font-bold'},'\u21BA Try again')
+                    h('button',{"aria-label":__alloT('stem.calculus.a11y_try_again', 'Try again'),onClick:function(){upd('derivInputChecked',false);upd('derivInput1','');upd('derivInput2','');},className:'mt-1 text-[0.6875rem] text-emerald-600 hover:underline font-bold'},'\u21BA Try again')
                   );
                 })()
               )
@@ -2484,8 +2495,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
               h('p',{className:'text-[0.6875rem] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C. Enter a decimal; round to 3 places when needed.'),
               h('div',{className:'flex gap-2'},
-                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'','aria-label':'Exact integral value',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-600'}),
-                h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'},'Check \u2192')
+                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'','aria-label':__alloT('stem.calculus.a11y_exact_integral_value', 'Exact integral value'),onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-600'}),
+                h('button',{"aria-label":__alloT('stem.calculus.a11y_check', 'Check'),onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'},'Check \u2192')
               )
             ),
             cq && cq.answered && h('div',{className:'p-3 rounded-xl text-sm font-bold mb-2 '+(cq.correct?'bg-emerald-50 text-emerald-700 border border-emerald-200':'bg-red-50 text-red-700 border border-red-200'),style:{animation:cq.correct?'calcCorrect 0.5s ease':'calcWrong 0.4s ease'}},
@@ -2527,7 +2538,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div',{ className:'bg-red-50 rounded-xl border border-red-200 p-4 mb-3'},
                   h('p',{ id: 'err-stem_tool_calculus-724', role: 'alert',className:'text-xs font-bold text-red-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D Mission 1: The Error Halving Law'),
                   h('p',{ id: 'err-stem_tool_calculus-725', role: 'alert',className:'text-xs text-red-800'},'Goal: Discover what happens to the error when you double the number of rectangles.'),
-                  h('div',{ role:'progressbar', 'aria-label':'Mission 1 progress', 'aria-valuemin':0, 'aria-valuemax':5, 'aria-valuenow':Math.min(step,5), 'aria-valuetext':'Step '+Math.min(step+1,5)+' of 5'},
+                  h('div',{ role:'progressbar', 'aria-label':__alloT('stem.calculus.a11y_mission_1_progress', 'Mission 1 progress'), 'aria-valuemin':0, 'aria-valuemax':5, 'aria-valuenow':Math.min(step,5), 'aria-valuetext':'Step '+Math.min(step+1,5)+' of 5'},
                     h('p',{className:'text-[0.625rem] font-bold text-red-700 mb-1'},'Step '+Math.min(step+1,5)+' of 5'),
                     h('div',{ className:'flex gap-1', 'aria-hidden':'true'},
                       [0,1,2,3,4].map(function(i){
@@ -2549,8 +2560,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-700 mb-2 font-bold' + onHostInk},'Now go to the Integral tab and find the error value for n=4. Come back and enter it below:'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold text-slate-600' + onHostInk},'Error at n=4:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'','aria-label':'Riemann-sum error at n equals 4',onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                    h('button',{"aria-label":"Got it",disabled:!data.err4,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'','aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_4', 'Riemann-sum error at n equals 4'),onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":__alloT('stem.calculus.a11y_got_it', 'Got it'),disabled:!data.err4,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
 
@@ -2564,7 +2575,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       return h('button',{ "aria-label": 'Hypothesize the error will be '+item[1].toLowerCase(), 'aria-pressed':data.prediction1===item[0],key:item[0],onClick:function(){saveData('prediction1',item[0]);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction1===item[0]?'bg-violet-600 text-white border-violet-600':'bg-white text-slate-600 border-slate-200 hover:border-violet-400')},item[1]);
                     })
                   ),
-                  data.prediction1 && h('button',{"aria-label":"Hypothesis committed; now measure",onClick:nextStep,className:'transition-colors px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700'},'Hypothesis committed \u2014 now measure \u2192')
+                  data.prediction1 && h('button',{"aria-label":__alloT('stem.calculus.a11y_hypothesis_committed_now_measure', 'Hypothesis committed; now measure'),onClick:nextStep,className:'transition-colors px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700'},'Hypothesis committed \u2014 now measure \u2192')
                 ),
 
                 // Step 2: Measure n=8
@@ -2573,8 +2584,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-3'},'Go to the Integral tab, set n=8 (using the slider), and record the error:'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold text-slate-600' + onHostInk},'Error at n=8:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'','aria-label':'Riemann-sum error at n equals 8',onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                    h('button',{"aria-label":"Got it",disabled:!data.err8,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'','aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_8', 'Riemann-sum error at n equals 8'),onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":__alloT('stem.calculus.a11y_got_it', 'Got it'),disabled:!data.err8,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
 
@@ -2604,8 +2615,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now estimate the error at n=16 by applying the measured ratio again.'),
                       h('div',{ className:'flex gap-2 items-center'},
                         h('span',{ className:'text-xs font-bold text-slate-600'},'Estimated error at n=16:'),
-                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':'Estimated error at n equals 16',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                        h('button',{"aria-label":"Estimate committed",disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Estimate committed \u2192')
+                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':__alloT('stem.calculus.a11y_estimated_error_at_n_equals_16', 'Estimated error at n equals 16'),onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                        h('button',{"aria-label":__alloT('stem.calculus.a11y_estimate_committed', 'Estimate committed'),disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Estimate committed \u2192')
                       )
                     );
                   })()
@@ -2617,7 +2628,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-2'},'Set n=16 on the Integral tab and record the measured error. Then compare it with your committed estimate.'),
                   h('div',{className:'flex gap-2 items-center mb-3'},
                     h('span',{className:'text-xs font-bold text-slate-600'},'Measured error at n=16:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err16||'','aria-label':'Measured error at n equals 16',onChange:function(e){saveData('err16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err16||'','aria-label':__alloT('stem.calculus.a11y_measured_error_at_n_equals_16', 'Measured error at n equals 16'),onChange:function(e){saveData('err16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
                   ),
                   data.err16 && (function(){
                     var pred=parseFloat(data.predictN16)||0, actual=parseFloat(data.err16)||0;
@@ -2656,14 +2667,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 ),
                 step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Commit a hypothesis before you test'),
-                  h('button',{"aria-label":"Load f(x) = x squared on 0 to 3 with 6 subdivisions",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:6,mode:'left',tab:'discover'})});});addToast('Loaded for Method Showdown','success');},className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 mb-3 block'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=6'),
+                  h('button',{"aria-label":__alloT('stem.calculus.a11y_load_f_x_x_squared_on_0_to_3_with_6_subdivision', 'Load f(x) = x squared on 0 to 3 with 6 subdivisions'),onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:6,mode:'left',tab:'discover'})});});addToast('Loaded for Method Showdown','success');},className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 mb-3 block'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=6'),
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'At n=6, which method do you hypothesize will have the smallest absolute error?'),
                   h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
                     ['Left Riemann','Right Riemann','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
                       return h('button',{ "aria-label": 'Hypothesize '+m+' has the smallest error', 'aria-pressed':data.prediction===m,key:m,onClick:function(){saveData('prediction',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction===m?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},m);
                     })
                   ),
-                  data.prediction && h('button',{"aria-label":"Hypothesis committed; collect evidence",onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'Hypothesis committed \u2014 collect evidence \u2192')
+                  data.prediction && h('button',{"aria-label":__alloT('stem.calculus.a11y_hypothesis_committed_collect_evidence', 'Hypothesis committed; collect evidence'),onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'Hypothesis committed \u2014 collect evidence \u2192')
                 ),
                 step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Measure errors for all 5 methods'),
@@ -2674,7 +2685,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       return h('button',{ "aria-label": 'Record '+m+' as the method with the smallest error', 'aria-pressed':data.measured===m,key:m,onClick:function(){saveData('measured',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.measured===m?'bg-emerald-700 text-white border-emerald-500':'bg-white text-slate-600 border-slate-200 hover:border-emerald-600')},m);
                     })
                   ),
-                  data.measured && h('button',{"aria-label":"Next",onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'Next \u2192')
+                  data.measured && h('button',{"aria-label":__alloT('stem.calculus.a11y_next', 'Next'),onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'Next \u2192')
                 ),
                 step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 Compare hypothesis with recorded evidence'),
@@ -2687,10 +2698,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},"Concept check: why does Simpson's rule give zero error for this quadratic?"),
                   h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
                     ['It uses parabolas — which fit polynomial curves better than flat-top rectangles','It uses the most rectangles','It averages left and right','It avoids the edges of the curve'].map(function(ans,i){
-                      return h('button',{ "aria-label": "Next Step",key:i,onClick:function(){saveData('why',i);},className:'px-2 py-2 rounded-lg text-xs text-left border-2 transition-all '+(data.why===i?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},ans);
+                      return h('button',{ "aria-label": __alloT('stem.calculus.a11y_next_step', 'Next Step'),key:i,onClick:function(){saveData('why',i);},className:'px-2 py-2 rounded-lg text-xs text-left border-2 transition-all '+(data.why===i?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},ans);
                     })
                   ),
-                  data.why !== undefined && h('button',{"aria-label":"See answer",onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'See answer \u2192')
+                  data.why !== undefined && h('button',{"aria-label":__alloT('stem.calculus.a11y_see_answer', 'See answer'),onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'See answer \u2192')
                 ),
                 step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2463 The Big Idea'),
@@ -2719,7 +2730,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 ),
                 step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Set up and measure'),
-                  h('button',{"aria-label":"Load f(x) = x squared with x zero equal to 1",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:-1,xMax:4,n:20,mode:'left',x0:1,secantH:0.1,tab:'discover'})});});addToast('Loaded f(x) = x\u00B2','success');},className:'transition-colors px-4 py-2 bg-violet-700 text-white rounded-lg text-xs font-bold hover:bg-violet-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2, x\u2080=1'),
+                  h('button',{"aria-label":__alloT('stem.calculus.a11y_load_f_x_x_squared_with_x_zero_equal_to_1', 'Load f(x) = x squared with x zero equal to 1'),onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:-1,xMax:4,n:20,mode:'left',x0:1,secantH:0.1,tab:'discover'})});});addToast('Loaded f(x) = x\u00B2','success');},className:'transition-colors px-4 py-2 bg-violet-700 text-white rounded-lg text-xs font-bold hover:bg-violet-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2, x\u2080=1'),
                   h('p',{className:'text-xs text-slate-600 mb-2'},'Go to the Derivative tab. Drag h close to 0. The slope shown is f\u2032(1). Record it:'),
                   h('div',{ className:'space-y-2'},
                     [['1','slope1'],['2','slope2'],['3','slope3']].map(function(item){
@@ -2729,7 +2740,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       );
                     })
                   ),
-                  data.slope1 && data.slope2 && data.slope3 && h('button',{"aria-label":"Got all three",onClick:nextStep,className:'transition-colors mt-3 px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700'},'Got all three \u2192')
+                  data.slope1 && data.slope2 && data.slope3 && h('button',{"aria-label":__alloT('stem.calculus.a11y_got_all_three', 'Got all three'),onClick:nextStep,className:'transition-colors mt-3 px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700'},'Got all three \u2192')
                 ),
                 step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Spot the pattern'),
@@ -2742,10 +2753,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'What formula produces these values? f\u2032(x) = ___'),
                   h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
                     ['2x','x\u00B2','x + 1','x/2'].map(function(f){
-                      return h('button',{ "aria-label": "Next Step",key:f,onClick:function(){saveData('formulaGuess',f);},className:'px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all '+(data.formulaGuess===f?'bg-violet-600 text-white border-violet-600':'bg-white text-slate-600 border-slate-200 hover:border-violet-400')},f);
+                      return h('button',{ "aria-label": __alloT('stem.calculus.a11y_next_step', 'Next Step'),key:f,onClick:function(){saveData('formulaGuess',f);},className:'px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all '+(data.formulaGuess===f?'bg-violet-600 text-white border-violet-600':'bg-white text-slate-600 border-slate-200 hover:border-violet-400')},f);
                     })
                   ),
-                  data.formulaGuess && h('button',{"aria-label":"Check answer",onClick:nextStep,className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700'},'Check answer \u2192')
+                  data.formulaGuess && h('button',{"aria-label":__alloT('stem.calculus.a11y_check_answer', 'Check answer'),onClick:nextStep,className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700'},'Check answer \u2192')
                 ),
                 step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 You found it!'),
@@ -2757,8 +2768,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now change a=2 (f(x) = 2x\u00B2) on the Derivative tab. Measure f\u2032(1). What do you predict?'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold'},'f\u2032(1) for 2x\u00B2:'),
-                    h('input',{type:'number',step:'any',placeholder:'?',value:data.slope2x||'','aria-label':'Derivative at x equals 1 for 2x squared',onChange:function(e){saveData('slope2x',e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                    h('button',{"aria-label":"Verify",disabled:!data.slope2x,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-violet-700'},'Verify \u2192')
+                    h('input',{type:'number',step:'any',placeholder:'?',value:data.slope2x||'','aria-label':__alloT('stem.calculus.a11y_derivative_at_x_equals_1_for_2x_squared', 'Derivative at x equals 1 for 2x squared'),onChange:function(e){saveData('slope2x',e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":__alloT('stem.calculus.a11y_verify', 'Verify'),disabled:!data.slope2x,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-violet-700'},'Verify \u2192')
                   )
                 ),
                 step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
@@ -2791,14 +2802,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-700 mb-2'},'A car starts from rest. Its velocity (in m/s) at time t seconds is:'),
                   h('p',{className:'text-base font-black text-emerald-700 text-center mb-2'},'v(t) = 2t m/s'),
                   h('p',{className:'text-xs text-slate-700 mb-3'},'The x-axis is time (seconds), the y-axis is velocity (m/s). The area under the velocity curve is the total distance traveled.'),
-                  h('button',{"aria-label":"Load v(t) = 2t, t  [0,3]",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:0,b:2,c:0,xMin:0,xMax:3,n:20,mode:'left',tab:'discover'})});});addToast('Loaded v(t) = 2t from t=0 to t=3','success');},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800 mb-3 block'},'\u25B6 Load v(t) = 2t, t \u2208 [0,3]'),
+                  h('button',{"aria-label":__alloT('stem.calculus.a11y_load_v_t_2t_t_0_3', 'Load v(t) = 2t, t  [0,3]'),onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:0,b:2,c:0,xMin:0,xMax:3,n:20,mode:'left',tab:'discover'})});});addToast('Loaded v(t) = 2t from t=0 to t=3','success');},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800 mb-3 block'},'\u25B6 Load v(t) = 2t, t \u2208 [0,3]'),
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Before computing: the velocity graph from t=0 to t=3 is a triangle. What is the area of this triangle?'),
                   h('p',{className:'text-xs text-slate-600 mb-2'},'(Hint: Area of triangle = \u00BD \u00D7 base \u00D7 height. Base = 3, height = v(3) = 2\u00D73 = ?)'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold'},'My triangle area:'),
-                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'','aria-label':'Triangle area in meters',onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'','aria-label':__alloT('stem.calculus.a11y_triangle_area_in_meters', 'Triangle area in meters'),onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('span',{ className:'text-xs text-slate-600'},'meters'),
-                    h('button',{"aria-label":"Got it",disabled:!data.triangleArea,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Got it \u2192')
+                    h('button',{"aria-label":__alloT('stem.calculus.a11y_got_it', 'Got it'),disabled:!data.triangleArea,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Got it \u2192')
                   )
                 ),
                 step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
@@ -2806,8 +2817,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-2'},'Go to the Integral tab. The exact value shown is the definite integral of v(t) = 2t from 0 to 3. What is it?'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold'},'Integral value:'),
-                    h('input',{type:'number',step:'any',placeholder:'?',value:data.integralVal||'','aria-label':'Definite integral value in meters',onChange:function(e){saveData('integralVal',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                    h('button',{"aria-label":"Verify",disabled:!data.integralVal,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Verify \u2192')
+                    h('input',{type:'number',step:'any',placeholder:'?',value:data.integralVal||'','aria-label':__alloT('stem.calculus.a11y_definite_integral_value_in_meters', 'Definite integral value in meters'),onChange:function(e){saveData('integralVal',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":__alloT('stem.calculus.a11y_verify', 'Verify'),disabled:!data.integralVal,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Verify \u2192')
                   )
                 ),
                 step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
@@ -2821,8 +2832,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Extension: estimate how far the car travels in 5 seconds before changing the interval.'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold'},'Distance in 5s (estimate):'),
-                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'','aria-label':'Estimated distance in 5 seconds in meters',onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                    h('button',{"aria-label":"Commit distance estimate and test it",disabled:!data.predict5,onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{xMax:5,tab:'discover'})});});nextStep();},className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Commit estimate and test \u2192')
+                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'','aria-label':__alloT('stem.calculus.a11y_estimated_distance_in_5_seconds_in_meters', 'Estimated distance in 5 seconds in meters'),onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":__alloT('stem.calculus.a11y_commit_distance_estimate_and_test_it', 'Commit distance estimate and test it'),disabled:!data.predict5,onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{xMax:5,tab:'discover'})});});nextStep();},className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Commit estimate and test \u2192')
                   )
                 ),
                 step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
@@ -2922,7 +2933,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('span', { className: 'ml-auto px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[0.625rem] font-bold rounded-full' }, 'LIVE CANVAS')
                 ),
                 // Sub-view selector
-                h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold mb-2', role: 'tablist', 'aria-label': 'Calculus visualization view' },
+                h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold mb-2', role: 'tablist', 'aria-label': __alloT('stem.calculus.a11y_calculus_visualization_view', 'Calculus visualization view') },
                   VIEWS.map(function(v, vi) {
                     var active = vizView === v.id;
                     var btnAttrs = {
@@ -2960,7 +2971,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   })
                 ),
                 ['zoom', 'tangent', 'motion', 'ftc', 'slope', 'optim'].indexOf(vizView) >= 0 &&
-                h('div', { role: 'group', 'aria-label': 'Visualization controls', className: 'mb-2 flex flex-wrap items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3' },
+                h('div', { role: 'group', 'aria-label': __alloT('stem.calculus.a11y_visualization_controls', 'Visualization controls'), className: 'mb-2 flex flex-wrap items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3' },
                   vizView === 'zoom' && vizRangeControl('calc-viz-x0', 'Point x₀', -3, 3, 0.05, vizX0, 'vizX0', 'x0', vizX0.toFixed(2)),
                   vizView === 'zoom' && vizRangeControl('calc-viz-zoom', 'Zoom', 1, 100, 1, vizZoom, 'vizZoom', 'zoom', vizZoom.toFixed(0) + '×'),
                   vizView === 'tangent' && vizRangeControl('calc-viz-tangent-x', 'Tangent x₀', -3, 3, 0.05, vizX0, 'vizX0', 'x0', vizX0.toFixed(2)),
@@ -2998,7 +3009,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       upd('vizSlopeSeeds', []);
                     },
                     title: 'Return to auto-animation',
-                    'aria-label': 'Reset interaction; resume auto-animation',
+                    'aria-label': __alloT('stem.calculus.a11y_reset_interaction_resume_auto_animation', 'Reset interaction; resume auto-animation'),
                     className: 'transition-colors absolute top-2 right-12 px-2 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-xs font-bold'
                   }, '\u21BA auto'),
                   h('button', {
@@ -3009,7 +3020,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       else { if (window.__alloStemFS) window.__alloStemFS(el); }
                     },
                     title: 'Toggle fullscreen',
-                    'aria-label': 'Toggle fullscreen',
+                    'aria-label': __alloT('stem.calculus.a11y_toggle_fullscreen', 'Toggle fullscreen'),
                     className: 'transition-colors absolute top-2 right-2 w-8 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-sm font-bold'
                   }, '\u26F6')
                 ),
@@ -3084,14 +3095,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('button', { type: 'button', onClick: function() { setIQ({ a: 1, b: 0, c: 0, xPoint: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset'),
                   h('span', { className: 'text-[0.625rem] text-slate-500', role: 'status', 'aria-live': 'polite' }, inquiryLog.length + '/2 evidence settings logged')
                 ),
-                inquiryLog.length > 0 && h('div', { role: 'region', 'aria-label': 'Logged derivative evidence', className: 'rounded-lg border border-slate-200 bg-slate-50 p-2' },
+                inquiryLog.length > 0 && h('div', { role: 'region', 'aria-label': __alloT('stem.calculus.a11y_logged_derivative_evidence', 'Logged derivative evidence'), className: 'rounded-lg border border-slate-200 bg-slate-50 p-2' },
                   h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-600 mb-1' }, 'Evidence log'),
                   h('ol', { className: 'space-y-1 text-[0.6875rem] text-slate-700' }, inquiryLog.map(function(entry, index) {
                     var loggedMeta = stateMeta[entry.st];
                     return h('li', { key: derivativeLogKey(entry) + '-' + index, className: 'font-mono' }, (index + 1) + '. a=' + entry.a + ', b=' + entry.b + ', c=' + entry.c + ', x=' + entry.x + ' \u2192 f\'(x)=' + entry.d + '; ' + (loggedMeta ? loggedMeta.label : entry.st));
                   }))
                 ),
-                h('textarea', { 'aria-label': 'Working explanation from live derivative evidence', 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.',
+                h('textarea', { 'aria-label': __alloT('stem.calculus.a11y_working_explanation_from_live_derivative_eviden', 'Working explanation from live derivative evidence'), 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.',
                   className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck? Show comparison prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700' },
@@ -3106,7 +3117,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('input', { type: 'checkbox', id: 'calc-deriv-understood', checked: evidenceReady && !!iq.understood, disabled: !evidenceReady, 'aria-disabled': evidenceReady ? 'false' : 'true', 'aria-describedby': 'calc-deriv-evidence-ready', onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   h('label', { htmlFor: 'calc-deriv-understood', className: 'text-[0.75rem] font-bold text-emerald-800 cursor-pointer' }, 'I can explain the pattern I observed')
                 ),
-                evidenceReady && iq.understood && h('textarea', { 'aria-label': 'Evidence-based derivative behavior explanation', 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.',
+                evidenceReady && iq.understood && h('textarea', { 'aria-label': __alloT('stem.calculus.a11y_evidence_based_derivative_behavior_explanation', 'Evidence-based derivative behavior explanation'), 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.',
                   className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Model note: the live marker and numerical derivative are visible, descriptive evidence. They are not a hidden prediction result or a score.')
               )
@@ -3138,7 +3149,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 + 'No markdown, no bullets, no headings. Plain prose.';
               callGemini(prompt, false, false, 0.5).then(function (resp) {
                 save('aiExplain', String(resp || '').trim()); save('aiLoading', false);
-                if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.calculus.sr_explanation_ready', 'Explanation ready.'));
               }).catch(function () {
                 save('aiLoading', false); save('aiError', 'Could not reach AI tutor. Try again in a moment.');
               });
@@ -3146,7 +3157,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             return h('div', { className: 'mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50', role: 'region', },
               h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
                 h('span', { className: 'text-sm font-bold text-purple-700' }, '\u2728 Explain at my level'),
-                h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': __alloT('stem.calculus.a11y_reading_level', 'Reading level') },
                   LEVELS.map(function (L) {
                     var active = aiLevel === L.id;
                     return h('button', {
