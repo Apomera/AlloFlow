@@ -180,3 +180,15 @@ The walk-on chain used to close back on the first card after six steps. Ventricl
 
 FOR REVIEW: newly authored explanations again, this time of the memory circuit, habit learning and melatonin. Same caveat as the side view cards.
 
+## Progress that says what it actually measured
+
+September 5, 2026. The overview reported activity in language that sounded like mastery. Opening a view was labeled map coverage, which reads as ground covered rather than screens seen. A second tile counted the regions in the current view, which is not progress at all, and that number was already on the canvas chip, the search results button and the directory heading.
+
+The four tiles now separate three things and say what each one is. Views opened counts screens seen and states in the tile that opening is not the same as practising. Checks answered counts the understanding checks on the region cards that have an answer stored, out of the twenty-five that exist. Quiz answers keeps the damage-pattern count and adds that it is practice, not a grade. Selected is unchanged.
+
+The old current-targets tile is gone, and its place is taken by one concrete next step. If a check is currently answered wrongly, the tile offers to look again at that region: the jump opens the region's own view, selects it, switches to Plain, opens the check, and clears the stored answer so the retry is a real attempt rather than a locked screen. The destination view comes from the lesson's own view field, the same derivation the card rendering uses, so the button cannot point at a region the destination does not contain. Answers for other regions are left alone.
+
+There is no new stored state. This reads the check answers that were already being saved.
+
+Four ui_strings keys are now unreferenced by this tool (views_explored, current_targets, quiz_score, damage_pattern_practice) and could be swept later; they were left in place rather than hand-edited out of a file several sessions are writing at once.
+

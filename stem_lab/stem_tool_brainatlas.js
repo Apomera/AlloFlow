@@ -96,6 +96,9 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-metric-label{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--ba-muted);margin:0 0 4px;}',
     '.brainatlas-metric-value{font-size:18px;line-height:1.1;font-weight:900;color:var(--ba-text);margin:0;}',
     '.brainatlas-metric-note{font-size:10px;line-height:1.35;color:var(--ba-muted);margin:4px 0 0;}',
+    '.brainatlas-metric-action{display:inline-flex;align-items:center;justify-content:flex-start;width:100%;box-sizing:border-box;min-height:44px;margin-top:6px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 8px;font-size:12px;font-weight:700;line-height:1.35;text-align:left;overflow-wrap:anywhere;}',
+    '.brainatlas-metric-action:hover{border-color:var(--ba-purple);color:var(--ba-purple-ink);}',
+    '.brainatlas-metric-action:focus-visible{outline:3px solid var(--ba-focus);outline-offset:2px;}',
     '.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mission-copy,.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-action-row,.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mode-groups,.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-route-library,.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-metric-grid{display:none!important;}',
     '.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mission-inner{grid-template-columns:minmax(0,1fr);padding:14px 18px;}',
     '.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mission-title{font-size:18px;}',
@@ -9252,6 +9255,47 @@ var d = labToolData.brainAtlas || {};
             focusBrainAtlasPlainCheck();
           }
 
+          // Three progress states kept apart on purpose. Opening a view is not
+          // answering a check about it, and neither one is a mastery claim.
+          var BRAIN_ATLAS_CHECKABLE = Object.keys(BRAIN_ATLAS_PLAIN_CHECKS);
+          var plainChecksAnswered = BRAIN_ATLAS_CHECKABLE.filter(function (id) { return [0, 1, 2].indexOf(plainCheckAnswers[id]) >= 0; });
+          var plainChecksMissed = plainChecksAnswered.filter(function (id) { return plainCheckAnswers[id] !== 0; });
+          // Derived from each lesson's own view field, so the jump cannot point
+          // at a region the destination view does not contain.
+          function brainAtlasRegionForCheck(id) {
+            var lesson = BRAIN_ATLAS_PLAIN_LESSONS[id];
+            if (!lesson) return null;
+            var revisitView = lesson.view || 'lateral';
+            var target = VIEWS[revisitView];
+            if (!target || !Array.isArray(target.regions)) return null;
+            var found = target.regions.filter(function (r) { return r.id === id; })[0];
+            return found ? { view: revisitView, region: found } : null;
+          }
+          var plainRevisit = (function () {
+            for (var mi = 0; mi < plainChecksMissed.length; mi++) {
+              var candidate = brainAtlasRegionForCheck(plainChecksMissed[mi]);
+              if (candidate) return candidate;
+            }
+            return null;
+          })();
+          function openBrainAtlasRevisit() {
+            if (!plainRevisit) return;
+            upd('view', plainRevisit.view);
+            upd('viewGroup', brainAtlasViewGroupFor(plainRevisit.view));
+            upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o[plainRevisit.view] = true; return o; })());
+            upd('selected3DStructure', '');
+            upd('selectedRegion', plainRevisit.region.id);
+            upd('detailMode', 'plain');
+            upd('quizMode', false);
+            upd('search', '');
+            upd('plainCheckRegion', plainRevisit.region.id);
+            // clear the stored answer so the check is open for a fresh try
+            var revisitAnswers = Object.assign({}, plainCheckAnswers); delete revisitAnswers[plainRevisit.region.id];
+            upd('plainCheckAnswers', revisitAnswers);
+            if (typeof announceToSR === 'function') announceToSR(plainRevisit.region.name + '. ' + (t('stem.brainatlas.revisit_announced', 'Card opened with its check ready to try again.') || 'Card opened with its check ready to try again.'));
+            window.setTimeout(function () { scrollToBrainAtlasSection('brainatlas-region-detail', ''); }, 40);
+          }
+
 
           // A self-contained, ungraded lesson. Keep its progress separate from quiz scores.
           var movementSaved = d.movementLesson && typeof d.movementLesson === 'object' && !Array.isArray(d.movementLesson) ? d.movementLesson : {};
@@ -9741,22 +9785,30 @@ var d = labToolData.brainAtlas || {};
                   )
                 ),
                 React.createElement("div", { className: "brainatlas-metric-grid", "aria-label": t('stem.brainatlas.brain_atlas_progress_summary', 'Brain atlas progress summary') },
-                  React.createElement("div", { className: "brainatlas-metric" },
-                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.views_explored', 'Views explored')),
+                  React.createElement("div", { className: "brainatlas-metric", "data-brainatlas-metric": "visited" },
+                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.views_opened', 'Views opened')),
                     React.createElement("p", { className: "brainatlas-metric-value" }, viewsExploredCount + " / " + VIEW_KEYS.length),
-                    React.createElement("p", { className: "brainatlas-metric-note" }, atlasCompletion + "% map coverage")
+                    React.createElement("p", { className: "brainatlas-metric-note" }, t('stem.brainatlas.views_opened_note', 'opened, which is not the same as practised'))
                   ),
-                  React.createElement("div", { className: "brainatlas-metric" },
-                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.current_targets', 'Current targets')),
-                    React.createElement("p", { className: "brainatlas-metric-value" }, filtered.length),
-                    React.createElement("p", { className: "brainatlas-metric-note" }, t('stem.brainatlas.regions_in_this_view', 'regions in this view'))
+                  React.createElement("div", { className: "brainatlas-metric", "data-brainatlas-metric": "practised" },
+                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.checks_answered', 'Checks answered')),
+                    React.createElement("p", { className: "brainatlas-metric-value" }, plainChecksAnswered.length + " / " + BRAIN_ATLAS_CHECKABLE.length),
+                    React.createElement("p", { className: "brainatlas-metric-note" }, plainChecksMissed.length
+                      ? (plainChecksMissed.length + ' ' + (t('stem.brainatlas.checks_to_revisit', 'to look at again') || 'to look at again'))
+                      : t('stem.brainatlas.checks_answered_note', 'understanding checks on region cards')),
+                    plainRevisit && React.createElement("button", {
+                      type: "button",
+                      className: "brainatlas-metric-action",
+                      "data-brainatlas-revisit": plainRevisit.region.id,
+                      onClick: openBrainAtlasRevisit
+                    }, (t('stem.brainatlas.look_again_at', 'Look again at') || 'Look again at') + ' ' + plainRevisit.region.name)
                   ),
-                  React.createElement("div", { className: "brainatlas-metric" },
-                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.quiz_score', 'Quiz score')),
+                  React.createElement("div", { className: "brainatlas-metric", "data-brainatlas-metric": "quiz" },
+                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.quiz_answers', 'Quiz answers')),
                     React.createElement("p", { className: "brainatlas-metric-value" }, quizScoreLabel),
-                    React.createElement("p", { className: "brainatlas-metric-note" }, t('stem.brainatlas.damage_pattern_practice', 'damage-pattern practice'))
+                    React.createElement("p", { className: "brainatlas-metric-note" }, t('stem.brainatlas.damage_pattern_practice_note', 'damage-pattern practice, not a grade'))
                   ),
-                  React.createElement("div", { className: "brainatlas-metric" },
+                  React.createElement("div", { className: "brainatlas-metric", "data-brainatlas-metric": "selected" },
                     React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.selected', 'Selected')),
                     React.createElement("p", { className: "brainatlas-metric-value", style: { fontSize: selectedLabel.length > 18 ? 13 : 18 } }, selectedLabel),
                     React.createElement("p", { className: "brainatlas-metric-note" }, sel ? t('stem.brainatlas.detail_panel_ready', 'detail panel ready') : t('stem.brainatlas.pick_a_region', 'pick a region on the atlas'))
