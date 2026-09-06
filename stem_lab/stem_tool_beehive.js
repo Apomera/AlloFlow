@@ -5335,6 +5335,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var addToast = ctx.addToast;
       var t = ctx.t;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
@@ -6892,7 +6894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   ),
                   h('button', {
                     onClick: explainI, disabled: aiLoading,
-                    'aria-label': 'Generate AI explanation for ' + layerLabel,
+                    'aria-label': __alloFill(__alloT('stem.beehive.a11y_generate_ai_explanation_for', 'Generate AI explanation for {value1}'), { value1: layerLabel }),
                     className: 'transition-colors px-2.5 py-1 rounded text-[0.6875rem] font-bold bg-amber-500 text-amber-950 hover:bg-amber-400 disabled:opacity-50'
                   }, aiLoading ? '⏳' : (aiText ? '🔄' : '🧠 Explain'))
                 ),
@@ -24314,7 +24316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var rivalFrontlinePct = 100 - frontlinePct;
           var frontlineState = frontlinePct >= 60 ? 'Advantage' : frontlinePct <= 40 ? 'Rival advantage' : 'Contested';
           var frontlineAdvice = frontlinePct >= 60 ? 'Your forage lane is open.' : frontlinePct <= 40 ? 'Protect the lane before expanding.' : 'Hold the line while you build.';
-          return h('div', { id: 'beehive-queen-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': 'Colony Network playfield. Forage frontline: your colony controls ' + frontlinePct + ' percent; rival controls ' + rivalFrontlinePct + ' percent. ' + frontlineAdvice, 'data-beehive-stage': 'queen', 'data-rts-state': queenResult ? 'complete' : queenPaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-purple-500/60' : 'border-purple-400'), style: { height: 'clamp(380px, 48vw, 470px)', background: dk ? 'radial-gradient(circle at 50% 44%, rgba(168,85,247,0.22), rgba(15,23,42,0.96) 68%)' : 'radial-gradient(circle at 50% 44%, rgba(245,208,254,0.62), rgba(255,251,235,0.95) 70%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(192,132,252,0.22)' : '0 18px 38px rgba(168,85,247,0.18), 0 0 0 1px rgba(192,132,252,0.24)' } },
+          return h('div', { id: 'beehive-queen-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_colony_network_playfield_forage_frontline_your', 'Colony Network playfield. Forage frontline: your colony controls {value1} percent; rival controls {value2} percent. {value3}'), { value1: frontlinePct, value2: rivalFrontlinePct, value3: frontlineAdvice }), 'data-beehive-stage': 'queen', 'data-rts-state': queenResult ? 'complete' : queenPaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-purple-500/60' : 'border-purple-400'), style: { height: 'clamp(380px, 48vw, 470px)', background: dk ? 'radial-gradient(circle at 50% 44%, rgba(168,85,247,0.22), rgba(15,23,42,0.96) 68%)' : 'radial-gradient(circle at 50% 44%, rgba(245,208,254,0.62), rgba(255,251,235,0.95) 70%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(192,132,252,0.22)' : '0 18px 38px rgba(168,85,247,0.18), 0 0 0 1px rgba(192,132,252,0.24)' } },
             h('canvas', { ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'beehive-queen-canvas-description',
               'aria-label': 'Live two-colony Colony Network map. Your colony health ' + queenHiveHealth + ' percent, rival hive health ' + queenRival.health + ' percent, forage control ' + frontlinePct + ' percent, frontline status ' + frontlineState.toLowerCase() + '.' + (queenBuildMode ? ' Placement mode active for ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + '.' : ''),
               onClick: function(e) {
@@ -24385,7 +24387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             return null;
           }
-          return h('div', { 'data-beehive-queen-placement': 'true', role: 'group', 'aria-label': 'Place ' + sType.label + ' on your comb',
+          return h('div', { 'data-beehive-queen-placement': 'true', role: 'group', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_place_on_your_comb', 'Place {value1} on your comb'), { value1: sType.label }),
             className: 'mt-3 rounded-xl border p-2.5 ' + (dk ? 'border-amber-600/50 bg-amber-950/30' : 'border-amber-300 bg-amber-50') },
             h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
               h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-amber-200' : 'text-amber-900') },
@@ -24542,7 +24544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Pause keeps this window open while you place a structure or review the strategy dock.'))),
               h('div', { 'data-rts-decision-response': 'true', className: 'mt-3 flex flex-col gap-2 rounded-lg border border-dashed p-2 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-white/20 bg-slate-950/25' : 'border-slate-300 bg-white/55') },
                 h('div', { className: 'min-w-0' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Recommended response'), h('div', { className: 'mt-0.5 text-[0.625rem] font-bold ' + (dk ? 'text-white' : 'text-slate-900') }, decision.action ? decision.action.label + ' · ' + decision.action.desc : decision.gap || 'Choose the response that best tests this forecast.')),
-                decision.actionId && decision.ready && h('button', { type: 'button', 'data-rts-recommended-command': 'true', 'data-recommended-action': decision.actionId, onClick: function() { queenAction(decision.actionId); }, 'aria-label': 'Use recommended response: ' + decision.action.label + '. ' + decision.action.desc, className: 'min-h-[44px] shrink-0 rounded-lg bg-purple-700 px-3 py-2 text-[0.625rem] font-black text-white transition-colors hover:bg-purple-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500' }, 'Use ' + decision.action.label))),
+                decision.actionId && decision.ready && h('button', { type: 'button', 'data-rts-recommended-command': 'true', 'data-recommended-action': decision.actionId, onClick: function() { queenAction(decision.actionId); }, 'aria-label': __alloFill(__alloT('stem.beehive.a11y_use_recommended_response', 'Use recommended response: {value1}. {value2}'), { value1: decision.action.label, value2: decision.action.desc }), className: 'min-h-[44px] shrink-0 rounded-lg bg-purple-700 px-3 py-2 text-[0.625rem] font-black text-white transition-colors hover:bg-purple-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500' }, 'Use ' + decision.action.label))),
             h('article', { 'data-rts-impact-kind': queenImpact ? queenImpact.kind : 'awaiting', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-slate-200 bg-white') },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                 h('div', null,
@@ -24778,7 +24780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', { 'aria-hidden': 'true' }, action.icon || '\u2192'), action.label,
                 action.shortcut && h('kbd', { 'aria-hidden': 'true', className: 'rounded border border-white/25 bg-black/15 px-1.5 py-0.5 text-[0.625rem]' }, action.shortcut)),
               h('div', { className: 'mt-1 text-[0.625rem] font-semibold leading-relaxed opacity-70' }, action.hint || 'Ready now'),
-              h('div', { 'data-beehive-coach-watch': 'true', role: 'note', 'aria-label': 'What to watch after ' + action.label, className: 'mt-2 border-t border-current/15 pt-2 text-[0.625rem] leading-relaxed opacity-80' },
+              h('div', { 'data-beehive-coach-watch': 'true', role: 'note', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_what_to_watch_after', 'What to watch after {value1}'), { value1: action.label }), className: 'mt-2 border-t border-current/15 pt-2 text-[0.625rem] leading-relaxed opacity-80' },
                 h('strong', null, 'Watch: '), action.watch || 'Observe the highlighted system metrics for a change.')));
         }
         function renderBeeMissionDeck() {
@@ -25083,7 +25085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('div', { className: 'text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Build a claim from simulation evidence'),
                   h('p', { className: 'mt-0.5 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Write a prediction, capture or record evidence, then explain the mechanism. Entries are saved separately for each role.')),
-                h('button', { type: 'button', 'data-beehive-capture-evidence': viewMode, onClick: captureBeeNotebookEvidence, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-sky-700 px-3 py-2 text-[0.625rem] font-black text-white shadow-sm transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400', 'aria-label': 'Capture current ' + roleName + ' metrics as notebook evidence' }, h('span', { 'aria-hidden': 'true' }, '\u2295'), 'Capture current evidence')),
+                h('button', { type: 'button', 'data-beehive-capture-evidence': viewMode, onClick: captureBeeNotebookEvidence, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-sky-700 px-3 py-2 text-[0.625rem] font-black text-white shadow-sm transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_capture_current_metrics_as_notebook_evidence', 'Capture current {value1} metrics as notebook evidence'), { value1: roleName })}, h('span', { 'aria-hidden': 'true' }, '\u2295'), 'Capture current evidence')),
               notebookHandoffCue && h('section', { 'data-beehive-notebook-handoff': 'true', role: 'note', className: 'mt-4 rounded-xl border p-3 ' + (droneLastRun.success ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/75') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50/75')), 'aria-label': __alloT('stem.beehive.a11y_drone_flight_evidence_carried_into_the_science', 'Drone Flight evidence carried into the Science Notebook') },
                 h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] ' + (droneLastRun.success ? (dk ? 'text-emerald-300' : 'text-emerald-800') : (dk ? 'text-amber-300' : 'text-amber-800')) }, 'Flight evidence → Notebook synthesis'),
                 h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, notebookHandoffCue.title),
@@ -25140,7 +25142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 transition-all', style: { width: (portfolioCompleted * 10) + '%' } })),
                 h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_open_a_role_notebook', 'Open a role notebook') }, portfolioRoles.map(function(role) {
                   var active = viewMode === role.id;
-                  return h('button', { key: role.id, type: 'button', 'data-notebook-role': role.id, onClick: function() { upd('viewMode', role.id); }, 'aria-current': active ? 'true' : undefined, 'aria-label': 'Open ' + role.label + ' notebook, ' + role.completed + ' of 3 sections written, self-review ' + role.reviewCompleted + ' of 3 ready', className: 'flex min-h-[48px] items-center gap-2 rounded-lg border px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (active ? 'border-emerald-800 bg-emerald-700 text-white' : (dk ? 'border-slate-700 bg-slate-900 text-slate-100 hover:border-emerald-600' : 'border-slate-200 bg-white text-slate-900 hover:border-emerald-400')) },
+                  return h('button', { key: role.id, type: 'button', 'data-notebook-role': role.id, onClick: function() { upd('viewMode', role.id); }, 'aria-current': active ? 'true' : undefined, 'aria-label': __alloFill(__alloT('stem.beehive.a11y_open_notebook_of_3_sections_written_self_review', 'Open {value1} notebook, {value2} of 3 sections written, self-review {value3} of 3 ready'), { value1: role.label, value2: role.completed, value3: role.reviewCompleted }), className: 'flex min-h-[48px] items-center gap-2 rounded-lg border px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (active ? 'border-emerald-800 bg-emerald-700 text-white' : (dk ? 'border-slate-700 bg-slate-900 text-slate-100 hover:border-emerald-600' : 'border-slate-200 bg-white text-slate-900 hover:border-emerald-400')) },
                     h('span', { className: 'text-base', 'aria-hidden': 'true' }, role.completed === 3 && role.reviewCompleted === 3 ? '\u2713' : role.icon),
                     h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block truncate text-[0.625rem] font-black' }, role.label), h('span', { className: 'block text-[0.625rem] ' + (active ? 'text-emerald-50' : (dk ? 'text-slate-400' : 'text-slate-600')) }, role.completed + ' of 3 written \u00B7 review ' + role.reviewCompleted + ' of 3')));
                 })),
@@ -25217,7 +25219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })),
             h('div', { 'data-beehive-journey-next': nextMilestone ? nextMilestone.id : 'complete', role: 'status', 'aria-live': 'polite', className: 'mt-3 flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ' + (nextMilestone ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/70') : (dk ? 'border-indigo-700/45 bg-indigo-950/25' : 'border-indigo-200 bg-indigo-50/70')) },
               h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (nextMilestone ? 'text-emerald-600' : 'text-indigo-600') }, nextMilestone ? 'Recommended next' : 'Journey complete'), h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, nextMilestoneMessage)),
-              nextMilestone && h('button', { type: 'button', onClick: function() { upd('viewMode', nextMilestone.id); announceBee('Opening ' + nextMilestone.title + '.', false); }, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-[0.625rem] font-black text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400', 'aria-label': 'Open recommended next simulation: ' + nextMilestone.title }, 'Open ' + nextMilestone.title)),
+              nextMilestone && h('button', { type: 'button', onClick: function() { upd('viewMode', nextMilestone.id); announceBee('Opening ' + nextMilestone.title + '.', false); }, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-[0.625rem] font-black text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_open_recommended_next_simulation', 'Open recommended next simulation: {value1}'), { value1: nextMilestone.title })}, 'Open ' + nextMilestone.title)),
             h('div', { 'data-beehive-handoff': viewMode, role: 'note', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70') },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, handoff.label),
@@ -25354,7 +25356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
               h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Latest intervention'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, ev.label), h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, ev.summary || 'Compare the observed effect with the forecast.')),
               h('div', { className: 'flex flex-wrap items-center justify-end gap-1.5' },
-                h('span', { 'data-management-outcome': outcome.key, role: 'img', className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + outcomeTone, 'aria-label': 'Observed outcome: ' + outcome.label + '. ' + outcome.detail }, outcome.label),
+                h('span', { 'data-management-outcome': outcome.key, role: 'img', className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + outcomeTone, 'aria-label': __alloFill(__alloT('stem.beehive.a11y_observed_outcome', 'Observed outcome: {value1}. {value2}'), { value1: outcome.label, value2: outcome.detail })}, outcome.label),
                 h('span', { className: 'rounded-full bg-emerald-700 px-2.5 py-1 text-[0.625rem] font-black text-white' }, 'Day ' + (ev.day || day) + ' · ' + (ev.cost || 'Action')))),
             h('p', { 'data-management-outcome-detail': 'true', className: 'mt-2 text-[0.625rem] font-semibold ' + (dk ? 'text-emerald-200' : 'text-emerald-800') }, outcome.detail),
             h('div', { 'data-management-causal-path': 'true', role: 'group', 'aria-labelledby': 'beehive-management-causal-title', 'aria-describedby': 'beehive-management-causal-prompt', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-emerald-700/35 bg-slate-950/30' : 'border-emerald-200 bg-white/75') },
@@ -26263,7 +26265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         (risk.level === 'critical' ? 'Action: ' : 'Watch: ') + risk.label),
                       h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + bodyTone }, risk.detail),
                       h('p', { className: 'mt-1 text-[0.6875rem] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, risk.action),
-                      h('button', { type: 'button', 'data-forecast-response': risk.id, onClick: function() { focusForecastResponse(risk); }, className: 'mt-2 inline-flex min-h-[44px] items-center justify-center rounded-lg border px-3 py-2 text-[0.625rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 bg-sky-950/35 text-sky-200 hover:bg-sky-900/45' : 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100'), 'aria-label': 'Open intervention controls for ' + risk.label }, 'Open response controls'));
+                      h('button', { type: 'button', 'data-forecast-response': risk.id, onClick: function() { focusForecastResponse(risk); }, className: 'mt-2 inline-flex min-h-[44px] items-center justify-center rounded-lg border px-3 py-2 text-[0.625rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 bg-sky-950/35 text-sky-200 hover:bg-sky-900/45' : 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100'), 'aria-label': __alloFill(__alloT('stem.beehive.a11y_open_intervention_controls_for', 'Open intervention controls for {value1}'), { value1: risk.label })}, 'Open response controls'));
                   }))
               : h('p', { className: 'mt-3 rounded-xl border p-3 text-xs font-bold ' + cardTone, role: 'status' },
                   'No threshold risks appear in the baseline trend. Random events can still change the outcome.'),
@@ -26312,7 +26314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { type: 'button', onClick: function() { if (quizOpen) closeAccessibleBeePanel('quiz'); else startQuiz(); }, 'aria-label': __alloT('stem.beehive.a11y_bee_knowledge_quiz', 'Bee knowledge quiz'), 'aria-expanded': quizOpen ? 'true' : 'false', 'aria-controls': 'beehive-quiz-panel', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
                 className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '🎓'),
               // Badges button
-              h('button', { type: 'button', onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'Achievement badges, ' + badgeCount + ' of ' + BADGE_DEFS.length + ' earned', 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'beehive-badges-panel', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
+              h('button', { type: 'button', onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': __alloFill(__alloT('stem.beehive.a11y_achievement_badges_of_earned', 'Achievement badges, {value1} of {value2} earned'), { value1: badgeCount, value2: BADGE_DEFS.length }), 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'beehive-badges-panel', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
                 className: 'relative grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') },
                 '🏅',
                 badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[0.625rem] font-bold flex items-center justify-center text-white bg-amber-700' }, badgeCount)),
@@ -26407,7 +26409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'beehive-canvas-description',
-              'aria-label': 'Animated beehive simulation. ' + activeBeeView.label + ' educational canvas. ' + activeBeeView.shortDesc + '. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season] + '.',
+              'aria-label': __alloFill(__alloT('stem.beehive.a11y_animated_beehive_simulation_educational_canvas', 'Animated beehive simulation. {value1} educational canvas. {value2}. Workers: {value3}, Honey: {value4} lbs, Season: {value5}.'), { value1: activeBeeView.label, value2: activeBeeView.shortDesc, value3: workers, value4: honey, value5: seasonNames[season] }),
               style: { width: '100%', height: '100%', display: 'block', cursor: beeView === 'scene' ? 'pointer' : 'default' },
               onMouseMove: beeView === 'scene' ? function(e) {
                 // Cursor hinting: pointer over interactive zones, default elsewhere.
@@ -26680,7 +26682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
               h('div', { 'data-topic-progress': 'true', role: 'progressbar', 'aria-label': __alloT('stem.beehive.a11y_bee_science_topics_explored', 'Bee science topics explored'), 'aria-valuemin': 0, 'aria-valuemax': BEE_VIEWS.length, 'aria-valuenow': exploredBeeViewIds.length, className: 'h-2 min-w-[120px] flex-1 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-amber-100') },
                 h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-[width] motion-reduce:transition-none', style: { width: ((exploredBeeViewIds.length / BEE_VIEWS.length) * 100) + '%' } })),
-              nextBeeView ? h('button', { type: 'button', 'data-topic-continue': nextBeeView.id, onClick: function() { selectBeeView(nextBeeView.id); }, className: 'inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border px-3 py-2 text-[0.625rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'border-emerald-700/60 bg-emerald-950/35 text-emerald-200 hover:bg-emerald-900/50' : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'), 'aria-label': 'Continue exploring with ' + nextBeeView.label },
+              nextBeeView ? h('button', { type: 'button', 'data-topic-continue': nextBeeView.id, onClick: function() { selectBeeView(nextBeeView.id); }, className: 'inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border px-3 py-2 text-[0.625rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'border-emerald-700/60 bg-emerald-950/35 text-emerald-200 hover:bg-emerald-900/50' : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'), 'aria-label': __alloFill(__alloT('stem.beehive.a11y_continue_exploring_with', 'Continue exploring with {value1}'), { value1: nextBeeView.label })},
                 h('span', { 'aria-hidden': 'true' }, nextBeeView.icon), 'Continue: ' + nextBeeView.label) :
                 h('span', { 'data-topic-complete': 'true', className: 'rounded-lg bg-emerald-700 px-3 py-2 text-[0.625rem] font-black text-white' }, '\u2713 All topics explored')),
             h('div', { 'data-mobile-rail': 'learning-pathways', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-3 grid grid-flow-col auto-cols-[76%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-4 sm:overflow-visible sm:pb-0', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_choose_a_bee_science_learning_pathway', 'Choose a bee science learning pathway') },
@@ -27064,7 +27066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('div', { className: 'text-base font-black ' + (metric[2] ? 'text-emerald-500' : 'text-rose-500') }, metric[0]),
                           h('div', { className: 'text-[0.625rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, metric[1]));
                       })),
-                    h('div', { className: 'mt-3 flex h-3 overflow-hidden rounded-full bg-rose-800', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(queenTerritory), 'aria-label': 'Your colony controls ' + Math.round(queenTerritory) + ' percent of the forage range' },
+                    h('div', { className: 'mt-3 flex h-3 overflow-hidden rounded-full bg-rose-800', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(queenTerritory), 'aria-label': __alloFill(__alloT('stem.beehive.a11y_your_colony_controls_percent_of_the_forage_rang', 'Your colony controls {value1} percent of the forage range'), { value1: Math.round(queenTerritory) })},
                       h('div', { className: 'h-full bg-gradient-to-r from-purple-700 to-amber-500 transition-all', style: { width: queenTerritory + '%' } })),
                     h('p', { className: 'mt-2 text-[0.6875rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') },
                       (queenRival.intel || 0) > 0
@@ -27221,18 +27223,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('div', { 'data-structure-preview': stId, className: 'mt-1 text-[0.625rem] font-semibold leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, queenStructurePreview(stId)),
                           h('div', { className: 'inline-flex mt-1 rounded-full border px-1.5 py-0.5 text-[0.625rem] font-bold ' + (canBuild ? (dk ? 'border-amber-600/40 text-amber-300 bg-amber-900/20' : 'border-amber-200 text-amber-700 bg-amber-50') : (dk ? 'border-slate-700 text-slate-300 bg-slate-800' : 'border-slate-500 text-slate-700 bg-white')) }, canBuild ? costStr : queenResourceGapText(st.cost)));
                       })),
-                    queenBuildMode && h('section', { 'data-beehive-build-selection': 'true', className: 'mt-3 rounded-xl border-2 p-3 ' + (dk ? 'border-amber-600/60 bg-gradient-to-r from-amber-950/45 to-slate-950/35' : 'border-amber-300 bg-gradient-to-r from-amber-100/80 to-white'), 'aria-label': 'Placement armed for ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label },
+                    queenBuildMode && h('section', { 'data-beehive-build-selection': 'true', className: 'mt-3 rounded-xl border-2 p-3 ' + (dk ? 'border-amber-600/60 bg-gradient-to-r from-amber-950/45 to-slate-950/35' : 'border-amber-300 bg-gradient-to-r from-amber-100/80 to-white'), 'aria-label': __alloFill(__alloT('stem.beehive.a11y_placement_armed_for', 'Placement armed for {value1}'), { value1: QUEEN_STRUCTURE_TYPES[queenBuildMode].label })},
                       h('div', { className: 'flex items-center gap-3' },
                         h('span', { className: 'grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-xl shadow-sm', 'aria-hidden': 'true' }, QUEEN_STRUCTURE_TYPES[queenBuildMode].icon),
                         h('div', { className: 'min-w-0 flex-1' },
                           h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Placement armed'),
                           h('div', { className: 'truncate text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, QUEEN_STRUCTURE_TYPES[queenBuildMode].label),
                           h('p', { className: 'mt-0.5 text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Click a highlighted comb cell above, or choose an accessible zone below.')),
-                        h('button', { type: 'button', onClick: function() { updAll({ queen: Object.assign({}, queenData, { buildMode: null, feedback: { tone: 'info', text: 'Structure placement canceled. Choose another strategy option when ready.' } }) }); announceBee('Structure placement canceled.', false); }, className: 'shrink-0 rounded-lg border px-3 py-2 text-[0.625rem] font-black ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-900 hover:bg-amber-50'), 'aria-label': 'Cancel ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + ' placement' }, 'Cancel placement')),
+                        h('button', { type: 'button', onClick: function() { updAll({ queen: Object.assign({}, queenData, { buildMode: null, feedback: { tone: 'info', text: 'Structure placement canceled. Choose another strategy option when ready.' } }) }); announceBee('Structure placement canceled.', false); }, className: 'shrink-0 rounded-lg border px-3 py-2 text-[0.625rem] font-black ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-900 hover:bg-amber-50'), 'aria-label': __alloFill(__alloT('stem.beehive.a11y_cancel_placement', 'Cancel {value1} placement'), { value1: QUEEN_STRUCTURE_TYPES[queenBuildMode].label })}, 'Cancel placement')),
                       h('div', { className: 'mt-3 border-t pt-3 ' + (dk ? 'border-amber-700/35' : 'border-amber-200') },
                         h('div', { className: 'text-[0.625rem] font-black ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Place without the canvas'),
                         h('p', { className: 'mt-0.5 text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Keyboard, touch, and switch users can choose the same reliable comb zones.'),
-                        h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_keyboard_and_touch_placement_shortcuts', 'Keyboard and touch placement shortcuts') }, [{ label: 'Inner core', x: 0.18, y: 0.5 }, { label: 'Mid comb', x: 0.31, y: 0.38 }, { label: 'Outer edge', x: 0.44, y: 0.68 }].map(function(place) { return h('button', { key: place.label, type: 'button', 'data-placement-zone': place.label.toLowerCase().replace(/ /g, '-'), onClick: function() { buildQueenStructure(queenBuildMode, place.x, place.y); }, 'aria-label': 'Place ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + ' in ' + place.label, className: 'min-h-[44px] rounded-lg border px-2 py-2 text-[0.625rem] font-black transition-all active:scale-95 ' + (dk ? 'border-amber-700 bg-amber-950/35 text-amber-200 hover:bg-amber-900/40' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100') }, place.label); }))))),
+                        h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_keyboard_and_touch_placement_shortcuts', 'Keyboard and touch placement shortcuts') }, [{ label: 'Inner core', x: 0.18, y: 0.5 }, { label: 'Mid comb', x: 0.31, y: 0.38 }, { label: 'Outer edge', x: 0.44, y: 0.68 }].map(function(place) { return h('button', { key: place.label, type: 'button', 'data-placement-zone': place.label.toLowerCase().replace(/ /g, '-'), onClick: function() { buildQueenStructure(queenBuildMode, place.x, place.y); }, 'aria-label': __alloFill(__alloT('stem.beehive.a11y_place_in', 'Place {value1} in {value2}'), { value1: QUEEN_STRUCTURE_TYPES[queenBuildMode].label, value2: place.label }), className: 'min-h-[44px] rounded-lg border px-2 py-2 text-[0.625rem] font-black transition-all active:scale-95 ' + (dk ? 'border-amber-700 bg-amber-950/35 text-amber-200 hover:bg-amber-900/40' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100') }, place.label); }))))),
                   // RTS controls replace the old turn-based Next Day button.
                   h('div', { className: 'flex flex-wrap gap-2' },
                     h('button', { onClick: toggleQueenPause, 'aria-label': queenPaused ? 'Resume Colony Network simulation' : 'Pause Colony Network simulation', 'aria-keyshortcuts': 'P',
@@ -27419,7 +27421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (lowestVarroa <= 20) grade += 1;
             var letter = grade >= 8 ? 'A+' : grade >= 6 ? 'A' : grade >= 5 ? 'B' : grade >= 3 ? 'C' : grade >= 2 ? 'D' : 'F';
             var letterColor = grade >= 6 ? (dk ? 'text-amber-400' : 'text-amber-600') : grade >= 3 ? (dk ? 'text-green-400' : 'text-green-600') : (dk ? 'text-red-400' : 'text-red-600');
-            return h('div', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-400' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Year ' + completedYears + ' retrospective', style: { boxShadow: '0 0 24px rgba(251,191,36,0.25)' } },
+            return h('div', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-400' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_year_retrospective', 'Year {value1} retrospective'), { value1: completedYears }), style: { boxShadow: '0 0 24px rgba(251,191,36,0.25)' } },
               h('div', { className: 'flex items-start justify-between' },
                 h('div', null,
                   h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 Year ' + completedYears + ' Retrospective'),
@@ -27567,8 +27569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 current.opts.map(function(opt, oi) {
                   return h('button', { key: oi, type: 'button', onClick: function() { answerQuiz(oi); },
                     className: 'min-h-[44px] text-left p-3 rounded-xl border text-xs font-medium transition-all ' + (dk ? 'bg-slate-800 border-indigo-700/40 text-slate-200 hover:border-indigo-400 hover:bg-slate-700' : 'bg-white border-indigo-200 text-slate-700 hover:border-indigo-500 hover:shadow-md'),
-                    'aria-label': 'Answer: ' + opt
-                  }, String.fromCharCode(65 + oi) + '. ' + opt);
+                    'aria-label': __alloFill(__alloT('stem.beehive.a11y_answer', 'Answer: {value1}'), { value1: opt })}, String.fromCharCode(65 + oi) + '. ' + opt);
                 })),
               // Feedback
               quizFeedback && h(React.Fragment, null,
@@ -27612,7 +27613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   'data-treatment-forecast': currentVarroa + '-to-' + projectedVarroa,
                   'data-treatment-ready': affordable ? 'true' : 'false',
                   'data-unavailable-reason': affordable ? undefined : treatmentUnavailable,
-                  'aria-label': 'Apply ' + t.label + ' treatment',
+                  'aria-label': __alloFill(__alloT('stem.beehive.a11y_apply_treatment', 'Apply {value1} treatment'), { value1: t.label }),
                   'aria-describedby': treatmentDescriptionId,
                   className: 'text-left p-3 rounded-xl border transition-all ' +
                     (affordable
@@ -27653,7 +27654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('button', { type: 'button', onClick: dismissEvent, 'aria-label': 'Acknowledge ' + (activeEvent.label || 'colony event') + ' and return to time controls', className: 'min-h-[44px] rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2' }, __alloT('stem.beehive.acknowledge', '✓ Acknowledge'))),
 
           // Status bar (beekeeper mode only)
-          viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'group', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
+          viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'group', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_colony_status_day_lbs_honey_workers', 'Colony status: {value1}, Day {value2}, {value3} lbs honey, {value4} workers'), { value1: seasonNames[season], value2: ((day % 30) + 1), value3: honey, value4: fmtPop(workers) })},
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-800') }, seasonNames[season] + ' Day ' + ((day % 30) + 1)),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-800') }, '🍯 ' + honey + ' lbs'),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-yellow-900/40 text-yellow-300' : 'bg-yellow-100 text-yellow-800') }, '🌼 ' + pollen + ' lbs'),
@@ -27756,7 +27757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Total to use is workers (not the per-role estimate). Build segments only for non-zero roles.
               var segments = roleDefs.filter(function(r) { return (dist[r.id] || 0) > 0; });
               if (segments.length === 0) return null;
-              return h('div', { className: 'mb-3', role: 'region', 'aria-label': 'Workforce role distribution for ' + seasonNames[season] },
+              return h('div', { className: 'mb-3', role: 'region', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_workforce_role_distribution_for', 'Workforce role distribution for {value1}'), { value1: seasonNames[season] })},
                 h('div', { className: 'flex items-center justify-between mb-1' },
                   h('div', { className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.workforce_by_role', '👷 Workforce by role')),
                   h('div', { className: 'text-[0.625rem] italic ' + (dk ? 'text-slate-300' : 'text-slate-600') }, season === 3 ? 'Winter — no flying, mostly clustering' : 'Age-based + season-shifted')
@@ -27920,7 +27921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, '\uD83D\uDCCA Colony History (' + history.length + ' days)'),
             h('canvas', {
               role: 'img',
-              'aria-label': 'Colony metrics history chart showing workers, honey, varroa, and morale over ' + history.length + ' days',
+              'aria-label': __alloFill(__alloT('stem.beehive.a11y_colony_metrics_history_chart_showing_workers_ho', 'Colony metrics history chart showing workers, honey, varroa, and morale over {value1} days'), { value1: history.length }),
               ref: function(cv) {
                 if (!cv) return;
                 var cCtx = cv.getContext('2d');
@@ -28067,7 +28068,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // ── Hive Cross-Section Visual ── (beekeeper only)
           viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-b from-amber-900/30 to-amber-950/20 border-amber-700/40' : 'bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300'),
-            role: 'img', 'aria-label': 'Hive cross-section: honey stores on outer edges (' + Math.round(honey) + ' lbs), pollen ring (' + Math.round(pollen) + ' lbs), brood nest in center (' + fmtPop(brood) + ' larvae), queen health ' + queenHealth + '%. Bees organize comb concentrically for thermal efficiency.' },
+            role: 'img', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_hive_cross_section_honey_stores_on_outer_edges', 'Hive cross-section: honey stores on outer edges ({value1} lbs), pollen ring ({value2} lbs), brood nest in center ({value3} larvae), queen health {value4}%. Bees organize comb concentrically for thermal efficiency.'), { value1: Math.round(honey), value2: Math.round(pollen), value3: fmtPop(brood), value4: queenHealth })},
             h('div', { className: 'text-xs font-bold mb-2 text-center ' + (dk ? 'text-amber-300' : 'text-amber-900'), role: 'heading', 'aria-level': '3' }, __alloT('stem.beehive.hive_cross_section', '🏠 Hive Cross-Section')),
             h('div', { className: 'flex gap-0.5 justify-center', 'aria-hidden': 'true', style: { height: '80px' } },
               // Each column represents a frame — color shows contents
@@ -28230,7 +28231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
                 h('button', {
                   type: 'button', 'data-beehive-restart': 'same-seed',
-                  'aria-label': 'Replay colony with the same seed ' + simulationSeed,
+                  'aria-label': __alloFill(__alloT('stem.beehive.a11y_replay_colony_with_the_same_seed', 'Replay colony with the same seed {value1}'), { value1: simulationSeed }),
                   onClick: function() {
                     var baseline = bhNormalizeExperimentSnapshot(d.experimentBaseline) || bhCreateExperimentSnapshot(d);
                     var nextRunSerial = bhExperimentRunSerial(d.experimentRunSerial) + 1;
@@ -28525,7 +28526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Conservation Actions
             h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-200') },
               h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-emerald-300' : 'text-emerald-800'), role: 'heading', 'aria-level': '3' }, __alloT('stem.beehive.conservation_actions_help_save_bees', '🌍 Conservation Actions (help save bees!)')),
-              h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Conservation actions — ' + actionPoints + ' action points available' },
+              h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_conservation_actions_action_points_available', 'Conservation actions — {value1} action points available'), { value1: actionPoints })},
                 CONSERVATION_ACTIONS.map(function(action) {
                   var effectText = conservationActionEffect(action);
                   var conservationReady = actionPoints >= action.cost;

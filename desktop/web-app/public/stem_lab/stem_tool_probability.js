@@ -54,6 +54,8 @@ window.StemLab = window.StemLab || {
     try { v = (__alloProbCtx && typeof __alloProbCtx.t === "function") ? __alloProbCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null) ? (fb != null ? fb : k) : v;
   };
+  // Fills {value1}-style placeholders, so a translation can reorder them.
+  var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
   'use strict';
 
   // ── Audio + WCAG (auto-injected) ──
@@ -1419,7 +1421,7 @@ var d = (labToolData.probability) || {};
                 6: [[s*0.3, s*0.25], [s*0.7, s*0.25], [s*0.3, s/2], [s*0.7, s/2], [s*0.3, s*0.75], [s*0.7, s*0.75]]
               };
               var dots = dotPositions[val] || [];
-              return React.createElement("svg", { role: "img", 'aria-label': 'd6 showing ' + val, viewBox: "0 0 " + s + " " + s, width: s, height: s },
+              return React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_d6_showing', 'd6 showing {value1}'), { value1: val }), viewBox: "0 0 " + s + " " + s, width: s, height: s },
                 React.createElement("rect", { x: 2, y: 2, width: s - 4, height: s - 4, rx: 8, fill: "white", stroke: "#94a3b8", strokeWidth: 2 }),
                 dots.map(function (pos, i) {
                   return React.createElement("circle", { key: i, cx: pos[0], cy: pos[1], r: s * 0.08, fill: "#1e293b" });
@@ -1435,7 +1437,7 @@ var d = (labToolData.probability) || {};
             };
             var fontSize = s * (val >= 10 ? 0.32 : 0.42) * (shape.fontScale || 1);
             var textY = s * shape.textCY + fontSize * 0.36;
-            return React.createElement("svg", { role: "img", viewBox: "0 0 " + s + " " + s, width: s, height: s, 'aria-label': 'd' + dSides + ' showing ' + val },
+            return React.createElement("svg", { role: "img", viewBox: "0 0 " + s + " " + s, width: s, height: s, 'aria-label': __alloFill(__alloT('stem.probability.a11y_d_showing', 'd{value1} showing {value2}'), { value1: dSides, value2: val })},
               shape.ring && React.createElement("polygon", { points: ptsStr(shape.ring(s)), fill: shape.fill, fillOpacity: 0.4, stroke: shape.stroke, strokeWidth: 2, strokeLinejoin: 'round' }),
               React.createElement("polygon", { points: ptsStr(shape.points(s)), fill: shape.fill, stroke: shape.stroke, strokeWidth: 2.5, strokeLinejoin: 'round' }),
               React.createElement("text", { x: s/2, y: textY, textAnchor: 'middle', fontSize: fontSize, fontWeight: 900, fill: 'white', style: { paintOrder: 'stroke', stroke: shape.stroke, strokeWidth: 0.5 } }, val)
@@ -1837,7 +1839,7 @@ var d = (labToolData.probability) || {};
 
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board'], ['volume3d', '\uD83E\uDDCA 3D Volume']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Select mode: " + label, "aria-pressed": d.mode === m, key: m, onClick: function() { selectMode(m); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_mode', 'Select mode: {value1}'), { value1: label }), "aria-pressed": d.mode === m, key: m, onClick: function() { selectMode(m); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
@@ -1911,7 +1913,7 @@ var d = (labToolData.probability) || {};
                       upd('convergenceHistory', []); upd('lastResult', null); upd('_lastPair', null);
                     },
                     'aria-pressed': active,
-                    'aria-label': 'd' + sides + ', P equals one over ' + sides,
+                    'aria-label': __alloFill(__alloT('stem.probability.a11y_d_p_equals_one_over', 'd{value1}, P equals one over {value2}'), { value1: sides, value2: sides }),
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2',
                     style: active
                       ? { background: dieColor, color: '#fff', borderColor: dieColor, boxShadow: '0 2px 4px ' + dieColor + '55' }
@@ -2002,9 +2004,9 @@ var d = (labToolData.probability) || {};
 
                   return React.createElement("div", { key: i, className: "flex items-center gap-2 rounded-lg p-2", style: { background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.7)', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.15)' : '#e9d5ff') } },
 
-                    React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full border-0 cursor-pointer flex-shrink-0", style: { borderRadius: '50%' } }),
+                    React.createElement("input", { type: "color", value: o.color, 'aria-label': __alloFill(__alloT('stem.probability.a11y_color_for_outcome', 'Color for outcome {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full border-0 cursor-pointer flex-shrink-0", style: { borderRadius: '50%' } }),
 
-                    React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg text-sm font-bold flex-shrink-0", style: { border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ddd6fe'), background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : '#fff', color: _text } }),
+                    React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': __alloFill(__alloT('stem.probability.a11y_name_for_color', 'Name for color {value1}'), { value1: (i + 1) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg text-sm font-bold flex-shrink-0", style: { border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ddd6fe'), background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : '#fff', color: _text } }),
 
                     React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#fecaca', color: '#991b1b' } }, "\u2212"),
 
@@ -2014,7 +2016,7 @@ var d = (labToolData.probability) || {};
 
                     React.createElement("span", { className: "ml-auto text-[0.6875rem] font-mono", style: { color: isDark || isContrast ? '#a5b4fc' : '#7c3aed' } }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + ((o.prob || 0) * 100).toFixed(1) + '%'),
 
-                    customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove marble color " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-sm font-bold px-1 flex-shrink-0 transition-colors", style: { color: '#f87171' } }, "\u2715")
+                    customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_marble_color', 'Remove marble color {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-sm font-bold px-1 flex-shrink-0 transition-colors", style: { color: '#f87171' } }, "\u2715")
 
                   );
 
@@ -2032,7 +2034,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { style: { position: 'relative', display: 'inline-block', animation: d._mbShaking ? 'mbShake 0.5s ease-in-out' : 'none' } },
 
-                  React.createElement("svg", { role: "img", 'aria-label': 'Marble bag containing ' + customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + ' marbles across ' + customOutcomes.length + ' colors', viewBox: "0 0 180 200", width: 180, height: 200, style: { filter: 'drop-shadow(0 4px 12px rgba(139,92,246,0.2))' } },
+                  React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_marble_bag_containing_marbles_across_colors', 'Marble bag containing {value1} marbles across {value2} colors'), { value1: customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0), value2: customOutcomes.length }), viewBox: "0 0 180 200", width: 180, height: 200, style: { filter: 'drop-shadow(0 4px 12px rgba(139,92,246,0.2))' } },
 
                     // Bag body
 
@@ -2114,7 +2116,7 @@ var d = (labToolData.probability) || {};
 
                 SPORTS.map(function (s) {
 
-                  return React.createElement("button", { "aria-label": "Select sport scenario: " + s.label,
+                  return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_sport_scenario', 'Select sport scenario: {value1}'), { value1: s.label }),
 
                     key: s.id,
 
@@ -2140,7 +2142,7 @@ var d = (labToolData.probability) || {};
 
               React.createElement("div", { className: "flex gap-1 mb-3 bg-amber-100/50 rounded-lg p-1" },
 
-                [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { "aria-label": "Select " + label + " input mode", key: sm, onClick: function () { setCustomSubMode(sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
+                [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_input_mode', 'Select {value1} input mode'), { value1: label }), key: sm, onClick: function () { setCustomSubMode(sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
 
               ),
 
@@ -2158,19 +2160,19 @@ var d = (labToolData.probability) || {};
 
                     return React.createElement("div", { key: i, className: "flex flex-wrap items-center gap-2 bg-white/60 rounded-lg p-2" },
 
-                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
+                      React.createElement("input", { type: "color", value: o.color, 'aria-label': __alloFill(__alloT('stem.probability.a11y_color_for_outcome', 'Color for outcome {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
 
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Event " + (i + 1), 'aria-label': 'Name for event ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Event " + (i + 1), 'aria-label': __alloFill(__alloT('stem.probability.a11y_name_for_event', 'Name for event {value1}'), { value1: (i + 1) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
 
-                      React.createElement("input", { type: "number", min: 0, max: 999, value: o.numerator != null ? o.numerator : 1, 'aria-label': 'Numerator for event ' + (o.label || (i + 1)), onChange: function (e) { var num = Math.max(0, parseInt(e.target.value) || 0); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { numerator: num, prob: (o.denominator || 20) > 0 ? num / (o.denominator || 20) : 0 }); setProbabilityOutcomes(co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
+                      React.createElement("input", { type: "number", min: 0, max: 999, value: o.numerator != null ? o.numerator : 1, 'aria-label': __alloFill(__alloT('stem.probability.a11y_numerator_for_event', 'Numerator for event {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var num = Math.max(0, parseInt(e.target.value) || 0); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { numerator: num, prob: (o.denominator || 20) > 0 ? num / (o.denominator || 20) : 0 }); setProbabilityOutcomes(co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
 
                       React.createElement("span", { className: "text-xs font-bold text-amber-600 flex-shrink-0" }, t('stem.probability.out_of', "out of")),
 
-                      React.createElement("input", { type: "number", min: 1, max: 10000, value: o.denominator != null ? o.denominator : 20, 'aria-label': 'Denominator for event ' + (o.label || (i + 1)), onChange: function (e) { var den = Math.max(1, parseInt(e.target.value) || 1); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { denominator: den, prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); setProbabilityOutcomes(co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
+                      React.createElement("input", { type: "number", min: 1, max: 10000, value: o.denominator != null ? o.denominator : 20, 'aria-label': __alloFill(__alloT('stem.probability.a11y_denominator_for_event', 'Denominator for event {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var den = Math.max(1, parseInt(e.target.value) || 1); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { denominator: den, prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); setProbabilityOutcomes(co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
 
                       React.createElement("span", { className: "ml-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-bold " + (o.prob <= 0.1 ? 'bg-violet-100 text-violet-700' : o.prob <= 0.5 ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700') }, (o.prob * 100).toFixed(1) + '%'),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove event " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_event', 'Remove event {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
 
                     );
 
@@ -2200,9 +2202,9 @@ var d = (labToolData.probability) || {};
 
                     return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
 
-                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
+                      React.createElement("input", { type: "color", value: o.color, 'aria-label': __alloFill(__alloT('stem.probability.a11y_color_for_outcome', 'Color for outcome {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
 
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for marble color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': __alloFill(__alloT('stem.probability.a11y_name_for_marble_color', 'Name for marble color {value1}'), { value1: (i + 1) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
 
                       React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-800 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
 
@@ -2212,7 +2214,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("span", { className: "ml-1 text-[0.6875rem] font-mono text-amber-600" }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + (o.prob * 100).toFixed(1) + '%'),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove marble color " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_marble_color', 'Remove marble color {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
 
                     );
 
@@ -2256,19 +2258,19 @@ var d = (labToolData.probability) || {};
 
                     return React.createElement("div", { key: i, className: "flex flex-wrap items-center gap-2" },
 
-                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
+                      React.createElement("input", { type: "color", value: o.color, 'aria-label': __alloFill(__alloT('stem.probability.a11y_color_for_outcome', 'Color for outcome {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
 
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), 'aria-label': 'Name for outcome ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "min-w-0 flex-1 basis-32 px-2 py-1.5 rounded-lg border border-amber-600 text-sm font-bold" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), 'aria-label': __alloFill(__alloT('stem.probability.a11y_name_for_outcome', 'Name for outcome {value1}'), { value1: (i + 1) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "min-w-0 flex-1 basis-32 px-2 py-1.5 rounded-lg border border-amber-600 text-sm font-bold" }),
 
                       React.createElement("div", { className: "flex min-w-0 flex-1 basis-32 items-center gap-1" },
 
-                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': 'Probability for outcome ' + (o.label || (i + 1)), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } setProbabilityOutcomes(co); }, className: "h-6 min-w-0 flex-1 accent-amber-600" }),
+                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': __alloFill(__alloT('stem.probability.a11y_probability_for_outcome', 'Probability for outcome {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } setProbabilityOutcomes(co); }, className: "h-6 min-w-0 flex-1 accent-amber-600" }),
 
                         React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
 
                       ),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove outcome " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_outcome', 'Remove outcome {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
 
                     );
 
@@ -2515,8 +2517,7 @@ var d = (labToolData.probability) || {};
                       key: 'auto-' + n,
                       onClick: function() { autoRun(n); },
                       className: 'px-3 py-1.5 rounded-md text-[0.6875rem] font-bold bg-white/15 hover:bg-white/25 text-white focus:ring-2 focus:ring-white focus:outline-none',
-                      'aria-label': 'Simulate ' + n + ' rounds of each strategy'
-                    }, '⚡ +' + n + ' of each');
+                      'aria-label': __alloFill(__alloT('stem.probability.a11y_simulate_rounds_of_each_strategy', 'Simulate {value1} rounds of each strategy'), { value1: n })}, '⚡ +' + n + ' of each');
                   }),
                   (ms.stayN > 0 || ms.switchN > 0) && React.createElement('button', {
                     onClick: resetStats,
@@ -2768,8 +2769,7 @@ var d = (labToolData.probability) || {};
                     viewBox: '0 0 ' + svgW + ' ' + svgH,
                     width: svgW, height: svgH,
                     style: { background: 'rgba(255,255,255,0.05)', borderRadius: 8 },
-                    'aria-label': 'Galton board with ' + GB_ROWS + ' peg rows and ' + GB_BINS + ' histogram bins below'
-                  },
+                    'aria-label': __alloFill(__alloT('stem.probability.a11y_galton_board_with_peg_rows_and_histogram_bins_b', 'Galton board with {value1} peg rows and {value2} histogram bins below'), { value1: GB_ROWS, value2: GB_BINS })},
                     pegs,
                     // Divider line between pegs and bins
                     React.createElement('line', { x1: 0, y1: binAreaY, x2: svgW, y2: binAreaY, stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }),
@@ -3093,7 +3093,7 @@ var d = (labToolData.probability) || {};
 
                     for (var _mk = 0; _mk < mn && _mk < 365; _mk++) mpb *= (365 - _mk) / 365;
 
-                    return React.createElement("button", { "aria-label": "Set group size to " + mn + " people", key: mn, onClick: function() { upd('birthdayN', mn); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all", style: { background: _bn === mn ? '#b45309' : (isDark||isContrast?'rgba(251,191,36,0.1)':'#fef9c3'), color: _bn === mn ? '#fff' : (isDark||isContrast?'#fbbf24':'#92400e'), border: '1px solid '+(isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a'), boxShadow: _bn === mn ? '0 2px 8px rgba(180,83,9,0.3)' : 'none' } }, 'n=' + mn + ' → ' + ((1 - mpb) * 100).toFixed(0) + '%');
+                    return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_set_group_size_to_people', 'Set group size to {value1} people'), { value1: mn }), key: mn, onClick: function() { upd('birthdayN', mn); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all", style: { background: _bn === mn ? '#b45309' : (isDark||isContrast?'rgba(251,191,36,0.1)':'#fef9c3'), color: _bn === mn ? '#fff' : (isDark||isContrast?'#fbbf24':'#92400e'), border: '1px solid '+(isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a'), boxShadow: _bn === mn ? '0 2px 8px rgba(180,83,9,0.3)' : 'none' } }, 'n=' + mn + ' → ' + ((1 - mpb) * 100).toFixed(0) + '%');
 
                   })
 
@@ -3603,10 +3603,10 @@ var d = (labToolData.probability) || {};
 
               React.createElement("div", { role: "group", 'aria-label': __alloT('stem.probability.a11y_automatic_simulation_speed', 'Automatic simulation speed'), className: "flex flex-wrap gap-1" }, [['Slow', 600], ['Normal', 250], ['Fast', 80], ['Turbo', 20]].map(function(pair) {
 
-                return React.createElement("button", { "aria-label": "Set simulation speed to " + pair[0], "aria-pressed": (d._autoSpeed || 250) === pair[1] ? "true" : "false", key: pair[0], onClick: function() {
+                return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_set_simulation_speed_to', 'Set simulation speed to {value1}'), { value1: pair[0] }), "aria-pressed": (d._autoSpeed || 250) === pair[1] ? "true" : "false", key: pair[0], onClick: function() {
 
                   upd('_autoSpeed', pair[1]);
-                  if (typeof announceToSR === 'function') announceToSR('Automatic simulation speed set to ' + pair[0] + '.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.probability.sr_automatic_simulation_speed_set_to', 'Automatic simulation speed set to {value1}.'), { value1: pair[0] }));
 
                   if (_autoRun.interval) {
 
@@ -3630,7 +3630,7 @@ var d = (labToolData.probability) || {};
 
             d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
-              [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", disabled: !customCanRun || !!d._autoRunning, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
+              [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_run_trials', 'Run {value1} trials'), { value1: n }), disabled: !customCanRun || !!d._autoRunning, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
 
               React.createElement("button", { "aria-label": __alloT('stem.probability.a11y_reset_current_run', 'Reset current run'), onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset current run")
 
@@ -3706,7 +3706,7 @@ var d = (labToolData.probability) || {};
                 var yHi = Math.min(100, convExpected + _pad);
                 var _span = (yHi - yLo) || 1;
                 var ymap = function (pct) { var c = Math.max(yLo, Math.min(yHi, pct)); return 100 - ((c - yLo) / _span) * 100; };
-                return React.createElement("svg", { role: "img", 'aria-label': 'Convergence chart: observed ' + convHist[convHist.length - 1].pct.toFixed(1) + ' percent, expected ' + convExpected.toFixed(1) + ' percent after ' + d.trials + ' trials', viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
+                return React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_convergence_chart_observed_percent_expected_per', 'Convergence chart: observed {value1} percent, expected {value2} percent after {value3} trials'), { value1: convHist[convHist.length - 1].pct.toFixed(1), value2: convExpected.toFixed(1), value3: d.trials }), viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
                   React.createElement("line", { x1: 0, y1: ymap(convExpected), x2: 400, y2: ymap(convExpected), stroke: "#22c55e", strokeWidth: 1, strokeDasharray: "4 2" }),
                   React.createElement("text", { x: 2, y: Math.max(8, ymap(convExpected) - 3), fill: "#22c55e", style: { fontSize: '7px', fontWeight: 'bold' } }, convExpected.toFixed(1) + '% expected'),
                   React.createElement("polyline", {
@@ -4091,7 +4091,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "flex gap-3 items-start flex-wrap" },
 
-                  React.createElement("svg", { role: "img", 'aria-label': 'Monte Carlo pi scatter plot with ' + _piInV + ' of ' + _piTotV + ' points inside the quarter circle; pi estimate ' + _piEstV.toFixed(4), viewBox: "0 0 200 200", width: 180, height: 180, style: { border: '1px solid '+_border, borderRadius: 8, flexShrink: 0, background: isDark||isContrast?'#1e1b4b':'#f8fafc' } },
+                  React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_monte_carlo_pi_scatter_plot_with_of_points_insi', 'Monte Carlo pi scatter plot with {value1} of {value2} points inside the quarter circle; pi estimate {value3}'), { value1: _piInV, value2: _piTotV, value3: _piEstV.toFixed(4) }), viewBox: "0 0 200 200", width: 180, height: 180, style: { border: '1px solid '+_border, borderRadius: 8, flexShrink: 0, background: isDark||isContrast?'#1e1b4b':'#f8fafc' } },
 
                     React.createElement("path", { d:"M 0 200 A 200 200 0 0 1 200 0", fill: isDark||isContrast?'rgba(34,197,94,0.12)':'rgba(34,197,94,0.08)', stroke:'#22c55e', strokeWidth:1.5, strokeDasharray:'5 3' }),
 

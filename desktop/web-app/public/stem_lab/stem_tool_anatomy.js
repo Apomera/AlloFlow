@@ -25,6 +25,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     try { v = (__alloAnatomyCtx && typeof __alloAnatomyCtx.t === "function") ? __alloAnatomyCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null) ? (fb != null ? fb : k) : v;
   };
+  // Fills {value1}-style placeholders, so a translation can reorder them.
+  var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
   'use strict';
   // Capture the module URL while document.currentScript is available. Canvas may
   // expose a blob: baseURI, so local assets resolve from the script first.
@@ -2875,7 +2877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               }
             }
             if (typeof announceToSR === 'function') {
-              announceToSR('Challenges updated. You have completed ' + updatedCompleted.length + ' of ' + ANAT_CHALLENGES.length + ' challenges. Research points: ' + newRP);
+              announceToSR(__alloFill(__alloT('stem.anatomy.sr_challenges_updated_you_have_completed_of_challeng', 'Challenges updated. You have completed {value1} of {value2} challenges. Research points: {value3}'), { value1: updatedCompleted.length, value2: ANAT_CHALLENGES.length, value3: newRP }));
             }
           }
         };
@@ -4278,7 +4280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // Show the requested explanation even when search began in another study mode.
           Object.assign(resultPatch, { _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _studyFilter: 'all', _anatomySearchShowAll: false, _anatomySearchDismissed: true });
           updMulti(resultPatch);
-          if (typeof announceToSR === 'function') announceToSR('Opening ' + result.label + ' in ' + result.systemName + '.');
+          if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_opening_in', 'Opening {value1} in {value2}.'), { value1: result.label, value2: result.systemName }));
           playSound('structureClick');
         }
 
@@ -4386,7 +4388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               type: 'button',
               className: 'anatomy-synthesis-step',
               'data-synthesis-step': stepItem.id,
-              'aria-label': 'Review ' + stepItem.title + ': ' + stepItem.outcome,
+              'aria-label': __alloFill(__alloT('stem.anatomy.a11y_review', 'Review {value1}: {value2}'), { value1: stepItem.title, value2: stepItem.outcome }),
               onClick: function() { openSystemsMotionStep(stepIndex, 'Reviewing ' + stepItem.title + '.', systemsMotionScenarioId); }
             },
               h('span', null, stepItem.number + ' · ' + stepItem.systemLabel),
@@ -4460,7 +4462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
             selectedOption ? h('div', {
               className: 'anatomy-intervention-chain', role: 'img',
-              'aria-label': 'Chosen response: ' + selectedOption.label + '. Local response: ' + selectedOption.local + ' System outcome: ' + selectedOption.system,
+              'aria-label': __alloFill(__alloT('stem.anatomy.a11y_chosen_response_local_response_system_outcome', 'Chosen response: {value1}. Local response: {value2} System outcome: {value3}'), { value1: selectedOption.label, value2: selectedOption.local, value3: selectedOption.system }),
               'data-intervention-path': selectedOption.id
             },
               h('div', { className: 'anatomy-intervention-stage' }, h('span', null, 'Chosen response'), h('strong', null, selectedOption.label)),
@@ -4600,8 +4602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('span', null, systemsMotionCurrent.summary),
                 h('div', {
                   className: 'anatomy-motion-cascade', role: 'img',
-                  'aria-label': 'Trigger: ' + systemsMotionCurrent.trigger + ' Mechanism: ' + systemsMotionCurrent.mechanism + ' Outcome: ' + systemsMotionCurrent.outcome
-                },
+                  'aria-label': __alloFill(__alloT('stem.anatomy.a11y_trigger_mechanism_outcome', 'Trigger: {value1} Mechanism: {value2} Outcome: {value3}'), { value1: systemsMotionCurrent.trigger, value2: systemsMotionCurrent.mechanism, value3: systemsMotionCurrent.outcome })},
                   h('div', { className: 'anatomy-motion-cascade-stage' }, h('strong', null, 'Trigger'), h('span', null, systemsMotionCurrent.trigger)),
                   h('span', { className: 'anatomy-motion-cascade-arrow', 'aria-hidden': 'true' }, '→'),
                   h('div', { className: 'anatomy-motion-cascade-stage' }, h('strong', null, 'Mechanism'), h('span', null, systemsMotionCurrent.mechanism)),
@@ -4917,7 +4918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (!SYSTEMS[systemId]) return;
           updMulti(systemSelectionPatch(systemId));
           playSound('systemSelect');
-          if (contextLabel && typeof announceToSR === 'function') announceToSR('Showing ' + SYSTEMS[systemId].name + ' diagram for ' + contextLabel + '.');
+          if (contextLabel && typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_showing_diagram_for', 'Showing {value1} diagram for {value2}.'), { value1: SYSTEMS[systemId].name, value2: contextLabel }));
         }
 
         function selectAnatomyLevel(value) {
@@ -4969,7 +4970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           nextConnectionsViewed[connection.id] = true;
           updMulti({ _activeTab: 'connections', _expandedConn: connection.id, _connectionsViewed: nextConnectionsViewed });
           playSound('connectionView');
-          if (typeof announceToSR === 'function') announceToSR('Opening ' + connection.title + ' connection details.');
+          if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_opening_connection_details', 'Opening {value1} connection details.'), { value1: connection.title }));
         }
 
         // ── Clinical cases state ──
@@ -5143,7 +5144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           updMulti({ _pathwaysCompleted: newPC, _activePathway: null, _pathwayStep: 0, _pathwayRecap: null });
           playSound('badge');
           if (addToast) addToast('🛤 Pathway complete: ' + pw.title + '!');
-          if (typeof announceToSR === 'function') announceToSR('Pathway complete: ' + pw.title + '.');
+          if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), { value1: pw.title }));
           setTimeout(checkAnatomyChallenges, 50);
         }
         function renderPathwayRecap(pw) {
@@ -9221,7 +9222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (!handoff) return null;
           return h('div', {
             className: 'anatomy-scale-continuation',
-            'aria-label': 'Connected pathway: ' + handoff.label,
+            'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: handoff.label }),
             'data-anatomy-pathway-from': atlasId,
             'data-scale-continuation': handoff.targetId
           },
@@ -10806,7 +10807,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('strong', null, masteryPrioritySystem.icon + ' ' + masteryPrioritySystem.name + ' — ' + masteryPriorityDetail)
               ),
               h('button', {
-                type: 'button', 'aria-label': 'Open suggested ' + masteryPrioritySystem.name + ' system focus',
+                type: 'button', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_suggested_system_focus', 'Open suggested {value1} system focus'), { value1: masteryPrioritySystem.name }),
                 onClick: function() { showAnatomySystem(masteryPrioritySystem.id, 'whole-body mastery map'); }
               }, 'Study this system')
             ) : null,
@@ -10868,13 +10869,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 return h('div', { key: connection.id, className: 'anatomy-relation-branch', role: 'listitem', 'data-relationship-connection': connection.id },
                   h('button', {
                     type: 'button', className: 'anatomy-relation-node', 'data-kind': 'process',
-                    'aria-label': 'Open ' + connection.title + ' connection details',
+                    'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_connection_details', 'Open {value1} connection details'), { value1: connection.title }),
                     onClick: function() { openRelationshipConnection(connection); }
                   }, h('span', null, 'System process'), h('strong', null, connection.icon + ' ' + connection.title)),
                   h('span', { className: 'anatomy-relation-arrow', 'aria-hidden': 'true' }, '\u2192'),
                   h('button', {
                     type: 'button', className: 'anatomy-relation-node', 'data-kind': 'partner',
-                    'aria-label': 'Open ' + partnerSystem.name + ' system diagram from ' + connection.title,
+                    'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_system_diagram_from', 'Open {value1} system diagram from {value2}'), { value1: partnerSystem.name, value2: connection.title }),
                     onClick: function() { showAnatomySystem(partnerSystemId, connection.title); }
                   }, h('span', { style: { color: '#475569' } }, 'Partner system'), h('strong', null, partnerSystem.icon + ' ' + partnerSystem.name))
                 );
@@ -11057,7 +11058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           });
           if (typeof setStemLabTab === 'function') setStemLabTab('explore');
           if (typeof setStemLabTool === 'function') setStemLabTool(toolId);
-          if (typeof announceToSR === 'function') announceToSR('Scale Journey: opening ' + label);
+          if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_scale_journey_opening', 'Scale Journey: opening {value1}'), { value1: label }));
         }
         function openScaleJourneyDetail() {
           if (clinicalScaleJourneyActive && selectedClinicalScaleBridge.tissueTarget === 'regionalAtlas') {
@@ -12107,7 +12108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         key: reviewStructure.id,
                         type: 'button',
                         'data-review-queue-id': reviewStructure.id,
-                        'aria-label': 'Review ' + reviewStructure.name,
+                        'aria-label': __alloFill(__alloT('stem.anatomy.a11y_review_2', 'Review {value1}'), { value1: reviewStructure.name }),
                         onClick: function() { openReviewStructure(reviewStructure); }
                       }, reviewStructure.name);
                     }),
@@ -12398,7 +12399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             activeLayerDef && h('button', {
               type: 'button',
               'data-anatomy-layer-isolate': 'true',
-              'aria-label': 'Show only ' + activeLayerDef.name + ' layer',
+              'aria-label': __alloFill(__alloT('stem.anatomy.a11y_show_only_layer', 'Show only {value1} layer'), { value1: activeLayerDef.name }),
               onClick: function() { isolateLayer(activeLayerDef.id); },
               title: 'Temporarily show only the ' + activeLayerDef.name + ' layer',
               className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold text-indigo-700 hover:bg-indigo-50 transition-all border border-indigo-200 active:scale-[0.97]'
@@ -12541,13 +12542,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('button', {
                 type: 'button',
                 onClick: focusComparisonTarget,
-                'aria-label': 'Open comparison target ' + compareSel.name,
+                'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_comparison_target', 'Open comparison target {value1}'), { value1: compareSel.name }),
                 className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border border-violet-300 bg-white text-violet-800 hover:bg-violet-50 active:scale-[0.97]'
               }, 'Open target'),
               h('button', {
                 type: 'button',
                 onClick: function() { upd('_compareStructure', null); },
-                'aria-label': 'Clear comparison target ' + compareSel.name,
+                'aria-label': __alloFill(__alloT('stem.anatomy.a11y_clear_comparison_target', 'Clear comparison target {value1}'), { value1: compareSel.name }),
                 className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-[0.97]'
               }, 'Clear')
             )
@@ -12597,7 +12598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           title: 'Standalone licensed reference organ with ontology provenance',
                           onClick: function() {
                             updMulti(clinicalAtlasPackTransitionPatch(selectedClinicalAtlasPack, 'clinical-view'));
-                            if (typeof announceToSR === 'function') announceToSR('Opening ' + selectedClinicalAtlasPack.title + ' for ' + selectedClinicalAtlasPack.focusLabel + '.');
+                            if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_opening_for', 'Opening {value1} for {value2}.'), { value1: selectedClinicalAtlasPack.title, value2: selectedClinicalAtlasPack.focusLabel }));
                           }
                         }, 'Clinical Atlas')
                       )
@@ -12616,7 +12617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           var nextPack = registeredClinicalAtlasPacks.find(function(pack) { return pack.id === nextPackId; });
                           if (!nextPack) return;
                           updMulti(clinicalAtlasPackTransitionPatch(nextPack, 'clinical-pack-selector'));
-                          if (typeof announceToSR === 'function') announceToSR('Opening ' + nextPack.title + ' for ' + nextPack.focusLabel + '.');
+                          if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_opening_for', 'Opening {value1} for {value2}.'), { value1: nextPack.title, value2: nextPack.focusLabel }));
                         }
                       }, registeredClinicalAtlasPacks.map(function(pack) { return h('option', { key: pack.id, value: pack.id }, pack.title); }))
                     ),
@@ -12636,7 +12637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       try { if (window.__alloAnatomyModelUrl) URL.revokeObjectURL(window.__alloAnatomyModelUrl); } catch (e) {}
                       window.__alloAnatomyModelUrl = URL.createObjectURL(file); window.__alloAnatomyModelName = file.name;
                       updMulti({ _bodyView3d: true, _body3dStyle: 'realistic', _bodyModelRevision: Date.now() });
-                      if (typeof announceToSR === 'function') announceToSR('Loading local anatomy model ' + file.name + '.');
+                      if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_loading_local_anatomy_model', 'Loading local anatomy model {value1}.'), { value1: file.name }));
                     } })
                       ),
                       window.__alloAnatomyModelName && h('button', { type: 'button', className: 'rounded-lg border border-slate-300 bg-white px-2 py-1 text-[0.6875rem] font-black text-slate-700', onClick: function() {
@@ -12884,7 +12885,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('p', null, 'Approximate ' + selectedClinicalAtlasPack.bodyView + ' body context. The reference organ remains a standalone model.'),
                     h('button', {
                       type: 'button', 'data-anatomy-clinical-locate': selectedClinicalAtlasPack.focusStructureId,
-                      'aria-label': 'Locate the ' + clinicalLocatorName + ' in the 2D Atlas',
+                      'aria-label': __alloFill(__alloT('stem.anatomy.a11y_locate_the_in_the_2d_atlas', 'Locate the {value1} in the 2D Atlas'), { value1: clinicalLocatorName }),
                       onClick: function() { updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _bodyView3d: false, system: resolveClinicalAtlasPackSystemId(selectedClinicalAtlasPack, sysKey), view: selectedClinicalAtlasPack.bodyView, selectedStructure: selectedClinicalAtlasPack.focusStructureId, search: '', _lastSelectedSource: 'clinical-locator' })); }
                     }, 'Locate ' + clinicalLocatorName + ' in 2D Atlas')
                   )
@@ -12916,13 +12917,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('button', {
                     type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'tissue',
                     'data-scale-specialist': scaleJourneyTissueSpecialist,
-                    'aria-label': 'Open tissue or specialist level: ' + scaleJourneyDetailLabel,
+                    'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_tissue_or_specialist_level', 'Open tissue or specialist level: {value1}'), { value1: scaleJourneyDetailLabel }),
                     onClick: openScaleJourneyDetail
                   }, h('span', null, '3 · Tissue / region'), h('strong', null, scaleJourneyDetailLabel)),
                   h('button', {
                     type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'cell',
                     'data-scale-cell-context': scaleJourneyCellContext,
-                    'aria-label': 'Open cell level: ' + scaleJourneyCellLabel,
+                    'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_cell_level', 'Open cell level: {value1}'), { value1: scaleJourneyCellLabel }),
                     onClick: openScaleJourneyCell
                   }, h('span', null, '4 · Cell scale'), h('strong', null, scaleJourneyCellLabel))
                 ),
@@ -13131,7 +13132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             title: compareStructureId === sel.id ? 'Remove from compare' : 'Set as compare target',
                             className: 'p-1 rounded text-[0.6875rem] font-bold transition-all ' + (compareStructureId === sel.id ? 'bg-violet-100 text-violet-700' : 'transition-colors hover:bg-violet-50 text-violet-700 active:scale-[0.97]')
                           }, compareStructureId === sel.id ? 'Pinned' : 'Compare'),
-                          h('button', { 'aria-label': 'Back to structures from ' + sel.name, onClick: function() { var priorStructureId = sel.id; upd('selectedStructure', null); restoreAnatomyStructureListFocus(priorStructureId); },
+                          h('button', { 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_back_to_structures_from', 'Back to structures from {value1}'), { value1: sel.name }), onClick: function() { var priorStructureId = sel.id; upd('selectedStructure', null); restoreAnatomyStructureListFocus(priorStructureId); },
                             className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 active:scale-[0.97]'
                           }, '\u2190 Structures')
                         )
@@ -13764,7 +13765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                               if (!connectionSystem) return null;
                               return h('button', {
                                 key: connectionSystemId,
-                                'aria-label': 'Show ' + connectionSystem.name + ' diagram for ' + conn.title,
+                                'aria-label': __alloFill(__alloT('stem.anatomy.a11y_show_diagram_for', 'Show {value1} diagram for {value2}'), { value1: connectionSystem.name, value2: conn.title }),
                                 'aria-pressed': sysKey === connectionSystemId,
                                 onClick: function() { showAnatomySystem(connectionSystemId, conn.title); },
                                 className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold border transition-all active:scale-[0.97] ' + (sysKey === connectionSystemId ? 'bg-sky-700 text-white border-sky-700' : 'bg-white text-sky-700 border-sky-300 hover:bg-sky-100')
@@ -14318,13 +14319,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   var presets = { soft: [400, 40], lung: [1500, -600], bone: [2000, 300], brain: [100, 40] };
                   var values = presets[preset] || presets.soft;
                   setImaging({ windowPreset: preset, windowWidth: values[0], windowLevel: values[1] });
-                  if (typeof announceToSR === 'function') announceToSR('CT ' + preset + ' window selected. Width ' + values[0] + ', level ' + values[1] + '.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_ct_window_selected_width_level', 'CT {value1} window selected. Width {value2}, level {value3}.'), { value1: preset, value2: values[0], value3: values[1] }));
                 }
                 function chooseBodyScopeDepth(layerId) {
                   var layer = bodyScopeProfile.depthLayers.find(function(item) { return item.id === layerId; });
                   if (!layer) return;
                   setImaging({ bodyScopeDepth: layer.id });
-                  if (typeof announceToSR === 'function') announceToSR('Depth focus: ' + layer.targetLabel + '. ' + layer.detail);
+                  if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_depth_focus', 'Depth focus: {value1}. {value2}'), { value1: layer.targetLabel, value2: layer.detail }));
                 }
                 function chooseBodyScopeAnswer(optionId) {
                   var option = bodyScopeProfile.challenge.options.find(function(item) { return item.id === optionId; });
@@ -14506,14 +14507,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     var distance = Math.sqrt(dx * dx + dy * dy) * 0.8;
                     var ruler = { id: 'img-' + Date.now(), type: 'ruler', x: start.x, y: start.y, x2: x, y2: y, distanceMm: Math.round(distance * 10) / 10, note: imagingNote || 'Measured span', modality: modality, region: region, plane: plane, slice: sliceValue };
                     setImaging({ annotations: allImagingAnnotations.concat([ruler]).slice(-12), rulerStart: null, note: '' });
-                    if (typeof announceToSR === 'function') announceToSR('Ruler recorded: ' + ruler.distanceMm + ' millimeters in this teaching phantom.');
+                    if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_ruler_recorded_millimeters_in_this_teaching_phant', 'Ruler recorded: {value1} millimeters in this teaching phantom.'), { value1: ruler.distanceMm }));
                   } else if (imagingTool === 'ruler') {
                     setImaging({ rulerStart: { x: x, y: y } });
                     if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_ruler_start_placed_select_an_end_point', 'Ruler start placed. Select an end point.'));
                   } else {
                     var pin = { id: 'img-' + Date.now(), type: 'pin', x: x, y: y, note: imagingNote || 'Observation pin', modality: modality, region: region, plane: plane, slice: sliceValue };
                     setImaging({ annotations: allImagingAnnotations.concat([pin]).slice(-12), note: '' });
-                    if (typeof announceToSR === 'function') announceToSR('Observation pin recorded on slice ' + Math.round(sliceValue) + '.');
+                    if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_observation_pin_recorded_on_slice', 'Observation pin recorded on slice {value1}.'), { value1: Math.round(sliceValue) }));
                   }
                 }
                 function handleImagingClick(event) {
@@ -14555,8 +14556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   event.preventDefault();
                   setImaging({ kbX: nx, kbY: ny });
                   if (typeof announceToSR === 'function') {
-                    announceToSR('Cursor at ' + Math.round(nx * 100) + ' percent across, '
-                      + Math.round(ny * 100) + ' percent down.');
+                    announceToSR(__alloFill(__alloT('stem.anatomy.sr_cursor_at_percent_across_percent_down', 'Cursor at {value1} percent across, {value2} percent down.'), { value1: Math.round(nx * 100), value2: Math.round(ny * 100) }));
                   }
                 }
 

@@ -668,7 +668,9 @@ describe('Anatomy Lab guided-mode continuity', () => {
     expect(source).toContain('1 + Math.floor(Math.random() * (flashcardPool.length - 1))');
     expect(source).toContain('var randIdx = (flashcardIdx + randomOffset) % flashcardPool.length;');
     expect(source).toContain(`announceToSR(__alloT('stem.anatomy.sr_guided_anatomy_tour_complete_returning_to_explore', 'Guided anatomy tour complete. Returning to Explore.'))`);
-    expect(source).toContain("announceToSR('Pathway complete: ' + pw.title + '.')");
+    expect(source).toContain(
+      "announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), { value1: pw.title })"
+    );
   });
 });
 describe('Anatomy Lab flashcard interaction semantics', () => {
@@ -728,7 +730,10 @@ describe('Anatomy Lab connection disclosure semantics', () => {
     expect(source).toContain('function showAnatomySystem(systemId, contextLabel)');
     expect(source).toContain('onClick: function() { showAnatomySystem(key); }');
     expect(source).toContain('onClick: function() { showAnatomySystem(connectionSystemId, conn.title); }');
-    expect(source).toContain("announceToSR('Showing ' + SYSTEMS[systemId].name + ' diagram for ' + contextLabel + '.')");
+    expect(source).toContain(
+      "announceToSR(__alloFill(__alloT('stem.anatomy.sr_showing_diagram_for', 'Showing {value1} diagram for {value2}.'), " +
+      "{ value1: SYSTEMS[systemId].name, value2: contextLabel })"
+    );
     expect(source).not.toContain("return h('button', { 'aria-label': conn.title");
   });
 });

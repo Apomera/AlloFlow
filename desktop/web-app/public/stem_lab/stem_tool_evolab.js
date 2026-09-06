@@ -29,6 +29,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     try { v = (__alloEvoCtx && typeof __alloEvoCtx.t === "function") ? __alloEvoCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null) ? (fb != null ? fb : k) : v;
   };
+  // Fills {value1}-style placeholders, so a translation can reorder them.
+  var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
   'use strict';
 
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
@@ -210,7 +212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             next[v] = true;
             upd('evoBadges', next);
             lsSet('evoLab.badges.v1', next);
-            announce('Module explored: ' + v);
+            announce(__alloFill(__alloT('stem.evolab.sr_module_explored', 'Module explored: {value1}'), { value1: v }));
           }
         }
       };
@@ -322,7 +324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         });
         upd('evoCapstone', nextCapstone);
         lsSet('evoLab.capstone.v2', nextCapstone);
-        announce('Captured simulator run ' + nextRunId + ' for the Capstone evidence notebook.');
+        announce(__alloFill(__alloT('stem.evolab.sr_captured_simulator_run_for_the_capstone_evidence', 'Captured simulator run {value1} for the Capstone evidence notebook.'), { value1: nextRunId }));
       };
 
       // ─────────────────────────────────────────────────────
@@ -410,7 +412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 if (!props.ready || alreadyCaptured || typeof props.getSnapshot !== 'function') return;
                 captureCapstoneRun(props.moduleId, props.getSnapshot());
               },
-              'aria-label': 'Capture this ' + props.moduleLabel + ' run in the Capstone evidence notebook',
+              'aria-label': __alloFill(__alloT('stem.evolab.a11y_capture_this_run_in_the_capstone_evidence_noteb', 'Capture this {value1} run in the Capstone evidence notebook'), { value1: props.moduleLabel }),
               className: 'flex-shrink-0 rounded-xl px-5 py-3 text-sm font-black shadow transition-colors ' + (props.ready && !alreadyCaptured ? 'bg-amber-700 text-white hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300' : 'cursor-not-allowed bg-slate-200 text-slate-600')
             }, alreadyCaptured ? '✓ Captured' : props.ready ? '📸 Capture this run' : 'Run required')
           )
@@ -817,7 +819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   var active = track.id === activeTrack.id;
                   return h('button', {
                     key: track.id,
-                    onClick: function() { upd('evoMenuTrack', track.id); announce('EvoLab path selected: ' + track.label); },
+                    onClick: function() { upd('evoMenuTrack', track.id); announce(__alloFill(__alloT('stem.evolab.sr_evolab_path_selected', 'EvoLab path selected: {value1}'), { value1: track.label })); },
                     'aria-pressed': active,
                     className: 'text-left rounded-xl border p-3 transition-all focus:outline-none focus:ring-4 focus:ring-emerald-300 ' + (active ? 'border-white bg-white text-slate-900 shadow-lg' : 'border-white/15 bg-white/10 text-white hover:bg-white/15')
                   },
@@ -1275,7 +1277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           // Compute fixation summary
           var fixed0 = traces.filter(function(t) { return t[t.length - 1] === 0; }).length;
           var fixed1 = traces.filter(function(t) { return t[t.length - 1] === 1; }).length;
-          announce('Ran 5 lineages at population size ' + popSize + ' for ' + generations + ' generations. Fixed at A: ' + fixed1 + ', fixed at a: ' + fixed0 + '.');
+          announce(__alloFill(__alloT('stem.evolab.sr_ran_5_lineages_at_population_size_for_generations', 'Ran 5 lineages at population size {value1} for {value2} generations. Fixed at A: {value3}, fixed at a: {value4}.'), { value1: popSize, value2: generations, value3: fixed1, value4: fixed0 }));
         };
 
         // SVG line chart of the 5 lineages
@@ -1399,7 +1401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       key: n,
                       onClick: function() { setPopSize(n); },
                       'aria-pressed': popSize === n,
-                      'aria-label': 'Set population size to ' + n,
+                      'aria-label': __alloFill(__alloT('stem.evolab.a11y_set_population_size_to', 'Set population size to {value1}'), { value1: n }),
                       className: 'py-2 rounded-lg font-bold text-sm transition-colors ' + (popSize === n ? 'bg-rose-600 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
                     }, 'N = ' + n);
                   })
@@ -1675,7 +1677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           creaturesRef.current = next;
           generationRef.current = nextGen;
           setGeneration(nextGen);
-          if (!silent) announce('Generation ' + nextGen + '. Mean trait ' + mean.toFixed(2) + ', survivors before reproduction ' + survivors.length + ' of ' + pop.length + '.');
+          if (!silent) announce(__alloFill(__alloT('stem.evolab.sr_generation_mean_trait_survivors_before_reproducti', 'Generation {value1}. Mean trait {value2}, survivors before reproduction {value3} of {value4}.'), { value1: nextGen, value2: mean.toFixed(2), value3: survivors.length, value4: pop.length }));
         };
 
         // Initialize synchronously before first paint to avoid the empty-canvas
@@ -1937,8 +1939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'w-full block',
                 tabIndex: 0,
                 role: 'img',
-                'aria-label': 'Selection sandbox population: ' + creaturesRef.current.length + ' creatures, mean trait ' + latest.mean.toFixed(2) + ', generation ' + generation
-              })
+                'aria-label': __alloFill(__alloT('stem.evolab.a11y_selection_sandbox_population_creatures_mean_tra', 'Selection sandbox population: {value1} creatures, mean trait {value2}, generation {value3}'), { value1: creaturesRef.current.length, value2: latest.mean.toFixed(2), value3: generation })})
             ),
             // Histogram + chart side by side
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -1955,7 +1956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     key: id,
                     onClick: function() { setPresetId(id); },
                     'aria-pressed': presetId === id,
-                    'aria-label': 'Select preset: ' + p.label,
+                    'aria-label': __alloFill(__alloT('stem.evolab.a11y_select_preset', 'Select preset: {value1}'), { value1: p.label }),
                     className: 'p-2 rounded-lg text-xs font-bold border-2 transition-colors text-left ' + (presetId === id ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-700 hover:border-slate-300')
                   }, p.label);
                 })
@@ -2469,7 +2470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var runCheck = function() {
           setChecked(true);
           var correct = ORGANISMS.filter(function(o) { return assignments[o.id] === o.truth; }).length;
-          announce('Cladogram graded. ' + correct + ' of ' + ORGANISMS.length + ' organisms placed correctly.');
+          announce(__alloFill(__alloT('stem.evolab.sr_cladogram_graded_of_organisms_placed_correctly', 'Cladogram graded. {value1} of {value2} organisms placed correctly.'), { value1: correct, value2: ORGANISMS.length }));
         };
 
         var allAssigned = ORGANISMS.every(function(o) { return assignments[o.id]; });
@@ -2582,7 +2583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     h('select', {
                       value: assigned || '',
                       onChange: function(e) { assign(o.id, e.target.value); },
-                      'aria-label': 'Assign clade for ' + o.name,
+                      'aria-label': __alloFill(__alloT('stem.evolab.a11y_assign_clade_for', 'Assign clade for {value1}'), { value1: o.name }),
                       className: 'mt-2 w-full px-2 py-1.5 rounded-lg border border-slate-500 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400'
                     },
                       h('option', { value: '' }, t('stem.evolab.select_clade', '— Select clade —')),
@@ -3224,7 +3225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           setReviewMode(true);
           setIdx(firstMissed);
           setReveal(false);
-          announce('Review mode. ' + missedIndices.length + ' missed questions to retry.');
+          announce(__alloFill(__alloT('stem.evolab.sr_review_mode_missed_questions_to_retry', 'Review mode. {value1} missed questions to retry.'), { value1: missedIndices.length }));
         };
 
         var correctCount = Object.keys(answers).filter(function(k) {
@@ -3336,7 +3337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'flex flex-wrap gap-2 justify-center' },
                 missedIndices.length > 0 && h('button', {
                   onClick: startReviewMode,
-                  'aria-label': 'Review and retry the ' + missedIndices.length + ' missed questions only',
+                  'aria-label': __alloFill(__alloT('stem.evolab.a11y_review_and_retry_the_missed_questions_only', 'Review and retry the {value1} missed questions only'), { value1: missedIndices.length }),
                   className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-amber-400 text-amber-900 hover:bg-amber-300 shadow'
                 }, '🔍 Review ' + missedIndices.length + ' Missed'),
                 h('button', {
@@ -3968,9 +3969,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             setSpeciated(true);
             setSpeciatedAt(nextGen);
             setAutoRun(false); // pause for the moment
-            announce('Trait-divergence milestone reached at generation ' + nextGen + '. This model does not test reproductive isolation.');
+            announce(__alloFill(__alloT('stem.evolab.sr_trait_divergence_milestone_reached_at_generation', 'Trait-divergence milestone reached at generation {value1}. This model does not test reproductive isolation.'), { value1: nextGen }));
           } else if (!silent) {
-            announce('Generation ' + nextGen + '. Trait-overlap proxy ' + Math.round(compat * 100) + ' percent.');
+            announce(__alloFill(__alloT('stem.evolab.sr_generation_trait_overlap_proxy_percent', 'Generation {value1}. Trait-overlap proxy {value2} percent.'), { value1: nextGen, value2: Math.round(compat * 100) }));
           }
         };
 
@@ -4107,8 +4108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               viewBox: '0 0 ' + W + ' ' + H,
               className: 'w-full',
               role: 'img',
-              'aria-label': 'Two trait means and a trait-overlap proxy over generations. The proxy is currently ' + compatPct + ' percent.'
-            },
+              'aria-label': __alloFill(__alloT('stem.evolab.a11y_two_trait_means_and_a_trait_overlap_proxy_over', 'Two trait means and a trait-overlap proxy over generations. The proxy is currently {value1} percent.'), { value1: compatPct })},
               h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
               h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
               h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
@@ -4161,8 +4161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'w-full block',
                 tabIndex: 0,
                 role: 'img',
-                'aria-label': 'Two populations separated by a barrier. Left mean ' + lStats.mean.toFixed(2) + ', right mean ' + rStats.mean.toFixed(2) + '. Trait-overlap proxy ' + compatPct + ' percent.'
-              })
+                'aria-label': __alloFill(__alloT('stem.evolab.a11y_two_populations_separated_by_a_barrier_left_mea', 'Two populations separated by a barrier. Left mean {value1}, right mean {value2}. Trait-overlap proxy {value3} percent.'), { value1: lStats.mean.toFixed(2), value2: rStats.mean.toFixed(2), value3: compatPct })})
             ),
             // History chart
             renderHistoryChart(),
@@ -4437,7 +4436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (historyRef.current.length > 80) historyRef.current.shift();
           generationRef.current = nextGen;
           setGeneration(nextGen);
-          if (!silent) announce('Generation ' + nextGen + '. Predator mean speed ' + predMean.toFixed(2) + ', prey mean ' + preyMean.toFixed(2) + '. ' + captures + ' captures.');
+          if (!silent) announce(__alloFill(__alloT('stem.evolab.sr_generation_predator_mean_speed_prey_mean_captures', 'Generation {value1}. Predator mean speed {value2}, prey mean {value3}. {value4} captures.'), { value1: nextGen, value2: predMean.toFixed(2), value3: preyMean.toFixed(2), value4: captures }));
         };
 
         if (predRef.current.length === 0) initPopulations();
@@ -4599,8 +4598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               viewBox: '0 0 ' + W + ' ' + H,
               className: 'w-full',
               role: 'img',
-              'aria-label': 'Predator and prey mean speeds over generations. Currently predator ' + predMean.toFixed(2) + ', prey ' + preyMean.toFixed(2) + '.'
-            },
+              'aria-label': __alloFill(__alloT('stem.evolab.a11y_predator_and_prey_mean_speeds_over_generations', 'Predator and prey mean speeds over generations. Currently predator {value1}, prey {value2}.'), { value1: predMean.toFixed(2), value2: preyMean.toFixed(2) })},
               h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
               h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
               h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
@@ -4641,8 +4639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'w-full block',
                 tabIndex: 0,
                 role: 'img',
-                'aria-label': 'Predator-prey simulation. ' + predRef.current.length + ' red predators chasing ' + preyRef.current.length + ' blue prey. Mean predator speed ' + predMean.toFixed(2) + ', prey ' + preyMean.toFixed(2) + '.'
-              })
+                'aria-label': __alloFill(__alloT('stem.evolab.a11y_predator_prey_simulation_red_predators_chasing', 'Predator-prey simulation. {value1} red predators chasing {value2} blue prey. Mean predator speed {value3}, prey {value4}.'), { value1: predRef.current.length, value2: preyRef.current.length, value3: predMean.toFixed(2), value4: preyMean.toFixed(2) })})
             ),
             renderHistoryChart(),
             // Sliders
@@ -5058,7 +5055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             popRef.current = survivors;
             setExtinct(true);
             setAutoRun(false);
-            announce('Extinction event! Population dropped to ' + survivors.length + '. Climate changed faster than they could adapt.');
+            announce(__alloFill(__alloT('stem.evolab.sr_extinction_event_population_dropped_to_climate_ch', 'Extinction event! Population dropped to {value1}. Climate changed faster than they could adapt.'), { value1: survivors.length }));
             return;
           }
           // Reproduce back to cap
@@ -5439,7 +5436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var meanNext = sum / nextPop.length;
           historyRef.current.push({ round: round + 1, mean: meanNext, max: Math.max.apply(null, nextPop.map(function(b) { return b.showiness; })) });
           setRound(round + 1);
-          announce('You chose the bird with showiness ' + chosen.showiness.toFixed(2) + '. Next generation mean: ' + meanNext.toFixed(2) + '.');
+          announce(__alloFill(__alloT('stem.evolab.sr_you_chose_the_bird_with_showiness_next_generation', 'You chose the bird with showiness {value1}. Next generation mean: {value2}.'), { value1: chosen.showiness.toFixed(2), value2: meanNext.toFixed(2) }));
           if (round + 1 >= MAX_ROUNDS) {
             setPhase('done');
             setMsg('🎯 Selection complete. Look how the population\'s showiness shifted because of YOUR choices.');
@@ -5830,7 +5827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             setKills(0);
             setRound(round + 1);
             roundStartRef.current = performance.now();
-            announce('Round ' + (round + 1) + ' complete. ' + KILLS_PER_ROUND + ' eaten in ' + time.toFixed(1) + ' seconds. Population mean trait now ' + meanSurvivors.toFixed(2) + '.');
+            announce(__alloFill(__alloT('stem.evolab.sr_round_complete_eaten_in_seconds_population_mean_t', 'Round {value1} complete. {value2} eaten in {value3} seconds. Population mean trait now {value4}.'), { value1: (round + 1), value2: KILLS_PER_ROUND, value3: time.toFixed(1), value4: meanSurvivors.toFixed(2) }));
             if (round + 1 >= MAX_ROUNDS) {
               setPhase('done');
               setMsg('🎯 Hunt complete! Look how the population shifted toward camouflage.');
@@ -5998,8 +5995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               viewBox: '0 0 ' + W + ' ' + H,
               className: 'w-full',
               role: 'img',
-              'aria-label': 'Mean trait over ' + hist.length + ' rounds. Approaching the camouflage ideal trait of ' + env.idealTrait.toFixed(2) + '.'
-            },
+              'aria-label': __alloFill(__alloT('stem.evolab.a11y_mean_trait_over_rounds_approaching_the_camoufla', 'Mean trait over {value1} rounds. Approaching the camouflage ideal trait of {value2}.'), { value1: hist.length, value2: env.idealTrait.toFixed(2) })},
               h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
               h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
               h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
@@ -6038,8 +6034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               viewBox: '0 0 ' + W + ' ' + H,
               className: 'w-full',
               role: 'img',
-              'aria-label': 'Bar chart of time to complete each round. ' + roundTimes.length + ' rounds completed. Latest time: ' + (roundTimes[roundTimes.length - 1] || 0).toFixed(1) + ' seconds.'
-            },
+              'aria-label': __alloFill(__alloT('stem.evolab.a11y_bar_chart_of_time_to_complete_each_round_rounds', 'Bar chart of time to complete each round. {value1} rounds completed. Latest time: {value2} seconds.'), { value1: roundTimes.length, value2: (roundTimes[roundTimes.length - 1] || 0).toFixed(1) })},
               h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
               h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
               h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
@@ -6096,7 +6091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'w-full block cursor-crosshair',
                 tabIndex: 0,
                 role: 'img',
-                'aria-label': 'Hunting field with ' + pop.length + ' camouflaged prey on ' + env.label + ' background. Click a prey, or press Enter or Space to hunt the prey farthest from the camouflage optimum.',
+                'aria-label': __alloFill(__alloT('stem.evolab.a11y_hunting_field_with_camouflaged_prey_on_backgrou', 'Hunting field with {value1} camouflaged prey on {value2} background. Click a prey, or press Enter or Space to hunt the prey farthest from the camouflage optimum.'), { value1: pop.length, value2: env.label }),
                 style: { imageRendering: 'crisp-edges' }
               })
             ),
@@ -6124,7 +6119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     key: id,
                     onClick: function() { setEnvId(id); initPopulation(); },
                     'aria-pressed': envId === id,
-                    'aria-label': 'Set environment to ' + e2.label,
+                    'aria-label': __alloFill(__alloT('stem.evolab.a11y_set_environment_to', 'Set environment to {value1}'), { value1: e2.label }),
                     className: 'p-2 rounded-lg text-sm font-bold border-2 transition-colors text-left ' + (envId === id ? 'border-lime-500 bg-lime-50 text-lime-800' : 'border-slate-200 text-slate-700 hover:border-slate-300')
                   }, e2.label);
                 })
@@ -6865,7 +6860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
         var setEvidenceVerdict = function(value) {
           saveCapstone({ evidenceVerdict: value });
-          announce('Evidence verdict selected: ' + value + '.');
+          announce(__alloFill(__alloT('stem.evolab.sr_evidence_verdict_selected', 'Evidence verdict selected: {value1}.'), { value1: value }));
         };
         var removeCapturedRun = function(runId) {
           var nextRuns = capturedRuns.filter(function(run) { return run.id !== runId; });
@@ -7030,7 +7025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                         h('button', {
                           type: 'button',
                           onClick: function() { removeCapturedRun(run.id); },
-                          'aria-label': 'Remove run ' + (index + 1) + ' snapshot',
+                          'aria-label': __alloFill(__alloT('stem.evolab.a11y_remove_run_snapshot', 'Remove run {value1} snapshot'), { value1: (index + 1) }),
                           className: 'rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-bold text-slate-700 transition-colors hover:border-rose-400 hover:text-rose-800'
                         }, 'Remove')
                       )
@@ -7072,7 +7067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     });
                   },
                   'aria-pressed': selected,
-                  'aria-label': 'Pick scenario: ' + s.title,
+                  'aria-label': __alloFill(__alloT('stem.evolab.a11y_pick_scenario', 'Pick scenario: {value1}'), { value1: s.title }),
                   className: 'text-left rounded-xl border-2 ' + (selected ? 'border-emerald-500 ring-4 ring-emerald-200' : 'transition-colors border-slate-200 hover:border-slate-400') + ' bg-white overflow-hidden transition-all'
                 },
                   h('div', { className: 'bg-gradient-to-br ' + s.color + ' p-4 text-white' },
@@ -7120,7 +7115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   onChange: function(e) { setPrediction(i, e.target.value); },
                   rows: 3,
                   placeholder: t('stem.evolab.type_your_prediction', 'Type your prediction…'),
-                  'aria-label': 'Prediction ' + (i + 1) + ': ' + prompt,
+                  'aria-label': __alloFill(__alloT('stem.evolab.a11y_prediction', 'Prediction {value1}: {value2}'), { value1: (i + 1), value2: prompt }),
                   className: 'w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
                 }),
                 h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, predictions[i] && predictions[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
@@ -7250,7 +7245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   });
                   goto(scenario.module);
                 },
-                'aria-label': 'Open ' + scenario.moduleLabel + ' to run the simulation',
+                'aria-label': __alloFill(__alloT('stem.evolab.a11y_open_to_run_the_simulation', 'Open {value1} to run the simulation'), { value1: scenario.moduleLabel }),
                 'aria-describedby': !trialPlanReady ? 'evo-trial-plan-required' : undefined,
                 className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (trialPlanReady ? 'transition-colors bg-emerald-700 hover:bg-emerald-800 text-white' : 'cursor-not-allowed bg-slate-200 text-slate-700')
               }, capturedRuns.length === 0 ? '→ Open ' + scenario.moduleLabel + ' — Run 1 of ' + displayedTrialTarget : capturedRuns.length < displayedTrialTarget ? '→ Run the comparison' : '→ Open another trial'),
@@ -7387,7 +7382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   onChange: function(e) { setReflection(i, e.target.value); },
                   rows: 3,
                   placeholder: t('stem.evolab.type_your_reflection', 'Type your reflection…'),
-                  'aria-label': 'Reflection ' + (i + 1) + ': ' + prompt,
+                  'aria-label': __alloFill(__alloT('stem.evolab.a11y_reflection', 'Reflection {value1}: {value2}'), { value1: (i + 1), value2: prompt }),
                   className: 'w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
                 }),
                 h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, reflections[i] && reflections[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
@@ -7698,7 +7693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       return h('button', {
                         key: m.id,
                         onClick: function() { goto(m.id); },
-                        'aria-label': 'Open ' + m.name + ' module',
+                        'aria-label': __alloFill(__alloT('stem.evolab.a11y_open_module', 'Open {value1} module'), { value1: m.name }),
                         className: 'flex items-center gap-2 p-3 bg-white border-2 border-slate-200 hover:border-slate-400 rounded-lg transition-colors text-left'
                       },
                         h('span', { className: 'text-2xl' }, m.icon),
@@ -7901,7 +7896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                         return h('button', {
                           key: mid,
                           onClick: function() { goto(mid); },
-                          'aria-label': 'Open ' + mod.name + ' (covers ' + s.id + ')',
+                          'aria-label': __alloFill(__alloT('stem.evolab.a11y_open_covers', 'Open {value1} (covers {value2})'), { value1: mod.name, value2: s.id }),
                           className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:border-emerald-500 text-xs text-emerald-900 font-bold transition-colors'
                         },
                           h('span', null, mod.icon),
@@ -7927,7 +7922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                     h('div', { className: 'flex items-center justify-between gap-3 mb-2' },
                       h('button', {
                         onClick: function() { goto(mid); },
-                        'aria-label': 'Open ' + mod.name + ' module',
+                        'aria-label': __alloFill(__alloT('stem.evolab.a11y_open_module', 'Open {value1} module'), { value1: mod.name }),
                         className: 'transition-colors flex items-center gap-2 text-sm font-bold text-slate-800 hover:text-violet-700'
                       },
                         h('span', { className: 'text-xl' }, mod.icon),
