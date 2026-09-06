@@ -496,6 +496,27 @@ None of the original shot lists **state the text-free policy at all.** They pred
 Each now carries the rule as a short header: no raster text, labels, numbers, captions or watermarks; where a prompt asks for a label, that text belongs in AlloFlow's native fields anchored over the image, not drawn into it; icons and arrows are fine as long as they carry no characters. Each also points at `day_night_sky_grade1.IMAGES.md` as a full-format example, in case a richer pass is wanted later.
 
 They were deliberately **not** rewritten into the newer format. That is a large authoring job — the new lists run to seven kilobytes of considered detail each — for little marginal gain over the one paragraph that actually binds. The proportionate fix was the constraint, not the format.
+## Twenty-third pass: timelines, and whether each brief can be obeyed
+
+Two surfaces were still unread: the four timelines, and the constraint-versus-deliverable arithmetic in all 38 applied-challenge briefs.
+
+### Timelines
+
+Every date checked. The Revolution runs 1763 to April 1775 with the Stamp Act, its repeal alongside the Declaratory Act, the Townshend Acts, the Massacre, 342 chests of tea, the Intolerable Acts and twelve colonies at the First Continental Congress, all correctly placed. The Constitution runs 1776 to 1791 with the Articles taking effect in 1781, Shays' Rebellion, the Great Compromise in July 1787, thirty-nine signatures in September, New Hampshire ninth in June 1788, and the Bill of Rights in 1791. Plate Tectonics has Ortelius noticing the coastline fit in 1596, Wegener in 1912, his death in 1930, post-war ocean mapping, Hess on sea-floor spreading in 1962 and the magnetic stripes in 1963.
+
+One thing was wrong, and it was the label rather than the data. The Plate Tectonics axis read **"A rejected idea (1912) → Accepted theory (1960s)"** while the timeline opens in **1596**. The axis promised a start date the timeline does not have. It now reads "A noticed coincidence (1596) → Accepted theory (1960s)", which is both accurate and a better arc.
+
+### Can each brief actually be obeyed?
+
+A brief states constraints and then demands a deliverable. Nothing had checked that the deliverable fits inside the constraints. Reading all 38 pairs found one that does not.
+
+**The Constitution brief constrained the work to "Under two pages" and then asked for "a two-page proposed constitution ... plus a half-page 'what if the wrong person wins?' test."** Two and a half pages inside a two-page budget. The brief forbade what it required, and a student following it exactly cannot satisfy it. The constraint now names both parts: under two pages for the constitution itself, plus the half-page stress test.
+
+One more was ambiguous rather than contradictory and was tightened anyway. Main Idea capped the work at "under 80 words total" while also asking for a poster *and* a five-sentence note to the teacher. A teacher applying the cap literally would mark down a correct submission. It now reads "under 80 words on the poster itself".
+
+Everything else holds: two weeks of growing time against a two-week data table, "one page plus the table and graph" against exactly that, an annotated map plus a one-page case inside a two-page budget.
+
+Both findings are the same species as the last several — **a pack contradicting itself**, this time between a label and its data, and between a constraint and its own deliverable. That now accounts for five of the defects found this week, and it is the one category that reading reliably catches and no gate does.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
