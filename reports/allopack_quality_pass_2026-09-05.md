@@ -204,11 +204,20 @@ Most of the twenty-three are not conflicts and should not be "fixed". Force is s
 ### The tool
 
 `dev-tools/report_shared_glossary_terms.cjs` prints every shared term with its definitions side by side. It is deliberately **not** part of the audit and has no pass or fail: most differences are correct, and only a human reading them can separate grade-appropriate scoping from a contradiction. Making it a gate would have meant either twenty-one false alarms or a threshold tuned until it caught nothing.
+## Ninth pass (same day): an id collision I introduced
+
+The shape suite checks that resource ids are unique *within* a pack. Nothing checked them across the catalog. `day_night_sky_grade1` was authored earlier the same day with the `sk-` prefix, for sky, while `simple_machines_grade5` already owned it. All nine resource ids collided, plus two objective ids.
+
+**The honest scope of this: it was not a live bug.** The host defends itself twice over. Load Project *replaces* the history rather than merging it, so two packs are never in one session by that route, and `normalizeArtifactInstanceIds` assigns every item a distinct instance id on load using a `used` set, so even duplicates within a single loaded file are separated. Checking that before writing this up kept a hygiene fix from being reported as a defect.
+
+It is still worth removing. The packs are a public catalog, an id is the thing a `resourceRef` and a `lessonRef` resolve against, and a prefix collision is invisible to every other check. The grade-1 pack now uses `dn-` throughout, including its concept-sort categories, its memory-aid card ids and its shot-list image slots, so a future author does not find a pack with two prefixes in it.
+
+`tests/allopack_id_uniqueness.test.js` now holds three properties across the whole catalog: no shared resource ids, no shared objective ids, and one prefix per pack owned by that pack alone. It was calibrated by reintroducing the exact collision and confirming two of the three assertions fail, then restoring. The renamed pack was re-checked live in the deployed app, since every internal reference had moved.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
 - Tools: `dev-tools/audit_allopacks.cjs`, `dev-tools/build_allopack_catalog_entries.cjs`, `dev-tools/report_shared_glossary_terms.cjs`
-- Tests: `tests/allopack_catalog.test.js`, `tests/content_viewer_boundary_key.test.js`
+- Tests: `tests/allopack_catalog.test.js`, `tests/content_viewer_boundary_key.test.js`, `tests/allopack_id_uniqueness.test.js`
 - Host fix: `AlloFlowANTI.txt` and its two paired copies (content-viewer boundary key)
 - Docs: `docs/ALLOPACK_FORMAT_SPEC.md`, `docs/ALLOPACK_AUTHORING_PROMPT.md`, `docs/COMMUNITY_CATALOG_SEED_PLAN.md`
 - Working files (not for the repo): `scratch/allopack-audit-2026-09-05/`
