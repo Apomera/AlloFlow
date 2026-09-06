@@ -923,3 +923,53 @@ describe('Siege Field wave 16: the HUD holds together on a narrow bay', () => {
     expect(hud).toContain('width: 260, maxWidth: \'100%\'');
   });
 });
+
+describe('Siege Field wave 17: every ghost arc says what changed', () => {
+  it('names the change between one shot and the last, in the learner\'s own units', () => {
+    const src = source();
+    expect(src).toContain("['releaseAngle', __alloT('stem.machinelab.chg_release', 'release'), '°', 0],");
+    expect(src).toContain(": name + ' ' + fmt(Number(was), dp) + '→' + fmt(Number(is), dp) + unit);");
+    expect(src).toContain("if (!prev) return __alloT('stem.machinelab.chg_first', 'first shot');");
+  });
+
+  it('does not pretend a six-slider rebuild was one change', () => {
+    const src = source();
+    expect(src).toContain("if (parts.length > 2) return parts.length + __alloT('stem.machinelab.chg_many', ' things changed');");
+    expect(src).toContain("if (!parts.length) return __alloT('stem.machinelab.chg_same', 'same setup');");
+  });
+
+  it('keeps the notes in step with the traces on both outcomes', () => {
+    const src = source();
+    expect(src).toContain("traceNotes: shortPath.length > 1 ? (d.traceNotes || []).slice(-2).concat([shortNote]) : (d.traceNotes || []),");
+    expect(src).toContain('traceNotes: (d.traceNotes || []).slice(-2).concat([hitNote]),');
+    // Both branches also record what this shot was set to, or the next diff
+    // would be measured against the shot before last.
+    expect(src).toContain('lastShotSetup: shortSetup');
+    expect(src).toContain('lastShotSetup: hitSetup');
+  });
+
+  it('rebuilds the ghost labels when a note changes, not only when a path does', () => {
+    const src = source();
+    expect(src).toContain(".join('|') + '#' + (d.traceNotes || []).join('#'),");
+  });
+
+  it('hangs each label over its own arc, and hides it when there is no note', () => {
+    const src = source();
+    expect(src).toContain('var note = noteList[noteList.length - 1 - ti2];');
+    expect(src).toContain("lab.sprite.position.set(tr[apx].z || 0, Math.max(1.5, tr[apx].y || 0) + 2.4, -standoff + (tr[apx].x || 0));");
+    expect(src).toContain('} else if (lab) { lab.sprite.visible = false; }');
+  });
+
+  it('fits a long label to its canvas instead of running it off the edge', () => {
+    const src = source();
+    expect(src).toContain('if (wide > 236) {');
+    expect(src).toContain('size = Math.max(20, Math.floor(size * 236 / wide));');
+  });
+
+  it('prints the same list as text under the field, newest first, and nothing before the first shot', () => {
+    const html = renderTool('machineLab', state({ traceNotes: ['first shot', 'release 35→45°'] }));
+    expect(html).toContain('Last shots, newest first: release 35→45° · first shot');
+    const fresh = renderTool('machineLab', state());
+    expect(fresh).not.toContain('Last shots, newest first');
+  });
+});

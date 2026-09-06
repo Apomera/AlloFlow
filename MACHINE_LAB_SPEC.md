@@ -183,6 +183,20 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 17 (2026-09-05)
+
+- **Every ghost arc says what changed.** The tool asks a learner to change one thing and
+  watch. Each of the last three arcs now carries the change that produced it — `release
+  35→45°`, `counterweight 900→1600 kg`, `first shot` — floated over its own apex in the
+  field, and printed newest-first as text under the bay for anyone reading rather than
+  looking.
+- It refuses to flatter: no change at all reads `same setup`, and more than two changes reads
+  `4 things changed` rather than a list, because that shot cannot answer a one-variable
+  question.
+- The notes are pushed in step with `sceneTraces` on both outcomes, and each shot records its
+  own setup, or the next diff would be measured against the shot before last.
+- `makeLabelSprite` now fits a long line to its canvas instead of running it off the edge.
+
 ### Wave 16 (2026-09-05) — a phone, high contrast and reduced motion
 
 A review pass rather than an addition: the Siege Field rendered at 390x844, in high contrast,

@@ -3100,9 +3100,17 @@ window.StemLab = window.StemLab || {
         this.text = text;
         try {
           g.clearRect(0, 0, 256, 128);
-          g.font = 'bold 54px system-ui, sans-serif';
+          // Fit the line to the canvas rather than letting it run off the
+          // edge: these carry a learner's own words back to them.
+          var size = 54;
+          g.font = 'bold ' + size + 'px system-ui, sans-serif';
+          var wide = g.measureText(text).width;
+          if (wide > 236) {
+            size = Math.max(20, Math.floor(size * 236 / wide));
+            g.font = 'bold ' + size + 'px system-ui, sans-serif';
+          }
           g.textAlign = 'center'; g.textBaseline = 'middle';
-          g.lineWidth = 11; g.lineJoin = 'round';
+          g.lineWidth = Math.max(5, size / 5); g.lineJoin = 'round';
           g.strokeStyle = 'rgba(12,9,5,0.94)';
           g.strokeText(text, 128, 64);
           g.fillStyle = tint || '#fff6dc';
@@ -4261,6 +4269,16 @@ window.StemLab = window.StemLab || {
       S.model.add(trLine); traces.push(trLine);
     }
     S.traces = traces; S.tracesSig = null;
+    // Each ghost arc is labelled with the change that produced it, so the
+    // comparison the whole tool asks for ("change one thing and watch") is
+    // legible in the field instead of only in the ledger.
+    var traceLabels = [];
+    for (var tl = 0; tl < traces.length; tl++) {
+      var traceLab = makeLabelSprite(THREE, 3.4, contrast ? '#ffffff' : '#efe3c6', true);
+      if (traceLab) { S.model.add(traceLab.sprite); }
+      traceLabels.push(traceLab);
+    }
+    S.traceLabels = traceLabels;
 
     // ── A windsock beside the engine: the wind, read where the stone leaves. ──
     if (!contrast) {
@@ -4578,10 +4596,23 @@ window.StemLab = window.StemLab || {
         for (var ti2 = 0; ti2 < S.traces.length; ti2++) {
           var tr = trs[trs.length - 1 - ti2];
           var ln = S.traces[ti2];
+          var noteList = data.traceNotes || [];
+          var note = noteList[noteList.length - 1 - ti2];
+          var lab = S.traceLabels ? S.traceLabels[ti2] : null;
           if (tr && tr.length > 1) {
             ln.geometry.setFromPoints(tr.map(function (p) { return new THREE.Vector3(p.z || 0, Math.max(0.1, p.y || 0), -standoff + (p.x || 0)); }));
             ln.visible = true;
-          } else { ln.visible = false; }
+            if (lab && note) {
+              var apx = 0;
+              for (var tq = 1; tq < tr.length; tq++) if ((tr[tq].y || 0) > (tr[apx].y || 0)) apx = tq;
+              lab.draw(note);
+              lab.sprite.position.set(tr[apx].z || 0, Math.max(1.5, tr[apx].y || 0) + 2.4, -standoff + (tr[apx].x || 0));
+              lab.sprite.visible = true;
+            } else if (lab) { lab.sprite.visible = false; }
+          } else {
+            ln.visible = false;
+            if (lab) lab.sprite.visible = false;
+          }
         }
       }
 
@@ -5220,6 +5251,9 @@ window.StemLab = window.StemLab || {
       scenePath: true, sceneIntroDismissed: false, lastFlight: null,
       // The ranging bracket: the best short and the best over at one standoff.
       bracket: null,
+      // The setup of the previous shot, and one line per ghost trace saying
+      // what was changed to produce it.
+      lastShotSetup: null, traceNotes: [],
       // Compact traces of the last three flights, and the best siege per target.
       sceneTraces: [], siegeBests: {},
       // Sound is opt-in: a classroom default.
@@ -7903,6 +7937,46 @@ window.StemLab = window.StemLab || {
         over: __alloT('stem.machinelab.guess_over', 'go over'),
         wide: __alloT('stem.machinelab.guess_wide', 'go wide')
       };
+      // What the learner changed between this shot and the last one. The whole
+      // tool asks them to change ONE thing and watch; this is the sentence that
+      // says whether they did, and it is what each ghost arc is labelled with.
+      var SHOT_FIELDS = [
+        ['machine', __alloT('stem.machinelab.chg_machine', 'machine'), '', 0],
+        ['releaseAngle', __alloT('stem.machinelab.chg_release', 'release'), '°', 0],
+        ['projMass', __alloT('stem.machinelab.chg_stone', 'stone'), ' kg', 0],
+        ['projDiameter', __alloT('stem.machinelab.chg_size', 'stone size'), ' m', 2],
+        ['cwMass', __alloT('stem.machinelab.chg_cw', 'counterweight'), ' kg', 0],
+        ['cwDrop', __alloT('stem.machinelab.chg_drop', 'drop'), ' m', 1],
+        ['beamLong', __alloT('stem.machinelab.chg_long', 'long arm'), ' m', 1],
+        ['beamShort', __alloT('stem.machinelab.chg_short', 'short arm'), ' m', 1],
+        ['slingLength', __alloT('stem.machinelab.chg_sling', 'sling'), ' m', 1],
+        ['torsionTurns', __alloT('stem.machinelab.chg_turns', 'turns'), '', 0],
+        ['torsionDraw', __alloT('stem.machinelab.chg_draw', 'draw'), ' m', 1],
+        ['onagerSling', __alloT('stem.machinelab.chg_sling', 'sling'), ' m', 1],
+        ['standoff', __alloT('stem.machinelab.chg_standoff', 'standoff'), ' m', 0],
+        ['windZ', __alloT('stem.machinelab.chg_wind', 'wind'), ' m/s', 0]
+      ];
+      function shotSetup() {
+        var out = { machine: machineId };
+        for (var sf = 1; sf < SHOT_FIELDS.length; sf++) out[SHOT_FIELDS[sf][0]] = d[SHOT_FIELDS[sf][0]];
+        return out;
+      }
+      function describeChange(prev, now) {
+        if (!prev) return __alloT('stem.machinelab.chg_first', 'first shot');
+        var parts = [];
+        for (var cf = 0; cf < SHOT_FIELDS.length; cf++) {
+          var key = SHOT_FIELDS[cf][0], name = SHOT_FIELDS[cf][1], unit = SHOT_FIELDS[cf][2], dp = SHOT_FIELDS[cf][3];
+          var was = prev[key], is = now[key];
+          if (was == null || is == null || was === is) continue;
+          parts.push(key === 'machine'
+            ? machineLabel(is)
+            : name + ' ' + fmt(Number(was), dp) + '→' + fmt(Number(is), dp) + unit);
+        }
+        if (!parts.length) return __alloT('stem.machinelab.chg_same', 'same setup');
+        if (parts.length > 2) return parts.length + __alloT('stem.machinelab.chg_many', ' things changed');
+        return parts.join(', ');
+      }
+
       function judgeGuess(actual) {
         var g = d.fieldGuess;
         if (!g) return { line: '', patch: {} };
@@ -7982,6 +8056,8 @@ window.StemLab = window.StemLab || {
           var shortId = (d.siegeFlightId || 0) + 1;
           var shortGuess = judgeGuess('short');
           var shortLand = shortPath.length ? (Number(shortPath[shortPath.length - 1].x) || 0) : (preview.range || 0);
+          var shortSetup = shotSetup();
+          var shortNote = describeChange(d.lastShotSetup, shortSetup);
           var shortBracket = bracketAfter('short', shortLand);
           updMulti(Object.assign({
             shotsFired: shots, totalCrankWork: work, lastImpact: null,
@@ -7996,7 +8072,10 @@ window.StemLab = window.StemLab || {
               ? { id: shortId, path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short', windup: WINDUP_SECS }
               : null,
             lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null,
-            sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || [])
+            sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || []),
+            // Kept in step with sceneTraces, so trace and note never disagree.
+            traceNotes: shortPath.length > 1 ? (d.traceNotes || []).slice(-2).concat([shortNote]) : (d.traceNotes || []),
+            lastShotSetup: shortSetup
           }, shortGuess.patch, shortBracket.patch));
           if (shortPath.length > 1) clearFlightLater(shortId, shortPlay + WINDUP_SECS);
           // The coach is for everyone, so it is spoken as well as shown.
@@ -8052,6 +8131,8 @@ window.StemLab = window.StemLab || {
         // Only a shot that went LONG closes the far side of the bracket. A wide
         // shot missed sideways and says nothing about range; a hit ends the
         // question. Both leave the bracket exactly as it was.
+        var hitSetup = shotSetup();
+        var hitNote = describeChange(d.lastShotSetup, hitSetup);
         var overBracket = (res.outcome === 'over')
           ? bracketAfter('over', flightPath.length ? (Number(flightPath[flightPath.length - 1].x) || 0) : (preview.range || 0))
           : { line: '', patch: {} };
@@ -8067,7 +8148,9 @@ window.StemLab = window.StemLab || {
             id: flightId, path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, windup: WINDUP_SECS
           },
           lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome },
-          sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)])
+          sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)]),
+          traceNotes: (d.traceNotes || []).slice(-2).concat([hitNote]),
+          lastShotSetup: hitSetup
         }, hitGuess.patch, overBracket.patch));
         clearFlightLater(flightId, playSecs + WINDUP_SECS);
         if (nowBreached && !d.breached) {
@@ -9003,7 +9086,8 @@ window.StemLab = window.StemLab || {
           impactKJ: d.lastImpact ? (d.lastImpact.ke || 0) / 1000 : 0,
           stored: preview ? preview.stored : 0,
           traces: d.sceneTraces || [],
-          tracesSig: (d.sceneTraces || []).map(function (p) { return p.length + ':' + (p.length ? Math.round(p[p.length - 1].x) : 0); }).join('|'),
+          tracesSig: (d.sceneTraces || []).map(function (p) { return p.length + ':' + (p.length ? Math.round(p[p.length - 1].x) : 0); }).join('|') + '#' + (d.traceNotes || []).join('#'),
+          traceNotes: d.traceNotes || [],
           showPath: d.scenePath !== false,
           // Only the bracket that belongs to this standoff: moving the engine
           // asks a different question, and the old answer is not about it.
@@ -9293,7 +9377,14 @@ window.StemLab = window.StemLab || {
             d.siegeFeedback ? h('p', {
               key: 'fb', role: 'status',
               style: { margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: d.siegeFeedback.ok ? T.ok : T.bad }
-            }, d.siegeFeedback.message) : null
+            }, d.siegeFeedback.message) : null,
+            // The ghost arcs carry these words in the field; this is the same
+            // list for anyone reading rather than looking. Newest first.
+            (d.traceNotes || []).length ? h('p', {
+              key: 'notes',
+              style: { margin: '6px 0 0', fontSize: 12, color: T.muted }
+            }, __alloT('stem.machinelab.trace_notes', 'Last shots, newest first: ') +
+               (d.traceNotes || []).slice().reverse().join(' · ')) : null
           ]),
           sceneStatus !== 'ready' ? card([
             h('p', { key: 'st', style: { margin: 0, fontSize: 12, color: T.dim } },
