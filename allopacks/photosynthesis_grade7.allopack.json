@@ -396,7 +396,7 @@
           },
           {
             "id": "p-place",
-            "label": "Place or part, not an ingredient",
+            "label": "NEITHER (not a reactant or a product)",
             "color": "bg-amber-500"
           }
         ],
