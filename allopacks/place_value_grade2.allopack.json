@@ -427,8 +427,8 @@
             "type": "mcq",
             "question": "In the number 245, what is the 4 really worth?",
             "options": [
-              "Four single things, one at a time",
               "Forty, because it sits in the tens place",
+              "Four single things, one at a time",
               "Four hundred, since it is near the front",
               "Nothing at all until you add it up"
             ],
@@ -439,8 +439,8 @@
             "type": "mcq",
             "question": "Why does 305 need the zero?",
             "options": [
-              "It holds the tens place open so 3 stays in hundreds",
               "It makes the number look longer on the page",
+              "It holds the tens place open so 3 stays in hundreds",
               "It is a habit that people just got used to",
               "It shows the number is meant to be an even one"
             ],
@@ -464,9 +464,9 @@
             "question": "To compare 519 and 591, where should you look first?",
             "options": [
               "At the ones, because that is where you start counting",
-              "At the left, because that place is worth the most",
               "At the middle digit, since it is in between",
-              "At whichever digit happens to be the largest"
+              "At whichever digit happens to be the largest",
+              "At the left, because that place is worth the most"
             ],
             "correctAnswer": "At the left, because that place is worth the most",
             "conceptLabel": "compare from the left"
@@ -475,9 +475,9 @@
             "type": "mcq",
             "question": "Which shows 406 in expanded form?",
             "options": [
+              "400 + 6",
               "40 + 0 + 6",
               "4 + 0 + 6",
-              "400 + 6",
               "4 + 60"
             ],
             "correctAnswer": "400 + 6",

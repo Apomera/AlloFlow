@@ -327,8 +327,8 @@
             "type": "mcq",
             "question": "What is a rule?",
             "options": [
-              "Something one person likes",
               "Something we all agree to do",
+              "Something one person likes",
               "Something only grown-ups do",
               "Something you say very loudly"
             ],
@@ -339,8 +339,8 @@
             "type": "mcq",
             "question": "Holding the rail on the stairs is mostly a rule about what?",
             "options": [
-              "Keeping us safe",
               "Taking turns",
+              "Keeping us safe",
               "Sharing",
               "Being quiet"
             ],
@@ -364,9 +364,9 @@
             "question": "What is the big question to ask about any rule?",
             "options": [
               "Who made it up?",
-              "Who does this rule help?",
               "How old is it?",
-              "Is it long or short?"
+              "Is it long or short?",
+              "Who does this rule help?"
             ],
             "correctAnswer": "Who does this rule help?",
             "conceptLabel": "the big question"
@@ -375,8 +375,8 @@
             "type": "mcq",
             "question": "Can rules change?",
             "options": [
-              "Yes, and people can ask for a change",
               "No, a rule always stays the same",
+              "Yes, and people can ask for a change",
               "Only if nobody notices the change",
               "Only on the last day of school"
             ],

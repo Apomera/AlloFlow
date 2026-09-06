@@ -475,9 +475,9 @@
             "question": "You know 6 x 7 = 42. What is 7 x 6?",
             "options": [
               "13",
-              "42",
               "36",
-              "You cannot tell without counting"
+              "You cannot tell without counting",
+              "42"
             ],
             "correctAnswer": "42",
             "conceptLabel": "the free second fact"
@@ -486,9 +486,9 @@
             "type": "mcq",
             "question": "Three bags hold 3, 6 and 2 marbles. What should you do to find the total?",
             "options": [
+              "Add 3 + 6 + 2",
               "Multiply 3 x 3",
               "Multiply 3 x 6",
-              "Add 3 + 6 + 2",
               "Multiply 3 x 11"
             ],
             "correctAnswer": "Add 3 + 6 + 2",
@@ -498,8 +498,8 @@
             "type": "mcq",
             "question": "Which is a good way to work out 9 x 4?",
             "options": [
-              "Find 10 x 4, then take one group of 4 away",
               "Find 10 x 4, then take just 1 away",
+              "Find 10 x 4, then take one group of 4 away",
               "Add 9 + 4 and then double the answer",
               "Find 5 x 4 and then double the answer"
             ],

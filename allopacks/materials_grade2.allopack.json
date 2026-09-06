@@ -338,8 +338,8 @@
             "type": "mcq",
             "question": "Why are windows made of glass and not wool?",
             "options": [
-              "Glass costs less money than wool does",
               "Glass is hard and clear, which is what a window needs",
+              "Glass costs less money than wool does",
               "Wool had not been invented when windows were made",
               "Glass is the only material anyone knows how to shape"
             ],
@@ -350,8 +350,8 @@
             "type": "mcq",
             "question": "A towel and a raincoat both meet water. What is different?",
             "options": [
-              "A towel soaks water up; a raincoat keeps it out",
               "A towel keeps water out; a raincoat soaks it up",
+              "A towel soaks water up; a raincoat keeps it out",
               "They both soak up water, just at different speeds",
               "They both keep water out, so either one works"
             ],
@@ -376,8 +376,8 @@
             "options": [
               "Good, because you can draw and write on it",
               "Bad, because it tears and gets wet so easily",
-              "Neither; it fits some jobs and not others",
-              "Good, because it can be made into almost anything"
+              "Good, because it can be made into almost anything",
+              "Neither; it fits some jobs and not others"
             ],
             "correctAnswer": "Neither; it fits some jobs and not others",
             "conceptLabel": "the material fits the job"
@@ -386,9 +386,9 @@
             "type": "mcq",
             "question": "You test three cloths to see which soaks up most. What makes it fair?",
             "options": [
-              "Use the same amount of water on each cloth",
               "Use more water on the cloth you like best",
               "Use a different sized cloth for every test",
+              "Use the same amount of water on each cloth",
               "Do the test once and trust what you saw"
             ],
             "correctAnswer": "Use the same amount of water on each cloth",

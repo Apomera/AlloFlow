@@ -27,7 +27,7 @@ The passes below are in the order they were run. **Start with "Where this stands
 
 ### What the gates hold now
 
-Beyond the original shape suite: grade-aware reading-level targets for every student-facing text, word-game playability, an anchor chart in every pack, citation-shaped claims flagged for sourcing, catalog-wide id uniqueness, and answer-key integrity. Two tools are deliberately **reports rather than gates**, because the judgment is semantic: `report_shared_glossary_terms.cjs` and the live smoke test.
+Beyond the original shape suite: grade-aware reading-level targets for every student-facing text, word-game playability, an anchor chart in every pack, citation-shaped claims flagged for sourcing, catalog-wide id uniqueness, answer-key integrity, and — since the twenty-ninth pass — stale word-count metas, quiz positions that are never correct, directions that promise a title no resource has, and timeline axes that disagree with their own first or last item. Two tools are deliberately **reports rather than gates**, because the judgment is semantic: `report_shared_glossary_terms.cjs` and the live smoke test.
 
 ### What is still open
 
@@ -656,6 +656,34 @@ The shot list for the grade 8 science pack had to open by rejecting the topic's 
 The correct image is duller and much better: a population whose composition changes while none of its members do. So every panel is built on one acceptance test — **no individual may differ between one frame and the next** — and the anchor panel states it concretely: cut any single beetle out of any row and it must be impossible to say which row it came from. The alt-text rules go further and require the sentence "every individual is drawn identically and none changes between rows", because that is not a stylistic note, it is the panel's entire scientific content, and alt text omitting it would describe a picture that teaches the misconception.
 
 The statistics shot list hit the same constraint the grade 3 maths pack did — numbered axes are forbidden — and resolved it the same way, with one addition that turned out to be the point: the artwork carries *shape* and the numbers live in the native labels, which is precisely what the reading asks a reader to do with a reported statistic.
+## Twenty-ninth pass: four reading-only defect classes become gates
+
+Across the last three passes, four kinds of defect were found only by reading, and every one of them recurred. All four turn out to be mechanically detectable. This pass adds them to `dev-tools/audit_allopacks.cjs`, calibrated first against known-bad fixtures so that each gate was seen to fail before its silence was trusted.
+
+| Gate | What it checks | Recurrences it would have caught |
+| --- | --- | --- |
+| Stale meta | the `~N words` claim against the actual reading, 10% tolerance | 9 packs across three passes |
+| Unused position | any of A–D never correct when a quiz has 5+ items | 6 packs the skew gate had passed |
+| Broken promise | a bold phrase in the directions that matches no resource title | the grade-1 "Rule or Not a Rule?" |
+| Axis vs data | the timeline label's first and last parenthetical against the first and last item dates | plate tectonics "(1912)" over 1596 |
+
+### Calibration before trust
+
+The audit gained an `ALLOPACK_DIR` override so it can be pointed at a directory of fixtures. Four were built: the **real** pre-fix plate tectonics blob from git, and three reconstructions of defects that were fixed in the working tree before they were ever committed. A clean pack went in as a control. All four gates fired on their fixture; none fired on the control.
+
+The calibration itself found a bug in the calibration. The historic blob was fetched with `git show f20976803^:...`, which is the normal way to name a parent commit — and Node's `execSync` on Windows runs through `cmd.exe`, where **`^` is the escape character.** The reference silently resolved to the commit itself, the post-fix version, and the fixture that was supposed to contain the defect did not. Had the assertion on the fixture's content not been there, the gate would have been "calibrated" against a clean file and reported as working. It now uses `~1`.
+
+### The directions gate needed its noise measured first
+
+This was the check that produced 160 flags in the twenty-third pass, 133 of them a house style. So before writing it as a gate, every non-title bold phrase across all 45 directions bodies was tallied: 173 in total. All but eight were the due line, a game name, or a resource type used as a label ("the **Glossary**"). Of the eight, seven were prefixes of real titles ("Six Machines" for "Six Machines, One Trade") and one was "Magnetism Lab", a real STEM Lab tool named conditionally. The gate allowlists the house set, matches loosely on title stems, and skips any line that names the STEM Lab. On the current catalog it produces zero flags; on the fixture it produces exactly one.
+
+### What the axis gate honestly does not catch
+
+Two axis defects were found this week. The gate catches one kind: plate tectonics, where the label's date disagreed with the first item's date. It does **not** catch the grade 2 case, where the label said "a letter on a train (1876)" over an 1876 entry that is Bell patenting the telephone — the date agreed and the description lied. The gate's comment says so. A gate that documents its blind spot is more useful than one that implies coverage it lacks.
+
+### Yield on the existing catalog
+
+Ten findings, all real, none previously flagged: four stale metas (Ancient Egypt claimed 370 words over 317; Making Ten claimed 230 over 197) and six quizzes where one option was never correct — five of them option D. All ten are fixed. Gates: 0 flags on 45 packs. Tests: 455 green.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`

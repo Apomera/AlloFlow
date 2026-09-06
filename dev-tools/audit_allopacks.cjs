@@ -10,7 +10,9 @@
 const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
-const dir = path.join(root, 'allopacks');
+// ALLOPACK_DIR lets a calibration run point the audit at known-bad fixtures without touching the
+// real catalog. A gate that has never been shown to fail on a defect it was written for is a hope.
+const dir = process.env.ALLOPACK_DIR ? path.resolve(process.env.ALLOPACK_DIR) : path.join(root, 'allopacks');
 const files = fs.readdirSync(dir).filter((f) => f.endsWith('.allopack.json')).sort();
 const read = (p) => JSON.parse(fs.readFileSync(p, 'utf8').replace(/^﻿/, ''));
 
@@ -76,6 +78,17 @@ for (const f of files) {
   const lo = band && band.hi <= 2 ? 140 : 300;
   const hi = band && band.hi <= 2 ? 280 : 600;
   if (fk && (fk.words < lo || fk.words > hi)) flags.push(`reading ${fk.words} words (target ${lo + 40}-${hi - 50})`);
+  // The meta line advertises a length ("~230 words"). It is written before the prose settles and
+  // then never revisited: nine packs across three passes shipped a stale claim, one off by 27%.
+  // 10% tolerance -- the estimator's own word split is not what an author counts by hand.
+  if (fk && reading.meta) {
+    const m = String(reading.meta).match(/~\s*(\d+)\s*words/);
+    if (m) {
+      const claim = Number(m[1]);
+      const pct = Math.round((100 * (claim - fk.words)) / Math.max(1, fk.words));
+      if (Math.abs(pct) > 10) flags.push(`reading meta claims ~${claim} words, actual ${fk.words} (${pct > 0 ? '+' : ''}${pct}%)`);
+    }
+  }
 
   // The reading is not the only thing a student reads. The FAQ especially is where a confused
   // student goes, so companion prose above the reading's own grade band defeats the point of
@@ -143,6 +156,11 @@ for (const f of files) {
     }
     posSpread = pos.join('/');
     if (mcq.length >= 4 && Math.max(...pos) >= Math.ceil(mcq.length * 0.6)) flags.push(`quiz answer position skew ${posSpread}`);
+    // Distinct from skew: a position that is NEVER correct. Six packs passed the skew gate with
+    // option D unused (2026-09-06). With five or more items every slot should be right at least once.
+    if (mcq.length >= 5 && mcq.every((q) => q.options.length === 4) && pos.includes(0)) {
+      flags.push(`quiz answer position ${'ABCD'[pos.indexOf(0)]} is never correct (${posSpread} of ${mcq.length})`);
+    }
     if (lengthTells) flags.push(`${lengthTells} quiz item(s) with an option-length tell`);
     const labels = new Set(quiz.data.questions.map((q) => q.conceptLabel));
     if (labels.size === quiz.data.questions.length && quiz.data.questions.length > 5) flags.push('every quiz item has a unique conceptLabel (no retention pairing)');
@@ -164,6 +182,26 @@ for (const f of files) {
     const body = String(directions.data.body || '');
     const named = items.filter((r) => r.type !== 'directions' && body.includes(r.title.split(/[—:]/)[0].trim())).length;
     if (named < Math.floor((items.length - 1) / 2)) flags.push(`directions body names ${named}/${items.length - 1} resources`);
+    // Every bold phrase in the body is a promise the student can find it on screen. Measured
+    // 2026-09-06 across 45 packs: 173 non-title bold phrases, of which every one but a handful was
+    // one of these -- the due line, a game name, a resource TYPE used as a house-style label
+    // ("the **Glossary**"), or a real STEM Lab tool named conditionally. Anything else is a title
+    // that does not exist. The 8 remaining were all prefixes of real titles, hence the loose match.
+    const HOUSE = new Set(['Due:', 'Matching', 'Memory', 'Crossword', 'Word Scramble', 'Bingo', 'Glossary', 'Sentence Frames', 'Cornell Notes', 'Anchor Chart', 'Quiz', 'FAQ', 'Timeline', 'Outline']);
+    const titles = items.map((r) => String(r.title || ''));
+    const stem = (t) => t.split(/[—:]/)[0].trim().toLowerCase();
+    const promised = (phrase) => {
+      const p = phrase.toLowerCase();
+      return titles.some((t) => t.toLowerCase() === p || t.toLowerCase().includes(p) || (stem(t).length >= 6 && p.includes(stem(t))));
+    };
+    for (const line of body.split('\n')) {
+      if (/in the STEM Lab/i.test(line)) continue; // a real app surface, not a pack resource
+      for (const m of line.matchAll(/\*\*([^*]+)\*\*/g)) {
+        const phrase = m[1].trim();
+        if (HOUSE.has(phrase) || phrase.length < 4) continue;
+        if (!promised(phrase)) flags.push(`directions promise "${phrase}" but no resource has that title`);
+      }
+    }
   }
   // Games the directions promise must have enough eligible terms to be worth playing.
   if (directions && directions.data && Array.isArray(directions.data.objectives)) {
@@ -188,6 +226,21 @@ for (const f of files) {
   // Settled 2026-09-05: every pack carries a wall reference. A teacher browsing the catalog
   // expects one, and a pack without it is the odd one out rather than a deliberate choice.
   if (!by('anchor-chart').length) flags.push('no anchor chart (every pack in the catalog has one)');
+  // ── TIMELINE AXIS VS ITS OWN DATA ────────────────────────────────────────
+  // The progressionLabel reads "X (1912) → Y (1960s)" and sits above items that carry dates. Twice in
+  // one week the label promised a start the items did not have: plate_tectonics said 1912 over a
+  // first entry of 1596. This checks the two parentheticals against the first and last item. It
+  // does NOT catch the then_and_now case ("a letter on a train (1876)" over an 1876 telephone
+  // entry) because there the DATE agreed and the description lied -- that one still needs a reader.
+  for (const tl of by('timeline')) {
+    const label = String((tl.data && tl.data.progressionLabel) || '');
+    const its = (tl.data && Array.isArray(tl.data.items)) ? tl.data.items : [];
+    const parens = [...label.matchAll(/\(([^()]+)\)/g)].map((m) => m[1].trim());
+    if (parens.length < 2 || its.length < 2) continue;
+    const fits = (want, have) => { const w = want.toLowerCase(), h = String(have || '').toLowerCase(); return h.includes(w) || w.includes(h); };
+    if (!fits(parens[0], its[0].date)) flags.push(`timeline axis starts at "(${parens[0]})" but the first item is dated "${its[0].date}"`);
+    if (!fits(parens[parens.length - 1], its[its.length - 1].date)) flags.push(`timeline axis ends at "(${parens[parens.length - 1]})" but the last item is dated "${its[its.length - 1].date}"`);
+  }
   // ── CITATION-SHAPED CLAIMS ───────────────────────────────────────────────
   // These packs are AI-authored and the catalog has no sourcing mechanism, so a sentence that
   // LOOKS like a citation is a liability: a reader cannot tell an invented statistic from a real

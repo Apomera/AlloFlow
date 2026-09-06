@@ -438,9 +438,9 @@
             "type": "mcq",
             "question": "\"Our school should start later. Teenagers are tired.\" What is missing?",
             "options": [
+              "The reasoning, since nothing explains why that follows",
               "The claim, since no position has been taken here",
               "The evidence, since nothing factual has been offered",
-              "The reasoning, since nothing explains why that follows",
               "Nothing is missing; the argument is complete as written"
             ],
             "correctAnswer": "The reasoning, since nothing explains why that follows",
