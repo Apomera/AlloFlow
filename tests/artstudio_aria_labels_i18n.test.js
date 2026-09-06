@@ -58,7 +58,19 @@ describe('Art Studio accessible names reach the translator', () => {
     // a template. Lower the bound as they are done, and delete this test at
     // zero.
     expect(assembled.length).toBeGreaterThan(0);
-    expect(assembled.length).toBeLessThanOrEqual(17);
+    expect(assembled.length).toBeLessThanOrEqual(6);
+  });
+
+  it('keys the words it chooses, not just the sentence around them', () => {
+    const section = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.artstudio;
+    // A state word and an enumerated member are both translatable.
+    expect(section.a11y_state_paused).toBe('paused');
+    expect(section.a11y_state_playing).toBe('playing');
+    expect(section.a11y_depth_near).toBe('near');
+    expect(section.a11y_tess_shape_hexagon).toBe('hexagon');
+    // Optional clauses are their own strings, not glued fragments.
+    expect(section.a11y_part_suffix_hidden).toBe(', hidden');
+    expect(section.a11y_part_suffix_locked).toBe(', locked');
   });
 
   it('templates the labels that carry only values', () => {

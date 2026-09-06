@@ -647,7 +647,7 @@ const d = labToolData.artStudio || {};
             var pending = window.StemLab && window.StemLab.artStudioPure && window.StemLab.artStudioPure.readPendingSculpt ? window.StemLab.artStudioPure.readPendingSculpt() : null;
             if (!pending) return;
             delete window.__alloArtStudioPendingSculpt;
-            updMany({ sculptRecipe: pending.recipe, sculptSel: 0, sculptUndo: d.sculptRecipe ? [d.sculptRecipe] : [], sculptRedo: [], tab: 'sculpt3d' });
+            updMany({ sculptRecipe: pending.recipe, sculptSel: 0, sculptUndo: d.sculptRecipe ? [d.sculptRecipe] : [], sculptRedo: [], tab: 'sculpt3d', studioStarted: true });
             if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(pending.recipe.parts.length === 1 ? __alloT('stem.artstudio.sr_sculpture_returned_from_print_lab_one', 'Sculpture returned from Print Lab with {value1} part. Undo restores what was here before.') : __alloT('stem.artstudio.sr_sculpture_returned_from_print_lab_many', 'Sculpture returned from Print Lab with {value1} parts. Undo restores what was here before.'), { value1: pending.recipe.parts.length }));
           }, []);
           const _artistCompareIdsState = React.useState(Array.isArray(d.artistCompareIds) ? d.artistCompareIds.slice(0, 3) : []);
@@ -1554,12 +1554,12 @@ const d = labToolData.artStudio || {};
               ),
               studioThreadPalette.length > 0 && React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-2" },
                 React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, "Use a Thread Kit color"),
-                React.createElement("div", { className: "mt-2 flex flex-wrap gap-2", role: "group", 'aria-label': "Choose a Thread Kit color for " + (opts.label || 'this artwork') },
+                React.createElement("div", { className: "mt-2 flex flex-wrap gap-2", role: "group", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_thread_kit_color_for', 'Choose a Thread Kit color for {value1}'), { value1: (opts.label || __alloT('stem.artstudio.a11y_word_this_artwork', 'this artwork')) })},
                   studioThreadPalette.map(function (threadColor, index) {
                     return React.createElement("button", {
                       key: threadColor.h + '-' + threadColor.s + '-' + threadColor.l + '-' + index,
                       type: "button",
-                      'aria-label': "Use Thread Kit color " + (index + 1) + " for " + (opts.label || 'this artwork'),
+                      'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_thread_kit_color_for', 'Use Thread Kit color {value1} for {value2}'), { value1: (index + 1), value2: (opts.label || __alloT('stem.artstudio.a11y_word_this_artwork', 'this artwork')) }),
                       onClick: function () { applyColor(threadColor); },
                       className: "h-10 w-10 rounded-lg border-2 border-white shadow ring-1 ring-slate-400 focus-visible:ring-4 focus-visible:ring-violet-600",
                       style: { background: 'hsl(' + threadColor.h + ',' + threadColor.s + '%,' + threadColor.l + '%)' }
@@ -7063,7 +7063,7 @@ const d = labToolData.artStudio || {};
               }),
 
               React.createElement("canvas", { tabIndex: 0, id: 'pixelCanvas', ref: pixelRef, width: 512, height: 512, role: "img",
-                'aria-label': 'Pixel art editor, ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' by ' + (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16) + ' grid with ' + Object.keys(d.pixelData || {}).length + ' colored cells.',
+                'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_pixel_art_editor_grid', 'Pixel art editor, {value1} by {value2} grid with {value3} colored cells.'), { value1: (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16), value2: (typeof d.pixelGrid === 'number' ? d.pixelGrid : 16), value3: Object.keys(d.pixelData || {}).length }),
                 'aria-describedby': "artstudio-pixel-keyboard-help",
                 'aria-details': "artstudio-pixel-touch-help",
                 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space",
@@ -8224,7 +8224,7 @@ const d = labToolData.artStudio || {};
                   parts.length ? React.createElement("div", null,
                     React.createElement("div", { className: "flex flex-wrap gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_parts', 'Parts') }, parts.map(function(p, i) {
                       var partDisplayName = p.label || p.shape;
-                      return React.createElement("button", { key: i, className: mini + (i === sel ? ' ring-2 ring-pink-500' : ''), "aria-pressed": i === sel ? 'true' : 'false', "aria-label": 'Part ' + (i + 1) + ': ' + partDisplayName + (p.label ? ', ' + p.shape : '') + (p.hidden ? ', hidden' : '') + (p.locked ? ', locked' : ''), style: { borderBottom: '3px solid ' + p.color, opacity: p.hidden ? 0.55 : 1 }, onClick: function() { upd('sculptSel', i); } }, (SHAPE_ICONS[p.shape] || p.shape) + (p.label ? ' ' + p.label : '') + (p.hidden ? ' \uD83D\uDE48' : '') + (p.locked ? ' \uD83D\uDD12' : ''));
+                      return React.createElement("button", { key: i, className: mini + (i === sel ? ' ring-2 ring-pink-500' : ''), "aria-pressed": i === sel ? 'true' : 'false', "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_part_name', 'Part {value1}: {value2}'), { value1: (i + 1), value2: partDisplayName }) + (p.label ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_part_suffix_shape', ', {value1}'), { value1: p.shape }) : '') + (p.hidden ? __alloT('stem.artstudio.a11y_part_suffix_hidden', ', hidden') : '') + (p.locked ? __alloT('stem.artstudio.a11y_part_suffix_locked', ', locked') : ''), style: { borderBottom: '3px solid ' + p.color, opacity: p.hidden ? 0.55 : 1 }, onClick: function() { upd('sculptSel', i); } }, (SHAPE_ICONS[p.shape] || p.shape) + (p.label ? ' ' + p.label : '') + (p.hidden ? ' \uD83D\uDE48' : '') + (p.locked ? ' \uD83D\uDD12' : ''));
                     })),
                     React.createElement("div", { className: "flex flex-wrap items-center gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_selected_part_visibility_and_locking', 'Selected part visibility and locking') },
                       React.createElement("button", { className: mini + " flex-1 px-2", "aria-label": selectedPart.hidden ? "Show selected part" : "Hide selected part", "aria-pressed": selectedPart.hidden, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { hidden: !selectedPart.hidden }); }); } }, selectedPart.hidden ? '\uD83D\uDC41 Show' : '\uD83D\uDE48 Hide'),
@@ -8595,7 +8595,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", "aria-describedby": "artstudio-spiro-description", 'aria-label': 'Spirograph output: a ' + (d.spiroRainbow ? 'rainbow' : 'single-color') + ' hypotrochoid with outer radius ' + (typeof d.spiroR === 'number' ? d.spiroR : 120) + ', inner radius ' + (typeof d.spiror === 'number' ? d.spiror : 45) + ', and pen offset ' + (typeof d.spirop === 'number' ? d.spirop : 55) + '.', className: "rounded-xl border-2 border-indigo-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", "aria-describedby": "artstudio-spiro-description", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_spirograph_output', 'Spirograph output: a {value1} hypotrochoid with outer radius {value2}, inner radius {value3}, and pen offset {value4}.'), { value1: (d.spiroRainbow ? __alloT('stem.artstudio.a11y_word_rainbow', 'rainbow') : __alloT('stem.artstudio.a11y_word_single_color', 'single-color')), value2: (typeof d.spiroR === 'number' ? d.spiroR : 120), value3: (typeof d.spiror === 'number' ? d.spiror : 45), value4: (typeof d.spirop === 'number' ? d.spirop : 55) }), className: "rounded-xl border-2 border-indigo-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -9344,7 +9344,7 @@ const d = labToolData.artStudio || {};
               }),
 
               React.createElement("canvas", { tabIndex: 0, id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img",
-                'aria-label': 'Spin art canvas at ' + (d.spinRPM || 120) + ' RPM with a ' + (d.spinBrush || 6) + '-pixel brush; ' + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'paused' : 'playing') + '.',
+                'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_spin_art_canvas', 'Spin art canvas at {value1} RPM with a {value2}-pixel brush; {value3}.'), { value1: (d.spinRPM || 120), value2: (d.spinBrush || 6), value3: ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? __alloT('stem.artstudio.a11y_state_paused', 'paused') : __alloT('stem.artstudio.a11y_state_playing', 'playing')) }),
                 'aria-describedby': "artstudio-spin-keyboard-help",
                 'aria-details': "artstudio-spin-touch-help",
                 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
@@ -10444,7 +10444,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", { className: "relative min-w-0" },
 
                   React.createElement("canvas", { tabIndex: 0, id: 'tessCanvas', width: 512, height: 512, role: "img",
-                    'aria-label': 'Tessellation canvas with ' + (d.tessShape || 'hexagon') + ' tiles in a ' + (d.tessScheme || 'rainbow') + ' color scheme and grid size ' + (typeof d.tessGrid === 'number' ? d.tessGrid : 6) + '.',
+                    'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_tessellation_canvas', 'Tessellation canvas with {value1} tiles in a {value2} color scheme and grid size {value3}.'), { value1: __alloT('stem.artstudio.a11y_tess_shape_' + String((d.tessShape || 'hexagon')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.tessShape || 'hexagon')), value2: __alloT('stem.artstudio.a11y_tess_scheme_' + String((d.tessScheme || 'rainbow')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.tessScheme || 'rainbow')), value3: (typeof d.tessGrid === 'number' ? d.tessGrid : 6) }),
                     'aria-describedby': "artstudio-tess-keyboard-help",
                     'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home Enter Space",
                     className: "rounded-xl border-2 border-teal-300 shadow-lg mx-auto block cursor-pointer focus-visible:ring-4 focus-visible:ring-teal-600 focus-visible:ring-offset-2",
@@ -12204,7 +12204,7 @@ const d = labToolData.artStudio || {};
                     React.createElement("canvas", { id: 'depthMapCanvas', width: 400, height: 400,
                       tabIndex: 0,
                       role: "img",
-                      "aria-label": "Depth map drawing canvas. Current brush is " + (d.stereoDepth || 'near') + ". White is near, gray is middle, and black is far.",
+                      "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_depth_map_canvas', 'Depth map drawing canvas. Current brush is {value1}. White is near, gray is middle, and black is far.'), { value1: __alloT('stem.artstudio.a11y_depth_' + String((d.stereoDepth || 'near')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoDepth || 'near')) }),
                       "aria-describedby": "artstudio-depth-map-legend artstudio-depth-map-touch-help artstudio-depth-map-keyboard-help",
                       "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
 
@@ -12485,7 +12485,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
                     role: "img",
-                    "aria-label": "Stereogram output using the " + (d.stereoPattern || 'black and white') + " pattern and " + (d.stereoPreset || 'drawn') + " depth map.",
+                    "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_stereogram_output', 'Stereogram output using the {value1} pattern and {value2} depth map.'), { value1: __alloT('stem.artstudio.a11y_pattern_' + String((d.stereoPattern || 'black and white')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoPattern || 'black and white')), value2: __alloT('stem.artstudio.a11y_preset_' + String((d.stereoPreset || 'drawn')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoPreset || 'drawn')) }),
                     "aria-describedby": "artstudio-stereogram-output-help",
 
                     key: 'stereo-' + (d.stereoGen || 0),
@@ -12759,7 +12759,7 @@ const d = labToolData.artStudio || {};
                     React.createElement("canvas", { id: 'stereoAnimDrawCanvas', width: 400, height: 400,
                       tabIndex: 0,
                       role: "img",
-                      "aria-label": "Animation depth-map drawing canvas. Current brush is " + (d.stereoAnimDrawBrush || 'near') + ".",
+                      "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_animation_depth_canvas', 'Animation depth-map drawing canvas. Current brush is {value1}.'), { value1: __alloT('stem.artstudio.a11y_depth_' + String((d.stereoAnimDrawBrush || 'near')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoAnimDrawBrush || 'near')) }),
                       "aria-describedby": "artstudio-anim-draw-description artstudio-anim-depth-touch-help artstudio-anim-draw-keyboard-help",
                       "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
 
@@ -14059,7 +14059,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("canvas", { id: 'stereoAnimCanvas', width: 512, height: 512,
                     role: "img",
-                    "aria-label": "Animated stereogram output with " + ((_stereoAnimRef.frames && _stereoAnimRef.frames.length) || 0) + " rendered frames; " + (d.stereoAnimPlaying ? "playing" : "paused") + ".",
+                    "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_animated_stereogram_output', 'Animated stereogram output with {value1} rendered frames; {value2}.'), { value1: ((_stereoAnimRef.frames && _stereoAnimRef.frames.length) || 0), value2: (d.stereoAnimPlaying ? __alloT('stem.artstudio.a11y_state_playing', 'playing') : __alloT('stem.artstudio.a11y_state_paused', 'paused')) }),
                     "aria-describedby": "artstudio-animated-stereogram-help",
 
                     className: "rounded-xl border-2 border-purple-200 shadow-lg block", style: { maxWidth: '100%', background: '#111' },
