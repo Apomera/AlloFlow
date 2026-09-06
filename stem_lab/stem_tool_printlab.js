@@ -1,6 +1,16 @@
 // AlloFlow STEM Lab — Print Lab
 // Client-only preparation workspace for primitive recipes, GLB, and STL.
 (function () {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloPLCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloPLCtx && typeof __alloPLCtx.t === "function") ? __alloPLCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
@@ -554,15 +564,15 @@
           h('h3', { id: 'print-lab-preview-title', className: 'text-sm font-black text-white' }, '3D preview'),
           h('p', { className: 'text-[0.6875rem] text-slate-300' }, status === 'ready' ? 'Drag to orbit. Use the controls below for a keyboard path.' : status === 'failed' ? '3D preview unavailable; use the complete text preflight below.' : status === 'empty' ? 'Add or import geometry to preview it.' : 'Loading the local 3D preview…')
         ),
-        h('div', { className: 'flex gap-1', 'aria-label': '3D preview controls' },
-          h('button', { type: 'button', onClick: useController('rotate', -Math.PI / 8), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': 'Rotate model left' }, '↶'),
-          h('button', { type: 'button', onClick: useController('rotate', Math.PI / 8), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': 'Rotate model right' }, '↷'),
-          h('button', { type: 'button', onClick: useController('zoom', 0.82), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': 'Zoom preview in' }, '+'),
-          h('button', { type: 'button', onClick: useController('zoom', 1.22), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': 'Zoom preview out' }, '−'),
+        h('div', { className: 'flex gap-1', 'aria-label': __alloT('stem.printlab.a11y_3d_preview_controls', '3D preview controls') },
+          h('button', { type: 'button', onClick: useController('rotate', -Math.PI / 8), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_rotate_model_left', 'Rotate model left') }, '↶'),
+          h('button', { type: 'button', onClick: useController('rotate', Math.PI / 8), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_rotate_model_right', 'Rotate model right') }, '↷'),
+          h('button', { type: 'button', onClick: useController('zoom', 0.82), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_zoom_preview_in', 'Zoom preview in') }, '+'),
+          h('button', { type: 'button', onClick: useController('zoom', 1.22), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_zoom_preview_out', 'Zoom preview out') }, '−'),
           h('button', { type: 'button', onClick: useController('reset'), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white' }, 'Reset')
         )
       ),
-      h('canvas', { ref: canvasRef, role: 'img', className: 'block h-[360px] w-full rounded-xl bg-[#07111f]', 'aria-label': 'Interactive preview of the current model. A complete text report is available in the Preflight tab.' })
+      h('canvas', { ref: canvasRef, role: 'img', className: 'block h-[360px] w-full rounded-xl bg-[#07111f]', 'aria-label': __alloT('stem.printlab.a11y_interactive_preview_of_the_current_model_a_comp', 'Interactive preview of the current model. A complete text report is available in the Preflight tab.') })
     );
   }
 
@@ -856,6 +866,7 @@
     aliases: ['3D printing', 'STL', 'GLB', 'Minecraft model', 'additive manufacturing', 'PHA'],
 
     render: function (ctx) {
+      __alloPLCtx = ctx;
       var React = ctx.React, h = React.createElement;
       var stored = (ctx.toolData && ctx.toolData.printLab) || {};
       var pendingSlotRef = React.useRef(undefined);
@@ -1032,7 +1043,7 @@
       function updateRecipe(next, nextUnitMm, preserveOperation) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
         var clean = P3D ? P3D.normalizeRecipe(next) : next;
-        if (!clean) { announce('That primitive recipe is not valid.'); return; }
+        if (!clean) { announce(__alloT('stem.printlab.sr_that_primitive_recipe_is_not_valid', 'That primitive recipe is not valid.')); return; }
         var cleanUnit = clamp(nextUnitMm == null ? unitMm : nextUnitMm, 0.01, 1000, 20);
         invalidateManufacturingEvidence({ preserveOperation: preserveOperation });
         setRecipe(clean); setFormat('RECIPE'); setFileBytes(null); setGlbRoot(null); setSourceName(''); setReport(null); setContentHash('');
@@ -1054,26 +1065,26 @@
       function importSavedRecipe() {
         if (!selectedSaved || !savedSculpts[selectedSaved]) return;
         var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = P3D && P3D.normalizeRecipe(savedSculpts[selectedSaved]);
-        if (!clean) { announce('That saved Geometry Sandbox design is not a valid primitive recipe.'); return; }
+        if (!clean) { announce(__alloT('stem.printlab.sr_that_saved_geometry_sandbox_design_is_not_a_valid', 'That saved Geometry Sandbox design is not a valid primitive recipe.')); return; }
         updateRecipe(clean, 20); setTitle(clean.name || selectedSaved); announce('Loaded “' + selectedSaved + '” from Geometry Sandbox.');
       }
 
       function downloadGeometryWorldSource() {
         var source = sourceContext && sourceContext.sourceModel;
-        if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce('No editable Geometry World source is available in this session.'); return; }
+        if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce(__alloT('stem.printlab.sr_no_editable_geometry_world_source_is_available_in', 'No editable Geometry World source is available in this session.')); return; }
         downloadBlob(new Blob([JSON.stringify(source, null, 2)], { type: 'application/json' }), 'geometry-world-editable-build.json');
-        announce('Downloaded the editable Geometry World block recipe. It contains shapes and rotations, not the physical print settings.');
+        announce(__alloT('stem.printlab.sr_downloaded_the_editable_geometry_world_block_reci', 'Downloaded the editable Geometry World block recipe. It contains shapes and rotations, not the physical print settings.'));
       }
 
       function downloadArtStudioRecipe() {
         var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = recipe && P3D && P3D.normalizeRecipe ? P3D.normalizeRecipe(recipe) : recipe;
-        if (!clean || !clean.parts || !clean.parts.length) { announce('There is no primitive recipe to send back yet.'); return; }
+        if (!clean || !clean.parts || !clean.parts.length) { announce(__alloT('stem.printlab.sr_there_is_no_primitive_recipe_to_send_back_yet', 'There is no primitive recipe to send back yet.')); return; }
         downloadBlob(new Blob([JSON.stringify(clean, null, 2)], { type: 'application/json' }), 'print-lab-sculpture.sculpture.json');
-        announce('Downloaded the editable sculpture recipe. Load it in Art Studio with its Load model button.');
+        announce(__alloT('stem.printlab.sr_downloaded_the_editable_sculpture_recipe_load_it', 'Downloaded the editable sculpture recipe. Load it in Art Studio with its Load model button.'));
       }
       function returnToArtStudio() {
         var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = recipe && P3D && P3D.normalizeRecipe ? P3D.normalizeRecipe(recipe) : recipe;
-        if (!clean || !clean.parts || !clean.parts.length) { announce('There is no primitive recipe to send back yet.'); return; }
+        if (!clean || !clean.parts || !clean.parts.length) { announce(__alloT('stem.printlab.sr_there_is_no_primitive_recipe_to_send_back_yet', 'There is no primitive recipe to send back yet.')); return; }
         if (typeof ctx.setStemLabTool !== 'function') { downloadArtStudioRecipe(); return; }
         window.__alloArtStudioPendingSculpt = {
           schema: 'alloflow-artstudio-sculpt/1',
@@ -1081,20 +1092,20 @@
           recipe: JSON.parse(JSON.stringify(clean))
         };
         if (typeof ctx.updateMulti === 'function') ctx.updateMulti('artStudio', { tab: 'sculpt3d', studioStarted: true });
-        announce('Returning the editable sculpture to Art Studio. Print settings remain in Print Lab only.');
+        announce(__alloT('stem.printlab.sr_returning_the_editable_sculpture_to_art_studio_pr', 'Returning the editable sculpture to Art Studio. Print settings remain in Print Lab only.'));
         ctx.setStemLabTool('artStudio');
       }
       // Starting points for a student who opens Print Lab first: the three
       // tools that can build printable geometry, each with its own way back.
       function startInTool(toolId) {
-        if (typeof ctx.setStemLabTool !== 'function') { announce('That tool is not available here.'); return; }
+        if (typeof ctx.setStemLabTool !== 'function') { announce(__alloT('stem.printlab.sr_that_tool_is_not_available_here', 'That tool is not available here.')); return; }
         if (toolId === 'geometryWorld' && typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
         if (toolId === 'artStudio' && typeof ctx.updateMulti === 'function') ctx.updateMulti('artStudio', { tab: 'sculpt3d', studioStarted: true });
         ctx.setStemLabTool(toolId);
       }
       function returnToGeometryWorld() {
         var source = sourceContext && sourceContext.sourceModel;
-        if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce('No editable Geometry World source is available in this session.'); return; }
+        if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce(__alloT('stem.printlab.sr_no_editable_geometry_world_source_is_available_in', 'No editable Geometry World source is available in this session.')); return; }
         if (typeof ctx.setStemLabTool !== 'function') { downloadGeometryWorldSource(); return; }
         window.__alloGeometryWorldPendingBuild = {
           schema: 'alloflow-geometry-world-build/1',
@@ -1102,13 +1113,13 @@
           sourceModel: JSON.parse(JSON.stringify(source))
         };
         if (typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
-        announce('Returning the editable selected build to Geometry World. Print settings remain in Print Lab only.');
+        announce(__alloT('stem.printlab.sr_returning_the_editable_selected_build_to_geometry', 'Returning the editable selected build to Geometry World. Print settings remain in Print Lab only.'));
         ctx.setStemLabTool('geometryWorld');
       }
 
       function runPreflight() {
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
-        if (!Printable) { announce('The inspection engine is still loading.'); return null; }
+        if (!Printable) { announce(__alloT('stem.printlab.sr_the_inspection_engine_is_still_loading', 'The inspection engine is still loading.')); return null; }
         var next = format === 'RECIPE' ? Printable.inspectRecipe(recipe, unitMm, profile)
           : format === 'STL' ? Printable.inspectStl(fileBytes, unitMm, profile)
           : Printable.inspectGlb(fileBytes, unitMm, profile);
@@ -1121,7 +1132,7 @@
 
       function createRepairCandidate() {
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
-        if (!Printable || format !== 'STL' || !fileBytes) { announce('Conservative local repair is available for an imported STL.'); return; }
+        if (!Printable || format !== 'STL' || !fileBytes) { announce(__alloT('stem.printlab.sr_conservative_local_repair_is_available_for_an_imp', 'Conservative local repair is available for an imported STL.')); return; }
         var result = Printable.repairStl(fileBytes, { unitMm: unitMm, profile: profile, weldTolerance: 0.00001 });
         setRepairResult(result);
         announce(result.ok ? 'Created a local repair candidate. It still requires full slicer and staff review.' : (result.errors || ['The STL could not be repaired.']).join(' '));
@@ -1135,15 +1146,15 @@
         Printable.sha256Hex(bytes).then(function (hash) {
           if (!operationIsCurrent('repair', token, startedRevision)) return;
           replaceDesign('STL', null, bytes, null, 'repaired-model.stl', unitMm, repairResult.report, hash, 'repair');
-          announce('The conservative repair candidate is now the local working copy. Its analysis remains advisory.');
-        }).catch(function () { if (operationIsCurrent('repair', token, startedRevision)) announce('The repaired candidate hash could not be calculated.'); });
+          announce(__alloT('stem.printlab.sr_the_conservative_repair_candidate_is_now_the_loca', 'The conservative repair candidate is now the local working copy. Its analysis remains advisory.'));
+        }).catch(function () { if (operationIsCurrent('repair', token, startedRevision)) announce(__alloT('stem.printlab.sr_the_repaired_candidate_hash_could_not_be_calculat', 'The repaired candidate hash could not be calculated.')); });
       }
 
       function downloadRepairCandidate() {
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
         if (!Printable || !repairResult || !repairResult.ok || !repairResult.buffer) return;
         downloadBlob(new Blob([repairResult.buffer], { type: 'model/stl' }), Printable.safeFilename(title || 'student-model') + '-conservative-repair.stl');
-        announce('Downloaded the conservative repair candidate. It is not certified watertight or ready to print.');
+        announce(__alloT('stem.printlab.sr_downloaded_the_conservative_repair_candidate_it_i', 'Downloaded the conservative repair candidate. It is not certified watertight or ready to print.'));
       }
 
       function setProfileField(key, value) {
@@ -1156,7 +1167,7 @@
       function importFile(event) {
         var file = event.target.files && event.target.files[0]; event.target.value = '';
         var accepted = allowedFile(file); if (!accepted.ok) { announce(accepted.message); return; }
-        if (!runtimeReady) { announce('The local inspection engine is still loading.'); return; }
+        if (!runtimeReady) { announce(__alloT('stem.printlab.sr_the_local_inspection_engine_is_still_loading', 'The local inspection engine is still loading.')); return; }
         var operation = beginDesignOperation('modelImport'), token = operation.token, startedRevision = operation.revision;
         var Printable = window.AlloModules.PrintableModel, P3D = window.AlloModules.Prim3D;
         announce('Reading ' + accepted.format + ' locally…');
@@ -1177,19 +1188,19 @@
               setSourceContext(null);
               replaceDesign('RECIPE', clean, null, null, '', 20, recipeReport, normalizedHash, 'modelImport');
               setTitle(clean.name || safeText(file.name.replace(/\.json$/i, ''), 100));
-              announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
+              announce(__alloT('stem.printlab.sr_import_inspected_locally_confirm_scale_and_review', 'Import inspected locally. Confirm scale and review Preflight before submitting.'));
             });
           } else if (accepted.format === 'STL') {
             var stlReport = Printable.inspectStl(bytes, 1, profile);
             setSourceContext(null);
             replaceDesign('STL', null, bytes, null, file.name, 1, stlReport, hash, 'modelImport');
-            announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
+            announce(__alloT('stem.printlab.sr_import_inspected_locally_confirm_scale_and_review', 'Import inspected locally. Confirm scale and review Preflight before submitting.'));
           } else {
             var glbReport = Printable.inspectGlb(bytes, 10, profile);
             if (hasBlockingIssue(glbReport)) {
               setSourceContext(null);
               replaceDesign('GLB', null, bytes, null, file.name, 10, glbReport, hash, 'modelImport');
-              announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
+              announce(__alloT('stem.printlab.sr_import_inspected_locally_confirm_scale_and_review', 'Import inspected locally. Confirm scale and review Preflight before submitting.'));
               return null;
             }
             return ensureThree().then(function (THREE) { return parseGlb(THREE, bytes); }).then(function (root) {
@@ -1197,7 +1208,7 @@
               glbReport = inspectObjectCapabilities(root, glbReport);
               setSourceContext(null);
               replaceDesign('GLB', null, bytes, root, file.name, 10, glbReport, hash, 'modelImport');
-              announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
+              announce(__alloT('stem.printlab.sr_import_inspected_locally_confirm_scale_and_review', 'Import inspected locally. Confirm scale and review Preflight before submitting.'));
             });
           }
           return null;
@@ -1210,9 +1221,9 @@
         var file = event.target.files && event.target.files[0]; event.target.value = '';
         var accepted = allowedGcodeFile(file); if (!accepted.ok) { announce(accepted.message); return; }
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
-        if (!Printable) { announce('The local metadata reader is still loading.'); return; }
+        if (!Printable) { announce(__alloT('stem.printlab.sr_the_local_metadata_reader_is_still_loading', 'The local metadata reader is still loading.')); return; }
         var token = beginOperation('gcodeImport'), startedRevision = contextRevisionRef.current;
-        announce('Reading allowlisted G-code comments locally. Toolpath commands will not be interpreted.');
+        announce(__alloT('stem.printlab.sr_reading_allowlisted_g_code_comments_locally_toolp', 'Reading allowlisted G-code comments locally. Toolpath commands will not be interpreted.'));
         var metadataPromise = readBytes(file).then(function (bytes) {
           var parsed = Printable.parseGcodeMetadata(bytes);
           if (!parsed.ok) throw new Error(parsed.errors.join(' '));
@@ -1228,15 +1239,15 @@
             var next = Object.assign({}, quoteConfig, { estimatedMinutes: Math.round(result.value.estimatedTimeSeconds / 6) / 10 });
             setQuoteConfig(next); persist({ quoteConfig: next });
           }
-          announce('Slicer comment metadata imported locally. No G-code command was stored or executed.');
+          announce(__alloT('stem.printlab.sr_slicer_comment_metadata_imported_locally_no_g_cod', 'Slicer comment metadata imported locally. No G-code command was stored or executed.'));
         }).catch(function (error) { if (operationIsCurrent('gcodeImport', token, startedRevision)) announce(error && error.message ? error.message : 'G-code comment metadata could not be read.'); });
       }
 
       function callRecipeAi(kind) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!P3D || typeof ctx.callGemini !== 'function') { announce('AI assistance is not configured. Manual primitive tools remain available.'); return; }
+        if (!P3D || typeof ctx.callGemini !== 'function') { announce(__alloT('stem.printlab.sr_ai_assistance_is_not_configured_manual_primitive', 'AI assistance is not configured. Manual primitive tools remain available.')); return; }
         var prompt = kind === 'refine' ? P3D.buildRefinePrompt(recipe, aiRefinement) : P3D.buildRecipePrompt(aiSubject);
-        if ((kind === 'refine' && !aiRefinement.trim()) || (kind !== 'refine' && !aiSubject.trim())) { announce('Describe what you want the modeling assistant to do.'); return; }
+        if ((kind === 'refine' && !aiRefinement.trim()) || (kind !== 'refine' && !aiSubject.trim())) { announce(__alloT('stem.printlab.sr_describe_what_you_want_the_modeling_assistant_to', 'Describe what you want the modeling assistant to do.')); return; }
         var operation = beginDesignOperation('ai'), token = operation.token, startedRevision = operation.revision;
         setAiBusy(true); announce(kind === 'refine' ? 'Preparing an AI-assisted revision…' : 'Preparing an AI-assisted primitive recipe…');
         Promise.resolve(ctx.callGemini(prompt, false, false, 0.5)).then(function (response) {
@@ -1245,7 +1256,7 @@
           if (!next) throw new Error('The modeling response did not contain a valid primitive recipe.');
           updateRecipe(next, unitMm, 'ai'); setTitle(next.name || title); setAiUse('ASSISTED');
           if (!aiDisclosure) setAiDisclosure(kind === 'refine' ? 'AI helped revise a primitive-based model from my instruction.' : 'AI proposed a primitive-based starting model that I reviewed and can edit.');
-          announce('AI-assisted recipe ready. Review every part and run Preflight.');
+          announce(__alloT('stem.printlab.sr_ai_assisted_recipe_ready_review_every_part_and_ru', 'AI-assisted recipe ready. Review every part and run Preflight.'));
         }).catch(function (error) { if (operationIsCurrent('ai', token, startedRevision)) announce(error && error.message ? error.message : 'AI modeling was unavailable.'); }).then(function () { if (operationIsCurrent('ai', token, startedRevision)) setAiBusy(false); });
       }
 
@@ -1277,10 +1288,10 @@
       }
 
       function createJobTicket() {
-        if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce('Complete model analysis before creating a job ticket.'); return; }
-        if (!gcodeEvidenceCurrent) { announce('Import comment metadata from the approved school slicer for this exact model, scale, material, and printer profile before creating a job ticket.'); return; }
-        if (!quoteMaterial || !(Number(quoteMaterial.estimatedGrams) > 0)) { announce('The reviewed slicer handoff must include a positive material mass in grams before creating a job ticket.'); return; }
-        if (!profileReviewed || !materialReviewed) { announce('Confirm the reviewed material and printer profile first.'); return; }
+        if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce(__alloT('stem.printlab.sr_complete_model_analysis_before_creating_a_job_tic', 'Complete model analysis before creating a job ticket.')); return; }
+        if (!gcodeEvidenceCurrent) { announce(__alloT('stem.printlab.sr_import_comment_metadata_from_the_approved_school', 'Import comment metadata from the approved school slicer for this exact model, scale, material, and printer profile before creating a job ticket.')); return; }
+        if (!quoteMaterial || !(Number(quoteMaterial.estimatedGrams) > 0)) { announce(__alloT('stem.printlab.sr_the_reviewed_slicer_handoff_must_include_a_positi', 'The reviewed slicer handoff must include a positive material mass in grams before creating a job ticket.')); return; }
+        if (!profileReviewed || !materialReviewed) { announce(__alloT('stem.printlab.sr_confirm_the_reviewed_material_and_printer_profile', 'Confirm the reviewed material and printer profile first.')); return; }
         var token = beginOperation('ticket'), startedRevision = contextRevisionRef.current;
         currentModelHash().then(function (hash) {
           if (!operationIsCurrent('ticket', token, startedRevision)) return null;
@@ -1299,13 +1310,13 @@
         }).then(function (ticket) {
           if (!ticket || !operationIsCurrent('ticket', token, startedRevision)) return;
           setJobTicket(ticket); setSimulatorSnapshot(null); setSimulatorJobKey(''); setSimulatedSchedule(null); simulatorRef.current = null;
-          announce('Created a privacy-minimized local job ticket. It contains no G-code commands and does not authorize printing.');
+          announce(__alloT('stem.printlab.sr_created_a_privacy_minimized_local_job_ticket_it_c', 'Created a privacy-minimized local job ticket. It contains no G-code commands and does not authorize printing.'));
         }).catch(function (error) { if (operationIsCurrent('ticket', token, startedRevision)) announce(error && error.message ? error.message : 'The job ticket could not be created.'); });
       }
 
       function downloadJobTicket() {
         if (!Printable || !jobTicket) return;
-        try { downloadBlob(new Blob([Printable.serializePrintJobTicket(jobTicket)], { type: 'application/json' }), Printable.safeFilename(title || 'print-job') + '.alloflow-print-job.json'); announce('Downloaded the versioned job ticket for staff review.'); }
+        try { downloadBlob(new Blob([Printable.serializePrintJobTicket(jobTicket)], { type: 'application/json' }), Printable.safeFilename(title || 'print-job') + '.alloflow-print-job.json'); announce(__alloT('stem.printlab.sr_downloaded_the_versioned_job_ticket_for_staff_rev', 'Downloaded the versioned job ticket for staff review.')); }
         catch (error) { announce(error && error.message ? error.message : 'The job ticket could not be downloaded.'); }
       }
 
@@ -1319,20 +1330,20 @@
       }
 
       function queueSimulation() {
-        if (!jobTicket) { announce('Create a reviewed job ticket before using the simulator.'); return; }
-        try { var adapter=simulator(),job=adapter.submit(jobTicket,'sim-printer-a');setSimulatorJobKey(job.jobKey);setSimulatorSnapshot(adapter.snapshot());announce('Queued a simulation-only job. No printer was contacted.'); }
+        if (!jobTicket) { announce(__alloT('stem.printlab.sr_create_a_reviewed_job_ticket_before_using_the_sim', 'Create a reviewed job ticket before using the simulator.')); return; }
+        try { var adapter=simulator(),job=adapter.submit(jobTicket,'sim-printer-a');setSimulatorJobKey(job.jobKey);setSimulatorSnapshot(adapter.snapshot());announce(__alloT('stem.printlab.sr_queued_a_simulation_only_job_no_printer_was_conta', 'Queued a simulation-only job. No printer was contacted.')); }
         catch(error){announce(error&&error.message?error.message:'The simulated job could not be queued.');}
       }
 
       function advanceSimulation() {
         var adapter=simulator();if(!adapter||!simulatorJobKey)return;
-        try { var state=adapter.snapshot(),job=state.jobs[simulatorJobKey];if(job&&job.state==='PRINTING'&&job.progressPercent<75)adapter.emit({type:'JOB_PROGRESS',jobKey:simulatorJobKey,printerKey:job.printerKey,progressPercent:job.progressPercent+25,atMinute:state.sequence});else adapter.advance(simulatorJobKey);setSimulatorSnapshot(adapter.snapshot());announce('Advanced simulated telemetry only. No physical action occurred.'); }
+        try { var state=adapter.snapshot(),job=state.jobs[simulatorJobKey];if(job&&job.state==='PRINTING'&&job.progressPercent<75)adapter.emit({type:'JOB_PROGRESS',jobKey:simulatorJobKey,printerKey:job.printerKey,progressPercent:job.progressPercent+25,atMinute:state.sequence});else adapter.advance(simulatorJobKey);setSimulatorSnapshot(adapter.snapshot());announce(__alloT('stem.printlab.sr_advanced_simulated_telemetry_only_no_physical_act', 'Advanced simulated telemetry only. No physical action occurred.')); }
         catch(error){announce(error&&error.message?error.message:'The simulation could not advance.');}
       }
 
       function planCapacity() {
-        if (!jobTicket) { announce('Create a job ticket before planning capacity.'); return; }
-        var adapter=simulator();setSimulatedSchedule(adapter.plan([jobTicket,jobTicket,jobTicket]));announce('Planned a deterministic three-copy example across two simulated printers.');
+        if (!jobTicket) { announce(__alloT('stem.printlab.sr_create_a_job_ticket_before_planning_capacity', 'Create a job ticket before planning capacity.')); return; }
+        var adapter=simulator();setSimulatedSchedule(adapter.plan([jobTicket,jobTicket,jobTicket]));announce(__alloT('stem.printlab.sr_planned_a_deterministic_three_copy_example_across', 'Planned a deterministic three-copy example across two simulated printers.'));
       }
 
       function buildSubmissionPreflight() {
@@ -1342,8 +1353,8 @@
       }
 
       function downloadHandoff() {
-        if (!Printable) { announce('The handoff engine is still loading.'); return; }
-        var activeReport = report || runPreflight(); if (!activeReport || activeReport.status === 'FAIL') { chooseTab('Preflight'); announce('Resolve blocking preflight items before creating a handoff.'); return; }
+        if (!Printable) { announce(__alloT('stem.printlab.sr_the_handoff_engine_is_still_loading', 'The handoff engine is still loading.')); return; }
+        var activeReport = report || runPreflight(); if (!activeReport || activeReport.status === 'FAIL') { chooseTab('Preflight'); announce(__alloT('stem.printlab.sr_resolve_blocking_preflight_items_before_creating', 'Resolve blocking preflight items before creating a handoff.')); return; }
         var token = beginOperation('handoff'), startedRevision = contextRevisionRef.current;
         var hashPromise = contentHash ? Promise.resolve(contentHash) : Printable.sha256Hex(format === 'RECIPE' ? JSON.stringify(recipe || {}) : fileBytes);
         hashPromise.then(function (hash) {
@@ -1357,12 +1368,12 @@
           });
           var name = Printable.safeFilename(title || 'student-model') + '.alloflow-print.json';
           downloadBlob(new Blob([serialized], { type: 'application/json' }), name);
-          announce('Downloaded a privacy-minimized staff-review handoff. The model file itself was not embedded.');
+          announce(__alloT('stem.printlab.sr_downloaded_a_privacy_minimized_staff_review_hando', 'Downloaded a privacy-minimized staff-review handoff. The model file itself was not embedded.'));
         }).catch(function (error) { if (operationIsCurrent('handoff', token, startedRevision)) announce(error && error.message ? error.message : 'The handoff could not be created.'); });
       }
 
       function exportStl() {
-        if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce('Run preflight and resolve blocking items before exporting STL.'); return; }
+        if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce(__alloT('stem.printlab.sr_run_preflight_and_resolve_blocking_items_before_e', 'Run preflight and resolve blocking items before exporting STL.')); return; }
         var token = beginOperation('export'), startedRevision = contextRevisionRef.current;
         ensureThree().then(function (THREE) {
           if (!operationIsCurrent('export', token, startedRevision)) return;
@@ -1373,7 +1384,7 @@
           disposeObject(object, false);
           if (!buffer) throw new Error('The model did not contain exportable triangles.');
           downloadBlob(new Blob([buffer], { type: 'model/stl' }), Printable.safeFilename(title || 'student-model') + '.stl');
-          announce('STL exported. Re-open it in the school’s slicer to confirm orientation, supports, scale, and machine settings.');
+          announce(__alloT('stem.printlab.sr_stl_exported_re_open_it_in_the_school_s_slicer_to', 'STL exported. Re-open it in the school’s slicer to confirm orientation, supports, scale, and machine settings.'));
         }).catch(function (error) { if (operationIsCurrent('export', token, startedRevision)) announce(error && error.message ? error.message : 'STL export was unavailable.'); });
       }
 
@@ -1490,7 +1501,7 @@
                 )
               ),
               runtimeError && h('p', { role: 'alert', className: 'mt-2 rounded-lg border border-rose-700 bg-rose-950/40 p-2 text-xs text-rose-100' }, runtimeError),
-              h('div', { className: 'mt-3 flex flex-wrap gap-2', 'aria-label': 'Add a primitive' }, SHAPES.map(function (shape) { return h('button', { key: shape, type: 'button', disabled: !runtimeReady, onClick: function () { addPrimitive(shape); }, className: 'min-h-[42px] rounded-xl bg-cyan-700 px-3 text-xs font-black text-white disabled:opacity-50' }, '+ ' + shape); })),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2', 'aria-label': __alloT('stem.printlab.a11y_add_a_primitive', 'Add a primitive') }, SHAPES.map(function (shape) { return h('button', { key: shape, type: 'button', disabled: !runtimeReady, onClick: function () { addPrimitive(shape); }, className: 'min-h-[42px] rounded-xl bg-cyan-700 px-3 text-xs font-black text-white disabled:opacity-50' }, '+ ' + shape); })),
               recipe && field('Model name', recipe.name || '', function (value) { updateRecipe(Object.assign({}, recipe, { name: safeText(value, 80) })); }),
               !recipe && h('p', { className: 'mt-3 rounded-xl border border-dashed border-slate-600 p-4 text-sm text-slate-300' }, 'No primitive recipe yet. Add a shape, import a file, or use an optional AI starting point.'),
               recipe && h('div', { className: 'mt-3 space-y-3' }, recipe.parts.map(renderPart))
@@ -1559,7 +1570,7 @@
               geometryScaleRecommendation && geometryScaleRecommendation.needsReduction && h('div', {
                 className: 'mt-2 rounded-xl border border-cyan-700 bg-cyan-950/30 p-3 text-cyan-50',
                 role: 'region',
-                'aria-label': 'Suggested Geometry World scale correction',
+                'aria-label': __alloT('stem.printlab.a11y_suggested_geometry_world_scale_correction', 'Suggested Geometry World scale correction'),
                 'data-geometry-scale-recommendation': geometryScaleRecommendation.canFit ? geometryScaleRecommendation.recommendedUnitMm : 'unavailable'
               },
                 h('strong', { className: 'block text-xs' }, geometryScaleRecommendation.canFit
@@ -1572,7 +1583,7 @@
                     'This targets a usable ' + geometryScaleRecommendation.availableLabel + ' envelope, preserving ' + geometryScaleRecommendation.clearanceMm + ' mm on every edge. Printer clips, purge lines, and machine keep-out zones still require slicer and staff review.'
                   )
                   : 'Revise the model or choose a different printer profile before preflight.'),
-                geometryScaleRecommendation.canFit && geometryScaleRecommendation.recommendedPhysicalSize && h('dl', { className: 'mt-3 grid grid-cols-3 gap-2', 'aria-label': 'Scale change preview' },
+                geometryScaleRecommendation.canFit && geometryScaleRecommendation.recommendedPhysicalSize && h('dl', { className: 'mt-3 grid grid-cols-3 gap-2', 'aria-label': __alloT('stem.printlab.a11y_scale_change_preview', 'Scale change preview') },
                   h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, 'Current envelope'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryPhysicalSize.label)),
                   h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, 'Suggested envelope'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryScaleRecommendation.recommendedPhysicalSize.label)),
                   h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, 'Scale reduction'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryScaleRecommendation.reductionPercent + '%'))
@@ -1591,7 +1602,7 @@
                 geometryOrientationAdvice && h('div', {
                   className: 'mt-3 rounded-lg border border-violet-600 bg-violet-950/35 p-3 text-violet-50',
                   role: 'note',
-                  'aria-label': 'Alternative 90-degree model orientation',
+                  'aria-label': __alloT('stem.printlab.a11y_alternative_90_degree_model_orientation', 'Alternative 90-degree model orientation'),
                   'data-geometry-orientation-advice': geometryOrientationAdvice.currentScaleFitsRotated ? 'preserve-scale' : 'improve-scale'
                 },
                   h('strong', { className: 'block text-xs' }, 'A 90-degree turn may fit better'),
@@ -1631,7 +1642,7 @@
               className: 'mt-3 rounded-xl border p-3 ' + (geometryClearanceFit ? 'border-emerald-700 bg-emerald-950/30 text-emerald-100' : 'border-amber-600 bg-amber-950/30 text-amber-100'),
               role: 'region',
               'aria-live': 'polite',
-              'aria-label': 'Geometry World printer fit in Preflight',
+              'aria-label': __alloT('stem.printlab.a11y_geometry_world_printer_fit_in_preflight', 'Geometry World printer fit in Preflight'),
               'data-geometry-preflight-fit': geometryClearanceFit ? 'true' : 'false'
             },
               h('strong', { className: 'block text-xs' }, geometryClearanceFit ? 'Geometry World scale fits this profile' : 'Geometry World scale needs attention'),
@@ -1681,7 +1692,7 @@
               h('dl', { className: 'grid gap-2 sm:grid-cols-2 xl:grid-cols-4' },
                 [['Width', report.dimensionsMm && report.dimensionsMm.width, 'mm'], ['Depth', report.dimensionsMm && report.dimensionsMm.depth, 'mm'], ['Height', report.dimensionsMm && report.dimensionsMm.height, 'mm'], ['Triangles', report.triangleCount, '']].map(function (row) { return h('div', { key: row[0], className: 'rounded-xl bg-slate-950 p-3' }, h('dt', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, row[0]), h('dd', { className: 'mt-1 text-lg font-black text-white' }, row[1] == null ? '—' : row[1] + (row[2] ? ' ' + row[2] : ''))); })
               ),
-              h('ul', { className: 'space-y-2', 'aria-label': 'Preflight findings' }, (report.issues || []).map(function (item, index) { return h('li', { key: item.code + index, className: 'rounded-xl border p-3 text-xs leading-5 ' + (item.severity === 'ERROR' ? 'border-rose-700 bg-rose-950/30 text-rose-100' : 'border-amber-600 bg-amber-950/20 text-amber-100') }, h('strong', null, item.severity + ': '), item.message); })),
+              h('ul', { className: 'space-y-2', 'aria-label': __alloT('stem.printlab.a11y_preflight_findings', 'Preflight findings') }, (report.issues || []).map(function (item, index) { return h('li', { key: item.code + index, className: 'rounded-xl border p-3 text-xs leading-5 ' + (item.severity === 'ERROR' ? 'border-rose-700 bg-rose-950/30 text-rose-100' : 'border-amber-600 bg-amber-950/20 text-amber-100') }, h('strong', null, item.severity + ': '), item.message); })),
               !(report.issues || []).length && h('p', { className: 'rounded-xl border border-emerald-700 bg-emerald-950/30 p-3 text-xs text-emerald-100' }, 'No blocking condition was found by these limited checks.')
             ),
             h('div', { className: 'mt-4 rounded-xl border border-cyan-800 bg-cyan-950/30 p-3 text-xs leading-5 text-cyan-100' },
@@ -1766,7 +1777,7 @@
               h('p', { className: 'mt-1' }, rewardsAssetCompatibility.reason + ' Current local file: ' + rewardsAssetSizeLabel + '; portal maximum: 4 MiB. The 5 MiB local inspection allowance is intentionally larger so staff can inspect and simplify a borderline file without uploading it.')
             ),
             h('button', { type: 'button', disabled: !title.trim() || !report || report.status === 'FAIL', onClick: downloadHandoff, className: 'min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Download review handoff'),
-            rewardsPortalUrl && h('button', { type: 'button', disabled: !rewardsAssetCompatibility.compatible, 'data-school-rewards-asset-ready': rewardsAssetCompatibility.compatible ? 'true' : 'false', onClick: function () { try { var popup = window.open(rewardsPortalUrl, '_blank', 'noopener,noreferrer'); if (popup) popup.opener = null; } catch (_) { announce('The School Rewards portal could not open.'); } }, className: 'min-h-[44px] w-full rounded-xl border border-emerald-400 bg-emerald-950/30 px-4 text-sm font-black text-emerald-100 disabled:cursor-not-allowed disabled:border-slate-600 disabled:text-slate-400' }, 'Open School Rewards portal'),
+            rewardsPortalUrl && h('button', { type: 'button', disabled: !rewardsAssetCompatibility.compatible, 'data-school-rewards-asset-ready': rewardsAssetCompatibility.compatible ? 'true' : 'false', onClick: function () { try { var popup = window.open(rewardsPortalUrl, '_blank', 'noopener,noreferrer'); if (popup) popup.opener = null; } catch (_) { announce(__alloT('stem.printlab.sr_the_school_rewards_portal_could_not_open', 'The School Rewards portal could not open.')); } }, className: 'min-h-[44px] w-full rounded-xl border border-emerald-400 bg-emerald-950/30 px-4 text-sm font-black text-emerald-100 disabled:cursor-not-allowed disabled:border-slate-600 disabled:text-slate-400' }, 'Open School Rewards portal'),
             !rewardsPortalUrl && h('p', { className: 'text-[0.6875rem] leading-5 text-slate-300' }, 'Connect the Google Education School Rewards portal in AlloFlow Project Settings to open it directly from this step.'),
             h('button', { type: 'button', disabled: !report || report.status === 'FAIL', onClick: exportStl, className: 'min-h-[44px] w-full rounded-xl border border-cyan-400 px-4 text-sm font-black text-cyan-100 disabled:opacity-50' }, 'Optional STL export'),
             h('p', { className: 'text-[0.6875rem] leading-5 text-amber-100' }, 'The receiving school workflow must pair the handoff with the original GLB/STL when needed, verify the content hash, inspect the slicer preview, approve a point quote, and only then create a store request.'),
@@ -1790,7 +1801,7 @@
           h('h1', { className: 'mt-1 text-2xl font-black text-white' }, 'Print Lab'),
           h('p', { className: 'mt-2 max-w-4xl text-sm leading-6 text-slate-200' }, 'Shape a model, understand its physical scale and material tradeoffs, and prepare evidence for a staff-reviewed print request. Nothing here spends points or starts a printer.')
         ),
-        h('nav', { role: 'tablist', 'aria-label': 'Print Lab workflow', className: 'grid grid-cols-2 gap-2 rounded-2xl border border-slate-700 bg-slate-900 p-2 sm:grid-cols-4' }, TABS.map(function (name, index) {
+        h('nav', { role: 'tablist', 'aria-label': __alloT('stem.printlab.a11y_print_lab_workflow', 'Print Lab workflow'), className: 'grid grid-cols-2 gap-2 rounded-2xl border border-slate-700 bg-slate-900 p-2 sm:grid-cols-4' }, TABS.map(function (name, index) {
           var lower = name.toLowerCase(), selected = activeTab === name;
           return h('button', { key: name, id: 'print-lab-tab-' + lower, type: 'button', role: 'tab', 'aria-selected': selected ? 'true' : 'false', 'aria-controls': 'print-lab-panel-' + lower, tabIndex: selected ? 0 : -1, onKeyDown: function (event) { onTabKey(event, index); }, onClick: function () { chooseTab(name); }, className: 'min-h-[44px] rounded-xl px-3 text-sm font-black ' + (selected ? 'bg-cyan-500 text-slate-950' : 'bg-slate-950 text-slate-200') }, (index + 1) + '. ' + name);
         })),

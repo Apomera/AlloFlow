@@ -50,6 +50,16 @@ window.StemLab = window.StemLab || {
 // ═══ End Guard ═══
 
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloSLCtx = null;
+  var __alloSLT = function (k, fb) {
+    var v;
+    try { v = (__alloSLCtx && typeof __alloSLCtx.t === "function") ? __alloSLCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   // ── Reduced motion (WCAG 2.3.3) ──
@@ -1477,6 +1487,7 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return (d.quizCompletedCount || 0) > 0 ? 'best: ' + (d.quizCorrect || 0) + '/5' : 'pending'; } }
     ],
     render: function(ctx) {
+      __alloSLCtx = ctx;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
@@ -1854,7 +1865,7 @@ window.StemLab = window.StemLab || {
       },
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-          h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM tools', 'data-sl-focusable': 'true', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid rgba(99,102,241,.45)', background: 'rgba(99,102,241,.10)', color: '#c7d2fe', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),
+          h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloSLT('stem.statslab.a11y_back_to_stem_tools', 'Back to STEM tools'), 'data-sl-focusable': 'true', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid rgba(99,102,241,.45)', background: 'rgba(99,102,241,.10)', color: '#c7d2fe', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),
           h('div', { style: { fontSize: 36 } }, '📊'),
           h('div', { style: { flex: 1 } },
             h('h2', { style: { margin: 0, color: 'var(--sl-heading)', fontSize: 24, fontWeight: 900 } }, __alloT('stem.statslab.statistics_lab', 'Statistics Lab')),
@@ -1869,11 +1880,11 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.15em] text-indigo-300' }, 'Research analysis command · Stage ' + analysisStage + '/4'),
               h('h2', { id: 'statslab-command-title', className: 'mt-2 text-xl sm:text-2xl font-black text-white' }, analysisMission.icon + ' ' + analysisMission.title),
               h('p', { className: 'mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed' }, analysisMission.detail),
-              h('div', { className: 'mt-4 grid grid-cols-3 gap-2', 'aria-label': 'Statistics workflow status' },
+              h('div', { className: 'mt-4 grid grid-cols-3 gap-2', 'aria-label': __alloSLT('stem.statslab.a11y_statistics_workflow_status', 'Statistics workflow status') },
                 [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-200' }, metric[1])); })
               )
             ),
-            h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': 'Statistics evidence route' },
+            h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': __alloSLT('stem.statslab.a11y_statistics_evidence_route', 'Statistics evidence route') },
               h('div', { className: 'flex items-center justify-between gap-3' }, h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-300' }, 'Evidence route'), h('span', { className: 'text-lg font-black text-white' }, analysisStage + '/4')),
               h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-800', role: 'progressbar', 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': analysisStage, 'aria-label': 'Statistics analysis stage ' + analysisStage + ' of 4' }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400', style: { width: (analysisStage / 4 * 100) + '%' } })),
               h('ol', { className: 'mt-4 space-y-1.5 text-[0.6875rem] text-slate-300' }, ['Question', 'Sample', 'Test', 'Conclusion'].map(function(step, i) { return h('li', { key: step, className: 'flex items-center gap-2' }, h('span', { className: i < analysisStage ? 'text-emerald-400' : 'text-slate-600', 'aria-hidden': 'true' }, i < analysisStage ? '●' : '○'), h('span', null, step)); }))
@@ -2583,7 +2594,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-info)', marginBottom: 4 } }, '🧮 Local analytical workspace'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Run read-only SQL over the numeric data currently in Stats Lab. The query executes locally in your browser and keeps its source/provenance with the result.'),
-        h('textarea', { value: kernelSQL, onChange: function(e) { upd({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, 'data-sl-focusable': 'true', 'aria-label': 'Local analytical SQL query', placeholder: 'SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name', style: { width: '100%', padding: '7px 9px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' } }),
+        h('textarea', { value: kernelSQL, onChange: function(e) { upd({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, 'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_local_analytical_sql_query', 'Local analytical SQL query'), placeholder: 'SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name', style: { width: '100%', padding: '7px 9px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' } }),
         kernelRecipes.length > 0 && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' } },
           h('label', { htmlFor: 'sl-kernel-recipe', style: { fontSize: 10, fontWeight: 800, color: 'var(--sl-info)' } }, 'Starter recipe'),
           h('select', { id: 'sl-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, 'data-sl-focusable': 'true', style: { flex: 1, minWidth: 190, padding: '5px 7px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-info)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontSize: 10 } },
@@ -2622,7 +2633,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'text', value: t.aLabel,
               onChange: function(e) { upd('twoColData', Object.assign({}, t, { aLabel: e.target.value })); },
-              'data-sl-focusable': 'true', 'aria-label': 'Column A label',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_column_a_label', 'Column A label'),
               style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
@@ -2631,7 +2642,7 @@ window.StemLab = window.StemLab || {
                 var vals = e.target.value.split(/[\s,]+/).map(parseFloat).filter(_isNum);
                 upd('twoColData', Object.assign({}, t, { a: vals }));
               },
-              'data-sl-focusable': 'true', 'aria-label': 'Column A values',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_column_a_values', 'Column A values'),
               placeholder: 'one number per line\nor comma-separated',
               rows: 8,
               style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
@@ -2642,7 +2653,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'text', value: t.bLabel,
               onChange: function(e) { upd('twoColData', Object.assign({}, t, { bLabel: e.target.value })); },
-              'data-sl-focusable': 'true', 'aria-label': 'Column B label',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_column_b_label', 'Column B label'),
               style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
@@ -2651,7 +2662,7 @@ window.StemLab = window.StemLab || {
                 var vals = e.target.value.split(/[\s,]+/).map(parseFloat).filter(_isNum);
                 upd('twoColData', Object.assign({}, t, { b: vals }));
               },
-              'data-sl-focusable': 'true', 'aria-label': 'Column B values',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_column_b_values', 'Column B values'),
               placeholder: 'one number per line\nor comma-separated',
               rows: 8,
               style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
@@ -2668,7 +2679,7 @@ window.StemLab = window.StemLab || {
           h('summary', { style: { cursor: 'pointer', fontSize: 11, color: 'var(--sl-heading)' } }, '📋 Paste CSV (header row optional)'),
           h('textarea', {
             placeholder: 'Group A,Group B\n22,15\n25,18\n...',
-            'aria-label': 'CSV paste for two columns',
+            'aria-label': __alloSLT('stem.statslab.a11y_csv_paste_for_two_columns', 'CSV paste for two columns'),
             rows: 5,
             'data-sl-focusable': 'true',
             onPaste: function(e) {
@@ -2755,7 +2766,7 @@ window.StemLab = window.StemLab || {
               var vals = e.target.value.split(/[\s,]+/).map(parseFloat).filter(_isNum);
               upd('oneColData', Object.assign({}, d.oneColData, { values: vals }));
             },
-            'data-sl-focusable': 'true', 'aria-label': 'Single column values',
+            'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_single_column_values', 'Single column values'),
             rows: 5,
             style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
           }),
@@ -2768,7 +2779,7 @@ window.StemLab = window.StemLab || {
                 var n = parseFloat(e.target.value);
                 upd('oneColData', Object.assign({}, d.oneColData, { mu0: isFinite(n) ? n : 0 }));
               },
-              'data-sl-focusable': 'true', 'aria-label': 'Hypothesized population mean',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_hypothesized_population_mean', 'Hypothesized population mean'),
               style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginTop: 4, boxSizing: 'border-box' }
             }),
             h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'n = ' + d.oneColData.values.length)
@@ -2871,7 +2882,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { overflowX: 'auto' } },
           h('table', {
             style: { borderCollapse: 'collapse', fontSize: 11 },
-            'aria-label': 'Contingency table editor'
+            'aria-label': __alloSLT('stem.statslab.a11y_contingency_table_editor', 'Contingency table editor')
           },
             h('thead', null,
               h('tr', null,
@@ -2897,7 +2908,7 @@ window.StemLab = window.StemLab || {
                       var table = d.chiIndepData.table.map(function(row) { return row.concat([0]); });
                       upd('chiIndepData', Object.assign({}, d.chiIndepData, { cols: cols, table: table }));
                     },
-                    'data-sl-focusable': 'true', 'aria-label': 'Add column',
+                    'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_add_column', 'Add column'),
                     style: { padding: '2px 6px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }
                   }, '+col')
                 )
@@ -2956,7 +2967,7 @@ window.StemLab = window.StemLab || {
                       var table = d.chiIndepData.table.slice(); table.push(newRow);
                       upd('chiIndepData', Object.assign({}, d.chiIndepData, { rows: rows, table: table }));
                     },
-                    'data-sl-focusable': 'true', 'aria-label': 'Add row',
+                    'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_add_row', 'Add row'),
                     style: { padding: '4px 10px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }
                   }, '+ Add row')
                 )
@@ -2981,7 +2992,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', gap: 10, marginBottom: 10, flexWrap: 'wrap', alignItems: 'flex-end' } },
           h('div', null,
             h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, '# of predictors:'),
-            h('input', { 'aria-label': "# of predictors",
+            h('input', { 'aria-label': __alloSLT('stem.statslab.a11y_of_predictors', '# of predictors'),
               type: 'number', min: 1, max: 8, step: 1,
               value: (d.multiRegData.xLabels || ['X1']).length,
               onChange: function(e) {
@@ -3005,7 +3016,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'text', value: d.multiRegData.yLabel || 'Y',
               onChange: function(e) { upd('multiRegData', Object.assign({}, d.multiRegData, { yLabel: e.target.value })); },
-              'data-sl-focusable': 'true', 'aria-label': 'Outcome variable label',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_outcome_variable_label', 'Outcome variable label'),
               style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
@@ -3025,7 +3036,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { overflowX: 'auto', maxHeight: 360, overflowY: 'auto' } },
           h('table', {
             style: { borderCollapse: 'collapse', fontSize: 11 },
-            'aria-label': 'Multiple regression data editor'
+            'aria-label': __alloSLT('stem.statslab.a11y_multiple_regression_data_editor', 'Multiple regression data editor')
           },
             h('thead', { style: { position: 'sticky', top: 0, background: 'var(--allo-stem-canvas, #0f172a)', zIndex: 1 } },
               h('tr', null,
@@ -3239,7 +3250,7 @@ window.StemLab = window.StemLab || {
           border: '1px solid rgba(245,158,11,0.45)',
           borderRadius: 10, padding: 12, marginBottom: 12
         },
-        role: 'note', 'aria-label': 'Assumption check warnings'
+        role: 'note', 'aria-label': __alloSLT('stem.statslab.a11y_assumption_check_warnings', 'Assumption check warnings')
       },
         h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--sl-warning)', marginBottom: 6 } }, '⚠ Assumption checks'),
         assumptionPreview.map(function(w, i) {
@@ -3313,7 +3324,7 @@ window.StemLab = window.StemLab || {
     });
 
     return h('section', {
-      'aria-label': 'AP statistics concept mastery',
+      'aria-label': __alloSLT('stem.statslab.a11y_ap_statistics_concept_mastery', 'AP statistics concept mastery'),
       style: { marginTop: 4 }
     },
       // Hero
@@ -3617,7 +3628,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { overflowX: 'auto' } },
           h('table', {
             style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: 'monospace' },
-            'aria-label': 'Multiple regression coefficients'
+            'aria-label': __alloSLT('stem.statslab.a11y_multiple_regression_coefficients', 'Multiple regression coefficients')
           },
             h('thead', null,
               h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
@@ -3689,7 +3700,7 @@ window.StemLab = window.StemLab || {
             background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.40)',
             borderRadius: 8
           },
-          role: 'region', 'aria-label': 'Glossary of statistical terms'
+          role: 'region', 'aria-label': __alloSLT('stem.statslab.a11y_glossary_of_statistical_terms', 'Glossary of statistical terms')
         },
           h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--sl-purple)', marginBottom: 8 } }, '📖 Definitions of terms in this result'),
           (function() {
@@ -3840,7 +3851,7 @@ window.StemLab = window.StemLab || {
         d.subsampleResult && h('div', { style: { marginTop: 10 } },
           h('table', {
             style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, fontFamily: 'monospace' },
-            'aria-label': 'Subsample stability table'
+            'aria-label': __alloSLT('stem.statslab.a11y_subsample_stability_table', 'Subsample stability table')
           },
             h('thead', null,
               h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
@@ -4712,7 +4723,7 @@ window.StemLab = window.StemLab || {
               id: 'sl-viz-d', type: 'range', min: 0, max: 2.0, step: 0.05,
               value: p.vizD || 0.5,
               onChange: function(e) { setP('vizD', parseFloat(e.target.value)); },
-              'data-sl-focusable': 'true', 'aria-label': "Cohen's d slider",
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_cohen_s_d_slider', 'Cohen\'s d slider'),
               style: { width: '100%' }
             })
           ),
@@ -4724,7 +4735,7 @@ window.StemLab = window.StemLab || {
               id: 'sl-viz-n', type: 'range', min: 4, max: 200, step: 2,
               value: p.vizN || 30,
               onChange: function(e) { setP('vizN', parseInt(e.target.value, 10)); },
-              'data-sl-focusable': 'true', 'aria-label': 'Sample size slider',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_sample_size_slider', 'Sample size slider'),
               style: { width: '100%' }
             })
           ),
@@ -4736,7 +4747,7 @@ window.StemLab = window.StemLab || {
               id: 'sl-viz-alpha', type: 'range', min: 0.001, max: 0.20, step: 0.001,
               value: p.vizAlpha || 0.05,
               onChange: function(e) { setP('vizAlpha', parseFloat(e.target.value)); },
-              'data-sl-focusable': 'true', 'aria-label': 'Alpha slider',
+              'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_alpha_slider', 'Alpha slider'),
               style: { width: '100%' }
             })
           )
@@ -5171,7 +5182,7 @@ window.StemLab = window.StemLab || {
     }
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
-      role: 'img', 'aria-label': 'Interaction plot of cell means across factor levels',
+      role: 'img', 'aria-label': __alloSLT('stem.statslab.a11y_interaction_plot_of_cell_means_across_factor_le', 'Interaction plot of cell means across factor levels'),
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     }, children);
   }

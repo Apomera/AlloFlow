@@ -35,6 +35,16 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab'))) {
 
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloAQCtx = null;
+  var __alloAQT = function (k, fb) {
+    var v;
+    try { v = (__alloAQCtx && typeof __alloAQCtx.t === "function") ? __alloAQCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   // ─── Live region (ARIA) ───
@@ -8102,7 +8112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (key === 'escape') {
         e.preventDefault();
         clearKeys();
-        aqAnnounce('Exiting the AquacultureLab 3D simulator.');
+        aqAnnounce(__alloAQT('stem.aquaculture.sr_exiting_the_aquaculturelab_3d_simulator', 'Exiting the AquacultureLab 3D simulator.'));
         if (opts && opts.onExit) opts.onExit();
         return;
       }
@@ -8153,13 +8163,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function submitMissionDecision(choiceId) {
       if (!boatState.surfaceReading || !boatState.cropDepthReading) {
         statusCb({ type: 'info', text: 'Verification response locked - record both depth samples first.' });
-        aqAnnounce('Record both depth samples before choosing the next verification step.');
+        aqAnnounce(__alloAQT('stem.aquaculture.sr_record_both_depth_samples_before_choosing_the_nex', 'Record both depth samples before choosing the next verification step.'));
         return;
       }
       var evaluation = aqEvaluateMissionDecision(missionScenario.id, boatState.surfaceReading, boatState.cropDepthReading, choiceId);
       if (!evaluation) {
         statusCb({ type: 'info', text: 'Choose one of the listed verification responses.' });
-        aqAnnounce('Choose one of the listed verification responses.');
+        aqAnnounce(__alloAQT('stem.aquaculture.sr_choose_one_of_the_listed_verification_responses', 'Choose one of the listed verification responses.'));
         return;
       }
       boatState.decisionAttempts += 1;
@@ -8249,12 +8259,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (boatState.fuel < 25 && !boatState.fuelWarningShown) {
         boatState.fuelWarningShown = true;
         statusCb({ type: 'warning', text: 'Fuel below 25% — finish lease work and plan the return.' });
-        aqAnnounce('Fuel below 25 percent. Finish lease work and plan the return.');
+        aqAnnounce(__alloAQT('stem.aquaculture.sr_fuel_below_25_percent_finish_lease_work_and_plan', 'Fuel below 25 percent. Finish lease work and plan the return.'));
       }
       if (boatState.fuel <= 0 && !boatState.fuelEmptyShown) {
         boatState.fuelEmptyShown = true;
         statusCb({ type: 'violation', text: 'Fuel exhausted — exit and restart the mission.' });
-        aqAnnounce('Fuel exhausted. Exit and restart the mission.');
+        aqAnnounce(__alloAQT('stem.aquaculture.sr_fuel_exhausted_exit_and_restart_the_mission', 'Fuel exhausted. Exit and restart the mission.'));
       }
 
       boat.position.x = boatState.pos.x;
@@ -8280,13 +8290,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             var starboardOffset = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
             if (starboardOffset > 0.4) {
               boatState.passedRedNun = true;
-              aqAnnounce('Correctly passed red nun on starboard heading up-river. Red right returning.');
+              aqAnnounce(__alloAQT('stem.aquaculture.sr_correctly_passed_red_nun_on_starboard_heading_up', 'Correctly passed red nun on starboard heading up-river. Red right returning.'));
               statusCb({ type: 'milestone', text: 'Passed first red nun on starboard ✓' });
               break;
             } else if (starboardOffset < -0.4 && !bb.userData.wrongSideWarned) {
               bb.userData.wrongSideWarned = true;
               boatState.buoyViolations += 1;
-              aqAnnounce('Wrong side. In IALA-B, returning vessels keep red on starboard. The Bagaduce up-river counts as "returning."');
+              aqAnnounce(__alloAQT('stem.aquaculture.sr_wrong_side_in_iala_b_returning_vessels_keep_red_o', 'Wrong side. In IALA-B, returning vessels keep red on starboard. The Bagaduce up-river counts as "returning."'));
               statusCb({ type: 'violation', text: 'Buoyage violation — move left of the red nun and retry inbound' });
             }
           }
@@ -8295,7 +8305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
       if (!boatState.reachedLease && dLease < 6) {
         boatState.reachedLease = true;
-        aqAnnounce('Reached your LPA lease. Deploy all five seeded lines first, then compare surface and crop-depth samples.');
+        aqAnnounce(__alloAQT('stem.aquaculture.sr_reached_your_lpa_lease_deploy_all_five_seeded_lin', 'Reached your LPA lease. Deploy all five seeded lines first, then compare surface and crop-depth samples.'));
         statusCb({ type: 'milestone', text: 'Reached lease — deploy droppers before taking the paired samples' });
       }
 
@@ -8304,13 +8314,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         actionRequests['f'] = false;
         if (!boatState.reachedLease || dLease >= 10) {
           statusCb({ type: 'info', text: 'Dropper unavailable — move inside the yellow lease markers.' });
-          aqAnnounce('Move inside the yellow lease markers before deploying a dropper.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_move_inside_the_yellow_lease_markers_before_deplo', 'Move inside the yellow lease markers before deploying a dropper.'));
         } else if (!boatState.passedRedNun) {
           statusCb({ type: 'info', text: 'Lease work locked — complete the inbound red-right-returning check.' });
-          aqAnnounce('Complete the inbound red-right-returning check before beginning lease work.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_complete_the_inbound_red_right_returning_check_be', 'Complete the inbound red-right-returning check before beginning lease work.'));
         } else if (boatState.droppersDeployed >= 5) {
           statusCb({ type: 'info', text: 'All 5 droppers are already deployed.' });
-          aqAnnounce('All five droppers are already deployed.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_all_five_droppers_are_already_deployed', 'All five droppers are already deployed.'));
         } else {
           boatState.droppersDeployed += 1;
           rebuildDroppers(boatState.droppersDeployed);
@@ -8323,13 +8333,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         actionRequests['p'] = false;
         if (!boatState.reachedLease || dLease >= 10) {
           statusCb({ type: 'info', text: 'Surface sample unavailable — move beside the lease.' });
-          aqAnnounce('Move beside the lease before taking a surface sample.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_move_beside_the_lease_before_taking_a_surface_sam', 'Move beside the lease before taking a surface sample.'));
         } else if (!boatState.passedRedNun) {
           statusCb({ type: 'info', text: 'Sampling locked — complete the inbound navigation check.' });
-          aqAnnounce('Complete the inbound navigation check before sampling.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_complete_the_inbound_navigation_check_before_samp', 'Complete the inbound navigation check before sampling.'));
         } else if (boatState.droppersDeployed < 5) {
           statusCb({ type: 'info', text: 'Sampling comes next — deploy ' + (5 - boatState.droppersDeployed) + ' more dropper' + (5 - boatState.droppersDeployed === 1 ? '' : 's') + ' first.' });
-          aqAnnounce('Deploy all five droppers before comparing depth samples.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_deploy_all_five_droppers_before_comparing_depth_s', 'Deploy all five droppers before comparing depth samples.'));
         } else {
           var surfaceReading = takeProbeReading('surface');
           boatState.surfaceSampled = true;
@@ -8344,7 +8354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             statusCb({ type: 'comparison', text: describeDepthComparison(surfaceReading, boatState.cropDepthReading) });
             openMissionDecisionCheckpoint();
           } else {
-            aqAnnounce('Surface sample recorded. Now take a crop-depth sample with C before returning.');
+            aqAnnounce(__alloAQT('stem.aquaculture.sr_surface_sample_recorded_now_take_a_crop_depth_sam', 'Surface sample recorded. Now take a crop-depth sample with C before returning.'));
           }
         }
       }
@@ -8353,13 +8363,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         actionRequests['c'] = false;
         if (!boatState.reachedLease || dLease >= 10) {
           statusCb({ type: 'info', text: 'Crop-depth sample unavailable — move beside the suspended mussels.' });
-          aqAnnounce('Move beside the suspended mussels before taking a crop-depth sample.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_move_beside_the_suspended_mussels_before_taking_a', 'Move beside the suspended mussels before taking a crop-depth sample.'));
         } else if (!boatState.passedRedNun) {
           statusCb({ type: 'info', text: 'Sampling locked — complete the inbound navigation check.' });
-          aqAnnounce('Complete the inbound navigation check before sampling.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_complete_the_inbound_navigation_check_before_samp', 'Complete the inbound navigation check before sampling.'));
         } else if (boatState.droppersDeployed < 5) {
           statusCb({ type: 'info', text: 'Sampling comes next — deploy ' + (5 - boatState.droppersDeployed) + ' more dropper' + (5 - boatState.droppersDeployed === 1 ? '' : 's') + ' first.' });
-          aqAnnounce('Deploy all five droppers before comparing depth samples.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_deploy_all_five_droppers_before_comparing_depth_s', 'Deploy all five droppers before comparing depth samples.'));
         } else {
           var cropReading = takeProbeReading('crop');
           boatState.cropDepthSampled = true;
@@ -8374,7 +8384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             statusCb({ type: 'comparison', text: describeDepthComparison(boatState.surfaceReading, cropReading) });
             openMissionDecisionCheckpoint();
           } else {
-            aqAnnounce('Crop-depth sample recorded. Add a surface sample before returning.');
+            aqAnnounce(__alloAQT('stem.aquaculture.sr_crop_depth_sample_recorded_add_a_surface_sample_b', 'Crop-depth sample recorded. Add a surface sample before returning.'));
           }
         }
       }
@@ -8384,7 +8394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         if (dDock > 6) boatState.dockReminderShown = false;
         if (dDock < 4 && Math.abs(boatState.speed) < 1 && boatState.passedRedNun && boatState.droppersDeployed >= 5 && boatState.surfaceSampled && boatState.cropDepthSampled && boatState.decisionId) {
           boatState.returnedHome = true;
-          aqAnnounce('Docked. Mission summary available.');
+          aqAnnounce(__alloAQT('stem.aquaculture.sr_docked_mission_summary_available', 'Docked. Mission summary available.'));
           statusCb({
             type: 'complete',
             text: 'Mission complete — review the captain’s debrief',
@@ -8568,7 +8578,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     desc: 'Pilot your skiff to your Bagaduce River lease. Deploy droppers, monitor water quality, harvest mussels, learn IALA-B buoyage + lease tiers + climate stressors in a 3D sim.',
     tags: ['aquaculture', 'shellfish', 'boating', 'navigation', 'maine', '3d', 'sim'],
     ready: true,
-    render: function(ctx) { return _renderAquacultureLab(ctx); }
+    render: function(ctx) {
+      __alloAQCtx = ctx; return _renderAquacultureLab(ctx); }
   });
 
   function _renderAquacultureLab(ctx) {

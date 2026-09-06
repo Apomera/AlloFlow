@@ -314,7 +314,7 @@ describe('Architecture Studio authoring', () => {
       expect(source).toContain("upd('activeRotation', nextDeg)");
       expect(source).toContain('function buildPlacementGrid(minX, maxX, minZ, maxZ)');
       expect(source).toContain('ArchGL.preview(hoverTarget');
-      expect(source).toContain("'aria-label': 'Three-dimensional camera controls'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_three_dimensional_camera_controls', 'Three-dimensional camera controls'");
       expect(source).toContain("if (showReplay) {");
       expect(source).toContain('var pickArchProperties = function (target)');
       expect(source).toContain("mode === 'pick'");

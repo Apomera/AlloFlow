@@ -1862,7 +1862,7 @@ window.StemLab = window.StemLab || {
             const camera = threeCameraRef.current;
             const controls = threeControlsRef.current;
             if (!camera || !controls) {
-              if (typeof announceToSR === 'function') announceToSR('The 3D molecule view is still loading.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.molecule.sr_the_3d_molecule_view_is_still_loading', 'The 3D molecule view is still loading.'));
               return;
             }
             const target = controls.target || { x: 0, y: 0, z: 0 };
@@ -2378,7 +2378,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 if (typeof setStemLabTab === 'function') setStemLabTab('explore');
                 if (typeof setStemLabTool === 'function') {
                   setStemLabTool('moleculeShelf');
-                  if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.molecule.sr_opening_molecule_shelf_real_structures_viewer', 'Opening Molecule Shelf real structures viewer.'));
                 } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info');
               };
               var routes = [
@@ -2400,7 +2400,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               return React.createElement("section", {
                 "data-molecule-command": "true",
                 "data-molecule-command-state": modeDeckOpen ? "expanded" : "compact",
-                "aria-label": "Molecule Lab command deck",
+                "aria-label": __alloT('stem.molecule.a11y_molecule_lab_command_deck', 'Molecule Lab command deck'),
                 className: "mb-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-2.5 shadow-sm"
               },
                 React.createElement("div", { className: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", "data-molecule-command-summary": "true" },
@@ -2421,7 +2421,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       type: "button",
                       onClick: openRealStructures,
                       className: "min-h-9 rounded-lg border border-cyan-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-black text-cyan-800 shadow-sm transition-colors hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600",
-                      "aria-label": "Open Molecule Shelf real structures viewer"
+                      "aria-label": __alloT('stem.molecule.a11y_open_molecule_shelf_real_structures_viewer', 'Open Molecule Shelf real structures viewer')
                     }, "\uD83E\uDDEC " + __alloT('stem.molecule.real_structures', 'Real structures')),
                     React.createElement("button", {
                       type: "button",
@@ -2433,7 +2433,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }, (modeDeckOpen ? "\u2212 " : "+ ") + (modeDeckOpen ? __alloT('stem.molecule.hide_mode_guide', 'Hide mode guide') : __alloT('stem.molecule.explore_all_modes', 'Explore all modes')))
                   )
                 ),
-                React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-2", "aria-label": "Molecule Lab progress summary" },
+                React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-2", "aria-label": __alloT('stem.molecule.a11y_molecule_lab_progress_summary', 'Molecule Lab progress summary') },
                   summaryStats.map(function(stat) {
                     return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[0.625rem] text-slate-600 shadow-sm" },
                       React.createElement("span", { className: "font-bold" }, stat[0]),
@@ -2490,7 +2490,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             // Mode tabs
 
-            React.createElement("nav", { className: "mb-3 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1", "aria-label": "Molecule Lab modes", "data-molecule-primary-tabs": "true" },
+            React.createElement("nav", { className: "mb-3 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1", "aria-label": __alloT('stem.molecule.a11y_molecule_lab_modes', 'Molecule Lab modes'), "data-molecule-primary-tabs": "true" },
 
               [
                 ['viewer', '\uD83D\uDD2C', 'Viewer', 'View'],
@@ -3214,11 +3214,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     if (d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) {
                       upd('buildBondMode', false);
                       upd('buildBondFrom', null);
-                      if (typeof announceToSR === 'function') announceToSR('Bond drawing mode off.');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.molecule.sr_bond_drawing_mode_off', 'Bond drawing mode off.'));
                     } else {
                       upd('buildBondMode', true);
                       addToast('\uD83D\uDD17 Select one atom, then another atom, to create a bond.', 'info');
-                      if (typeof announceToSR === 'function') announceToSR('Bond drawing mode on. Select one atom, then another atom.');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.molecule.sr_bond_drawing_mode_on_select_one_atom_then_another', 'Bond drawing mode on. Select one atom, then another atom.'));
                     }
                   },
                   className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 " +
@@ -3471,7 +3471,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ),
                   React.createElement("span", { className: "rounded-full border border-sky-200 bg-white px-2.5 py-1 text-[0.6875rem] font-black text-sky-800", "aria-hidden": "true" }, filteredElements.length + "/118 visible")
                 ),
-                React.createElement("div", { className: "mt-3 flex flex-wrap gap-2 items-end", role: "search", "aria-label": "Filter the periodic table" },
+                React.createElement("div", { className: "mt-3 flex flex-wrap gap-2 items-end", role: "search", "aria-label": __alloT('stem.molecule.a11y_filter_the_periodic_table', 'Filter the periodic table') },
                   React.createElement("label", { className: "block min-w-0", style: { flex: '2 1 280px' }, htmlFor: "molecule-element-search" },
                     React.createElement("span", { className: "mb-1 block text-[0.625rem] font-black uppercase text-slate-600", style: { letterSpacing: '0.06em' } }, "Search"),
                     React.createElement("input", {
@@ -3480,7 +3480,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       value: elementSearchText,
                       onChange: (e) => updateElementFilters({ elementSearch: e.target.value }),
                       placeholder: "Name, symbol, number, group, period, or block",
-                      "aria-label": "Search elements by name, symbol, atomic number, group, period, or block",
+                      "aria-label": __alloT('stem.molecule.a11y_search_elements_by_name_symbol_atomic_number_gr', 'Search elements by name, symbol, atomic number, group, period, or block'),
                       className: "w-full px-3 py-2 rounded-lg border border-slate-400 bg-white text-xs text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     })
                   ),
@@ -3490,7 +3490,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       id: "molecule-element-category",
                       value: elementCategoryFilter,
                       onChange: (e) => updateElementFilters({ elementCategory: e.target.value }),
-                      "aria-label": "Filter elements by category",
+                      "aria-label": __alloT('stem.molecule.a11y_filter_elements_by_category', 'Filter elements by category'),
                       className: "w-full px-3 py-2 rounded-lg border border-slate-400 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     }, elementFilterOptions.map(function (option) {
                       return React.createElement("option", { key: option[0], value: option[0] }, option[1]);
@@ -3502,7 +3502,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       id: "molecule-element-period",
                       value: elementPeriodFilter,
                       onChange: (e) => updateElementFilters({ elementPeriod: e.target.value }),
-                      "aria-label": "Filter elements by period",
+                      "aria-label": __alloT('stem.molecule.a11y_filter_elements_by_period', 'Filter elements by period'),
                       className: "w-full px-3 py-2 rounded-lg border border-slate-400 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     }, elementPeriodOptions.map(function (option) {
                       return React.createElement("option", { key: option[0], value: option[0] }, option[1]);
@@ -3514,7 +3514,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       id: "molecule-element-block",
                       value: elementBlockFilter,
                       onChange: (e) => updateElementFilters({ elementBlock: e.target.value }),
-                      "aria-label": "Filter elements by block",
+                      "aria-label": __alloT('stem.molecule.a11y_filter_elements_by_block', 'Filter elements by block'),
                       className: "w-full px-3 py-2 rounded-lg border border-slate-400 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     }, elementBlockOptions.map(function (option) {
                       return React.createElement("option", { key: option[0], value: option[0] }, option[1]);
@@ -3524,7 +3524,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     type: "button",
                     onClick: () => updateElementFilters({ elementSearch: '', elementCategory: 'all', elementPeriod: 'all', elementBlock: 'all' }),
                     disabled: !elementFiltersActive,
-                    "aria-label": "Clear all element filters",
+                    "aria-label": __alloT('stem.molecule.a11y_clear_all_element_filters', 'Clear all element filters'),
                     className: "px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-bold shadow-sm hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   }, "Clear filters")
                 ),
@@ -3536,7 +3536,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 ),
                 activeElementFilterChips.length > 0 && React.createElement("div", {
                   className: "mt-2 flex flex-wrap items-center gap-1.5",
-                  "aria-label": "Active element filters"
+                  "aria-label": __alloT('stem.molecule.a11y_active_element_filters', 'Active element filters')
                 },
                   React.createElement("span", { className: "mr-0.5 text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, "Active"),
                   activeElementFilterChips.map(function(chip) {
@@ -3583,7 +3583,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   className: "overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-2",
                   role: "region",
                   tabIndex: 0,
-                  "aria-label": "Matching element results"
+                  "aria-label": __alloT('stem.molecule.a11y_matching_element_results', 'Matching element results')
                 },
                   React.createElement("div", { className: "flex gap-2", style: { width: 'max-content', minWidth: '100%' } },
                     filteredElements.map(function(el) {
@@ -3699,7 +3699,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("button", {
                         type: "button",
                         onClick: () => updMulti({ elementCompareA: comparisonB.s, elementCompareB: comparisonA.s }),
-                        "aria-label": "Swap compared elements",
+                        "aria-label": __alloT('stem.molecule.a11y_swap_compared_elements', 'Swap compared elements'),
                         className: "px-3 py-2 rounded-lg border border-violet-300 bg-white text-xs font-bold text-violet-800 hover:bg-violet-100"
                       }, "⇄ Swap"),
                       React.createElement("div", null,
@@ -3771,12 +3771,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       style: { fontVariantNumeric: 'tabular-nums' }
                     }, "Groups " + periodicMapViewport.firstGroup + "–" + periodicMapViewport.lastGroup + " in view")
                   ),
-                  React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": "Move through periodic table groups" },
+                  React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": __alloT('stem.molecule.a11y_move_through_periodic_table_groups', 'Move through periodic table groups') },
                     React.createElement("button", {
                       type: "button",
                       onClick: function() { movePeriodicMapViewport(-1); },
                       disabled: !periodicMapViewport.scrollable || periodicMapViewport.atStart,
-                      "aria-label": "Show earlier periodic table groups",
+                      "aria-label": __alloT('stem.molecule.a11y_show_earlier_periodic_table_groups', 'Show earlier periodic table groups'),
                       "data-periodic-map-move": "earlier",
                       className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-blue-300 bg-white px-2 text-sm font-black text-blue-800 shadow-sm transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
                     }, "←"),
@@ -3784,7 +3784,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       type: "button",
                       onClick: function() { movePeriodicMapViewport(1); },
                       disabled: !periodicMapViewport.scrollable || periodicMapViewport.atEnd,
-                      "aria-label": "Show later periodic table groups",
+                      "aria-label": __alloT('stem.molecule.a11y_show_later_periodic_table_groups', 'Show later periodic table groups'),
                       "data-periodic-map-move": "later",
                       className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-blue-300 bg-white px-2 text-sm font-black text-blue-800 shadow-sm transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
                     }, "→")
@@ -3797,7 +3797,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     className: "overflow-x-auto rounded-xl border border-slate-200 bg-white p-2",
                     tabIndex: 0,
                     role: "region",
-                    "aria-label": "Scrollable periodic table map",
+                    "aria-label": __alloT('stem.molecule.a11y_scrollable_periodic_table_map', 'Scrollable periodic table map'),
                     "aria-describedby": "molecule-periodic-map-instructions molecule-periodic-map-viewport-status",
                     "data-molecule-periodic-scroll": "true",
                     onScroll: function(event) { syncPeriodicMapViewport(event.currentTarget); }
@@ -3865,7 +3865,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   })
                 ),
 
-              React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5 justify-center border-t border-slate-200 pt-3", "aria-label": "Filter by element category" },
+              React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5 justify-center border-t border-slate-200 pt-3", "aria-label": __alloT('stem.molecule.a11y_filter_by_element_category', 'Filter by element category') },
 
                 [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', 'Lanthanide'], ['actinide', 'Actinide']].map(([cat, label]) =>
 
@@ -3956,7 +3956,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   ),
 
-                  React.createElement("div", { role: "group", "aria-label": "Browse elements by atomic number", className: "px-3 py-2 border-t border-slate-200/50 bg-white/70 flex items-center justify-between gap-2" },
+                  React.createElement("div", { role: "group", "aria-label": __alloT('stem.molecule.a11y_browse_elements_by_atomic_number', 'Browse elements by atomic number'), className: "px-3 py-2 border-t border-slate-200/50 bg-white/70 flex items-center justify-between gap-2" },
                     React.createElement("button", {
                       type: "button",
                       disabled: !previousElement,
@@ -4705,7 +4705,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       elAttempts > 0 && React.createElement("span", { className: "rounded-full border border-emerald-200 bg-white px-2 py-1 text-xs font-bold text-emerald-700 shadow-sm", "aria-label": elScore + ' correct out of ' + elAttempts + ' attempts, ' + elAccuracy + ' percent accuracy, streak ' + elStreak }, '⭐ ' + elScore + '/' + elAttempts + ' • ' + elAccuracy + '% | 🔥 ' + elStreak),
 
-                      elAttempts > 0 && React.createElement("button", { type: "button", onClick: function () { updMulti({ elQuiz: null, elScore: 0, elAttempts: 0, elStreak: 0 }); }, className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[0.6875rem] font-bold text-slate-600 shadow-sm hover:bg-slate-50", "aria-label": "Reset element quiz session" }, "Reset")
+                      elAttempts > 0 && React.createElement("button", { type: "button", onClick: function () { updMulti({ elQuiz: null, elScore: 0, elAttempts: 0, elStreak: 0 }); }, className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[0.6875rem] font-bold text-slate-600 shadow-sm hover:bg-slate-50", "aria-label": __alloT('stem.molecule.a11y_reset_element_quiz_session', 'Reset element quiz session') }, "Reset")
                     )
 
                   ),
@@ -5817,7 +5817,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, __alloT('stem.molecule.orbital_clouds_title', '☁️ Orbital clouds — where electrons really are')),
           h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.orbital_clouds_intro', 'An atom is not a tiny solar system. Electrons don’t orbit the nucleus on tracks — they exist as a fuzzy cloud of probability (|ψ|²). The two colours are the wavefunction’s + and − phases; where they meet, the electron is never found (a node).')),
           // orbital picker
-          h('div', { className: 'flex flex-wrap gap-1.5 mb-3', role: 'group', 'aria-label': 'Choose an orbital' },
+          h('div', { className: 'flex flex-wrap gap-1.5 mb-3', role: 'group', 'aria-label': __alloT('stem.molecule.a11y_choose_an_orbital', 'Choose an orbital') },
             ORBITAL_ORDER.map(function (k) {
               var on = k === key, oo = ORBITALS[k];
               return h('button', { key: k, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function () { try { setExp({ orbChoice: k }); } catch (e) {} try { var lr = document.getElementById('allo-live-molecule'); if (lr) lr.textContent = oo.label + ' orbital: ' + oo.shape + ', ' + (oo.n - oo.l - 1) + ' radial and ' + oo.l + ' angular nodes.'; } catch (e) {} },

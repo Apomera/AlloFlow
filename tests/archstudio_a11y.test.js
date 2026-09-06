@@ -41,17 +41,17 @@ describe('ArchStudio accessibility parity', () => {
       expect(source).toContain("'aria-label': m.label + ' mode'");
       expect(source).toContain("'aria-pressed': modeActive");
       expect(source).toContain('var modeActive = mode === m.id');
-      expect(source).toContain("'aria-label': 'Mirror entire build across the X axis'");
-      expect(source).toContain("'aria-label': 'Mirror entire build across the Z axis'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_mirror_entire_build_across_the_x_axis', 'Mirror entire build across the X axis'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_mirror_entire_build_across_the_z_axis', 'Mirror entire build across the Z axis'");
       expect(source).toContain("'aria-label': 'Load saved build ' + item.name");
       expect(source).toContain("'aria-label': 'Delete saved build ' + item.name");
       expect(source).toContain("'aria-label': t('stem.archstudio.copy_upward', 'Copy upward')");
-      expect(source).toContain("'aria-label': 'Selected block inspector'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_selected_block_inspector', 'Selected block inspector'");
       expect(source).toContain("label: 'Move selected block right along X'");
       expect(source).toContain("'aria-label': move.label");
-      expect(source).toContain("'aria-label': 'Duplicate selected block above'");
-      expect(source).toContain("'aria-label': 'Apply current properties to selected block'");
-      expect(source).toContain("'aria-label': 'Delete selected block'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_duplicate_selected_block_above', 'Duplicate selected block above'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_apply_current_properties_to_selected_block', 'Apply current properties to selected block'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_delete_selected_block', 'Delete selected block'");
       expect(source).toContain("'aria-selected': isSelected");
       expect(source).toContain("'aria-label': s.label + ' shape'");
       expect(source).toContain("'aria-label': 'Use ' + m.label + ' material'");
@@ -64,7 +64,7 @@ describe('ArchStudio accessibility parity', () => {
       expect(source).toContain('minHeight: 32');
       expect(source).toContain('minHeight: 34');
       expect(source).toContain('var focusArchStudioRegion = function ()');
-      expect(source).toContain("announceToSR('Block selection cleared.')");
+      expect(source).toContain("announceToSR(__alloAST('stem.archstudio.sr_block_selection_cleared', 'Block selection cleared.')");
       expect(source).toContain('var authoringShortcutSurface =');
       expect(source).not.toContain("(k === 'Delete' || k === 'Backspace')");
       expect(source).toContain('selectionMesh = new T.Mesh');
@@ -84,7 +84,7 @@ describe('ArchStudio accessibility parity', () => {
   it('provides named keyboard-accessible controls for the three-dimensional camera', () => {
     for (const file of files) {
       const source = fs.readFileSync(file, 'utf8');
-      expect(source).toContain("'aria-label': 'Three-dimensional camera controls'");
+      expect(source).toContain("'aria-label': __alloAST('stem.archstudio.a11y_three_dimensional_camera_controls', 'Three-dimensional camera controls'");
       for (const label of ['Rotate view left', 'Rotate view right', 'Tilt view up', 'Tilt view down', 'Zoom in', 'Zoom out', 'Reset three-dimensional view']) {
         expect(source).toContain(`cameraBtn('${label}'`);
       }
@@ -125,11 +125,11 @@ describe('ArchStudio accessibility parity', () => {
       expect(optionalColors).toMatch(/'aria-pressed':\s*(?:activeColor|customColor)\s*===\s*c/);
 
       const filters = source.slice(source.lastIndexOf('// ── Block Search / Filter'), source.lastIndexOf('// ── Achievement Badges'));
-      expect(filters).toContain("'aria-label': 'Show all materials'");
+      expect(filters).toContain("'aria-label': __alloAST('stem.archstudio.a11y_show_all_materials', 'Show all materials'");
       expect(filters).toContain("'aria-pressed': !filterMaterial");
       expect(filters).toContain("'aria-label': 'Filter by ' + m.label + ' material'");
       expect(filters).toContain("'aria-pressed': filterMaterial === m.id");
-      expect(filters).toContain("'aria-label': 'Show all shapes'");
+      expect(filters).toContain("'aria-label': __alloAST('stem.archstudio.a11y_show_all_shapes', 'Show all shapes'");
       expect(filters).toContain("'aria-pressed': !filterShape");
       expect(filters).toContain("'aria-label': 'Filter by ' + s.label + ' shape'");
       expect(filters).toContain("'aria-pressed': filterShape === s.id");
@@ -168,7 +168,7 @@ describe('ArchStudio accessibility parity', () => {
       expect(dock).toContain("'aria-label': chip.clearLabel");
       expect(dock).toContain("'aria-hidden': 'true'");
       expect(dock).toContain("'data-arch-reset-view': 'true'");
-      expect(dock).toContain("'aria-label': 'Reset layer, slice, filters, heatmap, replay, and blueprint view settings'");
+      expect(dock).toContain("'aria-label': __alloAST('stem.archstudio.a11y_reset_layer_slice_filters_heatmap_replay_and_bl', 'Reset layer, slice, filters, heatmap, replay, and blueprint view settings'");
     }
   });
 
@@ -191,7 +191,11 @@ describe('ArchStudio accessibility parity', () => {
         ['data-arch-inspector-actions', 'Selected object actions'],
       ]) {
         expect(inspector).toContain(`'${hook}': 'true'`);
-        expect(inspector).toContain(`'aria-label': '${label}'`);
+        // Built from the table above, so it has to accept the keyed form as
+        // well as a bare literal. The English is still named exactly.
+        expect(inspector).toMatch(
+          new RegExp("'aria-label': (?:__alloAST\\('[^']+', )?'" + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "'")
+        );
       }
       expect((inspector.match(/role:\s*'group'/g) || [])).toHaveLength(3);
 
@@ -265,7 +269,7 @@ describe('ArchStudio accessibility parity', () => {
       expect(aiStart).toBeGreaterThanOrEqual(0);
       expect(aiEnd).toBeGreaterThan(aiStart);
       expect(aiPanel).toMatch(/role:\s*'region'/);
-      expect(aiPanel).toContain("'aria-label': 'AI Architect advice'");
+      expect(aiPanel).toContain("'aria-label': __alloAST('stem.archstudio.a11y_ai_architect_advice', 'AI Architect advice'");
       expect(aiPanel).toContain("'aria-busy': aiLoading");
       expect(aiPanel).toMatch(/aiLoading\s*&&\s*el\('div',\s*\{\s*role:\s*'status'/);
       expect(aiPanel).toMatch(/'aria-live':\s*'polite'/);

@@ -10,6 +10,17 @@
  * Registered tool ID: "archStudio"
  * Registry: window.StemLab.registerTool()
  */
+
+// Translator for this tool. This file has NO IIFE, so the name is a true
+// global shared with the other 146 tools on the page and must stay unique to
+// Architecture Studio. It returns its English fallback until a render hands
+// it a ctx, so it is safe to call from anywhere, including before mount.
+var __alloASCtx = null;
+function __alloAST(k, fb) {
+  var v;
+  try { v = (__alloASCtx && typeof __alloASCtx.t === "function") ? __alloASCtx.t(k, fb) : null; } catch (e) { v = null; }
+  return (v == null) ? (fb != null ? fb : k) : v;
+}
 (function () {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
@@ -1316,6 +1327,11 @@
       { id: 'try_2_styles', label: 'Try 2 architectural styles', icon: '\uD83C\uDFDB\uFE0F', check: function(d) { return Object.keys(d.stylesUsed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.stylesUsed || {}).length + '/2 styles'; } }
     ],
     render: function (ctx) {
+      // Guarded: several tests build a function from a SLICE of this render,
+      // where the top-level declaration is not in scope, and a bare assignment
+      // throws under 'use strict'. Failing to wire ctx there is harmless - the
+      // helper returns its English fallback.
+      try { __alloASCtx = ctx; } catch (e) {}
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
     var React = ctx.React;
     var el = React.createElement;
@@ -1768,13 +1784,13 @@
     var openArchGridForKeyboard = function () {
       upd('editorView', 'grid');
       focusArchGridCell(gridCursorX, gridCursorZ);
-      if (announceToSR) announceToSR('Floor grid opened. Use arrow keys to move between cells and Enter or Space to use the active tool.');
+      if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_floor_grid_opened_use_arrow_keys_to_move_between', 'Floor grid opened. Use arrow keys to move between cells and Enter or Space to use the active tool.'));
     };
 
     var clearSelectedBlock = function (restoreFocus) {
       if (!selectedBlock) return false;
       upd('selectedBlockKey', '');
-      if (announceToSR) announceToSR('Block selection cleared.');
+      if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_block_selection_cleared', 'Block selection cleared.'));
       if (restoreFocus) focusArchStudioRegion();
       return true;
     };
@@ -1784,7 +1800,7 @@
     // This is intentionally read-only and does not add an undo entry.
     var pickArchProperties = function (target) {
       if (showReplay) {
-        if (announceToSR) announceToSR('Exit construction replay before picking a block.');
+        if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_exit_construction_replay_before_picking_a_block', 'Exit construction replay before picking a block.'));
         return false;
       }
       var cell = target && target.block;
@@ -1793,7 +1809,7 @@
       });
       if (!picked) {
         upd('selectedBlockKey', '');
-        if (announceToSR) announceToSR('Pick mode needs an existing block.');
+        if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_pick_mode_needs_an_existing_block', 'Pick mode needs an existing block.'));
         return false;
       }
       var pickedShape = Object.prototype.hasOwnProperty.call(ARCH_SHAPE_IDS, picked.shape) ? picked.shape : 'block';
@@ -1814,7 +1830,7 @@
 
     var commitArchEdit = function (target) {
       if (showReplay) {
-        if (announceToSR) announceToSR('Exit construction replay before editing.');
+        if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_exit_construction_replay_before_editing', 'Exit construction replay before editing.'));
         return false;
       }
       var edit = {
@@ -1904,11 +1920,11 @@
 
     var commitSelectedAction = function (action) {
       if (showReplay) {
-        if (announceToSR) announceToSR('Exit construction replay before editing the selected block.');
+        if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_exit_construction_replay_before_editing_the_selec', 'Exit construction replay before editing the selected block.'));
         return false;
       }
       if (!selectedBlock) {
-        if (announceToSR) announceToSR('Pick a block before using the inspector.');
+        if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_pick_a_block_before_using_the_inspector', 'Pick a block before using the inspector.'));
         return false;
       }
       var restoreInspectorFocus = false;
@@ -1954,8 +1970,8 @@
           if (fullAction.type === 'delete') sfxErase(); else sfxPlace();
         }
         if (announceToSR) {
-          if (fullAction.type === 'delete') announceToSR('Deleted the selected block.');
-          else if (fullAction.type === 'replace') announceToSR('Applied the current properties to the selected block.');
+          if (fullAction.type === 'delete') announceToSR(__alloAST('stem.archstudio.sr_deleted_the_selected_block', 'Deleted the selected block.'));
+          else if (fullAction.type === 'replace') announceToSR(__alloAST('stem.archstudio.sr_applied_the_current_properties_to_the_selected_bl', 'Applied the current properties to the selected block.'));
           else announceToSR((fullAction.type === 'duplicate' ? 'Duplicated' : 'Moved') + ' selected block to X ' + targetCell.x + ', Y ' + targetCell.y + ', Z ' + targetCell.z + '.');
         }
       };
@@ -2041,7 +2057,7 @@
     var editAtPointer = function (ev) {
       if (archDrag.suppressClick) { archDrag.suppressClick = false; return; }
       if (showReplay) {
-        if (announceToSR) announceToSR('Exit construction replay before editing.');
+        if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_exit_construction_replay_before_editing', 'Exit construction replay before editing.'));
         return;
       }
       var target = ArchGL.pick(ev.clientX, ev.clientY);
@@ -2131,7 +2147,7 @@
       var report = function () {
         if (!transaction.committed || transaction.reported) return;
         transaction.reported = true;
-        if (announceToSR) announceToSR('All blocks cleared.');
+        if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_all_blocks_cleared', 'All blocks cleared.'));
       };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
@@ -2294,7 +2310,7 @@
       window.__archAiPendingReqId = thisReqId;
       window.__archAiPendingSignature = requestBuildSignature;
       upd({ aiLoading: true, showAI: true, aiRequestId: thisReqId, aiRequestBuildSignature: requestBuildSignature });
-      if (announceToSR) announceToSR('AI Architect is analyzing this build.');
+      if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_ai_architect_is_analyzing_this_build', 'AI Architect is analyzing this build.'));
 
       var desc = totalBlocks === 0
         ? 'The student has not placed any blocks yet.'
@@ -2997,7 +3013,7 @@
         unitMm: 5,
         summary: { blockCount: bundle.blockCount, triangleCount: bundle.triangleCount }
       };
-      if (typeof announceToSR === 'function') announceToSR('Building handed to Print Lab as an STL model. Opening Print Lab.');
+      if (typeof announceToSR === 'function') announceToSR(__alloAST('stem.archstudio.sr_building_handed_to_print_lab_as_an_stl_model_open', 'Building handed to Print Lab as an STL model. Opening Print Lab.'));
       ctx.setStemLabTool('printLab');
     };
 
@@ -3261,9 +3277,9 @@
         !archShow3d && el('div', { role: 'status', style: { margin: '0 auto 8px', padding: '6px 10px', borderRadius: 8, background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.45)', color: '#fde68a', fontSize: 11 } },
           '3D is unavailable, but the floor grid is fully editable.'),
         el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-          el('button', { type: 'button', disabled: editLayer <= 0, 'aria-label': 'Previous floor', onClick: function () { upd('editLayer', Math.max(0, editLayer - 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer > 0 ? '#e2e8f0' : '#475569', cursor: editLayer > 0 ? 'pointer' : 'default' } }, '\u2212'),
+          el('button', { type: 'button', disabled: editLayer <= 0, 'aria-label': __alloAST('stem.archstudio.a11y_previous_floor', 'Previous floor'), onClick: function () { upd('editLayer', Math.max(0, editLayer - 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer > 0 ? '#e2e8f0' : '#475569', cursor: editLayer > 0 ? 'pointer' : 'default' } }, '\u2212'),
           el('strong', { style: { minWidth: 92, textAlign: 'center', color: '#f8fafc', fontSize: 12 } }, 'Floor Y=' + editLayer),
-          el('button', { type: 'button', disabled: editLayer >= 31, 'aria-label': 'Next floor', onClick: function () { upd('editLayer', Math.min(31, editLayer + 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer < 31 ? '#e2e8f0' : '#475569', cursor: editLayer < 31 ? 'pointer' : 'default' } }, '+'),
+          el('button', { type: 'button', disabled: editLayer >= 31, 'aria-label': __alloAST('stem.archstudio.a11y_next_floor', 'Next floor'), onClick: function () { upd('editLayer', Math.min(31, editLayer + 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer < 31 ? '#e2e8f0' : '#475569', cursor: editLayer < 31 ? 'pointer' : 'default' } }, '+'),
           el('span', { style: { color: '#94a3b8', fontSize: 11 } }, mode === 'place' ? 'Select a cell to place ' + activeShape : mode === 'erase' ? 'Select a block to remove it' : mode === 'paint' ? 'Select a block to paint it' : 'Select a block to copy its shape, material, color, and rotation')
         ),
         el('div', { id: 'arch-grid-help', style: { margin: '0 auto 7px', color: '#94a3b8', fontSize: 10, textAlign: 'center' } },
@@ -3301,26 +3317,26 @@
         || (typeof tgt.getAttribute === 'function' && tgt.getAttribute('role') === 'gridcell');
       if ((e.ctrlKey || e.metaKey) && lower === 'z') {
         e.preventDefault();
-        if (showReplay) { if (announceToSR) announceToSR('Exit construction replay before editing.'); }
+        if (showReplay) { if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_exit_construction_replay_before_editing', 'Exit construction replay before editing.')); }
         else if (e.shiftKey) doRedo(); else doUndo();
       }
       else if ((e.ctrlKey || e.metaKey) && lower === 'y') {
         e.preventDefault();
-        if (showReplay) { if (announceToSR) announceToSR('Exit construction replay before editing.'); }
+        if (showReplay) { if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_exit_construction_replay_before_editing', 'Exit construction replay before editing.')); }
         else doRedo();
       }
       else if (e.ctrlKey || e.metaKey || e.altKey) { return; }
-      else if ((k === 'p' || k === 'P') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'place'); if (announceToSR) announceToSR('Place mode.'); }
-      else if ((k === 'e' || k === 'E') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'erase'); if (announceToSR) announceToSR('Erase mode.'); }
-      else if ((k === 'a' || k === 'A') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'paint'); if (announceToSR) announceToSR('Paint mode.'); }
-      else if ((k === 'i' || k === 'I') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'pick'); if (announceToSR) announceToSR('Pick properties mode. Select an existing block.'); }
+      else if ((k === 'p' || k === 'P') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'place'); if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_place_mode', 'Place mode.')); }
+      else if ((k === 'e' || k === 'E') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'erase'); if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_erase_mode', 'Erase mode.')); }
+      else if ((k === 'a' || k === 'A') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'paint'); if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_paint_mode', 'Paint mode.')); }
+      else if ((k === 'i' || k === 'I') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'pick'); if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_pick_properties_mode_select_an_existing_block', 'Pick properties mode. Select an existing block.')); }
       else if (k === 'Escape' && selectedBlock && (authoringShortcutSurface || inInspector)) { e.preventDefault(); clearSelectedBlock(inInspector); }
       else if (k === 'Delete' && selectedBlock && authoringShortcutSurface) { e.preventDefault(); commitSelectedAction({ type: 'delete' }); }
       else if ((k === 'd' || k === 'D') && selectedBlock && authoringShortcutSurface) { e.preventDefault(); commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }
       else if ((k === 's' || k === 'S') && authoringShortcutSurface) { e.preventDefault(); takeScreenshot(); }
       else if ((k === 'g' || k === 'G') && authoringShortcutSurface) {
         e.preventDefault();
-        if (showReplay) { if (announceToSR) announceToSR('Exit construction replay before editing.'); }
+        if (showReplay) { if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_exit_construction_replay_before_editing', 'Exit construction replay before editing.')); }
         else applyGravity();
       }
       else if ((k === 'r' || k === 'R') && authoringShortcutSurface) {
@@ -3396,7 +3412,7 @@
         filterMaterial: '', filterShape: '', showHeatmap: false,
         showReplay: false, replayStep: -1, blueprintView: false
       });
-      if (announceToSR) announceToSR('View reset. Showing the entire live build.');
+      if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_view_reset_showing_the_entire_live_build', 'View reset. Showing the entire live build.'));
     };
 
     return el('div', {
@@ -3509,9 +3525,9 @@
           el('button', { type: 'button', onClick: saveBuild, disabled: !blocks.length, title: t('stem.archstudio.save_to_gallery', 'Save to gallery'), style: { flex: '0 0 auto', background: blocks.length ? 'rgba(34,197,94,.16)' : 'rgba(71,85,105,.25)', border: blocks.length ? '1px solid rgba(34,197,94,.55)' : '1px solid transparent', color: blocks.length ? '#86efac' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' } }, '\uD83D\uDCBE Save'),
           el('button', { type: 'button', onClick: clearAll, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to clear the build' : 'Clear the live build', style: { flex: '0 0 auto', background: !showReplay && blocks.length ? 'rgba(239,68,68,.14)' : 'rgba(71,85,105,.25)', border: !showReplay && blocks.length ? '1px solid rgba(239,68,68,.45)' : '1px solid transparent', color: !showReplay && blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDD1\uFE0F Clear')
         ),
-        el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': 'Architecture Studio features and actions', style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
+        el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_studio_features_and_actions', 'Architecture Studio features and actions'), style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
         // Toggle pills
-        el('div', { role: 'group', 'aria-label': 'Editor style', style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
+        el('div', { role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_editor_style', 'Editor style'), style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
           [{ id: 'architect', label: '\uD83C\uDFDB\uFE0F Architect', color: '#a5b4fc', bg: 'rgba(99,102,241,.24)' }, { id: 'bricks', label: '\uD83E\uDDF1 Bricks', color: '#fca5a5', bg: 'rgba(239,68,68,.22)' }].map(function (option) {
             var selectedStyle = styleMode === option.id;
             return el('button', { key: option.id, type: 'button', 'aria-pressed': selectedStyle, onClick: function () { upd('styleMode', option.id); }, style: { padding: '3px 9px', borderRadius: 16, border: '1px solid ' + (selectedStyle ? option.color : 'transparent'), background: selectedStyle ? option.bg : 'transparent', color: selectedStyle ? option.color : '#64748b', cursor: 'pointer', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap', boxShadow: selectedStyle ? '0 0 14px ' + option.bg : 'none' } }, option.label);
@@ -3556,7 +3572,7 @@
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar', 'aria-label': 'Architecture tools', style: { width: 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           // Mode selector
           el('div', { className: 'arch-studio-mode-card' },
@@ -3580,7 +3596,7 @@
             className: 'arch-studio-inspector',
             'data-arch-inspector': 'true',
             'data-arch-selected-key': selectedBlockKey,
-            'aria-label': 'Selected block inspector',
+            'aria-label': __alloAST('stem.archstudio.a11y_selected_block_inspector', 'Selected block inspector'),
             'aria-labelledby': 'arch-selected-heading',
             style: { padding: 9, borderRadius: 11, border: '2px solid #f59e0b', background: 'linear-gradient(145deg,rgba(120,53,15,.2),rgba(15,23,42,.82))', boxShadow: '0 10px 26px rgba(245,158,11,.13)' }
           },
@@ -3592,9 +3608,9 @@
                   (selectedShapeMeta ? selectedShapeMeta.label : 'Block') + ' \u2022 ' + (selectedMaterialMeta ? selectedMaterialMeta.label : 'Stone'))
               ),
               el('span', { style: { flexShrink: 0, padding: '2px 5px', borderRadius: 999, fontSize: 10, fontWeight: 800, color: archUnsupportedKeys[selectedBlockKey] ? '#fecaca' : '#bbf7d0', background: archUnsupportedKeys[selectedBlockKey] ? 'rgba(239,68,68,.16)' : 'rgba(34,197,94,.14)', border: '1px solid ' + (archUnsupportedKeys[selectedBlockKey] ? 'rgba(248,113,113,.55)' : 'rgba(74,222,128,.45)') } }, archUnsupportedKeys[selectedBlockKey] ? 'Floating' : 'Supported'),
-              el('button', { type: 'button', 'aria-label': 'Clear selected block', title: 'Deselect (Escape)', onClick: function () { clearSelectedBlock(true); }, style: { minWidth: 28, minHeight: 28, border: '1px solid transparent', borderRadius: 6, background: 'transparent', color: '#fca5a5', cursor: 'pointer', padding: 4, fontSize: 13 } }, '\u2715')
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_clear_selected_block', 'Clear selected block'), title: 'Deselect (Escape)', onClick: function () { clearSelectedBlock(true); }, style: { minWidth: 28, minHeight: 28, border: '1px solid transparent', borderRadius: 6, background: 'transparent', color: '#fca5a5', cursor: 'pointer', padding: 4, fontSize: 13 } }, '\u2715')
             ),
-            el('div', { 'data-arch-inspector-coordinates': 'true', role: 'group', 'aria-label': 'Selected object coordinates', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 6 } },
+            el('div', { 'data-arch-inspector-coordinates': 'true', role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_selected_object_coordinates', 'Selected object coordinates'), style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 6 } },
               [['X', selectedBlock.x], ['Y', selectedBlock.y], ['Z', selectedBlock.z]].map(function (entry) {
                 return el('div', { key: entry[0], style: { padding: '4px 3px', borderRadius: 6, background: 'rgba(15,23,42,.72)', border: '1px solid rgba(71,85,105,.55)', textAlign: 'center' } },
                   el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, entry[0]),
@@ -3607,7 +3623,7 @@
             ),
             archUnsupportedKeys[selectedBlockKey] && el('div', { role: 'status', style: { marginBottom: 6, padding: '5px 6px', borderRadius: 6, background: 'rgba(239,68,68,.13)', border: '1px solid rgba(248,113,113,.35)', color: '#fecaca', fontSize: 10, fontWeight: 750 } }, '\u26A0 Floating: move down or add support'),
             el('div', { style: { fontSize: 10, color: '#cbd5e1', fontWeight: 750, marginBottom: 4 } }, 'Move one cell'),
-            el('div', { 'data-arch-inspector-moves': 'true', role: 'group', 'aria-label': 'Move selected object one cell', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 7 } },
+            el('div', { 'data-arch-inspector-moves': 'true', role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_move_selected_object_one_cell', 'Move selected object one cell'), style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 7 } },
               selectedMoves.map(function (move) {
                 var available = canSelectedAction(move);
                 return el('button', { key: move.label, type: 'button', 'aria-label': move.label, title: move.label, disabled: !available, onClick: function () { commitSelectedAction(move); }, style: {
@@ -3615,11 +3631,11 @@
                 } }, move.glyph);
               })
             ),
-            el('div', { 'data-arch-inspector-actions': 'true', role: 'group', 'aria-label': 'Selected object actions', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
-              el('button', { type: 'button', 'aria-label': 'Reveal selected block', onClick: revealSelectedBlock, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #38bdf8', background: 'rgba(56,189,248,.1)', color: '#7dd3fc', cursor: 'pointer', fontSize: 10, fontWeight: 750 } }, '\uD83D\uDC41 Reveal'),
-              el('button', { type: 'button', 'aria-label': 'Duplicate selected block above', title: 'Duplicate selected block above (D)', disabled: !canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }), onClick: function () { commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.1)', color: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? '#93c5fd' : '#475569', cursor: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 750 } }, '\u2398 Copy \u2191'),
-              el('button', { type: 'button', 'aria-label': 'Apply current properties to selected block', disabled: !canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }), onClick: function () { commitSelectedAction({ type: 'replace' }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #a855f7', background: 'rgba(168,85,247,.1)', color: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? '#d8b4fe' : '#475569', cursor: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 750 } }, '\u2728 Apply Palette'),
-              el('button', { type: 'button', 'aria-label': 'Delete selected block', title: 'Delete selected block (Delete)', disabled: showReplay, onClick: function () { commitSelectedAction({ type: 'delete' }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #ef4444', background: 'rgba(239,68,68,.1)', color: showReplay ? '#475569' : '#fca5a5', cursor: showReplay ? 'default' : 'pointer', fontSize: 10, fontWeight: 750 } }, '\uD83D\uDDD1 Delete')
+            el('div', { 'data-arch-inspector-actions': 'true', role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_selected_object_actions', 'Selected object actions'), style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_reveal_selected_block', 'Reveal selected block'), onClick: revealSelectedBlock, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #38bdf8', background: 'rgba(56,189,248,.1)', color: '#7dd3fc', cursor: 'pointer', fontSize: 10, fontWeight: 750 } }, '\uD83D\uDC41 Reveal'),
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_duplicate_selected_block_above', 'Duplicate selected block above'), title: 'Duplicate selected block above (D)', disabled: !canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }), onClick: function () { commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.1)', color: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? '#93c5fd' : '#475569', cursor: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 750 } }, '\u2398 Copy \u2191'),
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_apply_current_properties_to_selected_block', 'Apply current properties to selected block'), disabled: !canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }), onClick: function () { commitSelectedAction({ type: 'replace' }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #a855f7', background: 'rgba(168,85,247,.1)', color: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? '#d8b4fe' : '#475569', cursor: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 750 } }, '\u2728 Apply Palette'),
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_delete_selected_block', 'Delete selected block'), title: 'Delete selected block (Delete)', disabled: showReplay, onClick: function () { commitSelectedAction({ type: 'delete' }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #ef4444', background: 'rgba(239,68,68,.1)', color: showReplay ? '#475569' : '#fca5a5', cursor: showReplay ? 'default' : 'pointer', fontSize: 10, fontWeight: 750 } }, '\uD83D\uDDD1 Delete')
             )
           ),
 
@@ -3691,9 +3707,9 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83E\uDE9E Mirror & Symmetry'),
             el('div', { style: { display: 'flex', gap: 3 } },
-              el('button', { type: 'button', onClick: mirrorBuildX, disabled: showReplay || !blocks.length, 'aria-label': 'Mirror entire build across the X axis', title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the X axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
-              el('button', { type: 'button', onClick: mirrorBuildZ, disabled: showReplay || !blocks.length, 'aria-label': 'Mirror entire build across the Z axis', title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the Z axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
-              el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, 'aria-pressed': symmetryMode, 'aria-label': 'Symmetry: mirror edits across X equals zero', title: 'Mirror place, paint, and erase edits across X=0', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
+              el('button', { type: 'button', onClick: mirrorBuildX, disabled: showReplay || !blocks.length, 'aria-label': __alloAST('stem.archstudio.a11y_mirror_entire_build_across_the_x_axis', 'Mirror entire build across the X axis'), title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the X axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
+              el('button', { type: 'button', onClick: mirrorBuildZ, disabled: showReplay || !blocks.length, 'aria-label': __alloAST('stem.archstudio.a11y_mirror_entire_build_across_the_z_axis', 'Mirror entire build across the Z axis'), title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the Z axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
+              el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, 'aria-pressed': symmetryMode, 'aria-label': __alloAST('stem.archstudio.a11y_symmetry_mirror_edits_across_x_equals_zero', 'Symmetry: mirror edits across X equals zero'), title: 'Mirror place, paint, and erase edits across X=0', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
             )
           ),
 
@@ -3722,7 +3738,7 @@
             // Budget slider
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\uD83D\uDCB2' + budget),
-              el('input', { type: 'range', 'aria-label': 'budget', min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#f59e0b' } })
+              el('input', { type: 'range', 'aria-label': __alloAST('stem.archstudio.a11y_budget', 'budget'), min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#f59e0b' } })
             )
           ),
 
@@ -3753,7 +3769,7 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDC2\uFE0F Layer View'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
               el('span', { style: { fontSize: 10, color: viewLayer === -1 ? '#4ade80' : '#f59e0b', fontWeight: 700, minWidth: 28 } }, viewLayer === -1 ? 'All' : 'Y' + viewLayer),
-              el('input', { type: 'range', 'aria-label': 'Visible floor layer', 'aria-valuetext': viewLayer === -1 ? 'All floors' : 'Floor Y equals ' + viewLayer, min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
+              el('input', { type: 'range', 'aria-label': __alloAST('stem.archstudio.a11y_visible_floor_layer', 'Visible floor layer'), 'aria-valuetext': viewLayer === -1 ? 'All floors' : 'Floor Y equals ' + viewLayer, min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
             ),
             viewLayer >= 0 && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
               blocks.filter(function (b) { return b.y === viewLayer; }).length + ' blocks at Y=' + viewLayer
@@ -4052,7 +4068,7 @@
           showSlice && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD2C Cross-Section (Z)'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 } },
-              el('button', { type: 'button', 'aria-label': 'Show all Z cross-sections', 'aria-pressed': !sliceZSelected, onClick: function () { upd({ sliceZ: -1, sliceZSelected: false }); }, style: {
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_z_cross_sections', 'Show all Z cross-sections'), 'aria-pressed': !sliceZSelected, onClick: function () { upd({ sliceZ: -1, sliceZSelected: false }); }, style: {
                 padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 background: !sliceZSelected ? 'rgba(34,211,238,.2)' : 'transparent', border: !sliceZSelected ? '1px solid #22d3ee' : '1px solid #334155', color: !sliceZSelected ? '#67e8f9' : '#94a3b8'
               } }, 'All'),
@@ -4137,7 +4153,7 @@
             el('div', { style: { marginBottom: 4 } },
               el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Material:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { type: 'button', 'aria-label': 'Show all materials', 'aria-pressed': !filterMaterial, onClick: function () { upd('filterMaterial', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
+                el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_materials', 'Show all materials'), 'aria-pressed': !filterMaterial, onClick: function () { upd('filterMaterial', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 materials.map(function (m) {
                   return el('button', { key: m.id, type: 'button', 'aria-label': 'Filter by ' + m.label + ' material', 'aria-pressed': filterMaterial === m.id, onClick: function () { upd('filterMaterial', m.id); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: filterMaterial === m.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterMaterial === m.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterMaterial === m.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, m.icon + ' ' + m.label);
                 })
@@ -4146,7 +4162,7 @@
             el('div', { style: { marginBottom: 4 } },
               el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Shape:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { type: 'button', 'aria-label': 'Show all shapes', 'aria-pressed': !filterShape, onClick: function () { upd('filterShape', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
+                el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_show_all_shapes', 'Show all shapes'), 'aria-pressed': !filterShape, onClick: function () { upd('filterShape', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 shapes.map(function (s) {
                   return el('button', { key: s.id, type: 'button', 'aria-label': 'Filter by ' + s.label + ' shape', 'aria-pressed': filterShape === s.id, title: s.label, onClick: function () { upd('filterShape', s.id); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: filterShape === s.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterShape === s.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, s.icon);
                 })
@@ -4340,7 +4356,7 @@
             symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
 
-          mainUse3d && el('div', { className: 'arch-studio-camera-controls', role: 'group', 'aria-label': 'Three-dimensional camera controls', style: {
+          mainUse3d && el('div', { className: 'arch-studio-camera-controls', role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_three_dimensional_camera_controls', 'Three-dimensional camera controls'), style: {
             position: 'absolute', right: 8, bottom: 8, zIndex: 7, display: 'flex', flexWrap: 'wrap', gap: 3,
             width: 'max-content', maxWidth: 'calc(100% - 16px)', padding: 4, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155'
           } },
@@ -4357,7 +4373,7 @@
           // it also becomes the automatic fallback if WebGL cannot start.
           el('div', { className: 'arch-studio-view-switch', style: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none', display: 'flex', gap: 3, padding: 3, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155' } },
             archShow3d && el('button', { type: 'button', 'aria-pressed': mainUse3d, onClick: function () { upd('editorView', '3d'); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: mainUse3d ? '1px solid #60a5fa' : '1px solid transparent', background: mainUse3d ? 'rgba(96,165,250,.2)' : 'transparent', color: mainUse3d ? '#bfdbfe' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, '3D Build'),
-            !archShow3d && el('button', { type: 'button', 'aria-label': 'Retry the three-dimensional view', onClick: function () { upd({ hide3d: false, editorView: '3d' }); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.14)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Retry 3D'),
+            !archShow3d && el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_retry_the_three_dimensional_view', 'Retry the three-dimensional view'), onClick: function () { upd({ hide3d: false, editorView: '3d' }); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.14)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Retry 3D'),
             el('button', { type: 'button', 'aria-pressed': !mainUse3d, onClick: openArchGridForKeyboard, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: !mainUse3d ? '1px solid #2dd4bf' : '1px solid transparent', background: !mainUse3d ? 'rgba(45,212,191,.18)' : 'transparent', color: !mainUse3d ? '#99f6e4' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Floor Grid')
           ),
 
@@ -4396,7 +4412,7 @@
             el('button', {
               type: 'button',
               'data-arch-reset-view': 'true',
-              'aria-label': 'Reset layer, slice, filters, heatmap, replay, and blueprint view settings',
+              'aria-label': __alloAST('stem.archstudio.a11y_reset_layer_slice_filters_heatmap_replay_and_bl', 'Reset layer, slice, filters, heatmap, replay, and blueprint view settings'),
               onClick: resetArchView,
               style: { flex: '0 0 auto', padding: '4px 9px', borderRadius: 7, border: '1px solid #64748b', background: 'rgba(71,85,105,.3)', color: '#e2e8f0', cursor: 'pointer', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' }
             }, '\u21BA Reset View')
@@ -4406,7 +4422,7 @@
           showAnalysis && totalBlocks > 0 && el('div', { className: 'arch-studio-floating-panel arch-studio-analysis-panel', role: 'region', 'aria-label': showReplay ? 'Live build analysis' : 'Structural analysis', style: { position: 'absolute', top: 70, right: 8, width: 238, background: 'rgba(15,23,42,.93)', borderRadius: 14, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid rgba(168,85,247,.35)', zIndex: 10 } },
             el('div', { className: 'arch-studio-floating-header', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
               el('div', { style: { fontSize: 10, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83D\uDCD0 ' + (showReplay ? 'Live Build Analysis' : 'Structural Analysis')),
-              el('button', { type: 'button', 'aria-label': 'Close structural analysis', onClick: function () { upd('showAnalysis', false); }, style: { marginLeft: 'auto', width: 24, height: 24, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 14 } }, '\u00D7')
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_close_structural_analysis', 'Close structural analysis'), onClick: function () { upd('showAnalysis', false); }, style: { marginLeft: 'auto', width: 24, height: 24, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 14 } }, '\u00D7')
             ),
             el('div', { style: { textAlign: 'center', marginBottom: 10, padding: '8px 0', background: 'rgba(30,41,59,.6)', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)' } },
               el('div', { style: { fontSize: 24, marginBottom: 2 } }, analysis.stabilityEmoji),
@@ -4434,11 +4450,11 @@
           ),
 
           // AI Architect overlay (left side, below mode indicator)
-          showAI && el('div', { className: 'arch-studio-floating-panel arch-studio-ai-panel', role: 'region', 'aria-label': 'AI Architect advice', 'aria-busy': aiLoading, style: { position: 'absolute', top: 44, left: 8, width: 264, background: 'rgba(15,23,42,.93)', borderRadius: 14, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid rgba(244,114,182,.35)', zIndex: 10 } },
+          showAI && el('div', { className: 'arch-studio-floating-panel arch-studio-ai-panel', role: 'region', 'aria-label': __alloAST('stem.archstudio.a11y_ai_architect_advice', 'AI Architect advice'), 'aria-busy': aiLoading, style: { position: 'absolute', top: 44, left: 8, width: 264, background: 'rgba(15,23,42,.93)', borderRadius: 14, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid rgba(244,114,182,.35)', zIndex: 10 } },
             el('div', { className: 'arch-studio-floating-header', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
               el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83E\uDD16 AI Architect'),
               el('button', { type: 'button', onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 7, padding: '4px 9px', fontSize: 10, fontWeight: 800, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Working' : '\u2728 Ask Again'),
-              el('button', { type: 'button', 'aria-label': 'Close AI Architect', onClick: function () { upd('showAI', false); }, style: { width: 24, height: 24, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 14 } }, '\u00D7')
+              el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_close_ai_architect', 'Close AI Architect'), onClick: function () { upd('showAI', false); }, style: { width: 24, height: 24, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 14 } }, '\u00D7')
             ),
             aiLoading && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: aiAdvice ? 8 : 0, padding: '7px 8px', borderRadius: 8, background: 'rgba(244,114,182,.1)', border: '1px solid rgba(244,114,182,.24)', color: '#fbcfe8', fontSize: 10, fontWeight: 700 } },
               el('span', { 'aria-hidden': 'true', style: { animation: 'spin 1.5s linear infinite' } }, '\u2726'),
@@ -4495,7 +4511,7 @@
         return el('div', { className: 'arch-studio-inquiry', style: { padding: 12, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', borderTop: '1px solid #334155', color: '#e2e8f0' } },
           el('div', { className: 'arch-studio-inquiry-header', style: { position: 'sticky', top: -12, zIndex: 3, margin: '-12px -12px 8px', padding: '10px 12px 8px', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(15,23,42,.97)', borderBottom: '1px solid #334155', backdropFilter: 'blur(12px)' } },
             el('h3', { style: { flex: 1, fontSize: 13, fontWeight: 800, color: '#a78bfa', margin: 0 } }, '⚖️ Gravity-rigidity discovery'),
-            el('button', { type: 'button', 'aria-label': 'Close gravity-rigidity discovery', onClick: function () { upd('showInquiryLab', false); }, style: { width: 26, height: 26, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 15 } }, '\u00D7')
+            el('button', { type: 'button', 'aria-label': __alloAST('stem.archstudio.a11y_close_gravity_rigidity_discovery', 'Close gravity-rigidity discovery'), onClick: function () { upd('showInquiryLab', false); }, style: { width: 26, height: 26, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 15 } }, '\u00D7')
           ),
           el('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, 'Sliders for gravity multiplier, rigidity, mass. Discrete stability outcome. No score, no reveal.'),
           el('div', { style: { padding: 8, borderRadius: 6, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 8 } },
