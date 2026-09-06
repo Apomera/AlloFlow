@@ -2,6 +2,16 @@
 // A grade-banded, evidence-first weather simulation for K-12 learners.
 
 (function () {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloWeatherCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloWeatherCtx && typeof __alloWeatherCtx.t === "function") ? __alloWeatherCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
@@ -3079,6 +3089,7 @@ var GEOGRAPHY_PROFILES = {
       { id: 'accurate_forecast', label: 'Score 80 or higher on a forecast', icon: '\uD83C\uDFC6', check: function (d) { return (d.bestForecast || 0) >= 80; }, progress: function (d) { return (d.bestForecast || 0) + '/80'; } }
     ],
     render: function (ctx) {
+      __alloWeatherCtx = ctx;
       var React = ctx.React;
       var h = React.createElement;
       var dataRoot = ctx.toolData || {};
@@ -3139,7 +3150,7 @@ var GEOGRAPHY_PROFILES = {
         var restoredPatch = validateImmersiveSessionPayload(payload);
         if (!restoredPatch) return;
         update(Object.assign({}, restoredPatch, { immersiveSessionStatus: 'Shared immersive session restored from this link.' }));
-        if (announce) announce('Shared immersive weather session restored.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_shared_immersive_weather_session_restored', 'Shared immersive weather session restored.'));
       }, []);
 
       React.useEffect(function () {
@@ -3151,7 +3162,7 @@ var GEOGRAPHY_PROFILES = {
           var restoredPatch = raw ? validateImmersiveLocalWorkspacePayload(JSON.parse(raw)) : null;
           if (!restoredPatch) return;
           update(Object.assign({}, restoredPatch, { immersiveLocalSaveStatus: 'Restored this immersive workspace from local device storage.' }));
-          if (announce) announce('Immersive workspace restored from this device.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_immersive_workspace_restored_from_this_device', 'Immersive workspace restored from this device.'));
         } catch (error) {}
       }, []);
 
@@ -3210,17 +3221,17 @@ var GEOGRAPHY_PROFILES = {
         if (!next) {
           try { if (window.localStorage) window.localStorage.removeItem(IMMERSIVE_LOCAL_WORKSPACE_KEY); } catch (error) {}
           update({ immersiveLocalPersistenceEnabled: false, immersiveLocalSaveStatus: 'Local autosave is off and the saved device copy was cleared.' });
-          if (announce) announce('Local autosave turned off and saved device copy cleared.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_local_autosave_turned_off_and_saved_device_copy_c', 'Local autosave turned off and saved device copy cleared.'));
           return;
         }
         update({ immersiveLocalPersistenceEnabled: true, immersiveLocalSaveStatus: 'Local autosave enabled for this device.' });
-        if (announce) announce('Local autosave enabled for this device.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_local_autosave_enabled_for_this_device', 'Local autosave enabled for this device.'));
       }
 
       function clearImmersiveLocalWorkspace() {
         try { if (window.localStorage) window.localStorage.removeItem(IMMERSIVE_LOCAL_WORKSPACE_KEY); } catch (error) {}
         update({ immersiveLocalPersistenceEnabled: false, immersiveLocalSaveStatus: 'Saved device copy cleared. Local autosave is now off.' });
-        if (announce) announce('Saved device copy cleared and local autosave turned off.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_saved_device_copy_cleared_and_local_autosave_turn', 'Saved device copy cleared and local autosave turned off.'));
       }
 
       function captureImmersiveEvidence() {
@@ -3253,7 +3264,7 @@ var GEOGRAPHY_PROFILES = {
 
       function clearImmersiveEvidenceCaptures() {
         update({ immersiveEvidenceCaptures: [], immersiveEvidenceLastId: '', immersiveEvidenceStatus: 'Evidence captures cleared.' });
-        if (announce) announce('Immersive evidence captures cleared.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_immersive_evidence_captures_cleared', 'Immersive evidence captures cleared.'));
       }
 
       function copyImmersiveSessionLink() {
@@ -3291,7 +3302,7 @@ var GEOGRAPHY_PROFILES = {
             if (!importedPatch) throw new Error('This file is not a supported Weather Systems session.');
             update(Object.assign({}, importedPatch, { immersiveAudienceMode: 'teacher', immersiveSessionStatus: 'Session JSON imported. Review the location and source labels before sharing it.' }));
             if (addToast) addToast('Weather Systems session imported.', 'success');
-            if (announce) announce('Weather Systems session imported.');
+            if (announce) announce(__alloT('stem.weathersystems.sr_weather_systems_session_imported', 'Weather Systems session imported.'));
           } catch (error) {
             var message = error && error.message ? error.message : 'The session file could not be read.';
             update({ immersiveSessionStatus: message });
@@ -3369,7 +3380,7 @@ var GEOGRAPHY_PROFILES = {
         var primaryFeature = comparison.primary.feature && comparison.primary.feature.id ? comparison.primary.feature.id : '';
         var comparisonFeature = comparison.comparison.feature && comparison.comparison.feature.id ? comparison.comparison.feature.id : '';
         update({ tab: 'immersive', immersiveSceneMode: comparison.comparison.sceneMode || d.immersiveSceneMode, immersiveComparisonFeature: primaryFeature, immersiveExplainerFeature: comparisonFeature || d.immersiveExplainerFeature, immersiveInspectorPanel: 'compare', immersiveEvidenceStatus: '3D comparison opened for the selected captures.' });
-        if (announce) announce('3D comparison opened for the selected captures.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_3d_comparison_opened_for_the_selected_captures', '3D comparison opened for the selected captures.'));
       }
 
       function toggleImmersiveStageMode() {
@@ -3461,7 +3472,7 @@ var GEOGRAPHY_PROFILES = {
 
       function saveImmersiveLessonPreset() {
         var name = String(d.immersiveLessonPresetDraftName || '').trim();
-        if (!name) { update({ immersiveLessonPresetStatus: 'Enter a preset name before saving.' }); if (announce) announce('Enter a preset name before saving.'); return; }
+        if (!name) { update({ immersiveLessonPresetStatus: 'Enter a preset name before saving.' }); if (announce) announce(__alloT('stem.weathersystems.sr_enter_a_preset_name_before_saving', 'Enter a preset name before saving.')); return; }
         var preset = immersiveLessonPresetPayload(d, name, { id: 'weather-preset-' + Date.now(), savedAt: new Date().toISOString() });
         if (!preset) return;
         var next = immersiveLessonPresetList((Array.isArray(d.immersiveLessonPresets) ? d.immersiveLessonPresets : []).filter(function (item) { return item.id !== preset.id; }).concat([preset]));
@@ -3481,7 +3492,7 @@ var GEOGRAPHY_PROFILES = {
         var id = preset && preset.id;
         var next = immersiveLessonPresetList((Array.isArray(d.immersiveLessonPresets) ? d.immersiveLessonPresets : []).filter(function (item) { return item.id !== id; }));
         update({ immersiveLessonPresets: next, immersiveLessonPresetActiveId: d.immersiveLessonPresetActiveId === id ? '' : d.immersiveLessonPresetActiveId, immersiveLessonPresetStatus: 'Preset removed.' });
-        if (announce) announce('Lesson preset removed.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_lesson_preset_removed', 'Lesson preset removed.'));
       }
 
       function fetchLiveWeather(latitude, longitude, label, place) {
@@ -3557,7 +3568,7 @@ var GEOGRAPHY_PROFILES = {
         }
         if (query.length < 2) {
           if (addToast) addToast('Enter at least two characters for a location search.', 'warning');
-          if (announce) announce('Enter at least two characters for a location search.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_enter_at_least_two_characters_for_a_location_sear', 'Enter at least two characters for a location search.'));
           return;
         }
         var candidates = locationSearchCandidates(query, fields);
@@ -3592,7 +3603,7 @@ var GEOGRAPHY_PROFILES = {
         var runtime = immersiveRuntimeRef.current;
         if (!runtime || !runtime.renderer) {
           if (addToast) addToast('The immersive scene is still loading.', 'info');
-          if (announce) announce('The immersive weather scene is still loading.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_the_immersive_weather_scene_is_still_loading', 'The immersive weather scene is still loading.'));
           return;
         }
         if (!window.navigator || !window.navigator.xr || !window.navigator.xr.isSessionSupported) {
@@ -3608,10 +3619,10 @@ var GEOGRAPHY_PROFILES = {
           return runtime.renderer.xr.setSession(session).then(function () {
             update({ vrStatus: 'VR session active.', vrSessionActive: true });
             if (addToast) addToast('VR weather immersion started.', 'success');
-            if (announce) announce('VR weather immersion started.');
+            if (announce) announce(__alloT('stem.weathersystems.sr_vr_weather_immersion_started', 'VR weather immersion started.'));
             session.addEventListener('end', function () {
               update({ vrStatus: 'VR session ended.', vrSessionActive: false });
-              if (announce) announce('VR weather immersion ended.');
+              if (announce) announce(__alloT('stem.weathersystems.sr_vr_weather_immersion_ended', 'VR weather immersion ended.'));
             }, { once: true });
           });
         }).catch(function (error) {
@@ -3666,7 +3677,7 @@ var GEOGRAPHY_PROFILES = {
       function resetImmersiveOrientation() {
         if (geographicViewState(d).mode === 'geographic') setGeographicCameraPreset('local');
         else setImmersiveCameraPreset('overview');
-        if (announce) announce('Immersive orientation reset to the guided view.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_immersive_orientation_reset_to_the_guided_view', 'Immersive orientation reset to the guided view.'));
       }
 
       function applyGeographicAnalysisLens(lensId, extraPatch, announcement) {
@@ -3743,7 +3754,7 @@ var GEOGRAPHY_PROFILES = {
         }
         if (d.geographicTerrainAvailable === false || !runtime.map.getSource('weather-terrain')) {
           if (addToast) addToast('3D terrain is unavailable, but the open base map remains usable.', 'info');
-          if (announce) announce('Terrain emphasis is unavailable because the terrain layer did not load.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_terrain_emphasis_is_unavailable_because_the_terra', 'Terrain emphasis is unavailable because the terrain layer did not load.'));
           return;
         }
         runtime.map.setTerrain({ source: 'weather-terrain', exaggeration: nextExaggeration });
@@ -3780,7 +3791,7 @@ var GEOGRAPHY_PROFILES = {
         var evidenceWeather = activeLiveWeather(d);
         if (!analysis || !evidenceWeather) {
           if (addToast) addToast('Wait for the terrain profile to finish sampling.', 'info');
-          if (announce) announce('Terrain evidence is still being prepared.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_terrain_evidence_is_still_being_prepared', 'Terrain evidence is still being prepared.'));
           return;
         }
         var evidence = (d.evidence || []).slice();
@@ -3791,7 +3802,7 @@ var GEOGRAPHY_PROFILES = {
           var forecastPatch = { tab: 'forecast' };
           if (existingNote && !String(d.reasoning || '').trim()) forecastPatch.reasoning = existingNote;
           update(forecastPatch);
-          if (announce) announce('Forecast Mission opened with terrain evidence and the mapped evidence note carried forward.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_forecast_mission_opened_with_terrain_evidence_and', 'Forecast Mission opened with terrain evidence and the mapped evidence note carried forward.'));
           return;
         }
         if (!selected) evidence.push(TERRAIN_EVIDENCE.id);
@@ -3824,7 +3835,7 @@ var GEOGRAPHY_PROFILES = {
         if (investigationNote && !String(d.reasoning || '').trim()) evidencePatch.reasoning = investigationNote;
         update(evidencePatch);
         if (addToast) addToast('Terrain profile added to forecast evidence.', 'success');
-        if (announce) announce('Wind-aligned terrain profile added to forecast evidence.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_wind_aligned_terrain_profile_added_to_forecast_ev', 'Wind-aligned terrain profile added to forecast evidence.'));
       }
 
       function setGeographicBuildings(visible) {
@@ -3838,7 +3849,7 @@ var GEOGRAPHY_PROFILES = {
         if (!buildingLayerIds.length) {
           update({ geographicBuildings: false, geographicBuildingsAvailable: false });
           if (addToast) addToast('This map style does not provide a compatible 3D building layer.', 'info');
-          if (announce) announce('Real 3D buildings are unavailable in the current map style.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_real_3d_buildings_are_unavailable_in_the_current', 'Real 3D buildings are unavailable in the current map style.'));
           return;
         }
         runtime.buildingLayerIds = buildingLayerIds;
@@ -3871,7 +3882,7 @@ var GEOGRAPHY_PROFILES = {
         if (!timeline.length) return;
         var currentIndex = weatherTimelineCurrentIndex(timeline);
         update({ liveWeatherTimelineIndex: currentIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the current weather hour...' });
-        if (announce) announce('Weather timeline returned to the current observation.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_weather_timeline_returned_to_the_current_observat', 'Weather timeline returned to the current observation.'));
       }
 
       function setImmersiveTimelineComparison(index) {
@@ -3890,7 +3901,7 @@ var GEOGRAPHY_PROFILES = {
         try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
         if (reduceMotion && !d.liveWeatherTimelinePlaying) {
           if (addToast) addToast('Automatic playback is paused by your reduced-motion preference. Use the step buttons or timeline slider.', 'info');
-          if (announce) announce('Automatic playback is unavailable with reduced motion. Use step controls.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_automatic_playback_is_unavailable_with_reduced_mo', 'Automatic playback is unavailable with reduced motion. Use step controls.'));
           return;
         }
         var index = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(timeline);
@@ -3905,7 +3916,7 @@ var GEOGRAPHY_PROFILES = {
         var weather = activeLiveWeather(d);
         if (!weather || weather.timelineRole !== 'forecast') {
           if (addToast) addToast('Select a future forecast hour before saving a checkpoint.', 'info');
-          if (announce) announce('A future forecast hour is required to save a verification checkpoint.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_a_future_forecast_hour_is_required_to_save_a_veri', 'A future forecast hour is required to save a verification checkpoint.'));
           return;
         }
         var checkpoint = {
@@ -3929,7 +3940,7 @@ var GEOGRAPHY_PROFILES = {
 
       function removeLiveForecastCheckpoint(checkpointId) {
         update({ liveForecastCheckpoints: (d.liveForecastCheckpoints || []).filter(function (item) { return item.id !== checkpointId; }) });
-        if (announce) announce('Forecast checkpoint removed.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_forecast_checkpoint_removed', 'Forecast checkpoint removed.'));
       }
 
       function openLiveForecastCheckpoint(checkpoint) {
@@ -3963,7 +3974,7 @@ var GEOGRAPHY_PROFILES = {
         var active = activeLiveWeather(d);
         if (!active || !active.validAt) {
           if (addToast) addToast('Load live weather and select an hourly time before loading a regional field.', 'info');
-          if (announce) announce('Regional weather fields require a selected live weather hour.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_regional_weather_fields_require_a_selected_live_w', 'Regional weather fields require a selected live weather hour.'));
           return;
         }
         var radius = clamp(Math.max(25, Number(d.geographicStudyRadius) || 10), 10, 75);
@@ -4021,7 +4032,7 @@ var GEOGRAPHY_PROFILES = {
           if (source && source.setData) source.setData({ type: 'FeatureCollection', features: [] });
         }
         update({ geographicTerrainProbe: null });
-        if (announce) announce('Terrain comparison point cleared.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_terrain_comparison_point_cleared', 'Terrain comparison point cleared.'));
       }
 
       function toggleImmersiveFocusSpotlight() {
@@ -4118,7 +4129,7 @@ function openImmersiveTourStep(stepId) {
         if (geographicViewState(d).mode === 'conceptual') applyImmersiveFocus(d.immersiveFocus || 'system');
         var runtime = immersiveRuntimeRef.current;
         if (runtime && runtime.setComparisonVisual) runtime.setComparisonVisual('');
-        if (announce) announce('Feature comparison cleared.');
+        if (announce) announce(__alloT('stem.weathersystems.sr_feature_comparison_cleared', 'Feature comparison cleared.'));
       }
 
       function setImmersiveInspectorPanel(panelId) {
@@ -4251,7 +4262,7 @@ function openImmersiveTourStep(stepId) {
       function checkBoundaryGuess() {
         if (!d.boundaryGuess) {
           if (addToast) addToast('Choose the station pair with the strongest boundary signal.', 'warning');
-          if (announce) announce('Choose a station pair before checking the boundary.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_choose_a_station_pair_before_checking_the_boundar', 'Choose a station pair before checking the boundary.'));
           return;
         }
         var analysis = stationNetworkAnalysis(state);
@@ -4266,14 +4277,14 @@ function openImmersiveTourStep(stepId) {
         var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, activeLiveWeather(d));
         if ((d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && !terrainEvidenceStatus.current) {
           if (addToast) addToast('Refresh or remove stale terrain evidence before verifying the forecast.', 'warning');
-          if (announce) announce('Forecast verification paused because the selected terrain evidence does not match the active live observation.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_forecast_verification_paused_because_the_selected', 'Forecast verification paused because the selected terrain evidence does not match the active live observation.'));
           return;
         }
         var reasoningTarget = band === 'K-2' ? 10 : 20;
         var reasoningText = (d.reasoning || '').trim();
         if (!d.predictionPrecip || !d.predictionTiming || !d.predictionHazard || !d.readinessAction || !d.forecastConfidence || reasoningText.length < reasoningTarget) {
           if (addToast) addToast('Complete the forecast choices and explain your reasoning before verification.', 'warning');
-          if (announce) announce('Forecast incomplete. Complete precipitation, timing, hazard, school action, confidence, and the reasoning note.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_forecast_incomplete_complete_precipitation_timing', 'Forecast incomplete. Complete precipitation, timing, hazard, school action, confidence, and the reasoning note.'));
           return;
         }
         var result = scoreForecast(state, {
@@ -4310,7 +4321,7 @@ function openImmersiveTourStep(stepId) {
       function performExperiment() {
         if (!d.experimentPrediction) {
           if (addToast) addToast('Predict the effect on precipitation potential before running the test.', 'warning');
-          if (announce) announce('Choose whether precipitation potential will increase, decrease, or stay close.');
+          if (announce) announce(__alloT('stem.weathersystems.sr_choose_whether_precipitation_potential_will_incre', 'Choose whether precipitation potential will increase, decrease, or stay close.'));
           return;
         }
         var result = runExperiment(state, experimentVariable, experimentValue, d.experimentHour != null ? Number(d.experimentHour) : 6);
@@ -5678,7 +5689,7 @@ var geographyGroup = new THREE.Group();
                 var activeExaggeration = terrainSettings && isFinite(Number(terrainSettings.exaggeration)) && Number(terrainSettings.exaggeration) > 0 ? Number(terrainSettings.exaggeration) : 1;
                 var renderedElevation = map.queryTerrainElevation(coordinate);
                 if (renderedElevation == null || !isFinite(Number(renderedElevation))) {
-                  if (announce) announce('Terrain elevation is not available at that map point yet.');
+                  if (announce) announce(__alloT('stem.weathersystems.sr_terrain_elevation_is_not_available_at_that_map_po', 'Terrain elevation is not available at that map point yet.'));
                   return false;
                 }
                 var renderedSiteElevation = map.queryTerrainElevation([geographic.longitude, geographic.latitude]);
@@ -5860,14 +5871,14 @@ var geographyGroup = new THREE.Group();
               ),
               h('div', { className: 'min-w-[150px] flex-1 basis-full sm:basis-auto sm:max-w-xs' },
                 h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, earned + ' of ' + badges.length + ' earned'), h('span', { className: indigoAccentClass }, progress + '%')),
-                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': 'Meteorologist badges earned', 'aria-valuemin': 0, 'aria-valuemax': badges.length, 'aria-valuenow': earned },
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_meteorologist_badges_earned', 'Meteorologist badges earned'), 'aria-valuemin': 0, 'aria-valuemax': badges.length, 'aria-valuenow': earned },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-amber-300 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
                 )
               ),
               nextBadge && h('button', { type: 'button', onClick: function () { update({ tab: nextBadge.tab }); }, className: 'min-h-11 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-black text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300' }, nextBadge.action + ' \u2192'),
               h('button', { type: 'button', onClick: function () { update({ badgeBoardOpen: !open }); }, 'aria-expanded': open, 'aria-controls': 'meteorologist-badge-grid', className: buttonClass + ' text-xs' }, open ? 'Hide badges' : 'Show badges')
             ),
-            open && h('div', { id: 'meteorologist-badge-grid', className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5', role: 'list', 'aria-label': 'Meteorologist achievement badges' }, badges.map(function (badge) {
+            open && h('div', { id: 'meteorologist-badge-grid', className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5', role: 'list', 'aria-label': __alloT('stem.weathersystems.a11y_meteorologist_achievement_badges', 'Meteorologist achievement badges') }, badges.map(function (badge) {
               return h('div', { key: badge.id, role: 'listitem', 'aria-label': badge.title + (badge.complete ? ' earned' : ' in progress'), className: 'rounded-xl border p-3 transition-colors motion-reduce:transition-none ' + (badge.complete ? (dark ? 'border-amber-400/40 bg-amber-400/10' : 'border-amber-200 bg-amber-50') : (dark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white/80')) },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('span', { className: 'text-xl ' + (badge.complete ? '' : 'grayscale opacity-60'), 'aria-hidden': true }, badge.icon),
@@ -5931,12 +5942,12 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'min-w-[150px] text-right' },
                 h('p', { className: 'text-sm font-black ' + tealAccentClass }, completedCount + ' of ' + stages.length + ' stages'),
                 h('p', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, nextStage ? 'Next: ' + nextStage.label : 'Cycle complete'),
-                h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-teal-100'), role: 'progressbar', 'aria-label': 'Weather investigation pathway progress', 'aria-valuemin': 0, 'aria-valuemax': stages.length, 'aria-valuenow': completedCount },
+                h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-teal-100'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_weather_investigation_pathway_progress', 'Weather investigation pathway progress'), 'aria-valuemin': 0, 'aria-valuemax': stages.length, 'aria-valuenow': completedCount },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all motion-reduce:transition-none', style: { width: (completedCount / stages.length * 100) + '%' } })
                 )
               )
             ),
-            h('ol', { className: 'mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5', 'aria-label': 'Weather investigation stages' }, stages.map(function (stage, index) {
+            h('ol', { className: 'mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5', 'aria-label': __alloT('stem.weathersystems.a11y_weather_investigation_stages', 'Weather investigation stages') }, stages.map(function (stage, index) {
               var recommended = nextStage && nextStage.id === stage.id;
               var stateClass = stage.complete
                 ? (dark ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-100' : 'border-emerald-200 bg-emerald-50 text-emerald-950')
@@ -5974,7 +5985,7 @@ var geographyGroup = new THREE.Group();
         ];
         return h('div', { className: 'border-b ' + (dark ? 'border-slate-800 bg-slate-950/95' : 'border-sky-200 bg-white/95') },
           h('div', { className: 'flex flex-wrap items-center gap-3 px-4 py-3' },
-            h('button', { type: 'button', onClick: function () { setStemLabTool(null); }, className: buttonClass, 'aria-label': 'Back to STEM tools' }, '\u2190 Back'),
+            h('button', { type: 'button', onClick: function () { setStemLabTool(null); }, className: buttonClass, 'aria-label': __alloT('stem.weathersystems.a11y_back_to_stem_tools', 'Back to STEM tools') }, '\u2190 Back'),
             h('div', { className: 'min-w-0 flex-1' },
               h('div', { className: 'flex flex-wrap items-center gap-2' },
                 h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83C\uDF26\uFE0F'),
@@ -5993,7 +6004,7 @@ var geographyGroup = new THREE.Group();
               className: buttonClass
             }, '\uD83D\uDCF8 Snapshot')
           ),
-          h('div', { className: 'flex flex-wrap gap-2 px-4 pb-3', role: 'tablist', 'aria-label': 'Weather lab sections' },
+          h('div', { className: 'flex flex-wrap gap-2 px-4 pb-3', role: 'tablist', 'aria-label': __alloT('stem.weathersystems.a11y_weather_lab_sections', 'Weather lab sections') },
             tabs.map(function (tab, tabIndex) {
               var active = (d.tab || 'map') === tab.id;
               return h('button', {
@@ -7211,7 +7222,7 @@ var geographyGroup = new THREE.Group();
             )
           ),
           h('div', { className: 'p-4' },
-            h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Jump to a model-hour chapter' },
+            h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_jump_to_a_model_hour_chapter', 'Jump to a model-hour chapter') },
               h('span', { className: 'mr-1 text-xs font-black uppercase tracking-wide ' + storyEyebrow }, 'Jump to chapter'),
               chapters.map(function (hour) {
                 var active = state.simHour === hour;
@@ -7322,7 +7333,7 @@ var geographyGroup = new THREE.Group();
             h('span', { className: 'rounded-full px-2 py-1 text-[0.6875rem] font-black ' + (activePreset ? (dark ? 'bg-violet-950 text-violet-300' : 'bg-violet-100 text-violet-800') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')), role: 'status', 'aria-live': 'polite' }, activePreset ? activePreset.label : 'Custom mix')
           ),
           h('div', { className: 'p-3' },
-            h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Weather map visual presets' }, presets.map(function (preset) {
+            h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_weather_map_visual_presets', 'Weather map visual presets') }, presets.map(function (preset) {
               var selected = activePreset && activePreset.id === preset.id;
               return h('button', { key: preset.id, type: 'button', onClick: function () { applyVisualPreset(preset); }, 'aria-pressed': !!selected, className: 'min-h-16 rounded-xl border p-3 text-left transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-violet-400 bg-violet-600 text-white shadow-md' : (dark ? 'border-slate-700 bg-slate-950/60 hover:border-violet-500/50 hover:bg-slate-800' : 'border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50')) },
                 h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, preset.icon), h('span', { className: 'text-xs font-black' }, preset.label)),
@@ -7430,7 +7441,7 @@ var geographyGroup = new THREE.Group();
         }
         function carryLensEvidence() {
           if (!selectedLensEvidence.length) {
-            if (announce) announce('Select at least one evidence card before opening the Forecast Mission.');
+            if (announce) announce(__alloT('stem.weathersystems.sr_select_at_least_one_evidence_card_before_opening', 'Select at least one evidence card before opening the Forecast Mission.'));
             return;
           }
           var merged = (d.evidence || []).slice();
@@ -7619,7 +7630,7 @@ var geographyGroup = new THREE.Group();
                   type: 'button',
                   onClick: function () {
                     update({ tab: 'experiment' });
-                    if (announce) announce('Cause and Effect Lab opened for a one-variable controlled test.');
+                    if (announce) announce(__alloT('stem.weathersystems.sr_cause_and_effect_lab_opened_for_a_one_variable_co', 'Cause and Effect Lab opened for a one-variable controlled test.'));
                   },
                   className: buttonClass
                 }, 'Open controlled test')
@@ -7714,7 +7725,7 @@ var geographyGroup = new THREE.Group();
                     metric.meter == null ? null : h('div', {
                       className: 'mt-1.5 h-1.5 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-sky-100'),
                       role: 'progressbar',
-                      'aria-label': 'Moisture closeness to saturation',
+                      'aria-label': __alloT('stem.weathersystems.a11y_moisture_closeness_to_saturation', 'Moisture closeness to saturation'),
                       'aria-valuemin': 0,
                       'aria-valuemax': 100,
                       'aria-valuenow': Math.round(metric.meter),
@@ -7894,7 +7905,7 @@ var geographyGroup = new THREE.Group();
               h('span', { className: 'rounded-full px-3 py-1.5 text-xs font-black ' + (dark ? 'bg-white/10 text-indigo-200 ring-1 ring-white/10' : 'bg-indigo-100 text-indigo-900') }, 'T +' + carried.startHour + ' to T +' + carried.endHour)
             ),
             h('div', { className: 'p-4' },
-              h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Evidence carried from the map' }, items.map(function (item) {
+              h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': __alloT('stem.weathersystems.a11y_evidence_carried_from_the_map', 'Evidence carried from the map') }, items.map(function (item) {
                 return h('span', { key: item.id, role: 'listitem', className: 'rounded-full px-3 py-1.5 text-xs font-black ' + (dark ? 'bg-cyan-400/10 text-cyan-200 ring-1 ring-cyan-300/20' : 'bg-cyan-100 text-cyan-900') }, item.label);
               })),
               h('div', { className: 'mt-4 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center ' + (dark ? 'border-amber-300/20 bg-amber-300/10' : 'border-amber-200 bg-amber-50') },
@@ -7907,7 +7918,7 @@ var geographyGroup = new THREE.Group();
                   type: 'button',
                   onClick: function () {
                     update({ tab: 'map' });
-                    if (announce) announce('Map Lab opened with your evidence cards still selected.');
+                    if (announce) announce(__alloT('stem.weathersystems.sr_map_lab_opened_with_your_evidence_cards_still_sel', 'Map Lab opened with your evidence cards still selected.'));
                   },
                   className: buttonClass + ' shrink-0'
                 }, 'Review map evidence')
@@ -7948,7 +7959,7 @@ var geographyGroup = new THREE.Group();
               h('p', { className: 'mt-1 text-xs leading-relaxed ' + (dark ? 'text-slate-100' : 'text-slate-800') }, terrainEvidence.investigationNote)
             ),
             h('p', { className: 'mt-2 text-[0.6875rem] ' + mutedClass }, 'Transect: ' + terrainEvidence.upwindDirection + ' upwind to ' + terrainEvidence.downwindDirection + ' downwind. Use with moisture, stability, and pressure evidence; terrain alone is not a forecast.'),
-            h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveSceneMode: 'geographic', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); if (announce) announce('Geographic 3D terrain evidence reopened.'); }, className: buttonClass + ' mt-3' }, 'Review terrain evidence')
+            h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveSceneMode: 'geographic', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); if (announce) announce(__alloT('stem.weathersystems.sr_geographic_3d_terrain_evidence_reopened', 'Geographic 3D terrain evidence reopened.')); }, className: buttonClass + ' mt-3' }, 'Review terrain evidence')
           );
         }
         function cerComposerPanel() {
@@ -8001,7 +8012,7 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'min-w-[110px] text-right' },
                 h('p', { className: 'text-sm font-black ' + (dark ? 'text-teal-300' : 'text-teal-800') }, completed + ' of 3'),
                 h('p', { className: 'text-[0.6875rem] font-bold ' + mutedClass }, completed === 3 ? 'CER structure ready' : 'parts ready'),
-                h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), role: 'progressbar', 'aria-label': 'Claim Evidence Reasoning completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completed },
+                h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_claim_evidence_reasoning_completeness', 'Claim Evidence Reasoning completeness'), 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completed },
                   h('div', { className: 'h-full rounded-full bg-teal-500 transition-all motion-reduce:transition-none', style: { width: (completed / 3 * 100) + '%' } })
                 )
               )
@@ -8018,7 +8029,7 @@ var geographyGroup = new THREE.Group();
                   h('p', { className: 'mt-1 text-[0.6875rem] leading-snug ' + mutedClass }, step.detail)
                 );
               })),
-              h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Claim Evidence Reasoning sentence frames' }, frames.map(function (frame) {
+              h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_claim_evidence_reasoning_sentence_frames', 'Claim Evidence Reasoning sentence frames') }, frames.map(function (frame) {
                 return h('button', {
                   key: frame.id,
                   type: 'button',
@@ -8079,7 +8090,7 @@ var geographyGroup = new THREE.Group();
               )
             ),
             h('div', { className: 'px-4 pt-3' },
-              h('div', { className: 'h-2 overflow-hidden rounded-full ' + featureTrack, role: 'progressbar', 'aria-label': 'Forecast readiness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastReadiness },
+              h('div', { className: 'h-2 overflow-hidden rounded-full ' + featureTrack, role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_forecast_readiness', 'Forecast readiness'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastReadiness },
                 h('div', { className: 'h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all motion-reduce:transition-none', style: { width: forecastReadiness + '%' } })
               )
             ),
@@ -8223,7 +8234,7 @@ var geographyGroup = new THREE.Group();
                 h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'Open the hourly 3D timeline, choose a future hour, and save its temperature, precipitation, pressure, wind, and condition as a testable forecast.'),
                 h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveDataSource: 'live' }); }, className: 'mt-3 min-h-11 rounded-lg bg-fuchsia-700 px-4 py-2 text-xs font-black text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, 'Open 3D forecast timeline')
               ),
-              statuses.length > 0 && h('ol', { className: 'space-y-3', 'aria-label': 'Saved live forecast checkpoints' }, statuses.slice().reverse().map(function (item) {
+              statuses.length > 0 && h('ol', { className: 'space-y-3', 'aria-label': __alloT('stem.weathersystems.a11y_saved_live_forecast_checkpoints', 'Saved live forecast checkpoints') }, statuses.slice().reverse().map(function (item) {
                 var checkpoint = item.checkpoint;
                 var result = item.result;
                 var predicted = checkpoint.predicted || {};
@@ -8304,7 +8315,7 @@ var geographyGroup = new THREE.Group();
                 h('p', { className: 'text-xs font-black uppercase tracking-wide ' + fuchsiaAccentClass }, latest ? (delta != null && delta > 0 ? 'Revision momentum' : 'Reflection prompt') : 'Journal ready'),
                 h('p', { className: 'mt-1 text-xs font-bold leading-relaxed' }, reflection)
               ),
-              history.length > 0 && h('ol', { className: 'mt-3 space-y-2', 'aria-label': 'Verified forecast attempts' }, history.slice().reverse().map(function (entry, reverseIndex) {
+              history.length > 0 && h('ol', { className: 'mt-3 space-y-2', 'aria-label': __alloT('stem.weathersystems.a11y_verified_forecast_attempts', 'Verified forecast attempts') }, history.slice().reverse().map(function (entry, reverseIndex) {
                 var isLatest = reverseIndex === 0;
                 return h('li', { key: entry.attempt + '-' + reverseIndex, className: 'rounded-xl border p-3 ' + (isLatest ? (dark ? 'border-fuchsia-700 bg-fuchsia-950/20' : 'border-fuchsia-200 bg-fuchsia-50/70') : (dark ? 'border-slate-700' : 'border-slate-200')) },
                   h('div', { className: 'flex items-center justify-between gap-3' },
@@ -8355,7 +8366,7 @@ var geographyGroup = new THREE.Group();
               !unlocked && h('div', { className: 'mb-4 rounded-xl border p-3 text-sm font-bold ' + (dark ? 'border-amber-800 bg-amber-950/30 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-900'), role: 'status' }, 'Verify at least one forecast to unlock the reasoning check.'),
               h('div', { className: 'mb-4' },
                 h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, 'Explanations checked'), h('span', { className: amberAccentClass }, answered + '/' + questions.length)),
-                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-amber-100'), role: 'progressbar', 'aria-label': 'Reasoning pulse completion', 'aria-valuemin': 0, 'aria-valuemax': questions.length, 'aria-valuenow': answered },
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-amber-100'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_reasoning_pulse_completion', 'Reasoning pulse completion'), 'aria-valuemin': 0, 'aria-valuemax': questions.length, 'aria-valuenow': answered },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-400 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
                 )
               ),
@@ -8425,7 +8436,7 @@ var geographyGroup = new THREE.Group();
             }
             update({ peerReviewSubmitted: true });
             if (addToast) addToast('Peer review saved.', 'success');
-            if (announce) announce('Peer review saved for the Teacher Handoff Brief.');
+            if (announce) announce(__alloT('stem.weathersystems.sr_peer_review_saved_for_the_teacher_handoff_brief', 'Peer review saved for the Teacher Handoff Brief.'));
           }
           return h('section', {
             className: panelClass + ' overflow-hidden',
@@ -8444,7 +8455,7 @@ var geographyGroup = new THREE.Group();
               !unlocked && h('div', { className: 'mb-4 rounded-xl border p-3 text-sm font-bold ' + (dark ? 'border-indigo-800 bg-indigo-950/30 text-indigo-200' : 'border-indigo-200 bg-indigo-50 text-indigo-900'), role: 'status' }, 'Verify at least one forecast before exchanging peer feedback.'),
               h('div', { className: 'mb-4' },
                 h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, 'Peer-review completeness'), h('span', { className: indigoAccentClass }, progress + '%')),
-                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': 'Peer review completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completedParts },
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_peer_review_completeness', 'Peer review completeness'), 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completedParts },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-400 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
                 )
               ),
@@ -8468,7 +8479,7 @@ var geographyGroup = new THREE.Group();
               ),
               h('fieldset', { disabled: !unlocked },
                 h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '1. What was strong?' : '1. Which part of the forecast is strongest?'),
-                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Choose a peer-review strength' }, strengthOptions.map(function (option) {
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_choose_a_peer_review_strength', 'Choose a peer-review strength') }, strengthOptions.map(function (option) {
                   var selected = strength === option.id;
                   return h('button', {
                     key: option.id,
@@ -8481,7 +8492,7 @@ var geographyGroup = new THREE.Group();
               ),
               h('fieldset', { className: 'mt-4', disabled: !unlocked },
                 h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '2. What could make it even better?' : '2. Choose one actionable revision move'),
-                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 lg:grid-cols-3', role: 'group', 'aria-label': 'Choose a peer-review revision move' }, moveOptions.map(function (option) {
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 lg:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_choose_a_peer_review_revision_move', 'Choose a peer-review revision move') }, moveOptions.map(function (option) {
                   var selected = revisionMove === option.id;
                   return h('button', {
                     key: option.id,
@@ -8556,7 +8567,7 @@ var geographyGroup = new THREE.Group();
             }
             update({ reflectionSubmitted: true });
             if (addToast) addToast('Reflection and exit ticket saved.', 'success');
-            if (announce) announce('Reflection and exit ticket saved for the teacher handoff.');
+            if (announce) announce(__alloT('stem.weathersystems.sr_reflection_and_exit_ticket_saved_for_the_teacher', 'Reflection and exit ticket saved for the teacher handoff.'));
           }
           return h('section', {
             className: panelClass + ' overflow-hidden',
@@ -8575,13 +8586,13 @@ var geographyGroup = new THREE.Group();
               !unlocked && h('div', { className: 'mb-4 rounded-xl border p-3 text-sm font-bold ' + (dark ? 'border-amber-800 bg-amber-950/30 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-900'), role: 'status' }, 'Verify at least one forecast to unlock the reflection exit ticket.'),
               h('div', { className: 'mb-4' },
                 h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, 'Reflection completeness'), h('span', { className: emeraldAccentClass }, progress + '%')),
-                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-emerald-100'), role: 'progressbar', 'aria-label': 'Learner reflection completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completedParts },
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-emerald-100'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_learner_reflection_completeness', 'Learner reflection completeness'), 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completedParts },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
                 )
               ),
               h('fieldset', { disabled: !unlocked },
                 h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '1. What helped your idea change?' : '1. What most changed or strengthened your thinking?'),
-                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Choose what changed your thinking' }, shiftOptions.map(function (option) {
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_choose_what_changed_your_thinking', 'Choose what changed your thinking') }, shiftOptions.map(function (option) {
                   var selected = shift === option.id;
                   return h('button', {
                     key: option.id,
@@ -8594,7 +8605,7 @@ var geographyGroup = new THREE.Group();
               ),
               h('fieldset', { className: 'mt-4', disabled: !unlocked },
                 h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '2. How ready are you to tell your weather story?' : '2. How ready are you to explain your forecast reasoning?'),
-                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'group', 'aria-label': 'Choose explanation readiness' }, readinessOptions.map(function (option) {
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_choose_explanation_readiness', 'Choose explanation readiness') }, readinessOptions.map(function (option) {
                   var selected = readiness === option.id;
                   return h('button', {
                     key: option.id,
@@ -8680,7 +8691,7 @@ var geographyGroup = new THREE.Group();
                   h('span', null, 'Briefing completeness'),
                   h('span', null, communicationProgress + '%')
                 ),
-                h('div', { className: 'h-2 overflow-hidden rounded-full ' + featureTrack, role: 'progressbar', 'aria-label': 'Broadcast briefing completeness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communicationProgress },
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + featureTrack, role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_broadcast_briefing_completeness', 'Broadcast briefing completeness'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communicationProgress },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-300 transition-all motion-reduce:transition-none', style: { width: communicationProgress + '%' } })
                 )
               ),
@@ -8796,7 +8807,7 @@ var geographyGroup = new THREE.Group();
                   h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Forecast verification'), h('h3', { className: 'text-lg font-black' }, forecastResult.score >= 80 ? 'Strong forecast' : forecastResult.score >= 55 ? 'Developing forecast' : 'Revise and retry')),
                   h('p', { className: 'text-4xl font-black ' + (forecastResult.score >= 80 ? emeraldAccentClass : 'text-amber-400') }, forecastResult.score)
                 ),
-                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-700', role: 'progressbar', 'aria-label': 'Forecast score', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastResult.score }, h('div', { className: forecastResult.score >= 80 ? 'h-full bg-emerald-400' : 'h-full bg-amber-400', style: { width: forecastResult.score + '%' } })),
+                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-700', role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_forecast_score', 'Forecast score'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastResult.score }, h('div', { className: forecastResult.score >= 80 ? 'h-full bg-emerald-400' : 'h-full bg-amber-400', style: { width: forecastResult.score + '%' } })),
                 h('ul', { className: 'mt-4 space-y-2 text-xs leading-relaxed ' + mutedClass }, forecastResult.notes.map(function (note, index) { return h('li', { key: index }, '\u2022 ' + note); })),
                 h('div', { className: 'mt-4 rounded-lg p-3 ' + (dark ? 'bg-slate-950/75' : 'bg-sky-50') },
                   h('p', { className: 'text-xs font-black' }, 'Model outcome at +6 hours'),
@@ -8931,7 +8942,7 @@ var geographyGroup = new THREE.Group();
             h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, band === 'K-2' ? 'Change one weather ingredient. Keep the others the same and see what happens.' : 'Isolate one starting variable while every other condition stays fixed. Predict, test, and explain the modeled effect.')
           ),
           h('div', { className: 'grid gap-4 lg:grid-cols-[330px_minmax(0,1fr)]' },
-            h('section', { className: panelClass + ' space-y-4 p-4', 'aria-label': 'Controlled experiment setup' },
+            h('section', { className: panelClass + ' space-y-4 p-4', 'aria-label': __alloT('stem.weathersystems.a11y_controlled_experiment_setup', 'Controlled experiment setup') },
               h('div', { className: 'rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-cyan-50') },
                 h('p', { className: 'text-xs font-black uppercase tracking-wide ' + cyanAccentClass }, 'Fair-test rule'),
                 h('p', { className: 'mt-1 text-xs font-bold' }, 'Keep all other starting conditions fixed.')
@@ -9241,7 +9252,7 @@ var geographyGroup = new THREE.Group();
                     h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Scene legend'), h('h4', { id: 'weather-stage-legend-title', className: 'mt-0.5 text-xs font-black text-white' }, geographicMode ? 'Map + terrain layers' : 'Visible 3D channels')),
                     h('div', { className: 'flex items-center gap-1.5' },
                       h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[0.625rem] font-black text-cyan-100' }, stageLegendItems.filter(function (item) { return item.enabled; }).length + '/' + stageLegendItems.length + ' on'),
-                      h('button', { type: 'button', onClick: function () { update({ immersiveStageLegendCollapsed: true }); }, 'aria-label': 'Collapse the scene legend', 'data-weather-stage-legend-toggle': 'collapse', className: 'flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-white/5 text-xs font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, '\u2212')
+                      h('button', { type: 'button', onClick: function () { update({ immersiveStageLegendCollapsed: true }); }, 'aria-label': __alloT('stem.weathersystems.a11y_collapse_the_scene_legend', 'Collapse the scene legend'), 'data-weather-stage-legend-toggle': 'collapse', className: 'flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-white/5 text-xs font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, '\u2212')
                     )
                   ),
                   h('div', { className: 'mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5' }, stageLegendItems.map(function (item) {
@@ -9250,7 +9261,7 @@ var geographyGroup = new THREE.Group();
                       h('span', { className: 'truncate' }, item.label)
                     );
                   })),
-                  h('div', { className: 'mt-2 border-t border-white/10 pt-2', 'data-weather-stage-focus-controls': true, role: 'group', 'aria-label': '3D layer focus presets' },
+                  h('div', { className: 'mt-2 border-t border-white/10 pt-2', 'data-weather-stage-focus-controls': true, role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_3d_layer_focus_presets', '3D layer focus presets') },
                     h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Quick focus'),
                     h('div', { className: 'mt-1 grid grid-cols-2 gap-1' }, stageFocusOptions.map(function (option) {
                       var active = immersiveFocus === option.id;
@@ -9303,7 +9314,7 @@ var geographyGroup = new THREE.Group();
                   h('p', { className: 'mt-1.5 text-[0.625rem] font-bold text-cyan-100' }, d.immersiveHoverInput === 'keyboard' ? 'Press Enter to explain and focus.' : 'Click to explain and focus.')
                 );
         var geographicCommandBar = geographicMode && h('div', { className: 'pointer-events-none w-full pr-11 sm:pr-0', 'data-weather-geographic-camera-controls': true },
-                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/90 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': 'Geographic camera views', 'data-weather-geographic-command-bar': true },
+                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/90 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_geographic_camera_views', 'Geographic camera views'), 'data-weather-geographic-command-bar': true },
                     h('span', { className: 'px-2 text-[0.625rem] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
                     [
                       { id: 'region', icon: '\u25A7', label: 'Region' },
@@ -9322,7 +9333,7 @@ var geographyGroup = new THREE.Group();
                     fullscreenToggleButton()
                   )
                 );
-        var geographicLegendPanel = geographicMode && h('div', { className: 'pointer-events-none rounded-lg border border-white/15 bg-slate-950/85 px-3 py-2 shadow-lg backdrop-blur-md', 'data-weather-geographic-legend': true, role: 'group', 'aria-label': 'Geographic layer legend' },
+        var geographicLegendPanel = geographicMode && h('div', { className: 'pointer-events-none rounded-lg border border-white/15 bg-slate-950/85 px-3 py-2 shadow-lg backdrop-blur-md', 'data-weather-geographic-legend': true, role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_geographic_layer_legend', 'Geographic layer legend') },
                   h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, 'Map legend'),
                   h('div', { className: 'mt-1.5 space-y-1 text-[0.625rem] font-bold text-slate-100' },
                     h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'h-2.5 w-2.5 rounded-full border-2 border-white bg-amber-400', 'aria-hidden': true }), h('span', null, 'Observation site')),
@@ -9403,7 +9414,7 @@ var geographyGroup = new THREE.Group();
                       timelineDelta.conditionChanged && h('p', { className: 'mt-2 text-[0.625rem] font-bold text-amber-100' }, 'Condition changed from ' + (timelineComparisonPoint.condition || 'the baseline') + ' to ' + (liveTimelinePoint.condition || 'the selected hour') + '.')
                     ) : h('p', { className: 'mt-2 text-[0.625rem] text-slate-400', role: 'status' }, 'Choose a different hour to reveal temperature, moisture, pressure, wind, and precipitation changes.')
                   ),
-                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Stage timeline playback controls' },
+                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_stage_timeline_playback_controls', 'Stage timeline playback controls') },
                     h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Previous hour'),
                     h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg bg-violet-300 px-3 py-2 text-[0.625rem] font-black text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, d.liveWeatherTimelinePlaying ? 'Pause timeline' : 'Play timeline'),
                     h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.625rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Next hour'),
@@ -9426,7 +9437,7 @@ var geographyGroup = new THREE.Group();
                 ),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute left-3 right-3 top-3 z-10 flex flex-col items-start gap-2', 'data-weather-stage-overlays': 'conceptual' },
                   h('div', { className: 'flex w-full flex-wrap items-start justify-between gap-2' },
-                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': '3D camera views', 'data-weather-camera-controls': true, 'data-weather-conceptual-command-bar': true },
+                  h('div', { className: 'pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border border-white/15 bg-slate-950/85 p-1.5 shadow-2xl backdrop-blur-md', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_3d_camera_views', '3D camera views'), 'data-weather-camera-controls': true, 'data-weather-conceptual-command-bar': true },
                     h('span', { className: 'px-2 text-[0.625rem] font-black uppercase tracking-widest text-slate-400', 'aria-hidden': true }, 'View'),
                     [
                       { id: 'overview', icon: '\u25A7', label: 'Overview' },
@@ -9517,7 +9528,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       ),
                       h('circle', { cx: 48, cy: 48, r: 5, fill: '#0ea5e9', stroke: '#e0f2fe', strokeWidth: 2 })
                     ),
-                    h('div', { className: 'grid min-w-0 flex-1 grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4', 'data-weather-observation-instruments': true, role: 'group', 'aria-label': 'Selected-hour weather instruments' },
+                    h('div', { className: 'grid min-w-0 flex-1 grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4', 'data-weather-observation-instruments': true, role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_selected_hour_weather_instruments', 'Selected-hour weather instruments') },
                       [
                         ['Temperature', live.temperature + '\u00B0C'],
                         ['Relative humidity', live.humidity + '%'],
@@ -9555,7 +9566,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   ['Focus', focusDetail.label],
                   ['Location', geographic.label]
                 ].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-white/10 bg-white/5 p-3' }, h('dt', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-sky-200' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, item[1])); })),
-                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Selected weather values' }, values.slice(0, 6).map(function (metric) { return h('div', { key: 'summary-' + metric[0], className: 'rounded-xl border border-white/10 bg-slate-950/35 p-3' }, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-base font-black tabular-nums text-white' }, metric[1])); })),
+                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': __alloT('stem.weathersystems.a11y_selected_weather_values', 'Selected weather values') }, values.slice(0, 6).map(function (metric) { return h('div', { key: 'summary-' + metric[0], className: 'rounded-xl border border-white/10 bg-slate-950/35 p-3' }, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-base font-black tabular-nums text-white' }, metric[1])); })),
                 h('div', { className: 'mt-3 rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-3' },
                   h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Visible layer meanings'),
                   h('ul', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' }, stageLegendItems.map(function (item) { return h('li', { key: 'summary-layer-' + item.id, className: 'flex items-start gap-2 text-[0.6875rem] leading-relaxed ' + (item.enabled ? 'text-slate-100' : 'text-slate-500') }, h('span', { className: 'mt-1 h-2.5 w-2.5 shrink-0 rounded-full border border-white/70', style: { backgroundColor: item.color, opacity: item.enabled ? 1 : 0.28 }, 'aria-hidden': true }), h('span', null, h('strong', { className: 'font-black' }, item.label + ' - ' + (item.enabled ? 'visible' : 'hidden')), h('span', null, ' - ' + item.detail))); }))
@@ -9569,21 +9580,21 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                      h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, 'Audience focus'), h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, immersiveAudienceMode === 'teacher' ? 'Teacher tools expose capture, sharing, and provenance controls.' : 'Student focus keeps the investigation path and explanations in front.' )),
                      h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2.5 py-1 text-[0.625rem] font-black text-cyan-100', 'data-weather-audience-label': true }, immersiveAudienceMode === 'teacher' ? 'Teacher mode' : 'Student mode')
                    ),
-                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive audience focus' },
+                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_immersive_audience_focus', 'Immersive audience focus') },
                      h('button', { type: 'button', onClick: function () { setImmersiveAudienceMode('student'); }, 'aria-pressed': immersiveAudienceMode === 'student', className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveAudienceMode === 'student' ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, 'Student focus'),
                      h('button', { type: 'button', onClick: function () { setImmersiveAudienceMode('teacher'); }, 'aria-pressed': immersiveAudienceMode === 'teacher', className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveAudienceMode === 'teacher' ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, 'Teacher tools')
                    )
                  ),
                  h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-scene-mode': true },
                   h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-emerald-300' }, 'Immersive scene mode'),
-                  h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive scene mode' },
+                  h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_immersive_scene_mode', 'Immersive scene mode') },
                     h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': !geographicMode, className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black ' + (!geographicMode ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u25C8'), h('span', null, 'Conceptual 3D')),
                     h('button', { type: 'button', disabled: !geographic.available, onClick: function () { update({ immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'observationSite', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': geographicMode, 'aria-describedby': 'weather-geographic-mode-help', className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40 ' + (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u231E'), h('span', null, 'Geographic terrain'))
                   ),
                    h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.'),
                    h('div', { className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-orientation-controls': true },
                      h('div', { className: 'flex items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-slate-200' }, 'Orientation'), h('span', { className: 'text-[0.625rem] font-bold text-slate-400', 'data-weather-orientation-status': true }, geographicMode ? geographicCameraPreset + ' map view' : immersiveCameraPreset + ' 3D view')),
-                     !geographicMode && h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Conceptual 3D camera views' },
+                     !geographicMode && h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_conceptual_3d_camera_views', 'Conceptual 3D camera views') },
                        ['overview', 'front', 'surface'].map(function (preset) { return h('button', { key: preset, type: 'button', onClick: function () { setImmersiveCameraPreset(preset); }, 'aria-pressed': immersiveCameraPreset === preset, className: 'min-h-11 rounded-lg border px-2 py-2 text-[0.625rem] font-black capitalize focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveCameraPreset === preset ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, preset); })
                      ),
                      h('button', { type: 'button', onClick: resetImmersiveOrientation, className: 'mt-2 min-h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.6875rem] font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, geographicMode ? 'Reset map orientation' : 'Reset 3D orientation')
@@ -9594,12 +9605,12 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, 'Guided investigation'), h('h4', { className: 'text-sm font-black' }, tourStep.label)),
                     h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
                       h('span', { className: 'rounded-full bg-cyan-300 px-2 py-1 text-[0.6875rem] font-black text-cyan-950' }, (tourStep.index + 1) + '/' + tourStep.total),
-                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[0.625rem] font-black text-emerald-100', 'data-weather-tour-progress': true, role: 'status', 'aria-label': 'Guided investigation progress' }, tourRun.completedCount + '/' + tourRun.total + ' complete')
+                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[0.625rem] font-black text-emerald-100', 'data-weather-tour-progress': true, role: 'status', 'aria-label': __alloT('stem.weathersystems.a11y_guided_investigation_progress', 'Guided investigation progress') }, tourRun.completedCount + '/' + tourRun.total + ' complete')
                     )
                   ),
                   h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300', 'data-weather-tour-prompt': true }, tourStep.prompt),
                   h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-cyan-100' }, tourStep.evidence),
-                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive guided investigation steps' },
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_immersive_guided_investigation_steps', 'Immersive guided investigation steps') },
                     IMMERSIVE_TOUR_STEPS.map(function (step) {
                       var active = step.id === tourStep.id;
                       var progress = tourRun.steps.filter(function (item) { return item.id === step.id; })[0] || step;
@@ -9633,10 +9644,10 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   ),
                   h('div', { id: 'weather-immersive-explainer-content', hidden: !immersiveGuideOpen },
                     immersiveGuideOpen && h('div', { className: 'border-t border-white/10 p-4' },
-                      h('div', { className: 'rounded-xl border border-sky-300/20 bg-slate-950/55 p-3', 'data-weather-scene-narration': true, role: 'region', 'aria-label': 'Current 3D view description' },
+                      h('div', { className: 'rounded-xl border border-sky-300/20 bg-slate-950/55 p-3', 'data-weather-scene-narration': true, role: 'region', 'aria-label': __alloT('stem.weathersystems.a11y_current_3d_view_description', 'Current 3D view description') },
                         h('div', { className: 'flex items-start justify-between gap-3' },
                           h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-sky-300' }, 'Current-view description'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-200' }, immersiveSceneNarration)),
-                          h('button', { type: 'button', onClick: describeImmersiveSceneToLearner, className: 'min-h-11 shrink-0 rounded-lg border border-sky-300/40 bg-sky-300/10 px-2 py-2 text-[0.6875rem] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200', 'aria-label': 'Read the current 3D scene description' }, 'Describe')
+                          h('button', { type: 'button', onClick: describeImmersiveSceneToLearner, className: 'min-h-11 shrink-0 rounded-lg border border-sky-300/40 bg-sky-300/10 px-2 py-2 text-[0.6875rem] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200', 'aria-label': __alloT('stem.weathersystems.a11y_read_the_current_3d_scene_description', 'Read the current 3D scene description') }, 'Describe')
                         )
                       ),
                       !geographicMode && h('div', { className: 'mt-3 rounded-xl border border-cyan-300/25 bg-cyan-300/10 p-3', 'data-weather-object-selection-help': true },
@@ -9667,7 +9678,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                           h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.15em] text-slate-300' }, 'Inspector view'),
                           h('p', { className: 'text-[0.625rem] font-bold text-cyan-200', role: 'status', 'aria-live': 'polite' }, 'Showing ' + immersiveInspectorPanelLabels[immersiveInspectorPanel])
                         ),
-                        h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4', role: 'group', 'aria-label': 'Immersive feature inspector views' },
+                        h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_immersive_feature_inspector_views', 'Immersive feature inspector views') },
                           [
                             { id: 'explain', label: 'Explain', icon: '?', badge: 'Core' },
                             { id: 'evidence', label: 'Evidence', icon: '\u25C9', badge: selectedFeatureEvidence ? String(selectedFeatureEvidence.metrics.length) : '0' },
@@ -9693,7 +9704,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       selectedGlossaryFeature && h('article', { id: 'weather-immersive-feature-definition', className: 'mt-3 rounded-xl border border-cyan-300/20 bg-slate-950/60 p-3', 'data-weather-feature-definition': selectedGlossaryFeature.id, 'aria-live': 'polite' },
                         h('div', { className: 'flex items-start justify-between gap-3' }, h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-300' }, selectedGlossaryFeature.category), h('h5', { className: 'mt-0.5 text-sm font-black text-white' }, selectedGlossaryFeature.label)), h('span', { className: 'text-xl text-cyan-200', 'aria-hidden': true }, selectedGlossaryFeature.icon)),
                         h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-200' }, selectedGlossaryFeature.definition),
-                        h('dl', { id: 'weather-inspector-explain', hidden: immersiveInspectorPanel !== 'explain', className: 'mt-3 space-y-2 text-[0.6875rem]', 'data-weather-inspector-panel': 'explain', 'aria-label': 'Feature explanation' },
+                        h('dl', { id: 'weather-inspector-explain', hidden: immersiveInspectorPanel !== 'explain', className: 'mt-3 space-y-2 text-[0.6875rem]', 'data-weather-inspector-panel': 'explain', 'aria-label': __alloT('stem.weathersystems.a11y_feature_explanation', 'Feature explanation') },
                           h('div', { className: 'border-l-2 border-sky-300/60 pl-2' }, h('dt', { className: 'font-black text-sky-200' }, 'Look for'), h('dd', { className: 'mt-0.5 leading-relaxed text-slate-300' }, selectedGlossaryFeature.lookFor)),
                           h('div', { className: 'border-l-2 border-violet-300/60 pl-2' }, h('dt', { className: 'font-black text-violet-200' }, 'Why it matters'), h('dd', { className: 'mt-0.5 leading-relaxed text-slate-300' }, selectedGlossaryFeature.why)),
                           h('div', { className: 'border-l-2 border-amber-300/60 pl-2' }, h('dt', { className: 'font-black text-amber-200' }, 'Evidence question'), h('dd', { className: 'mt-0.5 font-bold leading-relaxed text-slate-200' }, selectedGlossaryFeature.question))
@@ -9879,7 +9890,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                  ),
                  h('section', { className: 'rounded-xl border border-white/10 bg-white/5 p-4', 'data-weather-immersive-source': true },
                   h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? timelineSelectionLabel : 'Teaching model'))), h('span', { className: 'rounded-full border px-2 py-1 text-[0.6875rem] font-black ' + (useLive ? observationFreshnessClass : 'border-white/10 bg-white/10 text-slate-200'), 'data-weather-source-freshness': useLive ? (liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code) : 'model' }, geographicMode ? 'MAP \u2022 ' + timelineBadge : (useLive ? timelineBadge : 'MODEL'))),
-                  !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive weather data source' },
+                  !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_immersive_weather_data_source', 'Immersive weather data source') },
                     h('button', { type: 'button', onClick: function () { update({ immersiveDataSource: 'model' }); }, 'aria-pressed': !useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[0.6875rem] font-black ' + (!useLive ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5') }, 'Teaching model'),
                     h('button', { type: 'button', disabled: !live, onClick: function () { update({ immersiveDataSource: 'live' }); }, 'aria-pressed': useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[0.6875rem] font-black disabled:opacity-40 ' + (useLive ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5') }, live ? (observationFreshness.current ? 'Use live weather' : 'Use saved observation') : 'Load live weather')
                   ),
@@ -9928,10 +9939,10 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       h('span', null, 'Current'),
                       h('span', null, '+' + liveTimeline[liveTimeline.length - 1].offsetHours + ' h')
                     ),
-                    h('div', { className: 'mt-2 grid grid-cols-4 gap-2', role: 'group', 'aria-label': 'Hourly weather playback controls' },
-                      h('button', { type: 'button', disabled: liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Previous weather hour' }, '\u22121 h'),
+                    h('div', { className: 'mt-2 grid grid-cols-4 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_hourly_weather_playback_controls', 'Hourly weather playback controls') },
+                      h('button', { type: 'button', disabled: liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': __alloT('stem.weathersystems.a11y_previous_weather_hour', 'Previous weather hour') }, '\u22121 h'),
                       h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg border border-violet-300/40 bg-violet-300/15 px-2 py-2 text-[0.6875rem] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, d.liveWeatherTimelinePlaying ? 'Pause' : 'Play'),
-                      h('button', { type: 'button', disabled: liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Next weather hour' }, '+1 h'),
+                      h('button', { type: 'button', disabled: liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[0.6875rem] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': __alloT('stem.weathersystems.a11y_next_weather_hour', 'Next weather hour') }, '+1 h'),
                       h('button', { type: 'button', disabled: !liveTimelinePoint || liveTimelinePoint.role === 'current', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-2 py-2 text-[0.6875rem] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-40' }, 'Now')
                     ),
                     h('p', { className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-400' }, (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast model hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier model hour' : 'Current conditions') + ' | ' + live.condition + ' | ' + live.temperature + '\u00B0C | ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h | ' + live.precipitation + ' mm precipitation'),
@@ -9990,7 +10001,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       ),
                       h('span', { className: 'rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[0.6875rem] font-black text-slate-200' }, geographicAnalysisLensDetail.label)
                     ),
-                    h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3', role: 'group', 'aria-label': 'Geographic analysis views' },
+                    h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_geographic_analysis_views', 'Geographic analysis views') },
                       GEOGRAPHIC_ANALYSIS_LENSES.map(function (lens) {
                         var active = geographicAnalysisLensId === lens.id;
                         var lensView = geographicCameraView(lens.camera);
@@ -10031,7 +10042,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       [5, 10, 25, 50].map(function (radius) { return h('option', { key: radius, value: String(radius) }, radius + ' km radius'); })
                     )
                   ),
-                  geographicMode && h('div', { className: 'mt-3 grid grid-cols-3 gap-2', role: 'group', 'aria-label': 'Geographic overlay visibility', 'data-weather-geographic-layer-controls': true },
+                  geographicMode && h('div', { className: 'mt-3 grid grid-cols-3 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_geographic_overlay_visibility', 'Geographic overlay visibility'), 'data-weather-geographic-layer-controls': true },
                     [
                       { id: 'studyArea', icon: '\u25EF', label: 'Study area', visible: geographicStudyAreaVisible, activeClass: 'border-amber-300/60 bg-amber-300/15 text-amber-100' },
                       { id: 'wind', icon: '\u2197', label: 'Wind vector', visible: geographicWindVisible, activeClass: 'border-sky-300/60 bg-sky-300/15 text-sky-100' },
@@ -10094,7 +10105,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   ),
                   h('p', { id: 'weather-geographic-investigation-prompt', className: 'mt-3 text-xs font-bold leading-relaxed text-white', 'data-weather-geographic-investigation-prompt': true }, geographicInvestigationPaused ? 'Camera or evidence layers were adjusted manually.' : geographicFieldStep.prompt),
                   h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + (geographicInvestigationPaused ? 'text-amber-100' : 'text-emerald-100'), 'data-weather-geographic-investigation-status': geographicInvestigationPaused ? 'paused' : 'active' }, geographicInvestigationPaused ? 'Choose a numbered step or resume the previous step to restore its coordinated camera and layers.' : geographicFieldStep.evidence),
-                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Geographic field investigation steps' },
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.weathersystems.a11y_geographic_field_investigation_steps', 'Geographic field investigation steps') },
                     GEOGRAPHIC_INVESTIGATION_STEPS.map(function (step, index) {
                       var active = !geographicInvestigationPaused && step.id === geographicFieldStep.id;
                       return h('button', {
@@ -10285,7 +10296,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
               )
             )
           ),
-          h('section', { className: panelClass + ' grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Immersive weather layer guide' },
+          h('section', { className: panelClass + ' grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': __alloT('stem.weathersystems.a11y_immersive_weather_layer_guide', 'Immersive weather layer guide') },
             (geographicMode ? [['Open vector map', 'Published roads, water, places, and boundaries'], [geographicStudyRadius + ' km study area', 'True-scale radius centered on the selected site'], ['Downwind vector', cardinal(geographicOverlays ? geographicOverlays.downwindBearing : 0) + ' from the live observation'], ['3D terrain/profile', 'Elevation, buildings, and a wind-aligned natural terrain cross-section']] : [['Terrain map', geography.label], ['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Arrows and particles', 'Wind and precipitation']]).map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black ' + (dark ? 'text-sky-300' : 'text-sky-700') }, item[0]), h('p', { className: 'mt-1 text-[0.6875rem] ' + mutedClass }, item[1])); })
           )
         );
@@ -10560,7 +10571,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
               h('button', {
                 type: 'button',
                 onClick: copyMission,
-                'aria-label': 'Copy classroom mission brief to clipboard',
+                'aria-label': __alloT('stem.weathersystems.a11y_copy_classroom_mission_brief_to_clipboard', 'Copy classroom mission brief to clipboard'),
                 className: 'min-h-11 rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-sky-800 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
               }, '\uD83D\uDCCB Copy mission brief')
             ),
@@ -10650,7 +10661,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
               ),
               h('details', { className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
                 h('summary', { className: 'flex min-h-11 cursor-pointer items-center px-4 py-3 text-sm font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400' }, 'Preview copy-ready mission brief'),
-                h('pre', { className: 'whitespace-pre-wrap break-words border-t p-4 font-sans text-xs leading-relaxed ' + (dark ? 'border-slate-700 text-slate-200' : 'border-slate-200 text-slate-700'), 'aria-label': 'Classroom mission brief plain text' }, missionText)
+                h('pre', { className: 'whitespace-pre-wrap break-words border-t p-4 font-sans text-xs leading-relaxed ' + (dark ? 'border-slate-700 text-slate-200' : 'border-slate-200 text-slate-700'), 'aria-label': __alloT('stem.weathersystems.a11y_classroom_mission_brief_plain_text', 'Classroom mission brief plain text') }, missionText)
               ),
               h('section', {
                 className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-cyan-800 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50'),
@@ -10666,13 +10677,13 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                   h('button', {
                     type: 'button',
                     onClick: copyStudentDirections,
-                    'aria-label': 'Copy student mission directions to clipboard',
+                    'aria-label': __alloT('stem.weathersystems.a11y_copy_student_mission_directions_to_clipboard', 'Copy student mission directions to clipboard'),
                     className: 'min-h-11 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-cyan-800 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
                   }, '\uD83D\uDCCB Copy student directions')
                 ),
                 h('details', null,
                   h('summary', { className: 'flex min-h-11 cursor-pointer items-center px-4 py-3 text-sm font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400' }, 'Preview student directions'),
-                  h('pre', { className: 'whitespace-pre-wrap break-words border-t p-4 font-sans text-xs leading-relaxed ' + (dark ? 'border-cyan-900 text-slate-200' : 'border-cyan-200 text-slate-700'), 'aria-label': 'Student mission directions plain text' }, studentMissionText)
+                  h('pre', { className: 'whitespace-pre-wrap break-words border-t p-4 font-sans text-xs leading-relaxed ' + (dark ? 'border-cyan-900 text-slate-200' : 'border-cyan-200 text-slate-700'), 'aria-label': __alloT('stem.weathersystems.a11y_student_mission_directions_plain_text', 'Student mission directions plain text') }, studentMissionText)
                 ),
                 h('p', { className: 'border-t px-4 py-3 text-xs leading-relaxed ' + (dark ? 'border-cyan-900 text-cyan-300' : 'border-cyan-200 text-cyan-900') }, 'Student directions exclude teacher press questions, conference records, and local alignment notes.')
               ),
@@ -10748,14 +10759,14 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     h('span', null, readyCount + ' of ' + checkpoints.length + ' checkpoints ready'),
                     h('span', { className: tealAccentClass }, readinessPercent + '%')
                   ),
-                  h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-teal-100'), role: 'progressbar', 'aria-label': 'Teacher checkpoint readiness', 'aria-valuemin': 0, 'aria-valuemax': checkpoints.length, 'aria-valuenow': readyCount },
+                  h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-teal-100'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_teacher_checkpoint_readiness', 'Teacher checkpoint readiness'), 'aria-valuemin': 0, 'aria-valuemax': checkpoints.length, 'aria-valuenow': readyCount },
                     h('div', { className: 'h-full rounded-full bg-gradient-to-r from-teal-400 via-cyan-400 to-indigo-400 transition-all motion-reduce:transition-none', style: { width: readinessPercent + '%' } })
                   )
                 )
               )
             ),
             h('div', { className: 'p-4' },
-              h('div', { className: 'grid gap-3 sm:grid-cols-2 lg:grid-cols-5', role: 'list', 'aria-label': 'Recorded investigation checkpoints' }, checkpoints.map(function (checkpoint) {
+              h('div', { className: 'grid gap-3 sm:grid-cols-2 lg:grid-cols-5', role: 'list', 'aria-label': __alloT('stem.weathersystems.a11y_recorded_investigation_checkpoints', 'Recorded investigation checkpoints') }, checkpoints.map(function (checkpoint) {
                 var status = checkpointStatus(checkpoint);
                 var statusClass = checkpoint.complete ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : checkpoint.started ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700');
                 return h('div', { key: checkpoint.id, role: 'listitem', className: 'flex min-h-[220px] flex-col rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
@@ -10925,13 +10936,13 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                 h('button', {
                   type: 'button',
                   onClick: copyHandoff,
-                  'aria-label': 'Copy Teacher Handoff Brief to clipboard',
+                  'aria-label': __alloT('stem.weathersystems.a11y_copy_teacher_handoff_brief_to_clipboard', 'Copy Teacher Handoff Brief to clipboard'),
                   className: 'min-h-11 rounded-lg bg-teal-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-800 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
                 }, '\uD83D\uDCCB Copy handoff brief')
               ),
               h('pre', {
                 className: 'whitespace-pre-wrap break-words p-4 font-sans text-xs leading-relaxed ' + (dark ? 'text-slate-200' : 'text-slate-700'),
-                'aria-label': 'Teacher Handoff Brief plain text'
+                'aria-label': __alloT('stem.weathersystems.a11y_teacher_handoff_brief_plain_text', 'Teacher Handoff Brief plain text')
               }, handoffText),
               h('p', { className: 'border-t px-4 py-3 text-xs font-bold ' + (dark ? 'border-teal-900 text-teal-300' : 'border-teal-200 text-teal-900') }, 'Plain text only. Review the brief before sharing and keep student-identifying information out of the note.')
             );
@@ -10954,7 +10965,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     h('span', null, ratedCount + ' of ' + criteria.length + ' look-fors reviewed'),
                     h('span', { className: violetAccentClass }, secureCount + ' secure')
                   ),
-                  h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-violet-100'), role: 'progressbar', 'aria-label': 'Teacher look-fors reviewed', 'aria-valuemin': 0, 'aria-valuemax': criteria.length, 'aria-valuenow': ratedCount },
+                  h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-violet-100'), role: 'progressbar', 'aria-label': __alloT('stem.weathersystems.a11y_teacher_look_fors_reviewed', 'Teacher look-fors reviewed'), 'aria-valuemin': 0, 'aria-valuemax': criteria.length, 'aria-valuenow': ratedCount },
                     h('div', { className: 'h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 transition-all motion-reduce:transition-none', style: { width: reviewPercent + '%' } })
                   )
                 )
@@ -11009,7 +11020,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                       type: 'button',
                       onClick: function () {
                         update({ teacherRatings: {}, teacherConferenceNote: '' });
-                        if (announce) announce('Teacher conference ratings and note cleared.');
+                        if (announce) announce(__alloT('stem.weathersystems.sr_teacher_conference_ratings_and_note_cleared', 'Teacher conference ratings and note cleared.'));
                       },
                       disabled: ratedCount === 0 && !note,
                       className: buttonClass + ' text-xs disabled:cursor-not-allowed disabled:opacity-50'

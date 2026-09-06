@@ -3303,7 +3303,7 @@ describe('Weather Systems geographic map loader resilience', () => {
     expect(source).toContain("immersiveInspectorPanel: 'compare'");
     expect(source).toContain("immersiveInspectorPanel: 'explain'");
     expect(source).toContain('data-weather-inspector-view-controls');
-    expect(source).toContain("'aria-label': 'Immersive feature inspector views'");
+    expect(source).toContain(`'aria-label': __alloT('stem.weathersystems.a11y_immersive_feature_inspector_views', 'Immersive feature inspector views')`);
     expect(source).toContain("'data-weather-inspector-panel': 'explain'");
     expect(source).toContain("'data-weather-inspector-panel': 'evidence'");
     expect(source).toContain("'data-weather-inspector-panel': 'compare'");
