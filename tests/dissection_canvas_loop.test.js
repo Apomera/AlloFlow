@@ -215,8 +215,8 @@ describe('dissection canvas animation loop', () => {
       expect(finalGuidanceSource).not.toContain('screenPromptText');
       expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font='6px Inter, system-ui';ctx\.fillStyle='rgba\(254,226,226,0\.58\)';fillReadableSpecimenText\('thorax'/);
       expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '6px Inter, system-ui'; ctx\.fillStyle = 'rgba\(254,240,138,0\.58\)';\s*fillReadableSpecimenText\('Area centralis'/);
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '7px Inter, system-ui'; ctx\.fillStyle = '#fbbf24'; fillReadableSpecimenText\('Refracted light'/);
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = 'bold 10px Inter, system-ui'; ctx\.fillStyle = '#22c55e'; fillReadableSpecimenText\(bpm \+ ' BPM'/);
+      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '7px Inter, system-ui'; ctx\.fillStyle = '#fbbf24';[\s\S]{0,1500}fillReadableSpecimenText\(refractedLabel, refractedAnchorX/);
+      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = 'bold 10px Inter, system-ui'; ctx\.fillStyle = '#22c55e';[\s\S]{0,1500}fillPanelText\(bpmText, ecgX - 5/);
       expect(source).toMatch(/Compact labels remain inside the specimen[\s\S]{0,180}if \(!d\.quizMode\) \{/);
       expect(source).toContain('W = canvas._logicalW || canvas.width;');
       expect(source).toContain('H = canvas._logicalH || canvas.height;');

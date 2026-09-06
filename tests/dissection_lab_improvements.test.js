@@ -1266,7 +1266,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("specimenVariationValue('tray-pad-angle-' + padFiberIndex)");
       expect(source).not.toContain("specimenVariationValue('tissue-stipple-size-' + stip)");
       expect(source).toContain('Compact instrument bay: grounded metal tools replace the earlier faint line-art corner icons.');
-      expect(source).toContain("ctx.fillText('INSTRUMENT BAY'");
+      // 2026-09-05: the caption now routes through fillPanelText so the ventral mirror does
+      // not reverse it, and the bay anchor mirrors with it to hold the bottom-right corner.
+      expect(source).toContain("fillPanelText('INSTRUMENT BAY', instrumentBayX, instrumentBayW, 9,");
       expect(source).toContain('background: linear-gradient(145deg, #64748b 0%, #26364b 16%, #0f172a 78%, #475569 100%)');
       expect(source).not.toContain('Math.random() * 2 + 0.5');      expect(source).toContain('var fishBodyGradient = ctx.createLinearGradient');
       expect(source).toContain('var fishIridescence = ctx.createLinearGradient');

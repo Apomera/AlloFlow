@@ -1788,6 +1788,54 @@ var d = labToolData.dissection || {};
               return Object.assign({}, p, { dissection: Object.assign({}, currentDissection, patch || {}) });
             });
           };
+          // Canvas 2D cannot parse a CSS custom property. `ctx.fillStyle = 'var(--x, #fff)'` is
+          // silently ignored, but `gradient.addColorStop(0, 'var(--x, #fff)')` THROWS, and the
+          // throw aborts the whole frame: the Skeleton layer on the frog, the fetal pig and the
+          // perch stores its colour as 'var(--allo-stem-text, #e2e8f0)', so choosing that layer
+          // left students an empty tray with the bench scenery and nothing else. Resolve the
+          // property against a live element and keep the authored fallback when it is not set.
+          // One source of truth for body-system colour coding. The canvas colour key and the
+          // structure directory each carried their OWN map and the two disagreed on three of
+          // eight systems. On excretory they disagreed on HUE: violet in the key, lime in the
+          // directory, so the key pointed a student at the wrong dot. Violet also duplicated the
+          // nervous system, which is presumably why the directory moved it, so the directory
+          // hues win. Lightness still differs by surface: the key sits on a near-black panel and
+          // the directory dots on a white card.
+          var DISSECTION_SYSTEM_COLORS = {
+            circulatory: { onDark: '#ef4444', onLight: '#ef4444' },
+            digestive: { onDark: '#f59e0b', onLight: '#f59e0b' },
+            respiratory: { onDark: '#3b82f6', onLight: '#3b82f6' },
+            nervous: { onDark: '#8b5cf6', onLight: '#8b5cf6' },
+            skeletal: { onDark: '#e2e8f0', onLight: '#94a3b8' },
+            muscular: { onDark: '#f87171', onLight: '#dc2626' },
+            excretory: { onDark: '#a3e635', onLight: '#84cc16' },
+            reproductive: { onDark: '#ec4899', onLight: '#ec4899' }
+          };
+          function dissectionSystemColor(systemId, surface) {
+            var systemEntry = DISSECTION_SYSTEM_COLORS[systemId];
+            if (!systemEntry) return '#94a3b8';
+            return systemEntry[surface] || systemEntry.onLight || '#94a3b8';
+          }
+          function resolveCanvasColor(value, element) {
+            var rawColorValue = String(value == null ? '' : value);
+            var varAt = rawColorValue.indexOf('var(');
+            if (varAt < 0) return rawColorValue;
+            var varInner = rawColorValue.slice(varAt + 4, rawColorValue.lastIndexOf(')'));
+            var varCommaAt = varInner.indexOf(',');
+            var varProperty = (varCommaAt < 0 ? varInner : varInner.slice(0, varCommaAt)).trim();
+            var varFallback = varCommaAt < 0 ? '' : varInner.slice(varCommaAt + 1).trim();
+            var varResolved = '';
+            try {
+              var varTarget = element || (typeof document !== 'undefined' ? document.documentElement : null);
+              if (varTarget && typeof window !== 'undefined' && window.getComputedStyle) {
+                varResolved = String(window.getComputedStyle(varTarget).getPropertyValue(varProperty) || '').trim();
+              }
+            } catch (e) { varResolved = ''; }
+            // A resolved value can itself be another var() reference, and canvas cannot take that
+            // either, so fall through to the authored fallback rather than passing it on.
+            if (varResolved.indexOf('var(') >= 0) varResolved = '';
+            return varResolved || varFallback || '#94a3b8';
+          }
           function clearOwnedTimedDissectionState(field, startedAt, expectedSpecimen) {
             setLabToolData(function (p) {
               var currentDissection = p.dissection || {};
@@ -5785,7 +5833,7 @@ var d = labToolData.dissection || {};
                 active: true, startedAt: Date.now(), duration: transitionDuration, reducedMotion: prefersReducedLayerMotion,
                 specimenShape: spec.bodyShape, fromLayerId: fromLayerDef.id, toLayerId: toLayerDef.id,
                 fromName: fromLayerDef.name, toName: toLayerDef.name, fromIcon: fromLayerDef.icon || '', toIcon: toLayerDef.icon || '',
-                fromColor: fromLayerDef.color || '#8f5960', toColor: toLayerDef.color || '#fbbf24'
+                fromColor: resolveCanvasColor(fromLayerDef.color) || '#8f5960', toColor: resolveCanvasColor(toLayerDef.color) || '#fbbf24'
               } : null;
               var transitionPatch = {
                 revealedLayers: newRevealed, selectedOrgan: null, _incisionAnim: null, _layerTransition: layerTransition,
@@ -6112,6 +6160,31 @@ var d = labToolData.dissection || {};
 
               // Guard: skip frame if canvas dimensions are not finite or zero
 
+              // The backing buffer was pinned at the 500x600 logical size while the stylesheet
+              // stretches the element across its whole column, so every frame was drawn small
+              // and then blown up: on a 650px column a 7px HUD label was rasterised at 7px and
+              // smeared over 9, which is why the canvas read as soft everywhere. Rasterise at
+              // the density the canvas is actually displayed at. The drawing space stays
+              // 500x600, so no geometry moves and no HUD constant changes size on screen;
+              // only the pixels get finer. Reallocation is guarded so a steady layout does not
+              // rebuild the buffer every frame.
+              var renderRect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+              // Pin the logical size before the first resize: without setupHiDPI having recorded
+              // it, canvas.width would be read back as the new buffer size and the buffer would
+              // grow by the display ratio on every frame.
+              if (!canvas._logicalW) canvas._logicalW = canvas.width || 500;
+              if (!canvas._logicalH) canvas._logicalH = canvas.height || 600;
+              var renderLogicalW = canvas._logicalW;
+              var renderLogicalH = canvas._logicalH;
+              var renderCssWidth = renderRect && renderRect.width ? renderRect.width : renderLogicalW;
+              var renderDevicePixelRatio = 1;
+              try { renderDevicePixelRatio = Math.max(1, window.devicePixelRatio || 1); } catch (e) {}
+              var renderScale = Math.max(1, Math.min(3, renderDevicePixelRatio * (renderCssWidth / Math.max(1, renderLogicalW))));
+              if (Math.abs(renderScale - (Number(canvas._dpr) || 0)) > 0.02) {
+                canvas._dpr = renderScale;
+                canvas.width = Math.round(renderLogicalW * renderScale);
+                canvas.height = Math.round(renderLogicalH * renderScale);
+              }
               // All anatomy and interaction math stays in logical CSS pixels; the context transform maps it to the HiDPI buffer.
               W = canvas._logicalW || canvas.width;
               H = canvas._logicalH || canvas.height;
@@ -6206,6 +6279,29 @@ var d = labToolData.dissection || {};
               relationshipMotion = d.relationshipMotion !== false;
               focusMode = d.focusMode !== false;
               parallaxDepth = d.parallaxDepth !== false;
+
+              // The orientation compass is a screen-fixed panel painted after the specimen, so
+              // whatever sits under it is simply lost. Derive its box ONCE here, before anything
+              // that has to steer around it; drawAnatomicalOrientationCompass reads these same
+              // values rather than recomputing them. The top is reserved conservatively because
+              // the exact Y depends on specimenHudX, which is not resolved until much later.
+              var hudCompassAxis = anatomicalOrientationData().axis;
+              // Width follows the widest line rather than a fixed multiple of the authored 126.
+              // Scaling that number by the full HUD factor made the panel 195px wide and it
+              // reached across into the corridor safety label; the text it has to hold is only
+              // ~149px there. The authored widths stay the floor, so desktop does not move.
+              var hudCompassTitleWidth = 0;
+              try {
+                ctx.save();
+                ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';
+                hudCompassTitleWidth = ctx.measureText('ANATOMICAL AXIS').width;
+                ctx.restore();
+              } catch (e) { hudCompassTitleWidth = 0; }
+              var hudCompassW = hudCompassAxis === 'horizontal'
+                ? Math.max(188, hudCompassTitleWidth + 30 * canvasHudScale)
+                : Math.max(126, hudCompassTitleWidth + 30 * canvasHudScale);
+              var hudCompassH = (hudCompassAxis === 'horizontal' ? 55 : 91) * canvasHudScale;
+              var hudCompassBox = (sceneDetail && !d.quizMode) ? { x: 14, y: 14, w: hudCompassW, h: 82 + hudCompassH - 14 } : null;
               lightDirection = ['overhead', 'left', 'right', 'raking'].indexOf(d.lightDirection) >= 0 ? d.lightDirection : 'overhead';
               anatomicalView = ['dorsal', 'ventral', 'lateral', 'internal'].indexOf(d.anatomicalView) >= 0 ? d.anatomicalView : 'dorsal';
               crossSectionMode = !!d.crossSectionMode;
@@ -6496,7 +6592,16 @@ var d = labToolData.dissection || {};
               // Compact instrument bay: grounded metal tools replace the earlier faint line-art corner icons.
               if (sceneDetail) {
                 ctx.save();
-                var instrumentBayX = W - 142, instrumentBayY = H - 94, instrumentBayW = 122, instrumentBayH = 57;
+                var instrumentBayW = 122, instrumentBayH = 57;
+                // The bay is bench scenery, but it is painted inside the specimen transform. In
+                // the ventral view that transform mirrors x about W/2, so a right-edge anchor
+                // threw the whole tray into the bottom-LEFT corner and reversed its label into
+                // "YAB TNEMURTSNI". Mirror the anchor to hold the corner, and let fillPanelText
+                // flip the glyphs back.
+                var instrumentBayX = specimenScale.x < 0 ? 20 : W - 142;
+                // Clear the scale compass below it: that panel is H - 62 * canvasHudScale - 14
+                // at its top, and it paints later, so anything overlapping here is simply lost.
+                var instrumentBayY = H - 62 * canvasHudScale - 24 - instrumentBayH;
                 ctx.shadowColor = 'rgba(2,6,23,0.54)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
                 var instrumentBayGradient = ctx.createLinearGradient(instrumentBayX, instrumentBayY, instrumentBayX, instrumentBayY + instrumentBayH);
                 instrumentBayGradient.addColorStop(0, 'rgba(148,163,184,0.18)');
@@ -6509,7 +6614,9 @@ var d = labToolData.dissection || {};
                 ctx.strokeStyle = 'rgba(203,213,225,0.24)'; ctx.lineWidth = 0.8;
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(instrumentBayX + 0.5, instrumentBayY + 0.5, instrumentBayW - 1, instrumentBayH - 1, 8); ctx.stroke(); }
                 else ctx.strokeRect(instrumentBayX + 0.5, instrumentBayY + 0.5, instrumentBayW - 1, instrumentBayH - 1);
-                ctx.font = 'bold 6px Inter, system-ui'; ctx.fillStyle = 'rgba(226,232,240,0.58)'; ctx.fillText('INSTRUMENT BAY', instrumentBayX + 9, instrumentBayY + 11);
+                // 6px at 0.58 alpha over a mid-grey tray was a smudge rather than a caption.
+                ctx.font = 'bold 7px Inter, system-ui'; ctx.fillStyle = 'rgba(226,232,240,0.78)';
+                fillPanelText('INSTRUMENT BAY', instrumentBayX, instrumentBayW, 9, instrumentBayY + 12);
 
                 // Scalpel with a brushed handle and a distinct beveled blade.
                 ctx.save(); ctx.translate(instrumentBayX + 34, instrumentBayY + 33); ctx.rotate(-0.28);
@@ -6546,9 +6653,9 @@ var d = labToolData.dissection || {};
 
               var curLayer = spec.layers[currentLayerIdx] || spec.layers[0];
 
-              var layerColor = curLayer.color || '#94a3b8';
+              var layerColor = resolveCanvasColor(curLayer.color, canvas) || '#94a3b8';
 
-              var layerStroke = curLayer.accent || '#94a3b8';
+              var layerStroke = resolveCanvasColor(curLayer.accent, canvas) || '#94a3b8';
 
               // cx, cy declared at top of drawDissectionFrame
 
@@ -6913,7 +7020,14 @@ var d = labToolData.dissection || {};
                   var anteriorTaper = Math.min(1, Math.max(0, t / 0.055));
                   var posteriorTaper = Math.min(1, Math.max(0, (1 - t) / 0.105));
                   var taper = 0.34 + Math.min(anteriorTaper, posteriorTaper) * 0.66;
-                  var clitellumExpansion = t >= 0.29 && t <= 0.39 ? 1.16 : 1;
+                  // The swelling used to switch from 1 to 1.16 at a single t, so the clitellum
+                  // stood off the body as a hard shelf with square ends and read as a rectangle
+                  // pasted over the worm. Ease into the saddle and out of it, keeping a flat
+                  // 1.16 plateau across 0.29-0.39 so the glandular band still traces the body.
+                  var clitellumRampIn = (t - 0.245) / 0.045;
+                  var clitellumRampOut = (0.435 - t) / 0.045;
+                  var clitellumBlend = Math.max(0, Math.min(1, Math.min(clitellumRampIn, clitellumRampOut)));
+                  var clitellumExpansion = 1 + 0.16 * clitellumBlend * clitellumBlend * (3 - 2 * clitellumBlend);
                   return wormBaseWidth * taper * clitellumExpansion;
                 }
                 function earthwormFrame(t) {
@@ -8123,6 +8237,12 @@ var d = labToolData.dissection || {};
                 var crayAccessible = (d.visualRealism || visualRealism) === 'accessible';
                 var crayRealistic = (d.visualRealism || visualRealism) === 'realistic';
                 var crayOutlineWidth = crayAccessible ? 1.7 : 1.05;
+                // Appendage thicknesses below were authored as raw pixels against a ~420px
+                // canvas while every landmark around them is a fraction of W. On a desktop
+                // canvas that left the walking legs and eyestalks as hairlines beside a body
+                // three times their intended scale, so they read as stray scratches. Keep the
+                // authored ratios and restore them to the body.
+                var crayUnit = W / 420;
                 var crayShellLight = crayAccessible ? layerColor : 'rgba(184,70,54,0.98)';
                 var crayShellMid = crayAccessible ? layerColor : 'rgba(132,48,39,0.99)';
                 var crayShellDark = crayAccessible ? layerColor : 'rgba(74,31,30,0.99)';
@@ -8154,12 +8274,12 @@ var d = labToolData.dissection || {};
                   var ankleY = cy + side * H * (0.235 + index * 0.012);
                   var tipX = ankleX - W * (0.035 - index * 0.003);
                   var tipY = cy + side * H * (0.255 + index * 0.012);
-                  drawCraySegment(hipX, hipY, kneeX, kneeY, 2.8, 2.1, alpha);
-                  drawCraySegment(kneeX, kneeY, ankleX, ankleY, 2.2, 1.25, alpha);
+                  drawCraySegment(hipX, hipY, kneeX, kneeY, 2.8 * crayUnit, 2.1 * crayUnit, alpha);
+                  drawCraySegment(kneeX, kneeY, ankleX, ankleY, 2.2 * crayUnit, 1.25 * crayUnit, alpha);
                   ctx.save(); ctx.globalAlpha = alpha;
                   ctx.beginPath(); ctx.moveTo(ankleX, ankleY); ctx.quadraticCurveTo(tipX - W * 0.01, tipY, tipX, tipY);
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.05; ctx.stroke();
-                  ctx.beginPath(); ctx.arc(kneeX, kneeY, 1.8, 0, Math.PI * 2); ctx.fillStyle = crayShellDark; ctx.fill();
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.05 * crayUnit; ctx.lineCap = 'round'; ctx.stroke();
+                  ctx.beginPath(); ctx.arc(kneeX, kneeY, 1.8 * crayUnit, 0, Math.PI * 2); ctx.fillStyle = crayShellDark; ctx.fill();
                   ctx.restore();
                 }
 
@@ -8193,10 +8313,10 @@ var d = labToolData.dissection || {};
                 ctx.save(); ctx.strokeStyle = layerStroke; ctx.lineCap = 'round';
                 [-1, 1].forEach(function (side) {
                   ctx.globalAlpha = side < 0 ? 0.62 : 0.9;
-                  ctx.lineWidth = 0.85;
+                  ctx.lineWidth = 0.85 * crayUnit;
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy + side * H * 0.045);
                   ctx.bezierCurveTo(cx - W * 0.28, cy + side * H * 0.12, cx - W * 0.36, cy + side * H * 0.08, cx - W * 0.45, cy + side * H * 0.14); ctx.stroke();
-                  ctx.lineWidth = 0.55;
+                  ctx.lineWidth = 0.55 * crayUnit;
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.215, cy + side * H * 0.025);
                   ctx.bezierCurveTo(cx - W * 0.275, cy + side * H * 0.055, cx - W * 0.32, cy + side * H * 0.025, cx - W * 0.355, cy + side * H * 0.06); ctx.stroke();
                 });
@@ -8213,7 +8333,7 @@ var d = labToolData.dissection || {};
                   [-1, 1].forEach(function (side) {
                     ctx.beginPath(); ctx.moveTo(swimX, cy + side * H * 0.045);
                     ctx.quadraticCurveTo(swimX + W * 0.012, cy + side * H * 0.082, swimX + W * 0.002, cy + side * H * 0.098);
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.55; ctx.stroke();
+                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.55 * crayUnit; ctx.stroke();
                   });
                 }
                 ctx.restore();
@@ -8300,13 +8420,13 @@ var d = labToolData.dissection || {};
                 [-1, 1].forEach(function (side) {
                   var eyeStalkX = cx - W * 0.215; var eyeStalkY = cy + side * H * 0.073;
                   var crayEyeX = cx - W * 0.245; var crayEyeY = cy + side * H * 0.101;
-                  drawCraySegment(eyeStalkX, eyeStalkY, crayEyeX, crayEyeY, 2.4, 2.05, side < 0 ? 0.8 : 1);
+                  drawCraySegment(eyeStalkX, eyeStalkY, crayEyeX, crayEyeY, 2.4 * crayUnit, 2.05 * crayUnit, side < 0 ? 0.8 : 1);
                   ctx.save(); ctx.globalAlpha = side < 0 ? 0.84 : 1;
-                  var compoundEyeGrad = ctx.createRadialGradient(crayEyeX - 1, crayEyeY - 1, 0.5, crayEyeX, crayEyeY, 5);
+                  var compoundEyeGrad = ctx.createRadialGradient(crayEyeX - crayUnit, crayEyeY - crayUnit, 0.5 * crayUnit, crayEyeX, crayEyeY, 5 * crayUnit);
                   compoundEyeGrad.addColorStop(0, 'rgba(82,82,72,0.9)'); compoundEyeGrad.addColorStop(0.42, 'rgba(17,24,39,0.98)'); compoundEyeGrad.addColorStop(1, 'rgba(2,6,23,1)');
-                  ctx.beginPath(); ctx.ellipse(crayEyeX, crayEyeY, 4.9, 4.0, side * 0.18, 0, Math.PI * 2); ctx.fillStyle = compoundEyeGrad; ctx.fill();
-                  ctx.strokeStyle = 'rgba(148,163,184,0.35)'; ctx.lineWidth = 0.35;
-                  ctx.beginPath(); ctx.moveTo(crayEyeX - 3.4, crayEyeY); ctx.lineTo(crayEyeX + 3.4, crayEyeY); ctx.moveTo(crayEyeX, crayEyeY - 2.8); ctx.lineTo(crayEyeX, crayEyeY + 2.8); ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(crayEyeX, crayEyeY, 4.9 * crayUnit, 4.0 * crayUnit, side * 0.18, 0, Math.PI * 2); ctx.fillStyle = compoundEyeGrad; ctx.fill();
+                  ctx.strokeStyle = 'rgba(148,163,184,0.35)'; ctx.lineWidth = 0.35 * crayUnit;
+                  ctx.beginPath(); ctx.moveTo(crayEyeX - 3.4 * crayUnit, crayEyeY); ctx.lineTo(crayEyeX + 3.4 * crayUnit, crayEyeY); ctx.moveTo(crayEyeX, crayEyeY - 2.8 * crayUnit); ctx.lineTo(crayEyeX, crayEyeY + 2.8 * crayUnit); ctx.stroke();
                   ctx.restore();
                 });
 
@@ -8553,7 +8673,20 @@ var d = labToolData.dissection || {};
                 focusGlow.addColorStop(0, 'rgba(251,191,36,0.82)'); focusGlow.addColorStop(1, 'rgba(251,191,36,0)');
                 ctx.beginPath(); ctx.arc(focusX, eyeCy + eyeRy * 0.035, 5, 0, Math.PI * 2); ctx.fillStyle = focusGlow; ctx.fill();
                 if (!d.quizMode) {
-                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; fillReadableSpecimenText('Refracted light', eyeCx - eyeRx * 1.46, eyeCy - eyeRy * 0.29);
+                  ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  var refractedLabel = 'Refracted light';
+                  var refractedWidth = ctx.measureText(refractedLabel).width;
+                  // The label belongs at the start of the incoming ray, which is well to the
+                  // LEFT of the eye. The ventral transform mirrors about cx, so that anchor
+                  // landed at the right canvas edge and the word ran off it. Clamp where the
+                  // text actually lands on screen, then map the anchor back into specimen space.
+                  var refractedAnchorX = eyeCx - eyeRx * 1.46;
+                  var refractedScreenX = specimenScale.x < 0 ? 2 * cx - refractedAnchorX : refractedAnchorX;
+                  // 20, not 6: the decorative tray frame is drawn about 12px inside the canvas
+                  // edge, so clearing the canvas alone still left the last letter on the border.
+                  refractedScreenX = Math.max(20, Math.min(W - refractedWidth - 20, refractedScreenX));
+                  refractedAnchorX = specimenScale.x < 0 ? 2 * cx - refractedScreenX : refractedScreenX;
+                  fillReadableSpecimenText(refractedLabel, refractedAnchorX, eyeCy - eyeRy * 0.29);
                 }
                 ctx.restore();
 
@@ -8676,10 +8809,21 @@ var d = labToolData.dissection || {};
                 ctx.restore();
 
                 // ECG display stays fixed while the specimen subtly contracts above it.
-                var ecgY = H - 35; var ecgW = W * 0.6; var ecgX = (W - ecgW) / 2;
-                var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 15);
+                // At H - 35 the strip sat squarely in the bottom HUD band: the scale card
+                // covered its right third and the layer pill its left end. Lift it clear.
+                var ecgY = H - 95;
+                // Centred and full width the strip ran under the instrument bay on the right and
+                // the layer pill on the left. The free band is bottom-left, above the layer pill
+                // and left of the bay (whose left edge is W - 142), so anchor it there and keep a
+                // 30px margin from the bay at any canvas width.
+                var ecgW = Math.min(W * 0.46, W - 172);
+                // The strip is painted inside the specimen transform, so a fixed left anchor
+                // lands on the RIGHT in the ventral view, straight onto the instrument bay.
+                // Mirror the anchor the way every other panel here does.
+                var ecgX = specimenScale.x < 0 ? W - 20 - ecgW : 20;
+                var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 20);
                 ecgPanel.addColorStop(0, 'rgba(2,6,23,0.86)'); ecgPanel.addColorStop(1, 'rgba(15,23,42,0.66)');
-                ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 35);
+                ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 40);
                 ctx.strokeStyle = 'rgba(34,197,94,0.14)'; ctx.lineWidth = 0.3;
                 for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY - 15 + eg * 5); ctx.lineTo(ecgX + ecgW, ecgY - 15 + eg * 5); ctx.stroke(); }
                 ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.35; ctx.beginPath();
@@ -8696,7 +8840,13 @@ var d = labToolData.dissection || {};
                 ctx.stroke();
                 var bpm = dissMotionReduced ? 72 : 72 + Math.floor(Math.sin(dissTick * 0.02) * 5);
                 if (!d.quizMode) {
-                  ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e'; fillReadableSpecimenText(bpm + ' BPM', ecgX + ecgW + 8, ecgY);
+                  ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+                  var bpmText = bpm + ' BPM';
+                  var bpmWidth = ctx.measureText(bpmText).width;
+                  // Drawn 8px outside the panel this readout landed inside the scale card,
+                  // and the ventral mirror moved it onto the layer pill instead. Right-align
+                  // it inside its own panel, where nothing else paints, in either view.
+                  fillPanelText(bpmText, ecgX - 5, ecgW + 10, ecgW + 10 - 6 - bpmWidth, ecgY + 13);
                   ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.58)';
                   fillReadableSpecimenText('P', ecgX + ecgW * 0.10, ecgY - 18); fillReadableSpecimenText('QRS', ecgX + ecgW * 0.23, ecgY - 18); fillReadableSpecimenText('T', ecgX + ecgW * 0.42, ecgY - 18);
                 }
@@ -9574,6 +9724,39 @@ var d = labToolData.dissection || {};
                 ctx.scale(1 / (specimenScale.x || 1), 1 / (specimenScale.y || 1));
                 ctx.fillText(text, 0, 0); ctx.restore();
               }
+              // Canvas card text used to be cut with a fixed character count, which cannot know
+              // the font or the box: the guided handoff card ended "and locate t", mid-word and
+              // with no mark that anything was missing. Measure against the real box instead,
+              // break on a word boundary, and say so with an ellipsis. Both helpers read the
+              // font currently set on ctx, so set the font before calling them.
+              function fitTextToWidth(text, maxWidth) {
+                var fitSource = String(text == null ? '' : text);
+                if (!(maxWidth > 0) || ctx.measureText(fitSource).width <= maxWidth) return fitSource;
+                var fitWords = fitSource.split(' ');
+                while (fitWords.length > 1) {
+                  fitWords.pop();
+                  var fitJoined = fitWords.join(' ') + '\u2026';
+                  if (ctx.measureText(fitJoined).width <= maxWidth) return fitJoined;
+                }
+                var fitCut = fitSource;
+                while (fitCut.length > 1 && ctx.measureText(fitCut + '\u2026').width > maxWidth) fitCut = fitCut.slice(0, -1);
+                return fitCut + '\u2026';
+              }
+              function wrapTextToWidth(text, maxWidth, maxLines) {
+                var wrapWords = String(text == null ? '' : text).split(' ').filter(Boolean);
+                var wrapLines = [], wrapCurrent = '';
+                wrapWords.forEach(function (wrapWord) {
+                  var wrapCandidate = wrapCurrent ? wrapCurrent + ' ' + wrapWord : wrapWord;
+                  if (wrapCurrent && ctx.measureText(wrapCandidate).width > maxWidth) { wrapLines.push(wrapCurrent); wrapCurrent = wrapWord; }
+                  else wrapCurrent = wrapCandidate;
+                });
+                if (wrapCurrent) wrapLines.push(wrapCurrent);
+                if (!wrapLines.length) return [''];
+                if (wrapLines.length <= maxLines) return wrapLines;
+                var wrapKept = wrapLines.slice(0, Math.max(1, maxLines - 1));
+                wrapKept.push(fitTextToWidth(wrapLines.slice(Math.max(1, maxLines - 1)).join(' '), maxWidth));
+                return wrapKept;
+              }
               ctx.font = (10 * canvasUiScale) + 'px Inter, system-ui, sans-serif';
               var canvasLabelsVisible = d.labelMode !== 'hidden' && !d.quizMode;
               var denseHotspotView = canvasLabelsVisible && organs.length >= 8 && zoom < 1.22;
@@ -9854,12 +10037,62 @@ var d = labToolData.dissection || {};
                 var corridorDepthLabel = corridorDeep ? 'DEEP PRACTICE \u00B7 PROTECTED' : (procedureProtocol.corridorLabel ? 'SAFE \u00B7 ' + procedureProtocol.corridorLabel : defaultCorridorDepthLabel);
                 ctx.font = 'bold 8px Inter, system-ui';
                 var corridorLabelWidth = Math.ceil(ctx.measureText(corridorDepthLabel).width) + 12;
-                var corridorLabelX = Math.max(8, Math.min(W - corridorLabelWidth - 8, corridorMid.x - corridorLabelWidth / 2));
-                var corridorLabelY = Math.max(8, corridorMid.y - corridorHalfWidth - 22);
-                ctx.fillStyle = corridorAccessible ? '#ffffff' : 'rgba(15,23,42,0.88)';
+                // The hotspot pills are laid out before this runs but PAINTED after it, so they
+                // landed on top of the safety label: on the perch "SAFE - LATERAL WINDOW" was
+                // half covered by the "Lateral Line" pill, and on the frog, whose twelve organs
+                // stack in one narrow column, every position directly above the corridor is
+                // taken. Search along the corridor as well as across it and take the clearest
+                // box; the authored position is tried first and kept when it is already clear.
+                var corridorLabelHeight = 17;
+                var corridorLabelOverlapAt = function (candidateX, candidateY) {
+                  var overlapArea = 0;
+                  var addCorridorOverlap = function (boxX, boxY, boxW, boxH) {
+                    var overlapX = Math.min(candidateX + corridorLabelWidth, boxX + boxW) - Math.max(candidateX, boxX);
+                    var overlapY = Math.min(candidateY + corridorLabelHeight, boxY + boxH) - Math.max(candidateY, boxY);
+                    if (overlapX > 0 && overlapY > 0) overlapArea += overlapX * overlapY;
+                  };
+                  adaptiveHotspotLayout.forEach(function (labelItem) {
+                    // The pill itself, and the marker cluster painted at the structure point:
+                    // depth ring, exposure disc and selection reticle all sit there.
+                    addCorridorOverlap(labelItem.x, labelItem.y, labelItem.width, labelItem.height);
+                    addCorridorOverlap(labelItem.pointX - 14, labelItem.pointY - 14, 28, 28);
+                  });
+                  if (hudCompassBox) {
+                    // Screen-fixed box, but this label is drawn inside the mirrored specimen
+                    // transform, so reflect it about cx before comparing.
+                    addCorridorOverlap(specimenScale.x < 0 ? 2 * cx - hudCompassBox.x - hudCompassBox.w : hudCompassBox.x,
+                      hudCompassBox.y, hudCompassBox.w, hudCompassBox.h);
+                  }
+                  return overlapArea;
+                };
+                var corridorLabelClampX = function (value) { return Math.max(8, Math.min(W - corridorLabelWidth - 8, value)); };
+                var corridorLabelClampY = function (value) { return Math.max(8, Math.min(H - corridorLabelHeight - 8, value)); };
+                var corridorLabelX = corridorLabelClampX(corridorMid.x - corridorLabelWidth / 2);
+                var corridorLabelY = corridorLabelClampY(corridorMid.y - corridorHalfWidth - 22);
+                var corridorLabelBest = corridorLabelOverlapAt(corridorLabelX, corridorLabelY);
+                if (corridorLabelBest > 0) {
+                  [0.5, 0.28, 0.72, 0.12, 0.88].forEach(function (corridorT) {
+                    var alongPoint = corridorPointAt(corridorT);
+                    var candidateX = corridorLabelClampX(alongPoint.x - corridorLabelWidth / 2);
+                    [alongPoint.y - corridorHalfWidth - 22,
+                     alongPoint.y - corridorHalfWidth - 22 - corridorLabelHeight - 6,
+                     alongPoint.y + corridorHalfWidth + 6,
+                     alongPoint.y + corridorHalfWidth + 6 + corridorLabelHeight + 6].forEach(function (candidateY) {
+                      var clampedY = corridorLabelClampY(candidateY);
+                      var candidateOverlap = corridorLabelOverlapAt(candidateX, clampedY);
+                      if (candidateOverlap < corridorLabelBest) {
+                        corridorLabelBest = candidateOverlap; corridorLabelX = candidateX; corridorLabelY = clampedY;
+                      }
+                    });
+                  });
+                }
+                // The safety label sits over dense anatomy and numbered hotspot pills. At 0.88 the
+                // organs behind mottled the glyphs; the corridor label is the one thing on this
+                // canvas that must never be guessed at, so give it an opaque backing.
+                ctx.fillStyle = corridorAccessible ? '#ffffff' : 'rgba(15,23,42,0.97)';
                 ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(corridorLabelX, corridorLabelY, corridorLabelWidth, 17, 5);
-                else ctx.rect(corridorLabelX, corridorLabelY, corridorLabelWidth, 17);
+                if (ctx.roundRect) ctx.roundRect(corridorLabelX, corridorLabelY, corridorLabelWidth, corridorLabelHeight, 5);
+                else ctx.rect(corridorLabelX, corridorLabelY, corridorLabelWidth, corridorLabelHeight);
                 ctx.fill();
                 ctx.strokeStyle = corridorDeep ? '#fb7185' : '#5eead4'; ctx.lineWidth = corridorAccessible ? 1.6 : 0.8; ctx.stroke();
                 ctx.fillStyle = corridorDeep ? (corridorAccessible ? '#9f1239' : '#fecdd3') : (corridorAccessible ? '#134e4a' : '#99f6e4');
@@ -10001,7 +10234,7 @@ var d = labToolData.dissection || {};
                 var flapTransition = liveTissueTransitionAction === 'forceps' ? liveTissueTransitionProgress : (liveTissueTransitionAction === 'undo-forceps' ? 1 - liveTissueTransitionProgress : 1);
                 spread *= 0.12 + flapTransition * 0.88;
                 var inset = 0.009;
-                var layerColor = ((spec.layers[currentLayerIdx] || {}).color) || '#d89b8f';
+                var layerColor = resolveCanvasColor(((spec.layers[currentLayerIdx] || {}).color), canvas) || '#d89b8f';
                 function offsetFlapPoint(point, amount) { return { x: point.x + normalX * amount, y: point.y + normalY * amount }; }
                 var flaps = [
                   [offsetFlapPoint(start, inset), offsetFlapPoint(middle, inset), offsetFlapPoint(end, inset), offsetFlapPoint(end, spread), offsetFlapPoint(middle, spread * 1.08), offsetFlapPoint(start, spread)],
@@ -10203,7 +10436,7 @@ var d = labToolData.dissection || {};
                 var baseAX = baseX - tangentX * halfSpan, baseAY = baseY - tangentY * halfSpan;
                 var baseBX = baseX + tangentX * halfSpan, baseBY = baseY + tangentY * halfSpan;
                 var tractionColor = tractionState.key === 'stress' ? '#fb7185' : (tractionState.key === 'slip' ? '#facc15' : '#5eead4');
-                var layerColor = ((spec.layers[currentLayerIdx] || {}).color) || '#a87579';
+                var layerColor = resolveCanvasColor(((spec.layers[currentLayerIdx] || {}).color), canvas) || '#a87579';
                 ctx.save();
                 if (directAssessment && tractionValid) {
                   // The solid outer ring is the safe lift envelope; the dashed inner ring marks the minimum effective lift.
@@ -10406,7 +10639,13 @@ var d = labToolData.dissection || {};
                 var handoffAccessible = highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible';
                 var handoffAccent = handoffAccessible ? '#ffffff' : (handoffSelected ? '#5eead4' : '#facc15');
                 var handoffPulse = dissMotionReduced ? 0 : Math.sin(dissTick * 0.045) * 2;
-                var handoffLabelWidth = 184, handoffLabelHeight = 44;
+                // Sized for the instruction, not the other way round: at 184x44 the next-step
+                // sentence was cut to 38 characters and set at 7px, so it read "and locate t".
+                // Height and type scale with the HUD the way the specimen chip does, so the
+                // next step is still readable when the 500px buffer is squeezed into a phone
+                // column. Width deliberately does NOT scale: at 208 the card clears the
+                // specimen chip on the left, and the instruction wraps instead of widening.
+                var handoffLabelWidth = 208, handoffLabelHeight = 58 * canvasHudScale;
                 // This card is screen-fixed but is drawn inside the specimen transform, because
                 // its leader line has to reach a point on the specimen. In the ventral view that
                 // transform mirrors x about cx = W/2, so a right-edge anchor flipped the whole
@@ -10458,11 +10697,23 @@ var d = labToolData.dissection || {};
                 ctx.save(); ctx.fillStyle = handoffAccessible ? '#000000' : 'rgba(15,23,42,0.94)'; ctx.strokeStyle = handoffAccent; ctx.lineWidth = 1.2; ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(handoffLabelX, handoffLabelY, handoffLabelWidth, handoffLabelHeight, 6); else ctx.rect(handoffLabelX, handoffLabelY, handoffLabelWidth, handoffLabelHeight);
                 ctx.fill(); ctx.stroke();
-                ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : handoffAccent; fillReadableSpecimenText(handoffTitle.slice(0, 34), handoffLabelX + (specimenScale.x < 0 ? handoffLabelWidth - 7 : 7), handoffLabelY + 11);
-                ctx.font = '7px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : '#e2e8f0'; fillReadableSpecimenText(String(nextInfo.label || '').slice(0, 38), handoffLabelX + (specimenScale.x < 0 ? handoffLabelWidth - 7 : 7), handoffLabelY + 23);
-                var handoffSegmentWidth = 24, handoffSegmentGap = 4, handoffRailX = handoffLabelX + 7, handoffRailY = handoffLabelY + 31;
+                var handoffTextInset = 8 * canvasHudScale, handoffTextWidth = handoffLabelWidth - handoffTextInset * 2;
+                ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : handoffAccent;
+                fillPanelText(fitTextToWidth(handoffTitle, handoffTextWidth), handoffLabelX, handoffLabelWidth, handoffTextInset, handoffLabelY + 13 * canvasHudScale);
+                ctx.font = (8 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : '#e2e8f0';
+                wrapTextToWidth(String(nextInfo.label || ''), handoffTextWidth, 2).forEach(function (handoffLine, handoffLineIndex) {
+                  fillPanelText(handoffLine, handoffLabelX, handoffLabelWidth, handoffTextInset, handoffLabelY + (26 + handoffLineIndex * 10) * canvasHudScale);
+                });
+                var handoffSegmentGap = 4;
+                var handoffSegmentWidth = (handoffLabelWidth - handoffTextInset * 2 - handoffSegmentGap * 5) / 6;
+                var handoffRailX = handoffLabelX + handoffTextInset, handoffRailY = handoffLabelY + 45 * canvasHudScale;
                 for (var handoffSegment = 0; handoffSegment < 6; handoffSegment++) {
-                  var handoffSegmentX = handoffRailX + handoffSegment * (handoffSegmentWidth + handoffSegmentGap);
+                  // Step 1 has to sit on the reading-left of the rail. The ventral transform
+                  // mirrors the card, so lay the segments out from the model right edge there,
+                  // the same flip fillPanelText applies to the text above.
+                  var handoffSegmentX = specimenScale.x < 0
+                    ? handoffLabelX + handoffLabelWidth - handoffTextInset - handoffSegmentWidth - handoffSegment * (handoffSegmentWidth + handoffSegmentGap)
+                    : handoffRailX + handoffSegment * (handoffSegmentWidth + handoffSegmentGap);
                   ctx.beginPath(); ctx.rect(handoffSegmentX, handoffRailY, handoffSegmentWidth, 6);
                   if (handoffSegment < handoffStep || handoffStep >= 6) {
                     ctx.fillStyle = handoffAccessible ? '#ffffff' : '#5eead4'; ctx.fill();
@@ -12290,25 +12541,30 @@ var d = labToolData.dissection || {};
 
               var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
 
-              var sysColors = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#e2e8f0', muscular: '#f87171', excretory: '#a78bfa', reproductive: '#ec4899' };
 
               var legendLabels = ['Circulatory', 'Digestive', 'Respiratory', 'Nervous', 'Skeletal', 'Muscular', 'Excretory', 'Reproductive'];
 
               ctx.save();
 
-              ctx.font = 'bold 9px Inter, system-ui';
+              // The specimen chip and the scale card already scale with canvasHudScale, which is
+              // 1 on a desktop canvas and ~1.55 when the 500px buffer is squeezed into a 323px
+              // phone column. This key never did, so on a phone its 9px text rendered at about
+              // 5.8 screen px. Finishing that existing pattern changes nothing on desktop.
+              ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';
 
               var legendTextWidth = 0;
 
               for (var lm = 0; lm < legendLabels.length; lm++) legendTextWidth = Math.max(legendTextWidth, ctx.measureText(legendLabels[lm]).width);
 
-              var legendRowHeight = 13;
+              var legendRowHeight = 13 * canvasHudScale;
 
-              var legendPanelW = Math.min(W - 28, legendTextWidth + 30);
+              var legendPanelW = Math.min(W - 28, legendTextWidth + 30 * canvasHudScale);
 
-              var legendPanelH = legendSys.length * legendRowHeight + 12;
+              var legendPanelH = legendSys.length * legendRowHeight + 12 * canvasHudScale;
 
-              var legendPanelX = W - legendPanelW - 14, legendPanelY = 74;
+              // The next-step card is 58 * canvasHudScale tall from y 10. At desktop scale that
+              // ends at 68 and this panel cleared it by 6 at 74; once the card scaled, it did not.
+              var legendPanelX = W - legendPanelW - 14, legendPanelY = Math.max(74, 10 + 58 * canvasHudScale + 6);
 
               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)'; ctx.lineWidth = 1;
 
@@ -12318,15 +12574,15 @@ var d = labToolData.dissection || {};
 
               for (var li = 0; li < legendSys.length; li++) {
 
-                var lx = legendPanelX + 13, ly = legendPanelY + 13 + li * legendRowHeight;
+                var lx = legendPanelX + 13 * canvasHudScale, ly = legendPanelY + 13 * canvasHudScale + li * legendRowHeight;
 
-                ctx.beginPath(); ctx.arc(lx, ly, 3.2, 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(lx, ly, 3.2 * canvasHudScale, 0, Math.PI * 2);
 
-                ctx.fillStyle = sysColors[legendSys[li]] || '#94a3b8'; ctx.fill();
+                ctx.fillStyle = dissectionSystemColor(legendSys[li], 'onDark'); ctx.fill();
 
                 ctx.fillStyle = '#e2e8f0';
 
-                ctx.fillText(legendLabels[li], lx + 9, ly + 3);
+                ctx.fillText(legendLabels[li], lx + 9 * canvasHudScale, ly + 3 * canvasHudScale);
 
               }
 
@@ -12362,7 +12618,7 @@ var d = labToolData.dissection || {};
                 ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText('Layer cross-section', sectionX, sectionY - 5);
                 spec.layers.forEach(function (layer, layerIdx) {
                   var isCurrentSection = layer.id === activeLayer;
-                  ctx.fillStyle = layer.color || (isCurrentSection ? '#f59e0b' : '#64748b');
+                  ctx.fillStyle = resolveCanvasColor(layer.color, canvas) || (isCurrentSection ? '#f59e0b' : '#64748b');
                   ctx.globalAlpha = isCurrentSection ? 1 : 0.62;
                   ctx.fillRect(sectionX, sectionY + layerIdx * sectionH, sectionW, sectionH - 2);
                   ctx.globalAlpha = 1; ctx.font = (isCurrentSection ? 'bold ' : '') + '8px Inter, system-ui'; ctx.fillStyle = isCurrentSection ? '#0f172a' : '#f8fafc';
@@ -12682,22 +12938,36 @@ var d = labToolData.dissection || {};
                 if (!d.quizMode && screenCompactCount > 0) {
                   var screenDeclutter = 'Adaptive labels \u00B7 ' + screenCompactCount + ' compact \u00B7 ' + (canvasCoarsePointer ? 'select to expand' : 'hover to expand');
                   ctx.save(); ctx.font = 'bold ' + (9.5 * screenGuideScale) + 'px Inter, system-ui';
-                  var screenDeclutterWidth = Math.min(W - 28, ctx.measureText(screenDeclutter).width + 18 * screenGuideScale);
-                  var screenDeclutterHeight = 22 * screenGuideScale, screenDeclutterX = (W - screenDeclutterWidth) / 2;
+                  var screenDeclutterHeight = 22 * screenGuideScale;
                   var screenDeclutterY = Math.max(44, layerPillY - screenDeclutterHeight - 8);
+                  // Stop at the scale HUD when the two share a band, instead of running under it.
+                  var screenDeclutterRightLimit = (screenDeclutterY + screenDeclutterHeight > compassY) ? compassX - 8 : W - 14;
+                  var screenDeclutterSpan = Math.max(90, screenDeclutterRightLimit - 14);
+                  var screenDeclutterText = fitTextToWidth(screenDeclutter, screenDeclutterSpan - 18 * screenGuideScale);
+                  var screenDeclutterWidth = Math.min(screenDeclutterSpan, ctx.measureText(screenDeclutterText).width + 18 * screenGuideScale);
+                  var screenDeclutterX = Math.max(14, Math.min((W - screenDeclutterWidth) / 2, screenDeclutterRightLimit - screenDeclutterWidth));
                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(45,212,191,0.64)';
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight, 7); ctx.fill(); ctx.stroke(); }
                   else { ctx.fillRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); ctx.strokeRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); }
-                  ctx.fillStyle = '#99f6e4'; ctx.fillText(screenDeclutter, screenDeclutterX + 9 * screenGuideScale, screenDeclutterY + 15 * screenGuideScale); ctx.restore();
+                  ctx.fillStyle = '#99f6e4'; ctx.fillText(screenDeclutterText, screenDeclutterX + 9 * screenGuideScale, screenDeclutterY + 15 * screenGuideScale); ctx.restore();
                 }
               }
+              // The scale HUD below paints AFTER this overlay and occupies the same bottom band,
+              // so a centred chip inside the overlay lost its last words under it ("hover to expa").
+              // Derive that box once, here, and let the overlay steer around it. The HUD block
+              // further down assigns from these same variables rather than recomputing them.
+              var specimenSpanCm = spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3;
+              var scaleCm = (spec.bodyShape === 'pig' || spec.bodyShape === 'fish') ? 2 : ((spec.bodyShape === 'eye' || spec.bodyShape === 'heart') ? 0.5 : 1);
+              var scalePixels = Math.max(28, Math.min(92, (scaleCm / specimenSpanCm) * W * zoom));
+              var compassWidth = Math.min(W - 28, Math.max(144 * canvasHudScale, scalePixels + 18 * canvasHudScale));
+              var compassHeight = 62 * canvasHudScale;
+              var compassX = W - compassWidth - 14;
+              var compassBottomInset = guidedMode && currentGuided ? Math.max(72, 64 * canvasHudScale) : 14;
+              var compassY = H - compassHeight - compassBottomInset;
               drawFinalScreenGuidanceOverlay();
 
               // A calibrated screen-fixed orientation and scale HUD keeps anatomical direction accurate across specimen shapes and zoom.
               var hudView = String(d.anatomicalView || anatomicalView || 'dorsal').toUpperCase();
-              var specimenSpanCm = spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3;
-              var scaleCm = (spec.bodyShape === 'pig' || spec.bodyShape === 'fish') ? 2 : ((spec.bodyShape === 'eye' || spec.bodyShape === 'heart') ? 0.5 : 1);
-              var scalePixels = Math.max(28, Math.min(92, (scaleCm / specimenSpanCm) * W * zoom));
               var horizontalAxis = spec.bodyShape === 'pig' || spec.bodyShape === 'fish' || spec.bodyShape === 'crayfish' || spec.bodyShape === 'eye';
               var cardiacAxis = spec.bodyShape === 'heart';
               var axisStart = cardiacAxis ? 'BASE' : 'A';
@@ -12705,18 +12975,27 @@ var d = labToolData.dissection || {};
               var orientationText = horizontalAxis ? axisStart + ' \u2190  \u2192 ' + axisEnd : axisStart + ' \u2191  \u2193 ' + axisEnd;
               ctx.save();
               var specimenHudLabel = spec.icon + ' ' + spec.name + '  /  ' + hudView;
-              ctx.font = 'bold ' + (12 * canvasHudScale) + 'px Inter, system-ui, sans-serif';
-              var specimenHudWidth = Math.min(W - 28, Math.max(154 * canvasHudScale, ctx.measureText(specimenHudLabel).width + 22 * canvasHudScale));
+              // The chip has the least room of any HUD panel, because the next-step card owns
+              // the opposite corner, so its type is capped below the full HUD factor: at 1.55
+              // the phone chip could only show "Frog (Rana) / ..." and dropped the view it
+              // exists to state, while at 1.3 the whole label fits. No effect at desktop scale 1.
+              var specimenHudTypeScale = Math.min(canvasHudScale, 1.3);
+              ctx.font = 'bold ' + (12 * specimenHudTypeScale) + 'px Inter, system-ui, sans-serif';
+              // The next-step card owns the top-right 218px of the canvas. The chip used to be
+              // allowed the full width, which was harmless while its type was 12px and the
+              // label ended well short of the card; once the type scaled up on a phone the two
+              // ran into each other. Stop the chip short and ellipsise rather than overlap. The
+              // fit below allows 1px more than the sizing reserved, so a label that set its own
+              // box width is never cut by a rounding hair: the ellipsis appears only once the
+              // W - 236 ceiling really bites.
+              var specimenHudWidth = Math.min(W - 236, Math.max(154 * specimenHudTypeScale, ctx.measureText(specimenHudLabel).width + 22 * specimenHudTypeScale));
               var macroLikelyOnLeft = inspectionLens && macroInset && Number(canvas._lensDisplayX) > W * 0.58;
               var specimenHudX = macroLikelyOnLeft ? W - specimenHudWidth - 14 : 14;
               ctx.fillStyle = 'rgba(15,23,42,0.86)'; ctx.strokeStyle = 'rgba(148,163,184,0.34)'; ctx.lineWidth = 1;
-              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(specimenHudX, 13, specimenHudWidth, 30 * canvasHudScale, 8 * canvasHudScale); ctx.fill(); ctx.stroke(); }
-              else { ctx.fillRect(specimenHudX, 13, specimenHudWidth, 30 * canvasHudScale); ctx.strokeRect(specimenHudX, 13, specimenHudWidth, 30 * canvasHudScale); }
-              ctx.fillStyle = '#e2e8f0'; ctx.fillText(specimenHudLabel, specimenHudX + 11 * canvasHudScale, 13 + 20 * canvasHudScale);
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale, 8 * specimenHudTypeScale); ctx.fill(); ctx.stroke(); }
+              else { ctx.fillRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); ctx.strokeRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); }
+              ctx.fillStyle = '#e2e8f0'; ctx.fillText(fitTextToWidth(specimenHudLabel, specimenHudWidth - 21 * specimenHudTypeScale), specimenHudX + 11 * specimenHudTypeScale, 13 + 20 * specimenHudTypeScale);
 
-              var compassWidth = Math.min(W - 28, Math.max(144 * canvasHudScale, scalePixels + 18 * canvasHudScale)), compassHeight = 62 * canvasHudScale, compassX = W - compassWidth - 14;
-              var compassBottomInset = guidedMode && currentGuided ? Math.max(72, 64 * canvasHudScale) : 14;
-              var compassY = H - compassHeight - compassBottomInset;
               var liveLensX = Number(canvas._lensDisplayX), liveLensY = Number(canvas._lensDisplayY);
               var lensNearCompass = inspectionLens && isFinite(liveLensX) && isFinite(liveLensY) && liveLensX > compassX - 42 * canvasHudScale && liveLensY > compassY - 42 * canvasHudScale;
               if (lensNearCompass) compassY = Math.max(82, compassY - 76 * canvasHudScale);
@@ -12906,9 +13185,16 @@ var d = labToolData.dissection || {};
                 var compassAccent = compassAccessible ? '#ffffff' : (compass.aligned ? '#2dd4bf' : '#fbbf24');
                 var compassX = 14, compassY = 14;
                 // The specimen chip owns the corner when it is on the left; sit under it.
-                if (specimenHudX < 20) compassY = 13 + 30 * canvasHudScale + 8;
-                var compassW = compass.axis === 'horizontal' ? 188 : 126;
-                var compassH = compass.axis === 'horizontal' ? 55 : 91;
+                // Two things already own the top-left: the specimen chip at y 13 (height
+                // 30 * canvasHudScale) and the fixed "View: <name>" chip at (14, 50, 118, 24).
+                // Sit below whichever reaches further down.
+                if (specimenHudX < 20) compassY = Math.max(82, 13 + 30 * canvasHudScale + 8);
+                // Same unconverted-HUD case as the colour key: fixed pixels here rendered at
+                // about two thirds size once the 500px buffer is squeezed into a phone column.
+                // canvasHudScale is 1 on desktop, so this is a phone-only change.
+                // Sized above, before the corridor label runs, so both agree on one box.
+                var compassW = hudCompassW;
+                var compassH = hudCompassH;
                 var compassStatus = compass.view.toUpperCase() + (compass.aligned ? ' · ALIGNED' : ' · TARGET ' + compass.targetView.toUpperCase());
                 ctx.save();
                 ctx.fillStyle = compassAccessible ? '#000000' : 'rgba(15,23,42,0.88)';
@@ -12916,31 +13202,44 @@ var d = labToolData.dissection || {};
                 ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(compassX, compassY, compassW, compassH, 8); else ctx.rect(compassX, compassY, compassW, compassH);
                 ctx.fill(); ctx.stroke();
-                ctx.font = 'bold ' + (compassAccessible ? '9' : '8') + 'px Inter, system-ui';
+                ctx.font = 'bold ' + (compassAccessible ? 9 : 8) * canvasHudScale + 'px Inter, system-ui';
                 ctx.fillStyle = compassAccessible ? '#ffffff' : '#e2e8f0';
-                ctx.fillText('ANATOMICAL AXIS', compassX + 9, compassY + 13);
-                ctx.font = 'bold 7px Inter, system-ui'; ctx.fillStyle = compassAccent;
-                ctx.fillText(compassStatus.slice(0, 27), compassX + 9, compassY + 24);
+                ctx.fillText('ANATOMICAL AXIS', compassX + 9 * canvasHudScale, compassY + 13 * canvasHudScale);
+                ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = compassAccent;
+                ctx.fillText(fitTextToWidth(compassStatus, compassW - 18 * canvasHudScale), compassX + 9 * canvasHudScale, compassY + 24 * canvasHudScale);
                 ctx.strokeStyle = compassAccent; ctx.fillStyle = compassAccent;
                 ctx.lineWidth = compassAccessible ? 2.2 : 1.5;
                 if (compass.axis === 'horizontal') {
-                  var axisLeftX = compassX + 15, axisRightX = compassX + compassW - 15, axisY = compassY + 35;
+                  var axisLeftX = compassX + 15 * canvasHudScale, axisRightX = compassX + compassW - 15 * canvasHudScale, axisY = compassY + 35 * canvasHudScale;
                   var axisStartX = compass.mirrored ? axisRightX : axisLeftX;
                   var axisEndX = compass.mirrored ? axisLeftX : axisRightX;
                   ctx.beginPath(); ctx.moveTo(axisLeftX, axisY); ctx.lineTo(axisRightX, axisY); ctx.stroke();
-                  ctx.beginPath(); ctx.arc(axisStartX, axisY, compassAccessible ? 4.5 : 3.7, 0, Math.PI * 2); ctx.fill();
-                  ctx.beginPath(); ctx.moveTo(axisEndX, axisY - 5); ctx.lineTo(axisEndX + 5, axisY); ctx.lineTo(axisEndX, axisY + 5); ctx.lineTo(axisEndX - 5, axisY); ctx.closePath(); ctx.fill();
-                  ctx.font = 'bold 7px Inter, system-ui'; ctx.textAlign = 'center';
-                  ctx.fillText(compass.start.slice(0, 12), axisStartX, compassY + 50);
-                  ctx.fillText(compass.end.slice(0, 12), axisEndX, compassY + 50);
+                  ctx.beginPath(); ctx.arc(axisStartX, axisY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
+                  var axisDiamond = 5 * canvasHudScale;
+                  ctx.beginPath(); ctx.moveTo(axisEndX, axisY - axisDiamond); ctx.lineTo(axisEndX + axisDiamond, axisY); ctx.lineTo(axisEndX, axisY + axisDiamond); ctx.lineTo(axisEndX - axisDiamond, axisY); ctx.closePath(); ctx.fill();
+                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'center';
+                  // Centred on the endpoint markers, ANTERIOR and POSTERIOR both ran off the
+                  // panel: on the perch the first and last letters were cut by its own border.
+                  // Keep the centre where it belongs unless doing so would cross the edge.
+                  var compassEndInset = 5 * canvasHudScale;
+                  var clampCompassEndLabel = function (endLabel, endX) {
+                    var endHalf = ctx.measureText(endLabel).width / 2;
+                    return Math.max(compassX + compassEndInset + endHalf, Math.min(compassX + compassW - compassEndInset - endHalf, endX));
+                  };
+                  var compassStartLabel = fitTextToWidth(compass.start, compassW - compassEndInset * 2);
+                  var compassEndLabel = fitTextToWidth(compass.end, compassW - compassEndInset * 2);
+                  ctx.fillText(compassStartLabel, clampCompassEndLabel(compassStartLabel, axisStartX), compassY + 50 * canvasHudScale);
+                  ctx.fillText(compassEndLabel, clampCompassEndLabel(compassEndLabel, axisEndX), compassY + 50 * canvasHudScale);
                 } else {
-                  var axisX = compassX + 18, axisTopY = compassY + 31, axisBottomY = compassY + compassH - 13;
+                  var axisX = compassX + 18 * canvasHudScale, axisTopY = compassY + 31 * canvasHudScale, axisBottomY = compassY + compassH - 13 * canvasHudScale;
                   ctx.beginPath(); ctx.moveTo(axisX, axisTopY); ctx.lineTo(axisX, axisBottomY); ctx.stroke();
-                  ctx.beginPath(); ctx.arc(axisX, axisTopY, compassAccessible ? 4.5 : 3.7, 0, Math.PI * 2); ctx.fill();
-                  ctx.beginPath(); ctx.moveTo(axisX, axisBottomY - 5); ctx.lineTo(axisX + 5, axisBottomY); ctx.lineTo(axisX, axisBottomY + 5); ctx.lineTo(axisX - 5, axisBottomY); ctx.closePath(); ctx.fill();
-                  ctx.font = 'bold 7px Inter, system-ui'; ctx.textAlign = 'left';
-                  ctx.fillText(compass.start.slice(0, 12), axisX + 10, axisTopY + 3);
-                  ctx.fillText(compass.end.slice(0, 12), axisX + 10, axisBottomY + 3);
+                  ctx.beginPath(); ctx.arc(axisX, axisTopY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
+                  var axisVerticalDiamond = 5 * canvasHudScale;
+                  ctx.beginPath(); ctx.moveTo(axisX, axisBottomY - axisVerticalDiamond); ctx.lineTo(axisX + axisVerticalDiamond, axisBottomY); ctx.lineTo(axisX, axisBottomY + axisVerticalDiamond); ctx.lineTo(axisX - axisVerticalDiamond, axisBottomY); ctx.closePath(); ctx.fill();
+                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'left';
+                  var compassVerticalWidth = compassX + compassW - 8 * canvasHudScale - (axisX + 10 * canvasHudScale);
+                  ctx.fillText(fitTextToWidth(compass.start, compassVerticalWidth), axisX + 10 * canvasHudScale, axisTopY + 3 * canvasHudScale);
+                  ctx.fillText(fitTextToWidth(compass.end, compassVerticalWidth), axisX + 10 * canvasHudScale, axisBottomY + 3 * canvasHudScale);
                 }
                 ctx.restore();
               }
@@ -13723,7 +14022,7 @@ var d = labToolData.dissection || {};
                   if (!engaged || !contactContext || !contactContext.onSpecimen || toolId === 'dropper') return;
                   var occlusionAccessible = highContrastEnabled || liveVisualMode === 'accessible';
                   var openingOcclusion = !!(canvasProcedure.incisionStarted && activeOpeningPath && activeOpeningPath.length > 1 && distanceToGuide(screenPointer, activeOpeningPath) <= 0.055);
-                  var occlusionLayer = (spec.layers[currentLayerIdx] || {}).color || '#b87972';
+                  var occlusionLayer = resolveCanvasColor((spec.layers[currentLayerIdx] || {}).color, canvas) || '#b87972';
                   var toolDepthFactor = { scalpel: 0.62, scissors: 0.52, forceps: 0.46, pin: 0.92, probe: 0.38, wick: 0.24 }[toolId] || 0.32;
                   var pitchDepth = Math.max(0.18, Math.sin((pitchData && pitchData.radians) || 0.24));
                   var occlusionDepth = Math.max(0.18, Math.min(1, toolDepthFactor * (0.62 + contactPressure * 0.58) * (0.74 + pitchDepth * 0.38)));
@@ -14231,6 +14530,20 @@ var d = labToolData.dissection || {};
             var isCanvas = !!(target && target.matches && target.matches('[data-diss-canvas]'));
             if (!isCanvas && e.key !== 'Escape') return;
             var keyboardOrgans = organs.filter(function (organ) { return structureExposureState(organ, currentProcedure) === 'visible'; });
+            // Arrow keys walk only structures that are currently exposed. Before the layer has
+            // been opened that list is empty, and every branch below used to return in silence --
+            // while the canvas's own ready message was telling the user to press an Arrow key,
+            // and the Enter branch answered with "use an Arrow key first". A keyboard-only user
+            // was sent round in a circle with no way to find out why nothing happened.
+            function announceKeyboardStructureGap(moveFocus) {
+              var hiddenCount = organs.length;
+              var layerName = (currentLayerDef && currentLayerDef.name) || activeLayer;
+              setProcedureFeedback('No structure is exposed yet, so Arrow keys have nothing to preview. '
+                + (hiddenCount
+                  ? 'All ' + hiddenCount + ' structures in the ' + layerName + ' layer are listed in the structure directory beside the specimen: press Tab to reach it, or complete the next technique step to expose them here.'
+                  : 'Use the structure directory beside the specimen.'), 'working');
+              if (moveFocus) focusDissectionTarget('diss-structure-directory');
+            }
             function keyboardPreview(organ) {
               if (!organ) return;
               target._keyboardPreviewOrganId = organ.id;
@@ -14260,14 +14573,17 @@ var d = labToolData.dissection || {};
               panCanvasByControl(syntheticPanEvent, panHorizontal, panVertical, panLabel);
             } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
               e.preventDefault();
-              if (!keyboardOrgans.length) return;
+              if (!keyboardOrgans.length) { announceKeyboardStructureGap(false); return; }
               var direction = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
-              var keyboardPreviewId = target._keyboardPreviewOrganId;
+              // Fall back to the current selection so a structure chosen with the pointer or from
+              // the directory is where Arrow browsing continues from, rather than the list start.
+              var keyboardPreviewId = target._keyboardPreviewOrganId || d.selectedOrgan;
               var organIndex = keyboardOrgans.findIndex(function (organ) { return organ.id === keyboardPreviewId; });
               if (organIndex < 0) organIndex = direction > 0 ? -1 : 0;
               keyboardPreview(keyboardOrgans[(organIndex + direction + keyboardOrgans.length) % keyboardOrgans.length]);
             } else if (e.key === 'Home' || e.key === 'End') {
               e.preventDefault();
+              if (!keyboardOrgans.length) { announceKeyboardStructureGap(false); return; }
               keyboardPreview(e.key === 'Home' ? keyboardOrgans[0] : keyboardOrgans[keyboardOrgans.length - 1]);
             } else if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -14279,8 +14595,10 @@ var d = labToolData.dissection || {};
               var keyboardCommitId = target._keyboardPreviewOrganId;
               var keyboardSelected = keyboardOrgans.find(function (organ) { return organ.id === keyboardCommitId; });
               if (!keyboardSelected) {
+                target._keyboardPreviewOrganId = null;
+                // Only suggest the Arrow keys when they would actually do something.
+                if (!keyboardOrgans.length) { announceKeyboardStructureGap(true); return; }
                 setProcedureFeedback('Use an Arrow key, Home, or End to preview a structure before pressing Enter.', 'working');
-              target._keyboardPreviewOrganId = null;
                 return;
               }
               if (d.quizMode) {
@@ -16604,6 +16922,21 @@ var d = labToolData.dissection || {};
                           ? spec.name + ' practice assessment specimen'
                           : spec.name + ' interactive specimen \u00B7 ' + currentLayerDef.name + ' layer, ' + anatomicalView + ' view'
                       ),
+                      // The canvas carried BOTH aria-labelledby (this span) and a 4,837-character aria-label.
+                      // aria-labelledby wins the accessible-name computation, so every word of that label was
+                      // dead: Chromium's accessibility tree reported nameLen 61 from the related element and
+                      // listed the 4,837-character attribute as a superseded source. It shipped in every render
+                      // and no assistive technology ever read it. The text is kept verbatim and moved here,
+                      // under a heading, so it is reachable in browse mode; it is deliberately NOT added to
+                      // aria-describedby, which would force ~5,500 characters of speech on every focus, and
+                      // focus returns here after every structure inspection.
+                      React.createElement("section", { id: "diss-canvas-detail", className: "diss-sr-only", "aria-labelledby": "diss-canvas-detail-heading" },
+                        React.createElement("h4", { id: "diss-canvas-detail-heading" }, 'Specimen canvas description'),
+                        React.createElement("p", null, 'Every canvas selection and drag action has a keyboard or button alternative. Use the structure directory for equivalent anatomical descriptions, the technique action button instead of drawing a stroke, the pin action button instead of dragging a pin, the probe action button instead of tracing a structure, and the pan controls instead of dragging a zoomed view. When the depth atlas is enabled, surface landmarks use circles, mid-depth landmarks use diamonds, and deep landmarks use double rings.'),
+                        React.createElement("p", null, d.quizMode
+                          ? spec.name + ' practice assessment, ' + currentLayerDef.name + ' layer. ' + (effectiveQuizAnswerMode === 'hotspot' ? 'Select a structure on the specimen, or switch to the keyboard-accessible multiple-choice answers.' : 'Answer with the keyboard-accessible choices in the assessment panel.')
+                          : spec.name + ' virtual dissection. Specimen-specific procedure: ' + procedureProtocol.title + '; recommended view ' + procedureProtocol.recommendedView + '; access route ' + procedureProtocol.route + '; protected landmarks ' + (protectedLandmarkNames.join(', ') || 'underlying anatomy') + '. Current view: ' + anatomicalView + ', ' + specimenCondition + ' condition, ' + currentLayerDef.name + ' layer. ' + (livingFunctionEnabled ? 'Living function model active: ' + specimenLivingFunctionProfile().title + '; this represents in-life physiology, not preserved specimen motion. ' : '') + 'Progressive exposure: ' + currentExposure.label + ', ' + currentExposure.score + ' percent; decision quality ' + currentDecisionScore + ' percent. Observation field: ' + currentObservationField.label + ', ' + currentObservationField.quality + ' percent; limiting factor: ' + currentObservationField.limiter + '. Surface model: ' + activeMaterialProfile.label + '. Surface microtexture ' + ((visualRealism === 'accessible' || !sceneDetail) ? 'is suppressed for visual clarity' : 'uses ' + activeMaterialProfile.pattern + ' detail aligned to ' + lightDirection + ' illumination, with sheen adjusted for ' + currentTissueState.moisture + ' percent moisture and ' + specimenCondition + ' condition') + (currentTissueState.salineDrops ? '. Hydration model: ' + specimenHydrationProfile().label + ', ' + currentTissueState.salineDrops + ' saline ' + (currentTissueState.salineDrops === 1 ? 'drop' : 'drops') + ' applied' : '') + '. Tool contact response: ' + activeMaterialProfile.response + '. Light direction: ' + lightDirection + '. Illumination ' + lightIntensity + ' percent: ' + currentIllumination.label + '; glare risk ' + currentIllumination.glareRisk + ' percent. Focus isolation ' + (focusMode ? 'on' : 'off') + (opticalPlaneMapActive ? '. Focus-plane map active at ' + lensFocusDepth + ' depth: ' + opticalPlaneCounts.resolved + ' resolved, ' + opticalPlaneCounts.soft + ' soft, and ' + opticalPlaneCounts.unresolved + ' unresolved structures' : '') + '. Tissue relief ' + (tissueReliefEnabled ? 'on and responsive to the inspection light' : 'off') + '. Depth atlas ' + (depthAtlasEnabled ? 'on, with circle surface markers, diamond mid-depth markers, and double-ring deep markers' : 'off') + '. Selected and hovered structures use a labeled depth footprint with front and back edges, visibility-specific line styles, and boundary-attached relationship paths. Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced. Tubular, lobed, chambered, layered, and compact structure classes use distinct contours, internal patterns, and text labels' + (sceneDetail ? '. Anatomical orientation axis uses a circle for ' + anatomicalOrientationData().start.toLowerCase() + ' and a diamond for ' + anatomicalOrientationData().end.toLowerCase() + '; current and target views are stated in text' : '') + '. View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers, plus concentric depth rings for deeper or superficial movement; reduced motion switches instantly and uses text announcements. Depth motion ' + (parallaxDepth ? 'on' : 'off') + '. ' + visibleOrgansInView.length + ' directly visible structures. Active instrument: ' + activeInstrument + '. Action readiness: ' + currentToolReadiness.label + ', ' + currentToolReadiness.score + ' percent. ' + currentToolReadiness.cue + (instrumentVisuals ? '. Directional contact footprint feedback is active. Engaged instrument tips use foreground tissue lips and paired depth notches to show partial insertion and opening-edge occlusion' : '') + ((procedureMode === 'guided' && !currentProcedure.incisionStarted) ? '. Guided anatomical access corridor active; circle marks start and diamond marks finish' : '') + ((instrumentVisuals && (activeInstrument === 'scalpel' || activeInstrument === 'scissors')) ? '. Predictive cutting trajectory safety feedback is active' : '') + (instrumentVisuals ? '. Directional target guidance uses a dashed arrow, labeled endpoint, and shape-coded reticle when an instrument is spatially misaligned' : '') + '. Localized action outcomes use a one-shot check or warning symbol with the changed tissue metric. Tissue opening, retraction, stabilization, hydration, and risk metrics transition spatially after each action; Undo reverses openings, retraction, pin placement, hydration, wick evidence, and probe traces; reduced motion snaps to the final state' + (instrumentVisuals ? '. Three-dimensional instrument pitch feedback is active. Light-aware instrument elevation feedback is active. Equivalent keyboard and button actions include an instrument approach, contact, and release replay. Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape. Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent. Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry. Direct pin press-drag-release placement adds shaft alignment, insertion travel, safe depth, and control feedback. Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape. Direct probe press-drag-release tracing adds contact coverage, alignment, resistance, deformation, and control feedback. Direct dropper press-drag-release hydration adds contact coverage, flow alignment, moisture, dose, and pooling feedback. Direct wick press-drag-release recovery adds pool-edge alignment, contact coverage, recovery distance, and control feedback. Live dropper spread forecast shows dose count, organism-specific flow direction, current saturation, and pooling risk with text and geometry. Absorbent-wick feedback shows pool-edge targeting, fluid recovery, and a localized balanced-film marker with text and cross-hatched geometry. Guided procedure handoff cue connects the next required instrument to its anatomical target and ' + (procedureProtocol.order || []).length + '-step progress rail with text, shape, and line style. Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry; direct wick recovery maps pool-edge contact, recovery distance, and control' : '') + '. ' + ((activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'Drag on the canvas to practice a stroke, or use the equivalent technique action button.' : (activeInstrument === 'forceps' ? 'Press the opened tissue edge, drag away while monitoring lift and tension, then release inside the solid safe envelope; the equivalent technique action button remains available.' : (activeInstrument === 'pin' ? 'Press an indicated endpoint, drag inward along the shaft while monitoring insertion and alignment, then release when stable; the equivalent technique action button remains available.' : (activeInstrument === 'probe' ? 'Press a visible structure, trace a short path while monitoring pressure, resistance, and contact, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'dropper' ? 'Press the specimen surface, drag a short flow-aligned path while monitoring dose, contact, moisture, and pooling, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'wick' ? 'Press the saline pool edge, drag outward across a short recovery path while monitoring contact, alignment, and control, then release when controlled; the equivalent technique action button remains available.' : 'Select on the canvas or use the equivalent technique action button.')))))) + ' Occluded structures remain available in the structure directory.')
+                      ),
                       React.createElement("canvas", {
 
                       key: specimen,
@@ -16623,6 +16956,10 @@ var d = labToolData.dissection || {};
                           setProcedureFeedback(focusMessage, 'working');
                         }
                       },
+                      // Clearing the browse position here is deliberate and must stay: without it,
+                      // Enter could commit a preview the user had since moved away from and
+                      // replaced by a pointer selection. Continuity across an inspection comes
+                      // from the Arrow branch falling back to d.selectedOrgan instead.
                       onBlur: function (e) { e.currentTarget._keyboardFocus = false; e.currentTarget._keyboardPreviewOrganId = null; },
                       'data-diss-canvas': true,
                       'data-cursor-mode': pointerGuideData.mode,
@@ -16631,9 +16968,6 @@ var d = labToolData.dissection || {};
                       'aria-labelledby': 'diss-canvas-label',
                       'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V' + (advancedWorkspace ? ' X M P F' : '') + ' 1 2 3 4 5 6 7',
                       tabIndex: 0,
-                      'aria-label': d.quizMode
-                        ? spec.name + ' practice assessment, ' + currentLayerDef.name + ' layer. ' + (effectiveQuizAnswerMode === 'hotspot' ? 'Select a structure on the specimen, or switch to the keyboard-accessible multiple-choice answers.' : 'Answer with the keyboard-accessible choices in the assessment panel.')
-                        : spec.name + ' virtual dissection. Specimen-specific procedure: ' + procedureProtocol.title + '; recommended view ' + procedureProtocol.recommendedView + '; access route ' + procedureProtocol.route + '; protected landmarks ' + (protectedLandmarkNames.join(', ') || 'underlying anatomy') + '. Current view: ' + anatomicalView + ', ' + specimenCondition + ' condition, ' + currentLayerDef.name + ' layer. ' + (livingFunctionEnabled ? 'Living function model active: ' + specimenLivingFunctionProfile().title + '; this represents in-life physiology, not preserved specimen motion. ' : '') + 'Progressive exposure: ' + currentExposure.label + ', ' + currentExposure.score + ' percent; decision quality ' + currentDecisionScore + ' percent. Observation field: ' + currentObservationField.label + ', ' + currentObservationField.quality + ' percent; limiting factor: ' + currentObservationField.limiter + '. Surface model: ' + activeMaterialProfile.label + '. Surface microtexture ' + ((visualRealism === 'accessible' || !sceneDetail) ? 'is suppressed for visual clarity' : 'uses ' + activeMaterialProfile.pattern + ' detail aligned to ' + lightDirection + ' illumination, with sheen adjusted for ' + currentTissueState.moisture + ' percent moisture and ' + specimenCondition + ' condition') + (currentTissueState.salineDrops ? '. Hydration model: ' + specimenHydrationProfile().label + ', ' + currentTissueState.salineDrops + ' saline ' + (currentTissueState.salineDrops === 1 ? 'drop' : 'drops') + ' applied' : '') + '. Tool contact response: ' + activeMaterialProfile.response + '. Light direction: ' + lightDirection + '. Illumination ' + lightIntensity + ' percent: ' + currentIllumination.label + '; glare risk ' + currentIllumination.glareRisk + ' percent. Focus isolation ' + (focusMode ? 'on' : 'off') + (opticalPlaneMapActive ? '. Focus-plane map active at ' + lensFocusDepth + ' depth: ' + opticalPlaneCounts.resolved + ' resolved, ' + opticalPlaneCounts.soft + ' soft, and ' + opticalPlaneCounts.unresolved + ' unresolved structures' : '') + '. Tissue relief ' + (tissueReliefEnabled ? 'on and responsive to the inspection light' : 'off') + '. Depth atlas ' + (depthAtlasEnabled ? 'on, with circle surface markers, diamond mid-depth markers, and double-ring deep markers' : 'off') + '. Selected and hovered structures use a labeled depth footprint with front and back edges, visibility-specific line styles, and boundary-attached relationship paths. Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced. Tubular, lobed, chambered, layered, and compact structure classes use distinct contours, internal patterns, and text labels' + (sceneDetail ? '. Anatomical orientation axis uses a circle for ' + anatomicalOrientationData().start.toLowerCase() + ' and a diamond for ' + anatomicalOrientationData().end.toLowerCase() + '; current and target views are stated in text' : '') + '. View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers, plus concentric depth rings for deeper or superficial movement; reduced motion switches instantly and uses text announcements. Depth motion ' + (parallaxDepth ? 'on' : 'off') + '. ' + visibleOrgansInView.length + ' directly visible structures. Active instrument: ' + activeInstrument + '. Action readiness: ' + currentToolReadiness.label + ', ' + currentToolReadiness.score + ' percent. ' + currentToolReadiness.cue + (instrumentVisuals ? '. Directional contact footprint feedback is active. Engaged instrument tips use foreground tissue lips and paired depth notches to show partial insertion and opening-edge occlusion' : '') + ((procedureMode === 'guided' && !currentProcedure.incisionStarted) ? '. Guided anatomical access corridor active; circle marks start and diamond marks finish' : '') + ((instrumentVisuals && (activeInstrument === 'scalpel' || activeInstrument === 'scissors')) ? '. Predictive cutting trajectory safety feedback is active' : '') + (instrumentVisuals ? '. Directional target guidance uses a dashed arrow, labeled endpoint, and shape-coded reticle when an instrument is spatially misaligned' : '') + '. Localized action outcomes use a one-shot check or warning symbol with the changed tissue metric. Tissue opening, retraction, stabilization, hydration, and risk metrics transition spatially after each action; Undo reverses openings, retraction, pin placement, hydration, wick evidence, and probe traces; reduced motion snaps to the final state' + (instrumentVisuals ? '. Three-dimensional instrument pitch feedback is active. Light-aware instrument elevation feedback is active. Equivalent keyboard and button actions include an instrument approach, contact, and release replay. Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape. Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent. Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry. Direct pin press-drag-release placement adds shaft alignment, insertion travel, safe depth, and control feedback. Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape. Direct probe press-drag-release tracing adds contact coverage, alignment, resistance, deformation, and control feedback. Direct dropper press-drag-release hydration adds contact coverage, flow alignment, moisture, dose, and pooling feedback. Direct wick press-drag-release recovery adds pool-edge alignment, contact coverage, recovery distance, and control feedback. Live dropper spread forecast shows dose count, organism-specific flow direction, current saturation, and pooling risk with text and geometry. Absorbent-wick feedback shows pool-edge targeting, fluid recovery, and a localized balanced-film marker with text and cross-hatched geometry. Guided procedure handoff cue connects the next required instrument to its anatomical target and ' + (procedureProtocol.order || []).length + '-step progress rail with text, shape, and line style. Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry; direct wick recovery maps pool-edge contact, recovery distance, and control' : '') + '. ' + ((activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'Drag on the canvas to practice a stroke, or use the equivalent technique action button.' : (activeInstrument === 'forceps' ? 'Press the opened tissue edge, drag away while monitoring lift and tension, then release inside the solid safe envelope; the equivalent technique action button remains available.' : (activeInstrument === 'pin' ? 'Press an indicated endpoint, drag inward along the shaft while monitoring insertion and alignment, then release when stable; the equivalent technique action button remains available.' : (activeInstrument === 'probe' ? 'Press a visible structure, trace a short path while monitoring pressure, resistance, and contact, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'dropper' ? 'Press the specimen surface, drag a short flow-aligned path while monitoring dose, contact, moisture, and pooling, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'wick' ? 'Press the saline pool edge, drag outward across a short recovery path while monitoring contact, alignment, and control, then release when controlled; the equivalent technique action button remains available.' : 'Select on the canvas or use the equivalent technique action button.')))))) + ' Occluded structures remain available in the structure directory.',
                       'aria-describedby': 'diss-canvas-status diss-canvas-equivalent',
 
                   onPointerMove: function (e) {
@@ -16794,7 +17128,12 @@ var d = labToolData.dissection || {};
                   React.createElement("span", { className: "diss-depth-key__item" }, React.createElement("span", { className: "diss-depth-symbol", "data-depth": "deep", "aria-hidden": "true" }), 'Deep', React.createElement("span", { className: "diss-depth-key__count" }, String(depthAtlasCounts.deep)))
                 ),
 
-                React.createElement("p", { id: "diss-canvas-equivalent", className: "diss-sr-only" }, 'Every canvas selection and drag action has a keyboard or button alternative. Use the structure directory for equivalent anatomical descriptions, the technique action button instead of drawing a stroke, the pin action button instead of dragging a pin, the probe action button instead of tracing a structure, and the pan controls instead of dragging a zoomed view. When the depth atlas is enabled, surface landmarks use circles, mid-depth landmarks use diamonds, and deep landmarks use double rings.'),
+                // This paragraph is in aria-describedby, so all 497 characters of it were spoken on
+                // EVERY focus of the canvas - and focus returns here after every structure
+                // inspection. What a student needs on focus is the promise and where the detail is;
+                // the four-item enumeration and the marker-shape legend do not change and are now
+                // carried, verbatim, by the reachable canvas description instead. 497 -> 100.
+                React.createElement("p", { id: "diss-canvas-equivalent", className: "diss-sr-only" }, 'Every canvas action has a keyboard or button alternative. The specimen canvas description lists them.'),
                 React.createElement("details", { id: "diss-evidence-notebook", className: "diss-evidence", open: splitComparison && !!referenceEvidence },
                   React.createElement("summary", null, 'Evidence notebook · ' + visualEvidence.length + '/' + evidenceFrameLimit + ' frames'),
                   React.createElement("p", { id: "diss-evidence-capacity", className: "diss-evidence__capacity", "data-full": visualEvidence.length >= evidenceFrameLimit ? "true" : "false", role: "status", "aria-live": "polite" },
@@ -16840,7 +17179,14 @@ var d = labToolData.dissection || {};
                   ) : React.createElement("p", null, 'Capture a frame from Lab tools to build a visual record of layers, views, and technique progress.')
                 ),
 
-                  React.createElement("p", { id: "diss-canvas-status", className: "diss-stage__live", "data-tool-status": "true", "data-tone": stageHandoffTone, role: "status", "aria-live": "polite", "aria-atomic": "true" },
+                  // aria-atomic replayed all 221 characters of this line every time any part of it
+                  // changed. Measured with a MutationObserver on all seven live regions: one
+                  // ArrowRight produced three queued announcements totalling ~382 characters, and
+                  // the one the student needs ("Previewing Ventral Skin") was third, behind a full
+                  // replay of the phase text that had not changed. Without atomic, only the node
+                  // that actually changed is announced, so the selection sentence below is its own
+                  // element. Visible text is byte-identical either way.
+                  React.createElement("p", { id: "diss-canvas-status", className: "diss-stage__live", "data-tool-status": "true", "data-tone": stageHandoffTone, role: "status", "aria-live": "polite" },
                     d.quizMode
                       ? (effectiveQuizAnswerMode === 'hotspot'
                         ? 'Practice assessment: ' + quizPrompt + ' Select a visible structure to submit. Arrow keys preview and Enter submits.'
@@ -16848,11 +17194,13 @@ var d = labToolData.dissection || {};
                       : (stageHandoffUsesTool ? ('Tool ' + nextToolDefinition.label + ' · ' + (nextToolReadiness ? nextToolReadiness.label + '. ' + nextToolReadiness.cue : nextActionModel.description) + ' ' + (sel
                         ? ('Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer. ' + sel.fn.split('.')[0] + '.')
                         : 'Select a structure on the specimen or use the accessible structure directory. Arrow keys move between structures when the canvas is focused.'))
-                        : (nextActionModel.phase + ': '
+                        : [nextActionModel.phase + ': '
                           + (procedureLearningCheckpointVisible()
                             ? nextActionModel.description + ' Answer it in the planning checkpoint above the specimen.'
-                            : nextActionModel.title + '. ' + nextActionModel.description)
-                          + (sel ? ' Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer.' : '')))
+                            : nextActionModel.title + '. ' + nextActionModel.description),
+                          // Its own node so browsing a structure announces this sentence alone
+                          // instead of replaying the phase that did not change.
+                          sel ? React.createElement("span", { key: 'diss-status-selection' }, ' Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer.') : null])
                   ),
 
                   React.createElement("details", { className: "diss-shortcuts" },
@@ -17949,9 +18297,8 @@ var d = labToolData.dissection || {};
 
                       }
 
-                      var sysColorsMap = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#94a3b8', muscular: '#dc2626', excretory: '#84cc16', reproductive: '#ec4899' };
 
-                      var dotColor = orgSys ? sysColorsMap[orgSys] : '#94a3b8';
+                      var dotColor = orgSys ? dissectionSystemColor(orgSys, 'onLight') : '#94a3b8';
 
                       var isExplored = (d.exploredOrgans || {})[specimen + '|' + org.id];
                       var directoryExposureState = structureExposureState(org, currentProcedure);
