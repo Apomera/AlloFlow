@@ -37,8 +37,9 @@ const DNT = ['AlloFlow', 'AlloBot', 'AlloHaven', 'StoryForge', 'LitLab', 'PoetTr
 const uiPath = path.join(ROOT, 'ui_strings.js');
 const ui = JSON.parse(fs.readFileSync(uiPath, 'utf8'));
 
-// A section may be nested: "stem.anatomy" addresses ui.stem.anatomy.
-const SECTION_PATH = SECTION.split('.');
+// A section may be nested: "stem.anatomy" addresses ui.stem.anatomy. "--section ." addresses the
+// ROOT of the pack, where the catalog_* keys live as top-level entries.
+const SECTION_PATH = SECTION === '.' ? [] : SECTION.split('.');
 function dig(root, create) {
   let node = root;
   for (const part of SECTION_PATH) {

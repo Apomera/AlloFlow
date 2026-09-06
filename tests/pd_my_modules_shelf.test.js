@@ -207,7 +207,7 @@ describe('PdEditor surface', () => {
     const html = render(CC.PdEditor, { draft, addToast() {}, onBack() {}, onSaved() {}, onRun() {}, onSubmit() {} });
     const results = await audit(html);
     expect(results.violations, results.violations.map(v => v.id).join(', ')).toEqual([]);
-  });
+  }, 20000); // axe over a real render in jsdom: 5-6 s on this host, so the 5 s default flaps
 });
 
 describe('PdHome browse header', () => {
