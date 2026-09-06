@@ -1356,7 +1356,7 @@ const d = labToolData.artStudio || {};
             updMany(contrastPatch);
             var transferLabel = studioThreadPalette.length >= 2 ? 'Thread Kit colors and contrast goal loaded.' : 'Thread Kit contrast goal loaded.';
             if (typeof addToast === 'function') addToast(transferLabel, 'success');
-            if (typeof announceToSR === 'function') announceToSR(transferLabel + ' The selected goal is ' + (studioThreadKit.accessibilityTarget === 7 ? 'AAA 7 to 1.' : 'AA 4.5 to 1.'));
+            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_the_selected_goal_is', '{value1} The selected goal is {value2}'), { value1: transferLabel, value2: (studioThreadKit.accessibilityTarget === 7 ? __alloT('stem.artstudio.sr_aaa_7_to_1', 'AAA 7 to 1.') : __alloT('stem.artstudio.sr_aa_4_5_to_1', 'AA 4.5 to 1.')) }));
           };
           const artStudioSnapshots = Array.isArray(toolSnapshots)
             ? toolSnapshots.filter(function (snapshot) {
@@ -3975,19 +3975,19 @@ const d = labToolData.artStudio || {};
               if (!event.ctrlKey && !event.metaKey && !event.altKey && historyKey === 'p') {
                 event.preventDefault();
                 var nowPaused = engine.togglePause();
-                if (typeof announceToSR === 'function') announceToSR(nowPaused ? 'Watercolor drying paused.' : 'Watercolor drying resumed.');
+                if (typeof announceToSR === 'function') announceToSR(nowPaused ? __alloT('stem.artstudio.sr_watercolor_drying_paused', 'Watercolor drying paused.') : __alloT('stem.artstudio.sr_watercolor_drying_resumed', 'Watercolor drying resumed.'));
                 return;
               }
               if ((event.ctrlKey || event.metaKey) && historyKey === 'z') {
                 event.preventDefault();
                 var didHistoryChange = event.shiftKey ? engine.redo() : engine.undo();
-                if (typeof announceToSR === 'function') announceToSR(didHistoryChange ? (event.shiftKey ? 'Watercolor redone.' : 'Watercolor undone.') : (event.shiftKey ? 'Nothing to redo.' : 'Nothing to undo.'));
+                if (typeof announceToSR === 'function') announceToSR(didHistoryChange ? (event.shiftKey ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_watercolor_undone', 'Watercolor undone.')) : (event.shiftKey ? __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.') : __alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.')));
                 return;
               }
               if ((event.ctrlKey || event.metaKey) && historyKey === 'y') {
                 event.preventDefault();
                 var didRedo = engine.redo();
-                if (typeof announceToSR === 'function') announceToSR(didRedo ? 'Watercolor redone.' : 'Nothing to redo.');
+                if (typeof announceToSR === 'function') announceToSR(didRedo ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.'));
                 return;
               }
               var move = Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.55);
@@ -4729,8 +4729,7 @@ const d = labToolData.artStudio || {};
                 canvas._symmetryKeyboardCursor = keyboardCursor;
                 updateKeyboardCursor(true);
                 if (typeof announceToSR === 'function') {
-                  announceToSR((event.shiftKey ? 'Drew to' : 'Symmetry cursor') + ' x ' + Math.round(keyboardCursor.x) +
-                    ', y ' + Math.round(keyboardCursor.y) + '.');
+                  announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_drew_to_x_y', 'Drew to x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_symmetry_cursor_x_y', 'Symmetry cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
                 }
                 return;
               }
@@ -6430,7 +6429,7 @@ const d = labToolData.artStudio || {};
                 }
                 setArtistCompareIds(ids);
                 upd('artistCompareIds', ids);
-                if (typeof announceToSR === 'function') announceToSR((existingIndex === -1 ? 'Added ' : 'Removed ') + profile.name + (existingIndex === -1 ? ' to comparison' : ' from comparison'));
+                if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(existingIndex === -1 ? __alloT('stem.artstudio.sr_added_to_comparison', 'Added {value1} to comparison') : __alloT('stem.artstudio.sr_removed_from_comparison', 'Removed {value1} from comparison'), { value1: profile.name }));
               }
               function findRightsClearedWorks(profile) {
                 var requestId = ++artistWorksRequestRef.current;
@@ -6812,10 +6811,10 @@ const d = labToolData.artStudio || {};
                   React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 512, height: 512, role: "img", 'aria-label': 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.', 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full max-w-[640px] focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { aspectRatio: '1 / 1', touchAction: d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } })
                 ),
                 React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
-                  React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor undone.' : 'Nothing to undo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
-                  React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor redone.' : 'Nothing to redo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
-                  React.createElement("button", { id: "artstudio-watercolor-pause", type: "button", 'aria-pressed': false, 'data-pause-label': __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying"), 'data-resume-label': __alloT('stem.artstudio.resume_watercolor_drying', "Resume drying"), onClick: function () { var c = document.getElementById('watercolorCanvas'); var isPaused = !!(c && c._watercolorEngine && c._watercolorEngine.togglePause()); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Watercolor drying paused.' : 'Watercolor drying resumed.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100" }, __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying")),
-                  React.createElement("button", { id: "artstudio-watercolor-remove-mask", type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.removeMask()); if (typeof announceToSR === 'function') announceToSR(changed ? 'All watercolor masking fluid removed.' : 'No masking fluid to remove.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100" }, __alloT('stem.artstudio.remove_all_masking_fluid', "Remove all mask")),
+                  React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_undone', 'Watercolor undone.') : __alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
+                  React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
+                  React.createElement("button", { id: "artstudio-watercolor-pause", type: "button", 'aria-pressed': false, 'data-pause-label': __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying"), 'data-resume-label': __alloT('stem.artstudio.resume_watercolor_drying', "Resume drying"), onClick: function () { var c = document.getElementById('watercolorCanvas'); var isPaused = !!(c && c._watercolorEngine && c._watercolorEngine.togglePause()); if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_watercolor_drying_paused', 'Watercolor drying paused.') : __alloT('stem.artstudio.sr_watercolor_drying_resumed', 'Watercolor drying resumed.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100" }, __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying")),
+                  React.createElement("button", { id: "artstudio-watercolor-remove-mask", type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.removeMask()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_all_watercolor_masking_fluid_removed', 'All watercolor masking fluid removed.') : __alloT('stem.artstudio.sr_no_masking_fluid_to_remove', 'No masking fluid to remove.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100" }, __alloT('stem.artstudio.remove_all_masking_fluid', "Remove all mask")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); else saveWatercolorMetadata('', ''); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_canvas_cleared', 'Watercolor canvas cleared.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_brush_reloaded', 'Watercolor brush reloaded.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_dried', 'Watercolor dried.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
@@ -8013,6 +8012,33 @@ const d = labToolData.artStudio || {};
                   if (typeof addToast === 'function') addToast('Unable to export the sculpture model.', 'error');
                 }
               };
+              // Continue in Print Lab (2026-09-05): the sculpture is already the
+              // constrained Prim3D recipe Print Lab designs with, so hand it over
+              // locally instead of asking the student to export and re-import JSON.
+              var sendSculptToPrintLab = function() {
+                if (!recipe) return;
+                var normalized = P3D.normalizeRecipe(recipe);
+                if (!normalized || !normalized.parts || !normalized.parts.length) {
+                  if (typeof addToast === 'function') addToast('Add at least one part before continuing in Print Lab.', 'error');
+                  return;
+                }
+                window.__alloPrintLabPendingHandoff = {
+                  schema: 'alloflow-print-source/1',
+                  id: 'as-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+                  sourceTool: 'artStudio', format: 'RECIPE',
+                  recipe: normalized,
+                  title: normalized.name || 'Art Studio sculpture',
+                  description: 'Created in Art Studio sculpt mode from primitive shapes. Colours and finishes are appearance only; choose the physical scale and filament in Print Lab.',
+                  unitMm: 20
+                };
+                if (ctx && typeof ctx.setStemLabTool === 'function') {
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_handed_to_print_lab', 'Sculpture handed to Print Lab as an editable recipe. Opening Print Lab.'));
+                  ctx.setStemLabTool('printLab');
+                } else {
+                  delete window.__alloPrintLabPendingHandoff;
+                  if (typeof addToast === 'function') addToast('Print Lab is not available here. Export the model JSON and load it in Print Lab instead.', 'info');
+                }
+              };
               var importSculptJson = function(event) {
                 var input = event.currentTarget;
                 var file = input && input.files && input.files[0];
@@ -8147,11 +8173,12 @@ const d = labToolData.artStudio || {};
                         var cnv = _cnvBox.current;
                         if (cnv && cnv._p3d) { cnv._p3d.auto = nextAuto; cnv.dataset.auto = nextAuto ? '1' : '0'; }
                         upd('sculptAuto', nextAuto);
-                        if (typeof announceToSR === 'function') announceToSR(nextAuto ? 'Sculpture auto-rotation resumed.' : 'Sculpture auto-rotation paused.');
+                        if (typeof announceToSR === 'function') announceToSR(nextAuto ? __alloT('stem.artstudio.sr_sculpture_auto_rotation_resumed', 'Sculpture auto-rotation resumed.') : __alloT('stem.artstudio.sr_sculpture_auto_rotation_paused', 'Sculpture auto-rotation paused.'));
                       }
                     }, sculptAuto ? '⏸ ' + __alloT('stem.artstudio.pause', 'Pause') : '▶ ' + __alloT('stem.artstudio.resume', 'Resume')),
                     React.createElement("button", { className: mini + " flex-1", "aria-label": "Save sculpture picture as PNG", onClick: doExportPng }, '📷 ' + __alloT('stem.artstudio.sculpt_export', 'Save picture')),
                     React.createElement("button", { className: mini + " flex-1", "aria-label": "Export sculpture JSON model", disabled: !recipe, onClick: doExportSculptJson }, '⬇ Model'),
+                    React.createElement("button", { className: mini + " flex-1", "aria-label": "Continue this sculpture in Print Lab", disabled: !recipe, onClick: sendSculptToPrintLab }, '🖨 ' + __alloT('stem.artstudio.sculpt_print_lab', 'Print Lab')),
                     React.createElement("label", { className: mini + " flex-1 cursor-pointer text-center px-2 py-2 focus-within:ring-4 focus-within:ring-pink-600 focus-within:ring-offset-2" }, '⬆ Load model',
                       React.createElement("input", { type: "file", accept: ".json,.sculpture.json,application/json", className: "sr-only", "aria-label": "Import sculpture JSON model", onChange: importSculptJson })
                     ),
@@ -8519,7 +8546,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_spirograph_png', "Export spirograph as PNG"), onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_spirograph_png_exported', 'Spirograph PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
 
-                      React.createElement("button", { "aria-label": d.spiroRainbow ? "Use a single color for the spirograph" : "Use a rainbow color progression for the spirograph", "aria-pressed": !!d.spiroRainbow, onClick: function () { var nextRainbow = !d.spiroRainbow; upd('spiroRainbow', nextRainbow); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? 'Rainbow spirograph enabled.' : 'Single-color spirograph enabled.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-indigo-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
+                      React.createElement("button", { "aria-label": d.spiroRainbow ? "Use a single color for the spirograph" : "Use a rainbow color progression for the spirograph", "aria-pressed": !!d.spiroRainbow, onClick: function () { var nextRainbow = !d.spiroRainbow; upd('spiroRainbow', nextRainbow); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? __alloT('stem.artstudio.sr_rainbow_spirograph_enabled', 'Rainbow spirograph enabled.') : __alloT('stem.artstudio.sr_single_color_spirograph_enabled', 'Single-color spirograph enabled.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-indigo-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
                     ),
 
@@ -8675,7 +8702,7 @@ const d = labToolData.artStudio || {};
                   onClick: function () {
                     var isPaused = d.genPaused === undefined ? reducedMotion : !!d.genPaused;
                     upd('genPaused', !isPaused);
-                    if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Generative animation resumed.' : 'Generative animation paused.');
+                    if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_generative_animation_resumed', 'Generative animation resumed.') : __alloT('stem.artstudio.sr_generative_animation_paused', 'Generative animation paused.'));
                   },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold " + ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? 'bg-amber-100 text-amber-700' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200')
                 }, (d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
@@ -9023,9 +9050,7 @@ const d = labToolData.artStudio || {};
 
                       updateGenCursor(true);
 
-                      if (typeof announceToSR === 'function') announceToSR((event.shiftKey ? 'Created particle burst at' : 'Generative cursor') +
-
-                        ' x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_created_particle_burst_at_x_y', 'Created particle burst at x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_generative_cursor_x_y', 'Generative cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
 
                       return;
 
@@ -9229,7 +9254,7 @@ const d = labToolData.artStudio || {};
                   onClick: function () {
                     var isPaused = d.spinPaused === undefined ? reducedMotion : !!d.spinPaused;
                     upd('spinPaused', !isPaused);
-                    if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Spin art animation resumed.' : 'Spin art animation paused.');
+                    if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_spin_art_animation_resumed', 'Spin art animation resumed.') : __alloT('stem.artstudio.sr_spin_art_animation_paused', 'Spin art animation paused.'));
                   },
                   className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold " + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
                 }, (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
@@ -9506,9 +9531,7 @@ const d = labToolData.artStudio || {};
 
                       updateSpinCursor(true);
 
-                      if (typeof announceToSR === 'function') announceToSR((event.shiftKey ? 'Added paint at' : 'Spin art cursor') +
-
-                        ' x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_added_paint_at_x_y', 'Added paint at x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_spin_art_cursor_x_y', 'Spin art cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
 
                     } else if (event.key === 'Enter' || event.key === ' ') {
 
@@ -9722,7 +9745,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_string_art_png', "Export string art as PNG"), onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_string_art_png_exported', 'String-art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
 
-                      React.createElement("button", { "aria-label": d.strRainbow ? "Use a single thread color" : "Use a rainbow thread progression", "aria-pressed": !!d.strRainbow, onClick: function () { var nextRainbow = !d.strRainbow; upd('strRainbow', nextRainbow); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? 'Rainbow threads enabled.' : 'Single-color threads enabled.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + (d.strRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-rose-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
+                      React.createElement("button", { "aria-label": d.strRainbow ? "Use a single thread color" : "Use a rainbow thread progression", "aria-pressed": !!d.strRainbow, onClick: function () { var nextRainbow = !d.strRainbow; upd('strRainbow', nextRainbow); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? __alloT('stem.artstudio.sr_rainbow_threads_enabled', 'Rainbow threads enabled.') : __alloT('stem.artstudio.sr_single_color_threads_enabled', 'Single-color threads enabled.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + (d.strRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-rose-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
                     ),
 
@@ -9978,7 +10001,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? "Resume Op Art animation" : "Pause Op Art animation", "aria-describedby": "artstudio-op-motion-status", onClick: function () { var isPaused = d.opPaused === undefined ? reducedMotion : !!d.opPaused; upd('opPaused', !isPaused); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Op Art animation resumed.' : 'Op Art animation paused.'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-800 border border-amber-600 hover:bg-amber-100') }, (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
+                      React.createElement("button", { "aria-label": (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? "Resume Op Art animation" : "Pause Op Art animation", "aria-describedby": "artstudio-op-motion-status", onClick: function () { var isPaused = d.opPaused === undefined ? reducedMotion : !!d.opPaused; upd('opPaused', !isPaused); if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_op_art_animation_resumed', 'Op Art animation resumed.') : __alloT('stem.artstudio.sr_op_art_animation_paused', 'Op Art animation paused.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-800 border border-amber-600 hover:bg-amber-100') }, (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_op_art_png', "Export Op Art as PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_op_art_png_exported', 'Op Art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
 
@@ -12361,9 +12384,7 @@ const d = labToolData.artStudio || {};
 
                             if (typeof announceToSR === 'function') {
 
-                              announceToSR((event.shiftKey ? 'Drew depth to' : 'Depth cursor') + ' x ' + Math.round(keyboardCursor.x) +
-
-                                ', y ' + Math.round(keyboardCursor.y) + '.');
+                              announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_drew_depth_to_x_y', 'Drew depth to x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_depth_cursor_x_y', 'Depth cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
 
                             }
 
@@ -12868,9 +12889,7 @@ const d = labToolData.artStudio || {};
 
                             updateAnimDepthCursor(true);
 
-                            if (typeof announceToSR === 'function') announceToSR((event.shiftKey ? 'Drew animation depth to' : 'Animation depth cursor') +
-
-                              ' x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+                            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_drew_animation_depth_to_x_y', 'Drew animation depth to x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_animation_depth_cursor_x_y', 'Animation depth cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
 
                             return;
 
