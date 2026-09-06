@@ -2343,14 +2343,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           renderer.domElement.addEventListener('webglcontextlost', function(event) {
             event.preventDefault();
             host.setAttribute('data-flight-error', 'true');
-            if (statusNode) statusNode.textContent = 'The 3D context paused. Switch tabs and return to restart the flight view.';
+            if (statusNode) statusNode.textContent = t('stem.migration.flight_context_lost', 'The 3D context paused. Switch tabs and return to restart the flight view.');
           });
 
           host.setAttribute('data-flight-ready', 'true');
           host.removeAttribute('data-flight-error');
         } catch (error) {
           host.setAttribute('data-flight-error', 'true');
-          if (statusNode) statusNode.textContent = '3D flight is unavailable on this device. The V-Formation and Routes tabs remain fully usable.';
+          if (statusNode) statusNode.textContent = t('stem.migration.flight_unavailable_device', '3D flight is unavailable on this device. The V-Formation and Routes tabs remain fully usable.');
           return;
         }
 
@@ -2430,7 +2430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         _f3dHostRef.current = host;
         var token = ++_f3dBootRef.current;
         var statusNode = host.querySelector('.migration-flight-stage-status');
-        if (statusNode) statusNode.textContent = 'Preparing the 3D migration corridor...';
+        if (statusNode) statusNode.textContent = t('stem.migration.flight_preparing', 'Preparing the 3D migration corridor...');
 
         function start(THREE) {
           if (token !== _f3dBootRef.current || !host.isConnected) return;
@@ -2444,16 +2444,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         if (window.StemLab && typeof window.StemLab.ensureThree === 'function') {
           window.StemLab.ensureThree({
             orbit: false,
-            failMessage: 'The 3D migration view could not load. The 2D formation and route investigations remain available.'
+            failMessage: t('stem.migration.flight_fail_message', 'The 3D migration view could not load. The 2D formation and route investigations remain available.')
           }).then(start).catch(function() {
             if (token !== _f3dBootRef.current || !host.isConnected) return;
             host.setAttribute('data-flight-error', 'true');
-            if (statusNode) statusNode.textContent = '3D flight could not load. Use the V-Formation or Migration Routes tab for the complete 2D investigations.';
+            if (statusNode) statusNode.textContent = t('stem.migration.flight_load_failed', '3D flight could not load. Use the V-Formation or Migration Routes tab for the complete 2D investigations.');
           });
           return;
         }
         host.setAttribute('data-flight-error', 'true');
-        if (statusNode) statusNode.textContent = 'The shared 3D engine is unavailable. Use the V-Formation or Migration Routes tab.';
+        if (statusNode) statusNode.textContent = t('stem.migration.flight_engine_missing', 'The shared 3D engine is unavailable. Use the V-Formation or Migration Routes tab.');
       }, []);
 
       useEffect(function() {
@@ -7271,7 +7271,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         world:      { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83C\uDF0D', title: t('stem.migration.world_flyways_title', 'The eight global flyways'), hint: t('stem.migration.world_flyways_hint', 'Migration is not a North American story and not only a bird story. Eight flyways carry waterbirds across the whole planet, and insects, fish, reptiles and mammals have arrived at the same strategy independently.') },
         aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: t('stem.migration.aerodynamics_of_bird_flight', 'Aerodynamics of bird flight'), hint: t('stem.migration.wing_shape_aspect_ratio_camber_tunes_l', 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 50\u201380 Hz wingbeat.') },
         navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: t('stem.migration.weather_navigation', 'Weather + navigation'),       hint: t('stem.migration.birds_use_multiple_cues_simultaneously', 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.') },
-        inquiry:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD2C', title: t('stem.migration.energy_inquiry', 'Energy inquiry'), hint: t('stem.migration.energy_inquiry_hint', 'Test how wingspan, body mass, wind, formation, and distance combine to determine whether a migration leg is feasible.') }
+        // Own key, not the tab label's: one key carrying both "Energy Inquiry"
+        // and "Energy inquiry" means a translator sees only one of them and the
+        // other call site silently ships the wrong string. Every other hero
+        // here already has its own title key.
+        inquiry:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD2C', title: t('stem.migration.energy_inquiry_title', 'Energy inquiry'), hint: t('stem.migration.energy_inquiry_hint', 'Test how wingspan, body mass, wind, formation, and distance combine to determine whether a migration leg is feasible.') }
       };
       var meta = TAB_META[tab] || TAB_META.flight3d;
       var tabHero = h('div', {
