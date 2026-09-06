@@ -147,3 +147,9 @@ The copied text ends with a line stating that the findings are described at the 
 The copy goes through the shell's alloCopyText helper rather than the Clipboard API directly. Gemini Canvas refuses navigator.clipboard by permissions policy, so a direct call would fail on every click for a Canvas user while passing every jsdom and browser test. A standalone fallback creates a hidden textarea and uses execCommand, and because that needs the click's own activation the text is built synchronously with nothing awaited in between. A test asserts all of this, including that no await or fetch sits between the click and the copy.
 
 The result line is scoped to the card it belongs to, so a success message from one card does not appear on another.
+
+## Keeping focus after an answer
+
+September 5, 2026. A disabled button leaves the tab order. In the headline check and the Stimulation Lab, answering therefore removed the element the keyboard user was standing on, dropped focus to the document, and left the feedback that had just appeared below reachable only by tabbing again from the top of the tool. The authored-card checks in the same file already avoided this by marking answered choices aria-disabled instead, which keeps them focusable and still announces them as unavailable.
+
+Both widgets now use that pattern, with a guard so a second press cannot overwrite a locked answer. Nothing about the questions, the feedback, or the scoring changed. This was a defect in code added earlier in the day, and the Stimulation Lab shared it.

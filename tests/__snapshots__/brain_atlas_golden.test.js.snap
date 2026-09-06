@@ -182,7 +182,7 @@ exports[`brainAtlas render goldens > view: neuromyths renders + pins a digest 1`
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 194,
-  "sha": "ee997a614e775536",
+  "sha": "47daee0349ec4cfb",
   "svgs": 0,
 }
 `;
@@ -237,7 +237,7 @@ exports[`brainAtlas render goldens > view: stimulate renders + pins a digest 1`]
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 177,
-  "sha": "e376c25167d9b60d",
+  "sha": "c16a9b161fa71cba",
   "svgs": 0,
 }
 `;

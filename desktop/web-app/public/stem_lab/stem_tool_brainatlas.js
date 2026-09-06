@@ -11491,8 +11491,9 @@ var d = labToolData.brainAtlas || {};
                     verdictKeys.map(function (vk) {
                       var meta = BRAIN_ATLAS_MYTH_VERDICTS[vk];
                       var isCorrect = vk === hl.verdict; var wasChosen = hlShow && hlFb.chosen === vk;
-                      return React.createElement("button", { key: vk, type: "button", role: "radio", "aria-checked": wasChosen ? "true" : "false", disabled: hlShow, "data-brainatlas-headline-choice": vk,
+                      return React.createElement("button", { key: vk, type: "button", role: "radio", "aria-checked": wasChosen ? "true" : "false", "aria-disabled": hlShow ? "true" : "false", "data-brainatlas-headline-choice": vk,
                         onClick: function () {
+                          if (hlShow) return;
                           upd('mythHeadlineFeedback', { id: hl.id, chosen: vk, correct: isCorrect });
                           if (typeof announceToSR === 'function') announceToSR(isCorrect ? (t('stem.brainatlas.headline_fits', 'Yes, that verdict fits.') || 'Yes, that verdict fits.') : (t('stem.brainatlas.headline_different', 'The evidence points to a different verdict.') || 'The evidence points to a different verdict.'));
                         },
@@ -11530,8 +11531,8 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("div", { role: "radiogroup", "aria-label": t('stem.brainatlas.predict_the_effect_of_stimulation', "Predict the effect of stimulation"), className: "grid grid-cols-1 gap-1.5" },
                       sc.options.map(function (optText, oi) {
                         var isCorrect = oi === sc.correctIdx; var wasChosen = show && fb.chosen === oi;
-                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
-                          onClick: function () { upd('stimFeedback', { chosen: oi, correct: isCorrect }); if (isCorrect) upd('stimScore', (d.stimScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
+                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, "aria-disabled": show ? "true" : "false",
+                          onClick: function () { if (show) return; upd('stimFeedback', { chosen: oi, correct: isCorrect }); if (isCorrect) upd('stimScore', (d.stimScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] font-medium border-2 transition-all " +
                             (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-amber-300 text-slate-600 hover:bg-amber-50 active:scale-[0.97]')
                         }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optText);
