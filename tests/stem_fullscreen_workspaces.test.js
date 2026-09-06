@@ -22,8 +22,8 @@ describe('STEM fullscreen workspaces', () => {
     expect(text).toContain("id: 'geoworld-fs-workspace'");
     expect(text).toContain("document.getElementById('geoworld-fs-workspace')");
     expect(text).toContain("id: 'geoworld-fs-wrap'");
-    expect(text).toContain("'aria-label': 'Place block'");
-    expect(text.indexOf("id: 'geoworld-fs-workspace'")).toBeLessThan(text.indexOf("'aria-label': 'Place block'"));
+    expect(text).toContain("'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block')");
+    expect(text.indexOf("id: 'geoworld-fs-workspace'")).toBeLessThan(text.indexOf("'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block')"));
   });
 
   it('offers fullscreen Particle Lab condition sliders with accessible state', () => {
