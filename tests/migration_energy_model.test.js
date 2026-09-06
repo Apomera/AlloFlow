@@ -111,6 +111,22 @@ describe('Migration Lab flight-energy model', () => {
     expect(saving('not-a-formation')).toBe(0);
   });
 
+  it('agrees with the record the tool leads with', () => {
+    // The Bar-tailed Godwit's 8,425 mi non-stop flight is the tool's headline
+    // claim, and the comparison table lists the bird at 300 g. Run the tool's
+    // own physics at its own numbers and a 300 g bird does not get there even
+    // on 55% fat -- which is correct, and is exactly why the species card now
+    // says it leaves at roughly twice its normal weight. Both halves are
+    // pinned, because a model that made the record look easy at lean mass
+    // would be quietly wrong in the other direction.
+    const em = tool._testing.flightEnergy;
+    const km = 8425 * 1.609344;
+    const lean = em({ massKg: 0.3, formation: 'solo', distanceKm: km, fatFraction: 0.55 });
+    const fattened = em({ massKg: 0.6, formation: 'solo', distanceKm: km, fatFraction: 0.55 });
+    expect(lean.ratio, 'a lean godwit should fall short').toBeLessThan(1);
+    expect(fattened.ratio, 'a fattened godwit should make it').toBeGreaterThanOrEqual(1);
+  });
+
   it('never lets a headwind drive the cost to infinity', () => {
     const em = tool._testing.flightEnergy;
     const gale = em({ massKg: 1, wingspanM: 1.2, formation: 'V', distanceKm: 1000, headwindMs: 40 });

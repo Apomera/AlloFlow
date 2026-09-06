@@ -586,7 +586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     { id: 'peregrine', name: 'Peregrine Falcon', emoji: '\uD83E\uDD85', flyway: 'central', distance: 15500, speed: 60, altitude: 3500, breedingRange: 'Arctic tundra', winterRange: 'South America', funFact: 'The Peregrine Falcon is the fastest animal on Earth, reaching over 240 mph (386 km/h) in a hunting stoop (dive).', formation: 'Solo', weight: '0.5-1.5 kg' },
     { id: 'sandhill_crane', name: 'Sandhill Crane', emoji: '\uD83E\uDDA9', flyway: 'central', distance: 6000, speed: 35, altitude: 6000, breedingRange: 'Northern US & Canada', winterRange: 'Southern US & Mexico', funFact: 'Sandhill Cranes are among the oldest living bird species, with fossils dating back 2.5 million years. They dance to bond with mates.', formation: 'V-formation', weight: '3-5 kg' },
     { id: 'monarch', name: 'Monarch Butterfly', emoji: '\uD83E\uDD8B', flyway: 'central', distance: 3000, speed: 12, altitude: 1200, breedingRange: 'Eastern North America', winterRange: 'Central Mexico (oyamel fir forests)', funFact: 'No single Monarch makes the full round trip. It takes 4 generations to complete the cycle. Only the "super generation" migrates south.', formation: 'Swarm', weight: '0.5 g' },
-    { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 18000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow.', formation: 'V-formation', weight: '300 g' }
+    { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 18000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow. It could only do it by leaving at roughly twice its normal weight: run the numbers at a lean 300 g and the fuel runs out well short of Tasmania.', formation: 'V-formation', weight: '300 g' }
   ];
 
   // ── Wing types for aerodynamics tab ──
@@ -1654,7 +1654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         name: t('stem.migration.species_bartailed_godwit_name', 'Bar-tailed Godwit'),
         breedingRange: t('stem.migration.species_bartailed_godwit_breedingrange', 'Alaska'),
         winterRange: t('stem.migration.species_bartailed_godwit_winterrange', 'New Zealand'),
-        funFact: t('stem.migration.species_bartailed_godwit_funfact', 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow.'),
+        funFact: t('stem.migration.species_bartailed_godwit_funfact', 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow. It could only do it by leaving at roughly twice its normal weight: run the numbers at a lean 300 g and the fuel runs out well short of Tasmania.'),
         formation: t('stem.migration.species_bartailed_godwit_formation', 'V-formation')
       })
     ];
@@ -5468,7 +5468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 )
               )
             ),
-            h('p', { className: 'text-[0.6875rem] mt-2 italic ' + textMuted }, t('stem.migration.distances_are_approximate_annual_migra', 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude.'))
+            h('p', { className: 'text-[0.6875rem] mt-2 italic ' + textMuted }, t('stem.migration.distances_are_approximate_annual_migra', 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude. Weights are ordinary body mass: several of these species roughly double it in fat before departure, which is what pays for the long crossings.'))
           ),
 
           // Technology & tracking
