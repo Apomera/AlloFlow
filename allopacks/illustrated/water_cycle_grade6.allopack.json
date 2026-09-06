@@ -8,7 +8,7 @@
     "gradeLevel": "6th Grade",
     "createdAt": "2026-07-20T00:00:00.000Z",
     "imageShotList": "allopacks/water_cycle_grade6.IMAGES.md",
-    "standards": "NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (domain vocabulary)",
+    "standards": "NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of symbols, key terms, and domain-specific words as used in a scientific context)",
     "sourcePack": "allopacks/water_cycle_grade6.allopack.json",
     "sourceAuthor": "AlloFlow flagship (authored by Claude, reviewed by A. Pomeranz)",
     "illustrations": {

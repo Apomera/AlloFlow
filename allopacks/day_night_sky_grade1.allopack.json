@@ -6,7 +6,7 @@
     "license": "CC-BY-4.0",
     "language": "en",
     "gradeLevel": "1st Grade",
-    "standards": "NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); NGSS 1-ESS1-2 (make observations at different times of day to describe patterns of change); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions about key details in a text); CCSS.ELA-LITERACY.SL.1.1 (participate in conversations about grade 1 topics with peers and adults)",
+    "standards": "NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions about key details in a text); CCSS.ELA-LITERACY.SL.1.1 (participate in collaborative conversations about grade 1 topics with peers and adults). NOTE: this pack covers the daily half of 1-ESS1-1. NGSS 1-ESS1-2 concerns seasonal daylight, which this pack does not teach, so it is not claimed.",
     "createdAt": "2026-09-05T21:10:00.000Z",
     "imageShotList": "allopacks/day_night_sky_grade1.IMAGES.md"
   },
