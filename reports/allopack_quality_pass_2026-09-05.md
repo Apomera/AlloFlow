@@ -292,6 +292,31 @@ The checks built in passes two through nine earned their keep against content wr
 One defect got through every gate and was caught by eye: a `bublets` typo sitting beside `bullets` in an anchor chart. The JSON stayed valid and every shape check passed, because an unknown extra key is not something any of them look for.
 
 All nine packs pass the audit at zero flags and load clean in the deployed app.
+## Thirteenth pass: fact-checking the packs written after the first read
+
+The first pass did a close factual read of the original 21 packs. The 17 written since have been checked by every gate in this report and by nothing at all for truth. Every number and name in them rested on the author's recall, which is exactly the thing not to trust.
+
+So: extract every sentence in those packs carrying a number, a date, a proper name or a quantity word, and check them one at a time. Fifty-seven claims.
+
+**Fifty-six held up.** The Moon's synodic cycle at about 29.5 days, alongside the sidereal 27 days for one orbit — two different numbers that the pack correctly keeps distinct. The Sun being about 400 times wider than the Moon and about 400 times further away, which is why an eclipse fits so neatly. The far side first photographed in 1959. Africa about fourteen times the area of Greenland. Van Helmont's willow gaining about 74 kg over five years while the soil lost almost nothing. Champollion publishing the decipherment in 1822. The Giza workers' villages with their bread ovens and healed fractures. A litre being exactly 1000 cubic centimetres. Lavoisier in the 1770s. Wolves back in Yellowstone in 1995. Twelve colonies at the First Continental Congress in 1774.
+
+### The one that did not
+
+A concept-sort card in the argument pack read: **"A 2019 survey found 62 percent of families eat out."**
+
+There is no such survey. The year, the percentage and the finding were invented, and they were invented in a lesson whose entire subject is how to tell a supported claim from an unsupported one. It sat in the Evidence category, presented to students as an example of what good evidence looks like.
+
+Nothing could have caught it. It passed every shape check, every reading-level check and every game check, because it is perfectly well-formed. It reads as authoritative precisely because it has the shape of a citation.
+
+The card now reads "Our class survey found 19 of 28 families eat out weekly" — still concrete, still genuinely evidence for the sort, and obviously local rather than borrowed authority. The other two evidence cards in that sort were already local ("forty students used the library after three last week"), which is what made the invented one stand out.
+
+### The check that came out of it
+
+The audit now flags **citation-shaped claims**: a year next to a percentage, or the phrase "a 2019 survey" and its relatives. It cannot tell a real statistic from an invented one — nothing can, from inside the file — so it does not try. It flags the shape and asks a human to either attach a real source or reword it as something local and obviously illustrative.
+
+The false-positive risk is low: one hit across 38 packs, and that hit was the defect. It was calibrated by putting the fabricated sentence back and confirming the flag fires.
+
+This is the fourth check in this report to be judged on its false-positive rate before shipping, and the first to survive because the rate was genuinely near zero. It belongs in the audit for a specific reason: these packs are AI-authored and the catalog has no sourcing mechanism, so a sentence that looks like a citation is a standing liability rather than an occasional slip.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
