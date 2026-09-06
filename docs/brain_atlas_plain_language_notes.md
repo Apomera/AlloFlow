@@ -218,3 +218,15 @@ The part worth the care is what happens when there is no counterpart. An empty s
 
 Checked in Chromium at 1280, 390 and 320 CSS px: the button stays 44 px, the note wraps under it on a phone, and the row never spills.
 
+## Finishing the reading-comfort pass
+
+September 6, 2026. The June review found a lot of 9 and 10 px text. An earlier pass had already raised the psychopharmacology guide, so the intro reads at 13 px, the safety notice at 12, the fact rows at 12 and the cautions and tags at 11. It stopped short of the stimulation-specific blocks, two toggle buttons, and the general overview notes, which were still at 9 and 10.
+
+Sixteen rules moved: prose blocks to 13 px, compact controls and count badges to 12 px. The stimulation term note, which explains a piece of vocabulary in a tinted callout, went from 9 px to 13. The compare and depth toggle buttons, the compare help and count and clear controls, the treatment builder slots, and the preset descriptions went to 12. So did the overview metric note and the route count.
+
+The uppercase category labels were left where they are. The review says to reserve uppercase for short category labels, not that those labels have to grow, and they are two or three words each.
+
+The sizes above were read off getComputedStyle in Chromium rather than off the source. Several of these selectors are declared more than once in the same stylesheet, and source order decides which one a learner actually sees, so reading the source would have given the wrong answer for at least six of them.
+
+Checked afterwards at 1280, 390 and 320 CSS px with the stimulation view and its treatment guide open: no clipped box anywhere, and nothing newly outside the viewport. The route cards do sit past the right edge, but they always have; that rail scrolls horizontally by design.
+
