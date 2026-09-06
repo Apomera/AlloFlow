@@ -8410,6 +8410,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     icon: '🦅',
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Fills {value1}-style placeholders, so a translation can reorder them.
+      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React, h = React.createElement;
       var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useMemo = React.useMemo;
       var setToolData = ctx.setToolData, toolData = ctx.toolData;
@@ -9315,8 +9317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       });
                     },
                     className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]',
-                    'aria-label': 'Jump back to ' + sec.label
-                  }, sec.icon + ' ' + sec.label);
+                    'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_jump_back_to', 'Jump back to {value1}'), { value1: sec.label })}, sec.icon + ' ' + sec.label);
                 })
               )
             );
@@ -9345,8 +9346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   return h('span', {
                     className: 'rh-hub-flight-history-trend',
                     'data-trend-state': trendState,
-                    'aria-label': 'Latest run compared with previous: ' + delta
-                  }, (trendState === 'up' ? '↑ ' : trendState === 'down' ? '↓ ' : '→ ') + delta);
+                    'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_latest_run_compared_with_previous', 'Latest run compared with previous: {value1}'), { value1: delta })}, (trendState === 'up' ? '↑ ' : trendState === 'down' ? '↓ ' : '→ ') + delta);
                 })()
               ),
               h('div', { className: 'rh-hub-flight-history-list' },
@@ -9379,8 +9379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         });
                         rhAnnounce('Loaded ' + missionName + ' setup');
                       },
-                      'aria-label': 'Review ' + speciesName + ' ' + missionName + ' setup'
-                    }, 'Review')
+                      'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_review_setup', 'Review {value1} {value2} setup'), { value1: speciesName, value2: missionName })}, 'Review')
                   );
                 })
               )
@@ -9730,8 +9729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 className: 'text-left p-4 rounded-xl border transition-all ' + (isActive
                   ? 'bg-gradient-to-br from-amber-800/50 to-orange-800/50 border-amber-400/70 ring-2 ring-amber-400/50'
                   : 'transition-colors bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/50 hover:border-amber-600/40 active:scale-[0.97]'),
-                'aria-label': 'Select ' + s.name
-              },
+                'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_select', 'Select {value1}'), { value1: s.name })},
                 h('div', { className: 'flex items-start gap-3' },
                   h('div', { className: 'text-3xl' }, s.emoji),
                   h('div', { className: 'flex-1' },
@@ -9861,8 +9859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('button', {
                 onClick: function() { setRH({ activeSection: 'hunt' }); },
                 className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-red-600 to-orange-700 text-white hover:from-red-700 hover:to-orange-700 transition-all',
-                'aria-label': 'Hunt as ' + sp.name
-              }, '🎯 Hunt as ' + sp.name + ' →')
+                'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_hunt_as', 'Hunt as {value1}'), { value1: sp.name })}, '🎯 Hunt as ' + sp.name + ' →')
             )
           ),
 
@@ -10243,7 +10240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'rh-flight-progress-pulse-head' }, 'Species progress'),
               h('div', { className: 'rh-flight-progress-pulse-copy' }, copy)
             ),
-            h('div', { className: 'rh-flight-progress-pulse-meter', 'aria-label': 'Current run ' + currentRun + ' catches, best run ' + bestRun + ' catches' },
+            h('div', { className: 'rh-flight-progress-pulse-meter', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_current_run_catches_best_run_catches', 'Current run {value1} catches, best run {value2} catches'), { value1: currentRun, value2: bestRun })},
               h('strong', { className: 'rh-flight-progress-pulse-value' }, currentRun + ' / ' + bestRun),
               h('span', { className: 'rh-flight-progress-pulse-label' }, 'Run / best')
             )
@@ -10515,8 +10512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       'data-target-state': simUI.targetState,
                       'data-raptor-target-guidance': 'true',
                       'aria-hidden': 'true',
-                      'aria-label': 'Target guidance: ' + simUI.targetHint
-                    }, simUI.targetHint),
+                      'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_target_guidance', 'Target guidance: {value1}'), { value1: simUI.targetHint })}, simUI.targetHint),
                     simUI.targetAnnouncement && h('div', {
                       className: 'sr-only',
                       role: 'status',
@@ -10807,7 +10803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             })
                           )
                         ),
-                        controlScheme !== 'custom' && h('ul', { className: 'rh-flight-keymap', 'data-raptor-keymap': 'true', 'aria-label': 'Key bindings for ' + activeScheme.label },
+                        controlScheme !== 'custom' && h('ul', { className: 'rh-flight-keymap', 'data-raptor-keymap': 'true', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_key_bindings_for', 'Key bindings for {value1}'), { value1: activeScheme.label })},
                           raptorSchemeBindings(activeScheme).map(function(row) {
                             return h('li', { key: row.action },
                               row.keys.map(function(key, index) { return h(React.Fragment, { key: key }, index > 0 && ' or ', h('kbd', null, key)); }),
@@ -19216,8 +19212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('button', {
               onClick: function() { setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false }); rhAnnounce('Quiz started · ' + total + ' questions'); },
               className: 'w-full px-5 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all',
-              'aria-label': 'Start quiz with ' + total + ' questions'
-            }, '▶ Start ' + total + '-question quiz')
+              'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_start_quiz_with_questions', 'Start quiz with {value1} questions'), { value1: total })}, '▶ Start ' + total + '-question quiz')
           );
         }
 
@@ -19253,8 +19248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   setQuiz({ started: true, missedReviewMode: true, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
                 },
                 className: 'px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 transition-all',
-                'aria-label': 'Review ' + quizState.missedIds.length + ' missed questions only'
-              }, '🎯 Review ' + quizState.missedIds.length + ' Missed') : null,
+                'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_review_missed_questions_only', 'Review {value1} missed questions only'), { value1: quizState.missedIds.length })}, '🎯 Review ' + quizState.missedIds.length + ' Missed') : null,
               h('button', {
                 onClick: function() {
                   var newBest = Math.max(quizState.bestScore, quizState.score);
@@ -19826,8 +19820,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           key: oi,
                           onClick: function() { identifyBone(activeBone, guessId); setPD({ activeBone: null }); },
                           className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 transition-all border border-slate-700 active:scale-[0.97]',
-                          'aria-label': 'Identify as ' + opt
-                        }, opt);
+                          'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_identify_as', 'Identify as {value1}'), { value1: opt })}, opt);
                       })
                     )
                   );
@@ -20165,8 +20158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   key: optId,
                   onClick: function() { submitGuess(optId); },
                   className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-800/50 text-amber-200 hover:bg-amber-900/40 hover:text-amber-100 border border-slate-700 transition-all active:scale-[0.97]',
-                  'aria-label': 'Guess ' + optPart.label
-                }, optPart.label);
+                  'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_guess', 'Guess {value1}'), { value1: optPart.label })}, optPart.label);
               })
             ) : h('div', { className: 'space-y-2' },
               h('div', { className: 'p-3 rounded-lg ' + (quizResult.correct ? 'bg-emerald-900/40 border border-emerald-700/50' : 'bg-red-900/40 border border-red-700/50') },
@@ -21758,8 +21750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', { key: p.label,
                   onClick: function() { setPR({ mass: p.mass, wingspan: p.wingspan, wingArea: p.wingArea }); rhAnnounce('Loaded ' + p.label + ' dimensions'); },
                   className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 hover:text-amber-100 active:scale-[0.97]',
-                  'aria-label': 'Load ' + p.label + ' dimensions'
-                }, p.label);
+                  'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_load_dimensions', 'Load {value1} dimensions'), { value1: p.label })}, p.label);
               })
             )
           )
@@ -22702,7 +22693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('aside', { className: 'rh-call-dossier', 'data-call-dossier': sp.id, 'aria-labelledby': 'rh-call-dossier-title' },
               h('div', { className: 'rh-call-dossier-head' },
                 h('div', null, h('div', { className: 'rh-call-detail-kicker' }, lens.question), h('h3', { id: 'rh-call-dossier-title' }, sp.name)),
-                h('div', { className: 'rh-call-code', 'aria-label': 'Profile ' + sp.code }, sp.code)
+                h('div', { className: 'rh-call-code', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_profile', 'Profile {value1}'), { value1: sp.code })}, sp.code)
               ),
               h('div', { className: 'rh-call-meta-row' },
                 h('span', { className: 'rh-call-meta' }, groupLabel),
@@ -22719,7 +22710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'rh-call-callout' }, h('span', null, 'Communication contexts'), h('p', null, contextLabels.join(' · '))),
                 h('div', { className: 'rh-call-callout' }, h('span', null, 'Evidence boundary'), h('p', null, sp.caveat))
               ),
-              h('a', { className: 'rh-call-source', href: sp.source, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Open ' + sp.sourceLabel + ' in a new tab', 'data-call-source-link': sp.id }, 'Open ' + sp.sourceLabel + ' ↗'),
+              h('a', { className: 'rh-call-source', href: sp.source, target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_open_in_a_new_tab', 'Open {value1} in a new tab'), { value1: sp.sourceLabel }), 'data-call-source-link': sp.id }, 'Open ' + sp.sourceLabel + ' ↗'),
               h('p', { className: 'rh-call-reviewed' }, 'Profile reviewed ' + RAPTOR_CALLS.reviewed + '. Archive recordings vary by individual, age, place, season, and recording conditions.')
             )
           ),
@@ -24581,7 +24572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 v.keyStructures.map(function(structure, i) {
                   var point = visual.hotspots[i] || [50, 50];
                   var selected = focusIdx === i;
-                  return h('button', { key: i, type: 'button', className: 'rh-anatomy-hotspot', style: { left: point[0] + '%', top: point[1] + '%' }, onClick: function() { setFocus(i); }, 'data-selected': selected, 'aria-pressed': selected, 'aria-label': 'Select structure ' + (i + 1) + ': ' + structure.name, title: structure.name }, String(i + 1).padStart(2, '0'));
+                  return h('button', { key: i, type: 'button', className: 'rh-anatomy-hotspot', style: { left: point[0] + '%', top: point[1] + '%' }, onClick: function() { setFocus(i); }, 'data-selected': selected, 'aria-pressed': selected, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_select_structure', 'Select structure {value1}: {value2}'), { value1: (i + 1), value2: structure.name }), title: structure.name }, String(i + 1).padStart(2, '0'));
                 })
               ),
               h('div', { className: 'rh-anatomy-plate-foot' }, h('span', null, h('strong', null, 'How to read:'), ' choose a numbered hotspot to connect location with function.'), h('span', null, 'Educational schematic'))
@@ -24607,7 +24598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             h('div', { className: 'rh-anatomy-directory-grid' }, v.keyStructures.map(function(structure, i) {
               var selected = focusIdx === i;
-              return h('button', { key: i, type: 'button', onClick: function() { setFocus(i); }, className: 'rh-anatomy-structure-card', 'data-active': selected, 'aria-pressed': selected, 'aria-label': 'Open ' + structure.name },
+              return h('button', { key: i, type: 'button', onClick: function() { setFocus(i); }, className: 'rh-anatomy-structure-card', 'data-active': selected, 'aria-pressed': selected, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_open', 'Open {value1}'), { value1: structure.name })},
                 h('span', { className: 'rh-anatomy-structure-card-index', 'aria-hidden': 'true' }, String(i + 1).padStart(2, '0')),
                 h('strong', null, structure.name),
                 h('span', { className: 'rh-anatomy-structure-card-arrow', 'aria-hidden': 'true' }, '→')
@@ -24806,7 +24797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           ),
           h('section', { className: 'rh-prey-directory', 'aria-labelledby': 'rh-prey-directory-title' },
             h('div', { className: 'rh-prey-section-head' }, h('div', null, h('div', { className: 'rh-prey-section-kicker' }, groupId === 'all' ? 'All ecological guilds' : PREY_ATLAS_GROUPS.filter(function(group) { return group.id === groupId; })[0].label), h('h3', { id: 'rh-prey-directory-title' }, 'Browse prey records')), h('span', null, filtered.length + ' visible')),
-            filtered.length ? h('div', { className: 'rh-prey-directory-grid' }, filtered.map(function(entry) { var selected = entry.index === selectedIdx; var entryTier = massTier(massEstimate(entry.item.mass)); return h('button', { key: entry.index, type: 'button', className: 'rh-prey-card', onClick: function() { setPrey(entry.index); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open ' + commonName(entry.item) + ' prey record', style: { '--rh-prey-accent': entry.group.accent } }, h('span', { className: 'rh-prey-card-icon', 'aria-hidden': 'true' }, entry.group.code), h('span', { className: 'rh-prey-card-copy' }, h('strong', null, commonName(entry.item)), h('span', null, entry.group.label + ' · ' + entry.item.habitat)), h('span', { className: 'rh-prey-card-mass' }, entry.item.mass + '\n' + entryTier.label)); })) : h('div', { className: 'rh-prey-empty', role: 'status' }, h('strong', null, 'No prey records match'), h('p', null, 'Try a species, predator, habitat, or broader ecological term.'), h('button', { type: 'button', onClick: function() { setSearch(''); } }, 'Clear filters'))
+            filtered.length ? h('div', { className: 'rh-prey-directory-grid' }, filtered.map(function(entry) { var selected = entry.index === selectedIdx; var entryTier = massTier(massEstimate(entry.item.mass)); return h('button', { key: entry.index, type: 'button', className: 'rh-prey-card', onClick: function() { setPrey(entry.index); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_open_prey_record', 'Open {value1} prey record'), { value1: commonName(entry.item) }), style: { '--rh-prey-accent': entry.group.accent } }, h('span', { className: 'rh-prey-card-icon', 'aria-hidden': 'true' }, entry.group.code), h('span', { className: 'rh-prey-card-copy' }, h('strong', null, commonName(entry.item)), h('span', null, entry.group.label + ' · ' + entry.item.habitat)), h('span', { className: 'rh-prey-card-mass' }, entry.item.mass + '\n' + entryTier.label)); })) : h('div', { className: 'rh-prey-empty', role: 'status' }, h('strong', null, 'No prey records match'), h('p', null, 'Try a species, predator, habitat, or broader ecological term.'), h('button', { type: 'button', onClick: function() { setSearch(''); } }, 'Clear filters'))
           ),
           h('div', { className: 'rh-prey-note', role: 'note' }, h('strong', null, 'Network-reading note: '), 'Predator nodes are resolved from the atlas text and show documented associations, not a complete diet or a measure of interaction strength.')
         );
@@ -25030,7 +25021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             h('section', { className: 'rh-fossil-directory', 'aria-labelledby': 'rh-fossil-directory-title' },
               h('div', { className: 'rh-fossil-section-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, FOSSIL_ERAS.filter(function(item) { return item.id === eraId; })[0].label), h('h3', { id: 'rh-fossil-directory-title' }, 'Browse fossil evidence cards')), h('span', null, filtered.length + ' visible')),
-              h('div', { className: 'rh-fossil-directory-grid' }, filtered.map(function(entry) { var active = entry.index === fossilIdx; return h('button', { key: entry.index, type: 'button', className: 'rh-fossil-card', onClick: function() { setFossil(entry.index); }, 'data-active': active, 'aria-current': active ? 'true' : undefined, 'aria-label': 'Open ' + entry.record.name + ' fossil reconstruction', style: { '--card-accent': entry.visual.accent } }, h('span', { className: 'rh-fossil-card-code', 'aria-hidden': 'true' }, entry.visual.code), h('span', { className: 'rh-fossil-card-copy' }, h('strong', null, shortName(entry.record)), h('span', null, entry.record.period + ' · ' + entry.visual.roleLabel)), h('span', { className: 'rh-fossil-card-age' }, entry.record.age)); }))
+              h('div', { className: 'rh-fossil-directory-grid' }, filtered.map(function(entry) { var active = entry.index === fossilIdx; return h('button', { key: entry.index, type: 'button', className: 'rh-fossil-card', onClick: function() { setFossil(entry.index); }, 'data-active': active, 'aria-current': active ? 'true' : undefined, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_open_fossil_reconstruction', 'Open {value1} fossil reconstruction'), { value1: entry.record.name }), style: { '--card-accent': entry.visual.accent } }, h('span', { className: 'rh-fossil-card-code', 'aria-hidden': 'true' }, entry.visual.code), h('span', { className: 'rh-fossil-card-copy' }, h('strong', null, shortName(entry.record)), h('span', null, entry.record.period + ' · ' + entry.visual.roleLabel)), h('span', { className: 'rh-fossil-card-age' }, entry.record.age)); }))
             ),
             h('section', { className: 'rh-fossil-challenge', 'aria-labelledby': 'rh-fossil-challenge-title', 'data-fossil-challenge': mysteryCorrect ? 'correct' : mysteryAnswered ? 'incorrect' : 'open' },
               h('div', { className: 'rh-fossil-section-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, 'Evolutionary reasoning challenge'), h('h3', { id: 'rh-fossil-challenge-title' }, 'Classify the evidence pattern')), h('span', null, FOSSIL_RECORD.fossils[mysteryIdx].age)),
@@ -27268,8 +27259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   key: i,
                   onClick: function() { pickChoice(letter); },
                   className: 'transition-colors w-full text-left px-3 py-2 bg-slate-900/40 hover:bg-slate-800/60 border border-slate-700/40 rounded-lg text-sm text-slate-100 active:scale-[0.97]',
-                  'aria-label': 'Choose ' + opt
-                }, opt);
+                  'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_choose', 'Choose {value1}'), { value1: opt })}, opt);
               })
             ),
             revealed && h('div', { className: 'space-y-2' },
@@ -27515,7 +27505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div',{className:'rh-research-meta-row'},h('span',{className:'rh-research-meta'},selected.type),h('span',{className:'rh-research-meta'},findRegion(selected.region).label),h('span',{className:'rh-research-meta'},selected.dateLabel)),
           h('div',{className:'rh-research-reading','data-lens':lensId},h('span',null,lensReading.label),h('strong',null,lensReading.title),h('p',null,lensReading.copy)),
           h('div',{className:'rh-research-callouts'},h('div',{className:'rh-research-callout'},h('span',null,'Operational focus'),h('p',null,selected.focus)),h('div',{className:'rh-research-callout'},h('span',null,'Place + scope'),h('p',null,selected.location+' · '+selected.country))),
-          h('a',{className:'rh-research-source',href:selected.url,target:'_blank',rel:'noopener noreferrer','data-research-source-link':'true','aria-label':'Open '+selected.sourceLabel+' for '+selected.name+' in a new tab'},'↗ '+selected.sourceLabel),
+          h('a',{className:'rh-research-source',href:selected.url,target:'_blank',rel:'noopener noreferrer','data-research-source-link':'true','aria-label':__alloFill(__alloT('stem.raptorhunt.a11y_open_for_in_a_new_tab', 'Open {value1} for {value2} in a new tab'), { value1: selected.sourceLabel, value2: selected.name })},'↗ '+selected.sourceLabel),
           h('p',{className:'rh-research-reviewed'},'Source reviewed '+RESEARCH_STATIONS.reviewedAt+'. Verify current programs, access, and participation requirements with the institution.')
         );}
         function comparison(){
@@ -27671,7 +27661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('aside',{className:'rh-org-dossier','aria-labelledby':'rh-org-dossier-title','data-org-node':selected.id},
               h('div',{className:'rh-org-dossier-head'},
                 h('div',null,h('div',{className:'rh-org-detail-kicker'},'Selected organization'),h('h3',{id:'rh-org-dossier-title'},selected.name)),
-                h('div',{className:'rh-org-code','aria-label':'Organization code '+selected.code},selected.code)
+                h('div',{className:'rh-org-code','aria-label':__alloFill(__alloT('stem.raptorhunt.a11y_organization_code', 'Organization code {value1}'), { value1: selected.code })},selected.code)
               ),
               h('div',{className:'rh-org-meta-row'},
                 h('span',{className:'rh-org-meta'},selectedAction.label),
@@ -27821,7 +27811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('aside',{className:'rh-museum-dossier','aria-labelledby':'rh-museum-dossier-title','data-museum-venue':selected.id},
               h('div',{className:'rh-museum-dossier-head'},
                 h('div',null,h('div',{className:'rh-museum-detail-kicker'},'Selected learning site'),h('h3',{id:'rh-museum-dossier-title'},selected.name)),
-                h('div',{className:'rh-museum-code','aria-label':'Venue code '+selected.code},selected.code)
+                h('div',{className:'rh-museum-code','aria-label':__alloFill(__alloT('stem.raptorhunt.a11y_venue_code', 'Venue code {value1}'), { value1: selected.code })},selected.code)
               ),
               h('div',{className:'rh-museum-meta-row'},
                 h('span',{className:'rh-museum-meta'},selectedMode.label),
@@ -28001,7 +27991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('aside', { className: 'rh-reading-dossier', 'aria-labelledby': 'rh-reading-dossier-title', 'data-reading-book-scene': selected.id },
               h('div', { className: 'rh-reading-dossier-head' },
                 h('div', null, h('div', { className: 'rh-reading-detail-kicker' }, 'Selected book dossier'), h('h3', { id: 'rh-reading-dossier-title' }, selected.title)),
-                h('div', { className: 'rh-reading-code', 'aria-label': 'Book code ' + selected.code }, selected.code)
+                h('div', { className: 'rh-reading-code', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_book_code', 'Book code {value1}'), { value1: selected.code })}, selected.code)
               ),
               h('p', { className: 'rh-reading-byline' }, selected.author + ' · ' + selected.year),
               h('div', { className: 'rh-reading-meta-row' },
@@ -28213,7 +28203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('aside', { className: 'rh-film-dossier', 'aria-labelledby': 'rh-film-dossier-title', 'data-film-title-scene': selected.id },
               h('div', { className: 'rh-film-dossier-head' },
                 h('div', null, h('div', { className: 'rh-film-detail-kicker' }, 'Selected title dossier'), h('h3', { id: 'rh-film-dossier-title' }, selected.title)),
-                h('div', { className: 'rh-film-code', 'aria-label': 'Film code ' + selected.code }, selected.code)
+                h('div', { className: 'rh-film-code', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_film_code', 'Film code {value1}'), { value1: selected.code })}, selected.code)
               ),
               h('p', { className: 'rh-film-byline' }, selected.year + ' · ' + selected.format),
               h('div', { className: 'rh-film-meta-row' },
@@ -29194,7 +29184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 metricData.map(function(metric) { return h('div', { key: metric.label, className: 'rh-molt-meter', role: 'meter', 'aria-label': metric.label, 'aria-valuenow': metric.value, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('div', { className: 'rh-molt-meter-head' }, h('span', null, metric.label), h('strong', null, metric.value + '%')), h('div', { className: 'rh-molt-meter-track' }, h('span', { style: { width: metric.value + '%' } }))); })
               ),
               h('div', { className: 'rh-molt-primary-controls', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_inspect_primary_feathers_p1_through_p10', 'Inspect primary feathers P1 through P10') },
-                primaryGeometry.map(function(g, i) { var status = featherStatus(i); var selected = focusIdx === i; return h('button', { key: i, type: 'button', className: 'rh-molt-primary-control', onClick: function() { setFocus(i); }, 'aria-pressed': selected, 'data-primary-control': 'P' + (i + 1), 'data-status': status, 'aria-label': 'Inspect primary P' + (i + 1) + ', ' + status }, 'P' + (i + 1), h('span', { className: 'rh-molt-primary-status' }, status)); })
+                primaryGeometry.map(function(g, i) { var status = featherStatus(i); var selected = focusIdx === i; return h('button', { key: i, type: 'button', className: 'rh-molt-primary-control', onClick: function() { setFocus(i); }, 'aria-pressed': selected, 'data-primary-control': 'P' + (i + 1), 'data-status': status, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_inspect_primary_p', 'Inspect primary P{value1}, {value2}'), { value1: (i + 1), value2: status })}, 'P' + (i + 1), h('span', { className: 'rh-molt-primary-status' }, status)); })
               )
             ),
             h('aside', { className: 'rh-molt-detail', 'data-raptor-molt-detail': 'true', 'aria-labelledby': 'rh-molt-detail-title', 'aria-live': 'polite' },
@@ -29228,7 +29218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('section', { className: 'rh-molt-directory', 'aria-labelledby': 'rh-molt-directory-title' },
             h('div', { className: 'rh-molt-section-head' }, h('div', null, h('div', { className: 'rh-molt-section-kicker' }, 'Species calendar comparison'), h('h3', { id: 'rh-molt-directory-title' }, 'Compare molt timing')), h('span', null, MOLT_ATLAS.timetable.length + ' profiles')),
             h('div', { className: 'rh-molt-directory-grid' },
-              MOLT_ATLAS.timetable.map(function(item, i) { var itemVisual = MOLT_VISUALS[i]; var selected = speciesIdx === i; return h('button', { key: i, type: 'button', className: 'rh-molt-card', onClick: function() { setSpecies(i); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open ' + item.species + ' molt profile', style: { '--rh-molt-accent': itemVisual.accent } },
+              MOLT_ATLAS.timetable.map(function(item, i) { var itemVisual = MOLT_VISUALS[i]; var selected = speciesIdx === i; return h('button', { key: i, type: 'button', className: 'rh-molt-card', onClick: function() { setSpecies(i); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_open_molt_profile', 'Open {value1} molt profile'), { value1: item.species }), style: { '--rh-molt-accent': itemVisual.accent } },
                 h('span', null, h('strong', null, item.species), h('span', { className: 'rh-molt-card-timing' }, item.timing), h('span', { className: 'rh-molt-card-months', 'aria-hidden': 'true' }, months.map(function(month, monthIndex) { return h('span', { key: month, className: 'rh-molt-card-month', 'data-active': itemVisual.activeMonths.indexOf(monthIndex) >= 0, 'data-peak': itemVisual.peakMonths.indexOf(monthIndex) >= 0 }); }))),
                 h('span', { className: 'rh-molt-card-copy' }, item.specifics)
               ); })
@@ -29452,12 +29442,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('div', { className: 'rh-wing-formula-controls' },
                 h('div', { className: 'rh-wing-formula-primary-grid', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_select_primary_feather_p1_through_p10', 'Select primary feather P1 through P10') },
-                  currentLengths.map(function(value, i) { var selected = focusIdx === i; return h('button', { key: i, type: 'button', className: 'rh-wing-formula-primary-button', onClick: function() { setFocus(i); }, 'aria-pressed': selected, 'data-primary-control': 'P' + (i + 1), 'aria-label': 'Measure primary P' + (i + 1) + ', normalized length ' + value }, 'P' + (i + 1), h('span', null, value)); })
+                  currentLengths.map(function(value, i) { var selected = focusIdx === i; return h('button', { key: i, type: 'button', className: 'rh-wing-formula-primary-button', onClick: function() { setFocus(i); }, 'aria-pressed': selected, 'data-primary-control': 'P' + (i + 1), 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_measure_primary_p_normalized_length', 'Measure primary P{value1}, normalized length {value2}'), { value1: (i + 1), value2: value })}, 'P' + (i + 1), h('span', null, value)); })
                 ),
                 h('div', { className: 'rh-wing-formula-adjust' },
                   h('label', { className: 'rh-wing-formula-range' },
                     h('span', { className: 'rh-wing-formula-range-head' }, h('span', null, 'Adjust P' + (focusIdx + 1) + ' normalized length'), h('strong', null, currentLengths[focusIdx] + ' / 100')),
-                    h('input', { type: 'range', min: 50, max: 100, step: 1, value: currentLengths[focusIdx], onChange: function(event) { setLength(event.target.value); }, 'aria-label': 'Normalized length for primary P' + (focusIdx + 1), 'aria-valuetext': currentLengths[focusIdx] + ' out of 100' })
+                    h('input', { type: 'range', min: 50, max: 100, step: 1, value: currentLengths[focusIdx], onChange: function(event) { setLength(event.target.value); }, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_normalized_length_for_primary_p', 'Normalized length for primary P{value1}'), { value1: (focusIdx + 1) }), 'aria-valuetext': currentLengths[focusIdx] + ' out of 100' })
                   ),
                   h('button', { type: 'button', className: 'rh-wing-formula-reset', onClick: resetProfile }, 'Restore ' + profile.code)
                 )
@@ -29509,7 +29499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('section', { className: 'rh-wing-formula-directory', 'aria-labelledby': 'rh-wing-formula-directory-title' },
             h('div', { className: 'rh-wing-formula-section-head' }, h('div', null, h('div', { className: 'rh-wing-formula-section-kicker' }, 'Reference library'), h('h3', { id: 'rh-wing-formula-directory-title' }, 'Compare all eight teaching profiles')), h('span', null, WING_FORMULA.species.length + ' profiles')),
             h('div', { className: 'rh-wing-formula-directory-grid' },
-              WING_FORMULA.species.map(function(item, i) { var itemProfile = WING_FORMULA_VISUALS[i]; var selected = speciesIdx === i; return h('button', { key: i, type: 'button', className: 'rh-wing-formula-profile-card', onClick: function() { setSpecies(i); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open ' + item.species + ' wing formula profile', style: { '--rh-wing-accent': itemProfile.accent } }, h('span', { className: 'rh-wing-formula-profile-code', 'aria-hidden': 'true' }, itemProfile.code), h('span', { className: 'rh-wing-formula-profile-copy' }, h('strong', null, item.species), h('span', null, itemProfile.shape + ' · ' + itemProfile.family)), h('span', { className: 'rh-wing-formula-profile-rank' }, rankedFormula(itemProfile.lengths, 3))); })
+              WING_FORMULA.species.map(function(item, i) { var itemProfile = WING_FORMULA_VISUALS[i]; var selected = speciesIdx === i; return h('button', { key: i, type: 'button', className: 'rh-wing-formula-profile-card', onClick: function() { setSpecies(i); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_open_wing_formula_profile', 'Open {value1} wing formula profile'), { value1: item.species }), style: { '--rh-wing-accent': itemProfile.accent } }, h('span', { className: 'rh-wing-formula-profile-code', 'aria-hidden': 'true' }, itemProfile.code), h('span', { className: 'rh-wing-formula-profile-copy' }, h('strong', null, item.species), h('span', null, itemProfile.shape + ' · ' + itemProfile.family)), h('span', { className: 'rh-wing-formula-profile-rank' }, rankedFormula(itemProfile.lengths, 3))); })
             )
           ),
           h('div', { className: 'rh-wing-formula-note', role: 'note' }, h('strong', null, 'Teaching-profile note: '), 'These normalized patterns are schematic comparisons, not specimen measurements. Feather wear, molt stage, age, sex, posture, and measurement technique can alter a real wing formula.')
@@ -30210,8 +30200,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 visual.marks.map(function(mark, i) { return h('li', { key: i }, h('strong', null, String(i + 1).padStart(2, '0')), h('span', null, mark.label)); })
               ),
               h('div', { className: 'rh-illustration-detail-nav' },
-                h('button', { type: 'button', onClick: function() { setIllIdx(previousIdx); }, 'aria-label': 'Previous illustration in ' + activeFilter }, '← Previous'),
-                h('button', { type: 'button', onClick: function() { setIllIdx(nextIdx); }, 'aria-label': 'Next illustration in ' + activeFilter }, 'Next →')
+                h('button', { type: 'button', onClick: function() { setIllIdx(previousIdx); }, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_previous_illustration_in', 'Previous illustration in {value1}'), { value1: activeFilter })}, '← Previous'),
+                h('button', { type: 'button', onClick: function() { setIllIdx(nextIdx); }, 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_next_illustration_in', 'Next illustration in {value1}'), { value1: activeFilter })}, 'Next →')
               )
             )
           ),
@@ -32463,8 +32453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     rhAnnounce(activeCategory.label + ' collection');
                   },
                   className: 'rh-nav-breadcrumb px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200 hover:bg-slate-700',
-                  'aria-label': 'Open ' + activeCategory.label + ' collection'
-                }, activeCategory.icon + ' ' + activeCategory.label)),
+                  'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_open_collection', 'Open {value1} collection'), { value1: activeCategory.label })}, activeCategory.icon + ' ' + activeCategory.label)),
             activeSection !== 'hub' && h('label', { className: 'ml-auto flex items-center gap-2 text-xs text-slate-300' },
               h('span', null, 'Switch lab'),
               h('select', {
