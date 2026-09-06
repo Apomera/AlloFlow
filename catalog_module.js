@@ -3772,7 +3772,7 @@
         e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3', role: 'list', 'aria-label': tr('catalog_learning_paths', 'Learning paths') },
           (state.paths || []).map(function (pth) {
             var pr = pdPathProgress(pth, slugCompleted);
-            return e('div', { key: pth.slug, role: 'listitem', className: 'bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 rounded-lg p-4 flex flex-col gap-2' },
+            return e('div', { key: pth.slug, role: 'listitem', className: 'bg-sky-50 border border-sky-200 rounded-lg p-4 flex flex-col gap-2' },
               e('div', { className: 'flex items-start justify-between gap-2' },
                 e('h4', { className: 'font-bold text-slate-800 text-sm' }, pth.title || '(untitled path)'),
                 pr.complete && e('span', { className: 'shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold' }, '✓ Complete')
@@ -3911,6 +3911,7 @@
     },
       e('div', {
         className: contentClass, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('catalog_community_catalog', 'Community Catalog'),
+        'data-allo-catalog': '',
         tabIndex: -1, ref: dialogRef,
         onKeyDown: function (ev) {
           if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); return; }
@@ -3932,7 +3933,8 @@
         },
       },
         // Header
-        e('div', { className: headerClass },
+        e('style', null, '.theme-contrast [data-allo-catalog] a, .theme-contrast [data-allo-catalog] summary { color: #ffff00 !important; text-decoration: underline; } .theme-contrast [data-allo-catalog] a:focus-visible, .theme-contrast [data-allo-catalog] summary:focus-visible { outline: 3px solid #00ff00; outline-offset: 2px; }'),
+      e('div', { className: headerClass },
           e('div', { className: 'flex items-center gap-3' },
             e('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '📚'),
             e('div', null,
