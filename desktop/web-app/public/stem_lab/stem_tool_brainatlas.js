@@ -1394,6 +1394,21 @@ var d = labToolData.brainAtlas || {};
           var allRegions = []; var brainAtlasRegionViewKey = {};
           Object.keys(VIEWS).forEach(function (vk) { VIEWS[vk].regions.forEach(function (r) { if (!allRegions.find(function (a) { return a.id === r.id; })) { allRegions.push(r); brainAtlasRegionViewKey[r.id] = vk; } }); });
 
+          // A random sort comparator does not produce a uniform permutation: it
+          // favours the ends of the array, which turns "guess an end option"
+          // into a scoring strategy. Fisher-Yates does, one swap per position.
+          function brainAtlasShuffle(list) {
+            var out = Array.prototype.slice.call(list || []);
+            if (typeof window !== 'undefined' && typeof window.fisherYatesShuffle === 'function') {
+              try { return window.fisherYatesShuffle(out); } catch (e) { /* fall through to the local copy */ }
+            }
+            for (var i = out.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var swap = out[i]; out[i] = out[j]; out[j] = swap;
+            }
+            return out;
+          }
+
           var quizPool = allRegions.filter(function (r) { return r.damage; });
 
           var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
@@ -1403,11 +1418,11 @@ var d = labToolData.brainAtlas || {};
           if (quizQ && d._brainQuizOptsFor !== d.quizIdx) {
 
             var quizAnswerView = brainAtlasRegionViewKey[quizQ.id];
-            var sameViewWrong = quizPool.filter(function (r) { return r.id !== quizQ.id && brainAtlasRegionViewKey[r.id] === quizAnswerView; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3);
-            var otherViewWrong = quizPool.filter(function (r) { return r.id !== quizQ.id && brainAtlasRegionViewKey[r.id] !== quizAnswerView; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3 - sameViewWrong.length);
+            var sameViewWrong = brainAtlasShuffle(quizPool.filter(function (r) { return r.id !== quizQ.id && brainAtlasRegionViewKey[r.id] === quizAnswerView; })).slice(0, 3);
+            var otherViewWrong = brainAtlasShuffle(quizPool.filter(function (r) { return r.id !== quizQ.id && brainAtlasRegionViewKey[r.id] !== quizAnswerView; })).slice(0, 3 - sameViewWrong.length);
             var wrong = sameViewWrong.concat(otherViewWrong);
 
-            brainQuizOpts = wrong.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
+            brainQuizOpts = brainAtlasShuffle(wrong.concat([quizQ]));
 
             upd('_brainQuizOpts', brainQuizOpts);
 

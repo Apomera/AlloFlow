@@ -290,3 +290,15 @@ There are 863 bare English fields on the region records, about 123,000 character
 
 Wrapping it is mechanical but it is not a small decision. It roughly triples the size of this tool's share of the string catalogue, every language pack has to carry it, and clinical prose is exactly the kind of text where a machine translation error matters. It is written down here with the measurement so the decision can be made deliberately rather than arrived at by a script.
 
+## The quiz was not shuffling its answers
+
+September 6, 2026. The Brain Quiz ordered its four options with a sort whose comparator returned a random number. That is a well-known non-shuffle: the result depends on the sorting algorithm and is not a uniform permutation. Measured in this engine on a four-item array, the correct answer landed in the first or last slot 31.2 per cent of the time and in each of the middle two slots 18.7 per cent. A learner who guessed an end option when unsure was about a third better off than one who guessed at random.
+
+The same comparator chose which distractors to offer, so some regions were systematically over-offered as wrong answers and others under-offered. For a three-item list, which is what several of those selections come down to, the skew was 49.9 per cent against 12.5 per cent.
+
+All three uses now go through one helper, which prefers the platform's Fisher-Yates if the shell has published it and otherwise runs an identical local copy. One swap per position, from the end.
+
+The test for this deserves a note. A few hundred rendered rounds cannot tell 31 per cent apart from 25 per cent without being flaky, so the uniformity check runs against the shuffle itself, lifted out of the source, over 120,000 draws with a one-percentage-point band. The same test then puts the old comparator through the identical bounds and requires it to fail them. A statistical gate that has quietly stopped discriminating looks exactly like a passing one, and this way it cannot.
+
+The quiz golden moved, which is expected: the option order changed under the fixed random value the goldens use.
+

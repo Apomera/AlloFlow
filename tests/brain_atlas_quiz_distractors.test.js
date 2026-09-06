@@ -42,7 +42,10 @@ describe('brainAtlas quiz distractors and diagram announcement', () => {
 
   it('falls back to other views only when the same view runs short (source contract)', () => {
     const src = readFileSync(FILE, 'utf8');
-    expect(src).toContain('var sameViewWrong = quizPool.filter');
+    // the shuffle moved from a random sort comparator to Fisher-Yates, so the
+    // selection is now wrapped rather than chained
+    expect(src).toContain('var sameViewWrong = brainAtlasShuffle(quizPool.filter');
+    expect(src).toContain('var otherViewWrong = brainAtlasShuffle(quizPool.filter');
     expect(src).toContain('.slice(0, 3 - sameViewWrong.length)');
     expect(src).toContain('var wrong = sameViewWrong.concat(otherViewWrong);');
   });
