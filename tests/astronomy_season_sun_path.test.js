@@ -17,11 +17,18 @@ function parseMarkup(html) {
 
 function renderAstronomyAtPortlandLatitude(latitude, state) {
   var source = readFileSync(resolve(process.cwd(), SOURCE_PATH), 'utf8');
-  var portlandLatitude = /(\{ id: 'portland', name: 'Portland, Maine', lat: )-?\d+(?:\.\d+)?/;
+  // The tool holds Portland twice: once in the Sky Map's location list and once
+  // in the Observatory's site list, which is declared first. A non-global regex
+  // would move the wrong one and leave the Seasons tab at the real latitude, so
+  // every copy is moved and the count is checked.
+  var portlandLatitude = /(\{ id: 'portland', name: 'Portland, Maine', lat: )-?\d+(?:\.\d+)?/g;
+  var moved = 0;
   var instrumented = source.replace(portlandLatitude, function(match, prefix) {
+    moved += 1;
     return prefix + String(latitude);
   });
-  if (instrumented === source) throw new Error('Could not instrument the Portland observer latitude');
+  if (!moved) throw new Error('Could not instrument the Portland observer latitude');
+  expect(instrumented).not.toMatch(/name: 'Portland, Maine', lat: 43\.66/);
   resetStemLab();
   // Test-only observer fixture: production locations remain untouched.
   // eslint-disable-next-line no-new-func
