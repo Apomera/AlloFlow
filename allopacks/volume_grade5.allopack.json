@@ -235,7 +235,7 @@
             "target": "Why volume answers carry a small three",
             "essentialFacts": [
               "Volume is measured by counting unit cubes.",
-              "A unit cube has three edges, so the label is cubic.",
+              "A cube is measured in three directions, so the label is cubic.",
               "Length is one direction, area is two, volume is three."
             ],
             "factLocked": true,
@@ -347,46 +347,78 @@
             "question": "A box is 6 cm long, 4 cm wide and 3 cm tall. What is its volume?",
             "answer": "72 cubic cm",
             "steps": [
-              { "explanation": "Find one layer first. The base is 6 by 4, so one layer holds 6 x 4 = 24 cubes." },
-              { "explanation": "The box is 3 cubes tall, so there are 3 identical layers." },
-              { "explanation": "3 layers of 24 cubes is 72. The answer is 72 cubic cm, because you counted cubes." }
+              {
+                "explanation": "Find one layer first. The base is 6 by 4, so one layer holds 6 x 4 = 24 cubes."
+              },
+              {
+                "explanation": "The box is 3 cubes tall, so there are 3 identical layers."
+              },
+              {
+                "explanation": "3 layers of 24 cubes is 72. The answer is 72 cubic cm, because you counted cubes."
+              }
             ]
           },
           {
             "question": "A prism has a base area of 15 square inches and a height of 4 inches. What is its volume?",
             "answer": "60 cubic inches",
             "steps": [
-              { "explanation": "The base area already tells you one layer holds 15 cubes. You do not need the length and width separately." },
-              { "explanation": "There are 4 layers, one for each inch of height." },
-              { "explanation": "4 x 15 = 60 cubic inches." }
+              {
+                "explanation": "The base area already tells you one layer holds 15 cubes. You do not need the length and width separately."
+              },
+              {
+                "explanation": "There are 4 layers, one for each inch of height."
+              },
+              {
+                "explanation": "4 x 15 = 60 cubic inches."
+              }
             ]
           },
           {
             "question": "A box holds 120 cubic cm. Its base is 5 cm by 6 cm. How tall is it?",
             "answer": "4 cm",
             "steps": [
-              { "explanation": "One layer is 5 x 6 = 30 cubes." },
-              { "explanation": "The question is really: how many layers of 30 make 120?" },
-              { "explanation": "120 divided by 30 is 4, so the box is 4 cm tall." }
+              {
+                "explanation": "One layer is 5 x 6 = 30 cubes."
+              },
+              {
+                "explanation": "The question is really: how many layers of 30 make 120?"
+              },
+              {
+                "explanation": "120 divided by 30 is 4, so the box is 4 cm tall."
+              }
             ]
           },
           {
             "question": "An L-shaped solid is made of a 4 x 2 x 2 block joined to a 3 x 2 x 2 block. What is its volume?",
             "answer": "28 cubic units",
             "steps": [
-              { "explanation": "Decompose it. Handle each rectangular prism on its own." },
-              { "explanation": "First block: 4 x 2 x 2 = 16 cubic units." },
-              { "explanation": "Second block: 3 x 2 x 2 = 12 cubic units." },
-              { "explanation": "Add them: 16 + 12 = 28 cubic units. Nothing is counted twice because the blocks do not overlap." }
+              {
+                "explanation": "Decompose it. Handle each rectangular prism on its own."
+              },
+              {
+                "explanation": "First block: 4 x 2 x 2 = 16 cubic units."
+              },
+              {
+                "explanation": "Second block: 3 x 2 x 2 = 12 cubic units."
+              },
+              {
+                "explanation": "Add them: 16 + 12 = 28 cubic units. Nothing is counted twice because the blocks do not overlap."
+              }
             ]
           },
           {
             "question": "Two boxes both hold 36 cubic cm. One is 6 x 3 x 2 and the other is 9 x 2 x 2. Are they the same shape?",
             "answer": "No, they are different shapes with the same volume",
             "steps": [
-              { "explanation": "Check the first: 6 x 3 x 2 = 36 cubic cm." },
-              { "explanation": "Check the second: 9 x 2 x 2 = 36 cubic cm. The volumes match." },
-              { "explanation": "But the edge lengths differ, so the boxes look nothing alike. Equal volume does not mean equal shape." }
+              {
+                "explanation": "Check the first: 6 x 3 x 2 = 36 cubic cm."
+              },
+              {
+                "explanation": "Check the second: 9 x 2 x 2 = 36 cubic cm. The volumes match."
+              },
+              {
+                "explanation": "But the edge lengths differ, so the boxes look nothing alike. Equal volume does not mean equal shape."
+              }
             ]
           }
         ]
