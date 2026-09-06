@@ -477,6 +477,25 @@ Twenty-seven objectives across twenty-six packs, now named in the body they belo
 The convention flags were not made into a gate and the packs were not rewritten to satisfy them. Renaming "the **Glossary**" to "the **Revolution Vocabulary**" in ninety places would make a checker happy and every directions body slightly worse to read. The check earned one narrow finding and is worth keeping as a scratch probe rather than a rule.
 
 That is the fifth check this week measured against its own false-positive rate before deciding what to do with it, and the second in two passes where the honest answer was "the checker is wrong about most of this".
+## Twenty-second pass: the shot lists, which nobody had checked against anything
+
+The `.IMAGES.md` files are the handoff document for a later illustration pass. They name slot ids and describe every picture. Nothing had ever compared one to the pack it belongs to.
+
+The first check reported **63 mismatches**, and every one of the 21 original packs failed all three tests while not one of the 17 newer packs failed any. That split is a format difference, not breakage: the originals use an earlier short format — a couple of lesson panels with a prompt and alt text — while the newer ones follow the fuller pattern the Water Cycle pilot established, with a policy statement, a glossary picture table and grouped panels. The check was measuring "does the old format look like the new one".
+
+### The real finding underneath it
+
+Reading one of the originals turned up a prompt ending: **`Caption: 'both watered, only one has light.'`** That is inside a `**Prompt:**` block, which is text written straight to an image generator, so it is an instruction to draw those words into the picture — exactly what the text-free policy forbids.
+
+That prompted a narrower scan, and here the checker had to be built carefully. In the *newer* lists, "Labels:" and "Caption:" mean AlloFlow's **native** fields, stated explicitly in each file's policy paragraph. Scanning those the same way would have flagged every panel in the catalog. Restricting the scan to `**Prompt:**` blocks in the old format found exactly one offender, now removed.
+
+### What was actually wrong with all 21
+
+None of the original shot lists **state the text-free policy at all.** They predate it. An illustrator working from those 21 files has no statement of the binding constraint, and one of them was actively asking for a caption in the artwork.
+
+Each now carries the rule as a short header: no raster text, labels, numbers, captions or watermarks; where a prompt asks for a label, that text belongs in AlloFlow's native fields anchored over the image, not drawn into it; icons and arrows are fine as long as they carry no characters. Each also points at `day_night_sky_grade1.IMAGES.md` as a full-format example, in case a richer pass is wanted later.
+
+They were deliberately **not** rewritten into the newer format. That is a large authoring job — the new lists run to seven kilobytes of considered detail each — for little marginal gain over the one paragraph that actually binds. The proportionate fix was the constraint, not the format.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
