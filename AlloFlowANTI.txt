@@ -5237,17 +5237,14 @@ const _refreshRemoteStrings = async () => {
         ]);
         if (hsTextRaw !== null) {
             const hsText = hsTextRaw.replace(/^\s*\/\/.*$/gm, '').trim();
-            try {
-                HELP_STRINGS = JSON.parse(hsText);
-            } catch (parseErr) {
-                console.warn("HELP_STRINGS: JSON.parse failed, falling back to JS-literal evaluation...", parseErr.message);
-                try {
-                    HELP_STRINGS = new Function("return " + hsText)();
-                } catch (evalErr) {
-                    console.warn("HELP_STRINGS: new Function blocked (CSP?), trying regex cleanup...", evalErr.message);
-                    const hsCleaned = hsText.replace(/^[^{]*/, '').replace(/[^}]*$/, '').replace(/'/g, '"').replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-                    try { HELP_STRINGS = JSON.parse(hsCleaned); } catch { console.error("HELP_STRINGS: All parse methods failed"); }
-                }
+            // Never evaluate fetched text: a compromised strings host would get code execution
+            // in every client. help_strings.js is a relaxed object literal (comments, single
+            // quotes, trailing commas), which the parser accepts without running it.
+            const hsParsed = _alloParseUntrustedObject(hsText);
+            if (hsParsed) {
+                HELP_STRINGS = hsParsed;
+            } else {
+                console.error("HELP_STRINGS: parse failed (strict and relaxed JSON); keeping cached/default strings");
             }
             if (HELP_STRINGS && Object.keys(HELP_STRINGS).length > 0) {
                 try { localStorage.setItem("alloflow_help_strings_cache", JSON.stringify(HELP_STRINGS)); } catch { }
@@ -5508,6 +5505,162 @@ function _buildGlossaryPreamble(glossary, targetLanguage) {
     ''
   ].join('\n');
 }
+// __ALLO_UNTRUSTED_PARSE_BEGIN__ (tests/i18n_untrusted_pack_parse.test.js loads this block by marker)
+// Fetched strings and packs are parsed, never evaluated. A compromised CDN, a bad file landing
+// in lang/ on main, or an LLM translation must not get code execution in every client.
+function _alloRelaxObjectLiteral(src) {
+    let out = '';
+    let i = 0;
+    const n = src.length;
+    const isIdStart = (ch) => /[A-Za-z_$]/.test(ch);
+    const isIdChar = (ch) => /[A-Za-z0-9_$]/.test(ch);
+    while (i < n) {
+        const c = src[i];
+        if (c === '/' && src[i + 1] === '*') {
+            const end = src.indexOf('*/', i + 2);
+            i = end === -1 ? n : end + 2;
+            continue;
+        }
+        if (c === '/' && src[i + 1] === '/') {
+            while (i < n && src[i] !== '\n') i++;
+            continue;
+        }
+        if (c === '"') {
+            let j = i + 1;
+            while (j < n) {
+                if (src[j] === '\\') { j += 2; continue; }
+                if (src[j] === '"') break;
+                j++;
+            }
+            out += src.slice(i, j + 1);
+            i = j + 1;
+            continue;
+        }
+        if (c === "'") {
+            let j = i + 1;
+            let inner = '';
+            while (j < n) {
+                const d = src[j];
+                if (d === '\\') {
+                    const e = src[j + 1];
+                    if (e === "'") { inner += "'"; j += 2; continue; }
+                    inner += d + (e === undefined ? '' : e);
+                    j += 2;
+                    continue;
+                }
+                if (d === "'") break;
+                inner += d;
+                j++;
+            }
+            // inner keeps JSON-style escapes; only unescaped double quotes need escaping.
+            const decoded = JSON.parse('"' + inner.replace(/(^|[^\\])"/g, '$1\\"') + '"');
+            out += JSON.stringify(decoded);
+            i = j + 1;
+            continue;
+        }
+        if (c === ',') {
+            let j = i + 1;
+            while (j < n && /\s/.test(src[j])) j++;
+            if (src[j] === '}' || src[j] === ']') { i++; continue; }
+            out += c;
+            i++;
+            continue;
+        }
+        if (isIdStart(c)) {
+            let j = i + 1;
+            while (j < n && isIdChar(src[j])) j++;
+            const word = src.slice(i, j);
+            let k = j;
+            while (k < n && /\s/.test(src[k])) k++;
+            if (src[k] === ':' && word !== 'true' && word !== 'false' && word !== 'null') {
+                out += '"' + word + '"';
+                i = j;
+                continue;
+            }
+            out += word;
+            i = j;
+            continue;
+        }
+        out += c;
+        i++;
+    }
+    return out;
+}
+// Drops keys that would reach Object.prototype through a later spread/merge.
+// Deliberately no module-level const here: the callers run from idle callbacks and
+// effects, and function declarations hoist without a TDZ.
+function _alloUntrustedReviver(key, value) {
+    return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : value;
+}
+function _alloParseUntrustedObject(text) {
+    if (typeof text !== 'string') return null;
+    const body = text.replace(/^\s*\/\/.*$/gm, '').trim();
+    if (!body) return null;
+    try {
+        const v = JSON.parse(body, _alloUntrustedReviver);
+        return (v && typeof v === 'object') ? v : null;
+    } catch (strictErr) {
+        try {
+            const v = JSON.parse(_alloRelaxObjectLiteral(body), _alloUntrustedReviver);
+            return (v && typeof v === 'object') ? v : null;
+        } catch (relaxedErr) {
+            return null;
+        }
+    }
+}
+
+// Language packs are untrusted: they arrive from a user-chosen file, a CDN fetch, or LLM
+// translation output, and t() resolves them BEFORE the static UI_STRINGS. Some consumers
+// concatenate t() output into innerHTML, so a pack can carry script into the page.
+// Packs legitimately contain inline markup (<strong>, and literal "</>" / "<title>" as prose),
+// so this neutralizes only executable constructs and leaves ordinary text byte-identical.
+// Presentational and structural tags survive: the accessibility lab ships deliberately-bad
+// HTML samples (<img> with no alt, <html>/<title> skeletons) as lesson content in every language,
+// and the Educator Evaluation export template ships <style> and <meta charset> fragments through
+// t() in all 63 packs (two auto-extracted keys). Neither executes; both must stay byte-identical.
+function _alloI18nExecutableTags() { return 'script|iframe|object|embed|applet|frame|frameset|base|link|portal'; }
+function _sanitizeI18nString(value) {
+  if (value.indexOf('<') === -1) return value;
+  const tags = _alloI18nExecutableTags();
+  return value
+    // Paired executable elements, including their contents.
+    .replace(new RegExp('<(' + tags + ')\\b[^>]*>[\\s\\S]*?<\\/\\1\\s*>', 'gi'), '')
+    // Unpaired or self-closing leftovers.
+    .replace(new RegExp('<\\/?(' + tags + ')\\b[^>]*>', 'gi'), '')
+    // Scrub attributes only INSIDE tag markup, so prose like "10 ones = 1 ten" is untouched.
+    .replace(/<[a-zA-Z][^>]*>/g, (tag) => tag
+      // "/" separates attributes as validly as whitespace does: <svg/onload=...> executes.
+      .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, ' ')
+      // A meta refresh can redirect; <meta charset> is harmless and ships in every pack.
+      .replace(/[\s/]http-equiv\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, ' ')
+      .replace(/((?:href|src|xlink:href|action|formaction)\s*=\s*)(?:"\s*(?:javascript|vbscript|data:text\/html)[^"]*"|'\s*(?:javascript|vbscript|data:text\/html)[^']*'|(?:javascript|vbscript|data:text\/html)[^\s>]+)/gi, '$1"#"'));
+}
+function sanitizeLanguagePack(pack) {
+  if (!pack || typeof pack !== 'object') return pack;
+  const seen = new WeakSet();
+  const walk = (node) => {
+    if (typeof node === 'string') return _sanitizeI18nString(node);
+    if (!node || typeof node !== 'object') return node;
+    if (seen.has(node)) return node;
+    seen.add(node);
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) node[i] = walk(node[i]);
+      return node;
+    }
+    for (const key of Object.keys(node)) {
+      // Never let a pack redefine __proto__/constructor through later merges.
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        delete node[key];
+        continue;
+      }
+      node[key] = walk(node[key]);
+    }
+    return node;
+  };
+  return walk(pack);
+}
+// __ALLO_UNTRUSTED_PARSE_END__
+
 const translateChunk = async (chunkData, targetLanguage, apiKey, signal) => {
   const glossary = await _loadTranslationGlossary(signal);
   _translationThrowIfAborted(signal);
@@ -5630,7 +5783,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         const json = JSON.parse(e.target.result);
         if (!translationRunRef.current || translationRunRef.current.generation !== importGeneration) return;
         if (typeof json === 'object' && json !== null) {
-          setLanguagePack(json);
+          setLanguagePack(sanitizeLanguagePack(json));
           setStatusMessage(t('language_selector.status_custom_loaded'));
           setIsTranslating(false);
         } else {
@@ -5697,7 +5850,7 @@ const useTranslation = (targetLanguage, apiKey) => {
                     _translationThrowIfAborted(signal);
                     if (cachedPack) {
                         debugLog(`[useTranslation] Loaded ${targetLanguage} from local device.`);
-                        setLanguagePack(cachedPack);
+                        setLanguagePack(sanitizeLanguagePack(cachedPack));
                         setIsTranslating(false);
                         return;
                     }
@@ -5742,24 +5895,16 @@ const useTranslation = (targetLanguage, apiKey) => {
                 const text = await resp.text();
                 _translationThrowIfAborted(signal);
                 let pack = null;
-                try {
-                    pack = JSON.parse(text);
-                } catch (parseErr) {
-                    try {
-                        pack = new Function('return ' + text)();
-                    } catch (evalErr) {
-                        try {
-                            const cleaned = text.replace(/^\s*\/\/.*$/gm, '').trim();
-                            pack = JSON.parse(cleaned);
-                        } catch (e2) {
-                            warnLog('Pack parse failed for ' + packUrl + ':', e2?.message);
-                            continue;
-                        }
-                    }
+                // Packs are JSON; the .js extension is historical. Never eval the response:
+                // a compromised pack host would get code execution in every client.
+                pack = _alloParseUntrustedObject(text);
+                if (!pack) {
+                    warnLog('Pack parse failed for ' + packUrl + ' (never evaluated as code)');
+                    continue;
                 }
                 if (pack && Object.keys(pack).length > 10) {
                     debugLog('[useTranslation] Loaded ' + resolvedDisplay + ' from ' + packUrl);
-                    setLanguagePack(pack);
+                    setLanguagePack(sanitizeLanguagePack(pack));
                     setIsTranslating(false);
                     try { await setOwnedStorage(storageKey, pack); } catch(e) { if (e?.name !== 'AbortError') warnLog('Cache save error:', e?.message || e); }
                     loaded = true;
@@ -5781,16 +5926,8 @@ const useTranslation = (targetLanguage, apiKey) => {
             if (hsResp.ok) {
               const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
               _translationThrowIfAborted(signal);
-              try {
-                _helpStrings = JSON.parse(hsText);
-              } catch (e) {
-                try {
-                  _helpStrings = new Function('return ' + hsText)();
-                } catch (evalErr) {
-                  warnLog('help_strings parse failed during translation init:', evalErr?.message);
-                  _helpStrings = {};
-                }
-              }
+              _helpStrings = _alloParseUntrustedObject(hsText) || {};
+              if (!Object.keys(_helpStrings).length) warnLog('help_strings parse failed during translation init (never evaluated as code)');
               try { if (isCurrent()) localStorage.setItem('alloflow_help_strings_cache', JSON.stringify(_helpStrings)); } catch {}
             }
           }
@@ -5826,7 +5963,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         // If nothing missing AND we have a substantive existing pack → done.
         if (missingCount === 0 && resumeCount > 50) {
             const finalPack = unflattenObject(resumeFromFlatPack);
-            setLanguagePack(finalPack);
+            setLanguagePack(sanitizeLanguagePack(finalPack));
             setStatusMessage(t('language_selector.status_complete'));
             await _translationAbortableDelay(500, signal);
             setIsTranslating(false);
@@ -5837,7 +5974,7 @@ const useTranslation = (targetLanguage, apiKey) => {
             setStatusMessage(t('language_selector.status_resuming', { done: resumeCount, total: expectedCount }) || ('Resuming translation (' + resumeCount + '/' + expectedCount + ')…'));
             // Surface the partial pack immediately so the user sees translations
             // for what's already done while the missing keys fill in.
-            try { setLanguagePack(unflattenObject(resumeFromFlatPack)); } catch (_) {}
+            try { setLanguagePack(sanitizeLanguagePack(unflattenObject(resumeFromFlatPack))); } catch (_) {}
         }
 
         const chunks = chunkObject(missingFlatStrings, 200);
@@ -5887,7 +6024,7 @@ const useTranslation = (targetLanguage, apiKey) => {
                 await setOwnedStorage(storageKey, partialPack);
                 // Also surface the partial pack to the UI so newly-translated
                 // keys start rendering as they're filled in.
-                setLanguagePack(partialPack);
+                setLanguagePack(sanitizeLanguagePack(partialPack));
             } catch (e) {
                 if (e?.name === 'AbortError') throw e;
                 warnLog('Incremental save failed:', e?.message || e);
@@ -5897,7 +6034,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         }
         const accumulatedPack = unflattenObject(accumulatedFlatPack);
         if (Object.keys(accumulatedPack).length > 50) {
-            setLanguagePack(accumulatedPack);
+            setLanguagePack(sanitizeLanguagePack(accumulatedPack));
             setStatusMessage(t('language_selector.status_complete'));
             try { await setOwnedStorage(storageKey, accumulatedPack); } catch(e) {
                 if (e?.name === 'AbortError') throw e;
