@@ -1280,12 +1280,12 @@ window.StemLab = window.StemLab || {
       };
       var duplicateActiveBuildLayer = function() {
         if (activeBuildLayer >= 9) {
-          announceToSR('Layer 10 cannot be duplicated higher.');
+          announceToSR(__alloT('stem.volume.sr_layer_10_cannot_be_duplicated_higher', 'Layer 10 cannot be duplicated higher.'));
           return;
         }
         var source = positions.filter(function(pos) { return parseInt(pos.split('-')[2], 10) === activeBuildLayer; });
         if (!source.length) {
-          announceToSR('Add blocks before duplicating this layer.');
+          announceToSR(__alloT('stem.volume.sr_add_blocks_before_duplicating_this_layer', 'Add blocks before duplicating this layer.'));
           return;
         }
         var targetLayer = activeBuildLayer + 1;
@@ -1621,13 +1621,13 @@ window.StemLab = window.StemLab || {
             // Only reset view when not typing in an input
             if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
               upd({ rotation: { x: -25, y: -35 }, scale: 1.0 });
-              announceToSR('3D view reset');
+              announceToSR(__alloT('stem.volume.sr_3d_view_reset', '3D view reset'));
               handled = true;
             }
             break;
           case 'Home':
             upd({ rotation: { x: -25, y: -35 }, scale: 1.0 });
-            announceToSR('3D view reset');
+            announceToSR(__alloT('stem.volume.sr_3d_view_reset', '3D view reset'));
             handled = true;
             break;
         }
@@ -2313,7 +2313,7 @@ window.StemLab = window.StemLab || {
           upd({ dispSubmerged: true, dispAnswer: '', dispFeedback: null });
           playSound('place');
           if (dispOverflow) {
-            announceToSR('The water overflowed past the 100 milliliter cylinder capacity. There is no valid final reading. Lower the initial water level and repeat the trial.');
+            announceToSR(__alloT('stem.volume.sr_the_water_overflowed_past_the_100_milliliter_cyli', 'The water overflowed past the 100 milliliter cylinder capacity. There is no valid final reading. Lower the initial water level and repeat the trial.'));
           } else {
             if (dispUsesSinker) {
               announceToSR('Sinker-only reading ' + dispTrial.sinkerOnly + ' milliliters. Sinker plus ' + dispObject.label + ' reading ' + dispTrial.final + ' milliliters. Subtract the sinker-only reading.');
@@ -2328,7 +2328,7 @@ window.StemLab = window.StemLab || {
           var parsed = Number(dispAnswer);
           if (!Number.isFinite(parsed)) {
             upd({ dispFeedback: { correct: false, msg: 'Enter a number for the final reading minus the subtraction baseline.' } });
-            announceToSR('Enter a number first.');
+            announceToSR(__alloT('stem.volume.sr_enter_a_number_first', 'Enter a number first.'));
             return;
           }
           var ok = Math.abs(parsed - dispTrial.measuredVolume) < 0.001;
@@ -2479,7 +2479,7 @@ window.StemLab = window.StemLab || {
                 h('select', {
                   value: dispObject.id,
                   onChange: function(e) { chooseSpecimen(e.target.value); },
-                  'aria-label': 'Choose an object to measure',
+                  'aria-label': __alloT('stem.volume.a11y_choose_an_object_to_measure', 'Choose an object to measure'),
                   className: 'min-h-[2.75rem] w-full rounded-lg border-2 border-sky-600 bg-white px-3 py-2 text-sm font-bold text-sky-900'
                 }, availableDisplacementObjects.map(function(o) {
                   return h('option', { key: o.id, value: o.id }, o.label);
@@ -2571,7 +2571,7 @@ window.StemLab = window.StemLab || {
               step: 1,
               value: dispTrial.initial,
               onChange: function(e) { resetDisplacementTrial({ dispInitial: Number(e.target.value) }); },
-              'aria-label': 'Initial water level in milliliters',
+              'aria-label': __alloT('stem.volume.a11y_initial_water_level_in_milliliters', 'Initial water level in milliliters'),
               'aria-describedby': 'volume-cylinder-capacity-note' + (dispInitialAdjusted ? ' volume-starting-level-comparison' : ''),
               className: 'mt-2 w-full accent-cyan-700'
             }),
@@ -2645,7 +2645,7 @@ window.StemLab = window.StemLab || {
                   '1. Predict the object volume',
                   h('span', { className: 'mt-1 block text-[0.6875rem] font-normal text-slate-600' }, 'Estimate before you see the final reading.'),
                   h('div', { className: 'mt-2 flex items-center gap-2' },
-                    h('input', { 'aria-label': 'Predicted object volume in cubic centimeters',
+                    h('input', { 'aria-label': __alloT('stem.volume.a11y_predicted_object_volume_in_cubic_centimeters', 'Predicted object volume in cubic centimeters'),
                       type: 'number', min: 0, max: 100, step: 1,
                       value: dispPrediction,
                       onChange: function(e) { upd({ dispPrediction: e.target.value }); },
@@ -2673,7 +2673,7 @@ window.StemLab = window.StemLab || {
                 h('label', { className: 'block text-sm font-black text-teal-900' },
                   dispUsesSinker ? '3. Calculate combined - sinker-only' : '3. Calculate final - initial',
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                    h('input', { 'aria-label': 'Calculated displaced volume in cubic centimeters',
+                    h('input', { 'aria-label': __alloT('stem.volume.a11y_calculated_displaced_volume_in_cubic_centimeter', 'Calculated displaced volume in cubic centimeters'),
                       type: 'number', min: 0, max: 100, step: 1,
                       value: dispAnswer,
                       disabled: !dispSubmerged || dispOverflow || !!(dispFeedback && dispFeedback.correct),
@@ -2718,7 +2718,7 @@ window.StemLab = window.StemLab || {
 
               h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', { type: 'button', onClick: nextSpecimen, className: 'min-h-[2.5rem] flex-1 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white hover:bg-indigo-800' }, 'Next specimen'),
-                h('button', { type: 'button', onClick: function() { resetDisplacementTrial({}); announceToSR('Trial reset.'); }, className: 'min-h-[2.5rem] rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100' }, 'Reset trial')
+                h('button', { type: 'button', onClick: function() { resetDisplacementTrial({}); announceToSR(__alloT('stem.volume.sr_trial_reset', 'Trial reset.')); }, className: 'min-h-[2.5rem] rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100' }, 'Reset trial')
               )
             )
           ),
@@ -2728,7 +2728,7 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'block text-sm font-black text-emerald-900' },
                 'Explain what the water showed',
                 h('span', { className: 'mt-1 block text-[0.6875rem] font-normal text-slate-600' }, 'Sentence starter: The object\'s volume is ___ because...'),
-                h('textarea', { 'aria-label': 'Explain the displacement evidence in your own words',
+                h('textarea', { 'aria-label': __alloT('stem.volume.a11y_explain_the_displacement_evidence_in_your_own_w', 'Explain the displacement evidence in your own words'),
                   rows: 3,
                   maxLength: 600,
                   value: dispExplanation,
@@ -2738,7 +2738,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('aside', { className: 'rounded-xl border border-cyan-200 bg-cyan-50 p-3', 'aria-label': 'Water displacement reminders' },
+            h('aside', { className: 'rounded-xl border border-cyan-200 bg-cyan-50 p-3', 'aria-label': __alloT('stem.volume.a11y_water_displacement_reminders', 'Water displacement reminders') },
               h('h4', { className: 'text-sm font-black text-cyan-950' }, 'Measurement reminders'),
               h('ul', { className: 'mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed text-cyan-950' },
                 h('li', null, dispUsesSinker ? 'Use combined - sinker-only, not combined - initial.' : 'Use final - initial, not the final reading alone.'),
@@ -2999,9 +2999,9 @@ window.StemLab = window.StemLab || {
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-700 hover:text-amber-800'),
               title: __alloT('stem.volume.word_problems_mode_w', 'Word Problems mode (W)')
             }, __alloT('stem.volume.word', '\uD83D\uDCDD Word')),
-            h('button', { 'aria-label': 'Water Displacement Lab mode',
+            h('button', { 'aria-label': __alloT('stem.volume.a11y_water_displacement_lab_mode', 'Water Displacement Lab mode'),
               id: 'stem-volume-tab-displacement',
-              onClick: function() { upd({ mode: 'displacement', challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, showBuildLibrary: false }); announceToSR('Water Displacement Lab opened.'); },
+              onClick: function() { upd({ mode: 'displacement', challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, showBuildLibrary: false }); announceToSR(__alloT('stem.volume.sr_water_displacement_lab_opened', 'Water Displacement Lab opened.')); },
               role: 'tab', 'aria-selected': isDisplacement, 'aria-controls': 'stem-volume-panel-displacement',
               tabIndex: isDisplacement ? 0 : -1,
               onKeyDown: function(e) { volumeTabKeyDown(e, 3); },
@@ -3038,7 +3038,7 @@ window.StemLab = window.StemLab || {
                 dispClayShape: 'lump', dispClayReshaped: false,
                 shape: 'prism', showCrossSection: false, showNet: false, showCompare: false, netFold: 0
               });
-              announceToSR('Volume explorer reset');
+              announceToSR(__alloT('stem.volume.sr_volume_explorer_reset', 'Volume explorer reset'));
             },
             'aria-label': __alloT('stem.volume.reset', 'Reset'),
             title: __alloT('stem.volume.reset_everything', 'Reset everything'),
@@ -3338,7 +3338,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-1.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 disabled:opacity-40 border border-amber-300'
               }, '\u21B6 Undo (' + undoStack.length + ')'),
               h('button', { 'aria-label': __alloT('stem.volume.clear_all', 'Clear All'),
-                onClick: function() { pushUndo(); upd({ positions: [], builderChallenge: null, builderFeedback: null }); announceToSR('Cleared all cubes'); },
+                onClick: function() { pushUndo(); upd({ positions: [], builderChallenge: null, builderFeedback: null }); announceToSR(__alloT('stem.volume.sr_cleared_all_cubes', 'Cleared all cubes')); },
                 className: 'px-3 py-1.5 text-xs font-bold bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300'
               }, __alloT('stem.volume.clear_all_2', '\u21BA Clear All'))
             )
@@ -3410,7 +3410,7 @@ window.StemLab = window.StemLab || {
           h('div', {
             className: 'absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-slate-950/85 p-2 shadow-lg',
             role: 'group',
-            'aria-label': '3D camera and fullscreen controls',
+            'aria-label': __alloT('stem.volume.a11y_3d_camera_and_fullscreen_controls', '3D camera and fullscreen controls'),
             onPointerDown: function(e) { e.stopPropagation(); },
             onPointerMove: function(e) { e.stopPropagation(); },
             onPointerUp: function(e) { e.stopPropagation(); }
@@ -3779,7 +3779,7 @@ window.StemLab = window.StemLab || {
             vpPhase === 'idle' && h('button', {
               onClick: function() {
                 setIQ({ phase: 'armed', guess: '', locked: null });
-                announceToSR('Prediction started. Volume readouts are now hidden. Enter your predicted volume, then lock it in.');
+                announceToSR(__alloT('stem.volume.sr_prediction_started_volume_readouts_are_now_hidden', 'Prediction started. Volume readouts are now hidden. Enter your predicted volume, then lock it in.'));
               },
               className: 'px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-[0.6875rem] font-bold hover:bg-indigo-600 mb-2'
             }, __alloT('stem.volume.start_a_prediction', '▶ Start a prediction')),
@@ -3797,7 +3797,7 @@ window.StemLab = window.StemLab || {
                     onChange: function(e) { setIQ({ guess: e.target.value }); },
                     onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); lockPrediction(); } },
                     className: 'w-28 px-2 py-1 border-2 border-indigo-300 rounded text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-400',
-                    'aria-label': 'Predicted volume in cubic units' })
+                    'aria-label': __alloT('stem.volume.a11y_predicted_volume_in_cubic_units', 'Predicted volume in cubic units') })
                 ),
                 h('button', { onClick: lockPrediction, disabled: !guessValid,
                   className: 'px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-[0.6875rem] font-bold hover:bg-indigo-600 disabled:opacity-40'
@@ -3805,7 +3805,7 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   onClick: function() {
                     setIQ({ phase: 'idle', guess: '', locked: null });
-                    announceToSR('Prediction cancelled. Volume readouts restored.');
+                    announceToSR(__alloT('stem.volume.sr_prediction_cancelled_volume_readouts_restored', 'Prediction cancelled. Volume readouts restored.'));
                   },
                   className: 'px-2 py-1 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300'
                 }, __alloT('stem.volume.cancel', '✖ Cancel'))
@@ -3823,7 +3823,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() {
                   setIQ({ phase: 'armed', guess: '', locked: null });
-                  announceToSR('New prediction started. Volume readouts hidden again.');
+                  announceToSR(__alloT('stem.volume.sr_new_prediction_started_volume_readouts_hidden_aga', 'New prediction started. Volume readouts hidden again.'));
                 },
                 className: 'px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-[0.6875rem] font-bold hover:bg-indigo-600 mb-2'
               }, __alloT('stem.volume.new_prediction', '🔄 New prediction'))
@@ -3840,7 +3840,7 @@ window.StemLab = window.StemLab || {
                 className: 'mt-1 px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300'
               }, __alloT('stem.volume.clear_attempts', '↺ Clear attempts'))
             ),
-            h('textarea', { id: 'volume-predictor-hypothesis', 'aria-label': 'Volume prediction hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
+            h('textarea', { id: 'volume-predictor-hypothesis', 'aria-label': __alloT('stem.volume.a11y_volume_prediction_hypothesis', 'Volume prediction hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.volume.hypothesis_how_do_you_build_intuition_', 'Hypothesis: How do you build intuition for predicting volume?'),
               className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300 mb-2' }, __alloT('stem.volume.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700 leading-relaxed mb-2' },
@@ -3851,7 +3851,7 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               __alloT('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { id: 'volume-predictor-explanation', 'aria-label': 'Explain how each dimension contributes to total volume', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
+            iq.understood && h('textarea', { id: 'volume-predictor-explanation', 'aria-label': __alloT('stem.volume.a11y_explain_how_each_dimension_contributes_to_total', 'Explain how each dimension contributes to total volume'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
               className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
             h('div', { className: 'mt-2 text-[0.625rem] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: commit-then-check. Volume readouts are masked while a prediction is armed, so the outcome reflects reasoning rather than reading. Discrete 3-band outcome on relative error; no score.'))
           );
@@ -3956,7 +3956,7 @@ window.StemLab = window.StemLab || {
                 pushUndo();
                 playSound('place');
                 upd({ positions: builderChallenge.libraryPositions.slice() });
-                announceToSR('Solution shown');
+                announceToSR(__alloT('stem.volume.sr_solution_shown', 'Solution shown'));
               },
               title: __alloT('stem.volume.reveal_the_solution_gives_up_no_badge', 'Reveal the solution (gives up \u2014 no badge)'),
               className: 'ml-2 px-2 py-0.5 rounded text-[0.625rem] font-bold bg-white text-pink-700 border border-pink-300 hover:bg-pink-100'
@@ -4185,7 +4185,7 @@ window.StemLab = window.StemLab || {
             'Cube: V equals s cubed. Sphere: V equals four thirds pi r cubed. Cylinder: V equals pi r squared h. Cone: V equals one third pi r squared h. Pyramid: V equals one third base area times height. Prism: V equals base area times height.'),
           h('div', { className: 'rounded-xl overflow-hidden border border-cyan-200', style: { background: '#020210', aspectRatio: '16/6' } },
             h('canvas', {
-              role: 'img', tabIndex: 0, 'aria-label': 'Volume and 3D shape visualization.', 'aria-describedby': 'volume-formulas-description',
+              role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.volume.a11y_volume_and_3d_shape_visualization', 'Volume and 3D shape visualization.'), 'aria-describedby': 'volume-formulas-description',
               ref: function(cvEl) {
                 if (!cvEl) return;
                 cvEl._volPaused = formulasPaused || reducedMotion;

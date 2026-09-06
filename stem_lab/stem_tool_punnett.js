@@ -1908,7 +1908,7 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   onClick: function() { upd('_showLabGuide', false); },
                   className: 'punnett-control border border-slate-300 bg-slate-50 text-slate-700',
-                  'aria-label': 'Close lab guide'
+                  'aria-label': __alloT('stem.punnett.a11y_close_lab_guide', 'Close lab guide')
                 }, 'Close')
               ),
               h('ol', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3 list-none p-0 m-0' },
@@ -1962,7 +1962,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { setStemLabTool(null); },
                 className: 'punnett-control border border-slate-200 bg-white text-slate-700',
-                'aria-label': 'Back to STEM tools'
+                'aria-label': __alloT('stem.punnett.a11y_back_to_stem_tools', 'Back to STEM tools')
               }, h(ArrowLeft, { size: 18, 'aria-hidden': 'true' })),
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex items-center gap-2 flex-wrap' },
@@ -1990,14 +1990,14 @@ window.StemLab = window.StemLab || {
                   className: 'punnett-control border ' + (showBadgePanel ? 'bg-amber-100 text-amber-800 border-amber-400' : 'bg-white text-slate-700 border-slate-200'),
                   'aria-pressed': showBadgePanel,
                   'aria-controls': showBadgePanel ? 'punnett-badge-panel' : undefined,
-                  'aria-label': 'Toggle badges'
+                  'aria-label': __alloT('stem.punnett.a11y_toggle_badges', 'Toggle badges')
                 }, '🏅 ' + Object.keys(badges).length + '/' + BADGES.length),
                 h('button', {
                   onClick: function() { upd('_showAI', !showAI); },
                   className: 'punnett-control border ' + (showAI ? 'bg-sky-100 text-sky-800 border-sky-400' : 'bg-white text-slate-700 border-slate-200'),
                   'aria-pressed': showAI,
                   'aria-controls': showAI ? 'punnett-ai-panel' : undefined,
-                  'aria-label': 'Toggle AI genetics tutor'
+                  'aria-label': __alloT('stem.punnett.a11y_toggle_ai_genetics_tutor', 'Toggle AI genetics tutor')
                 }, '🤖 Tutor')
               )
             ),
@@ -2005,7 +2005,7 @@ window.StemLab = window.StemLab || {
             showLabGuide && renderGeneticsCommand(),
 
             // ── Activity rail ──
-            h('nav', { 'aria-label': 'Genetics lab activities' },
+            h('nav', { 'aria-label': __alloT('stem.punnett.a11y_genetics_lab_activities', 'Genetics lab activities') },
               h('div', { className: 'punnett-activity-rail' },
                 SUBTOOLS.map(function(st, index) {
                   var isActive = subtool === st.id;
@@ -2024,7 +2024,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // ── Quest progress (on demand) ──
-            showQuestProgress && h('section', { id: 'punnett-quest-progress', className: 'bg-white rounded-xl border border-emerald-200 p-3 mb-3 shadow-sm', 'aria-label': 'Quest progress' },
+            showQuestProgress && h('section', { id: 'punnett-quest-progress', className: 'bg-white rounded-xl border border-emerald-200 p-3 mb-3 shadow-sm', 'aria-label': __alloT('stem.punnett.a11y_quest_progress', 'Quest progress') },
               h('div', { className: 'flex justify-between items-center mb-2 gap-2' },
                 h('h3', { className: 'text-xs font-bold text-emerald-800 uppercase tracking-wider' }, '🏆 Quest Progress'),
                 h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full' }, completedQuestCount + '/' + PUNNETT_CHALLENGES.length)
@@ -2101,7 +2101,7 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd('_aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAI(); },
                   placeholder: 'Ask about genetics, inheritance, alleles...',
-                  'aria-label': 'Ask the genetics tutor',
+                  'aria-label': __alloT('stem.punnett.a11y_ask_the_genetics_tutor', 'Ask the genetics tutor'),
                   className: 'flex-1 px-3 py-1.5 text-sm border border-sky-600 rounded-lg focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300'
                 }),
                 h('button', { onClick: askAI,
@@ -2289,7 +2289,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Punnett Grid
-              h('div', { className: 'punnett-grid-shell', role: 'region', tabIndex: 0, 'aria-label': 'Punnett square results; scroll horizontally on small screens' },
+              h('div', { className: 'punnett-grid-shell', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.punnett.a11y_punnett_square_results_scroll_horizontally_on_s', 'Punnett square results; scroll horizontally on small screens') },
                 h('table', { className: 'border-collapse' },
                   h('caption', { className: 'sr-only' },
                     (isSexLinked ? 'X-linked' : modeInfo.label) + ' Punnett square for ' +
@@ -2582,7 +2582,7 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // 4x4 Punnett Grid
-                  h('div', { className: 'punnett-grid-shell', role: 'region', tabIndex: 0, 'aria-label': 'Four by four dihybrid Punnett square; scroll horizontally on small screens' },
+                  h('div', { className: 'punnett-grid-shell', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.punnett.a11y_four_by_four_dihybrid_punnett_square_scroll_hor', 'Four by four dihybrid Punnett square; scroll horizontally on small screens') },
                     h('table', { className: 'border-collapse' },
                       h('caption', { className: 'sr-only' },
                         'Dihybrid Punnett square. Parent 1 gametes ' + diGametes1.join(', ') +
@@ -2711,7 +2711,7 @@ window.StemLab = window.StemLab || {
                   className: 'punnett-touch-choice px-3 py-2 text-[0.6875rem] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-800 border-emerald-600' : 'bg-slate-50 text-slate-700 border-slate-200'),
                   'aria-pressed': pedShowGeno
                 }, pedShowGeno ? '\uD83D\uDC41 Hide Genotypes' : '\uD83D\uDC41 Show Genotypes'),
-                h('button', { 'aria-label': 'Toggle pedigree solve mode',
+                h('button', { 'aria-label': __alloT('stem.punnett.a11y_toggle_pedigree_solve_mode', 'Toggle pedigree solve mode'),
                   onClick: function() { updMulti({ _pedSolveMode: !pedSolveMode, _pedSolveAnswer: '', _pedSolveFeedback: null, _pedShowGeno: pedSolveMode }); },
                   className: 'punnett-touch-choice px-3 py-2 text-[0.6875rem] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-600' : 'bg-slate-50 text-slate-700 border-slate-200'),
                   'aria-pressed': pedSolveMode
@@ -2951,7 +2951,7 @@ window.StemLab = window.StemLab || {
 
                 // Drift toggle
                 h('div', { className: 'flex items-center gap-2 mb-2' },
-                  h('button', { type: 'button', 'aria-label': 'Random genetic drift (stronger in small populations)', 'aria-pressed': popDrift ? 'true' : 'false',
+                  h('button', { type: 'button', 'aria-label': __alloT('stem.punnett.a11y_random_genetic_drift_stronger_in_small_populati', 'Random genetic drift (stronger in small populations)'), 'aria-pressed': popDrift ? 'true' : 'false',
                     onClick: function() { upd('popDrift', !popDrift); },
                     className: 'px-2 py-1 text-[0.6875rem] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                   }, popDrift ? '\uD83C\uDFB2 Drift ON' : '\uD83C\uDFB2 Drift OFF'),
@@ -2971,7 +2971,7 @@ window.StemLab = window.StemLab || {
                     },
                     className: 'px-4 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' + (popRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-700 hover:bg-emerald-800')
                   }, popRunning ? '\u23F8 Pause' : '\u25B6 Simulate'),
-                  h('button', { type: 'button', 'aria-label': 'Reset population simulation',
+                  h('button', { type: 'button', 'aria-label': __alloT('stem.punnett.a11y_reset_population_simulation', 'Reset population simulation'),
                     onClick: function() { updMulti({ popHistory: null, popRunning: false }); },
                     className: 'px-4 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200'
                   }, '\u21BA Reset')
@@ -3080,7 +3080,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Filter buttons
-              h('div', { className: 'flex flex-wrap gap-1 mb-3', role: 'group', 'aria-label': 'Filter traits by inheritance model' },
+              h('div', { className: 'flex flex-wrap gap-1 mb-3', role: 'group', 'aria-label': __alloT('stem.punnett.a11y_filter_traits_by_inheritance_model', 'Filter traits by inheritance model') },
                 [
                   { val: 'all', label: 'All Traits' },
                   { val: 'complete', label: 'Dominant/Rec' },
@@ -3166,24 +3166,24 @@ window.StemLab = window.StemLab || {
                   type: 'text', value: dnaSeq,
                   onChange: function(e) { upd('_dnaSeq', e.target.value.toUpperCase().replace(/[^ATCG]/g, '')); },
                   placeholder: 'e.g. ATGCGTACCTGA',
-                  'aria-label': 'DNA template strand sequence',
+                  'aria-label': __alloT('stem.punnett.a11y_dna_template_strand_sequence', 'DNA template strand sequence'),
                   className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-fuchsia-600 rounded-lg focus:outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-300 tracking-widest'
                 }),
                 h('div', { className: 'flex gap-2 mt-2' },
-                  h('button', { 'aria-label': 'Sample 1',
+                  h('button', { 'aria-label': __alloT('stem.punnett.a11y_sample_1', 'Sample 1'),
                     onClick: function() { upd('_dnaShowSteps', !dnaShowSteps); },
                     className: 'px-2 py-1 text-[0.6875rem] font-bold rounded-lg border ' + (dnaShowSteps ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-600' : 'bg-white text-slate-600 border-slate-200')
                   }, dnaShowSteps ? '\uD83D\uDC41 Hide Steps' : '\uD83D\uDC41 Show Steps'),
                   // Quick presets
-                  h('button', { 'aria-label': 'Sample 1',
+                  h('button', { 'aria-label': __alloT('stem.punnett.a11y_sample_1', 'Sample 1'),
                     onClick: function() { upd('_dnaSeq', 'ATGAAAGCTTTTCGATGA'); punnettSound('translate'); },
                     className: 'px-2 py-1 text-[0.6875rem] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-600'
                   }, '\uD83E\uDDEA Sample 1'),
-                  h('button', { 'aria-label': 'Sample 2',
+                  h('button', { 'aria-label': __alloT('stem.punnett.a11y_sample_2', 'Sample 2'),
                     onClick: function() { upd('_dnaSeq', 'ATGTGCCCGAACGTTTACTGA'); punnettSound('translate'); },
                     className: 'px-2 py-1 text-[0.6875rem] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-600'
                   }, '\uD83E\uDDEA Sample 2'),
-                  h('button', { 'aria-label': 'Translate',
+                  h('button', { 'aria-label': __alloT('stem.punnett.a11y_translate', 'Translate'),
                     onClick: function() {
                       if (!d._dnaDone) { upd('_dnaDone', true); awardXP('dnaTranslate', 15, 'DNA Translation'); }
                       punnettSound('translate');
@@ -3276,19 +3276,19 @@ window.StemLab = window.StemLab || {
                       )(band)
                     ),
                     h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
-                      h('button', { 'aria-label': 'Point Mutation',
+                      h('button', { 'aria-label': __alloT('stem.punnett.a11y_point_mutation', 'Point Mutation'),
                         onClick: function() { applyMutation('point'); },
                         className: 'px-2.5 py-1.5 text-[0.6875rem] font-bold rounded-lg border bg-white text-orange-700 border-orange-600 hover:bg-orange-50 transition-all'
                       }, '\uD83D\uDD00 Point Mutation'),
-                      h('button', { 'aria-label': 'Insertion',
+                      h('button', { 'aria-label': __alloT('stem.punnett.a11y_insertion', 'Insertion'),
                         onClick: function() { applyMutation('insertion'); },
                         className: 'px-2.5 py-1.5 text-[0.6875rem] font-bold rounded-lg border bg-white text-red-700 border-red-600 hover:bg-red-50 transition-all'
                       }, '\u2795 Insertion'),
-                      h('button', { 'aria-label': 'Deletion',
+                      h('button', { 'aria-label': __alloT('stem.punnett.a11y_deletion', 'Deletion'),
                         onClick: function() { applyMutation('deletion'); },
                         className: 'px-2.5 py-1.5 text-[0.6875rem] font-bold rounded-lg border bg-white text-red-700 border-red-600 hover:bg-red-50 transition-all'
                       }, '\u2796 Deletion'),
-                      mutOriginalDna && h('button', { 'aria-label': 'Revert to Original',
+                      mutOriginalDna && h('button', { 'aria-label': __alloT('stem.punnett.a11y_revert_to_original', 'Revert to Original'),
                         onClick: revertMutation,
                         className: 'px-2.5 py-1.5 text-[0.6875rem] font-bold rounded-lg border bg-emerald-50 text-emerald-700 border-emerald-600 hover:bg-emerald-100 transition-all'
                       }, '\u21BA Revert to Original')
@@ -3378,7 +3378,7 @@ window.StemLab = window.StemLab || {
                 ['easy', 'medium', 'hard'].map(function(diff) {
                   var labels = { easy: '\uD83C\uDF31 Beginner', medium: '\uD83D\uDD2C Intermediate', hard: '\uD83E\uDDE0 Advanced' };
                   var colors = { easy: 'emerald', medium: 'amber', hard: 'red' };
-                  return h('button', { 'aria-label': 'Select challenge difficulty',
+                  return h('button', { 'aria-label': __alloT('stem.punnett.a11y_select_challenge_difficulty', 'Select challenge difficulty'),
                     key: diff,
                     onClick: function() { updMulti({ _chalDiff: diff, _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); },
                     className: 'px-3 py-1.5 text-[0.6875rem] font-bold rounded-lg border-2 transition-all ' +
@@ -3474,7 +3474,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-sm font-bold text-violet-700' }, 'Challenge Complete!'),
                 h('p', { className: 'text-lg font-bold text-fuchsia-600' }, chalScore + '/' + chalQuestions.length),
                 chalFeedback && h('p', { className: 'text-xs text-slate-600 mt-1' }, chalFeedback),
-                h('button', { 'aria-label': 'Retry',
+                h('button', { 'aria-label': __alloT('stem.punnett.a11y_retry', 'Retry'),
                   onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); },
                   className: 'mt-3 px-4 py-1.5 text-xs font-bold text-white bg-violet-700 rounded-lg hover:bg-violet-600'
                 }, '\u21BA Retry ' + chalDiff.charAt(0).toUpperCase() + chalDiff.slice(1))
@@ -3491,7 +3491,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-4xl mb-3' }, '\u2694\uFE0F'),
                 h('p', { className: 'text-lg font-bold text-red-700 mb-1' }, 'Gene Defense'),
                 h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Battle the Mutation Virus! Answer correctly to deal damage. Wrong answers let the virus attack!'),
-                h('button', { 'aria-label': 'Start Battle',
+                h('button', { 'aria-label': __alloT('stem.punnett.a11y_start_battle', 'Start Battle'),
                   onClick: function() {
                     punnettSound('battle');
                     updMulti({
@@ -3615,7 +3615,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-4xl mb-2' }, battleResult === 'won' ? '\uD83C\uDFC6' : '\uD83D\uDCA5'),
                 h('p', { className: 'text-lg font-bold ' + (battleResult === 'won' ? 'text-emerald-700' : 'text-red-700') }, battleResult === 'won' ? 'Victory! Genome Defended!' : 'Defeated! The mutation spread...'),
                 h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length + ' | HP remaining: ' + battleHP),
-                h('button', { 'aria-label': 'Battle Again',
+                h('button', { 'aria-label': __alloT('stem.punnett.a11y_battle_again', 'Battle Again'),
                   onClick: function() {
                     punnettSound('battle');
                     updMulti({
@@ -3632,7 +3632,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-4xl mb-2' }, '\u23F0'),
                 h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over - Time Ran Out!'),
                 h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length + ' | Your HP: ' + battleHP + ' | Virus HP: ' + battleEnemyHP),
-                h('button', { 'aria-label': 'Try Again',
+                h('button', { 'aria-label': __alloT('stem.punnett.a11y_try_again', 'Try Again'),
                   onClick: function() {
                     punnettSound('battle');
                     updMulti({
@@ -3674,19 +3674,19 @@ window.StemLab = window.StemLab || {
                         h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, content)
                       ),
                       // "Try it" links
-                      idx === 0 && h('button', { 'aria-label': 'Try DNAProtein',
+                      idx === 0 && h('button', { 'aria-label': __alloT('stem.punnett.a11y_try_dnaprotein', 'Try DNAProtein'),
                         onClick: function() { upd('subtool', 'dna2protein'); },
                         className: 'mt-2 px-3 py-1 text-[0.6875rem] font-bold text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-700 rounded-lg hover:bg-fuchsia-100'
                       }, '\u2192 Try DNA\u2192Protein'),
-                      idx === 1 && h('button', { 'aria-label': 'Try Punnett Cross',
+                      idx === 1 && h('button', { 'aria-label': __alloT('stem.punnett.a11y_try_punnett_cross', 'Try Punnett Cross'),
                         onClick: function() { upd('subtool', 'cross'); },
                         className: 'mt-2 px-3 py-1 text-[0.6875rem] font-bold text-violet-600 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100'
                       }, '\u2192 Try Punnett Cross'),
-                      idx === 2 && h('button', { 'aria-label': 'Try Pedigree Builder',
+                      idx === 2 && h('button', { 'aria-label': __alloT('stem.punnett.a11y_try_pedigree_builder', 'Try Pedigree Builder'),
                         onClick: function() { upd('subtool', 'pedigree'); },
                         className: 'mt-2 px-3 py-1 text-[0.6875rem] font-bold text-violet-600 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100'
                       }, '\u2192 Try Pedigree Builder'),
-                      idx === 3 && h('button', { 'aria-label': 'Try Population Genetics',
+                      idx === 3 && h('button', { 'aria-label': __alloT('stem.punnett.a11y_try_population_genetics', 'Try Population Genetics'),
                         onClick: function() { upd('subtool', 'population'); },
                         className: 'mt-2 px-3 py-1 text-[0.6875rem] font-bold text-emerald-800 bg-emerald-50 border border-emerald-600 rounded-lg hover:bg-emerald-100'
                       }, '\u2192 Try Population Genetics')
@@ -3697,7 +3697,7 @@ window.StemLab = window.StemLab || {
 
               // Read-aloud
               h('div', { className: 'mt-3' },
-                h('button', { 'aria-label': 'Read Aloud',
+                h('button', { 'aria-label': __alloT('stem.punnett.a11y_read_aloud', 'Read Aloud'),
                   onClick: function() {
                     if (learnTopic >= 0 && LEARN_TOPICS[learnTopic]) {
                       var content = LEARN_TOPICS[learnTopic][band] || LEARN_TOPICS[learnTopic].g35;
@@ -3794,11 +3794,11 @@ window.StemLab = window.StemLab || {
             // ── Footer ──
             h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
               h('button', {
-                onClick: function() { setStemLabTool('dnaLab'); announceToSR('Opening DNA Lab'); },
+                onClick: function() { setStemLabTool('dnaLab'); announceToSR(__alloT('stem.punnett.sr_opening_dna_lab', 'Opening DNA Lab')); },
                 className: 'px-3 py-1.5 text-xs font-bold text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-700 rounded-full hover:bg-fuchsia-100 transition-all',
                 
               }, '\uD83E\uDDEC DNA Lab \u2192'),
-              h('button', { 'aria-label': 'Snapshot',
+              h('button', { 'aria-label': __alloT('stem.punnett.a11y_snapshot', 'Snapshot'),
                 onClick: takeSnapshot,
                 className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
               }, '\uD83D\uDCF8 Snapshot')
@@ -3830,7 +3830,7 @@ window.StemLab = window.StemLab || {
                     onClick: function() { upd('_studyConcept', null); },
                     autoFocus: true,
                     className: 'punnett-touch-choice absolute top-3 right-3 text-slate-500 hover:text-slate-700 font-bold p-2 rounded-lg hover:bg-slate-100',
-                    'aria-label': 'Close flashcard'
+                    'aria-label': __alloT('stem.punnett.a11y_close_flashcard', 'Close flashcard')
                   }, '✕'),
                   h('div', { className: 'text-center' },
                     h('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),

@@ -1484,7 +1484,7 @@ window.StemLab = window.StemLab || {
       function toggleChartPlayback() {
         if (reducedMotion) {
           chartPlaybackStep();
-          announceToSR('Advanced the epidemic chart by one day. Automatic playback is off while reduced motion is enabled.');
+          announceToSR(__alloT('stem.epidemic.sr_advanced_the_epidemic_chart_by_one_day_automatic', 'Advanced the epidemic chart by one day. Automatic playback is off while reduced motion is enabled.'));
           return;
         }
         if (chartPlaybackRunning) {
@@ -1866,7 +1866,7 @@ window.StemLab = window.StemLab || {
               onChange: function(e) { upd('hoverDay', Number(e.target.value)); },
               className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer',
               style: { accentColor: 'var(--allo-stem-accent, #6366f1)' },
-              'aria-label': 'Inspect epidemic day'
+              'aria-label': __alloT('stem.epidemic.a11y_inspect_epidemic_day', 'Inspect epidemic day')
             }),
             h('span', { className: 'font-mono font-bold w-16 text-right' }, hoverDay == null ? '—' : 'Day ' + scrubValue)
           ),
@@ -1876,7 +1876,7 @@ window.StemLab = window.StemLab || {
             }, reducedMotion ? 'Next day' : chartPlaybackActive ? '⏸ Pause' : '▶ Play'),
             !reducedMotion && h('label', { className: 'flex items-center gap-1' },
               h('span', null, 'Speed'),
-              h('select', { value: chartPlaybackSpeed, onChange: function(e) { upd('chartPlaybackSpeed', Number(e.target.value)); }, disabled: !activeData.length, 'aria-label': 'Playback speed', className: 'px-1 py-1 rounded border border-slate-500 bg-white text-[0.6875rem]' },
+              h('select', { value: chartPlaybackSpeed, onChange: function(e) { upd('chartPlaybackSpeed', Number(e.target.value)); }, disabled: !activeData.length, 'aria-label': __alloT('stem.epidemic.a11y_playback_speed', 'Playback speed'), className: 'px-1 py-1 rounded border border-slate-500 bg-white text-[0.6875rem]' },
                 h('option', { value: 1 }, '1×'),
                 h('option', { value: 2 }, '2×'),
                 h('option', { value: 4 }, '4×')
@@ -2334,7 +2334,7 @@ window.StemLab = window.StemLab || {
       function removeLastQuarantineZone() {
         if (!mapQuarantineZones.length) return;
         updMulti({ mapQuarantineZones: mapQuarantineZones.slice(0, -1), mapPlacementMode: false, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null });
-        announceToSR('Last quarantine zone removed.');
+        announceToSR(__alloT('stem.epidemic.sr_last_quarantine_zone_removed', 'Last quarantine zone removed.'));
         focusMapPlacementControl();
       }
       // ── Hospital capacity for outbreak map ──
@@ -2379,7 +2379,7 @@ window.StemLab = window.StemLab || {
         updMulti({ scenarioChoice: idx, scenarioResult: opt, scenarioDecision: decision });
         checkBadge('scenarioSolver');
         awardXP(20, 'Scenario decision recorded');
-        announceToSR('Response strategy committed. Modeled consequence revealed. This practice scenario is ungraded.');
+        announceToSR(__alloT('stem.epidemic.sr_response_strategy_committed_modeled_consequence_r', 'Response strategy committed. Modeled consequence revealed. This practice scenario is ungraded.'));
       }
 
       // ═══════════════════════════════════════════════════════
@@ -2604,7 +2604,7 @@ window.StemLab = window.StemLab || {
             slider('Population', popSize, 1000, 10000000, 1000, 'popSize', fmtNum),
             slider('Initial infected (%)', initialInfectedPct, 0.01, 5, 0.01, 'initialInfectedPct', function(v) { return v.toFixed(2) + '%'; }),
             h('p', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed' }, 'The curves and statistics above update live as settings change. Record stores this exact setup for comparison and learning evidence.'),
-            h('button', { 'aria-label': 'Record current live SIR setup', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md' }, '\uD83D\uDCCC Record current setup'),
+            h('button', { 'aria-label': __alloT('stem.epidemic.a11y_record_current_live_sir_setup', 'Record current live SIR setup'), onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md' }, '\uD83D\uDCCC Record current setup'),
             h('div', { className: 'flex flex-wrap items-center gap-2' },
               h('button', { type: 'button', onClick: runStochasticEnsemble, className: 'px-3 py-1.5 text-[0.6875rem] font-bold rounded-lg bg-rose-100 text-rose-800' }, stochasticSummary ? '↻ Re-run stochastic ensemble' : '🎲 Run 24 stochastic runs'),
               stochasticSummary && h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Shaded band: middle 80% of ' + stochasticSummary.runs + ' seeded runs.')
@@ -2689,7 +2689,7 @@ window.StemLab = window.StemLab || {
             slider('Population', popSize, 1000, 10000000, 1000, 'popSize', fmtNum),
             slider('Initial infected (%)', initialInfectedPct, 0.01, 5, 0.01, 'initialInfectedPct', function(v) { return v.toFixed(2) + '%'; }),
             h('p', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed' }, 'The SEIR curves update live. Record stores the current parameters as a comparison setup.'),
-            h('button', { 'aria-label': 'Record current live SEIR setup', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all shadow-md' }, '\uD83D\uDCCC Record current SEIR setup')
+            h('button', { 'aria-label': __alloT('stem.epidemic.a11y_record_current_live_seir_setup', 'Record current live SEIR setup'), onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all shadow-md' }, '\uD83D\uDCCC Record current SEIR setup')
           ),
           h('div', { className: glassCard },
             h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wide mb-2' }, __alloT('stem.epidemic.seir_curves', 'SEIR Curves')),
@@ -2822,7 +2822,7 @@ window.StemLab = window.StemLab || {
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
             slider('Simulation horizon (days)', simDays, 30, 730, 30, 'simDays', function(v) { return v + 'd'; }),
             h('p', { className: 'text-[0.6875rem] text-slate-600 leading-relaxed' }, 'Vaccination results update live. Record stores this setup for comparison.'),
-            h('button', { 'aria-label': 'Record current live vaccination setup', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-teal-700 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDCCC Record vaccination setup')
+            h('button', { 'aria-label': __alloT('stem.epidemic.a11y_record_current_live_vaccination_setup', 'Record current live vaccination setup'), onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-teal-700 text-white rounded-xl hover:bg-teal-700 transition-all shadow-md' }, '\uD83D\uDCCC Record vaccination setup')
           ),
           // Herd immunity visual
           h('div', { className: glassCard },
@@ -3209,7 +3209,7 @@ window.StemLab = window.StemLab || {
                   else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
                   text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
                   setOutbreak({ aiReadResponse: text, aiReadLoading: false });
-                  if (announceToSR) announceToSR('AI Public Health Reading complete.');
+                  if (announceToSR) announceToSR(__alloT('stem.epidemic.sr_ai_public_health_reading_complete', 'AI Public Health Reading complete.'));
                 }).catch(function() {
                   setOutbreak({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
                 });
@@ -3891,7 +3891,7 @@ window.StemLab = window.StemLab || {
               mapGrid && !reducedMotion && h('button', { type: 'button', onClick: function() { upd('mapRunning', !mapRunning); },
                 className: 'px-4 py-2 text-sm font-bold rounded-xl ' + (mapRunning ? 'bg-red-600 text-white' : 'bg-emerald-700 text-white')
               }, mapRunning ? '⏹ Stop' : '▶ Run'),
-              mapGrid && h('button', { type: 'button', onClick: function() { advanceMap(false); }, disabled: (mapRunning && !reducedMotion) || mapStep >= 200 || !mapGrid, 'aria-label': 'Advance outbreak map one day and stay paused',
+              mapGrid && h('button', { type: 'button', onClick: function() { advanceMap(false); }, disabled: (mapRunning && !reducedMotion) || mapStep >= 200 || !mapGrid, 'aria-label': __alloT('stem.epidemic.a11y_advance_outbreak_map_one_day_and_stay_paused', 'Advance outbreak map one day and stay paused'),
                 className: 'px-3 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-700 disabled:opacity-50'
               }, '\u23ED Step')
             ),
@@ -3917,7 +3917,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'range', min: 0, max: mapSnapshots.length - 1, step: 1, value: mapViewStep, disabled: mapRunning && !reducedMotion,
                 onChange: function(e) { var nextStep = Number(e.target.value); updMulti({ mapViewStep: nextStep, mapPlacementMode: nextStep === mapStep ? mapPlacementMode : false }); },
                 className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer', style: { accentColor: '#6366f1' },
-                'aria-label': 'View outbreak map day'
+                'aria-label': __alloT('stem.epidemic.a11y_view_outbreak_map_day', 'View outbreak map day')
               }),
               h('span', { className: 'font-mono font-bold w-20 text-right' }, mapViewStep === mapStep ? 'Latest' : 'Day ' + mapViewStep)
             ),
@@ -3981,12 +3981,12 @@ window.StemLab = window.StemLab || {
                   disabled: mapViewStep !== mapStep,
                   className: 'px-2 py-1 text-[0.6875rem] font-bold bg-amber-100 text-amber-700 rounded-lg disabled:opacity-50'
                 }, mapPlacementMode ? 'Cancel placement' : '＋ Place Zone'),
-                mapQuarantineZones.length > 0 && h('button', { 'aria-label': 'Undo last quarantine zone',
+                mapQuarantineZones.length > 0 && h('button', { 'aria-label': __alloT('stem.epidemic.a11y_undo_last_quarantine_zone', 'Undo last quarantine zone'),
                   onClick: removeLastQuarantineZone,
                   className: 'px-2 py-1 text-[0.6875rem] font-bold bg-slate-100 text-slate-600 rounded-lg'
                 }, '↶ Undo'),
                 mapQuarantineZones.length > 0 && h('button', { 'aria-label': __alloT('stem.epidemic.clear_3', 'Clear'),
-                  onClick: function() { updMulti({ mapQuarantineZones: [], mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null }); announceToSR('All quarantine zones cleared.'); },
+                  onClick: function() { updMulti({ mapQuarantineZones: [], mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null }); announceToSR(__alloT('stem.epidemic.sr_all_quarantine_zones_cleared', 'All quarantine zones cleared.')); },
                   className: 'px-2 py-1 text-[0.6875rem] font-bold bg-slate-100 text-slate-600 rounded-lg'
                 }, __alloT('stem.epidemic.clear_4', 'Clear'))
               )
@@ -4030,7 +4030,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'rounded-lg bg-amber-50 p-2' }, h('div', { className: 'text-[0.625rem] font-bold uppercase text-amber-700' }, 'Capacity overload'), h('div', { className: 'text-lg font-extrabold text-amber-800' }, mapSummary.overloadDays), h('div', { className: 'text-[0.625rem] text-amber-700' }, 'days above 100%')),
                   h('div', { className: 'rounded-lg bg-emerald-50 p-2' }, h('div', { className: 'text-[0.625rem] font-bold uppercase text-emerald-700' }, 'New infections'), h('div', { className: 'text-lg font-extrabold text-emerald-800' }, mapSummary.newInfections), h('div', { className: 'text-[0.625rem] text-emerald-700' }, mapSummary.attackRate.toFixed(1) + '% of cells'))
                 ),
-                mapBaselineHistory.length > 1 && h('div', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2', role: 'group', 'aria-label': 'Matched no-additional-response baseline comparison' },
+                mapBaselineHistory.length > 1 && h('div', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2', role: 'group', 'aria-label': __alloT('stem.epidemic.a11y_matched_no_additional_response_baseline_compari', 'Matched no-additional-response baseline comparison') },
                   h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wide text-slate-600' }, 'Compared with no additional response'),
                   h('div', { className: 'mt-1 flex flex-wrap gap-2 text-[0.6875rem] font-bold' },
                     h('span', { className: mapComparison.casesAvoided > 0 ? 'text-emerald-700' : mapComparison.casesAvoided < 0 ? 'text-red-700' : 'text-slate-600' },
@@ -4544,7 +4544,7 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: __alloT('stem.epidemic.type_your_answer_2', 'Type your answer...'), className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400', 'aria-label': __alloT('stem.epidemic.battle_answer', 'Battle answer') }),
                   h('div', { className: 'flex gap-2' },
-                    h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, __alloT('stem.epidemic.attack', '\u2694\uFE0F Attack!')),
+                    h('button', { 'aria-label': __alloT('stem.epidemic.a11y_attack', 'Attack!'), onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, __alloT('stem.epidemic.attack', '\u2694\uFE0F Attack!')),
                     h('button', { 'aria-label': __alloT('stem.epidemic.hint_2', 'Hint'), onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl border border-amber-200' }, __alloT('stem.epidemic.hint_3', '\uD83D\uDCA1 Hint'))
                   ),
                   battleFeedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)

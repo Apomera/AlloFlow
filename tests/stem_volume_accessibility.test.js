@@ -21,8 +21,8 @@ describe('Volume Lab accessibility', () => {
     expect(text).toContain("id: 'volume-visible-layers'");
     expect(text).toContain("htmlFor: 'volume-cross-section-layer'");
     expect(text).toContain("id: 'volume-cross-section-layer'");
-    expect(text).toContain("'aria-label': 'Volume prediction hypothesis'");
-    expect(text).toContain("'aria-label': 'Explain how each dimension contributes to total volume'");
+    expect(text).toContain(`'aria-label': __alloT('stem.volume.a11y_volume_prediction_hypothesis', 'Volume prediction hypothesis')`);
+    expect(text).toContain(`'aria-label': __alloT('stem.volume.a11y_explain_how_each_dimension_contributes_to_total', 'Explain how each dimension contributes to total volume')`);
   });
 
   it('fills native and CSS fullscreen with the model above a compact slider tray', () => {

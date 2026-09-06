@@ -10324,7 +10324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('span', { style: { display: 'block', marginTop: 2, color: '#bfdbfe', fontSize: 10.5, fontWeight: 700 } }, location.group.label));
       }
 
-      return h('nav', { className: 'aq-topic-nav', 'aria-label': 'AquacultureLab sections', style: {
+      return h('nav', { className: 'aq-topic-nav', 'aria-label': __alloT('stem.aquaculture.a11y_aquaculturelab_sections', 'AquacultureLab sections'), style: {
         marginBottom: 16, padding: 12, borderRadius: 14, background: 'linear-gradient(145deg, rgba(7,31,29,0.98), rgba(6,26,24,0.95))',
         border: '1px solid #527a75', boxShadow: '0 16px 36px rgba(0,0,0,0.24)'
       } },
@@ -10354,7 +10354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 background: selected ? '#5eead4' : '#0d302d', color: selected ? '#032522' : '#f1f5f9',
                 border: '1px solid ' + (selected ? '#99f6e4' : '#5c8580') } }, topic.label);
           })),
-        h('div', { className: 'aq-topic-pager', 'aria-label': 'Topic sequence navigation', style: {
+        h('div', { className: 'aq-topic-pager', 'aria-label': __alloT('stem.aquaculture.a11y_topic_sequence_navigation', 'Topic sequence navigation'), style: {
           display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)', gap: 8,
           alignItems: 'center', marginBottom: 10, padding: 8, borderRadius: 9,
           background: '#061a18', border: '1px solid #416c67'
@@ -10417,7 +10417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('div', { id: 'aq-topic-search-help', style: { marginTop: 5, color: '#cbd5e1', fontSize: 11.5 } },
                   'Searches topic names, summaries, curriculum keywords, and all 12 topic areas. Use several words to narrow results. Press / to open and Escape to clear or close.')),
               navSearch ? h('button', { type: 'button', className: 'aq-btn aq-topic-search-clear',
-                'aria-label': 'Clear topic search', onClick: function() { setNavSearch(''); aqAnnounce('Topic search cleared'); },
+                'aria-label': __alloT('stem.aquaculture.a11y_clear_topic_search', 'Clear topic search'), onClick: function() { setNavSearch(''); aqAnnounce('Topic search cleared'); },
                 style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer',
                   background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 800 } }, 'Clear') : null),
             h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '9px 0', color: '#dbeafe', fontSize: 12, fontWeight: 750 } },
@@ -10465,7 +10465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function evidenceCoachCard(rawEvidence, prompt, onUsePrompt) {
       var quality = aqEvidenceQuality(rawEvidence);
       var tone = quality.score === quality.total ? '#86efac' : quality.score > 0 ? '#fde68a' : '#cbd5e1';
-      return h('div', { className: 'aq-evidence-coach', role: 'status', 'aria-label': 'Evidence coach', style: { marginTop: 9, padding: 9, borderRadius: 9, background: '#031714', border: '1px solid #527a75' } },
+      return h('div', { className: 'aq-evidence-coach', role: 'status', 'aria-label': __alloT('stem.aquaculture.a11y_evidence_coach', 'Evidence coach'), style: { marginTop: 9, padding: 9, borderRadius: 9, background: '#031714', border: '1px solid #527a75' } },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
           h('span', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Evidence coach'),
           h('span', { style: { color: tone, fontSize: 11, fontWeight: 950 } }, quality.score + '/' + quality.total + ' moves')),
@@ -10602,7 +10602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return h('div', null,
         regionBar(),
         labPulse(),
-        lastContentLocation && h('section', { className: 'aq-resume-card', role: 'status', 'aria-label': 'Resume aquaculture learning',
+        lastContentLocation && h('section', { className: 'aq-resume-card', role: 'status', 'aria-label': __alloT('stem.aquaculture.a11y_resume_aquaculture_learning', 'Resume aquaculture learning'),
           style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '11px 13px', marginBottom: 12, borderRadius: 12, background: 'linear-gradient(110deg, rgba(11,43,40,0.98), rgba(7,31,29,0.96))', border: '1px solid #5c8580' } },
           h('div', null,
             h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Continue learning'),
@@ -10682,7 +10682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                     borderRadius: 8, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 900 } },
                   'Import & merge',
                   h('input', { id: 'aq-portfolio-import', type: 'file', accept: '.json,application/json',
-                    'aria-label': 'Import and merge an Aquaculture learning backup', onChange: handlePortfolioImport,
+                    'aria-label': __alloT('stem.aquaculture.a11y_import_and_merge_an_aquaculture_learning_backup', 'Import and merge an Aquaculture learning backup'), onChange: handlePortfolioImport,
                     style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }))),
               h('div', { role: 'status', 'aria-live': 'polite',
                 style: { marginTop: 8, color: learningNotice.kind === 'error' ? '#fecaca' : (learningNotice.kind === 'success' ? '#bbf7d0' : '#bfdbfe'),
@@ -10724,7 +10724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   style: { minHeight: 44, marginTop: 'auto', padding: '9px 11px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: journey.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } },
                   summary.complete ? 'Review path →' : (summary.completed ? 'Continue: ' : 'Start: ') + nextLocation.topic.label + ' →'));
             }))),
-        h('section', { className: 'aq-home-card aq-operations-card', 'data-aquaculture-command': 'true', 'aria-label': 'Aquaculture operations dashboard',
+        h('section', { className: 'aq-home-card aq-operations-card', 'data-aquaculture-command': 'true', 'aria-label': __alloT('stem.aquaculture.a11y_aquaculture_operations_dashboard', 'Aquaculture operations dashboard'),
           style: { background: 'linear-gradient(135deg, rgba(4,47,46,0.95), rgba(15,23,42,0.92))', border: '1px solid rgba(94,234,212,0.30)', borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: '0 18px 38px rgba(0,0,0,0.24)' } },
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, alignItems: 'stretch' } },
             h('div', { style: { padding: 14, borderRadius: 14, background: 'rgba(15,23,42,0.54)', border: '1px solid rgba(148,163,184,0.18)' } },
@@ -10911,7 +10911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('section', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle, 'aria-labelledby': 'aq-eco-environment-heading' },
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '1 · Choose an environment'),
           h('h2', { id: 'aq-eco-environment-heading', style: { margin: '0 0 10px', color: '#f8fafc', fontSize: 18 } }, model.environment.name),
-          h('div', { className: 'aq-eco-environments', role: 'radiogroup', 'aria-label': 'Farm environment', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(185px,1fr))', gap: 8 } },
+          h('div', { className: 'aq-eco-environments', role: 'radiogroup', 'aria-label': __alloT('stem.aquaculture.a11y_farm_environment', 'Farm environment'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(185px,1fr))', gap: 8 } },
             Object.keys(ECOSYSTEM_ENVIRONMENTS).map(function(environmentId) { var environment = ECOSYSTEM_ENVIRONMENTS[environmentId], selected = ecosystemWorkspace.environmentId === environmentId; return h('button', { key: environmentId, type: 'button', role: 'radio', 'aria-checked': selected, className: 'aq-btn aq-eco-environment', onClick: function() { selectEcosystemEnvironment(environmentId); }, style: { minHeight: 112, padding: 11, textAlign: 'left', cursor: 'pointer', borderRadius: 10, background: selected ? '#ccfbf1' : '#071f1d', color: selected ? '#052e2b' : '#f8fafc', border: '2px solid ' + (selected ? '#5eead4' : '#527a75') } }, h('div', { style: { fontSize: 21 } }, environment.icon), h('div', { style: { marginTop: 4, fontSize: 13, fontWeight: 950 } }, environment.name), h('div', { style: { marginTop: 4, color: selected ? '#164e49' : '#cbd5e1', fontSize: 10.5, lineHeight: 1.4 } }, environment.detail)); }))),
 
         h('div', { className: 'aq-eco-workbench', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(290px,.8fr)', gap: 12, alignItems: 'start' } },
@@ -10944,7 +10944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('section', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle, 'aria-labelledby': 'aq-eco-disturbance-heading' },
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '4 · Apply a disturbance'),
           h('h2', { id: 'aq-eco-disturbance-heading', style: { margin: '0 0 9px', color: '#f8fafc', fontSize: 18 } }, model.disturbance.name),
-          h('div', { role: 'radiogroup', 'aria-label': 'Ecosystem disturbance', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 7 } }, Object.keys(ECOSYSTEM_DISTURBANCES).map(function(disturbanceId) { var item = ECOSYSTEM_DISTURBANCES[disturbanceId], selected = ecosystemWorkspace.disturbanceId === disturbanceId; return h('button', { key: disturbanceId, type: 'button', role: 'radio', 'aria-checked': selected, className: 'aq-btn', onClick: function() { setEcosystemDisturbance(disturbanceId); }, style: { minHeight: 74, padding: 9, textAlign: 'left', borderRadius: 9, cursor: 'pointer', background: selected ? '#fde68a' : '#071f1d', color: selected ? '#2a1900' : '#f8fafc', border: '1px solid ' + (selected ? '#fef3c7' : '#527a75') } }, h('div', { style: { fontSize: 12, fontWeight: 950 } }, item.name), h('div', { style: { marginTop: 3, color: selected ? '#713f12' : '#cbd5e1', fontSize: 10.3, lineHeight: 1.35 } }, item.detail)); })),
+          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.aquaculture.a11y_ecosystem_disturbance', 'Ecosystem disturbance'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 7 } }, Object.keys(ECOSYSTEM_DISTURBANCES).map(function(disturbanceId) { var item = ECOSYSTEM_DISTURBANCES[disturbanceId], selected = ecosystemWorkspace.disturbanceId === disturbanceId; return h('button', { key: disturbanceId, type: 'button', role: 'radio', 'aria-checked': selected, className: 'aq-btn', onClick: function() { setEcosystemDisturbance(disturbanceId); }, style: { minHeight: 74, padding: 9, textAlign: 'left', borderRadius: 9, cursor: 'pointer', background: selected ? '#fde68a' : '#071f1d', color: selected ? '#2a1900' : '#f8fafc', border: '1px solid ' + (selected ? '#fef3c7' : '#527a75') } }, h('div', { style: { fontSize: 12, fontWeight: 950 } }, item.name), h('div', { style: { marginTop: 3, color: selected ? '#713f12' : '#cbd5e1', fontSize: 10.3, lineHeight: 1.35 } }, item.detail)); })),
           model.connections.length ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: 'rgba(30,64,175,.13)', border: '1px solid #60a5fa' } }, h('h3', { style: { margin: '0 0 5px', color: '#bfdbfe', fontSize: 12.5 } }, 'Modeled nutrient and habitat connections'), h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } }, model.connections.map(function(connection, index) { return h('li', { key: index }, connection); }))) : null),
 
         h('section', { className: 'aq-content-card aq-ecosystem-card aq-time-compare', style: cardStyle, 'aria-labelledby': 'aq-eco-time-heading' },
@@ -11053,8 +11053,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('rect', { x: -8, y: -13, width: 20, height: 13, rx: 2, fill: '#3a5566' })),
           h('line', { x1: 193, y1: 61, x2: 193, y2: 145, stroke: '#f8fafc', strokeWidth: 2 }),
           [105, 130, 148].map(function(y) { return h('ellipse', { key: y, cx: 193, cy: y, rx: 13, ry: 7, fill: '#2a2233', stroke: '#c4b5fd', strokeWidth: 1.5 }); }),
-          h('text', { x: 10, y: 50, 'aria-label': 'Landing', fill: '#0f172a', fontSize: 9.5, fontWeight: 900 }, 'DOWN-RIVER / LANDING'),
-          h('text', { x: 250, y: 50, 'aria-label': 'Mussel lease', fill: '#0f172a', fontSize: 9.5, fontWeight: 900 }, 'UP-RIVER / LEASE'),
+          h('text', { x: 10, y: 50, 'aria-label': __alloT('stem.aquaculture.a11y_landing', 'Landing'), fill: '#0f172a', fontSize: 9.5, fontWeight: 900 }, 'DOWN-RIVER / LANDING'),
+          h('text', { x: 250, y: 50, 'aria-label': __alloT('stem.aquaculture.a11y_mussel_lease', 'Mussel lease'), fill: '#0f172a', fontSize: 9.5, fontWeight: 900 }, 'UP-RIVER / LEASE'),
           h('line', { className: 'aq-field-current-arrow', x1: flowStartX, y1: 101, x2: flowEndX, y2: 101, stroke: '#f8fafc', strokeWidth: flowWidth, strokeDasharray: slackFlow ? '4 4' : undefined, markerEnd: slackFlow ? undefined : 'url(#' + markerId + ')' }),
           h('circle', { cx: 125, cy: 65, r: 7, fill: '#bae6fd', stroke: '#082f49', strokeWidth: 2 }),
           h('circle', { cx: 226, cy: 132, r: 7, fill: '#c4b5fd', stroke: '#312e81', strokeWidth: 2 }),
@@ -11347,7 +11347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 5, color: '#bae6fd', fontSize: 9.5 } },
                 h('span', null, 'Target ' + Math.max(0, Number(hud.targetDistance) || 0).toFixed(0) + ' m'),
                 h('span', null, missionProgressCount + '/6 complete')),
-              h('div', { role: 'progressbar', 'aria-label': '3D mission progress', 'aria-valuemin': 0, 'aria-valuemax': 6, 'aria-valuenow': missionProgressCount, 'aria-valuetext': missionProgressCount + ' of 6 mission milestones complete', style: { height: 5, margin: '5px 0 6px', borderRadius: 999, overflow: 'hidden', background: '#163f3b' } },
+              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.aquaculture.a11y_3d_mission_progress', '3D mission progress'), 'aria-valuemin': 0, 'aria-valuemax': 6, 'aria-valuenow': missionProgressCount, 'aria-valuetext': missionProgressCount + ' of 6 mission milestones complete', style: { height: 5, margin: '5px 0 6px', borderRadius: 999, overflow: 'hidden', background: '#163f3b' } },
                 h('span', { style: { display: 'block', width: (missionProgressCount / 6 * 100) + '%', height: '100%', background: '#5eead4' } })),
               h('svg', { key: active3DScenario.id, className: 'aq-3d-route-map', viewBox: '0 0 160 108', role: 'img', 'aria-labelledby': 'aq-3d-route-title aq-3d-route-desc', style: { display: 'block', width: '100%', height: 108, borderRadius: 7, background: '#cfe8ed' } },
                 h('title', { id: 'aq-3d-route-title' }, active3DScenario.name + ' live route and current map'),
@@ -11389,12 +11389,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 n > 1 && h('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, 'Dissolved O₂ across your ' + n + ' probes — warmer water holds less.'));
             })(),
 
-            h('div', { className: 'aq-3d-status-log', 'aria-label': 'Recent mission events', style: { position: 'absolute', bottom: 10, left: 10, right: 88, maxHeight: 100, overflowY: 'auto', background: 'rgba(4,18,18,0.9)', padding: 8, borderRadius: 8 } },
+            h('div', { className: 'aq-3d-status-log', 'aria-label': __alloT('stem.aquaculture.a11y_recent_mission_events', 'Recent mission events'), style: { position: 'absolute', bottom: 10, left: 10, right: 88, maxHeight: 100, overflowY: 'auto', background: 'rgba(4,18,18,0.9)', padding: 8, borderRadius: 8 } },
               (status || []).slice(-4).map(function(ev, ei) {
                 var color = ev.type === 'probe' ? '#5eead4' : (ev.type === 'comparison' ? '#c4b5fd' : (ev.type === 'dropper' ? '#fbbf24' : (ev.type === 'warning' ? '#fde68a' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#a7f3d0')))));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
-            h('div', { className: 'aq-3d-controls', role: 'group', 'aria-label': 'On-screen vessel controls', style: { position: 'absolute', left: 10, bottom: 116, width: 'min(250px, calc(100% - 20px))', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, padding: 7, borderRadius: 9, background: 'rgba(4,18,18,0.88)' } },
+            h('div', { className: 'aq-3d-controls', role: 'group', 'aria-label': __alloT('stem.aquaculture.a11y_on_screen_vessel_controls', 'On-screen vessel controls'), style: { position: 'absolute', left: 10, bottom: 116, width: 'min(250px, calc(100% - 20px))', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, padding: 7, borderRadius: 9, background: 'rgba(4,18,18,0.88)' } },
               [
                 { key: 'arrowup', label: 'Forward', hold: true },
                 { key: 'arrowleft', label: 'Turn left', hold: true },
@@ -11481,7 +11481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return h('div', null, regionBar(), h('div', { className: 'aq-content-card', style: cardStyle },
         h('div', { className: 'aq-section-kicker', style: headerStyle }, '🗺 Chart Room (Bagaduce River)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Stylized Bagaduce River chart. In a real sim, you\'d use NOAA chart 13309 (Penobscot Bay). Narrow channels — set + drift on river current matters as much as wind.'),
-        h('svg', { viewBox: '0 0 600 400', role: 'img', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(20,184,166,0.3)' }, 'aria-label': 'Bagaduce River route chart. The town landing is south, the mussel lease is north, inbound red nuns are on starboard to the east, and green cans are on port to the west.' },
+        h('svg', { viewBox: '0 0 600 400', role: 'img', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(20,184,166,0.3)' }, 'aria-label': __alloT('stem.aquaculture.a11y_bagaduce_river_route_chart_the_town_landing_is', 'Bagaduce River route chart. The town landing is south, the mussel lease is north, inbound red nuns are on starboard to the east, and green cans are on port to the west.') },
           h('rect', { x: 0, y: 0, width: 600, height: 60, fill: '#a8c595' }),
           h('text', { x: 18, y: 28, fill: '#3b4d2b', fontSize: 13, fontWeight: 700 }, 'Castine / Penobscot Peninsula'),
           h('rect', { x: 0, y: 320, width: 600, height: 80, fill: '#a8c595' }),
@@ -22838,7 +22838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('p', { style: { margin: 0, maxWidth: 760, color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } }, 'Read a lease case, predict the priority signal, inspect seven measurements, and reveal the model. Then explain what you would verify rather than treating one reading as a diagnosis.')),
               h('button', { type: 'button', className: 'aq-btn', onClick: resetMusselHealthWorkspace,
                 style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 12, fontWeight: 850 } }, 'Reset signals')),
-            h('ol', { className: 'aq-mussel-steps', 'aria-label': 'Mussel investigation steps',
+            h('ol', { className: 'aq-mussel-steps', 'aria-label': __alloT('stem.aquaculture.a11y_mussel_investigation_steps', 'Mussel investigation steps'),
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(125px,1fr))', gap: 7, margin: '14px 0 0', padding: 0, listStyle: 'none' } },
               ['1 · Choose case', '2 · Predict', '3 · Inspect', '4 · Reveal', '5 · Explain + save'].map(function(step, index) {
                 var stepState = index < currentStepIndex ? 'complete' : (index === currentStepIndex ? 'current' : 'upcoming');
@@ -22979,7 +22979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 950 } }, 'Open 3D + guided mission →')),
             h('fieldset', { className: 'aq-mussel-scenarios', style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #527a75' } },
               h('legend', { style: { padding: '0 6px', color: '#f8fafc', fontSize: 13, fontWeight: 900 } }, '1 · Choose a field case'),
-              h('div', { role: 'radiogroup', 'aria-label': 'Mussel field scenarios', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+              h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.aquaculture.a11y_mussel_field_scenarios', 'Mussel field scenarios'), style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
                 MUSSEL_HEALTH_PRESETS.map(function(preset, presetIndex) {
                   var selected = musselHealthWorkspace.scenarioId === preset.id;
                   return h('button', { key: preset.id, type: 'button', role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1, className: 'aq-btn aq-mussel-preset', onClick: function() { applyMusselHealthPreset(preset); }, onKeyDown: function(event) { handleMusselPresetKeyDown(event, presetIndex); },
@@ -24083,7 +24083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('input', { type: 'checkbox', id: 'sh-und', checked: !!sh.understood, onChange: function(e) { setSH({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
             h('label', { htmlFor: 'sh-und', style: { fontSize: 12, fontWeight: 700, color: '#86efac', cursor: 'pointer' } },
               'I think I understand the trade-offs — let me explain them in my own words')),
-          sh.understood && h('textarea', { 'aria-label': 'Pond oxygen explanation', value: sh.explanation || '',
+          sh.understood && h('textarea', { 'aria-label': __alloT('stem.aquaculture.a11y_pond_oxygen_explanation', 'Pond oxygen explanation'), value: sh.explanation || '',
             onChange: function(e) { setSH({ explanation: e.target.value }); },
             placeholder: 'Explain in your own words: what drives oxygen consumption? What replenishes it? Why does feed rate matter even at constant density? What is the trade-off a real fish farmer faces?',
             style: { width: '100%', minHeight: 80, padding: 6, background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(134,239,172,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),

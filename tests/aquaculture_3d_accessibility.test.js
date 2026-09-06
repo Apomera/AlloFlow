@@ -59,7 +59,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
   it('provides touch and assistive-technology controls with safe release cleanup', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
     expect(source).toContain('setControl: function(key, active)');
-    expect(source).toContain("'aria-label': 'On-screen vessel controls'");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquaculture.a11y_on_screen_vessel_controls', 'On-screen vessel controls')`);
     expect(source).toContain('props.onPointerDown = function(event)');
     expect(source).toContain('props.onLostPointerCapture = function()');
     expect(source).toContain("event.key === 'Enter' || event.key === ' '");
@@ -92,7 +92,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('var missionWaterProfile = {');
     expect(source).toContain("type: 'comparison', text: describeDepthComparison");
     expect(source).toContain("className: 'aq-3d-route-map'");
-    expect(source).toContain("'aria-label': '3D mission progress'");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquaculture.a11y_3d_mission_progress', '3D mission progress')`);
     expect(source).toContain("className: 'aq-3d-debrief'");
     expect(source).toContain('function save3DMissionNote()');
     expect(source).toContain('var activeMissionProbes =');
@@ -129,8 +129,8 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('boatState.pos.x += currentSet.x');
     expect(source).toContain('boatState.pos.z += currentSet.z');
     expect(source).toContain("className: 'aq-field-current-key'");
-    expect(source).toContain("'aria-label': 'Landing'");
-    expect(source).toContain("'aria-label': 'Mussel lease'");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquaculture.a11y_landing', 'Landing')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.aquaculture.a11y_mussel_lease', 'Mussel lease')`);
     expect(source).toContain("className: 'aq-3d-current-arrow'");
     expect(source).not.toContain('boatState.pos.z += currentDrift');
     expect(source).toContain('missionScenario.waveScale');
@@ -207,7 +207,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("type: 'search', value: navSearch");
     expect(source).toContain("'aria-describedby': 'aq-topic-search-help'");
     expect(source).toContain("'aria-keyshortcuts': 'Escape'");
-    expect(source).toContain("'aria-label': 'Clear topic search'");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquaculture.a11y_clear_topic_search', 'Clear topic search')`);
     expect(source).toContain("'aria-live': 'polite'");
     expect(source).toContain("searchMatches.slice(0, 30)");
     expect(source).toContain("currentArea ? ' · Current area' : ''");

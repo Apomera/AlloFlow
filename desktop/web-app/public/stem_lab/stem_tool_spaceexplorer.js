@@ -2327,7 +2327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('div', {
               'data-spaceexplorer-interior-progress': 'true',
               role: 'list',
-              'aria-label': 'Cabin readiness requirements',
+              'aria-label': __alloT('stem.spaceexplorer.a11y_cabin_readiness_requirements', 'Cabin readiness requirements'),
               className: 'min-w-[176px] rounded-lg border border-slate-600 bg-slate-800 p-2'
             },
               h('div', { className: 'text-xs font-black ' + (readinessComplete ? 'text-green-200' : activeRecovery ? 'text-amber-100' : 'text-cyan-100') }, readinessComplete ? 'Cabin ready' : activeRecovery ? 'Recovery in progress' : 'Readiness checklist'),
@@ -2354,7 +2354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 className: 'flex flex-wrap items-center justify-between gap-2 border-b border-slate-600 bg-slate-900 p-2'
               },
                 h('span', { className: 'text-xs font-black text-white' }, 'Cabin visual'),
-                h('div', { className: 'grid grid-cols-2 gap-1', role: 'group', 'aria-label': 'Cabin visual view' },
+                h('div', { className: 'grid grid-cols-2 gap-1', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_cabin_visual_view', 'Cabin visual view') },
                   h('button', {
                     type: 'button',
                     'data-spaceexplorer-interior-view': 'route',
@@ -2750,7 +2750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('div', { className: 'space-y-3' },
               h('div', null,
                 h('h3', { className: 'text-xs font-black text-white' }, '1. Choose a final compartment'),
-                h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Interior destination' },
+                h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_interior_destination', 'Interior destination') },
                   INTERIOR_ZONES.map(function(zone) {
                     var selected = zone.id === targetId;
                     return h('button', {
@@ -2770,7 +2770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('div', null,
                 h('h3', { className: 'text-xs font-black text-white' }, '2. Set the cabin condition'),
-                h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Cabin condition' },
+                h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_cabin_condition', 'Cabin condition') },
                   INTERIOR_CONDITIONS.map(function(item) {
                     var selected = item.id === condition.id;
                     return h('button', {
@@ -2795,7 +2795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     h('strong', { className: 'text-[0.6875rem] text-white' }, 'Carry a payload'),
                     h('span', { className: 'text-[0.6875rem] text-slate-300' }, 'Same speed \u2022 more mass = more braking distance')
                   ),
-                  h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-3 gap-2', role: 'group', 'aria-label': 'Payload carried during translation' },
+                  h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-3 gap-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_payload_carried_during_translation', 'Payload carried during translation') },
                     INTERIOR_PAYLOADS.map(function(item) {
                       var selected = item.id === payload.id;
                       return h('button', {
@@ -2818,7 +2818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     h('strong', { className: 'block text-[0.6875rem] text-white' }, 'Outcome support'),
                     h('span', { className: 'block text-[0.6875rem] text-slate-300' }, predictionMode === 'guided' ? 'See control predictions before moving.' : 'Predict first, then compare with the result.')
                   ),
-                  h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Movement prediction mode' },
+                  h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_movement_prediction_mode', 'Movement prediction mode') },
                     h('button', {
                       type: 'button',
                       disabled: !!activeRecovery,
@@ -2841,7 +2841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   id: 'se-interior-route-preview',
                   tabIndex: -1,
                   role: 'region',
-                  'aria-label': 'Current interior route',
+                  'aria-label': __alloT('stem.spaceexplorer.a11y_current_interior_route', 'Current interior route'),
                   'data-spaceexplorer-interior-route-preview': condition.id,
                   className: 'mt-2 rounded-lg border border-slate-600 bg-slate-900 p-2 text-[0.6875rem] text-slate-100'
                 }, positionId === targetId
@@ -2851,7 +2851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   id: 'se-staged-route-recommendation',
                   tabIndex: -1,
                   role: 'region',
-                  'aria-label': 'Safer staged route recommendation',
+                  'aria-label': __alloT('stem.spaceexplorer.a11y_safer_staged_route_recommendation', 'Safer staged route recommendation'),
                   'data-spaceexplorer-staged-route': 'recommendation',
                   className: 'mt-2 rounded-lg border border-cyan-400 bg-cyan-950/70 p-2.5 text-slate-100'
                 },
@@ -2869,7 +2869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   id: 'se-staged-route-status',
                   tabIndex: -1,
                   role: 'region',
-                  'aria-label': 'Active guided braking route',
+                  'aria-label': __alloT('stem.spaceexplorer.a11y_active_guided_braking_route', 'Active guided braking route'),
                   'data-spaceexplorer-staged-route': 'active',
                   className: 'mt-2 rounded-lg border border-cyan-300 bg-cyan-950/70 p-2.5 text-slate-100'
                 },
@@ -2897,7 +2897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                       h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-100' }, 'You crossed into ' + positionZone.name + ', but inertia is still carrying you past the work area. Choose how to create an external braking force.'),
                       h('p', { className: 'mt-2 rounded-md bg-slate-950/70 p-2 text-[0.6875rem] font-mono text-cyan-100' }, payload.label + ' \u2022 ' + condition.label + ' \u2022 ' + activeRecovery.speed.toFixed(2) + ' m/s \u2022 about ' + activeRecovery.stoppingDistance.toFixed(2) + ' m to stop'),
                       activeRecovery.attempts > 0 && h('p', { 'data-spaceexplorer-recovery-attempts': String(activeRecovery.attempts), className: 'mt-2 text-[0.6875rem] font-bold text-amber-100' }, activeRecovery.attempts + ' recovery adjustment' + (activeRecovery.attempts === 1 ? '' : 's') + ' attempted'),
-                      h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Drift recovery response' },
+                      h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_drift_recovery_response', 'Drift recovery response') },
                         h('button', {
                           type: 'button',
                           'data-spaceexplorer-recovery-action': 'rail',
@@ -2924,7 +2924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                         movementMethods.map(function(method) { return h('option', { key: method.id, value: method.id }, method.label); })
                       ),
                       h('p', { className: 'mt-2 text-xs text-slate-200' }, 'What will happen on this route with the current payload?'),
-                      h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Predicted movement outcome' },
+                      h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_predicted_movement_outcome', 'Predicted movement outcome') },
                         h('button', {
                           type: 'button',
                           'data-spaceexplorer-prediction-choice': 'controlled',
@@ -2948,7 +2948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                         className: 'mt-2 w-full rounded-lg border border-purple-200 bg-purple-700 px-3 py-2 text-xs font-black text-white hover:bg-purple-600'
                       }, predictionChoice ? 'Test prediction with ' + movementMethods.find(function(method) { return method.id === predictionStrategy; }).label : 'Choose a prediction to test')
                     )
-                  : h('div', { className: 'mt-2 space-y-2', role: 'group', 'aria-label': 'Microgravity movement method' },
+                  : h('div', { className: 'mt-2 space-y-2', role: 'group', 'aria-label': __alloT('stem.spaceexplorer.a11y_microgravity_movement_method', 'Microgravity movement method') },
                       movementMethods.map(function(method) {
                         var prediction = routePredictions[method.id];
                         return h('button', {
@@ -3797,7 +3797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   onChange: function(e) { upd('missionIntent', (e.target.value || '').slice(0, 220)); },
                   rows: 3, maxLength: 220,
                   placeholder: 'Example: I predict oxygen and hull margins will matter more than science points until we understand the radiation belts.',
-                  'aria-label': 'Mission hypothesis',
+                  'aria-label': __alloT('stem.spaceexplorer.a11y_mission_hypothesis', 'Mission hypothesis'),
                   className: 'w-full rounded-lg bg-slate-950/70 border border-purple-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-400 focus:outline-none'
                 }),
                 h('div', { className: 'mt-1 text-[0.625rem] text-slate-400 text-right' }, (missionIntent || '').length + '/220'),
@@ -4010,7 +4010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 onChange: function(e) { upd('protocolRevisionDraft', (e.target.value || '').slice(0, 220)); },
                 rows: 2, maxLength: 220,
                 placeholder: 'The oxygen margin is falling faster than predicted, so I will prioritize life support because ...',
-                'aria-label': 'Protocol revision justification',
+                'aria-label': __alloT('stem.spaceexplorer.a11y_protocol_revision_justification', 'Protocol revision justification'),
                 className: 'w-full rounded-md bg-slate-950/70 border border-fuchsia-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-400 focus:outline-none'
               }),
               h('div', { className: 'flex items-center justify-between gap-2 mt-1' },
@@ -4456,7 +4456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', { className: 'text-[0.625rem] font-bold ' + ((currentDecisionReason || '').trim().length >= 20 ? 'text-green-300' : 'text-slate-400') }, (currentDecisionReason || '').length + '/220')
               ),
               h('p', { className: 'text-[0.6875rem] text-slate-300 leading-snug mb-1.5' }, reasoningScaffold ? reasoningScaffold.guidance + ' ' + reasoningScaffold.focus : 'Optional: explain the evidence or tradeoff before choosing. Your debrief will preserve this reasoning.'),
-              reasoningScaffold && h('div', { className: 'flex flex-wrap gap-1.5 mb-2', 'aria-label': 'Reasoning starters' },
+              reasoningScaffold && h('div', { className: 'flex flex-wrap gap-1.5 mb-2', 'aria-label': __alloT('stem.spaceexplorer.a11y_reasoning_starters', 'Reasoning starters') },
                 reasoningScaffold.stems.map(function(stem) {
                   return h('button', {
                     key: stem.label,
@@ -4474,7 +4474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 onChange: function(e) { upd('currentDecisionReason', (e.target.value || '').slice(0, 220)); },
                 rows: 2, maxLength: 220,
                 placeholder: 'Because the spectrum/evidence suggests..., I will trade ... to protect ...',
-                'aria-label': 'Commander reasoning before choosing a response',
+                'aria-label': __alloT('stem.spaceexplorer.a11y_commander_reasoning_before_choosing_a_response', 'Commander reasoning before choosing a response'),
                 className: 'w-full rounded-md bg-slate-950/70 border border-sky-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-sky-400 focus:outline-none'
               })
             ),
@@ -4648,7 +4648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               'data-spaceexplorer-orientation-summary': String(interiorOrientationChecks),
               className: 'mt-2 text-xs font-bold text-cyan-100'
             }, 'Fixed-reference checks: ' + interiorOrientationChecks + ' of ' + INTERIOR_ZONES.length + ' compartments confirmed.'),
-            h('div', { className: 'mt-2 grid grid-cols-2 gap-2 md:grid-cols-3', role: 'list', 'aria-label': 'Cabin practice results' },
+            h('div', { className: 'mt-2 grid grid-cols-2 gap-2 md:grid-cols-3', role: 'list', 'aria-label': __alloT('stem.spaceexplorer.a11y_cabin_practice_results', 'Cabin practice results') },
               [
                 ['Activities', interiorCompletedActivities + ' completed', 'activities'],
                 ['Work attempts', String(interiorWorkAttempts), 'work-attempts'],
@@ -4742,7 +4742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               onChange: function(e) { upd('missionReflection', (e.target.value || '').slice(0, 260)); },
               rows: 3, maxLength: 260,
               placeholder: 'Revise your claim: What would you test differently next mission?',
-              'aria-label': 'Mission reflection and revised hypothesis',
+              'aria-label': __alloT('stem.spaceexplorer.a11y_mission_reflection_and_revised_hypothesis', 'Mission reflection and revised hypothesis'),
               className: 'w-full rounded-lg bg-slate-950/70 border border-purple-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }),
             h('div', { className: 'mt-1 text-[0.625rem] text-slate-400 text-right' }, (missionReflection || '').length + '/260')
@@ -4796,7 +4796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('h3', { className: 'text-[0.6875rem] text-sky-200 font-bold' }, '✍️ REASONING PRACTICE'),
               h('span', { className: 'text-[0.625rem] font-bold text-cyan-200' }, missionReasoningProgress.written + '/' + missionReasoningProgress.total + ' explained')
             ),
-            h('div', { className: 'h-1.5 rounded-full bg-slate-800 overflow-hidden mb-2', role: 'progressbar', 'aria-label': 'Decisions explained', 'aria-valuenow': missionReasoningProgress.percent, 'aria-valuemin': 0, 'aria-valuemax': 100 },
+            h('div', { className: 'h-1.5 rounded-full bg-slate-800 overflow-hidden mb-2', role: 'progressbar', 'aria-label': __alloT('stem.spaceexplorer.a11y_decisions_explained', 'Decisions explained'), 'aria-valuenow': missionReasoningProgress.percent, 'aria-valuemin': 0, 'aria-valuemax': 100 },
               h('div', { className: 'h-full bg-gradient-to-r from-sky-400 to-cyan-300', style: { width: missionReasoningProgress.percent + '%' } })
             ),
             h('p', { className: 'text-[0.6875rem] text-slate-300 leading-snug' }, missionReasoningProgress.status + '. ' + missionReasoningProgress.complete + ' decision' + (missionReasoningProgress.complete === 1 ? '' : 's') + ' named evidence, tradeoff, and prediction.'),
