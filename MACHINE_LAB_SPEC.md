@@ -183,6 +183,19 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 22 (2026-09-06)
+
+- **One derivation of a second, four places that draw it.** `secondMarks(path, limit, stopAtX)`
+  walks a flight and returns the interpolated point at each whole second. The Siege Field's
+  beads and the Test Range's beads now ask it instead of each carrying their own walk, and it
+  is exposed as `_secondMarks` so a test can check the arithmetic rather than the prose.
+- **The two flat figures mark seconds as well.** The Test Range's trajectory graph and the
+  Compare strip both draw a dot per second, each in its own colour, with "dots: one second
+  apart" in the caption. The strobe reading of an arc — even horizontal gaps, opening vertical
+  ones — is now available in the 2D views, which are the low-power and screenshot-friendly path.
+- ★`limit || 10` treated an explicit 0 as "unset" and returned ten marks. It is
+  `(limit == null) ? 10 : Math.max(0, limit)` now; the test that caught it asked for zero.
+
 ### Wave 21 (2026-09-06)
 
 - **A shock ring on the face of the wall.** A hit opens a ring out of the point of impact,

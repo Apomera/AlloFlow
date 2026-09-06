@@ -647,11 +647,12 @@ describe('Siege Field wave 9: the apex marked, the landing flagged, chaff on the
 describe('Siege Field wave 10: seconds on the arc, the track on the ground', () => {
   it('beads the arc wherever the flight clock passes a whole second', () => {
     const src = source();
-    expect(src).toContain('while (sec <= S.beads.marks.length && p1.t >= sec) {');
+    // The walk itself lives in secondMarks() since wave 22; the field asks it
+    // for as many beads as it has, and stops it where the drawn line stops.
+    expect(src).toContain('var beadPts = secondMarks(data.previewPath || [], S.beads.marks.length, standoff + 1)');
     // The fraction is clamped, so a coarse path cannot throw a bead off the arc.
-    expect(src).toContain('var bf = Math.max(0, Math.min(1, (sec - p0.t) / Math.max(1e-6, p1.t - p0.t)));');
-    // Beads stop where the drawn line stops.
-    expect(src).toContain('if ((Number(p1.x) || 0) > standoff + 1) break;');
+    expect(src).toContain('var f = Math.max(0, Math.min(1, (sec - Number(p0.t)) / Math.max(1e-6, Number(p1.t) - Number(p0.t))));');
+    expect(src).toContain('if (stopAtX != null && (Number(p1.x) || 0) > stopAtX) break;');
   });
 
   it('gives every bead a shadow on the ground and lays the whole arc flat as a track', () => {
@@ -984,7 +985,7 @@ describe('Siege Field wave 18: the Test Range gets the same instruments', () => 
   it('beads the fired arc by the second and rings its apex', () => {
     const src = source();
     const range = src.slice(src.indexOf('function buildRangeScene'), src.indexOf('// The build bay used to float'));
-    expect(range).toContain('while (second <= 12 && Number(q1.t) >= second) {');
+    expect(range).toContain('secondMarks(path, 12).forEach(function (mk) {');
     expect(range).toContain('var apRing = new THREE.Mesh(');
     expect(range).toContain("apLabel.draw((m.apexWord || 'apex ') + Math.round(Number(m.apex) || apPt.y) + (m.metresWord || ' m'));");
   });
@@ -1140,5 +1141,64 @@ describe('Siege Field wave 21: the field reacts to the hit', () => {
   it('tells the scene whether the wall is breached', () => {
     const src = source();
     expect(src).toContain('breached: !!d.breached,');
+  });
+});
+
+describe('Siege Field wave 22: one derivation of a second, four places that draw it', () => {
+  it('marks whole seconds by interpolating on the path it is given', () => {
+    const marks = cfg._secondMarks(
+      [{ x: 0, y: 0, z: 0, t: 0 }, { x: 20, y: 10, z: 2, t: 2 }],
+      10
+    );
+    expect(marks).toHaveLength(2);
+    expect(marks[0]).toMatchObject({ t: 1 });
+    expect(marks[0].x).toBeCloseTo(10, 6);
+    expect(marks[0].y).toBeCloseTo(5, 6);
+    expect(marks[0].z).toBeCloseTo(1, 6);
+    expect(marks[1].t).toBe(2);
+    expect(marks[1].x).toBeCloseTo(20, 6);
+  });
+
+  it('never returns more marks than asked for, and none from a path with no clock', () => {
+    const long = [];
+    for (let i = 0; i <= 40; i++) long.push({ x: i * 5, y: 0, z: 0, t: i });
+    expect(cfg._secondMarks(long, 6)).toHaveLength(6);
+    expect(cfg._secondMarks(long, 0)).toHaveLength(0);
+    expect(cfg._secondMarks([{ x: 0, y: 0 }, { x: 9, y: 9 }], 5)).toHaveLength(0);
+    expect(cfg._secondMarks([], 5)).toHaveLength(0);
+    expect(cfg._secondMarks(null, 5)).toHaveLength(0);
+  });
+
+  it('stops where the drawn line stops when given a cut', () => {
+    const p = [];
+    for (let i = 0; i <= 10; i++) p.push({ x: i * 10, y: 0, z: 0, t: i });
+    // Cut at 35 m: the walk ends before the segment that leaves the wall.
+    expect(cfg._secondMarks(p, 10, 35).map((m) => m.t)).toEqual([1, 2, 3]);
+  });
+
+  it('draws a dot per second on the flat trajectory figure, with a legend', () => {
+    const shot = {
+      range: 120.5, apex: 30.2, flightTime: 5.1, drift: 0, muzzleV: 40,
+      path: [
+        { t: 0, x: 0, y: 2, z: 0, v: 40 },
+        { t: 2, x: 60, y: 30, z: 0, v: 30 },
+        { t: 5.1, x: 120.5, y: 0, z: 0, v: 33.3 }
+      ]
+    };
+    const html = renderTool('machineLab', state({ view: 'range', lastShot: shot }));
+    expect(html).toContain('dots: one second apart');
+    // Five whole seconds fit inside a 5.1 s flight.
+    expect((html.match(/<circle[^>]*r="2.6"/g) || []).length).toBe(5);
+  });
+
+  it('draws them on the Compare strip too, in each machine own colour', () => {
+    const src = source();
+    expect(src).toContain("h('g', { key: 'secs' }, secondMarks(r.s.path, 12).map(function (mk, mi) {");
+    expect(src).toContain("r: 2.4, fill: color, stroke: T.bg, strokeWidth: 1");
+  });
+
+  it('is one derivation: no bespoke second-walk left anywhere', () => {
+    const src = source();
+    expect(src.match(/while \(sec(ond)? <= /g) || []).toHaveLength(1);
   });
 });

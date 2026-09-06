@@ -2105,21 +2105,11 @@ window.StemLab = window.StemLab || {
       var instCol = contrast ? 0xffff00 : 0xfde68a;
       var beadMat = new THREE.MeshBasicMaterial({ color: instCol, transparent: true, opacity: 0.95, fog: false });
       var beadGeo = new THREE.SphereGeometry(instR, 10, 8);
-      var second = 1;
-      for (var bp = 1; bp < path.length && second <= 12; bp++) {
-        var q0 = path[bp - 1], q1 = path[bp];
-        if (q0.t == null || q1.t == null) break;
-        while (second <= 12 && Number(q1.t) >= second) {
-          var bf = Math.max(0, Math.min(1, (second - Number(q0.t)) / Math.max(1e-6, Number(q1.t) - Number(q0.t))));
-          var bx = (Number(q0.x) || 0) + (((Number(q1.x) || 0) - (Number(q0.x) || 0)) * bf);
-          var by = (Number(q0.y) || 0) + (((Number(q1.y) || 0) - (Number(q0.y) || 0)) * bf);
-          var bz = (Number(q0.z) || 0) + (((Number(q1.z) || 0) - (Number(q0.z) || 0)) * bf);
-          var bead = new THREE.Mesh(beadGeo, beadMat);
-          bead.position.set(bx, Math.max(0.1, by), bz);
-          S.model.add(bead);
-          second++;
-        }
-      }
+      secondMarks(path, 12).forEach(function (mk) {
+        var bead = new THREE.Mesh(beadGeo, beadMat);
+        bead.position.set(mk.x, Math.max(0.1, mk.y), mk.z);
+        S.model.add(bead);
+      });
       // No bead shadows here: the Siege Field has real ground for a shadow to
       // fall on, and this bay has an abstract grid, where a 0.6 m disc at 100 m
       // is two pixels of nothing.
@@ -3126,6 +3116,36 @@ window.StemLab = window.StemLab || {
   // A sprite whose text can be rewritten. makeCanvasTexture keeps no handle on
   // its canvas, and these labels change with every slider drag, so this one
   // owns its canvas and repaints in place instead of building a new texture.
+  // Where the flight clock passes each whole second, interpolated on the very
+  // path the caller is about to draw. There are four places that mark seconds
+  // — the Siege Field's beads, the Test Range's beads, and the two flat
+  // figures — and they must agree, so they share this one derivation.
+  // stopAtX cuts the walk where the drawn line stops.
+  function secondMarks(path, limit, stopAtX) {
+    var out = [];
+    if (!path || path.length < 2) return out;
+    // An explicit 0 means none, not "use the default": `limit || 10` would
+    // have quietly turned it into ten.
+    var cap = (limit == null) ? 10 : Math.max(0, limit);
+    var sec = 1;
+    for (var i = 1; i < path.length && out.length < cap; i++) {
+      var p0 = path[i - 1], p1 = path[i];
+      if (stopAtX != null && (Number(p1.x) || 0) > stopAtX) break;
+      if (p0.t == null || p1.t == null) break;
+      while (sec <= cap && Number(p1.t) >= sec) {
+        var f = Math.max(0, Math.min(1, (sec - Number(p0.t)) / Math.max(1e-6, Number(p1.t) - Number(p0.t))));
+        out.push({
+          x: (Number(p0.x) || 0) + (((Number(p1.x) || 0) - (Number(p0.x) || 0)) * f),
+          y: (Number(p0.y) || 0) + (((Number(p1.y) || 0) - (Number(p0.y) || 0)) * f),
+          z: (Number(p0.z) || 0) + (((Number(p1.z) || 0) - (Number(p0.z) || 0)) * f),
+          t: sec
+        });
+        sec++;
+      }
+    }
+    return out;
+  }
+
   function makeLabelSprite(THREE, scale, tint, through) {
     if (typeof document === 'undefined' || !THREE || typeof THREE.Sprite !== 'function' || typeof THREE.CanvasTexture !== 'function') return null;
     var c, g;
@@ -4778,21 +4798,10 @@ window.StemLab = window.StemLab || {
             // A bead wherever the flight clock passes a whole second, walked
             // along the same points the line is built from.
             if (S.beads) {
-              var bpath = data.previewPath || [];
-              var beadPts = [], sec = 1;
-              for (var bx = 1; bx < bpath.length && beadPts.length < S.beads.marks.length; bx++) {
-                var p0 = bpath[bx - 1], p1 = bpath[bx];
-                if ((Number(p1.x) || 0) > standoff + 1) break;
-                if (p0.t == null || p1.t == null) break;
-                while (sec <= S.beads.marks.length && p1.t >= sec) {
-                  var bf = Math.max(0, Math.min(1, (sec - p0.t) / Math.max(1e-6, p1.t - p0.t)));
-                  beadPts.push(new THREE.Vector3(
-                    (p0.z || 0) + (((p1.z || 0) - (p0.z || 0)) * bf),
-                    Math.max(0.2, p0.y + (p1.y - p0.y) * bf),
-                    -standoff + p0.x + ((p1.x - p0.x) * bf)));
-                  sec++;
-                }
-              }
+              var beadPts = secondMarks(data.previewPath || [], S.beads.marks.length, standoff + 1)
+                .map(function (mk) {
+                  return new THREE.Vector3(mk.z, Math.max(0.2, mk.y), -standoff + mk.x);
+                });
               S.beads.count = beadPts.length;
               for (var bk = 0; bk < S.beads.marks.length; bk++) {
                 var bpt = beadPts[bk];
@@ -5478,6 +5487,7 @@ window.StemLab = window.StemLab || {
     // Exposed for tests: the pure model, with no DOM or React in sight.
     _math: _machineMath,
     _resolveBand: resolveBand,
+    _secondMarks: secondMarks,
     _aiTimeoutMs: AI_TIMEOUT_MS,
     _machineBenches: MACHINE_BENCHES,
     // Exposed so the answer-position test can inspect the ROTATED order rather
@@ -6438,6 +6448,16 @@ window.StemLab = window.StemLab || {
           });
         })).concat([
           h('polyline', { key: 'traj', points: toPts(s.path), fill: 'none', stroke: T.effort, strokeWidth: 2.5, strokeLinejoin: 'round' }),
+          // A dot per second of flight, on the same figure the graph draws:
+          // the horizontal gaps hold while the vertical ones open up.
+          h('g', { key: 'secs' }, secondMarks(s.path, 12).map(function (mk, mi) {
+            return h('circle', {
+              key: 's' + mi, cx: pad + mk.x * sx, cy: H - pad - mk.y * sy,
+              r: 2.6, fill: T.effort, stroke: T.card, strokeWidth: 1
+            });
+          })),
+          h('text', { key: 'sl', x: pad, y: H - 6, fill: T.dim, fontSize: 10 },
+            __alloT('stem.machinelab.sec_legend', 'dots: one second apart')),
           h('circle', { key: 'end', cx: pad + (s.path[s.path.length - 1].x) * sx, cy: H - pad, r: 4, fill: T.bad }),
           h('text', { key: 'r', x: W - pad, y: H - pad + 16, fill: T.dim, fontSize: 11, textAnchor: 'end' }, fmt(s.range, 0) + ' m'),
           h('text', { key: 'a', x: pad, y: pad - 8, fill: T.dim, fontSize: 11 }, __alloT('stem.machinelab.apex_label', 'apex ') + fmt(s.apex, 0) + ' m')
@@ -9676,7 +9696,8 @@ window.StemLab = window.StemLab || {
               h('span', { key: 'title', style: { fontSize: 11, fontWeight: 800, color: T.text, letterSpacing: 0.5, textTransform: 'uppercase' } },
                 __alloT('stem.machinelab.cmp_arc_title', 'Flight shapes at a glance')),
               h('span', { key: 'hint', style: { fontSize: 11, color: T.dim } },
-                __alloT('stem.machinelab.cmp_arc_hint', 'same stone · same release angle'))
+                __alloT('stem.machinelab.cmp_arc_hint', 'same stone · same release angle') + ' · ' +
+                __alloT('stem.machinelab.sec_legend', 'dots: one second apart'))
             ]),
             h('svg', {
               key: 'svg', viewBox: '0 0 ' + W + ' ' + H,
@@ -9696,6 +9717,12 @@ window.StemLab = window.StemLab || {
                     key: 'path', points: points(r.s.path), fill: 'none', stroke: color,
                     strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round'
                   }),
+                  h('g', { key: 'secs' }, secondMarks(r.s.path, 12).map(function (mk, mi) {
+                    return h('circle', {
+                      key: 's' + mi, cx: left + mk.x * sx, cy: H - bottom - mk.y * sy,
+                      r: 2.4, fill: color, stroke: T.bg, strokeWidth: 1
+                    });
+                  })),
                   h('circle', {
                     key: 'end', cx: left + end.x * sx, cy: H - bottom, r: 4,
                     fill: color, stroke: T.bg, strokeWidth: 1.5
