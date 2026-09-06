@@ -63,7 +63,54 @@
                 h('td', { style: { padding: 4, width: 1400 } }, 'Joules'),
                 h('td', { style: { padding: 4 } }, 'Percent of input'))))),
 
-        // 5. FITS: nothing to report.
+        // 5. CORRECT PATTERN: a decorative EMOJI watermark bled off the corner.
+        //    This is the case that broke when the aria-hidden clause was dropped
+        //    (rightly - skatelab's aria-hidden phase labels are visible text):
+        //    rocks and spacecolony both bleed a giant low-opacity glyph at
+        //    `-right-6 -top-8 text-8xl opacity-[.06]`, and an emoji IS text
+        //    content. "Carries text" has to mean "carries a letter or a number"
+        //    (\p{L}/\p{N}), which drops watermarks without going blind to
+        //    Japanese or Arabic labels the way /[A-Za-z0-9]/ would. Must stay
+        //    silent.
+        h('div', {
+          style: {
+            position: 'relative', overflow: 'hidden', height: 70, marginTop: 8,
+            border: '1px solid #15803d', background: '#fff'
+          }
+        },
+          h('div', {
+            'aria-hidden': 'true',
+            style: {
+              position: 'absolute', right: -24, top: -32, fontSize: 96,
+              opacity: 0.06, pointerEvents: 'none'
+            }
+          }, '\uD83E\uDEA8'),
+          h('div', { style: { position: 'relative', padding: 8 } }, 'Emoji watermark, clipped')),
+
+        // 6. ★★★ REAL DEFECT: a nowrap row that shoves a control ENTIRELY past
+        //    the column. This is the inversion case: `invisible()` treats
+        //    "outside the slot" as the skip-link parking pattern, so the worse
+        //    the overflow the more certainly it was silenced — coding reported
+        //    its 2px straddler and dropped four buttons at 65-262px. Only a
+        //    TRANSFORM means parked; laid out there means pushed. Must REPORT.
+        h('div', { style: { display: 'flex', flexWrap: 'nowrap', gap: 8, marginTop: 8 } },
+          h('div', { style: { minWidth: '1500px', padding: 8, border: '1px solid #b91c1c' } },
+            'Nowrap row that shoves the next control off the edge'),
+          h('button', { style: { padding: '6px 10px', whiteSpace: 'nowrap', border: '1px solid #b91c1c' } },
+            'Pushed clean off')),
+
+        // 7. CORRECT PATTERN: a skip link PARKED off-canvas by a transform,
+        //    revealed on focus. Outside the slot too, but deliberately so.
+        //    Must stay silent.
+        h('a', {
+          href: '#main',
+          style: {
+            position: 'absolute', left: 8, top: 8, padding: '6px 10px',
+            transform: 'translateY(-200%)', background: '#fff', color: '#0f172a'
+          }
+        }, 'Skip to content'),
+
+        // 8. FITS: nothing to report.
         h('div', { style: { border: '1px solid #334155', marginTop: 8, padding: 8 } },
           'A row that fits its column')
       );

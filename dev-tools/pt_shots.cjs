@@ -17,6 +17,16 @@ window.__mount = function (dark, tab) {
     // it was walking: a hub or category card changes simTab, and everything
     // scanned after that belongs to a different screen.
     window.__toolState = pair[0];
+    // Switch tab WITHOUT remounting, so a probe can check that state set on one
+    // tab survives to another — remounting installs fresh useState and would
+    // report every cross-tab effect as broken.
+    window.__setTab = function (t) {
+      pair[1](function (prev) {
+        var next = Object.assign({}, prev);
+        next.plateTectonics = Object.assign({}, prev.plateTectonics, { simTab: t });
+        return next;
+      });
+    };
     var ctx = { React: React, toolData: pair[0], setToolData: pair[1], setStemLabTool: function(){}, setStemLabTab: function(){}, setToolSnapshots: function(){}, addToast: function(){},
       announceToSR: function(m){ window.__sr = (window.__sr || []).concat([m]); }, awardXP: function(){}, getXP: function(){ return 0; }, beep: function(){}, celebrate: function(){},
       canvasNarrate: function(){}, canvasA11yDesc: function(){}, callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null, gradeLevel: '5th',

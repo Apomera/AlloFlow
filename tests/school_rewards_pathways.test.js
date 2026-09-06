@@ -64,6 +64,7 @@ async function openPortal(repository, email, intercept, savedSession) {
 
 function seedStore() {
   const h = harness(), student = setup(h), category = seededCategory(h);
+  h.setActive(ADMIN); h.call('adminUpdateRewardsSettings', { printLabEnabled: true }); // opt-in since 2026-09-05
   const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Notebook', cost: 10, inventoryLimit: 5, idempotencyKey: 'pathway_catalog_01' }).item;
   const window = h.call('adminUpsertRewardsWindow', { name: 'School store', status: 'OPEN' }).window;
   return { h, student, category, prize, window };

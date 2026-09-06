@@ -5,6 +5,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { buildApBlueprintCoverage } = require('./ap_blueprint_coverage_core.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_biology_foundation_pilot.json');
@@ -338,6 +339,7 @@ const automatedAssessment = findings.length === 0 ? 'pass' : 'fail';
 const generatedAt = /^\d{4}-\d{2}-\d{2}$/.test(String(pack.blueprint?.lastVerifiedAt || ''))
   ? `${pack.blueprint.lastVerifiedAt}T00:00:00.000Z` : '2026-08-20T00:00:00.000Z';
 const report = {
+  blueprintCoverage: buildApBlueprintCoverage({ pack, library }),
   reportId: 'ap-biology-foundation-qa',
   schemaVersion: 1,
   generatedAt,

@@ -6471,7 +6471,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                       onClick: function () { upd('beaverDam', o.on); },
                       style: { minHeight: 40, padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer',
                         border: '1px solid ' + (sel ? '#38bdf8' : 'var(--allo-stem-border, #334155)'), background: sel ? 'rgba(56,189,248,0.18)' : 'transparent',
-                        color: sel ? '#7dd3fc' : 'var(--allo-stem-text, #e2e8f0)' } }, o.label);
+                        // ★ sky-300 on the selected chip's own rgba(56,189,248,.18) tint read
+                        // 1.45:1: the tint resolves to near-white over stem_lab's card, which is
+                        // WHITE in light AND dark, so there is no isDark branch that would fix it.
+                        // The unselected state already uses the themed token; the selected state
+                        // just has to stop opting out of it. Selection stays obvious from the sky
+                        // border, the tinted ground and aria-pressed.
+                        color: 'var(--allo-stem-text, #e2e8f0)' } }, o.label);
                   })),
                 h('p', { role: 'status', style: { margin: '10px 4px 0', fontSize: 13, lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } },
                   damsIn

@@ -446,6 +446,12 @@ describe('Plate Tectonics — deployed copies', () => {
         if (text[i] === '[') depth++;
         else if (text[i] === ']') { depth--; if (!depth) break; }
       }
+      // The statements moved into ui_strings, so the literal now contains
+      // __alloT(key, fallback) calls. Evaluate it with a shim that returns the
+      // fallback: this test is about the SHAPE and the true/false balance of
+      // the bank, which must keep holding whatever language it renders in.
+      // eslint-disable-next-line no-unused-vars
+      const __alloT = (k, fb) => fb;
       // eslint-disable-next-line no-eval
       return eval(text.slice(open, i + 1));
     };

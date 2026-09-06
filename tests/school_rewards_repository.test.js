@@ -2121,21 +2121,24 @@ describe('staff undo (2026-09-02)', () => {
 });
 
 describe('school settings (2026-09-02)', () => {
-  it('defaults the Print Lab tab on, lets an administrator hide it, and reports the flag to every role', () => {
+  it('hides the Print Lab tab until an administrator turns it on, and reports the flag to every role', () => {
+    // Opt-in since 2026-09-05: a fresh deployment must not expose the printer
+    // workflow before the school has reviewed it.
     const h = harness();
     setup(h);
+    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(false);
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(false);
+    h.setActive(STAFF);
+    expect(() => h.call('adminUpdateRewardsSettings', { printLabEnabled: true })).toThrow(/role cannot/);
+    h.setActive(ADMIN);
+    expect(h.call('adminUpdateRewardsSettings', { printLabEnabled: true })).toEqual({ ok: true, printLabEnabled: true });
     expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(true);
     h.setActive(STUDENT);
     expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(true);
     h.setActive(ADMIN);
     expect(h.call('adminUpdateRewardsSettings', { printLabEnabled: false })).toEqual({ ok: true, printLabEnabled: false });
     expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(false);
-    h.setActive(STAFF);
-    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(false);
-    expect(() => h.call('adminUpdateRewardsSettings', { printLabEnabled: true })).toThrow(/role cannot/);
-    h.setActive(ADMIN);
-    h.call('adminUpdateRewardsSettings', { printLabEnabled: true });
-    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(true);
     expect(h.rows('Audit').filter(row => row[1] === 'SETTINGS_UPDATED').length).toBe(2);
   });
 });

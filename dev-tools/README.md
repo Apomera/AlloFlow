@@ -156,7 +156,103 @@ sourcebook's `aria-hidden` ring at `-right-12` inside a `relative overflow-hidde
 a **clipping** ancestor plus real **content** is *reported*, because the part past the edge
 cannot be scrolled to at all. Treating every `overflow: hidden` as harmless blinds the
 detector across a whole tool, since tool cards are routinely rounded `overflow-hidden`
-containers.
+containers. **Scrollability anywhere up the chain wins** — do not stop the ancestor walk at
+the first clip, because a clipping box nested inside a scrolling one is still reachable
+(magnetism's station tabs each clip their own ellipsised label inside a strip that scrolls).
+
+**★★★ A lab-wide sweep probes only the first 12 views of each tool.** `DEEP_CAP` is
+`ALL ? 12 : 30`, so `--all` runs at less than half the depth of a single-file run — and until
+Sep 5 nothing said so, which meant a tool's later views scored as clean rather than as
+unvisited. magnetism has **18** views and its two real `svg-text-outside-viewbox` findings sit
+past the twelfth: reported reliably when run alone, absent from all three sweep axes. The
+bisect: `--all --only=magnetism` gives 0 while the same file alone gives 2, on a fresh browser
+either way, so it is the cap and not browser longevity, load, or theme.
+
+The gate now prints, per file, `30 of 34 matched controls (re-run with --deep-cap=34)`. **Coverage is
+reported beside the findings, never among them** — a caveat about what was *measured* is not a
+defect that was *found*, and a first cut that pushed it into `findings` broke every calibration
+baseline at once (known-bad 7 → 8, pets 0 → 1). Two flags make this cheap to work with:
+
+```
+--only=<substr>     # run the --all code path over a subset (bisecting, re-checks)
+--deep-cap=N        # override the view cap in either mode
+```
+
+Treat any board without a coverage line as "the first 12 views were clean", not "the tool was
+clean". Depth is the expensive axis: raising the cap roughly triples sweep wall-clock.
+
+### Reading the caveats — the `!` lines under a board
+
+A board can now say three different things about its own limits, and none of them is a defect:
+
+```
+! N file(s) only partly probed — those views are UNMEASURED, not clean:   <- the DEEP_CAP
+! N file(s) were measured while an animation was still running (1200ms cap) <- settle() gave up
+! N file(s) had view(s) fail to probe:                                     <- a deep click threw
+```
+
+Each exists because the same bug kept recurring in different clothes: **the gate spelled
+"nothing went wrong" exactly like "nothing was measured".** A capped walk, a swallowed
+exception and an expired settle all scored an unexamined view identically to a clean one.
+Treat every `!` line as "re-run deeper / look closer", never as noise.
+
+### Calibrating the gate — `dev-tools/fixtures/`
+
+```
+node dev-tools/check_gate_fixtures.cjs     # all 13 calibrations, exits 1 on drift
+```
+
+Run that after ANY change to the gate. A drifted calibration means the **gate** changed
+behaviour, not that a tool did — the distinction matters, because three of this file's own bugs
+came from changes that looked like pure plumbing (a dedupe that deleted findings, a coverage
+note that broke every baseline, a `--gate` exit that failed on caveats).
+
+**A green board proves nothing unless the gate can still fail.** Every one of these has caught
+a real regression in the gate itself, usually within a minute of introducing it. Run them
+after ANY change to the gate, including changes that look like pure plumbing — deduping,
+logging and coverage reporting each broke a detector or a baseline on first attempt.
+
+| check | command | must report |
+|---|---|---|
+| known-bad blob | `git show f25a88533:stem_lab/stem_tool_pets.js > /tmp/kb.js`, then run it `--deep` | **7** |
+| current pets | `stem_lab/stem_tool_pets.js --deep` | **0** (and 0 at `--deep-cap=34`) |
+| clipped text | `dev-tools/fixtures/clipped_text_fixture.js` | **1** |
+| overflow column | `dev-tools/fixtures/overflow_column_fixture.js --narrow` | **4** (incl. a control pushed wholly off; the transform-parked skip link stays silent) |
+| deep coverage | `dev-tools/fixtures/deep_cap_fixture.js --deep --deep-cap=12` | 0 findings **+** `12 of 15 matched controls` |
+| svg text ink | `dev-tools/fixtures/svg_text_fixture.js` | **1** (the genuine cut, not the rotated label's leading) |
+| settle caveat | `dev-tools/fixtures/settle_fixture.js` | 0 findings **+** the `(1200ms cap)` caveat; silent at `--settle-cap=5000` |
+| contrast ink | `dev-tools/fixtures/contrast_ink_fixture.js --contrast` | **1** (the `!important` pin) |
+| contrast ink, host CSS off | same file `--contrast --no-host-css` | **4** (the pin + the three the host rescues) |
+
+`--gate` mode must fail on **defects only**, never on caveats — check both directions:
+`deep_cap_fixture.js --deep --deep-cap=12 --gate` exits **0** (coverage note, no defect) while
+the known-bad blob `--deep --gate` exits **1**. Adding coverage entries to `report` once made
+`--gate` fail a lab with zero defects, because the exit test read `report.length`.
+
+The two overflow/clipping fixtures each carry the false positives that motivated them — a
+scrollable wide row, a decorative bleed clipped by `overflow:hidden`, an emoji watermark — so
+they fail in *both* directions: they catch a detector going blind AND a detector getting
+greedy. `deep_cap_fixture.js` must also print nothing at `--deep-cap=15`; if the low-cap run
+stops printing its coverage line, sweeps have gone silently partial again.
+
+**★★★ "Outside the slot" describes both a parked skip-link and the worst overflow there is.**
+`invisible()` ends with an off-canvas clause for the skip-link pattern (`transform:
+translateY(-180%)`), and `r.left > sr.right` is equally true of a control shoved *entirely*
+past the edge by a too-wide row. Until Sep 6 that silenced the severe cases and kept only the
+straddlers: coding's header spills seven buttons, and the gate reported the single one whose
+left edge was still inside (2px over) while dropping four at 65-262px. **The worse the defect,
+the more certainly it was invisible.** The rule now distinguishes *parked* (moved by a
+transform — deliberate) from *pushed* (laid out there — a defect); fixture cases 6 and 7 pin
+both directions. Any `overflows-tool-column` count from before that fix under-reports.
+
+**★★★ Measure the settled layout, not the entry animation.** A CSS animation outranks an
+inline style, so an element positioned by `transform` loses that transform for as long as any
+keyframe animation also sets `transform`. archstudio's onboarding panel is centred with an
+inline `translate(-50%,-50%)` and `arch-panel-in` wiped it, throwing the panel half a stage
+out of its column. The 450ms post-mount wait did not help: the panel only appears once WebGL
+goes live, so its 0.2s animation began *after* the wait. Both the gate and `stem_tool_shot`
+now await `document.getAnimations()` (skipping infinite ones, capped at 1200ms) before
+measuring. It cuts both ways — archstudio narrow went 1 → 0, magnetism contrast went 2 → 5.
 
 **★★★ Redirect stderr somewhere ELSE, and watch for a positive liveness signal.**
 A full sweep takes tens of minutes and writes its JSON only at exit, so `0 bytes` looks
@@ -229,9 +325,41 @@ Flags: `--dark` | `--contrast` (default light), `--click=<button label prefix>`,
 
 ---
 
+### `check_untranslated_english.cjs` (NEW - Sep 5, node)
+
+Finds learner-facing English that never reaches the translation layer. It marks every
+`__alloT(...)` / `t(...)` span first, then reports sentence-like string literals that
+fall outside one, grouped by the mode they sit in.
+
+```bash
+node dev-tools/check_untranslated_english.cjs stem_lab/stem_tool_galaxy.js
+```
+
+**Its threshold is itself a blind spot.** The first version demanded two words of
+three-plus letters inside ONE literal, with a ten-character floor, and skipped anything
+starting with `.`. That hid every tail half of a concatenation - `' kpc field'`,
+`' billion years'`, `'Big Bang'`, and a narration fragment beginning `'. The flash marks
+a massive star exploding...'` - so the galaxy tool read as finished while those were
+still English. It now keeps short strings that start or end with a space, since those
+are usually joined onto a value. **Re-measure with a different rule before calling a
+sweep done.**
+
+Fragments like those must become a single template with placeholders, not one wrapper
+each: `'Switched to ' + label + ' galaxy. '` handed to a translator as separate pieces
+cannot be reordered, and word order differs in most languages.
+
+**It is an inventory, not a fixer.** A blanket rewrite of what it finds is UNSAFE: a
+first attempt at one proposed translating `"webgl"`, `"polite"`, `"barredSpiral"` and
+the star names in the spectral-class cards (`Sirius`, `Proxima Centauri`), which are
+identifiers and proper nouns. Every hit needs reading before it is wrapped. Two traps
+worth knowing: a naive replace will also match the comma inside an existing
+`__alloT(key, 'fallback')` and wrap the FALLBACK in a second call - rendering is
+unchanged, so an output-comparison check passes anyway - and strings compared against
+each other must be translated on BOTH sides or the comparison silently stops matching.
+
 ### Galaxy Explorer harnesses (`galaxy_*.cjs`)
 
-Sixteen scripts, all headless chromium against the real
+Eighteen scripts, all headless chromium against the real
 `stem_lab/stem_tool_galaxy.js`. The tool is a 3-D scene plus six modes plus thirteen
 hand-drawn canvas branches, and almost none of that is reachable from Vitest: the smoke
 harness resolves `ensureThree()` with a promise that never settles, and the scene builder
@@ -253,16 +381,75 @@ node dev-tools/galaxy_mode_churn.cjs         OUT [cycles]    # WebGL context lea
 node dev-tools/galaxy_interaction_sweep.cjs OUT        # click EVERY control, watch for throws
 node dev-tools/galaxy_panel_shot.cjs         OUT '<state-json>' '<selector>' NAME WIDTH [--open]
 node dev-tools/galaxy_tour_sheet.cjs         OUT        # every Grand Tour stage, all 4 types, frozen clock
+node dev-tools/galaxy_pseudo_locale_sweep.cjs OUT [--shots]  # does the layout survive TRANSLATION?
+node dev-tools/galaxy_rtl_sweep.cjs          OUT        # dir="rtl": Arabic, Farsi, Hebrew, Urdu
 ```
+
+### School Rewards portal, manual, and practice page
+
+The portal ships inside the school's own Apps Script project and the practice page is
+generated, so none of it is reachable from the app's usual harnesses. These four drive
+the generated `school-rewards-practice.html` (fictional data, ephemeral loopback server)
+or the published documents. Outputs land in `scratch/` and are gitignored.
+
+```bash
+node dev-tools/school_rewards_portal_a11y.cjs      # axe-core, 4 roles x (Help panel, tour)
+node dev-tools/school_rewards_wrapper_a11y.cjs     # wrapper contrast in light/dark/forced + keyboard walk
+node dev-tools/school_rewards_print_check.cjs      # real PDFs: page counts + break rule per block
+node dev-tools/school_rewards_mobile_sweep.cjs     # 390px: overflow, bottom tab bar, touch-target sizes
+```
+
+To photograph a Print Lab hand-off state use the shot harness's `--pre` hook, added
+2026-09-05: `node dev-tools/stem_tool_shot.cjs stem_lab/stem_tool_printlab.js --pre=@scratch/pre/printlab-art.js`
+sets `window.__alloPrintLabPendingHandoff` after the tool script loads and before mount.
+Two things that cost an hour: `--state` is the TOOL'S OWN slice (`{"blocks":[...]}`),
+not the whole store; and Art Studio's sculpt tab shows only a loading line until
+Prim3D exists, so pass `--pre=@prim3d_module.js` to see its toolbar.
+
+```bash
+node dev-tools/school_rewards_manual_capture.cjs   # regenerate the manual figures
+node dev-tools/school_rewards_demo_walkthrough.cjs # the 4-role demo route + 390px mobile pass
+node dev-tools/rebuild_school_rewards_practice.cjs # rebuild both practice pages (OneDrive-safe)
+```
+
+Two notes worth keeping. The print check's `straddling` list measures the UNPAGINATED
+flow, so it over-reports any block that computes `break-inside: avoid` (Chromium moves
+those whole); trust its `breakInside` field and the PDF page count. And axe returns
+`incomplete` for contrast under the fixed tour box, which is the scanner failing to
+resolve an overlapped background, not a finding: `school_rewards_wrapper_a11y.cjs`
+measures those same elements against their real backgrounds.
+
 
 **Read this before trusting a result.** Every one of these has produced a confident
 wrong answer at least once, and the traps are recorded in each file's header:
 
 - `galaxy_a11y_audit --shots` uses `fullPage: true`, and **that capture misrenders
   layout** — it showed a correct `grid-cols-7` picker as seven stacked rows. Use
-  `galaxy_panel_shot` (clipped, 1:1) for anything about spacing or size. The audit also
-  grades **disabled** controls and composites semi-transparent inline backgrounds against
-  an assumed white page, so its contrast list needs a screenshot before you act on it.
+  `galaxy_panel_shot` (clipped, 1:1) for anything about spacing or size.
+- The audit's contrast list used to be mostly fiction: it reported **45 failures on a
+  page with none**. Three causes, all fixed on 2026-09-06 — it now (a) refuses to score
+  text over a **gradient** ancestor, (b) refuses to score when the ancestor walk finds
+  nothing opaque instead of defaulting to white, (c) skips `sr-only` text (clipped to
+  1px) and **disabled** controls, which WCAG 1.4.3 exempts. The Star Life card is a dark
+  `bg-gradient-to-br from-slate-900 …`; light text on it was being graded against the
+  harness page's white body and "failing" at 1.85:1 when the shipped pixels measure
+  6.79:1.
+- English fitting is not evidence that a translation fits: German, Finnish and Russian
+  run 30-45% longer. `galaxy_pseudo_locale_sweep` expands and accents every
+  `stem.galaxy` string in place (leaving `{placeholders}` alone) and re-runs the
+  overflow check. It found exactly one offender in the whole tool, and it was SVG
+  text, which cannot wrap: `textLength` + `lengthAdjust` is the fix there.
+- The tool ships in four RTL languages and its HTML layout mirrors cleanly, but its
+  data charts did not: SVG geometry is authored in absolute viewBox coordinates while
+  `<text>` inside inherits the direction, so start-anchored captions ran off the edge.
+  **`dir="ltr"` on an `<svg>` does NOTHING** - `dir` maps to the CSS `direction`
+  property for HTML only; the attribute was present and `getComputedStyle` still
+  reported `rtl`. Set `style={{ direction: 'ltr' }}` as well. Always run an LTR
+  control: it is what proves an overflow is RTL-specific rather than pre-existing.
+- **A run with network errors is not a result.** One run reported 336 sub-24px targets,
+  73 contrast failures and 0 headings — every category at once, because
+  `ERR_INTERNET_DISCONNECTED` stopped the Tailwind CDN loading and every class went
+  inert. Check the console-errors section before reading any number.
 - Playwright's actionability waits **never settle** while the scene's rAF loop runs.
   Screenshots time out; `scrollIntoViewIfNeeded` hangs. Neutralise `requestAnimationFrame`
   after the scene settles — but *after* any scrolling, and re-measure clip boxes then.
@@ -272,18 +459,26 @@ wrong answer at least once, and the traps are recorded in each file's header:
   cannot tell two different stars apart. Use the selection reticle's world position.
 - Pair each Star Life stage with a mass that can reach it (`blue_supergiant` needs
   >25 M☉, otherwise it correctly resolves to main sequence and looks like dead code).
-- Aladin's offline mirror errors arrive **late** and get blamed on the next case.
+- Aladin's offline mirror errors arrive **late** and get blamed on the next case. A
+  text filter is NOT enough: once a realSky case has run, Aladin keeps retrying its
+  mirrors for the rest of the page's life, and the wording varies with the failure
+  mode. One `galaxy_saved_state_sweep` run failed "metalHunt bad numbers" for an
+  error the next run did not produce. The sweep now RELOADS the page after any
+  realSky case, which ends the contamination at its source and costs 2 of 26 cases.
+  If a harness of yours blames a case you cannot reproduce alone, suspect the case
+  BEFORE it.
 - To capture a timed sequence, **freeze `Date.now`, don't offset it.** Each SwiftShader
   screenshot burns 2-4 real seconds, and with `real + offset` those land on top of the
   offset: "stage k" came back as stage 2k. `galaxy_tour_sheet` pins the clock to the
   exact moment and uses a *pausable* rAF (a stub that returns 0 kills the loop).
 
-Baseline as of 2026-09-04: clipping/chroma steady across four morphologies, 0 sub-24px
-targets, 0 responsive overflow, 2-D fallback clean, reduced motion completely still,
-23/23 over-canvas labels above AA, 26/26 saved states render, 10/10 keyboard controls
-work, fullscreen OK on all four surfaces, and mode churn releases every WebGL context
+Baseline as of 2026-09-06: clipping/chroma steady across four morphologies, 0 sub-24px
+targets, **0 contrast failures**, 0 responsive overflow, 2-D fallback clean, reduced
+motion completely still, 23/23 over-canvas labels above AA, 26/26 saved states render,
+10/10 keyboard controls work, fullscreen OK on all four surfaces, and mode churn
+releases every WebGL context
 (made == lost). The interaction sweep drives all 316 controls: the tool's own 255 run
-clean; the 8 findings are inside Aladin Lite's injected panels. The tour sheet shows every
+clean; the 1 remaining finding is Aladin Lite's own MOC loader failing on a file:// URL. The tour sheet shows every
 type ending exactly at its fitted home radius with type-specific captions.
 
 ## Architecture notes

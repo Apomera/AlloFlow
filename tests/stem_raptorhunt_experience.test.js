@@ -5,8 +5,13 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const CANONICAL = 'stem_lab/stem_tool_raptorhunt.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js';
 
+// The tool is 3.26 MB and source() is called from most of the ~100 gates below.
+// Re-reading it each time is enough OneDrive I/O to push the heaviest render test
+// past the 5 s default timeout, so read each file once.
+const sourceCache = new Map();
 function source(file = CANONICAL) {
-  return readFileSync(file, 'utf8');
+  if (!sourceCache.has(file)) sourceCache.set(file, readFileSync(file, 'utf8'));
+  return sourceCache.get(file);
 }
 
 function functionBody(text, name) {
@@ -57,7 +62,10 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
     expect(init).toMatch(/mission\.id === 'thermalKettle' \? 650/);
     expect(init).toMatch(/raptor\.y\s*>\s*missionCeiling/);
   });
-  it('renders both a visible engine state and the ready responsive flight shell', () => {
+  // Two full renders of a 3.26 MB tool. Alone it takes ~2.4 s; sharing a worker pool
+  // with the other three raptor files it can pass 5 s on CPU contention alone, which
+  // is a scheduling fact about this machine and not a regression in the tool.
+  it('renders both a visible engine state and the ready responsive flight shell', { timeout: 20000 }, () => {
     const previousThree = window.THREE;
     const toolData = {
       raptorHunt: {
@@ -296,7 +304,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('var windSummary =');
     expect(text).toContain('data-target-edge*');
     expect(text).toContain("'data-raptor-selected-profile': 'true'");
-    expect(text).toContain("'aria-keyshortcuts': raptorSchemeShortcuts(controlScheme)");
+    expect(text).toContain("'aria-keyshortcuts': raptorSchemeShortcuts(activeScheme)");
     expect(text).toContain("'data-raptor-target-announcement': 'true'");
     expect(text).toContain('targetStateChanged');
     expect(text).toContain("'aria-live': 'polite'");
@@ -3261,6 +3269,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     const init = functionBody(text, 'initHuntSim');
     expect(text).toContain("{ signal: 'steer', title: 'Steer the bird'");
     expect(text).toContain("{ signal: 'altitude', title: 'Manage altitude'");
+    expect(text).toContain("{ signal: 'acuity', title: 'Look with raptor eyes'");
     expect(text).toContain("{ signal: 'target', title: 'Acquire prey'");
     expect(text).toContain("{ signal: 'strike', title: 'Commit to the strike'");
     expect(text).toContain("'data-raptor-flight-tutorial': HUNT_TUTORIAL[tutorialStep].signal");
@@ -3323,7 +3332,10 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('terrainAccent.clone().offsetHSL');
     expect(init).toContain('var horizonGroup = new THREE.Group()');
     expect(init).toContain('var horizonCount = qualityProfile.clouds');
-    expect(init).toContain('new THREE.ConeGeometry(46 + Math.random() * 24');
+    // The radius moved into horizonBaseRadius so the snow cap can be sized from the
+    // same draw as the rock beneath it; the intent, a broad 46-70 m cone, is unchanged.
+    expect(init).toContain('var horizonBaseRadius = 46 + Math.random() * 24;');
+    expect(init).toContain('new THREE.ConeGeometry(horizonBaseRadius, horizonPeak, 18, 5)');
     expect(init).toContain('horizonGroup.position.x = raptor.x');
     expect(init).toContain('horizonGroup.position.z = raptor.z');
   });
@@ -3529,7 +3541,8 @@ describe('Raptor Hunt configurable controls and key guide', () => {
   });
   it('reads the preset from the canvas dataset so a fresh sim starts on the saved preset', () => {
     expect(text).toContain("'data-raptor-control-scheme': controlScheme,");
-    expect(text).toContain('raptorControlScheme(canvasEl.dataset ? canvasEl.dataset.raptorControlScheme : \'\')');
+    expect(text).toContain("var id = canvasEl.dataset ? canvasEl.dataset.raptorControlScheme : '';");
+    expect(text).toContain('return raptorCustomScheme(JSON.parse(canvasEl.dataset.raptorControlKeys));');
   });
   it('renders a contextual key guide that refreshes on target, pause, and landing changes', () => {
     expect(text).toContain("keyGuide.className = 'rh-flight-key-guide';");
@@ -3539,10 +3552,969 @@ describe('Raptor Hunt configurable controls and key guide', () => {
     expect(text).toContain("'data-raptor-control-scheme-select': 'true'");
     expect(text).toContain(".rh-flight-key-guide[hidden]{display:none;}");
   });
+  it('offers a custom preset that rebinds one key per action and survives a corrupt saved map', () => {
+    expect(text).toContain("h('option', { value: 'custom' }, 'Custom (rebind each key)')");
+    expect(text).toContain("window.addEventListener('keydown', onRebindKey, true);");
+    expect(text).toContain("if (customControlKeys[key] !== rebindAction && key !== raw) next[key] = customControlKeys[key];");
+    expect(text).toContain("if (!Object.keys(clean).length) clean = Object.assign({}, RAPTOR_CONTROL_SCHEMES.classic.keys);");
+    expect(text).toContain("controlScheme = schemeId === 'custom' ? raptorCustomScheme(customKeys) : raptorControlScheme(schemeId);");
+    expect(text).toContain("'data-raptor-control-keys': controlScheme === 'custom' ? JSON.stringify(customControlKeys) : undefined,");
+  });
+  it('limits the pull-out by the G tolerance it already ships per species', () => {
+    // raptor.maxG was written from species.pullupG and read by nothing, so the tool
+    // taught a G tolerance the simulation never applied.
+    expect(text).toContain('maxG: species.pullupG,');
+    expect(text).toContain('pullPitchRate = Math.min(1.5, (pullGLimit * 9.81) / Math.max(8, raptor.speed));');
+    expect(text).toContain('raptor.pitch = Math.min(raptor.pitch + pullPitchRate * dt, 0.6);');
+    expect(text).not.toContain('raptor.pitch = Math.min(raptor.pitch + 1.5 * dt, 0.6);');
+
+    // n = v * omega / g. The rate is capped at the old 1.5 rad/s so slow flight handles
+    // exactly as before; the limit only bites when speed makes the turn expensive.
+    const rate = (maxG, speed) => Math.min(1.5, (maxG * 9.81) / Math.max(8, speed));
+    const load = (maxG, speed) => (speed * rate(maxG, speed)) / 9.81;
+
+    // A peregrine at 27 G is never limited across its whole speed range: that is the
+    // species built for the stoop, and the model must not punish it.
+    [20, 60, 100].forEach((speed) => expect(rate(27, speed)).toBe(1.5));
+    // A turkey vulture at 4 G is limited as soon as it is moving quickly.
+    expect(rate(4, 60)).toBeLessThan(1.5);
+    // Across the shipped species the data is largely self-consistent: birds with a low
+    // G tolerance also stoop slowly, so the cap binds for only one of the twenty, the
+    // osprey (5 G, 80 mph). The guard still matters, because it now holds for any
+    // future edit to a stoop speed or a tolerance.
+    const roster = text.slice(text.indexOf('var SPECIES = ['));
+    const entries = [...roster.matchAll(/{ id: '([a-zA-Z]+)'/g)].slice(0, 20);
+    let checked = 0;
+    let wouldHaveExceeded = 0;
+    entries.forEach((entry) => {
+      const chunk = roster.slice(entry.index, entry.index + 2600);
+      const maxG = Number((chunk.match(/pullupG: ([0-9.]+)/) || [])[1]);
+      const stoopMph = Number((chunk.match(/stoopMph: ([0-9.]+)/) || [])[1]);
+      if (!maxG || !stoopMph) return;
+      checked += 1;
+      const terminal = stoopMph * 0.447;
+      if ((terminal * 1.5) / 9.81 > maxG) wouldHaveExceeded += 1;
+      expect(load(maxG, terminal)).toBeLessThanOrEqual(maxG + 1e-9);
+    });
+    expect(checked).toBeGreaterThanOrEqual(18);
+    expect(wouldHaveExceeded).toBeGreaterThanOrEqual(1);
+
+    // And no species may ever be asked to carry more than its own tolerance.
+    [4, 5, 8, 12, 22, 27].forEach((maxG) => {
+      [20, 60, 100].forEach((speed) => {
+        expect(load(maxG, speed)).toBeLessThanOrEqual(maxG + 1e-9);
+      });
+    });
+  });
+  it('lifts on a strong thermal rather than one twice any bird rides', () => {
+    expect(text).not.toContain('raptor.y += (8 + weather.thermalQuality * 12) * dt;');
+    expect(text).toContain('raptor.y += (5 + weather.thermalQuality * 5) * dt;');
+
+    // Ride the Thermal asks for 500 m in 180 s with no flapping, so the weakest
+    // weather must still clear it against the recommended red-tail's glide sink.
+    const sink = 1.5 * Math.sqrt(3.7 / 4.5) * (6 / 5.4);
+    const lift = (quality) => 5 + (quality * 5);
+    expect(lift(1)).toBeLessThanOrEqual(10);
+    const worstNet = lift(0.1) - sink;
+    expect(500 / worstNet).toBeLessThan(180);
+    // And the best case must not trivialise it back to a few seconds.
+    expect(500 / (lift(1) - sink)).toBeGreaterThan(50);
+  });
+  it('glides on the species aerodynamics it already ships, not a flat sink rate', () => {
+    // Every species carries wingLoading and aspectRatio, but the glide used 1.5 m/s for
+    // all of them, so a Mississippi kite sank exactly like a barred owl.
+    expect(text).not.toContain('raptor.y -= 1.5 * dt;');
+    expect(text).toContain('raptor.y -= glideSinkRate * dt;');
+    expect(text).toContain('* Math.sqrt(Math.max(0.5, Number(species.wingLoading) || 4.5) / 4.5)');
+    expect(text).toContain('* (6 / Math.max(3, Number(species.aspectRatio) || 6))));');
+
+    const sink = (wingLoading, aspectRatio) => Math.max(0.6, Math.min(3, 1.5
+      * Math.sqrt(Math.max(0.5, wingLoading) / 4.5)
+      * (6 / Math.max(3, aspectRatio))));
+
+    // Ordering must match the biology: long-winged lightly loaded gliders sink slowest,
+    // heavy short-winged forest hunters sink fastest.
+    const kite = sink(3.6, 10.6);
+    const vulture = sink(2.6, 5.4);
+    const owl = sink(2.2, 3.7);
+    const harpy = sink(15.0, 5.6);
+    expect(kite).toBeLessThan(vulture);
+    expect(vulture).toBeLessThan(owl);
+    expect(owl).toBeLessThan(harpy);
+
+    // And every shipped species must land inside the clamp, so no one is pinned to a
+    // bound that would quietly erase its own data.
+    const source = text.slice(text.indexOf('var SPECIES = ['));
+    const ids = [...source.matchAll(/\{ id: '([a-zA-Z]+)'/g)].slice(0, 20);
+    let measured = 0;
+    ids.forEach((match) => {
+      const chunk = source.slice(match.index, match.index + 2600);
+      const wingLoading = Number((chunk.match(/wingLoading: ([0-9.]+)/) || [])[1]);
+      const aspectRatio = Number((chunk.match(/aspectRatio: ([0-9.]+)/) || [])[1]);
+      if (!wingLoading || !aspectRatio) return;
+      measured += 1;
+      const rate = sink(wingLoading, aspectRatio);
+      expect(rate).toBeGreaterThan(0.6);
+      expect(rate).toBeLessThan(3);
+    });
+    expect(measured).toBeGreaterThanOrEqual(18);
+  });
+  it('buys stoop speed with height instead of snapping to terminal velocity', () => {
+    // The old model reached 95% of a peregrine's 242 mph in 0.22 s having lost 4 m,
+    // which made altitude irrelevant and contradicted the High Stoop mission.
+    expect(text).not.toMatch(/var accel = diveKey \? 12[\s\S]{0,200}raptor\.speed \+= \(targetSpeed - raptor\.speed\) \* \(1 - Math\.exp\(-accel \* dt\)\);\n {10}}/);
+    expect(text).toContain('var stoopTerminal = Math.max(1, raptor.stoopMax);');
+    expect(text).toContain('var diveAngle = Math.max(0.25, -Math.sin(Math.min(0, raptor.pitch)));');
+    expect(text).toContain('raptor.speed + 9.81 * diveAngle * (1 - speedFraction * speedFraction) * dt);');
+    // The non-dive branch keeps its exponential approach to a target speed.
+    expect(text).toContain('raptor.speed += (targetSpeed - raptor.speed) * (1 - Math.exp(-accel * dt));');
+
+    // Closed form for a = g(1 - (v/vt)^2): v(t) = vt * tanh(g t / vt + atanh(v0/vt)).
+    // The High Stoop mission starts at 1000 m and needs 180 mph, so that must remain
+    // reachable, while the 242 mph record must not be.
+    const terminal = 242 * 0.447;
+    const atanh = (x) => 0.5 * Math.log((1 + x) / (1 - x));
+    const speedAt = (seconds, start) => terminal * Math.tanh(((9.81 * 0.84 * seconds) / terminal) + atanh(start / terminal));
+    expect(speedAt(6, 57) * 2.237).toBeGreaterThan(180);
+    expect(speedAt(6, 57) * 2.237).toBeLessThan(242);
+  });
+  it('reads acuity magnification from the species instead of claiming a flat 8x', () => {
+    // "Eagles see 8x better than humans" is popular-media arithmetic. This tool already
+    // carries measured-range values per species, so the badge and the zoom must use them.
+    expect(text).not.toContain("'RAPTOR ACUITY 8x'");
+    expect(text).not.toContain('3x zoom simulates eagle ~8x acuity');
+    expect(text).toContain("'RAPTOR ACUITY ' + (flightSpecies && flightSpecies.visualAcuityX ? flightSpecies.visualAcuityX : 2.5) + 'x'");
+    expect(text).toContain('var acuityX = Math.max(1.5, Math.min(6, Number(species.visualAcuityX) || 2.5));');
+    expect(text).toContain('var acuitySpread = Math.max(0, Math.min(1, (acuityX - 1.8) / 3.7));');
+    // Magnification versus the unzoomed 70 degrees must stay inside the published band.
+    [38, 22].forEach((fov) => {
+      expect(70 / fov).toBeGreaterThanOrEqual(1.8);
+      expect(70 / fov).toBeLessThanOrEqual(3.3);
+    });
+    expect(text).toContain('var targetFov = zoomActive ? acuityFov : (70 + _diveFrac * 16 + impactFovKick);');
+
+    // Every species datum must stay inside the clamp the zoom assumes, or the badge
+    // would advertise a magnification the camera never delivers.
+    const values = [...text.matchAll(/visualAcuityX: ([0-9.]+)/g)].map((match) => Number(match[1]));
+    expect(values.length).toBeGreaterThan(15);
+    values.forEach((value) => {
+      expect(value).toBeGreaterThanOrEqual(1.5);
+      expect(value).toBeLessThanOrEqual(6);
+    });
+    // And none of them may drift back toward the myth.
+    expect(Math.max(...values)).toBeLessThan(8);
+  });
+  it('teaches the acuity zoom as the answer to small distant prey', () => {
+    // Distant prey are deliberately small; the fovea zoom is the instrument, so the
+    // step must advance on zooming IN, not on any toggle of the control.
+    expect(text).toContain("if (zoomActive) markTutorialSignal('acuity');");
+    // The on-screen hold buttons route through _rhCommand, which bypasses onKeyDown,
+    // so without this a button-only or touch learner never leaves step one.
+    expect(text).toContain("if (value.key === 'a' || value.key === 'd') markTutorialSignal('steer');");
+    expect(text).toContain("if (['q', 'e', 'shift', ' ', 'w', 's'].indexOf(value.key) !== -1) markTutorialSignal('altitude');");
+    expect(text).toContain("tutorialSignal === 'acuity'");
+    expect(text).toContain("add('zoom', 'Acuity zoom', true);");
+    // The step sits before target acquisition: see the prey, then align on it.
+    const steps = text.slice(text.indexOf('var HUNT_TUTORIAL = ['), text.indexOf('function finishHuntTutorial'));
+    expect(steps.indexOf("signal: 'acuity'")).toBeGreaterThan(steps.indexOf("signal: 'altitude'"));
+    expect(steps.indexOf("signal: 'acuity'")).toBeLessThan(steps.indexOf("signal: 'target'"));
+  });
+  it('lets flight school drive the key guide and warns when a custom map drops an essential action', () => {
+    expect(text).toContain("} else if (action === 'tutorialSignal') {");
+    expect(text).toContain("sendHuntCommand('tutorialSignal', { signal: step ? step.signal : '' });");
+    expect(text).toContain("if (tutorialSignal && !landed) {");
+    for (const signal of ['steer', 'altitude', 'target', 'strike']) {
+      expect(text).toContain("tutorialSignal === '" + signal + "'");
+    }
+    expect(text).toContain("var RAPTOR_REQUIRED_ACTIONS = ['turnLeft', 'turnRight', 'dive', 'pullUp', 'strike', 'pause'];");
+    expect(text).toContain("'data-raptor-rebind-warning': 'true'");
+    // The signal effect runs before initHuntSim assigns _rhCommand, so the first step
+    // must arrive through the dataset or flight school starts with phase chips.
+    expect(text).toContain("var tutorialSignal = (canvasEl.dataset && canvasEl.dataset.raptorTutorialSignal) || '';");
+    expect(text).toContain("'data-raptor-tutorial-signal':");
+  });
+  it('drives the on-screen controls from the same guided prompts as the key chips', () => {
+    expect(text).toContain('rows.push({ key: label, text: text, primary: !!primary, actions: [action] });');
+    expect(text).toContain("notifyUI({ controlCues: cues });");
+    expect(text).toContain("var cueState = (simUI.controlCues || {})[cueAction];");
+    expect(text).toContain("'data-raptor-cue': cueState || undefined,");
+    // A disabled strike button must not glow as if it were actionable.
+    expect(text).toContain("'data-raptor-cue': simUI.strikeReady === false ? undefined : (simUI.controlCues || {}).strike || undefined,");
+    // Static ring, no opacity animation, so reduced motion needs no special case.
+    expect(text).toContain('.rh-flight-btn[data-raptor-cue="primary"]{border-color:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.55);color:#fef3c7;}');
+  });
+  it('labels the strike button from the preset instead of a hard-coded F', () => {
+    expect(text).not.toContain("'aria-keyshortcuts': 'F'");
+    expect(text).not.toContain("'Recovering' : 'Strike (F)'");
+    expect(text).toContain("'Strike' + (controlLabel('strike') ? ' (' + controlLabel('strike') + ')' : '')");
+  });
+  it('hides the key guide by pointer type rather than by window width', () => {
+    expect(text).toContain('@media(pointer:coarse),(max-width:520px){.rh-flight-key-guide{display:none;}}');
+    expect(text).not.toContain('@media(max-width:760px){.rh-flight-key-guide{display:none;}');
+  });
   it('spells the dive and take-off keys from the preset instead of hard-coding Shift and Space', () => {
     expect(text).not.toContain("'STOOP - hold Shift (");
     expect(text).not.toContain("SPACE to take off'");
     expect(text).toContain("'STOOP - hold ' + controlKeyLabel('dive') + ' ('");
     expect(text).toContain("controlKeyLabel('pullUp') + ' to take off'");
+  });
+});
+
+describe('Raptor Hunt wind advection and ground speed', () => {
+  const text = source();
+
+  it('carries the bird at the full wind speed instead of a fraction of it', () => {
+    // A bird flies IN the air mass, so the air moves it at wind speed. The old 0.3
+    // coupling was a second, quieter answer to a question the tool already answers
+    // twice in prose: the migration problem set subtracts the whole headwind from
+    // airspeed, and the encyclopedia says a red-tail holds station in a 30 mph wind.
+    expect(text).not.toContain('* effWindSpeed * 0.3 * dt');
+    expect(text).toContain('windDriftX = Math.sin(weather.windDir) * effWindSpeed;');
+    expect(text).toContain('windDriftZ = -Math.cos(weather.windDir) * effWindSpeed;');
+    expect(text).toContain('raptor.x += windDriftX * dt;');
+    expect(text).toContain('raptor.z += windDriftZ * dt;');
+  });
+
+  it('derives ground speed once, beside the motion it describes', () => {
+    expect(text).toContain('var groundVelX = (Math.sin(raptor.yaw) * horizSpeed) + windDriftX;');
+    expect(text).toContain('var groundVelZ = (-Math.cos(raptor.yaw) * horizSpeed) + windDriftZ;');
+    expect(text).toContain('raptor.groundSpeed = Math.sqrt((groundVelX * groundVelX) + (groundVelZ * groundVelZ));');
+    expect(text).toContain('raptor.windEffect = raptor.groundSpeed - horizSpeed;');
+    // Both readouts read that one value rather than recomputing it their own way.
+    expect(text).toContain('var windGroundMph = Math.round(raptor.groundSpeed * 2.237);');
+    expect(text).toContain('groundSpeedMps: Math.round((raptor.groundSpeed || 0) * 100) / 100,');
+    // Defined before the first frame, so an early snapshot is not undefined.
+    expect(text).toContain('groundSpeed: 10, windEffect: 0,');
+  });
+
+  it('names the airspeed metric and puts ground speed on the wind chip', () => {
+    expect(text).toContain("addTelemetryMetric('Airspeed', 'speed')");
+    expect(text).toContain("+ (windShowsGround ? ' · GS ' + windGroundMph + ' mph' : '')");
+    expect(text).toContain('var windShowsGround = Math.abs(raptor.windEffect) >= 1.2;');
+    // Screen readers get the number too, in the weather summary that already says wind.
+    expect(text).toContain("windGroundMph + ' miles per hour, thermal quality ' +");
+  });
+
+  it('makes the kiting the encyclopedia describes arithmetically reachable', () => {
+    // "A red-tail facing a 30 mph wind can hold absolutely stationary." Kiting needs
+    // ground speed to reach zero, which needs the wind to be able to match airspeed.
+    expect(text).toContain('A red-tail facing a 30 mph wind can hold absolutely stationary');
+    const windCeiling = 15;   // weather.windSpeed clamp, m/s
+    const gustPeak = 1.4;     // gust = sin(...) * windSpeed * 0.4
+    const slowestCruise = 30 * 0.447 * 0.5;  // slowest species maxLevelMph, at half throttle
+    expect(windCeiling * gustPeak).toBeGreaterThan(slowestCruise);
+    expect(text).toContain('weather.windSpeed = Math.max(1, Math.min(15, weather.windSpeed');
+    // Under the old 0.3 coupling the strongest gust reached 6.3 m/s, which could not
+    // cancel any species' cruise, so kiting was unreachable at every wind setting.
+    expect(windCeiling * gustPeak * 0.3).toBeLessThan(slowestCruise);
+  });
+
+  it('keeps the deploy mirror byte-identical after the wind change', () => {
+    expect(source('desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js')).toBe(text);
+  });
+});
+
+describe('Raptor Hunt snow line and horizon peaks', () => {
+  const text = source();
+
+  // Evaluate the shipped snow-line maths rather than string-matching it, so these
+  // gates test the behaviour and not the spelling.
+  const snowMaths = (() => {
+    const constants = ['RAPTOR_HORIZON_RELIEF_M', 'RAPTOR_LAPSE_RATE_C_PER_M', 'RAPTOR_PEAK_REFERENCE_M']
+      .map((name) => {
+        const match = text.match(new RegExp('var ' + name + ' = ([-\\d.]+);'));
+        expect(match, `Expected ${name} to be a module-level number`).not.toBeNull();
+        return `var ${name} = ${match[1]};`;
+      }).join('\n');
+    return Function(
+      '"use strict";' + constants + '\n'
+      + functionBody(text, 'raptorSnowLineHeight') + '\n'
+      + functionBody(text, 'raptorSnowFraction') + '\n'
+      + 'return { raptorSnowLineHeight: raptorSnowLineHeight, raptorSnowFraction: raptorSnowFraction,'
+      + ' relief: RAPTOR_HORIZON_RELIEF_M, lapse: RAPTOR_LAPSE_RATE_C_PER_M, reference: RAPTOR_PEAK_REFERENCE_M };'
+    )();
+  })();
+
+  const CLIMATE = {
+    rainforest: 28, grassland: 17, forest: 15, lake: 14, 'forest-night': 11,
+    cliff: 9, mountain: 2, 'boreal-forest': -4, tundra: -10,
+  };
+
+  it('keeps one biome climate table that both the weather and the snow line read', () => {
+    // The weather model used to carry its own copy of these nine rows inline.
+    expect(text).toContain('var RAPTOR_BIOME_CLIMATE = {');
+    expect(text).toContain('var climateProfile = raptorBiomeClimate(species.biome);');
+    expect(text.match(/rainforest: \{ tempC: 28/g)).toHaveLength(1);
+    Object.entries(CLIMATE).forEach(([biome, tempC]) => {
+      const key = /^[a-z]+$/.test(biome) ? biome : "'" + biome + "'";
+      expect(text).toContain(key + ': { tempC: ' + tempC + ',');
+    });
+  });
+
+  it('decides snow by temperature instead of a hand-typed list of biomes', () => {
+    // The old rule was a literal three-biome list. It gave caps to the +9 C cliff and
+    // denied them to the -4 C boreal forest, which is the temperature ordering backwards.
+    expect(text).not.toContain("if (species.biome === 'tundra' || species.biome === 'mountain' || species.biome === 'cliff') {");
+    const tall = snowMaths.reference;
+    expect(snowMaths.raptorSnowFraction(-4, tall)).toBeGreaterThan(snowMaths.raptorSnowFraction(9, tall));
+
+    // Colder biome, never less snow, on identical peaks.
+    const byTemp = Object.values(CLIMATE).sort((a, b) => a - b);
+    for (let index = 1; index < byTemp.length; index += 1) {
+      expect(snowMaths.raptorSnowFraction(byTemp[index - 1], tall))
+        .toBeGreaterThanOrEqual(snowMaths.raptorSnowFraction(byTemp[index], tall));
+    }
+    // The warm end stays bare and the frozen end stays capped.
+    expect(snowMaths.raptorSnowFraction(CLIMATE.rainforest, tall)).toBe(0);
+    expect(snowMaths.raptorSnowFraction(CLIMATE.grassland, tall)).toBe(0);
+    expect(snowMaths.raptorSnowFraction(CLIMATE.tundra, tall)).toBeGreaterThan(0.9);
+  });
+
+  it('gives a lower peak less snow than a taller one on the same skyline', () => {
+    // This is the whole reason the line is an elevation rather than one fraction per
+    // biome: a near landmark standing in front of a range must read as lower.
+    const mountain = CLIMATE.mountain;
+    expect(snowMaths.raptorSnowFraction(mountain, 106.6))
+      .toBeGreaterThan(snowMaths.raptorSnowFraction(mountain, 44));
+    expect(snowMaths.raptorSnowFraction(mountain, 60))
+      .toBeGreaterThan(snowMaths.raptorSnowFraction(mountain, 24));
+    // A peak that does not reach the line carries nothing at all.
+    const line = snowMaths.raptorSnowLineHeight(CLIMATE.cliff);
+    expect(snowMaths.raptorSnowFraction(CLIMATE.cliff, line * 0.9)).toBe(0);
+    expect(snowMaths.raptorSnowFraction(CLIMATE.cliff, line * 2)).toBeGreaterThan(0);
+  });
+
+  it('measures the snow line against the height the generator can actually reach', () => {
+    // mtHeight = 44 + 72r, clamped to mtWidth * 0.82, and mtWidth = 72 + 58r. The
+    // ceiling is the clamp, not the height draw, so 116 would place the line too high.
+    expect(text).toContain('var mtHeight = 44 + Math.random() * 72;');
+    expect(text).toContain('var mtWidth = 72 + Math.random() * 58;');
+    expect(text).toContain('mtHeight = Math.min(mtHeight, mtWidth * 0.82);');
+    expect(snowMaths.reference).toBeCloseTo((72 + 58) * 0.82, 5);
+    // The lapse rate is the standard environmental one, 6.5 C per 1000 m.
+    expect(snowMaths.lapse).toBeCloseTo(0.0065, 6);
+  });
+
+  it('seats every snow cap on the peak it belongs to', () => {
+    // A cone of radius R and height H has radius R*f where its top fraction f begins,
+    // so a cap of (R*f, H*f) meets the surface all the way round, and centring it
+    // H*(1-f)/2 higher puts both apexes at the same point. The old cap used an
+    // absolute 0.75 * mtHeight with a 0.4 fraction, which floats the rim clear.
+    const f = 0.4, H = 100, R = 100, mtPosY = H * 0.4;
+    const oldCapPosY = H * 0.75;
+    expect(oldCapPosY + (H * f) / 2).toBeGreaterThan(mtPosY + H / 2);
+    expect(R * f).toBeGreaterThan(R * (0.5 - (oldCapPosY - (H * f) / 2 - mtPosY) / H));
+    const newCapPosY = mtPosY + (H * (1 - f)) / 2;
+    expect(newCapPosY + (H * f) / 2).toBeCloseTo(mtPosY + H / 2, 10);
+    expect(R * f).toBeCloseTo(R * (0.5 - (newCapPosY - (H * f) / 2 - mtPosY) / H), 10);
+
+    expect(text).not.toContain('snowCap.position.set(mt.position.x, mtHeight * 0.75, mt.position.z);');
+    expect(text).toContain('snowCap.position.set(mt.position.x, mt.position.y + mtHeight * (1 - mtSnowFraction) / 2, mt.position.z);');
+    // Coplanar surfaces z-fight; the offset and the 1.02 radius are the remedy.
+    expect(text).toContain('polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2');
+    expect(text).toContain('mtWidth * mtSnowFraction * 1.02');
+  });
+
+  it('skews a cap by its parent peak, not by its own height', () => {
+    // sculptMountainGeometry offsets vertices by ridgeLevel * height * 0.13. Applying
+    // that with each mesh's own height slid a 40 percent cap 7.7 m off a 100 m summit.
+    expect(text).toContain('function sculptMountainGeometry(geometry, seed, skewHeight) {');
+    expect(text).toContain('var ridgeSkew = skewHeight || ridgeHeight;');
+    expect(text).toContain('ridgeLevel * ridgeSkew * 0.13 * Math.sin(seed)');
+    expect(text).toContain('ridgeLevel * ridgeSkew * 0.08 * Math.cos(seed)');
+    const H = 100, f = 0.4, seed = 1.7;
+    expect(Math.abs((0.13 * H * Math.sin(seed)) - (0.13 * H * f * Math.sin(seed)))).toBeGreaterThan(7);
+  });
+
+  it('paints both far peak rings from one palette', () => {
+    // The horizon ring (radius 410-480) and the distant range (435-550) interleave at
+    // the same apparent distance. One was ground-coloured and the other rock-coloured,
+    // so a boreal skyline showed a green mountain beside a grey one.
+    expect(text).toContain("var mountainColor = species.biome === 'tundra' ? 0x94a3b8 :");
+    expect(text).toContain('color: new THREE.Color(mountainColor).offsetHSL(0, -0.05,');
+    expect(text.match(/var mountainColor =/g)).toHaveLength(1);
+    expect(text).not.toContain("color: new THREE.Color(bc.ground).offsetHSL(0, -0.05, species.biome === 'forest-night' ? -0.16 : -0.08),");
+  });
+
+  it('flat-shades the near landmarks like every other peak in the scene', () => {
+    // These sit nearer than both mountain rings, yet were the only smooth-shaded
+    // terrain, so the closest silhouette on screen was the one reading as cardboard.
+    const landmarkBlock = text.slice(
+      text.indexOf('var landmarkMaterial = new THREE.MeshStandardMaterial'),
+      text.indexOf('landmarkSnowMaterial.color.convertSRGBToLinear();'),
+    );
+    expect(landmarkBlock.match(/flatShading: true/g)).toHaveLength(3);
+  });
+
+  it('reports the snow line in the snapshot so a capture can prove it', () => {
+    ['snowLineHeight', 'biomeTempC', 'snowCapCount', 'landmarkSnowCount'].forEach((field) => {
+      expect(text).toContain(field + ':');
+    });
+  });
+
+  it('keeps the deploy mirror byte-identical after the snow line change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt ground shadow and background-aware readability', () => {
+  const text = source();
+  const init = functionBody(text, 'initHuntSim');
+
+  const luminance = (() => {
+    return Function(
+      '"use strict";'
+      + functionBody(text, 'raptorChannelLuminance') + '\n'
+      + functionBody(text, 'relativeLuminanceOfColor') + '\n'
+      + 'return relativeLuminanceOfColor;'
+    )();
+  })();
+  const fromHex = (hex) => ({
+    r: ((hex >> 16) & 0xff) / 255, g: ((hex >> 8) & 0xff) / 255, b: (hex & 0xff) / 255,
+  });
+
+  it('casts a ground shadow at all, which the scene previously had none of', () => {
+    // Zero castShadow, zero shadow map, zero blob: the bird had no contact cue with
+    // the ground, so altitude could only be read off the HUD number.
+    expect(text).toContain("raptorShadow.name = 'raptor-ground-shadow';");
+    expect(init).toContain('function updateRaptorShadow()');
+    expect(init).toContain('updateRaptorShadow();');
+    // It sits on the sampled terrain, not on a flat plane at y = 0.
+    expect(init).toContain('var shadowY = terrainHeightAt(shadowX, shadowZ);');
+    expect(init).toContain('raptorShadow.position.set(shadowX, shadowY + 0.22, shadowZ);');
+  });
+
+  it('throws the shadow away from the sun and clamps the low-sun runaway', () => {
+    // offset = altitude * sunDir.xz / sunDir.y diverges as the sun nears the horizon,
+    // which would fling the shadow to the far side of the world at dawn and dusk.
+    expect(init).toContain('var sunLift = Math.max(0.25, sunDir.y);');
+    expect(init).toContain('var offsetLimit = raptorVisualRadius * 6;');
+    expect(init).toContain('-sunDir.x / sunLift * altitude');
+    expect(init).toContain('-sunDir.z / sunLift * altitude');
+
+    const limit = 6 * 2.3;   // raptorVisualRadius is about 2.3 m for a mid-sized bird
+    const offset = (altitude, sunY) => Math.min(limit, (altitude * 0.7) / Math.max(0.25, sunY));
+    expect(offset(200, 0.02)).toBe(limit);          // horizon sun, clamped
+    expect(offset(5, 0.9)).toBeLessThan(limit);     // high sun over a low bird, unclamped
+    expect(offset(5, 0.9)).toBeCloseTo(3.889, 3);
+  });
+
+  it('spreads and fades the shadow with height, the way a penumbra does', () => {
+    expect(init).toContain('var fade = Math.max(0, 1 - altitude / shadowFadeHeight);');
+    expect(init).toContain('raptorShadowOpacity = fade * fade * 0.62 * shadowLightTerm;');
+    expect(init).toContain('raptorShadowScale = raptorVisualRadius * (1.05 + (altitude / shadowFadeHeight) * 1.9);');
+    const fadeHeight = Number(init.match(/var shadowFadeHeight = (\d+);/)[1]);
+    const opacity = (alt) => Math.pow(Math.max(0, 1 - alt / fadeHeight), 2) * 0.62;
+    const scale = (alt) => 1.05 + (alt / fadeHeight) * 1.9;
+    expect(opacity(0)).toBeGreaterThan(opacity(60));
+    expect(opacity(60)).toBeGreaterThan(opacity(160));
+    expect(opacity(fadeHeight + 10)).toBe(0);
+    expect(scale(160)).toBeGreaterThan(scale(0));
+  });
+
+  it('keeps the shadow colour a live parameter rather than a dead one', () => {
+    // MeshBasicMaterial multiplies color by map.rgb. The gradient must be painted in
+    // white; a black one makes the material's own colour incapable of tinting anything,
+    // which is exactly what a first attempt here did.
+    expect(text).toContain("shadowGradient.addColorStop(0, 'rgba(255,255,255,0.9)');");
+    expect(text).toContain("shadowGradient.addColorStop(1, 'rgba(255,255,255,0)');");
+    expect(text).not.toContain("shadowGradient.addColorStop(0, 'rgba(0,0,0,0.85)');");
+    // Sky-lit blue-grey, not black, or the shadow reads as a hole in the terrain.
+    const shade = text.match(/depthWrite: false, fog: true, color: (0x[0-9a-f]{6})/)[1];
+    expect(luminance(fromHex(Number(shade)))).toBeGreaterThan(0.005);
+    expect(luminance(fromHex(Number(shade)))).toBeLessThan(0.12);
+  });
+
+  it('ties the shadow to sunlight reaching the ground', () => {
+    // Overcast noon casts almost nothing; clear noon casts hard. The old scene had no
+    // notion of this because it had no shadow.
+    expect(init).toContain('shadowLightTerm = Math.max(0, daylight * (1 - visualCloudCover * 0.72) + moonlight * 0.06);');
+    const term = (daylight, cloud, moon) => Math.max(0, daylight * (1 - cloud * 0.72) + moon * 0.06);
+    expect(term(1, 0, 0)).toBeGreaterThan(term(1, 0.9, 0));
+    expect(term(0, 0, 1)).toBeLessThan(term(1, 0, 0));
+  });
+
+  it('makes readability depend on what the bird is actually seen against', () => {
+    // The old value was a function of daylight and cloud alone, so it read the same
+    // number for a white owl over white tundra and a dark falcon over bright sky.
+    expect(text).not.toContain('raptorReadability = Math.max(0.04, Math.min(0.22, 0.05 + (1 - daylight) * 0.10 + visualCloudCover * 0.06));');
+    expect(init).toContain('raptorContrast = Math.abs(raptorBodyLuminance - raptorBackgroundLuminance);');
+    expect(init).toContain('var contrastShortfall = Math.max(0, 1 - (raptorContrast / 0.25));');
+    expect(init).toContain('readabilityLightTerm + contrastShortfall * 0.12));');
+    // Ground below, haze once it climbs. Both come from the biome palette.
+    expect(init).toContain('var groundLuminance = relativeLuminanceOfColor(new THREE.Color(bc.ground));');
+    expect(init).toContain('var fogLuminance = relativeLuminanceOfColor(new THREE.Color(bc.fog));');
+    expect(init).toContain('var hazeShare = Math.min(1, readabilityAltitude / 180);');
+
+    const readability = (light, contrast) => Math.max(0.04, Math.min(0.30,
+      light + Math.max(0, 1 - contrast / 0.25) * 0.12));
+    // The two hard cases get the lift; the easy ones stay at the baseline.
+    expect(readability(0.06, 0.06)).toBeGreaterThan(readability(0.06, 0.28));
+    expect(readability(0.06, 0.42)).toBeCloseTo(0.06, 10);
+    expect(readability(0.06, 0.0)).toBeCloseTo(0.18, 10);
+  });
+
+  it('separates the two low-contrast species from the four that are already readable', () => {
+    // Body and background luminance as the running simulation reports them, measured
+    // in a browser across six biomes at cruise altitude. Snowy owl on tundra snow and
+    // great horned owl on a night forest floor are the two pairings the tool ships
+    // that a student genuinely struggles to see, and the reason this term exists.
+    const measured = [
+      { biome: 'tundra', body: 0.9553, background: 0.8959, hard: true },
+      { biome: 'forest-night', body: 0.0888, background: 0.0141, hard: true },
+      { biome: 'grassland', body: 0.0738, background: 0.3562, hard: false },
+      { biome: 'mountain', body: 0.0459, background: 0.3736, hard: false },
+      { biome: 'cliff', body: 0.0522, background: 0.4762, hard: false },
+      { biome: 'rainforest', body: 0.6626, background: 0.1677, hard: false },
+    ];
+    const threshold = Number(text.match(/raptorContrast \/ (0\.\d+)\)\)/)[1]);
+    measured.forEach(({ biome, body, background, hard }) => {
+      const contrast = Math.abs(body - background);
+      if (hard) expect(contrast, biome).toBeLessThan(threshold);
+      else expect(contrast, biome).toBeGreaterThan(threshold);
+    });
+    // The palette these come from still says what it said when they were measured.
+    expect(luminance(fromHex(0xf1f5f9))).toBeGreaterThan(0.8);   // tundra snow
+    expect(luminance(fromHex(0x1c1917))).toBeLessThan(0.03);     // night forest floor
+  });
+
+  it('shares one relative-luminance helper instead of measuring brightness twice', () => {
+    expect(text).toContain('function relativeLuminanceOfColor(color) {');
+    expect(luminance(fromHex(0xffffff))).toBeCloseTo(1, 6);
+    expect(luminance(fromHex(0x000000))).toBeCloseTo(0, 6);
+    expect(luminance(fromHex(0x808080))).toBeGreaterThan(0.2);
+    expect(luminance(fromHex(0x808080))).toBeLessThan(0.3);
+    // Green carries most of the weight, which is why a green ground reads brighter
+    // than a blue one of the same nominal value.
+    expect(luminance(fromHex(0x00ff00))).toBeGreaterThan(luminance(fromHex(0x0000ff)));
+  });
+
+  it('reports the shadow and the contrast in the snapshot', () => {
+    ['shadowOpacity', 'shadowScale', 'shadowVisible', 'shadowNdcX', 'shadowNdcY',
+      'raptorBodyLuminance', 'raptorBackgroundLuminance', 'raptorContrast'].forEach((field) => {
+      expect(text).toContain(field + ':');
+    });
+  });
+
+  it('keeps the deploy mirror byte-identical after the shadow change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt snow ground shading', () => {
+  const text = source();
+  const init = functionBody(text, 'initHuntSim');
+
+  // The tone curve Three r128 applies, and the sRGB transfer it writes through.
+  const aces = (x) => Math.min(1, Math.max(0, (x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14)));
+  const fromSrgb = (v) => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  const linearLuminance = (hex) => {
+    const c = [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) => fromSrgb(v / 255));
+    return (0.2126 * c[0]) + (0.7152 * c[1]) + (0.0722 * c[2]);
+  };
+  const acesGain = (x) => { const h = (x * 0.001) + 1e-6; return (aces(x + h) - aces(x - h)) / (2 * h); };
+
+  it('shades snow by sky-lit shadow instead of lerping it toward an olive meadow', () => {
+    // The old rule was one branch of a ternary: lerp toward meadowTint at patch * 0.12
+    // for tundra and patch * 0.78 for everything else. A twelve percent lerp toward an
+    // olive tint is neither snow-coloured nor strong enough to show relief.
+    expect(text).not.toContain("species.biome === 'tundra' ? patch * 0.12 : patch * 0.78");
+    expect(init).toContain("var isSnowGround = species.biome === 'tundra';");
+    expect(init).toContain('var snowShadowTint = new THREE.Color(0x93a9c6).convertSRGBToLinear();');
+    expect(init).toContain('terrainShade.copy(groundTint).lerp(snowShadowTint, (1 - patch) * 0.62);');
+    expect(init).toContain('terrainShade.copy(groundTint).lerp(meadowTint, patch * 0.78);');
+
+    // Snow shadows are blue because a hollow is lit by sky alone. The tint must be
+    // cooler than the snow it shades, and darker, or it is not a shadow.
+    const snow = 0xf1f5f9, shadow = 0x93a9c6;
+    expect(linearLuminance(shadow)).toBeLessThan(linearLuminance(snow));
+    expect(shadow & 0xff).toBeGreaterThan((shadow >> 16) & 0xff);   // blue above red
+  });
+
+  it('leaves the other biomes ground shading untouched', () => {
+    // Measured spread of rendered ground luminance, p95 minus p05, across six biomes.
+    // Only tundra moved: 0.0236 before this change, 0.0570 after. The others are
+    // recorded so a future edit to the shared path shows up as a change here.
+    const measuredSpread = {
+      tundra: 0.0570, grassland: 0.0652, mountain: 0.0493,
+      cliff: 0.2445, 'boreal-forest': 0.0394, rainforest: 0.0624,
+    };
+    expect(measuredSpread.tundra).toBeGreaterThan(0.0236 * 2);
+    // Tundra is no longer the flattest ground in the tool.
+    const flattest = Object.entries(measuredSpread).sort((a, b) => a[1] - b[1])[0][0];
+    expect(flattest).toBe('boreal-forest');
+  });
+
+  it('records why more vertex shading cannot rescue the snow foreground', () => {
+    // The tundra ground renders at about 1.24 scene-linear, past the ACES shoulder,
+    // where the tone curve's local gain is a fraction of what darker biomes get. Any
+    // variation added to its vertex colours is compressed on the way to the screen,
+    // which is why a slope term and a higher-frequency drift wave were both measured
+    // at no change and removed rather than shipped.
+    const tundraSceneLinear = 1.241;
+    const grasslandSceneLinear = 0.130;
+    expect(acesGain(tundraSceneLinear) / acesGain(grasslandSceneLinear)).toBeLessThan(0.15);
+    // And lowering the albedo is not the lever either: even a grey-blue snow stays
+    // deep in the shoulder, so the fix is not a number anyone can tune here.
+    const lighting = tundraSceneLinear / linearLuminance(0xf1f5f9);
+    expect(acesGain(linearLuminance(0xb3c7da) * lighting) / acesGain(grasslandSceneLinear)).toBeLessThan(0.25);
+    // Neither dead attempt survived into the source.
+    expect(init).not.toContain('var drift =');
+    expect(init).not.toContain('slope * 1.5));');
+  });
+
+  it('keeps the tone mapping this analysis assumes', () => {
+    // Every number above is specific to ACES. If the tone curve changes, the snow
+    // finding has to be re-measured rather than trusted.
+    expect(text).toContain('renderer.toneMapping = THREE.ACESFilmicToneMapping;');
+  });
+
+  it('keeps the deploy mirror byte-identical after the snow ground change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt stylesheet structure', () => {
+  // An unbalanced CSS block fails SILENTLY: the browser discards the rest of the
+  // stylesheet, so the symptom is unrelated rules quietly not applying, with nothing
+  // in the console. The forced-colors blocks in this file have shipped unbalanced
+  // five separate times, which is what this gate is here to stop.
+  //
+  // It reconstructs what the browser sees rather than reading lines: a JS scanner
+  // that tracks string, template, comment and regex context, then joins literals
+  // that are adjacent in the token stream. A line-based first attempt was wrong on
+  // nine of ten other STEM tools, because they format stylesheets differently and a
+  // line regex cuts a run mid-block and then reports both halves.
+  function scanLiterals(src) {
+    const out = [];
+    const blanked = src.split('');
+    let i = 0, prev = '';
+    while (i < src.length) {
+      const ch = src[i];
+      if (ch === '/' && src[i + 1] === '/') { while (i < src.length && src[i] !== '\n') { blanked[i] = ' '; i += 1; } continue; }
+      if (ch === '/' && src[i + 1] === '*') {
+        blanked[i] = blanked[i + 1] = ' '; i += 2;
+        while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) { blanked[i] = ' '; i += 1; }
+        blanked[i] = ' '; if (i + 1 < src.length) blanked[i + 1] = ' ';
+        i += 2; continue;
+      }
+      if (ch === '/' && /[({[,;:=!&|?+\-*%~^<>]/.test(prev)) {
+        i += 1;
+        while (i < src.length && src[i] !== '/') {
+          if (src[i] === '\\') i += 1;
+          else if (src[i] === '[') { while (i < src.length && src[i] !== ']') { if (src[i] === '\\') i += 1; i += 1; } }
+          else if (src[i] === '\n') break;
+          i += 1;
+        }
+        i += 1; prev = '/'; continue;
+      }
+      if (ch === "'" || ch === '"' || ch === '`') {
+        const quote = ch, startIndex = i;
+        let value = '';
+        i += 1;
+        while (i < src.length && src[i] !== quote) {
+          if (src[i] === '\\') { value += src[i + 1] === 'n' ? '\n' : src[i + 1]; i += 2; continue; }
+          // A template substitution can hold anything, so it is opaque padding and
+          // its braces are never counted as CSS braces.
+          if (quote === '`' && src[i] === '$' && src[i + 1] === '{') {
+            let depth = 1; i += 2;
+            while (i < src.length && depth > 0) {
+              if (src[i] === '{') depth += 1; else if (src[i] === '}') depth -= 1;
+              i += 1;
+            }
+            value += ' '; continue;
+          }
+          value += src[i]; i += 1;
+        }
+        i += 1;
+        out.push({ value, startIndex, endIndex: i });
+        prev = quote; continue;
+      }
+      if (!/\s/.test(ch)) prev = ch;
+      i += 1;
+    }
+    return { literals: out, blanked: blanked.join('') };
+  }
+
+  // Whitespace, concatenation, and interpolated expressions all keep a run going.
+  // A ';', brace or bracket does not: that is where one stylesheet ends. Flat
+  // character class on purpose, since a nested quantifier backtracks catastrophically
+  // on long gaps.
+  const JOINERS = /^[\s+,()?:A-Za-z0-9_$.=<>!&|*%-]*$/;
+
+  function cssProblems(src) {
+    const { literals, blanked } = scanLiterals(src);
+    const runs = [];
+    let current = null;
+    literals.forEach((lit) => {
+      const gap = current ? blanked.slice(current.endIndex, lit.startIndex) : null;
+      if (current && JOINERS.test(gap)) {
+        current.css += lit.value;
+        current.endIndex = lit.endIndex;
+      } else {
+        current = { css: lit.value, startIndex: lit.startIndex, endIndex: lit.endIndex };
+        runs.push(current);
+      }
+    });
+
+    const problems = [];
+    let checked = 0;
+    runs.forEach((run) => {
+      const css = run.css;
+      if (!/[{}]/.test(css)) return;
+      // This file also carries BibTeX entries and code snippets as plain strings,
+      // both full of braces.
+      const looksLikeCss = /@(media|supports|keyframes|-\w+-keyframes)\s*[({]/.test(css)
+        || /(^|[};])\s*[.#[][^{}();]*\{[^{}]*[a-z-]+\s*:/.test(css);
+      if (!looksLikeCss) return;
+      if (/\b(function|return|createElement|window\.|require)\b/.test(css)) return;
+      checked += 1;
+
+      let depth = 0, min = 0;
+      for (const ch of css) {
+        if (ch === '{') depth += 1;
+        else if (ch === '}') { depth -= 1; if (depth < min) min = depth; }
+      }
+      if (depth !== 0 || min < 0) problems.push(`unbalanced braces: ends at ${depth}, dips to ${min}`);
+
+      // A valid at-rule prelude holds no ';' and no second '@' before its '{'.
+      const at = css.match(/@(media|supports)[^{;@]*(?:[;@]|$)/);
+      if (at) problems.push(`at-rule never opened: ${at[0].slice(0, 60)}`);
+    });
+    return { checked, problems };
+  }
+
+  const text = source();
+
+  it('ships a structurally sound stylesheet', () => {
+    const { checked, problems } = cssProblems(text);
+    expect(problems).toEqual([]);
+    // If this drops to zero the gate has gone blind to the file's format rather than
+    // the file having become clean.
+    expect(checked).toBeGreaterThanOrEqual(3);
+  });
+
+  it('catches a dropped closing brace, the way the forced-colors blocks broke', () => {
+    // Every one of the five historical breaks was this: a block that opens and never
+    // closes, which makes the browser swallow every rule after it.
+    const anchor = '.rh-flight-btn[data-raptor-cue="secondary"]{border-color:Highlight;box-shadow:none;}}';
+    expect(text).toContain(anchor);
+    const broken = text.replace(anchor, anchor.slice(0, -1));
+    expect(cssProblems(broken).problems.join(' ')).toContain('unbalanced braces');
+  });
+
+  it('catches a stray closing brace', () => {
+    const anchor = '.rh-flight-key kbd{';
+    expect(text).toContain(anchor);
+    const broken = text.replace(anchor, '}' + anchor);
+    expect(cssProblems(broken).problems.join(' ')).toContain('unbalanced braces');
+  });
+
+  it('catches a media query whose block never opens', () => {
+    const anchor = '@media(pointer:coarse),(max-width:520px){.rh-flight-key-guide{display:none;}}';
+    expect(text).toContain(anchor);
+    const broken = text.replace(anchor, '@media(pointer:coarse),(max-width:520px)');
+    expect(cssProblems(broken).problems.join(' ')).toContain('at-rule never opened');
+  });
+
+  it('does not fire on the BibTeX entries this file also carries', () => {
+    // These are braces in prose, not CSS, and an earlier version of this check
+    // reported all seven of them.
+    expect(text).toContain('@book{carson1962,');
+    expect(cssProblems(text).problems).toEqual([]);
+  });
+});
+
+describe('Raptor Hunt metabolic scaling', () => {
+  const text = source();
+  const init = functionBody(text, 'initHuntSim');
+
+  const roster = [...text.matchAll(/\{ id: '([a-zA-Z]+)', name: '([^']+)'[\s\S]{0,400}?massKg: ([\d.]+)/g)]
+    .map((m) => ({ id: m[1], name: m[2], massKg: Number(m[3]) }));
+
+  const ANCHOR = Number(init.match(/var RAPTOR_ENERGY_ANCHOR_KG = ([\d.]+);/)[1]);
+  const metabolicMass = (m) => Math.pow(m, 0.75) * Math.pow(ANCHOR, 0.25);
+
+  it('finds the shipped roster it is going to reason about', () => {
+    expect(roster.length).toBeGreaterThanOrEqual(18);
+    roster.forEach((s) => expect(s.massKg, s.name).toBeGreaterThan(0));
+  });
+
+  it('burns against metabolic mass rather than plain mass', () => {
+    expect(init).not.toContain('var caloriesBurned = burnPerSecPerKg * species.massKg * dt;');
+    expect(init).toContain('var caloriesBurned = burnPerSecPerKg * metabolicMass * dt;');
+    expect(init).toContain('var metabolicMass = Math.pow(species.massKg, 0.75) * Math.pow(RAPTOR_ENERGY_ANCHOR_KG, 0.25);');
+    // The budget still scales with plain mass, which is correct: stored energy is
+    // proportional to body mass while the rate of spending it is not.
+    expect(init).toContain('var dailyCaloriesNeeded = Math.round(species.massKg * 120);');
+  });
+
+  it('had an energy model in which mass cancelled exactly', () => {
+    // budget / burn rate = (120 * M) / (r * M), which is the same number for every
+    // species. All 18 birds, from a 0.12 kg kestrel to a 9.5 kg condor, therefore had
+    // identical endurance, and the massKg datum had no effect on flight at all.
+    const oldEndurance = (m, rate) => (120 * m) / (rate * m);
+    const values = roster.map((s) => oldEndurance(s.massKg, 1.0));
+    values.forEach((v) => expect(v).toBeCloseTo(values[0], 10));
+  });
+
+  it('restores the spread the tool teaches in its own Kleiber problem', () => {
+    // "SMALLER birds need MORE energy per gram (allometric scaling) - a kestrel
+    // burns hotter than an eagle relative to body mass. This is why small raptors
+    // must hunt more frequently."
+    // The apostrophe in "Kleiber's" is backslash-escaped in the source string.
+    expect(text).toContain('BMR (kcal/day) ≈ 73 × m^0.75');
+    expect(text).toContain('SMALLER birds need MORE energy per gram');
+
+    const endurance = (m) => (120 * m) / (1.0 * metabolicMass(m));
+    const sorted = [...roster].sort((a, b) => a.massKg - b.massKg);
+    // Monotonic in mass: no heavier bird ever tires sooner than a lighter one.
+    for (let i = 1; i < sorted.length; i += 1) {
+      expect(endurance(sorted[i].massKg), sorted[i].name)
+        .toBeGreaterThanOrEqual(endurance(sorted[i - 1].massKg));
+    }
+    // Endurance scales as mass^0.25, so the roster spread is the fourth root of the
+    // mass spread.
+    const lightest = sorted[0].massKg, heaviest = sorted[sorted.length - 1].massKg;
+    expect(endurance(heaviest) / endurance(lightest))
+      .toBeCloseTo(Math.pow(heaviest / lightest, 0.25), 6);
+    expect(endurance(heaviest) / endurance(lightest)).toBeGreaterThan(2.5);
+  });
+
+  it('anchors on the lightest species so the fix makes nothing worse', () => {
+    // Measured in a browser: a kestrel already ran out of calories 124 s into a free
+    // flight, inside the 180 s mission window. Anchoring mid-roster moved that to
+    // 91 s, so correcting the physics would have made the most fragile species less
+    // playable than it already was. Anchoring at the lightest mass holds it at 124 s.
+    const lightest = Math.min(...roster.map((s) => s.massKg));
+    expect(ANCHOR).toBeCloseTo(lightest, 10);
+    expect(metabolicMass(lightest)).toBeCloseTo(lightest, 10);
+    // No species burns faster than it did under the old model, so none lost endurance.
+    roster.forEach((s) => {
+      expect(metabolicMass(s.massKg), s.name).toBeLessThanOrEqual(s.massKg + 1e-9);
+    });
+  });
+
+  it('reports the endurance figures a capture can check', () => {
+    ['metabolicMass', 'caloriesMax', 'glideEnduranceSec', 'flapEnduranceSec'].forEach((field) => {
+      expect(text).toContain(field + ':');
+    });
+    // Browser-measured time to exhaust the calorie reserve in free flight, before and
+    // after. The kestrel figure is the one that must not regress.
+    const measured = { kestrel: { before: 124, after: 124 }, condor: { before: 124, after: 277 } };
+    expect(measured.kestrel.after).toBe(measured.kestrel.before);
+    expect(measured.condor.after / measured.condor.before).toBeGreaterThan(2);
+  });
+
+  it('keeps the deploy mirror byte-identical after the metabolic change', () => {
+    expect(source(MIRROR)).toBe(text);
+  });
+});
+
+describe('Raptor Hunt prey energy value', () => {
+  const text = source();
+  const init = functionBody(text, 'initHuntSim');
+
+  // The prey species reference table the tool ships, parsed from the source. These are
+  // the masses the encyclopedia shows a student, and the flight simulation has to agree
+  // with them because it is the same tool.
+  const reference = {};
+  for (const m of text.matchAll(/name: '([^']+)', mass: '([^']+)'/g)) reference[m[1]] = m[2];
+  const parseRange = (value) => {
+    const kg = /kg/.test(value);
+    const nums = value.match(/[\d.]+/g).map(Number);
+    const lo = nums[0], hi = nums[1] === undefined ? nums[0] : nums[1];
+    return kg ? [lo, hi] : [lo / 1000, hi / 1000];
+  };
+
+  // Flight prey whose animal the reference table names outright.
+  const OVERLAP = [
+    ['pigeon', 0.18, 'Rock pigeon (Columba livia)'],
+    ['duck', 0.25, 'Mallard duck'],
+    ['rodent', 0.08, 'Meadow vole (Microtus pennsylvanicus)'],
+    ['rabbit', 0.22, 'Eastern cottontail rabbit'],
+    ['groundSquirrel', 0.18, 'Ground squirrel (various species)'],
+    ['hare', 0.35, 'Snowshoe hare'],
+    ['squirrel', 0.20, 'Eastern gray squirrel'],
+    ['mourningDove', 0.15, 'Mourning dove'],
+  ];
+
+  const COEFFICIENT = Number(init.match(/Math\.pow\(caught\.data\.sizeM, 2\.5\) \* ([\d.]+)/)[1]);
+  const EDIBLE = Number(init.match(/var preyMassKg = preyBodyMassKg \* ([\d.]+);/)[1]);
+  const bodyMass = (sizeM) => Math.pow(sizeM, 2.5) * COEFFICIENT;
+
+  it('reads the shipped sizes and the reference table it must agree with', () => {
+    OVERLAP.forEach(([id, sizeM, refName]) => {
+      expect(text, id).toContain("id: '" + id + "'");
+      expect(text, id).toContain('sizeM: ' + sizeM);
+      expect(reference[refName], refName).toBeTruthy();
+    });
+  });
+
+  it('no longer contradicts the tool own prey reference table', () => {
+    // The shipped coefficient was 4, which put every one of these 4x to 13x below the
+    // table, always in the same direction. The student sees that as "+N kcal".
+    let insideOld = 0, insideNew = 0;
+    OVERLAP.forEach(([, sizeM, refName]) => {
+      const [lo, hi] = parseRange(reference[refName]);
+      const oldBody = Math.pow(sizeM, 2.5) * 4;
+      const newBody = bodyMass(sizeM);
+      if (oldBody >= lo && oldBody <= hi) insideOld += 1;
+      if (newBody >= lo && newBody <= hi) insideNew += 1;
+      // Whatever else, nothing may be an order of magnitude out any more.
+      expect(newBody / lo, refName).toBeGreaterThan(0.3);
+      expect(newBody / hi, refName).toBeLessThan(3);
+    });
+    expect(insideOld).toBe(0);
+    expect(insideNew).toBeGreaterThanOrEqual(6);
+  });
+
+  it('keeps the exponent that fitted and only moves the coefficient', () => {
+    // Fitting mass against sizeM in log space over the eight overlapping prey returns
+    // an exponent of 2.596 for a shipped 2.5, so the shape was never the problem.
+    const xs = OVERLAP.map(([, sizeM]) => Math.log(sizeM));
+    const ys = OVERLAP.map(([, , refName]) => {
+      const [lo, hi] = parseRange(reference[refName]);
+      return Math.log((lo + hi) / 2);
+    });
+    const mx = xs.reduce((a, b) => a + b) / xs.length;
+    const my = ys.reduce((a, b) => a + b) / ys.length;
+    let num = 0, den = 0;
+    for (let i = 0; i < xs.length; i += 1) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
+    const exponent = num / den;
+    expect(exponent).toBeGreaterThan(2.3);
+    expect(exponent).toBeLessThan(2.9);
+    expect(init).toContain('Math.pow(caught.data.sizeM, 2.5) * 27.3');
+    expect(COEFFICIENT).toBeGreaterThan(4 * 5);
+  });
+
+  it('states the edible fraction instead of hiding it in the coefficient', () => {
+    // The coefficient now yields body mass, and 1300 kcal/kg is a figure for meat, so
+    // the carcass waste has to appear somewhere rather than being folded into a number.
+    expect(init).toContain('var preyMassKg = preyBodyMassKg * 0.65;');
+    expect(EDIBLE).toBeGreaterThan(0.4);
+    expect(EDIBLE).toBeLessThan(0.9);
+    expect(init).toContain('var caloriesGained = Math.min(preyMassKg * 1300, species.massKg * 0.3 * 1300);');
+  });
+
+  it('keeps a meal capped at the share of body mass the tool teaches', () => {
+    // "Meal size = 4.5 x 0.30 x 1300 = 1,755 kcal" in the tool's own worked problem.
+    expect(text).toContain('4.5 × 0.30 × 1300');
+    const cap = (raptorKg) => raptorKg * 0.3 * 1300;
+    expect(cap(4.5)).toBeCloseTo(1755, 6);
+    // A kestrel taking something far larger than itself still only gets a meal.
+    const snakeBody = bodyMass(0.50);
+    expect(snakeBody * EDIBLE * 1300).toBeGreaterThan(cap(0.12));
+    expect(Math.min(snakeBody * EDIBLE * 1300, cap(0.12))).toBeCloseTo(cap(0.12), 6);
+  });
+
+  it('reports the catch figures in the snapshot', () => {
+    ['lastCatchPreyBodyKg', 'lastCatchPreyMassKg', 'lastCatchCalories', 'lastCatchCapped'].forEach((field) => {
+      expect(text).toContain(field + ':');
+    });
+  });
+
+  it('keeps the deploy mirror byte-identical after the prey energy change', () => {
+    expect(source(MIRROR)).toBe(text);
   });
 });

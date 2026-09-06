@@ -717,7 +717,9 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(source).toContain("'data-geology-core-load-mix': modeId");
     expect(source).toContain("'data-geology-core-objective': objective.id");
     expect(source).toContain("'data-state': objective.state");
-    expect(source).toContain("'aria-label': 'Bore Brief objectives'");
+    // Accessible names now route through the translator so a screen reader speaks the
+    // user's language; the English is the fallback, so it still ships unchanged.
+    expect(source).toContain("'aria-label': t('stem.geology.a11y.bore_brief_objectives', 'Bore Brief objectives')");
     expect(source).toContain("'data-geology-core-brief-summary': rigBrief.metCount");
     expect(source).toContain("'data-geology-core-brief-badge': latestCoreLog.boreBrief.metCount");
     expect(source).toContain('cleanReport.boreBrief = coreRigBoreBrief(');

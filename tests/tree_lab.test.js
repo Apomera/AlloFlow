@@ -552,6 +552,39 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(maxShare).toBeLessThanOrEqual(0.5);
   });
 
+  it('spreads the answer positions inside every band pool, not just the whole bank', () => {
+    // The check above measures all 16 questions together and passed while the pool a
+    // grade 6-8 student actually sees keyed the first option once in twelve questions.
+    // A band only ever sees the questions at or below its level, so that is the set
+    // whose positions have to be even.
+    const E = engine();
+    for (const band of E.BANDS) {
+      const pool = E.QUIZ.filter((q) => E.atLeast(band, q.band));
+      expect(pool.length, band).toBeGreaterThan(0);
+      const width = Math.max(...pool.map((q) => q.a.length));
+      const counts = new Array(width).fill(0);
+      for (const q of pool) counts[q.correct] += 1;
+      // Even to within one question: exact where the pool divides by the option count.
+      expect(Math.max(...counts) - Math.min(...counts), band + ' ' + counts.join(',')).toBeLessThanOrEqual(1);
+      // And no position is missing, so "never pick the first one" is never a strategy.
+      expect(Math.min(...counts), band).toBeGreaterThan(0);
+    }
+  });
+
+  it('never keys the same position three questions running', () => {
+    // Evenness alone still allows AAA BBB CCC DDD, which reads as a pattern to a
+    // student long before it reads as a coincidence.
+    const E = engine();
+    for (const band of E.BANDS) {
+      const seq = E.QUIZ.filter((q) => E.atLeast(band, q.band)).map((q) => q.correct);
+      let run = 1;
+      for (let i = 1; i < seq.length; i += 1) {
+        run = seq[i] === seq[i - 1] ? run + 1 : 1;
+        expect(run, band + ' ' + seq.join('')).toBeLessThan(3);
+      }
+    }
+  });
+
   it('does not let a student score the quiz by answer length', () => {
     // The position rotation cannot help here: length travels WITH the option text,
     // so shifting the order moves the tell around rather than removing it. The
@@ -1030,10 +1063,13 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(fresh).toContain('role="progressbar"');
     expect(fresh).toContain('allo-tree-quiz-leaf is-open is-current');
 
+    // A wrong pick, derived from the bank rather than written as a literal: the answer
+    // placement is chosen at module scope and moves whenever the bank grows.
+    const wrongPick = (engine().QUIZ[0].correct + 1) % engine().QUIZ[0].a.length;
     const rethink = render({
       treeLab: {
         view: 'quiz', bandOverride: 'k2',
-        quizPicks: { 0: 0 }, quizPickKey: 0, quizSeen: { 0: 'wrong' },
+        quizPicks: { 0: wrongPick }, quizPickKey: 0, quizSeen: { 0: 'wrong' },
       },
     });
     expect(rethink).toContain('Not yet - look at the clue');
@@ -1628,7 +1664,9 @@ describe('Tree Life Lab — response curves', () => {
   }
   // Each panel's polyline, as arrays of plotted y values.
   function paths(html) {
-    return [...html.matchAll(/<path d="(M[^"]+?)" fill="none"/g)].map((m) =>
+    // Keyed off the curve's own name: the path carries data-curve before its d attribute,
+    // and an earlier version of this matched '<path d=' and silently found zero panels.
+    return [...html.matchAll(/<path data-curve="[^"]*" d="(M[^"]+?)" fill="none"/g)].map((m) =>
       m[1].split(/[ML]/).filter(Boolean).map((p) => parseFloat(p.trim().split(/\s+/)[1])));
   }
 
@@ -1697,9 +1735,13 @@ describe('Tree Life Lab — response curves', () => {
     const html = chem();
     // The validated hues are in use...
     expect(html, 'CO2 is not on the validated violet').toMatch(/#7c3aed/);
-    expect(html, 'water is not on the validated blue').toMatch(/#0284c7/);
-    expect(html, 'light is not on the validated gold').toMatch(/#ca8a04/);
-    expect(html, 'temperature is not on the validated red').toMatch(/#dc2626/);
+    expect(html, 'water is not on the validated blue').toMatch(/#0369a1/);
+    expect(html, 'light is not on the validated gold').toMatch(/#a16207/);
+    expect(html, 'temperature is not on the validated red').toMatch(/#9f1239/);
+    // Each theme now has its own steps, because the shared set drew the sun amber at
+    // 2.94:1 on the white panel and the CO2 violet at 2.57:1 on the dark card, under the
+    // 3:1 a data mark needs. The retired light-theme steps must not linger.
+    expect(html, 'a light-theme hue below 3:1 survived').not.toMatch(/#ca8a04|#dc2626/);
     // ...and the retired two-blues pair is gone from this view entirely, including
     // the factor BARS under the figure, which kept their own hardcoded copies and
     // would otherwise have shown a different colour for the same factor.
@@ -3643,5 +3685,22 @@ describe('Tree Life Lab - causal seasonal carbon ledger', () => {
         expect(ledger).toContain('kg C');
       }
     }
+  });
+});
+
+describe('Knowledge check progress trail', () => {
+  it('picks a column count that never leaves one chip alone on the last row', () => {
+    const E = engine();
+    for (let n = 1; n <= 24; n += 1) {
+      const cols = E.trailColumns(n);
+      expect(cols, 'n=' + n).toBeGreaterThanOrEqual(3);
+      expect(cols, 'n=' + n).toBeLessThanOrEqual(6);
+      // A single chip on the last row is the defect; a full last row or two or more is fine.
+      if (n > cols) expect(n % cols, 'n=' + n + ' cols=' + cols).not.toBe(1);
+    }
+    // The four pool sizes the bands actually produce, stated so a bank change shows up here.
+    const sizes = E.BANDS.map((b) => E.QUIZ.filter((q) => E.atLeast(b, q.band)).length);
+    expect(sizes).toEqual([5, 8, 12, 16]);
+    for (const n of sizes) expect(E.trailColumns(n), 'pool ' + n).toBe(6);
   });
 });

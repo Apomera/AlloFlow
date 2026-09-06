@@ -70,10 +70,82 @@ describe('School Rewards manual', () => {
     expect(read('desktop', 'web-app', 'public', 'school-rewards-quick-cards.html')).toBe(cards);
     expect(cards).toContain('<h2 id="card-staff">');
     expect(cards).toContain('<h2 id="card-cashier">');
+    expect(cards).toContain('<h2 id="card-student">');
     expect(cards).toContain('fifteen minutes');
     expect(cards).toContain('Up to sixty');
     expect(read('sitemap.xml')).toContain('school-rewards-quick-cards.html');
     expect(read('educator-evaluation-manual.html')).toContain('<h3>Practice first</h3>');
+  });
+
+  it('prints without splitting a card, a diagram, a table, or the at-a-glance box', () => {
+    // Verified against real Chromium PDFs by scratch/school-rewards-print-check.cjs:
+    // Letter with half-inch margins gives 3 pages for 3 cards and 29 for the manual
+    // (measured with every figure decoded; an undecoded run under-reports).
+    const cards = read('school-rewards-quick-cards.html');
+    expect(cards).toMatch(/\.card\{[^}]*break-inside:avoid/);
+    expect(cards).toMatch(/@media print\{\.card\{page-break-after:always\}/);
+    expect(MANUAL).toContain('figure.diagram,.glance,.tablewrap{break-inside:avoid;page-break-inside:avoid;}');
+    // Tall screenshots stay breakable on purpose so a caption can follow to the next sheet.
+    expect(MANUAL).toContain('figure{break-inside:auto;page-break-inside:auto;}');
+    expect(MANUAL).toContain('prints to about 29 pages');
+  });
+
+  it('keeps every cross-document link and metadata claim true', () => {
+    const ids = new Set(Array.from(MANUAL.matchAll(/id="([^"]+)"/g), (m) => m[1]));
+    const internal = Array.from(MANUAL.matchAll(/href="#([^"]+)"/g), (m) => m[1]);
+    expect(internal.filter((a) => !ids.has(a))).toEqual([]);
+    // The built-in Help panel sends each role to its own manual section. A renamed
+    // heading id would silently drop the reader at the top of a 29-page document.
+    const portal = read('apps_script', 'school_rewards', 'Portal.html');
+    const deep = Array.from(portal.matchAll(/school-rewards-manual#([a-z-]+)/g), (m) => m[1]);
+    expect(deep.sort()).toEqual(['admin', 'awarding', 'store', 'students']);
+    expect(deep.filter((a) => !ids.has(a))).toEqual([]);
+    const cardIds = new Set(Array.from(read('school-rewards-quick-cards.html').matchAll(/id="([^"]+)"/g), (m) => m[1]));
+    const toCards = Array.from(MANUAL.matchAll(/href="school-rewards-quick-cards\.html#([^"]+)"/g), (m) => m[1]);
+    expect(toCards.length).toBeGreaterThan(0);
+    expect(toCards.filter((a) => !cardIds.has(a))).toEqual([]);
+    // The contents list and the "13 sections" claim describe the same sections.
+    const sections = Array.from(MANUAL.matchAll(/<h2 id="([^"]+)"/g), (m) => m[1]);
+    const toc = (MANUAL.match(/<nav class="toc"[\s\S]*?<\/nav>/) || [''])[0];
+    expect(sections).toHaveLength(13);
+    expect(toc.split('<li>').length - 1).toBe(sections.length);
+    expect(MANUAL).toContain('<span>' + sections.length + ' sections</span>');
+  });
+
+  it('keeps the presenter guide in step with the in-page demo guide', () => {
+    // Nothing else covers docs/school_rewards_admin_demo.md, so a change to the
+    // practice page can leave the printed route describing a screen that moved.
+    const guide = read('docs', 'school_rewards_admin_demo.md');
+    const page = read('school-rewards-practice.html');
+    const inPage = page.slice(page.indexOf('id="practice-demo-guide"'));
+    const steps = Array.from(inPage.slice(0, inPage.indexOf('</ol>')).matchAll(/<li><strong>([^<]+)<\/strong>/g), (m) => m[1].replace(/[:\s]+$/, ''));
+    expect(steps.length).toBeGreaterThanOrEqual(6);
+    // Every role the in-page route visits is named in the presenter guide.
+    for (const role of ['Staff', 'Student', 'Cashier', 'Administrator']) {
+      expect(steps.join(' '), 'in-page guide: ' + role).toContain(role);
+      expect(guide, 'presenter guide: ' + role).toContain(role);
+    }
+    // The two capabilities the route now opens with.
+    expect(inPage).toContain('Help');
+    expect(guide).toContain('**Help**');
+    expect(guide).toContain('Español');
+    // The figures the demo walkthrough harness asserts at runtime.
+    for (const fact of ['9 to 29', '**14**', '20 to 19', 'Shopping day']) {
+      expect(guide, fact).toContain(fact);
+    }
+    expect(guide).toContain('school-rewards-quick-cards.html');
+  });
+
+  it('describes the Print Lab default the repository actually ships', () => {
+    // Opt-in since 2026-09-05: the repository hides the tab unless the flag is
+    // explicitly true, and school_rewards_repository.test.js pins a fresh book
+    // to false. Every document has to say so.
+    const code = read('apps_script', 'school_rewards', 'Code.gs');
+    expect(code).toContain("function printLabEnabled_(config) { return String((config && config.printLabEnabled) || '') === 'true'; }");
+    const portal = read('apps_script', 'school_rewards', 'Portal.html');
+    expect(portal).toContain('The tab stays hidden until you turn it on here');
+    expect(MANUAL).toContain('A new deployment starts with the tab <strong>hidden</strong>');
+    expect(read('docs', 'school_rewards_admin_demo.md')).toContain('start with the tab **hidden**');
   });
 
   it('is one click away from the panel header', () => {

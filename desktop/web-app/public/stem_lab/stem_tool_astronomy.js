@@ -2405,6 +2405,37 @@
     } catch (error) { if (disposeOnError) disposeOnError(); throw error; }
   }
 
+  // The flat sky map drew 44 curated stars while the 3D observatory drew 8,920,
+  // so the two tabs showed different skies for the same place and time. This
+  // paints the same catalogue behind the map's markers: same limiting magnitude,
+  // same air. A stable component, because it owns an async load.
+  function SkyCatalogField(props) {
+    var React = props.React, h = React.createElement;
+    var state = React.useState(null), catalog = state[0], setCatalog = state[1];
+    React.useEffect(function() {
+      var cancelled = false;
+      loadObservatoryCatalog().then(function(loaded) { if (!cancelled) setCatalog(loaded); }, function() {});
+      return function() { cancelled = true; };
+    }, []);
+    if (!catalog || !catalog.count) return null;
+    var horizon = catalogHorizon(catalog, props.lst, props.lat, props.d, 1, 0);
+    var limit = props.limit, order = catalog.byMag, dots = [], drawn = 0;
+    var max = props.max || 900;
+    for (var k = 0; k < order.length && drawn < max; k++) {
+      var i = order[k];
+      if (horizon.alts[i] <= 0) continue;
+      var mag = horizon.extMags[i];
+      if (mag > limit) continue;
+      var rp = props.R * (90 - horizon.alts[i]) / 90;
+      var x = props.cx - rp * sind(horizon.azs[i]), y = props.cy - rp * cosd(horizon.azs[i]);
+      var vis = Math.max(0, Math.min(1, (limit - mag + 0.6) * 0.55));
+      dots.push(h('circle', { key: 'cat' + i, cx: Number(x.toFixed(2)), cy: Number(y.toFixed(2)),
+        r: Number(Math.max(0.34, 1.5 - mag * 0.2).toFixed(2)), fill: '#f8fafc',
+        opacity: Number((vis * (props.dim ? 0.3 : 1) * 0.85).toFixed(3)) }));
+      drawn++;
+    }
+    return h('g', { 'data-sky-layer': 'catalog-stars', 'data-catalog-stars': String(drawn), 'aria-hidden': 'true', pointerEvents: 'none', clipPath: 'url(#astronomy-sky-dome-clip)' }, dots);
+  }
   // Stable component: owns the WebGL lifecycle and catalog loading for the observatory.
   function ObservatoryView(props) {
     var React = props.React, h = React.createElement, host = React.useRef(null), viewer = React.useRef(null), latest = React.useRef(props);
@@ -3868,7 +3899,8 @@
           constellationLines: boundedBoolean(rawSkyLayers.constellationLines, true),
           planets: boundedBoolean(rawSkyLayers.planets, true),
           sunMoon: boundedBoolean(rawSkyLayers.sunMoon, true),
-          ecliptic: boundedBoolean(rawSkyLayers.ecliptic, true)
+          ecliptic: boundedBoolean(rawSkyLayers.ecliptic, true),
+          catalogStars: boundedBoolean(rawSkyLayers.catalogStars, true)
         };
         var base = new Date(); base.setUTCDate(base.getUTCDate() + dayOff);
         var ut = base.getUTCHours() + base.getUTCMinutes() / 60 + hourOff;
@@ -4619,7 +4651,8 @@
               layerToggle('constellationLines', __alloT('stem.astronomy.layer_constellation_lines', 'Constellation lines')),
               layerToggle('planets', __alloT('stem.astronomy.layer_planets', 'Planets')),
               layerToggle('sunMoon', __alloT('stem.astronomy.layer_sun_moon', 'Sun and Moon')),
-              layerToggle('ecliptic', __alloT('stem.astronomy.layer_ecliptic', 'Ecliptic'))),
+              layerToggle('ecliptic', __alloT('stem.astronomy.layer_ecliptic', 'Ecliptic')),
+              layerToggle('catalogStars', 'Catalogue star field')),
             h('div', { id: 'astronomy-sky-darkness-field', style: { display: 'flex', flexWrap: 'wrap', gap: '6px 8px', alignItems: 'center', minWidth: 0, marginBottom: 9 } },
               h('label', { htmlFor: 'astronomy-sky-darkness', style: { color: '#e2e8f0', fontSize: 11.5, fontWeight: 800 } }, 'Sky darkness'),
               h('select', {
@@ -4685,6 +4718,10 @@
                 h('circle', { cx: cx, cy: cy, r: R, fill: domeFill, stroke: '#94a3b8', strokeWidth: 1.8, 'data-sky-dome': 'true', 'data-bortle-class': bortlePreview.class }),
                 h('circle', { cx: cx, cy: cy, r: R, fill: 'url(#astronomy-sky-horizon-haze)', 'data-sky-atmosphere': 'haze', 'aria-hidden': 'true', pointerEvents: 'none' }),
                 h('circle', { cx: cx, cy: cy, r: R, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.8, 'aria-hidden': 'true', pointerEvents: 'none' }),
+                skyLayers.catalogStars ? h(SkyCatalogField, { React: React, key: 'catalog-field', lst: sky.lst, lat: loc.lat,
+                  d: astroDayNumber(base.getUTCFullYear(), base.getUTCMonth() + 1, base.getUTCDate(), ut),
+                  R: R, cx: cx, cy: cy, dim: skyFocusActive,
+                  limit: limitingMagnitude(bortleClass, sky.sun.alt, sky.moon.alt, sky.moon.phase.illum) }) : null,
                 guideEls,
                 gridEls,
                 markerEls,
@@ -4698,7 +4735,7 @@
                   h('text', { x: cx, y: 399, fill: '#e2e8f0', fontSize: 11.5, fontWeight: 650, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { timeZone: loc.timeZone, weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' \u00B7 ' + loc.name)),
               h('div', { id: 'astronomy-sky-map-help', style: { width: '100%', maxWidth: '100%', marginTop: 7, padding: '8px 10px', borderRadius: 8, background: '#0f172a', border: '1px solid #64748b', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.55 } },
                 h('strong', { style: { color: '#f8fafc' } }, 'Diagram guide: '),
-                'North is at the top and east is on the left. The outer circle is the horizon; inner rings mark 30\u00B0 and 60\u00B0 altitude; the center is directly overhead. When enabled, the gold dashed path shows the ecliptic and indigo lines show conventional recognition guides, not official constellation boundaries. A solid gold arc traces the selected target\'s visible motion during the next 12 hours whenever it is above the horizon; visible dots mark 4-hour intervals and the arrow shows direction. A faint, class-independent horizon haze and altitude dimming approximate clear-sky atmospheric extinction for stars and planets. Sky darkness separately changes the night background and the contrast of this map\'s curated reference stars. It does not model clouds, transparency, local glare, or the full number of stars visible; constellation lines and target markers remain guide overlays.'
+                'North is at the top and east is on the left. The outer circle is the horizon; inner rings mark 30\u00B0 and 60\u00B0 altitude; the center is directly overhead. When enabled, the gold dashed path shows the ecliptic and indigo lines show conventional recognition guides, not official constellation boundaries. A solid gold arc traces the selected target\'s visible motion during the next 12 hours whenever it is above the horizon; visible dots mark 4-hour intervals and the arrow shows direction. A faint, class-independent horizon haze and altitude dimming approximate clear-sky atmospheric extinction for stars and planets. Sky darkness separately changes the night background and the contrast of this map\'s curated reference stars. With the catalogue star field on, the faint unlabelled dots behind the markers come from the same 8,920-star catalogue the 3D Observatory draws, cut at the same limiting magnitude and dimmed by the same air, so both tabs show the same sky. It does not model clouds, transparency or local glare; constellation lines and target markers remain guide overlays.'
               )),
             h('div', { style: { flex: '1 1 240px', minWidth: 0 } },
               targetDetailPanel,
@@ -4739,6 +4776,9 @@
         var starSummary = skyLayers.stars
           ? referenceStarCount + ' curated bright reference-star positions are plotted above the horizon; their contrast changes continuously with altitude, twilight, and the illustrative darkness preview. '
           : 'Reference stars are hidden by the layer controls. ';
+        var fieldSummary = skyLayers.catalogStars
+          ? 'A faint background field drawn from the full star catalogue sits behind them; those stars are not individually labelled here, and the Observatory tab names them. '
+          : '';
         var previewInfo = BORTLE.find(function(item) { return item.class === bortlePreview.class; }) || BORTLE[4];
         var previewSummary = bortlePreview.mode === 'daylight'
           ? 'Bortle class ' + previewInfo.class + ' is selected, but daylight or civil twilight controls the current background and pauses the contrast preview. '
@@ -4748,7 +4788,7 @@
             : sky.sun.alt > -18 ? 'Twilight. ' : 'Night. ';
         return 'Computed sky for ' + loc.name + '. ' + solarState +
           'Overhead chart: north at top, east at left, horizon at the outer circle, zenith at the center. ' +
-          moonSummary + bodySummary + starSummary + previewSummary +
+          moonSummary + bodySummary + starSummary + fieldSummary + previewSummary +
           (targetStatus || '') + (targetTrackSummary ? ' ' + targetTrackSummary : '') + ' Shown for ' + when.toLocaleString(undefined, {
             timeZone: loc.timeZone, month: 'short', day: 'numeric', year: 'numeric',
             hour: 'numeric', minute: '2-digit'

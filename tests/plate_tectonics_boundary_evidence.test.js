@@ -20,18 +20,24 @@ describe('Plate Tectonics boundary evidence simulator', () => {
     expect(source).toContain('70 + Math.random() * 580');
     expect(source).toContain(': 2 + Math.random() * 28');
     expect(source).toContain("q.depthKm >= 300 ? '167,139,250'");
-    expect(source).toContain("quakes: 'Shallow to deep at subduction zones'");
-    expect(source).toContain("quakes: 'Mostly shallow'");
+    // Pinned by KEY plus binding, not by English: the labels are translated now,
+    // and a copy edit must not be able to red this test.
+    expect(source).toMatch(/quakes: __alloT\('stem\.platetectonics\.sim_ev_quakes_convergent'/);
+    expect(source).toMatch(/quakes: __alloT\('stem\.platetectonics\.sim_ev_quakes_shallow'/);
   });
 
   it('provides accessible, nonvisual boundary evidence', () => {
     const source = readFileSync(PATHS[0], 'utf8');
     expect(source).toContain("'aria-labelledby': 'ptEvidenceTitle'");
     expect(source).toContain("'aria-live': 'polite'");
-    expect(source).toContain("['Relative motion', evidence.motion]");
-    expect(source).toContain("['Crustal outcome', evidence.crust]");
-    expect(source).toContain("['Quake-depth clue', evidence.quakes]");
-    expect(source).toContain("['Volcanism clue', evidence.volcanoes]");
+    // Each row must still be bound to its own evidence field - that is the
+    // invariant. The row LABELS are translated, so matching their English text
+    // pinned a spelling instead.
+    [['sim_ev_row_motion', 'motion'], ['sim_ev_row_crust', 'crust'],
+     ['sim_ev_row_quakes', 'quakes'], ['sim_ev_row_volcanoes', 'volcanoes']].forEach(([key, field]) => {
+      expect(source, key + ' not bound to evidence.' + field)
+        .toMatch(new RegExp("\\[__alloT\\('stem\\.platetectonics\\." + key + "'[^\\]]*evidence\\." + field + "\\]"));
+    });
     expect(source).toContain("'aria-label': info.name + ' boundary cross-section.");
   });
 

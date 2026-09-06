@@ -5,6 +5,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { buildApBlueprintCoverage } = require('./ap_blueprint_coverage_core.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_us_history_foundation_pilot.json');
@@ -318,6 +319,7 @@ const findingCounts = countBy(structuralFindings, (finding) => finding.check);
 const signals = signalDefinitions.map(([check, meaning]) => ({ check, status: findingCounts[check] ? 'fail' : 'pass', findingCount: findingCounts[check] || 0, meaning }));
 const generatedAt = `${pack.blueprint?.lastVerifiedAt || '1970-01-01'}T00:00:00.000Z`;
 const report = {
+  blueprintCoverage: buildApBlueprintCoverage({ pack, library }),
   schemaVersion: 1,
   reportId: 'ap-us-history-foundation-pilot-qa',
   generatedAt,

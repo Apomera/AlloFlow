@@ -1,0 +1,8 @@
+{
+  "stem.archstudio.print_lab": "Print Lab",
+  "stem.archstudio.print_lab_aria": "Continue this building in Print Lab",
+  "stem.archstudio.print_export": "Print & export",
+  "stem.archstudio.export_stl": "STL file",
+  "stem.archstudio.export_stl_aria": "Download this building as an STL file",
+  "stem.archstudio.print_note": "Print Lab previews the real geometry, sets scale, and prepares a staff-reviewed request. Nothing here spends points."
+}

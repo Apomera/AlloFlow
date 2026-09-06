@@ -786,11 +786,13 @@ function refundSchoolRewardsPrintRequest(request) {
   });
 }
 
-// Print Lab visibility (2026-09-02). Default on so existing pilots are
-// unchanged; a school without a reviewed printer workflow hides the tab. This
-// is a display setting for the portal, not an access control: the print
+// Print Lab visibility (2026-09-02; default flipped to opt-in 2026-09-05).
+// The tab stays hidden until an administrator turns it on under School
+// settings, so a school without a reviewed printer workflow never shows it by
+// accident. A school that already saved the setting keeps its explicit value.
+// This is a display setting for the portal, not an access control: the print
 // endpoints keep their own role and roster checks.
-function printLabEnabled_(config) { return String((config && config.printLabEnabled) || '') !== 'false'; }
+function printLabEnabled_(config) { return String((config && config.printLabEnabled) || '') === 'true'; }
 function adminUpdateRewardsSettings(request) {
   var actor = requireRole_(['admin']); request = object_(request);
   var printLabEnabled = request.printLabEnabled !== false && String(request.printLabEnabled) !== 'false';

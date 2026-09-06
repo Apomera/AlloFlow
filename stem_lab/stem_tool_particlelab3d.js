@@ -136,6 +136,8 @@
     return { collisions: collisions, impulse: impulse, events: events, tracerCollisions: tracerCollisions, membranePassed: membranePassed, membraneBlocked: membraneBlocked, membranePassedA: membranePassedA, membranePassedB: membranePassedB, membraneBlockedA: membraneBlockedA, membraneBlockedB: membraneBlockedB, membraneNetA: membraneNetA, membraneNetB: membraneNetB };
   }
 
+  var COACH_TIMEOUT_MS = 20000; // an AI coach request that never settles must not leave the button disabled forever
+
   function meanFreePathEstimate(particleCount, boxSize, particleDiameter) {
     var count = Math.max(1, (Number(particleCount) || 1) - 1), volume = Math.pow(Math.max(0.1, Number(boxSize) || 1), 3), diameter = Math.max(0.01, Number(particleDiameter) || 0.58);
     return volume / (Math.sqrt(2) * count * Math.PI * diameter * diameter);
@@ -322,17 +324,19 @@
       var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
       var bucket = (ctx.toolData && ctx.toolData.particleLab3d) || {};
       var prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      var canvasRef = useRef(null), stageRef = useRef(null), runtimeRef = useRef(null), frameRef = useRef(null), settingsRef = useRef(null), replaySnapshotRef = useRef(null), keysDialogRef = useRef(null), keysCloseRef = useRef(null), keysOpenerRef = useRef(null);
-      var [preset, setPreset] = useState(bucket.preset || 'gas');
-      var [temperature, setTemperature] = useState(bucket.temperature || 300);
-      var [count, setCount] = useState(bucket.count || 64);
-      var [boxSize, setBoxSize] = useState(bucket.boxSize || 11);
+      var canvasRef = useRef(null), stageRef = useRef(null), rendererRef = useRef(null), runtimeRef = useRef(null), frameRef = useRef(null), settingsRef = useRef(null), replaySnapshotRef = useRef(null), keysDialogRef = useRef(null), keysCloseRef = useRef(null), keysOpenerRef = useRef(null);
+      function restoreOneOf(value, allowed, fallback) { return allowed.indexOf(value) >= 0 ? value : fallback; }
+      function restoreNumber(value, min, max, fallback) { var n = Number(value); return isFinite(n) ? clamp(n, min, max) : fallback; }
+      var [preset, setPreset] = useState(restoreOneOf(bucket.preset, ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'], 'gas'));
+      var [temperature, setTemperature] = useState(bucket.temperature == null ? 300 : restoreNumber(bucket.temperature, 40, 900, 300));
+      var [count, setCount] = useState(bucket.count == null ? 64 : restoreNumber(bucket.count, 24, 120, 64));
+      var [boxSize, setBoxSize] = useState(bucket.boxSize == null ? 11 : restoreNumber(bucket.boxSize, 7, 18, 11));
       var [particleDiameter, setParticleDiameter] = useState(bucket.particleDiameter == null ? 0.58 : clamp(Number(bucket.particleDiameter) || 0.58, 0.36, 0.9));
-      var [attraction, setAttraction] = useState(bucket.attraction == null ? 0.15 : bucket.attraction);
-      var [gravity, setGravity] = useState(bucket.gravity == null ? 0 : bucket.gravity);
+      var [attraction, setAttraction] = useState(bucket.attraction == null ? 0.15 : restoreNumber(bucket.attraction, 0, 1.5, 0.15));
+      var [gravity, setGravity] = useState(bucket.gravity == null ? 0 : restoreNumber(bucket.gravity, 0, 2, 0));
       var [membrane, setMembrane] = useState(bucket.membrane !== false);
-      var [permeability, setPermeability] = useState(bucket.permeability == null ? 0.45 : bucket.permeability);
-      var [membraneSelectivity, setMembraneSelectivity] = useState(bucket.membraneSelectivity || 'both');
+      var [permeability, setPermeability] = useState(bucket.permeability == null ? 0.45 : restoreNumber(bucket.permeability, 0, 1, 0.45));
+      var [membraneSelectivity, setMembraneSelectivity] = useState(restoreOneOf(bucket.membraneSelectivity, ['both', 'a', 'b'], 'both'));
       var [massRatioB, setMassRatioB] = useState(bucket.massRatioB == null ? 1 : clamp(Number(bucket.massRatioB) || 1, 0.5, 3));
       var [running, setRunning] = useState(false);
       var [trace, setTrace] = useState(!!bucket.trace);
@@ -342,14 +346,14 @@
       var [flowTrails, setFlowTrails] = useState(!!bucket.flowTrails);
       var [energyColors, setEnergyColors] = useState(bucket.energyColors !== false);
       var [wallSensors, setWallSensors] = useState(bucket.wallSensors !== false);
-      var [autoCamera, setAutoCamera] = useState(!!bucket.autoCamera);
+      var [autoCamera, setAutoCamera] = useState(!!bucket.autoCamera && !prefersReducedMotion);
       var [followTracer, setFollowTracer] = useState(!!bucket.followTracer && !prefersReducedMotion);
       var [systemProbe, setSystemProbe] = useState(!!bucket.systemProbe);
       var [systemInfo, setSystemInfo] = useState({ x: 0, y: 0, z: 0, spread: 0, density: 0, drift: 0 });
       var [heightInfo, setHeightInfo] = useState({ bins: new Array(8).fill(0.125), counts: new Array(8).fill(0), centerY: 0, normalizedCenter: 0, bottomFraction: 0.25, topFraction: 0.25, bottomTopRatio: 1, uniform: 0.125 });
       var [clusterInfo, setClusterInfo] = useState({ sizes: [], groups: [], clusterCount: 0, largest: 0, largestFraction: 0, bondedFraction: 0, meanSize: 0, cutoff: 1.1 });
       var [wallFaceInfo, setWallFaceInfo] = useState({ 'x+': 0, 'x-': 0, 'y+': 0, 'y-': 0, 'z+': 0, 'z-': 0 });
-      var [timeScale, setTimeScale] = useState(bucket.timeScale || 1);
+      var [timeScale, setTimeScale] = useState(restoreOneOf(bucket.timeScale, [0.25, 1, 2], 1));
       var [isFullscreen, setIsFullscreen] = useState(false);
       var [cssFullscreen, setCssFullscreen] = useState(false); // immersive fallback when the native API is unavailable (sandboxed iframes) or rejects
       var [showHud, setShowHud] = useState(true);
@@ -358,7 +362,7 @@
       var [readoutsPosition, setReadoutsPosition] = useState(['left', 'right', 'bottom'].indexOf(bucket.readoutsPosition) >= 0 ? bucket.readoutsPosition : 'right');
       var [stageNarrow, setStageNarrow] = useState(false); // stage <= 760px wide: the container query docks readouts below
       var [readoutsWidth, setReadoutsWidth] = useState(['compact', 'standard', 'wide'].indexOf(bucket.readoutsWidth) >= 0 ? bucket.readoutsWidth : 'standard');
-      var readoutsToggleRef = useRef(null), conditionsToggleRef = useRef(null);
+      var readoutsToggleRef = useRef(null), conditionsToggleRef = useRef(null), readoutsRef = useRef(null);
       var [legendOpen, setLegendOpen] = useState(bucket.legendOpen === true);
       var [showFullscreenConditions, setShowFullscreenConditions] = useState(false);
       var [advancedOpen, setAdvancedOpen] = useState(bucket.advancedOpen === true);
@@ -373,13 +377,14 @@
       var [conclusion, setConclusion] = useState(bucket.conclusion || '');
       var [coachFeedback, setCoachFeedback] = useState(bucket.coachFeedback || '');
       var [isCoaching, setIsCoaching] = useState(false);
-      var [quality, setQuality] = useState(bucket.quality || 'balanced');
-      var [cameraView, setCameraView] = useState(bucket.cameraView || 'hero');
+      var [quality, setQuality] = useState(restoreOneOf(bucket.quality, ['eco', 'balanced', 'ultra'], 'balanced'));
+      var [cameraView, setCameraView] = useState(restoreOneOf(bucket.cameraView, ['hero', 'top', 'close'], 'hero'));
       var [fps, setFps] = useState(0);
       var [trials, setTrials] = useState(Array.isArray(bucket.trials) ? bucket.trials.slice(-2) : []);
       var [tracerTrials, setTracerTrials] = useState(Array.isArray(bucket.tracerTrials) ? bucket.tracerTrials.slice(-2) : []);
       var [ready, setReady] = useState(!!(window.THREE && window.THREE.OrbitControls));
       var [loadError, setLoadError] = useState('');
+      var [contextLost, setContextLost] = useState(false);
       var [loadAttempt, setLoadAttempt] = useState(0);
       var [stats, setStats] = useState({ temperature: temperature, pressure: 0, energy: 0, collisions: 0 });
       var [distribution, setDistribution] = useState({ bins: new Array(12).fill(0), max: 1, mean: 0, p90: 0 });
@@ -393,6 +398,27 @@
       var runRef = useRef(false), stepRef = useRef(false), lastUiRef = useRef(0);
       settingsRef.current = { preset: preset, temperature: temperature, count: count, attraction: attraction, gravity: gravity, membrane: membrane, permeability: permeability, membraneSelectivity: membraneSelectivity, massRatioB: massRatioB, boxSize: boxSize, particleDiameter: particleDiameter, trace: trace, vectors: vectors, flowTrails: flowTrails, energyColors: energyColors, wallSensors: wallSensors, autoCamera: autoCamera, followTracer: followTracer, systemProbe: systemProbe, timeScale: timeScale, selectedParticle: Math.min(selectedParticle, count - 1) };
       runRef.current = running;
+      function measureReadoutScroll(node) {
+        if (!node) return;
+        var hidden = node.scrollHeight - node.clientHeight;
+        var up = hidden > 2 && node.scrollTop > 2, down = hidden > 2 && node.scrollTop < hidden - 2;
+        node.setAttribute('data-scroll', up && down ? 'both' : up ? 'up' : down ? 'down' : 'none');
+      }
+      useEffect(function () {
+        // Fade whichever dock edge has more cards beyond it. The cards are opaque and scroll OVER the dock's own
+        // background, so a background shadow is invisible (measured); the cue has to mask the content itself.
+        // Listener and observer are attached once per dock mount; the recheck below runs on every render, because
+        // the card count changes with trace/probe/preset. Both only set an attribute, so neither re-renders.
+        var node = readoutsRef.current;
+        if (!node) return undefined;
+        var update = function () { measureReadoutScroll(node); };
+        update();
+        node.addEventListener('scroll', update, { passive: true });
+        var observer = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null;
+        if (observer) observer.observe(node);
+        return function () { node.removeEventListener('scroll', update); if (observer) observer.disconnect(); };
+      }, [showHud]);
+      useEffect(function () { measureReadoutScroll(readoutsRef.current); });
       useEffect(function () {
         // Mirror the CSS container query (max-width: 760px) into state so DOM order and hints can follow it.
         var node = stageRef.current;
@@ -416,7 +442,7 @@
         exitReplayMode();
         if (replayPlaying) setReplayPlaying(false);
         if (historyCursor >= 0) setHistoryCursor(-1);
-      }, [ready, preset, count, boxSize, particleDiameter, massRatioB, resetKey, quality]);
+      }, [ready, contextLost, preset, count, boxSize, particleDiameter, massRatioB, resetKey, quality]);
       useEffect(function () {
         if (!replayPlaying || history.length < 2 || historyCursor < 0) return;
         if (historyCursor >= history.length - 1) {
@@ -450,7 +476,7 @@
       }, [ready, loadAttempt]);
 
       useEffect(function () {
-        if (!ready || !canvasRef.current || !window.THREE) return;
+        if (!ready || contextLost || !canvasRef.current || !window.THREE) return;
         var THREE = window.THREE, canvas = canvasRef.current;
         var qualityProfile = quality === 'eco' ? { pixelRatio: 1, stars: 70, sphereW: 12, sphereH: 9, flashes: 6, flow: 5 } : (quality === 'ultra' ? { pixelRatio: 2, stars: 240, sphereW: 26, sphereH: 20, flashes: 16, flow: 12 } : { pixelRatio: 1.5, stars: 140, sphereW: 18, sphereH: 14, flashes: 10, flow: 8 });
         var palettes = { solid: { bg: 0x030817, primary: 0x60a5fa, secondary: 0xe0f2fe, edge: 0x93c5fd }, liquid: { bg: 0x00131f, primary: 0x2dd4bf, secondary: 0x38bdf8, edge: 0x5eead4 }, gas: { bg: 0x100819, primary: 0xfbbf24, secondary: 0x22d3ee, edge: 0x67e8f9 }, diffusion: { bg: 0x090617, primary: 0x22d3ee, secondary: 0xf472b6, edge: 0xa78bfa } };
@@ -459,6 +485,7 @@
         var coldSpeedColor = new THREE.Color(0x22d3ee), midSpeedColor = new THREE.Color(0xa78bfa), hotSpeedColor = new THREE.Color(0xfb4d3d), liveSpeedColor = new THREE.Color();
         var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+        rendererRef.current = renderer;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, qualityProfile.pixelRatio));
         renderer.shadowMap.enabled = quality !== 'eco'; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.setClearColor(palette.bg, 1);
@@ -710,7 +737,40 @@
         return function () {
           cancelAnimationFrame(frameRef.current); canvas.removeEventListener('pointerdown', onPointerDown); canvas.removeEventListener('pointerup', onPointerUp); controls.dispose(); boxGeo.dispose(); edgeGeo.dispose(); baseGeo.dispose(); shadowGeo.dispose(); sensorGeo.dispose(); sphereGeo.dispose(); beaconGeo.dispose(); focusGeo.dispose(); probeGeo.dispose(); haloGeo.dispose(); densityGeo.dispose(); dropletHaloGeo.dispose(); attractionGeo.dispose(); energyRingGeo.dispose(); gravityFieldGeo.dispose(); membraneGeo.dispose(); membranePoreGeo.dispose(); speciesHaloGeo.dispose(); starGeo.dispose(); trailGeo.dispose(); trailMat.dispose(); currentFlightGeo.dispose(); currentFlightMat.dispose(); waypointGeo.dispose(); collisionWaypoints.forEach(function (waypoint) { waypoint.material.dispose(); }); flowLines.forEach(function (line) { line.geometry.dispose(); line.material.dispose(); }); edgeMat.dispose(); chamberMat.dispose(); baseMat.dispose(); shadowMat.dispose(); beaconMat.dispose(); holoMat.dispose(); holoTexture.dispose(); sensorFaces.forEach(function (sensor) { sensor.material.dispose(); }); focusMat.dispose(); probeMat.dispose(); haloMat.dispose(); densityMat.dispose(); dropletHalos.forEach(function (halo) { halo.material.dispose(); }); attractionMat.dispose(); energyRingMat.dispose(); gravityFieldMat.dispose(); membraneMat.dispose(); membranePoreAMat.dispose(); membranePoreBMat.dispose(); speciesHaloAMat.dispose(); speciesHaloBMat.dispose(); starMat.dispose(); glowTexture.dispose(); flashPool.forEach(function (f) { f.sprite.material.dispose(); }); glows.forEach(function (g) { g.material.dispose(); }); particleMaterials.forEach(function (m) { m.dispose(); }); arrows.forEach(function (a) { scene.remove(a); }); mats.forEach(function (m) { m.dispose(); }); driftArrow.line.geometry.dispose(); driftArrow.line.material.dispose(); driftArrow.cone.geometry.dispose(); driftArrow.cone.material.dispose(); gravityArrow.line.geometry.dispose(); gravityArrow.line.material.dispose(); gravityArrow.cone.geometry.dispose(); gravityArrow.cone.material.dispose(); renderer.dispose(); runtimeRef.current = null;
         };
-      }, [ready, preset, count, boxSize, particleDiameter, massRatioB, resetKey, quality]);
+      }, [ready, contextLost, preset, count, boxSize, particleDiameter, massRatioB, resetKey, quality]);
+
+      useEffect(function () {
+        // A lost context is permanent unless preventDefault() is called, and the browser can drop one for
+        // reasons outside this tool (a GPU reset, or another 3D tool exhausting the ~16 context cap). Without
+        // this the chamber just went black for good. Parking the scene on loss and rebuilding on restore keeps
+        // it recoverable; the listeners are mount-scoped so they outlive the scene effect being parked.
+        var canvas = canvasRef.current;
+        if (!canvas) return undefined;
+        function onLost(event) {
+          event.preventDefault();
+          cancelAnimationFrame(frameRef.current);
+          setContextLost(true);
+          if (ctx.announceToSR) ctx.announceToSR('The 3D chamber lost its graphics context and is rebuilding.');
+        }
+        function onRestored() { setContextLost(false); }
+        canvas.addEventListener('webglcontextlost', onLost);
+        canvas.addEventListener('webglcontextrestored', onRestored);
+        return function () { canvas.removeEventListener('webglcontextlost', onLost); canvas.removeEventListener('webglcontextrestored', onRestored); };
+      }, []);
+
+      useEffect(function () {
+        // Release the WebGL context when the tool really unmounts. dispose() frees GPU objects but leaves the
+        // context itself alive, and the browser caps concurrent contexts (~16): measured, twenty mount/unmount
+        // cycles reached "Too many active WebGL contexts. Oldest context will be lost.", which blanks whichever
+        // 3D tool opened first. This cannot live in the scene effect — that cleanup also runs on preset,
+        // quality and reset changes, and losing the context there would break the rebuild.
+        return function () {
+          var renderer = rendererRef.current; rendererRef.current = null;
+          if (!renderer) return;
+          try { renderer.dispose(); } catch (error) {}
+          try { if (renderer.forceContextLoss) renderer.forceContextLoss(); } catch (error) {}
+        };
+      }, []);
 
       useEffect(function () {
         function onFullscreenChange() { var fsEl = document.fullscreenElement || document.webkitFullscreenElement; setIsFullscreen(fsEl === stageRef.current); }
@@ -770,7 +830,10 @@
           var feedback = '';
           if (ctx.aiHintsEnabled && typeof ctx.callGemini === 'function') {
             var prompt = ['You are a warm Socratic K-12 particle-physics lab coach.', 'Respond in at most 4 sentences and end with exactly one question.', 'Do not give the scientific conclusion. Point the student back to their own measurements and controlled variables.', 'Protocol: ' + (currentProtocol ? currentProtocol.title : 'Free laboratory'), 'Prediction: ' + String(prediction || '(none)').slice(0, 800), 'Trials: ' + JSON.stringify(trials.slice(-2)), 'Observation: ' + String(observation || '(none)').slice(0, 800), 'Conclusion draft: ' + String(conclusion || '(none)').slice(0, 1000)].join('\n');
-            var response = await ctx.callGemini(prompt, false, false, 0.45); feedback = typeof response === 'string' ? response : String((response && (response.text || response.output || response.response)) || '');
+            // The coach button is disabled while this runs, so a request that never settles would strand the
+            // student with no way to retry. Losing the race resolves empty, which the next line already treats
+            // as "no AI answer" and replaces with the built-in coach.
+            var response = await Promise.race([ctx.callGemini(prompt, false, false, 0.45), new Promise(function (resolve) { window.setTimeout(function () { resolve(''); }, COACH_TIMEOUT_MS); })]); feedback = typeof response === 'string' ? response : String((response && (response.text || response.output || response.response)) || '');
           }
           if (!feedback.trim()) feedback = localCoachFeedback();
           feedback = feedback.trim().slice(0, 1200); setCoachFeedback(feedback); persist({ coachFeedback: feedback, coachRequests: (bucket.coachRequests || 0) + 1 });
@@ -779,9 +842,26 @@
         finally { setIsCoaching(false); }
       }
       function copyLabReport() {
+        // Gemini Canvas refuses navigator.clipboard by permissions policy, so a direct call rejects on every
+        // click there while passing every test on a normal origin. The shell publishes window.alloCopyText
+        // (clipboard, then execCommand) for exactly this reason; the inline fallback covers standalone pages.
         var report = buildLabReport();
-        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(report).then(function () { if (ctx.addToast) ctx.addToast('Lab report copied.', 'success'); }).catch(function () { if (ctx.addToast) ctx.addToast('Could not copy the lab report.', 'info'); });
-        else if (ctx.addToast) ctx.addToast('Clipboard access is unavailable.', 'info');
+        function done(ok) { if (ctx.addToast) ctx.addToast(ok ? 'Lab report copied.' : 'Could not copy the lab report. Select the text and press Control C.', ok ? 'success' : 'info'); }
+        if (typeof window.alloCopyText === 'function') { Promise.resolve(window.alloCopyText(report)).then(function (ok) { done(ok !== false); }).catch(function () { done(false); }); return; }
+        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(report).then(function () { done(true); }).catch(function () { done(legacyCopy(report)); }); return; }
+        done(legacyCopy(report));
+      }
+      function legacyCopy(text) {
+        // execCommand needs the click's transient activation, so this runs synchronously inside the handler.
+        try {
+          var area = document.createElement('textarea');
+          area.value = text; area.setAttribute('readonly', 'readonly');
+          area.style.position = 'fixed'; area.style.top = '-1000px'; area.style.opacity = '0';
+          document.body.appendChild(area); area.select();
+          var ok = document.execCommand && document.execCommand('copy');
+          document.body.removeChild(area);
+          return !!ok;
+        } catch (error) { return false; }
       }
       function restoreKeysFocus() {
         var opener = keysOpenerRef.current || canvasRef.current;
@@ -836,7 +916,7 @@
         else if (event.key === 'm' || event.key === 'M') { setMembrane(function (value) { var next = !value; persist({ membrane: next }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Diffusion membrane enabled.' : 'Diffusion membrane removed.'); return next; }); }
         else if (event.key === 'g' || event.key === 'G') { setGravity(function (value) { var next = value > 0.01 ? 0 : 1; persist({ gravity: next }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Gravity field enabled at one model g.' : 'Gravity field disabled.'); return next; }); }
         else if (event.key === 'f' || event.key === 'F') toggleFullscreen();
-        else if (event.key === 'c' || event.key === 'C') setAutoCamera(function (value) { var next = !value; if (next) setFollowTracer(false); persist({ autoCamera: next, followTracer: false }); return next; });
+        else if (event.key === 'c' || event.key === 'C') { if (prefersReducedMotion) { if (ctx.announceToSR) ctx.announceToSR('Showcase camera orbit is unavailable while reduced motion is preferred.'); } else setAutoCamera(function (value) { var next = !value; if (next) setFollowTracer(false); persist({ autoCamera: next, followTracer: false }); return next; }); }
         else if (event.key === 'l' || event.key === 'L') { if (prefersReducedMotion) { if (ctx.announceToSR) ctx.announceToSR('Tracer follow camera is unavailable while reduced motion is preferred.'); } else setFollowTracer(function (value) { var next = !value; if (next) { setTrace(true); setAutoCamera(false); persist({ followTracer: true, trace: true, traced: true, autoCamera: false }); } else persist({ followTracer: false }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Tracer follow camera enabled.' : 'Tracer follow camera disabled.'); return next; }); }
         else if (event.key === 'h' || event.key === 'H') toggleHud();
         else if (event.key === 'd' || event.key === 'D') { if (showHud) toggleReadouts(); }
@@ -935,7 +1015,8 @@
       }
       function setCameraShot(shot) {
         setCameraView(shot);
-        setAutoCamera(false); setFollowTracer(false); persist({ autoCamera: false, followTracer: false });
+        // cameraView was read back on mount but never written, so the chosen framing was lost on every return.
+        setAutoCamera(false); setFollowTracer(false); persist({ cameraView: shot, autoCamera: false, followTracer: false });
         var rt = runtimeRef.current; if (!rt || !rt.camera || !rt.controls) return;
         var positions = { hero: [boxSize * 1.05, boxSize * 0.74, boxSize * 1.18], top: [0.01, boxSize * 1.65, 0.01], close: [boxSize * 0.72, boxSize * 0.35, boxSize * 0.78] };
         var pos = positions[shot] || positions.hero; rt.camera.position.set(pos[0], pos[1], pos[2]); rt.controls.target.set(0, 0, 0); rt.controls.update();
@@ -948,7 +1029,9 @@
         if (ctx.announceToSR) ctx.announceToSR('Recorded trial at ' + trial.temperature + ' kelvin and pressure ' + trial.pressure + ' model units.');
       }
       function restoreTrial(trial) {
-        if (!trial) return; setPreset(trial.preset || 'gas'); setTemperature(trial.temperatureSetpoint == null ? trial.temperature : trial.temperatureSetpoint); setCount(trial.count); setBoxSize(trial.boxSize); setAttraction(trial.attraction || 0); setGravity(trial.gravity || 0); setMembrane(!!trial.membrane); setPermeability(trial.permeability == null ? 1 : trial.permeability); setMembraneSelectivity(trial.membraneSelectivity || 'both'); setMassRatioB(trial.massRatioB == null ? 1 : trial.massRatioB); setParticleDiameter(trial.particleDiameter == null ? 0.58 : trial.particleDiameter); setCameraView('hero'); setRunning(false); setHistory([]); setResetKey(function (k) { return k + 1; });
+        // Trials come from persisted bucket.trials, so they carry the same risk the saved bucket does: a value
+        // from an older build or a corrupt save would otherwise go straight into the particle loop.
+        if (!trial) return; setPreset(restoreOneOf(trial.preset, ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'], 'gas')); setTemperature(restoreNumber(trial.temperatureSetpoint == null ? trial.temperature : trial.temperatureSetpoint, 40, 900, 300)); setCount(restoreNumber(trial.count, 24, 120, 64)); setBoxSize(restoreNumber(trial.boxSize, 7, 18, 11)); setAttraction(restoreNumber(trial.attraction, 0, 1.5, 0)); setGravity(restoreNumber(trial.gravity, 0, 2, 0)); setMembrane(!!trial.membrane); setPermeability(trial.permeability == null ? 1 : restoreNumber(trial.permeability, 0, 1, 1)); setMembraneSelectivity(restoreOneOf(trial.membraneSelectivity, ['both', 'a', 'b'], 'both')); setMassRatioB(trial.massRatioB == null ? 1 : restoreNumber(trial.massRatioB, 0.5, 3, 1)); setParticleDiameter(trial.particleDiameter == null ? 0.58 : restoreNumber(trial.particleDiameter, 0.36, 0.9, 0.58)); setCameraView('hero'); setRunning(false); setHistory([]); setResetKey(function (k) { return k + 1; });
         if (ctx.announceToSR) ctx.announceToSR('Restored recorded trial conditions.');
       }
       function kineticRegime() {
@@ -1132,19 +1215,19 @@
               h('span', { id: 'particle-chamber-help', className: 'sr-only' }, 'Use Space to run or pause and the question mark key for all chamber shortcuts. Use the labeled particle selector and camera-view buttons for keyboard alternatives to clicking particles and dragging the camera.'),
               h('div', { className: 'pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,rgba(2,6,23,0.7)_100%)]' }),
               h('div', { className: 'pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent shadow-[0_0_18px_4px_rgba(34,211,238,0.35)]' }),
-              !ready && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950 p-6 text-center' },
-                loadError
+              (!ready || contextLost) && h('div', { id: 'particle-stage-overlay', className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950 p-6 text-center' },
+                loadError || contextLost
                   ? h('div', { role: 'alert', className: 'max-w-sm' },
-                      h('p', { className: 'text-sm font-black text-red-300' }, '3D engine unavailable'),
-                      h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300' }, loadError),
-                      h('button', { type: 'button', onClick: function () { setLoadError(''); setLoadAttempt(function (a) { return a + 1; }); }, className: 'mt-3 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Retry'))
+                      h('p', { className: 'text-sm font-black text-red-300' }, contextLost ? 'Graphics context lost' : '3D engine unavailable'),
+                      h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300' }, contextLost ? 'The browser released this chamber’s graphics context, usually because too many 3D tools were open at once. It rebuilds automatically; press Rebuild if it does not.' : loadError),
+                      h('button', { type: 'button', onClick: function () { if (contextLost) { setContextLost(false); setResetKey(function (k) { return k + 1; }); return; } setLoadError(''); setLoadAttempt(function (a) { return a + 1; }); }, className: 'mt-3 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, contextLost ? 'Rebuild' : 'Retry'))
                   : h('div', { role: 'status', 'aria-live': 'polite' },
                       h('div', { className: 'mx-auto h-9 w-9 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }),
                       h('p', { className: 'mt-3 text-sm font-bold text-cyan-200' }, 'Loading Three.js\u2026'))),
               );
-      var particleReadoutsNode = showHud && h('aside', { key: 'readouts', id: 'particle-readouts', hidden: !readoutsOpen, tabIndex: 0, 'aria-label': 'Chamber readouts', className: 'bg-slate-900 p-3 text-slate-200' },
+      var particleReadoutsNode = showHud && h('aside', { key: 'readouts', ref: readoutsRef, id: 'particle-readouts', hidden: !readoutsOpen, tabIndex: 0, 'aria-label': 'Chamber readouts', className: 'bg-slate-900 p-3 text-slate-200' },
                 h('div', { className: 'particle-readout-heading' }, h('h3', { className: 'text-xs font-black uppercase tracking-wider text-cyan-200' }, 'Chamber readouts')),
-                h('p', { className: 'text-[11px] text-slate-300' }, 'Move or collapse this panel with the controls below the chamber, or press D while the chamber has focus. On narrow screens it always sits below the chamber.'),
+                h('p', { className: 'particle-dock-hint text-[11px] text-slate-300' }, 'Move or collapse this panel with the controls below the chamber, or press D while the chamber has focus. On narrow screens it always sits below the chamber.'),
                 h('div', { className: 'particle-readout-grid' },
               h('div', { className: 'particle-readout-card rounded-xl border border-cyan-300/20 bg-slate-950/65 p-3 text-right' },
                 h('div', { className: 'flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300' }, h('span', null, preset + ' chamber'), h('span', { className: 'rounded bg-cyan-300/10 px-1.5 py-0.5 font-mono tracking-normal text-cyan-100' }, (fps || '--') + ' FPS \u2022 ' + quality)),
@@ -1153,7 +1236,11 @@
                 h('div', { className: 'mt-2', role: 'progressbar', 'aria-label': 'Temperature settling toward setpoint', 'aria-valuemin': 0, 'aria-valuemax': temperature, 'aria-valuenow': Math.min(displayTemperature, Number(temperature || 0)), 'aria-valuetext': displayTemperature + ' K ' + (replayMode ? 'in replay sample' : 'measured') + '; setpoint ' + temperature + ' K' }, h('div', { className: 'h-1.5 overflow-hidden rounded-full bg-white/10' }, h('div', { className: 'h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none ' + temperatureProgressTone, style: { width: Math.round(temperatureProgress * 100) + '%' } }))),
                 h('div', { className: 'mt-1 flex flex-wrap justify-end gap-x-3 gap-y-1 font-mono text-[10px] text-slate-300' }, h('span', null, 'P ' + displayPressure.toFixed(1)), h('span', null, 'N ' + count), h('span', null, 'V ' + Math.round(boxSize * boxSize * boxSize)), h('span', { className: 'text-cyan-200' }, 'View ' + cameraViewLabel), transportMode && h('span', null, preset === 'osmosis' ? 'Osm ' + (diffusionInfo.osmoticShift >= 0 ? '+' : '') + Math.round(diffusionInfo.osmoticShift * 100) + '%' : 'Mix ' + Math.round(diffusionInfo.mixing * 100) + '%'))
               ),
-              h('div', { id: 'particle-stage-activity', className: 'particle-readout-card rounded-xl border ' + (running ? 'border-emerald-300/30 bg-emerald-950/75 text-emerald-100' : 'border-white/15 bg-slate-950/75 text-slate-200') + ' px-3 py-2', role: 'status', 'aria-live': 'polite', 'aria-label': (running ? 'Live simulation. ' : 'Simulation paused. ') + stageActivityLabel + '. ' + stageActivityDetail }, h('div', { className: 'flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em]' }, h('span', { className: 'h-2 w-2 rounded-full ' + (running ? 'animate-pulse bg-emerald-300 shadow-[0_0_10px_2px_rgba(110,231,183,0.7)]' : 'bg-slate-400') }), running ? 'Live simulation' : 'Simulation paused'), h('div', { className: 'mt-1 text-[11px] font-bold' }, stageActivityLabel), h('div', { className: 'mt-0.5 text-[11px] opacity-75' }, stageActivityDetail)),
+              // NOT a live region: its detail line carries running metrics that changed about once a second, so a
+              // screen reader announced the whole card continuously (measured, scratch/particle_probe_live.mjs).
+              // Run and pause are already announced through announceToSR in toggleRun, and the visible text
+              // stays readable on demand.
+              h('div', { id: 'particle-stage-activity', className: 'particle-readout-card rounded-xl border ' + (running ? 'border-emerald-300/30 bg-emerald-950/75 text-emerald-100' : 'border-white/15 bg-slate-950/75 text-slate-200') + ' px-3 py-2' }, h('div', { className: 'flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em]' }, h('span', { className: 'h-2 w-2 rounded-full ' + (running ? 'animate-pulse bg-emerald-300 shadow-[0_0_10px_2px_rgba(110,231,183,0.7)]' : 'bg-slate-400') }), running ? 'Live simulation' : 'Simulation paused'), h('div', { className: 'mt-1 text-[11px] font-bold' }, stageActivityLabel), h('div', { className: 'mt-0.5 text-[11px] opacity-75' }, stageActivityDetail)),
               h('div', { id: 'particle-scene-key', className: 'particle-readout-card rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-[11px] font-bold text-slate-300', role: 'img', 'aria-label': sceneKeyLabel }, h('div', { className: 'mb-1 text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300' }, 'Scene key'), h('div', { className: 'flex flex-wrap items-center gap-x-3 gap-y-1' }, h('span', { className: 'inline-flex items-center gap-1.5' }, h('span', { className: 'h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.7)]' }), transportMode ? 'A / solvent' : 'particles'), transportMode && h('span', { className: 'inline-flex items-center gap-1.5' }, h('span', { className: 'h-2 w-2 rounded-full bg-fuchsia-300 shadow-[0_0_8px_rgba(244,114,182,0.7)]' }), 'B / solute'), trace && h('span', { className: 'inline-flex items-center gap-1.5 text-yellow-200' }, h('span', { className: 'h-2 w-2 rounded-full border-2 border-yellow-200' }), 'tracer')), visualOverlayLabels.length && h('div', { className: 'mt-1 border-t border-white/10 pt-1 text-[10px] font-bold text-slate-400' }, 'Cues: ' + visualOverlayDisplayLabels.join(' • '))),
               transportMode && membrane && h('div', { className: 'particle-readout-card rounded-xl border border-violet-300/20 bg-slate-950/70 p-3', role: 'img', 'aria-label': 'Live membrane pore lattice. Species A channel openness ' + Math.round(poreOpennessA * 100) + ' percent. Species B channel openness ' + Math.round(poreOpennessB * 100) + ' percent. Cyan and pink bursts show successful crossings by A and B; coral bursts show reflections.' },
                 h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-violet-200' }, 'Pore lattice'),
@@ -1182,23 +1269,32 @@
         h('style', { hidden: true }, `
           /* High-contrast theme paints every card black but leaves text-cyan-700 (#0e7490) alone: 3.91:1 on black. Cyan-300 reads 12:1 there. */
           .theme-contrast #particle-lab-root .text-cyan-700 { color: #67e8f9; }
+          /* High contrast blackens every [class*="bg-"] element. The chamber's decorative overlays carry bg-[radial-gradient...]
+             and bg-gradient-to-r classes, so that rule painted an opaque black sheet OVER the canvas: the 3D scene vanished. */
+          .theme-contrast #particle-viewport > [class*="bg-"] { background-color: transparent !important; }
+          /* Gradient cards keep their pale background-image while the theme turns their ink yellow; drop the image so the black takes over. */
+          .theme-contrast #particle-lab-root [class*="bg-gradient"] { background-image: none !important; }
+          /* The dock cluster paints its own panel from this stylesheet, so the theme's blanket bg- rule never sees it. */
+          .theme-contrast #particle-stage .particle-dock-cluster, .theme-contrast #particle-stage .particle-control-group { background: #000000; border-color: #ffff00; }
           #particle-stage { container-type: inline-size; }
           #particle-stage[data-fullscreen="false"] { align-self: start; }
           /* The chamber grows with tall desktop viewports (the stage no longer stretches to the sidebar, so this is the only way it gets taller). */
           #particle-workspace { --particle-dock: 17rem; display: grid; grid-template-columns: minmax(0, 1fr) var(--particle-dock); grid-template-areas: "scene readouts"; height: clamp(520px, 62vh, 780px); min-width: 0; }
           #particle-workspace[data-width="compact"] { --particle-dock: 14rem; }
           #particle-workspace[data-width="wide"] { --particle-dock: 22rem; }
+          #particle-lab-root button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+          /* SC 2.5.8: the whole control is the pointer target for a range input, so give every slider at least 24px. */
+          #particle-lab-root input[type="range"] { min-height: 24px; }
+          #particle-lab-root .particle-pulse-button { min-height: 24px; }
           .particle-dock-note { font-size: 11px; font-weight: 700; color: #cbd5e1; }
           .particle-mini-status { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 700; color: #cbd5e1; padding: 0 4px; }
           #particle-viewport { grid-area: scene; min-width: 0; min-height: 0; }
           #particle-viewport canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
-          #particle-readouts { grid-area: readouts; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; border-inline-start: 1px solid #334155;
-            /* Scroll shadows: the dock clips cards, so show a soft edge wherever more content sits above or below (CSS only, follows the scroll position). */
-            background: linear-gradient(#0f172a 30%, rgba(15, 23, 42, 0)) center top / 100% 28px no-repeat local,
-              linear-gradient(rgba(15, 23, 42, 0), #0f172a 70%) center bottom / 100% 28px no-repeat local,
-              radial-gradient(farthest-side at 50% 0, rgba(103, 232, 249, 0.35), rgba(103, 232, 249, 0)) center top / 100% 14px no-repeat scroll,
-              radial-gradient(farthest-side at 50% 100%, rgba(103, 232, 249, 0.35), rgba(103, 232, 249, 0)) center bottom / 100% 14px no-repeat scroll,
-              #0f172a; }
+          #particle-readouts { grid-area: readouts; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; border-inline-start: 1px solid #334155; background-color: #0f172a; }
+          /* data-scroll is set from the dock's scroll position; the mask fades the cards themselves at an edge that has more. */
+          #particle-readouts[data-scroll="up"] { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px); mask-image: linear-gradient(to bottom, transparent 0, #000 26px); }
+          #particle-readouts[data-scroll="down"] { -webkit-mask-image: linear-gradient(to top, transparent 0, #000 26px); mask-image: linear-gradient(to top, transparent 0, #000 26px); }
+          #particle-readouts[data-scroll="both"] { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%); }
           #particle-readouts[hidden] { display: none; }
           .particle-readout-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
           .particle-readout-grid { display: grid; gap: 10px; margin-top: 12px; align-content: start; }
@@ -1209,7 +1305,13 @@
           #particle-stage .particle-layout-button { border: 1px solid #475569; border-radius: 8px; background: #1e293b; color: #e2e8f0; padding: 6px 10px; font-size: 12px; font-weight: 700; }
           #particle-stage .particle-layout-button:hover { background: #334155; }
           #particle-stage button:focus-visible, #particle-stage select:focus-visible, #particle-readouts:focus-visible { outline: 2px solid #67e8f9; outline-offset: -2px; }
-          .particle-dock-label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+          /* The dock's controls read as one group instead of loose words wedged between buttons. */
+          /* Every logical set in the control row gets the panel the speed and camera groups already had, so the
+             row reads as a few named groups instead of ~20 loose buttons (and screen readers get the names too). */
+          #particle-stage .particle-control-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px; border: 1px solid #334155; border-radius: 8px; background: #0f172a; }
+          #particle-stage .particle-dock-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 8px; border: 1px solid #334155; border-radius: 12px; background: #111c30; }
+          .particle-dock-label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; }
+          #particle-stage .particle-dock-label select { font-size: 12px; font-weight: 700; text-transform: none; letter-spacing: normal; color: #e2e8f0; }
           #particle-secondary-controls { min-height: 0; }
           #particle-secondary-controls [aria-label="Camera views"] { flex-wrap: wrap; margin-left: 0; max-width: 100%; }
           #particle-workspace[data-dock="left"] { grid-template-columns: var(--particle-dock) minmax(0, 1fr); grid-template-areas: "readouts scene"; }
@@ -1230,10 +1332,30 @@
           }
           #particle-workspace[data-readouts="closed"] { height: clamp(520px, 62vh, 780px); grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); grid-template-areas: "scene"; }
           #particle-stage[data-fullscreen="true"] #particle-workspace[data-readouts="closed"] { grid-template-rows: minmax(0, 1fr); }
+          /* Phone fullscreen: the dock's how-to paragraph and the heading's note + quality toggle cost more than they give. */
+          #particle-stage[data-fullscreen="true"] .particle-dock-hint { display: none; }
+          /* Phone fullscreen (narrow stage or short viewport): the secondary controls become ONE horizontally
+             scrolling row instead of stacked rows cut off mid-button, which also hands the chamber the height back. */
+          @container (max-width: 760px) {
+            #particle-stage[data-fullscreen="true"] #particle-stage-heading > :not(#particle-preset-row) { display: none; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-controls { max-height: 30vh; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row > * { flex: 0 0 auto; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row [aria-label="Camera views"], #particle-stage[data-fullscreen="true"] #particle-secondary-row .particle-control-group { flex-wrap: nowrap; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row [role="note"] { white-space: nowrap; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row details[open] { display: flex; align-items: center; gap: 8px; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row details[open] > div { margin-top: 0; flex-wrap: nowrap; }
+          }
           @media (max-height: 500px) {
             #particle-stage[data-fullscreen="true"] #particle-stage-heading { display: none; }
-            #particle-stage[data-fullscreen="true"] #particle-secondary-controls { max-height: 22vh; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-controls { max-height: 30vh; }
             #particle-stage[data-fullscreen="true"] #particle-workspace { min-height: 100px; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row > * { flex: 0 0 auto; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row [aria-label="Camera views"], #particle-stage[data-fullscreen="true"] #particle-secondary-row .particle-control-group { flex-wrap: nowrap; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row [role="note"] { white-space: nowrap; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row details[open] { display: flex; align-items: center; gap: 8px; }
+            #particle-stage[data-fullscreen="true"] #particle-secondary-row details[open] > div { margin-top: 0; flex-wrap: nowrap; }
           }
 `),
         h('div', { className: 'rounded-2xl border border-cyan-200 bg-gradient-to-r from-slate-950 via-cyan-950 to-slate-900 p-5 text-white shadow-xl' },
@@ -1250,11 +1372,11 @@
           h('div', { className: 'mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4' }, protocols.map(function (protocol) { var active = activeProtocol === protocol.id; return h('button', { key: protocol.id, type: 'button', onClick: function () { applyProtocol(protocol); }, 'aria-pressed': active, className: 'group relative overflow-hidden rounded-xl border p-3 text-left transition-all ' + (active ? 'border-cyan-400 bg-slate-950 text-white shadow-lg shadow-cyan-900/20' : 'border-slate-200 bg-slate-50 text-slate-900 hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md') }, h('span', { className: 'absolute inset-y-0 left-0 w-1 bg-gradient-to-b ' + protocol.accent }), h('div', { className: 'flex items-start gap-3' }, h('span', { className: 'text-2xl' }, protocol.icon), h('span', null, h('span', { className: 'block text-sm font-black' }, protocol.title), h('span', { className: 'mt-0.5 block text-[10px] font-bold uppercase tracking-wide ' + (active ? 'text-cyan-300' : 'text-slate-500') }, protocol.law))), h('span', { className: 'mt-3 block text-[11px] leading-relaxed ' + (active ? 'text-slate-300' : 'text-slate-600') }, protocol.watch)); }))
         ),
         h('div', { className: 'grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]' },
-          h('section', { id: 'particle-stage', 'data-fullscreen': fsActive ? 'true' : 'false', ref: stageRef, onKeyDown: onStageKeyDown, className: 'relative min-w-0 overflow-hidden border border-cyan-500/30 bg-slate-950 shadow-2xl shadow-cyan-950/40 ring-1 ring-white/5 ' + (fsActive ? 'h-screen rounded-none flex flex-col' : 'rounded-[24px]'), style: cssFullscreen ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100dvh', zIndex: 99990, borderRadius: 0 } : undefined, 'aria-label': 'Three-dimensional particle simulation', 'aria-busy': ready ? 'false' : 'true' },
+          h('section', { id: 'particle-stage', 'data-fullscreen': fsActive ? 'true' : 'false', ref: stageRef, tabIndex: -1, onKeyDown: onStageKeyDown, className: 'relative min-w-0 overflow-hidden border border-cyan-500/30 bg-slate-950 shadow-2xl shadow-cyan-950/40 ring-1 ring-white/5 ' + (fsActive ? 'h-screen rounded-none flex flex-col' : 'rounded-[24px]'), style: cssFullscreen ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100dvh', zIndex: 99990, borderRadius: 0 } : undefined, 'aria-label': 'Three-dimensional particle simulation', 'aria-busy': ready ? 'false' : 'true' },
             showHud && h('div', { id: 'particle-stage-heading', className: 'flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 px-4 py-3' },
-              h('div', { className: 'flex flex-wrap gap-2' }, presets.map(function (p) { return h('button', { key: p.id, type: 'button', onClick: function () { choosePreset(p.id); }, 'aria-pressed': preset === p.id, className: 'rounded-xl border px-3 py-2 text-xs font-bold transition-all ' + (preset === p.id ? 'border-cyan-200 bg-cyan-300 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.35)]' : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-cyan-500/50 hover:bg-slate-800') }, p.icon + ' ' + p.label); })),
+              h('div', { id: 'particle-preset-row', className: 'flex flex-wrap gap-2' }, presets.map(function (p) { return h('button', { key: p.id, type: 'button', onClick: function () { choosePreset(p.id); }, 'aria-pressed': preset === p.id, className: 'rounded-xl border px-3 py-2 text-xs font-bold transition-all ' + (preset === p.id ? 'border-cyan-200 bg-cyan-300 text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.35)]' : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-cyan-500/50 hover:bg-slate-800') }, p.icon + ' ' + p.label); })),
               h('div', { className: 'flex flex-wrap items-center gap-2' },
-                h('span', { className: 'text-xs text-slate-400' }, ready ? presets.filter(function (p) { return p.id === preset; })[0].note : 'Loading the 3D engine\u2026'),
+                h('span', { className: 'text-xs text-slate-400' }, ready ? ((presets.filter(function (p) { return p.id === preset; })[0] || presets[0]).note) : 'Loading the 3D engine\u2026'),
                 h('div', { className: 'flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 p-1', role: 'group', 'aria-label': 'Visual quality' }, ['eco', 'balanced', 'ultra'].map(function (mode) { return h('button', { key: mode, type: 'button', onClick: function () { setQuality(mode); persist({ quality: mode }); }, 'aria-pressed': quality === mode, className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6 ' + (quality === mode ? 'bg-cyan-300 text-slate-950' : 'text-slate-400 hover:bg-slate-700 hover:text-white') }, mode); }))
               )
             ),
@@ -1280,16 +1402,19 @@
             h.apply(null, ['div', { id: 'particle-workspace', 'data-dock': readoutsPosition, 'data-width': readoutsWidth, 'data-readouts': showHud && readoutsOpen ? 'open' : 'closed', 'data-narrow': stageNarrow ? 'true' : 'false' }].concat(readoutsFirst ? [particleReadoutsNode, particleViewportNode] : [particleViewportNode, particleReadoutsNode])),
             h('div', { id: 'particle-essential-controls', role: 'group', 'aria-label': 'Essential chamber controls' },
               h('button', { type: 'button', onClick: toggleRun, className: 'rounded-lg bg-cyan-500 px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-400' }, running ? '\u23F8 Pause' : '\u25B6 Run'),
-              showHud && h('button', { ref: readoutsToggleRef, type: 'button', onClick: toggleReadouts, 'aria-expanded': readoutsOpen, 'aria-controls': 'particle-readouts', className: 'particle-layout-button' }, readoutsOpen ? 'Collapse readouts' : 'Show readouts'),
-              showHud && readoutsOpen && h('label', { className: 'particle-dock-label' }, 'Readouts ', h('select', { value: readoutsPosition, onChange: function (event) { var next = event.target.value; setReadoutsPosition(next); persist({ readoutsPosition: next }); if (ctx.announceToSR) ctx.announceToSR('Readouts moved ' + (next === 'bottom' ? 'below the chamber.' : 'to the ' + next + '. On narrow screens, readouts stay below the chamber.')); }, 'aria-label': 'Chamber readouts position', className: 'particle-layout-button' }, h('option', { value: 'right' }, 'Right'), h('option', { value: 'left' }, 'Left'), h('option', { value: 'bottom' }, 'Below'))),
-              showHud && readoutsOpen && stageNarrow && readoutsPosition !== 'bottom' && h('span', { className: 'particle-dock-note' }, 'shown below on this screen'),
-              showHud && readoutsOpen && readoutsPosition !== 'bottom' && !stageNarrow && h('label', { className: 'particle-dock-label' }, 'Width ', h('select', { value: readoutsWidth, onChange: function (event) { var next = event.target.value; setReadoutsWidth(next); persist({ readoutsWidth: next }); }, 'aria-label': 'Chamber readouts width', className: 'particle-layout-button' }, h('option', { value: 'compact' }, 'Compact'), h('option', { value: 'standard' }, 'Standard'), h('option', { value: 'wide' }, 'Wide'))),
+              showHud && h('div', { className: 'particle-dock-cluster' },
+              h('button', { ref: readoutsToggleRef, type: 'button', onClick: toggleReadouts, 'aria-expanded': readoutsOpen, 'aria-controls': 'particle-readouts', className: 'particle-layout-button' }, readoutsOpen ? 'Collapse readouts' : 'Show readouts'),
+              readoutsOpen && h('label', { className: 'particle-dock-label' }, 'Readouts ', h('select', { value: readoutsPosition, onChange: function (event) { var next = event.target.value; setReadoutsPosition(next); persist({ readoutsPosition: next }); if (ctx.announceToSR) ctx.announceToSR('Readouts moved ' + (next === 'bottom' ? 'below the chamber.' : 'to the ' + next + '. On narrow screens, readouts stay below the chamber.')); }, 'aria-label': 'Chamber readouts position', className: 'particle-layout-button' }, h('option', { value: 'right' }, 'Right'), h('option', { value: 'left' }, 'Left'), h('option', { value: 'bottom' }, 'Below'))),
+              readoutsOpen && stageNarrow && readoutsPosition !== 'bottom' && h('span', { className: 'particle-dock-note' }, 'shown below on this screen'),
+              readoutsOpen && readoutsPosition !== 'bottom' && !stageNarrow && h('label', { className: 'particle-dock-label' }, 'Width ', h('select', { value: readoutsWidth, onChange: function (event) { var next = event.target.value; setReadoutsWidth(next); persist({ readoutsWidth: next }); }, 'aria-label': 'Chamber readouts width', className: 'particle-layout-button' }, h('option', { value: 'compact' }, 'Compact'), h('option', { value: 'standard' }, 'Standard'), h('option', { value: 'wide' }, 'Wide'))),
               // With the dock collapsed the chamber state would otherwise vanish; keep a one-line summary in the bar (plain text, not a live region).
-              showHud && !readoutsOpen && h('span', { className: 'particle-mini-status', 'data-testid': 'particle-mini-status' }, Math.round(displayTemperature) + ' K · ' + count + ' particles · ' + (running ? 'running' : 'paused')),
+              !readoutsOpen && h('span', { className: 'particle-mini-status', 'data-testid': 'particle-mini-status' }, Math.round(displayTemperature) + ' K · ' + count + ' particles · ' + (running ? 'running' : 'paused'))
+              ),
               h('button', { type: 'button', onClick: toggleFullscreen, className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700', 'aria-label': fsActive ? 'Exit fullscreen particle chamber' : 'Open fullscreen particle chamber' }, fsActive ? '\u2922 Exit' : '\u26F6 Fullscreen'),
-              h('button', { type: 'button', onClick: toggleHud, 'aria-expanded': showHud, 'aria-label': showHud ? 'Hide the simulation controls. Press H to show them again.' : 'Show the simulation controls', className: 'particle-layout-button' }, showHud ? 'Hide UI' : 'Show controls (H)')
+              h('button', { type: 'button', onClick: toggleHud, 'aria-expanded': showHud, 'aria-label': showHud ? 'Hide UI. Hides the simulation controls; press H to show them again.' : undefined, className: 'particle-layout-button' }, showHud ? 'Hide UI' : 'Show controls (H)')
             ),
-              showKeys && h('div', { role: 'presentation', className: 'absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 p-4', onClick: function (event) { if (event.target === event.currentTarget) closeKeys(); } },
+              // Viewport-anchored (fixed), not stage-anchored: the stage is taller than a phone screen and even a 900px desktop, so an absolute overlay centred the dialog off-screen and cut its lower rows.
+              showKeys && h('div', { role: 'presentation', style: { zIndex: 99990 }, className: 'fixed inset-0 flex items-center justify-center bg-slate-950/70 p-4', onClick: function (event) { if (event.target === event.currentTarget) closeKeys(); } },
                 h('div', { ref: keysDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'particle-keys-title', 'aria-describedby': 'particle-keys-description', tabIndex: -1, className: 'max-h-full w-full max-w-md overflow-y-auto rounded-2xl border border-cyan-300/30 bg-slate-950/95 p-5 shadow-2xl backdrop-blur' },
                   h('div', { className: 'flex items-center justify-between gap-3' }, h('h3', { id: 'particle-keys-title', className: 'text-sm font-black uppercase tracking-wider text-cyan-300' }, 'Keyboard shortcuts'), h('button', { ref: keysCloseRef, type: 'button', onClick: closeKeys, className: 'min-h-6 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-700', 'aria-label': 'Close the keyboard shortcuts panel' }, 'Close')),
                   h('p', { id: 'particle-keys-description', className: 'mt-1 text-[11px] text-slate-300' }, 'Shortcuts work only while the particle chamber has keyboard focus. They do not run while you are using another control or typing.'),
@@ -1311,12 +1436,17 @@
                 transportMode && h('label', { className: 'block text-xs font-bold' }, 'Membrane permeability ', h('output', { className: 'text-violet-300' }, Math.round(permeability * 100) + '%'), h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: permeability, disabled: !membrane, onChange: function (e) { var value = Number(e.target.value); setPermeability(value); persist({ permeability: value }); }, className: 'mt-1 block min-h-11 w-full accent-violet-400 disabled:opacity-40', 'aria-label': 'Fullscreen membrane permeability' }))
               )
             ),
-            showHud && h('div', { className: 'flex flex-wrap items-center gap-2 border-t border-slate-700 p-3' },
+            showHud && h('div', { id: 'particle-secondary-row', className: 'flex flex-wrap items-center gap-3 border-t border-slate-700 p-3' },
+              h('div', { className: 'particle-control-group', role: 'group', 'aria-label': 'Playback' },
               h('button', { type: 'button', onClick: function () { exitReplayMode(); setHistoryCursor(-1); setRunning(false); stepRef.current = true; }, className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700' }, '\u23ED Step'),
-              h('button', { type: 'button', onClick: function () { setRunning(false); setHistory([]); setCameraView('hero'); setResetKey(function (k) { return k + 1; }); }, className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700' }, '\u21BB Reset'),
+              h('button', { type: 'button', onClick: function () { setRunning(false); setHistory([]); setCameraView('hero'); setResetKey(function (k) { return k + 1; }); }, className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700' }, '\u21BB Reset')
+              ),
+              h('div', { className: 'particle-control-group', role: 'group', 'aria-label': 'Particle tracer' },
               h('button', { type: 'button', onClick: function () { var next = !trace; setTrace(next); if (!next) setFollowTracer(false); persist({ trace: next, followTracer: false, traced: next || bucket.traced }); }, 'aria-pressed': trace, className: 'rounded-lg px-3 py-2 text-sm font-bold ' + (trace ? 'bg-yellow-300 text-slate-950' : 'bg-slate-800 text-white hover:bg-slate-700') }, '\uD83D\uDCCD Trace'),
-              trace && h('button', { type: 'button', onClick: resetTracerJourney, className: 'rounded-lg border border-yellow-300/40 bg-yellow-300/10 px-3 py-2 text-sm font-bold text-yellow-200 hover:bg-yellow-300/20', 'aria-label': 'Start a new random walk measurement for the selected particle' }, '\u25CE New walk'),
-              trace && h('button', { type: 'button', onClick: recordTracerJourney, disabled: selectedInfo.journeyTime < 1 || selectedInfo.particleHits < 1, className: 'rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-3 py-2 text-sm font-bold text-emerald-200 hover:bg-emerald-300/20 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': selectedInfo.particleHits < 1 ? 'Record tracer walk, available after the first particle collision' : 'Record the current tracer walk' }, '\uD83D\uDCCC Save walk'),
+              trace && h('button', { type: 'button', onClick: resetTracerJourney, className: 'rounded-lg border border-yellow-300/40 bg-yellow-300/10 px-3 py-2 text-sm font-bold text-yellow-200 hover:bg-yellow-300/20', 'aria-label': 'New walk. Starts a new random walk measurement for the selected particle.' }, '\u25CE New walk'),
+              trace && h('button', { type: 'button', onClick: function () { if (selectedInfo.journeyTime < 1 || selectedInfo.particleHits < 1) { if (ctx.announceToSR) ctx.announceToSR('Save walk is unavailable until the traced particle has completed a collision.'); return; } recordTracerJourney(); }, 'aria-disabled': selectedInfo.journeyTime < 1 || selectedInfo.particleHits < 1 ? 'true' : undefined, className: 'rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-3 py-2 text-sm font-bold text-emerald-200 hover:bg-emerald-300/20 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': selectedInfo.particleHits < 1 ? 'Save walk. Records the tracer walk, available after the first particle collision.' : 'Record the current tracer walk' }, '\uD83D\uDCCC Save walk')
+              ),
+              h('div', { className: 'particle-control-group', role: 'group', 'aria-label': 'Scene overlays' },
               h('details', { id: 'particle-visual-overlays', open: visualsOpen, onToggle: function (event) { var next = !!event.currentTarget.open; setVisualsOpen(next); persist({ visualsOpen: next }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Visual overlay controls expanded.' : 'Visual overlay controls collapsed.'); } },
                 h('summary', { className: 'flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-bold text-slate-200 outline-none transition hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-cyan-400' }, h('span', null, 'Visual overlays'), h('span', { className: 'font-mono text-[10px] text-cyan-200' }, visualOverlaySummary)),
                 h('div', { className: 'mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 p-2' },
@@ -1327,16 +1457,17 @@
               h('button', { type: 'button', onClick: function () { var next = !systemProbe; setSystemProbe(next); persist({ systemProbe: next }); }, 'aria-pressed': systemProbe, className: 'rounded-lg px-3 py-2 text-sm font-bold ' + (systemProbe ? 'bg-yellow-300 text-slate-950' : 'bg-slate-800 text-white hover:bg-slate-700') }, '\u25C8 System probe')
                 )
               ),
-              h('button', { type: 'button', onClick: function () { var next = gravity > 0.01 ? 0 : 1; setGravity(next); persist({ gravity: next }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Gravity field enabled at one model g.' : 'Gravity field disabled.'); }, 'aria-pressed': gravity > 0.01, className: 'rounded-lg px-3 py-2 text-sm font-bold ' + (gravity > 0.01 ? 'bg-amber-300 text-slate-950 shadow-[0_0_18px_rgba(253,224,71,0.3)]' : 'bg-slate-800 text-white hover:bg-slate-700') }, '\u2193 Gravity'),
+              h('button', { type: 'button', onClick: function () { var next = gravity > 0.01 ? 0 : 1; setGravity(next); persist({ gravity: next }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Gravity field enabled at one model g.' : 'Gravity field disabled.'); }, 'aria-pressed': gravity > 0.01, className: 'rounded-lg px-3 py-2 text-sm font-bold ' + (gravity > 0.01 ? 'bg-amber-300 text-slate-950 shadow-[0_0_18px_rgba(253,224,71,0.3)]' : 'bg-slate-800 text-white hover:bg-slate-700') }, '\u2193 Gravity')
+              ),
               h('div', { className: 'flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 p-1', role: 'group', 'aria-label': 'Simulation speed' }, [0.25, 1, 2].map(function (speed) { return h('button', { key: speed, type: 'button', onClick: function () { setTimeScale(speed); persist({ timeScale: speed }); }, 'aria-pressed': timeScale === speed, className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black sm:min-h-6 ' + (timeScale === speed ? 'bg-cyan-300 text-slate-950' : 'text-slate-300 hover:bg-slate-700') }, speed === 0.25 ? 'SLOW' : speed + '\u00D7'); })),
               fsActive && h('button', { ref: conditionsToggleRef, type: 'button', onClick: function () { var next = !showFullscreenConditions; setShowFullscreenConditions(next); if (next) requestAnimationFrame(function () { var control = stageRef.current && stageRef.current.querySelector('#particle-fullscreen-conditions input'); if (control) control.focus(); }); }, 'aria-expanded': showFullscreenConditions, 'aria-controls': 'particle-fullscreen-conditions', className: 'rounded-lg border border-cyan-400/40 bg-cyan-950 px-3 py-2 text-sm font-bold text-cyan-100 hover:bg-cyan-900' }, showFullscreenConditions ? 'Hide conditions' : '\u2699 Conditions'),
-              h('button', { ref: keysOpenerRef, type: 'button', onClick: function (event) { openKeys(event.currentTarget); }, 'aria-expanded': showKeys, 'aria-haspopup': 'dialog', className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700', 'aria-label': 'Show the keyboard shortcuts panel' }, 'Keys (?)'),
+              h('button', { ref: keysOpenerRef, type: 'button', onClick: function (event) { openKeys(event.currentTarget); }, 'aria-expanded': showKeys, 'aria-haspopup': 'dialog', className: 'rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white hover:bg-slate-700', 'aria-label': 'Keys (?). Shows the keyboard shortcuts panel.' }, 'Keys (?)'),
               h('div', { className: 'ml-auto flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 p-1', role: 'group', 'aria-label': 'Camera views' },
-                h('button', { type: 'button', onClick: function () { setCameraShot('hero'); }, 'aria-pressed': activeCameraView === 'hero', 'aria-label': 'Overview camera view', className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6 ' + (activeCameraView === 'hero' ? 'bg-cyan-300 text-slate-950' : 'text-cyan-200 hover:bg-slate-700') }, 'Hero'),
+                h('button', { type: 'button', onClick: function () { setCameraShot('hero'); }, 'aria-pressed': activeCameraView === 'hero', 'aria-label': 'Hero overview camera view', className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6 ' + (activeCameraView === 'hero' ? 'bg-cyan-300 text-slate-950' : 'text-cyan-200 hover:bg-slate-700') }, 'Hero'),
                 h('button', { type: 'button', onClick: function () { setCameraShot('top'); }, 'aria-pressed': activeCameraView === 'top', 'aria-label': 'Top-down camera view', className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6 ' + (activeCameraView === 'top' ? 'bg-cyan-300 text-slate-950' : 'text-cyan-200 hover:bg-slate-700') }, 'Top'),
-                h('button', { type: 'button', onClick: function () { setCameraShot('close'); }, 'aria-pressed': activeCameraView === 'close', 'aria-label': 'Detail camera view', className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6 ' + (activeCameraView === 'close' ? 'bg-cyan-300 text-slate-950' : 'text-cyan-200 hover:bg-slate-700') }, 'Close'),
-                h('button', { type: 'button', onClick: function () { var next = !autoCamera; setAutoCamera(next); if (next) setFollowTracer(false); persist({ autoCamera: next, followTracer: next ? false : followTracer }); }, 'aria-pressed': autoCamera, className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6 ' + (autoCamera ? 'bg-violet-300 text-slate-950' : 'text-violet-200 hover:bg-slate-700') }, '\u25CE Showcase camera'),
-                h('button', { type: 'button', disabled: prefersReducedMotion, onClick: function () { var next = !followTracer; setFollowTracer(next); if (next) { setTrace(true); setAutoCamera(false); persist({ followTracer: true, trace: true, traced: true, autoCamera: false }); } else persist({ followTracer: false }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Tracer follow camera enabled.' : 'Tracer follow camera disabled.'); }, 'aria-pressed': followTracer, 'aria-label': prefersReducedMotion ? 'Tracer follow camera unavailable because reduced motion is preferred' : (followTracer ? 'Disable tracer follow camera' : 'Enable tracer follow camera'), className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-6 ' + (followTracer ? 'bg-yellow-300 text-slate-950' : 'text-yellow-200 hover:bg-slate-700') }, '\u25CE Follow tracer')
+                h('button', { type: 'button', onClick: function () { setCameraShot('close'); }, 'aria-pressed': activeCameraView === 'close', 'aria-label': 'Close detail camera view', className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide sm:min-h-6 ' + (activeCameraView === 'close' ? 'bg-cyan-300 text-slate-950' : 'text-cyan-200 hover:bg-slate-700') }, 'Close'),
+                h('button', { type: 'button', 'aria-disabled': prefersReducedMotion ? 'true' : undefined, onClick: function () { if (prefersReducedMotion) { if (ctx.announceToSR) ctx.announceToSR('Showcase camera orbit is unavailable while reduced motion is preferred.'); return; } var next = !autoCamera; setAutoCamera(next); if (next) setFollowTracer(false); persist({ autoCamera: next, followTracer: next ? false : followTracer }); }, 'aria-pressed': autoCamera, 'aria-label': prefersReducedMotion ? 'Showcase camera unavailable because reduced motion is preferred' : undefined, className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-6 ' + (autoCamera ? 'bg-violet-300 text-slate-950' : 'text-violet-200 hover:bg-slate-700') }, '\u25CE Showcase camera'),
+                h('button', { type: 'button', 'aria-disabled': prefersReducedMotion ? 'true' : undefined, onClick: function () { if (prefersReducedMotion) { if (ctx.announceToSR) ctx.announceToSR('Tracer follow camera is unavailable while reduced motion is preferred.'); return; } var next = !followTracer; setFollowTracer(next); if (next) { setTrace(true); setAutoCamera(false); persist({ followTracer: true, trace: true, traced: true, autoCamera: false }); } else persist({ followTracer: false }); if (ctx.announceToSR) ctx.announceToSR(next ? 'Tracer follow camera enabled.' : 'Tracer follow camera disabled.'); }, 'aria-pressed': followTracer, 'aria-label': prefersReducedMotion ? 'Follow tracer unavailable because reduced motion is preferred' : undefined, className: 'min-h-11 rounded px-2 py-1 text-[10px] font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-6 ' + (followTracer ? 'bg-yellow-300 text-slate-950' : 'text-yellow-200 hover:bg-slate-700') }, '\u25CE Follow tracer')
               ),
               h('span', { role: 'note', className: 'text-xs font-bold ' + (running ? 'text-emerald-300' : 'text-slate-400') }, running ? 'Simulation running' : 'Paused')
             )
@@ -1356,7 +1487,7 @@
                 h('summary', { className: 'flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-800 outline-none transition hover:border-cyan-300 focus-visible:ring-2 focus-visible:ring-cyan-500' }, h('span', null, 'Advanced conditions'), h('span', { className: 'text-right text-[10px] font-normal leading-tight text-slate-500' }, advancedConditionSummary)),
                 h('div', { className: 'pt-3' },
                   h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Container edge: ', h('output', { className: 'text-cyan-700' }, boxSize + ' u'), h('span', { className: 'ml-1 font-normal text-slate-500' }, '(volume ' + Math.round(boxSize * boxSize * boxSize) + ' u\u00B3)')),
-              h('input', { type: 'range', min: 8, max: 15, step: 1, value: boxSize, onChange: function (e) { var value = Number(e.target.value); setBoxSize(value); setRunning(false); setResetKey(function (k) { return k + 1; }); persist({ boxSize: value }); }, className: 'mt-1 w-full accent-cyan-600', 'aria-label': 'Container edge length and volume' }),
+              h('input', { type: 'range', min: 7, max: 18, step: 1, value: boxSize, onChange: function (e) { var value = Number(e.target.value); setBoxSize(value); setRunning(false); setResetKey(function (k) { return k + 1; }); persist({ boxSize: value }); }, className: 'mt-1 w-full accent-cyan-600', 'aria-label': 'Container edge length and volume' }),
               h('label', { className: 'mt-4 block text-xs font-bold text-slate-700' }, 'Collision diameter: ', h('output', { className: 'text-cyan-700' }, particleDiameter.toFixed(2) + ' u')),
               h('input', { type: 'range', min: 0.36, max: 0.9, step: 0.06, value: particleDiameter, onChange: function (e) { var value = Number(e.target.value); setParticleDiameter(value); setRunning(false); setHistory([]); setResetKey(function (k) { return k + 1; }); persist({ particleDiameter: value }); }, className: 'mt-1 w-full accent-cyan-600', 'aria-label': 'Particle collision diameter', 'aria-valuetext': particleDiameter.toFixed(2) + ' model units' }),
               h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-500' }, 'Larger cross sections produce more frequent collisions and a shorter theoretical mean free path.'),
@@ -1533,7 +1664,7 @@
                 ),
                 transportMode && h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Species kinetic temperature comparison' }, h('div', { className: 'rounded-lg border border-cyan-200 bg-cyan-50 p-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-800' }, 'A kinetic temperature'), h('div', { className: 'mt-0.5 font-mono text-sm font-black text-cyan-950' }, speciesMotion.a.temperature + ' K')), h('div', { className: 'rounded-lg border border-fuchsia-200 bg-fuchsia-50 p-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-fuchsia-800' }, 'B kinetic temperature'), h('div', { className: 'mt-0.5 font-mono text-sm font-black text-fuchsia-950' }, speciesMotion.b.temperature + ' K'))),
                 transportMode && h('div', { className: 'mt-2 rounded-lg border border-slate-200 bg-white p-2' },
-                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-500' }, 'Thermalization experiment'), h('div', { className: 'font-mono text-[10px] font-black ' + (thermalGapPercent <= 10 ? 'text-emerald-700' : 'text-amber-700'), role: 'status', 'aria-live': 'polite' }, thermalGapPercent <= 10 ? 'Near equilibrium' : thermalGapPercent + '% temperature gap')), h('div', { className: 'flex gap-1' }, h('button', { type: 'button', onClick: function () { pulseSpeciesHeat(1, 1.8); }, className: 'rounded-md bg-fuchsia-600 px-2 py-1 text-[10px] font-black text-white hover:bg-fuchsia-700', 'aria-label': 'Apply a heat pulse that raises particle B kinetic temperature by eighty percent' }, 'Heat B +80%'), h('button', { type: 'button', onClick: function () { pulseSpeciesHeat(1, 0.55); }, className: 'rounded-md bg-cyan-700 px-2 py-1 text-[10px] font-black text-white hover:bg-cyan-800', 'aria-label': 'Apply a cooling pulse that lowers particle B kinetic temperature by forty-five percent' }, 'Cool B -45%'))),
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-500' }, 'Thermalization experiment'), h('div', { className: 'font-mono text-[10px] font-black ' + (thermalGapPercent <= 10 ? 'text-emerald-700' : 'text-amber-700'), role: 'status', 'aria-live': 'polite' }, thermalGapPercent <= 10 ? 'Near equilibrium' : thermalGapPercent + '% temperature gap')), h('div', { className: 'flex gap-1' }, h('button', { type: 'button', onClick: function () { pulseSpeciesHeat(1, 1.8); }, className: 'particle-pulse-button rounded-md bg-fuchsia-600 px-2 py-1 text-[10px] font-black text-white hover:bg-fuchsia-700', 'aria-label': 'Heat B +80%. Applies a heat pulse that raises particle B kinetic temperature by eighty percent.' }, 'Heat B +80%'), h('button', { type: 'button', onClick: function () { pulseSpeciesHeat(1, 0.55); }, className: 'particle-pulse-button rounded-md bg-cyan-700 px-2 py-1 text-[10px] font-black text-white hover:bg-cyan-800', 'aria-label': 'Cool B -45%. Applies a cooling pulse that lowers particle B kinetic temperature by forty-five percent.' }, 'Cool B -45%'))),
                   h('svg', { viewBox: '0 0 240 64', className: 'mt-2 h-14 w-full', role: 'img', 'aria-label': 'Recent species temperature traces. Particle A is ' + speciesMotion.a.temperature + ' kelvin and particle B is ' + speciesMotion.b.temperature + ' kelvin. The temperature gap is ' + thermalGapPercent + ' percent.' },
                     h('line', { x1: 4, y1: 56, x2: 236, y2: 56, stroke: '#cbd5e1', strokeWidth: 1 }),
                     h('path', { d: sharedScalePath(thermalA, thermalMin, thermalMax), fill: 'none', stroke: '#0891b2', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
@@ -1582,7 +1713,7 @@
                 )
               ),
               h('p', { role: 'note', className: 'mt-3 rounded-lg bg-cyan-50 p-2 text-xs leading-relaxed text-cyan-950' }, modelSummary()),
-              h('button', { type: 'button', onClick: recordTrial, disabled: transportMode && membrane && !selectivityAssay.ready, className: 'mt-3 w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45', 'aria-label': transportMode && membrane && !selectivityAssay.ready ? 'Record trial unavailable until both species have at least five membrane encounters' : 'Record this trial' }, transportMode && membrane && !selectivityAssay.ready ? 'Collect membrane evidence ' + Math.min(selectivityAssay.attemptsA, selectivityAssay.attemptsB) + '/5' : '\uD83D\uDCCC Record this trial'),
+              h('button', { type: 'button', onClick: function () { if (transportMode && membrane && !selectivityAssay.ready) { if (ctx.announceToSR) ctx.announceToSR('Recording a trial needs at least five membrane encounters for each species.'); return; } recordTrial(); }, 'aria-disabled': transportMode && membrane && !selectivityAssay.ready ? 'true' : undefined, className: 'mt-3 w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45', 'aria-label': transportMode && membrane && !selectivityAssay.ready ? 'Collect membrane evidence ' + Math.min(selectivityAssay.attemptsA, selectivityAssay.attemptsB) + '/5. Record trial unavailable until both species have at least five membrane encounters.' : 'Record this trial' }, transportMode && membrane && !selectivityAssay.ready ? 'Collect membrane evidence ' + Math.min(selectivityAssay.attemptsA, selectivityAssay.attemptsB) + '/5' : '\uD83D\uDCCC Record this trial'),
               trials.length > 0 && h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1' }, trials.map(function (trial, i) { return h('button', { key: trial.id, type: 'button', onClick: function () { restoreTrial(trial); }, className: 'rounded-xl border border-slate-200 bg-white p-3 text-left text-[11px] transition hover:border-cyan-400 hover:shadow-sm', 'aria-label': 'Restore Trial ' + (i + 1) + ' conditions' }, h('div', { className: 'flex items-center justify-between' }, h('strong', { className: 'text-cyan-700' }, 'Trial ' + (i + 1)), h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-400' }, '\u21BA Restore')), h('div', { className: 'mt-1 font-mono text-slate-700' }, trial.temperature + ' K \u2022 P ' + trial.pressure + ' \u2022 N ' + trial.count), h('div', { className: 'mt-1 text-slate-500' }, 'Volume ' + Math.round(trial.boxSize * trial.boxSize * trial.boxSize) + ' u\u00B3 \u2022 attraction ' + Number(trial.attraction || 0).toFixed(2) + ' \u2022 gravity ' + Number(trial.gravity || 0).toFixed(1) + ' g*' + (isTransportPreset(trial.preset) ? ' \u2022 mB ' + Number(trial.massRatioB || 1).toFixed(1) + '\u00d7 \u2022 ' + (trial.membraneSelectivity || 'both') + ' membrane \u2022 ' + (trial.preset === 'osmosis' ? 'osm ' + (Number(trial.osmoticShift || 0) >= 0 ? '+' : '') + Math.round(Number(trial.osmoticShift || 0) * 100) + '%' : 'mix ' + Math.round(Number(trial.mixing || 0) * 100) + '%') + (trial.membrane ? ' \u2022 A/B transmit ' + Math.round(Number(trial.transmissionA || 0) * 100) + '/' + Math.round(Number(trial.transmissionB || 0) * 100) + '% \u2022 separation ' + Number(trial.separation || 0).toFixed(1) + 'x' : '') : ''))); })),
               trialComparison && h('div', { className: 'mt-3 overflow-hidden rounded-xl border ' + (trialComparison.fair ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50') },
                 h('div', { className: 'flex items-center justify-between gap-2 px-3 py-2 ' + (trialComparison.fair ? 'bg-emerald-100/70' : 'bg-amber-100/70') }, h('strong', { className: 'text-xs ' + (trialComparison.fair ? 'text-emerald-900' : 'text-amber-900') }, trialComparison.fair ? '\u2713 Fair one-variable test' : '\u26A0 Confounded comparison'), h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-600' }, trialComparison.fair ? 'Changed: ' + trialComparison.changedVariable : trialComparison.changed.length + ' variables changed')),

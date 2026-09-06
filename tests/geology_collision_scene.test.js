@@ -211,10 +211,13 @@ describe('Geology Explorer — mountain belt registries (mission, quiz, sequence
     expect(answer(1)).toMatch(/25 km/);
     expect(answer(2)).toMatch(/no slab water or plume/i);
     expect(answer(3)).toMatch(/isostasy/i);
+    // Answers must not stack on one position. This was pinned as an exact count while the
+    // bank was 2-option; it is now 3-option, and the tool-wide spread is enforced by
+    // tests/geology_quiz_answer_balance.test.js.
     const positions = bank.items.map((q) => q.correct);
-    expect(positions.filter((p) => p === 0).length).toBe(2);
+    expect(new Set(positions).size, `collision answers ${JSON.stringify(positions)}`).toBeGreaterThan(1);
     bank.items.forEach((q, i) => {
-      expect(q.opts).toHaveLength(2);
+      expect(q.opts.length).toBeGreaterThanOrEqual(3);
       const remedy = P.quizRemediation('collision', i);
       expect(remedy.id).toBe(['collision-summit', 'collision-gneiss', 'collision-volcano', 'collision-root'][i]);
       expect(remedy.remedy.length).toBeGreaterThan(40);
@@ -284,6 +287,24 @@ describe('Geology Explorer — mountain belt registries (mission, quiz, sequence
     expect(source).toContain("var isoSideX3d = SCENE.id === 'collision' ? -1 : 1;");
     expect(source).toContain('iso: [[NX * 1.15 * isoSideX3d, NY * 1.05, NZ * 1.4]');
     expect(source).toContain('camera.position.set(WORLD.w * 1.15 * isoSideX3d, WORLD.h * 1.05, WORLD.d * 1.4);');
+  });
+
+  it('type chips use AA ink in both themes for every material type in every scene', () => {
+    const lum = (hex) => {
+      const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    const ratio = (a, b) => { const [h, l] = [lum(a), lum(b)].sort((x, y) => y - x); return (h + 0.05) / (l + 0.05); };
+    const types = new Set();
+    P.scenes().forEach((id) => { P.setScene(id); P.sceneVoxelKeys(id).forEach((k) => types.add(P.rockFacts(k, 1).R.type)); });
+    P.setScene('collision');
+    expect(types.size).toBeGreaterThan(15);
+    types.forEach((type) => {
+      expect(ratio(P.typeInkFor(type, false), '#ffffff'), type + ' light').toBeGreaterThanOrEqual(4.5);
+      expect(ratio(P.typeInkFor(type, true), '#0f172a'), type + ' dark').toBeGreaterThanOrEqual(4.5);
+    });
+    expect(P.typeInkFor('not-a-type', false)).toBe('#475569');
+    expect(source).not.toMatch(/TYPE_COLOR\[(R|RA|RB|toR|fpHud)\.type\]/);
   });
 
   it('ships the same bytes to the bundled desktop copy', () => {

@@ -8186,7 +8186,7 @@ const d = labToolData.artStudio || {};
                     React.createElement("button", { className: mini, "aria-label": __alloT('stem.artstudio.a11y_undo_sculpture_change', 'Undo sculpture change'), disabled: !sculptUndo.length, onClick: undoSculpt }, '\u21B6'),
                     React.createElement("button", { className: mini, "aria-label": __alloT('stem.artstudio.a11y_redo_sculpture_change', 'Redo sculpture change'), disabled: !sculptRedo.length, onClick: redoSculpt }, '\u21B7'),
                     React.createElement("button", {
-                      className: mini + " flex-1",
+                      className: mini, style: { flex: "1 1 96px" },
                       "aria-label": sculptAuto ? "Pause 3D preview rotation" : "Resume 3D preview rotation",
                       "aria-pressed": !sculptAuto,
                       onClick: function() {
@@ -8197,13 +8197,13 @@ const d = labToolData.artStudio || {};
                         if (typeof announceToSR === 'function') announceToSR(nextAuto ? __alloT('stem.artstudio.sr_sculpture_auto_rotation_resumed', 'Sculpture auto-rotation resumed.') : __alloT('stem.artstudio.sr_sculpture_auto_rotation_paused', 'Sculpture auto-rotation paused.'));
                       }
                     }, sculptAuto ? '⏸ ' + __alloT('stem.artstudio.pause', 'Pause') : '▶ ' + __alloT('stem.artstudio.resume', 'Resume')),
-                    React.createElement("button", { className: mini + " flex-1", "aria-label": __alloT('stem.artstudio.a11y_save_sculpture_picture_as_png', 'Save sculpture picture as PNG'), onClick: doExportPng }, '📷 ' + __alloT('stem.artstudio.sculpt_export', 'Save picture')),
-                    React.createElement("button", { className: mini + " flex-1", "aria-label": __alloT('stem.artstudio.a11y_export_sculpture_json_model', 'Export sculpture JSON model'), disabled: !recipe, onClick: doExportSculptJson }, '⬇ Model'),
-                    React.createElement("button", { className: mini + " flex-1", "aria-label": __alloT('stem.artstudio.a11y_continue_this_sculpture_in_print_lab', 'Continue this sculpture in Print Lab'), disabled: !recipe, onClick: sendSculptToPrintLab }, '🖨 ' + __alloT('stem.artstudio.sculpt_print_lab', 'Print Lab')),
-                    React.createElement("label", { className: mini + " flex-1 cursor-pointer text-center px-2 py-2 focus-within:ring-4 focus-within:ring-pink-600 focus-within:ring-offset-2" }, '⬆ Load model',
+                    React.createElement("button", { className: mini, style: { flex: "1 1 96px" }, "aria-label": __alloT('stem.artstudio.a11y_save_sculpture_picture_as_png', 'Save sculpture picture as PNG'), onClick: doExportPng }, '📷 ' + __alloT('stem.artstudio.sculpt_export', 'Save picture')),
+                    React.createElement("button", { className: mini, style: { flex: "1 1 96px" }, "aria-label": __alloT('stem.artstudio.a11y_export_sculpture_json_model', 'Export sculpture JSON model'), disabled: !recipe, onClick: doExportSculptJson }, '⬇ Model'),
+                    React.createElement("button", { className: mini, style: { flex: "1 1 96px" }, "aria-label": __alloT('stem.artstudio.a11y_continue_this_sculpture_in_print_lab', 'Continue this sculpture in Print Lab'), disabled: !recipe, onClick: sendSculptToPrintLab }, '🖨 ' + __alloT('stem.artstudio.sculpt_print_lab', 'Print Lab')),
+                    React.createElement("label", { className: mini + " cursor-pointer text-center px-2 py-2 focus-within:ring-4 focus-within:ring-pink-600 focus-within:ring-offset-2", style: { flex: "1 1 96px" } }, '⬆ Load model',
                       React.createElement("input", { type: "file", accept: ".json,.sculpture.json,application/json", className: "sr-only", "aria-label": __alloT('stem.artstudio.a11y_import_sculpture_json_model', 'Import sculpture JSON model'), onChange: importSculptJson })
                     ),
-                    recipe ? React.createElement("button", { className: mini + " flex-1", onClick: function() { upd('sculptSel', 0); setRecipe(null); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_cleared', 'Sculpture cleared.')); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
+                    recipe ? React.createElement("button", { className: mini, style: { flex: "1 1 96px" }, onClick: function() { upd('sculptSel', 0); setRecipe(null); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_cleared', 'Sculpture cleared.')); } }, '🗑 ' + __alloT('stem.artstudio.sculpt_clear', 'Clear')) : null
                   )
                 ),
                 // editor column

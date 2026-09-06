@@ -4,6 +4,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { buildApBlueprintCoverage } = require('./ap_blueprint_coverage_core.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_calculus_ab_foundation_pilot.json');
@@ -184,6 +185,7 @@ check(pack.capabilities?.constructedResponseIncluded === false && pack.capabilit
 check(pack.rightsPolicy?.secureCollegeBoardContentUsed === false && pack.releaseGates?.releaseEligible === false && library.rightsPolicy?.secureCollegeBoardContentUsed === false && library.releaseGates?.releaseEligible === false, 'rights-release-gates', 'Rights or release gates are invalid.');
 
 const report = {
+  blueprintCoverage: buildApBlueprintCoverage({ pack, library }),
   schemaVersion: 1,
   qaVersion: 'ap-calculus-ab-foundation-qa-v2',
   reportId: 'ap-calculus-ab-foundation-qa',

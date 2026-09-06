@@ -123,6 +123,14 @@ describe('theme and motion', () => {
     expect(CODE).toContain('@media(prefers-color-scheme:dark)');
   });
 
+  it('keeps every phone touch target at or above 24px', () => {
+    // Measured by dev-tools/school_rewards_mobile_sweep.cjs at 390x844 in all four
+    // roles. Before these rules the built-in help links rendered 17-21px tall and
+    // the checkbox rows, which are tapped through their label, rendered 16px.
+    expect(STYLE).toContain('.help-more a,.help-links a{display:inline-flex;align-items:center;min-height:44px');
+    expect(STYLE).toContain('label:has(input[type="checkbox"]){min-height:24px}');
+  });
+
   it('dark-theme text and surface pairs clear WCAG AA', () => {
     const luminance = (hex) => {
       const channel = (value) => { const c = value / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };

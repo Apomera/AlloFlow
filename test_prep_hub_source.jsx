@@ -1793,13 +1793,42 @@ function testPrepFoundationalDocumentRouteProgress(attempts, route) {
   const latestRouteAttempt = routeAttempts.reduce((latest, attempt) => (
     !latest || testPrepFinite(attempt.completedAt, 0) >= testPrepFinite(latest.completedAt, 0) ? attempt : latest
   ), null);
+  // Per-item correctness on the most recent attempt of each item; the study-plan
+  // view uses it to point at a set worth retrying. This is local practice
+  // history only, never a mastery or readiness classification.
+  const correctItemCount = Object.keys(latestByItem).filter((itemId) => latestByItem[itemId].correct).length;
+  const latestCompletedAt = Object.keys(latestByItem).reduce((latest, itemId) => Math.max(latest, latestByItem[itemId].completedAt), 0);
   return {
     totalItemCount,
     attemptedItemCount,
     attemptedPercent,
+    correctItemCount,
+    latestCompletedAt,
     status: attemptedItemCount === 0 ? 'not-started' : attemptedItemCount >= totalItemCount ? 'complete' : 'in-progress',
     latestRouteScore: latestRouteAttempt ? Math.max(0, Math.min(100, Math.round(testPrepFinite(latestRouteAttempt.percent, 0)))) : null,
   };
+}
+
+// Deterministic study-plan pointer from local history: the first set not yet
+// fully practiced is "start here"; once every set is practiced, the earliest
+// set with a miss on its latest attempt is "retry"; otherwise "practiced".
+function testPrepStudyPlanRoutePointer(setProgress) {
+  const entries = Array.isArray(setProgress) ? setProgress : [];
+  const unfinished = entries.findIndex((entry) => entry && entry.status !== 'complete');
+  if (unfinished >= 0) return { index: unfinished, kind: unfinished === 0 && entries[0].status === 'not-started' ? 'start' : 'continue' };
+  const missed = entries.findIndex((entry) => entry && entry.correctItemCount < entry.totalItemCount);
+  if (missed >= 0) return { index: missed, kind: 'retry' };
+  return { index: -1, kind: entries.length ? 'practiced' : 'none' };
+}
+
+function testPrepStudyPlanAgoLabel(completedAt, now) {
+  const stamp = Math.max(0, testPrepFinite(completedAt, 0));
+  if (!stamp) return 'Not practiced yet';
+  const hours = Math.max(0, Math.floor((testPrepFinite(now, Date.now()) - stamp) / 3600000));
+  if (hours < 1) return 'Practiced within the hour';
+  if (hours < 48) return 'Practiced ' + hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+  const days = Math.floor(hours / 24);
+  return 'Practiced ' + days + ' day' + (days === 1 ? '' : 's') + ' ago';
 }
 
 function testPrepBuildProgressAnalytics(progress, packId, contentIdentity) {
@@ -2126,6 +2155,169 @@ function testPrepPackSkillCatalog(pack, learningLibrary) {
   return Array.from(merged.values());
 }
 
+// Study-plan layers: the diagnostic-route, remediation, session, spaced-review,
+// and source-catalog records that packs author into a learning library. Two
+// authoring shapes exist (AP Physics 1 keeps everything on the route record with
+// entry/reinforcement/transfer diagnosticSets; AP Calculus AB keeps
+// foundation/depth/transfer diagnosticSets and a separate topicRemediationPlaybooks
+// list). Both normalize to one contract so the Hub renders them with one view.
+function testPrepStudyPlanText(value, limit) {
+  return String(value == null ? '' : value).trim().slice(0, limit || 600);
+}
+
+function testPrepStudyPlanIdList(value) {
+  return Array.isArray(value) ? value.map((entry) => testPrepSlug(entry, '')).filter(Boolean) : [];
+}
+
+function testPrepStudyPlanLayers(learningLibrary) {
+  const library = learningLibrary && typeof learningLibrary === 'object' && !Array.isArray(learningLibrary) ? learningLibrary : {};
+  const list = (key) => (Array.isArray(library[key]) ? library[key] : []).filter((entry) => entry && typeof entry === 'object' && !Array.isArray(entry));
+  const humanize = (value) => testPrepStudyPlanText(value, 120).replace(/[-_]+/g, ' ').replace(/^\w/, (char) => char.toUpperCase());
+
+  const topicRoutes = list('topicDiagnosticRoutes').map((route) => {
+    const sets = (Array.isArray(route.diagnosticSets) ? route.diagnosticSets : []).filter((set) => set && typeof set === 'object').map((set, index) => ({
+      id: testPrepSlug(set.id, testPrepSlug(route.id, 'route') + '-set-' + (index + 1)),
+      label: testPrepStudyPlanText(set.label || humanize(set.type || set.stage), 120) || 'Practice set ' + (index + 1),
+      purpose: testPrepStudyPlanText(set.purpose, 400),
+      sectionId: testPrepSlug(set.sectionId, ''),
+      itemIds: testPrepStudyPlanIdList(set.itemIds),
+      needsRepairAction: testPrepStudyPlanText(set.needsRepairAction, 400),
+      secureAction: testPrepStudyPlanText(set.secureAction, 400),
+    }));
+    const itemIds = testPrepStudyPlanIdList(route.itemIds);
+    const setItemIds = sets.reduce((all, set) => all.concat(set.itemIds), []);
+    const remediationId = testPrepSlug(route.remediationPlaybookId, '') ||
+      (list('topicRemediationPlaybooks').find((playbook) => testPrepSlug(playbook.diagnosticRouteId, '') === testPrepSlug(route.id, '')) || {}).id || '';
+    return {
+      id: testPrepSlug(route.id, ''),
+      title: testPrepStudyPlanText(route.topicLabel || route.title, 200) || 'Topic route',
+      topicId: testPrepStudyPlanText(route.topicId || route.topicRouteId, 40),
+      unitId: testPrepSlug(route.unitId || route.domainId, ''),
+      unitLabel: testPrepStudyPlanText(route.unitLabel, 160),
+      chapterId: testPrepSlug(route.chapterId, ''),
+      sectionIds: testPrepStudyPlanIdList(route.sectionIds),
+      itemIds: itemIds.length ? itemIds : Array.from(new Set(setItemIds)),
+      sets,
+      masterySignals: (Array.isArray(route.masterySignals) ? route.masterySignals : []).map((signal) => testPrepStudyPlanText(signal && signal.label, 240)).filter(Boolean),
+      nextStep: testPrepStudyPlanText(route.nextStep, 400),
+      remediationPlaybookId: testPrepSlug(remediationId, ''),
+      reviewStatus: testPrepStudyPlanText(route.reviewStatus, 80),
+    };
+  }).filter((route) => route.id);
+
+  const unitRoutes = list('unitReviewRoutes').map((route) => ({
+    id: testPrepSlug(route.id, ''),
+    title: testPrepStudyPlanText(route.unitLabel || route.title, 200) || 'Unit review',
+    unitId: testPrepSlug(route.unitId, ''),
+    chapterId: testPrepSlug(route.chapterId, ''),
+    topicRouteIds: testPrepStudyPlanIdList(route.topicDiagnosticRouteIds),
+    itemIds: testPrepStudyPlanIdList(route.itemIds),
+    mixedPracticeItemIds: testPrepStudyPlanIdList(route.mixedPracticeItemIds || (route.mixedPracticeSet && route.mixedPracticeSet.itemIds)),
+    purpose: testPrepStudyPlanText(route.purpose, 400),
+  })).filter((route) => route.id);
+
+  const ladders = list('reviewLadders').map((ladder) => ({
+    id: testPrepSlug(ladder.id, ''),
+    order: testPrepFinite(ladder.order, 0),
+    title: testPrepStudyPlanText(ladder.label || ladder.title, 200) || 'Review ladder',
+    purpose: testPrepStudyPlanText(ladder.purpose, 400),
+    focus: (Array.isArray(ladder.focus) ? ladder.focus : []).map((entry) => testPrepStudyPlanText(entry, 120)).filter(Boolean),
+    itemIds: testPrepStudyPlanIdList(ladder.itemIds),
+  })).filter((ladder) => ladder.id).sort((left, right) => left.order - right.order);
+
+  const forms = list('practiceForms').map((form) => ({
+    id: testPrepSlug(form.id, ''),
+    title: testPrepStudyPlanText(form.title, 200) || 'Practice form',
+    formType: humanize(form.formType),
+    itemIds: testPrepStudyPlanIdList(form.itemIds),
+    topicCount: Array.isArray(form.topicIds) ? form.topicIds.length : 0,
+    unitCount: Array.isArray(form.unitIds) ? form.unitIds.length : 0,
+  })).filter((form) => form.id);
+
+  const familyById = new Map(list('misconceptionFamilies').map((family) => [testPrepSlug(family.id, ''), family]));
+  const playbooks = list('misconceptionRemediationPlaybooks').map((playbook) => {
+    const family = familyById.get(testPrepSlug(playbook.familyId, '')) || {};
+    return {
+      id: testPrepSlug(playbook.id, ''),
+      title: testPrepStudyPlanText(playbook.title, 200) || 'Remediation playbook',
+      familyLabel: testPrepStudyPlanText(playbook.familyLabel || family.label, 160),
+      description: testPrepStudyPlanText(family.description, 400),
+      recognitionCue: testPrepStudyPlanText(playbook.recognitionCue, 400),
+      repairQuestion: testPrepStudyPlanText(playbook.repairQuestion, 400),
+      steps: (Array.isArray(playbook.stages) ? playbook.stages : []).map((stage, index) => ({
+        label: testPrepStudyPlanText(stage && (stage.label || humanize(stage.id)), 120) || 'Step ' + (index + 1),
+        instruction: testPrepStudyPlanText(stage && (stage.instruction || stage.learnerAction), 400),
+        requiredOutput: testPrepStudyPlanText(stage && stage.requiredOutput, 300),
+      })).filter((step) => step.instruction),
+      itemIds: testPrepStudyPlanIdList(family.itemIds),
+      occurrenceCount: testPrepFinite(family.occurrenceCount, 0),
+    };
+  }).concat(list('topicRemediationPlaybooks').map((playbook) => {
+    const retry = playbook.retryByStage && typeof playbook.retryByStage === 'object' ? playbook.retryByStage : {};
+    return {
+      id: testPrepSlug(playbook.id, ''),
+      title: testPrepStudyPlanText(playbook.title, 200) || 'Remediation playbook',
+      familyLabel: testPrepStudyPlanText(playbook.topicRouteId ? 'Topic ' + playbook.topicRouteId : '', 160),
+      description: '',
+      recognitionCue: testPrepStudyPlanText(playbook.misconceptionBoundary, 400),
+      repairQuestion: '',
+      steps: (Array.isArray(playbook.steps) ? playbook.steps : []).map((step, index) => ({
+        label: testPrepStudyPlanText(step && humanize(step.phase), 120) || 'Step ' + (index + 1),
+        instruction: testPrepStudyPlanText(step && (step.learnerAction || step.instruction), 400),
+        requiredOutput: '',
+      })).filter((step) => step.instruction),
+      itemIds: Array.from(new Set(Object.keys(retry).reduce((all, stage) => all.concat(testPrepStudyPlanIdList(retry[stage])), []))),
+      occurrenceCount: 0,
+    };
+  })).filter((playbook) => playbook.id);
+
+  const sessions = list('studySessionPlans').map((session) => ({
+    id: testPrepSlug(session.id, ''),
+    title: testPrepStudyPlanText(session.title, 200) || 'Study session',
+    sessionType: humanize(session.sessionType),
+    purpose: testPrepStudyPlanText(session.purpose, 400),
+    durationMinutes: testPrepFinite(session.durationMinutes, 0),
+    chapterId: testPrepSlug(session.chapterId, ''),
+    itemIds: testPrepStudyPlanIdList(session.itemIds),
+    steps: (Array.isArray(session.steps) ? session.steps : []).map((step, index) => ({
+      label: testPrepStudyPlanText(step && (step.label || humanize(step.id)), 120) || 'Step ' + (index + 1),
+      durationMinutes: testPrepFinite(step && step.durationMinutes, 0),
+      action: testPrepStudyPlanText(step && step.action, 400),
+    })).filter((step) => step.action),
+  })).filter((session) => session.id);
+
+  const spacedPlans = list('spacedReviewPlans').map((plan) => ({
+    id: testPrepSlug(plan.id, ''),
+    title: testPrepStudyPlanText(plan.topicLabel || plan.title, 200) || 'Spaced review',
+    unitId: testPrepSlug(plan.unitId, ''),
+    diagnosticRouteId: testPrepSlug(plan.diagnosticRouteId, ''),
+    stages: (Array.isArray(plan.cadenceStages) ? plan.cadenceStages : []).map((stage, index) => ({
+      label: humanize(stage && (stage.label || stage.id)) || 'Stage ' + (index + 1),
+      intervalHours: testPrepFinite(stage && stage.intervalHours, 0),
+      action: humanize(stage && stage.action),
+      completionEvidence: testPrepStudyPlanText(stage && stage.completionEvidence, 300),
+    })),
+  })).filter((plan) => plan.id);
+
+  const sources = list('sourceCatalog').map((source) => ({
+    id: testPrepSlug(source.id, ''),
+    title: testPrepStudyPlanText(source.title, 240) || 'Source',
+    organization: testPrepStudyPlanText(source.organization, 160),
+    url: /^https:\/\//i.test(String(source.url || '')) ? String(source.url).slice(0, 500) : '',
+    credibility: testPrepStudyPlanText(source.credibility, 400),
+    sourceType: humanize(source.sourceType),
+    reviewedAt: testPrepStudyPlanText(source.reviewedAt, 40),
+  })).filter((source) => source.id);
+
+  return {
+    topicRoutes, unitRoutes, ladders, forms, playbooks, sessions, spacedPlans, sources,
+    hasStudyPlan: topicRoutes.length > 0 || unitRoutes.length > 0 || ladders.length > 0 || forms.length > 0,
+    hasPlaybooks: playbooks.length > 0,
+    hasSessions: sessions.length > 0 || spacedPlans.length > 0,
+    hasSources: sources.length > 0,
+  };
+}
+
 function testPrepSearchPack(pack, learningLibrary, query, options) {
   const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
   const normalizedQuery = String(query || '').trim().toLowerCase().slice(0, 120);
@@ -2180,8 +2372,13 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
   (Array.isArray(library.memoryAids) ? library.memoryAids : []).filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').forEach((aid) => add('memory-aid', aid.id, aid.title, aid.content, aid.domain, [aid.title, aid.content].concat(aid.tags || []).join(' '), aid.reviewStatus));
   (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus || 'source-reviewed-editorial-pass'));
   (Array.isArray(library.foundationalDocumentRoutes) ? library.foundationalDocumentRoutes : []).forEach((route) => add('foundational-document', route.id, route.title, route.studyMove || route.accessNote, 'Foundational document', [route.title, route.documentId, route.topicIds, route.studyMove, route.accessNote].join(' '), route.reviewStatus || 'source-reviewed-editorial-pass'));
+  const studyPlan = testPrepStudyPlanLayers(library);
+  studyPlan.topicRoutes.forEach((route) => add('topic-route', route.id, route.title, route.nextStep || route.sets.map((set) => set.label).join(' · '), route.unitLabel || 'Topic route', [route.title, route.topicId, route.nextStep, route.masterySignals.join(' ')].join(' '), route.reviewStatus || 'internal-editorial-draft'));
+  studyPlan.playbooks.forEach((playbook) => add('playbook', playbook.id, playbook.title, playbook.recognitionCue || playbook.description, playbook.familyLabel || 'Remediation playbook', [playbook.title, playbook.familyLabel, playbook.recognitionCue, playbook.repairQuestion, playbook.description].join(' '), 'internal-editorial-draft'));
+  studyPlan.sessions.forEach((session) => add('study-session', session.id, session.title, session.purpose, session.sessionType || 'Study session', [session.title, session.purpose, session.steps.map((step) => step.action).join(' ')].join(' '), 'internal-editorial-draft'));
+  studyPlan.sources.forEach((source) => add('source', source.id, source.title, source.credibility, source.organization || 'Source', [source.title, source.organization, source.credibility, source.sourceType].join(' '), 'source-reviewed-editorial-pass'));
   normalizeTestPrepAnnotations(input.annotations).records.filter((record) => record.packId === normalizedPack.id).forEach((record) => add(record.kind, record.id, record.targetLabel || (record.kind === 'highlight' ? 'Highlight' : 'Note'), record.text, record.targetType, [record.targetLabel, record.text, record.targetType].join(' '), 'learner-created'));
-  const typeOrder = { question: 0, chapter: 1, 'foundational-document': 2, diagram: 3, glossary: 4, flashcard: 5, 'memory-aid': 6, 'constructed-response': 7, note: 8, highlight: 9 };
+  const typeOrder = { question: 0, chapter: 1, 'foundational-document': 2, diagram: 3, glossary: 4, flashcard: 5, 'memory-aid': 6, 'constructed-response': 7, 'topic-route': 8, playbook: 9, 'study-session': 10, source: 11, note: 12, highlight: 13 };
   results.sort((left, right) => (typeOrder[left.type] - typeOrder[right.type]) || left.title.localeCompare(right.title));
   const counts = {};
   results.forEach((result) => { counts[result.type] = (counts[result.type] || 0) + 1; });
@@ -3930,6 +4127,7 @@ function TestPrepHub(props) {
   const packAnnotations = selectedPack ? testPrepAnnotationsForPack(annotations, selectedPack.id, selectedLearnerDataIdentity) : [];
   const retainedAnnotationCount = selectedPack ? testPrepRetainedAnnotationCount(annotations, selectedPack.id, selectedLearnerDataIdentity) : 0;
   const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60, annotations: { records: packAnnotations } }) : { query: '', total: 0, counts: {}, results: [] };
+  const studyPlanLayers = React.useMemo(() => testPrepStudyPlanLayers(learningLibrary), [learningLibrary]);
   const flashcardRatings = selectedPack ? testPrepFlashcardScheduleForPack(flashcardStore, selectedPack.id, selectedLearnerDataIdentity) : {};
   const retainedFlashcardCount = selectedPack ? testPrepRetainedFlashcardCount(flashcardStore, selectedPack.id, selectedLearnerDataIdentity) : 0;
   const nativeChapterProgress = selectedPack ? testPrepNativeChapterProgressForPack(nativeChapterProgressStore, selectedPack.id, selectedLearnerDataIdentity) : {};
@@ -4692,6 +4890,28 @@ function TestPrepHub(props) {
     });
   }
 
+  // Study-plan launches reuse the guided-route path so every set is an ordinary
+  // unscored custom practice run; a set whose items are absent from the pack
+  // announces instead of starting an empty run.
+  function startStudyPlanSet(label, itemIds) {
+    startStudyRoute({ title: label, itemIds: Array.isArray(itemIds) ? itemIds : [] });
+  }
+
+  function openLibrarySection(chapterId, sectionId) {
+    if (!learningLibrary || !chapterId) return;
+    const chapter = (learningLibrary.chapters || []).find((entry) => entry && testPrepSlug(entry.id, '') === chapterId);
+    if (!chapter) { announce('That chapter is not available in this learning library.', 'info'); return; }
+    setLibraryMode('chapters');
+    setLibraryChapterId(chapter.id);
+    if (sectionId && typeof setTimeout === 'function') setTimeout(() => {
+      const index = (chapter.sections || []).findIndex((section) => section && testPrepSlug(section.id, '') === sectionId);
+      const target = document.getElementById('native-' + testPrepSlug(sectionId, 'section-' + (index + 1)));
+      if (!target) return;
+      if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'start' });
+      if (typeof target.focus === 'function') target.focus({ preventScroll: true });
+    }, 0);
+  }
+
   function toggleCustomQuizDomain(domainId) {
     if (!selectedPack) return;
     const allIds = selectedPack.domains.map((domain) => domain.id);
@@ -4766,6 +4986,12 @@ function TestPrepHub(props) {
       setLibraryDomain('all');
       setLibrarySearch(searchResult.title);
       setMemoryAidOpen(searchResult.id);
+      return;
+    }
+    if (searchResult.type === 'topic-route' || searchResult.type === 'playbook' || searchResult.type === 'study-session' || searchResult.type === 'source') {
+      setLibraryMode(searchResult.type === 'topic-route' ? 'study-plan' : searchResult.type === 'playbook' ? 'playbooks' : searchResult.type === 'study-session' ? 'study-sessions' : 'sources');
+      setLibraryChapterId('');
+      setLibrarySearch(searchResult.title);
       return;
     }
     if (searchResult.type === 'note' || searchResult.type === 'highlight') {
@@ -6589,7 +6815,7 @@ function TestPrepHub(props) {
               </div>
 
               {selectedPack.learningLibraryUrl && <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
-                {([['search', 'Search all'], ['chapters', 'Chapters']].concat(learningLibrary && Array.isArray(learningLibrary.studyRoutes) && learningLibrary.studyRoutes.length ? [['study-routes', 'Study routes']] : []).concat(learningLibrary && Array.isArray(learningLibrary.quickReference) && learningLibrary.quickReference.length ? [['quick-reference', 'Quick reference']] : []).concat(learningLibrary && Array.isArray(learningLibrary.foundationalDocumentRoutes) && learningLibrary.foundationalDocumentRoutes.length ? [['foundational-documents', 'Foundational documents']] : []).concat([['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']]).concat(learningLibrary && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length ? [['glossary', 'Glossary']] : []).concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', learningLibrary.workshopLabel || 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setLibrarySearch(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
+                {([['search', 'Search all'], ['chapters', 'Chapters']].concat(learningLibrary && Array.isArray(learningLibrary.studyRoutes) && learningLibrary.studyRoutes.length ? [['study-routes', 'Study routes']] : []).concat(learningLibrary && Array.isArray(learningLibrary.quickReference) && learningLibrary.quickReference.length ? [['quick-reference', 'Quick reference']] : []).concat(learningLibrary && Array.isArray(learningLibrary.foundationalDocumentRoutes) && learningLibrary.foundationalDocumentRoutes.length ? [['foundational-documents', 'Foundational documents']] : []).concat([['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']]).concat(learningLibrary && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length ? [['glossary', 'Glossary']] : []).concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', learningLibrary.workshopLabel || 'Written-response workshops']] : []).concat(studyPlanLayers.hasStudyPlan ? [['study-plan', 'Study plan']] : []).concat(studyPlanLayers.hasPlaybooks ? [['playbooks', 'Misconception playbooks']] : []).concat(studyPlanLayers.hasSessions ? [['study-sessions', 'Study sessions']] : []).concat(studyPlanLayers.hasSources ? [['sources', 'Sources']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setLibrarySearch(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
               </nav>}
 
               {!selectedPack.learningLibraryUrl && <div className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-800">
@@ -6611,8 +6837,8 @@ function TestPrepHub(props) {
                   {globalSearch.query ? <p className="text-sm font-bold text-slate-700" role="status">Found {globalSearch.total} result{globalSearch.total === 1 ? '' : 's'}; showing {globalSearch.results.length}.</p> : <p className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-700">Enter a word or phrase to search all available content in this pack.</p>}
                   <div className="grid gap-3 md:grid-cols-2">
                     {globalSearch.results.map((searchResult) => {
-                      const typeLabel = searchResult.type === 'memory-aid' ? 'Memory aid' : searchResult.type === 'constructed-response' ? 'Written-response workshop' : searchResult.type === 'foundational-document' ? 'Foundational document' : searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1);
-                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'foundational-document' ? 'Open document route' : searchResult.type === 'diagram' ? 'Open diagram' : searchResult.type === 'glossary' ? 'Open glossary term' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : (searchResult.type === 'note' || searchResult.type === 'highlight') ? 'Open annotation' : 'Open workshops';
+                      const typeLabel = searchResult.type === 'memory-aid' ? 'Memory aid' : searchResult.type === 'constructed-response' ? 'Written-response workshop' : searchResult.type === 'foundational-document' ? 'Foundational document' : searchResult.type === 'topic-route' ? 'Topic route' : searchResult.type === 'playbook' ? 'Misconception playbook' : searchResult.type === 'study-session' ? 'Study session' : searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1);
+                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'foundational-document' ? 'Open document route' : searchResult.type === 'diagram' ? 'Open diagram' : searchResult.type === 'glossary' ? 'Open glossary term' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : (searchResult.type === 'note' || searchResult.type === 'highlight') ? 'Open annotation' : searchResult.type === 'topic-route' ? 'Open topic route' : searchResult.type === 'playbook' ? 'Open playbook' : searchResult.type === 'study-session' ? 'Open session plan' : searchResult.type === 'source' ? 'Open sources' : 'Open workshops';
                       return <article key={searchResult.type + '-' + searchResult.id} className="flex flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{typeLabel}</span>{searchResult.domain && <span className="text-xs font-bold text-slate-600">{searchResult.domain}</span>}</div><h5 className="mt-2 font-black text-slate-900">{searchResult.title}</h5>{searchResult.snippet && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{searchResult.snippet}</p>}<button type="button" onClick={() => openLibrarySearchResult(searchResult)} className="mt-4 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{actionLabel}</button></article>;
                     })}
                   </div>
@@ -6626,7 +6852,7 @@ function TestPrepHub(props) {
                 return <>
                   {retainedChapterProgressCount > 0 && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status"><strong>{retainedChapterProgressCount} completed section marker{retainedChapterProgressCount === 1 ? '' : 's'} retained from an earlier or unidentified learning-content revision.</strong> Current chapter progress starts separately.</p>}
                   <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-label="Learning library inventory">
-                    {([['Chapters', learningLibrary.summary.chapters], ['Sections', learningLibrary.summary.sections], ['Knowledge checks', learningLibrary.summary.knowledgeChecks], ['Flashcards', learningLibrary.summary.flashcards], ['Memory aids', learningLibrary.summary.memoryAids], ['Diagrams', learningLibrary.summary.nativeDiagramPayloads || learningLibrary.summary.diagrams], ['Glossary terms', learningLibrary.summary.glossaryTerms]].concat(learningLibrary.summary.practiceRoutes ? [['Practice routes', learningLibrary.summary.practiceRoutes]] : []).concat(learningLibrary.summary.studyRoutes ? [['Guided routes', learningLibrary.summary.studyRoutes]] : []).concat(learningLibrary.summary.foundationalDocuments ? [['Foundational docs', learningLibrary.summary.foundationalDocuments]] : []).concat(learningLibrary.summary.constructedResponseWorkshops ? [['Response workshops', learningLibrary.summary.constructedResponseWorkshops]] : [])).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"><p className="text-2xl font-black text-slate-900">{Number(value || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">{label}</p></div>)}
+                    {([['Chapters', learningLibrary.summary.chapters], ['Sections', learningLibrary.summary.sections], ['Knowledge checks', learningLibrary.summary.knowledgeChecks], ['Flashcards', learningLibrary.summary.flashcards], ['Memory aids', learningLibrary.summary.memoryAids], ['Diagrams', learningLibrary.summary.nativeDiagramPayloads || learningLibrary.summary.diagrams], ['Glossary terms', learningLibrary.summary.glossaryTerms]].concat(learningLibrary.summary.practiceRoutes ? [['Practice routes', learningLibrary.summary.practiceRoutes]] : []).concat(learningLibrary.summary.studyRoutes ? [['Guided routes', learningLibrary.summary.studyRoutes]] : []).concat(learningLibrary.summary.foundationalDocuments ? [['Foundational docs', learningLibrary.summary.foundationalDocuments]] : []).concat(learningLibrary.summary.constructedResponseWorkshops ? [['Response workshops', learningLibrary.summary.constructedResponseWorkshops]] : []).concat(studyPlanLayers.topicRoutes.length ? [['Topic routes', studyPlanLayers.topicRoutes.length]] : []).concat(studyPlanLayers.playbooks.length ? [['Playbooks', studyPlanLayers.playbooks.length]] : []).concat(studyPlanLayers.sessions.length ? [['Session plans', studyPlanLayers.sessions.length]] : []).concat(studyPlanLayers.sources.length ? [['Sources', studyPlanLayers.sources.length]] : [])).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"><p className="text-2xl font-black text-slate-900">{Number(value || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">{label}</p></div>)}
                   </div>
                   <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
                     <label className="text-sm font-bold text-slate-800">Search chapters and section headings<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" placeholder="Try evidence, fractions, revision…" /></label>
@@ -6734,6 +6960,182 @@ function TestPrepHub(props) {
                       </article>;
                     })}
                   </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No foundational-document routes match that search.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'study-plan' && (() => {
+                const query = librarySearch.trim().toLowerCase();
+                const matches = (text) => !query || String(text || '').toLowerCase().includes(query);
+                const topicRoutes = studyPlanLayers.topicRoutes.filter((route) => matches([route.title, route.topicId, route.unitLabel, route.nextStep].join(' ')));
+                const unitRoutes = studyPlanLayers.unitRoutes.filter((route) => matches([route.title, route.purpose].join(' ')));
+                const ladders = studyPlanLayers.ladders.filter((ladder) => matches([ladder.title, ladder.purpose, ladder.focus.join(' ')].join(' ')));
+                const forms = studyPlanLayers.forms.filter((form) => matches([form.title, form.formType].join(' ')));
+                const playbookById = new Map(studyPlanLayers.playbooks.map((playbook) => [playbook.id, playbook]));
+                const routedQuestionCount = new Set(studyPlanLayers.topicRoutes.reduce((all, route) => all.concat(route.itemIds), [])).size;
+                return <section className="space-y-4" aria-labelledby="library-study-plan-title">
+                  <div className="rounded-2xl border border-sky-300 bg-sky-50 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-sky-800">Original internal study plan</p>
+                    <h4 id="library-study-plan-title" className="mt-1 text-xl font-black text-slate-900">Topic routes, unit reviews, and cumulative ladders</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-sky-950">Each route links a framework topic to its lesson sections and a short sequence of internal practice sets. Sets are unscored practice runs; nothing here is an official form, a scaled score, or a readiness prediction.</p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                      <div className="rounded-xl border border-sky-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{studyPlanLayers.topicRoutes.length.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Topic routes</p></div>
+                      <div className="rounded-xl border border-sky-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{routedQuestionCount.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Routed questions</p></div>
+                      <div className="rounded-xl border border-sky-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{studyPlanLayers.unitRoutes.length.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Unit reviews</p></div>
+                      <div className="rounded-xl border border-sky-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{(studyPlanLayers.ladders.length + studyPlanLayers.forms.length).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Ladders and forms</p></div>
+                    </div>
+                    <label className="mt-4 block text-sm font-black text-slate-900">Filter routes by topic, unit, or next step<input aria-label="Filter study-plan routes" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-sky-600" placeholder="Try 2.3, momentum, limits…" /></label>
+                  </div>
+                  {topicRoutes.length > 0 && <div className="space-y-3">
+                    <p className="text-sm font-bold text-slate-700" role="status">Showing {topicRoutes.length} of {studyPlanLayers.topicRoutes.length} topic routes</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {topicRoutes.map((route) => {
+                        const playbook = route.remediationPlaybookId ? playbookById.get(route.remediationPlaybookId) : null;
+                        const routeProgress = testPrepFoundationalDocumentRouteProgress(packAttempts, route);
+                        const setProgress = route.sets.map((set) => testPrepFoundationalDocumentRouteProgress(packAttempts, { title: route.title + ' · ' + set.label, itemIds: set.itemIds }));
+                        const pointer = testPrepStudyPlanRoutePointer(setProgress);
+                        const routeProgressLabel = routeProgress.status === 'complete' ? 'All sets practiced' : routeProgress.status === 'in-progress' ? 'In progress' : 'Not started yet';
+                        return <article key={route.id} data-test-prep-study-route={route.id} data-test-prep-study-route-status={routeProgress.status} className="flex flex-col rounded-2xl border border-sky-300 bg-white p-5 shadow-sm">
+                          <p className="text-xs font-black uppercase tracking-wide text-sky-800">{route.unitLabel || (route.topicId ? 'Topic ' + route.topicId : 'Topic route')}</p>
+                          <h5 className="mt-1 text-lg font-black text-slate-900">{route.title}</h5>
+                          {route.nextStep && <p className="mt-2 text-sm leading-relaxed text-slate-700">{route.nextStep}</p>}
+                          {route.masterySignals.length > 0 && <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700">{route.masterySignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>}
+                          {route.itemIds.length > 0 && <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"><div className="flex items-center justify-between gap-3 text-xs"><span className="font-black uppercase tracking-wide text-sky-900">Route progress</span><strong className="text-sky-950">{routeProgressLabel}</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-sky-100" role="progressbar" aria-label={route.title + ' route progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={routeProgress.attemptedPercent}><div className="h-full rounded-full bg-sky-700" style={{ width: routeProgress.attemptedPercent + '%' }} /></div><p className="mt-2 text-xs font-bold text-sky-950">{routeProgress.attemptedItemCount} of {routeProgress.totalItemCount} linked questions practiced{routeProgress.attemptedItemCount ? ' · ' + routeProgress.correctItemCount + ' correct on the latest try' : ''}</p></div>}
+                          {route.sets.length > 0 ? <ol className="mt-3 space-y-2">{route.sets.map((set, index) => {
+                            const progress = setProgress[index];
+                            const pointed = pointer.index === index;
+                            const pointerLabel = pointer.kind === 'start' ? 'Start here' : pointer.kind === 'continue' ? 'Continue here' : 'Retry this set';
+                            return <li key={set.id} data-test-prep-study-set-pointer={pointed ? pointer.kind : undefined} className={'rounded-xl border p-3 ' + (pointed ? 'border-sky-500 bg-white ring-2 ring-sky-300' : 'border-slate-200 bg-slate-50')}>
+                              <p className="text-sm font-black text-slate-900">{index + 1}. {set.label}<span className="ml-2 text-xs font-bold text-slate-600">{set.itemIds.length} question{set.itemIds.length === 1 ? '' : 's'}</span>{pointed && <span className="ml-2 rounded-full bg-sky-800 px-2 py-0.5 text-xs font-black text-white">{pointerLabel}</span>}</p>
+                              {set.purpose && <p className="mt-1 text-sm text-slate-700">{set.purpose}</p>}
+                              {progress.attemptedItemCount > 0 && <p className="mt-1 text-xs font-bold text-slate-700">{progress.attemptedItemCount} of {progress.totalItemCount} practiced · {progress.correctItemCount} correct on the latest try</p>}
+                              {set.needsRepairAction && (pointer.kind === 'retry' && pointed || progress.attemptedItemCount > 0 && progress.correctItemCount < progress.attemptedItemCount) && <p className="mt-1 text-xs text-slate-600"><strong>If it needs repair:</strong> {set.needsRepairAction}</p>}
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <button type="button" disabled={!set.itemIds.length} onClick={() => startStudyPlanSet(route.title + ' · ' + set.label, set.itemIds)} className="rounded-lg bg-sky-800 px-3 py-2 text-xs font-black text-white hover:bg-sky-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-sky-700">{progress.attemptedItemCount > 0 ? 'Retry set' : 'Start set'}</button>
+                                {set.sectionId && route.chapterId && <button type="button" onClick={() => openLibrarySection(route.chapterId, set.sectionId)} className="rounded-lg border border-sky-500 bg-white px-3 py-2 text-xs font-black text-sky-950 focus:ring-2 focus:ring-sky-700">Read the lesson first</button>}
+                              </div>
+                            </li>;
+                          })}</ol> : <p className="mt-3 text-sm text-slate-700">{route.itemIds.length} linked question{route.itemIds.length === 1 ? '' : 's'}</p>}
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <button type="button" disabled={!route.itemIds.length} onClick={() => startStudyPlanSet(route.title, route.itemIds)} className="rounded-xl bg-sky-800 px-4 py-3 text-sm font-black text-white hover:bg-sky-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-sky-700 focus:ring-offset-2">Practice the whole route</button>
+                            {playbook && <button type="button" onClick={() => { setLibraryMode('playbooks'); setLibrarySearch(playbook.title); }} className={'rounded-xl border px-4 py-3 text-sm font-black focus:ring-2 focus:ring-rose-700 ' + (pointer.kind === 'retry' ? 'border-rose-600 bg-rose-100 text-rose-950' : 'border-rose-400 bg-rose-50 text-rose-950')}>{pointer.kind === 'retry' ? 'Open remediation playbook before retrying' : 'Open remediation playbook'}</button>}
+                          </div>
+                        </article>;
+                      })}
+                    </div>
+                  </div>}
+                  {(unitRoutes.length > 0 || ladders.length > 0 || forms.length > 0) && <div className="grid gap-4 md:grid-cols-2">
+                    {unitRoutes.map((route) => <article key={route.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-wide text-slate-700">Unit review</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{route.title}</h5>
+                      <p className="mt-2 flex-1 text-sm text-slate-700">{route.purpose || (route.topicRouteIds.length + ' topic routes · ' + route.itemIds.length + ' linked questions')}</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {route.mixedPracticeItemIds.length > 0 && <button type="button" onClick={() => startStudyPlanSet(route.title + ' · mixed practice', route.mixedPracticeItemIds)} className="rounded-xl bg-slate-800 px-4 py-3 text-sm font-black text-white hover:bg-slate-900 focus:ring-2 focus:ring-slate-700 focus:ring-offset-2">Mixed practice ({route.mixedPracticeItemIds.length})</button>}
+                        <button type="button" disabled={!route.itemIds.length} onClick={() => startStudyPlanSet(route.title, route.itemIds)} className="rounded-xl border border-slate-500 bg-white px-4 py-3 text-sm font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-slate-700">Practice all unit questions ({route.itemIds.length})</button>
+                        {route.chapterId && <button type="button" onClick={() => openLibrarySection(route.chapterId, '')} className="rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-700">Open chapter</button>}
+                      </div>
+                    </article>)}
+                    {ladders.map((ladder) => <article key={ladder.id} className="flex flex-col rounded-2xl border border-violet-300 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-wide text-violet-800">Cumulative ladder {ladder.order || ''}</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{ladder.title}</h5>
+                      <p className="mt-2 flex-1 text-sm text-slate-700">{ladder.purpose}</p>
+                      {ladder.focus.length > 0 && <p className="mt-2 text-xs font-bold text-violet-900">Focus: {ladder.focus.join(' · ')}</p>}
+                      <button type="button" disabled={!ladder.itemIds.length} onClick={() => startStudyPlanSet(ladder.title, ladder.itemIds)} className="mt-4 rounded-xl bg-violet-800 px-4 py-3 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Climb this ladder ({ladder.itemIds.length} questions)</button>
+                    </article>)}
+                    {forms.map((form) => <article key={form.id} className="flex flex-col rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-wide text-amber-800">{form.formType || 'Internal practice form'}</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{form.title}</h5>
+                      <p className="mt-2 flex-1 text-sm text-slate-700">{form.itemIds.length} questions across {form.topicCount} topics and {form.unitCount} units. An internal mixed form, not an official exam form and not timed to official specifications.</p>
+                      <button type="button" disabled={!form.itemIds.length} onClick={() => startStudyPlanSet(form.title, form.itemIds)} className="mt-4 rounded-xl bg-amber-700 px-4 py-3 text-sm font-black text-white hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Start form</button>
+                    </article>)}
+                  </div>}
+                  {!topicRoutes.length && !unitRoutes.length && !ladders.length && !forms.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No study-plan routes match that filter.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'playbooks' && (() => {
+                const query = librarySearch.trim().toLowerCase();
+                const playbooks = studyPlanLayers.playbooks.filter((playbook) => !query || [playbook.title, playbook.familyLabel, playbook.recognitionCue, playbook.description].join(' ').toLowerCase().includes(query));
+                return <section className="space-y-4" aria-labelledby="library-playbooks-title">
+                  <div className="rounded-2xl border border-rose-300 bg-rose-50 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-rose-800">Original internal remediation aid</p>
+                    <h4 id="library-playbooks-title" className="mt-1 text-xl font-black text-slate-900">Misconception playbooks</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-rose-950">Each playbook names an error pattern, gives the repair question, and walks a recognize-repair-practice-retry loop. Use one after a missed set. The loops are self-checks; they do not score written work.</p>
+                    <label className="mt-4 block text-sm font-black text-slate-900">Filter playbooks<input aria-label="Filter misconception playbooks" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-rose-600" placeholder="Try sign, units, representation…" /></label>
+                  </div>
+                  {playbooks.length > 0 ? <div className="grid gap-4 lg:grid-cols-2">
+                    {playbooks.map((playbook) => <article key={playbook.id} className="flex flex-col rounded-2xl border border-rose-300 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-wide text-rose-800">{playbook.familyLabel || 'Remediation playbook'}</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{playbook.title}</h5>
+                      {playbook.description && <p className="mt-2 text-sm leading-relaxed text-slate-700">{playbook.description}</p>}
+                      {playbook.recognitionCue && <p className="mt-2 text-sm text-slate-800"><strong>How to recognize it:</strong> {playbook.recognitionCue}</p>}
+                      {playbook.repairQuestion && <p className="mt-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-bold text-rose-950">Repair question: {playbook.repairQuestion}</p>}
+                      {playbook.steps.length > 0 && <ol className="mt-3 flex-1 space-y-2 pl-5 text-sm text-slate-700" style={{ listStyleType: 'decimal' }}>{playbook.steps.map((step, index) => <li key={index}><span className="font-black text-slate-900">{step.label}.</span> {step.instruction}{step.requiredOutput && <span className="block text-xs text-slate-600">Write down: {step.requiredOutput}</span>}</li>)}</ol>}
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <button type="button" disabled={!playbook.itemIds.length} onClick={() => startStudyPlanSet(playbook.title, playbook.itemIds)} className="rounded-xl bg-rose-800 px-4 py-3 text-sm font-black text-white hover:bg-rose-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Practice this pattern ({playbook.itemIds.length})</button>
+                        {playbook.occurrenceCount > 0 && <span className="text-xs font-bold text-slate-600">Distractor pattern appears {playbook.occurrenceCount.toLocaleString()} times in this bank</span>}
+                      </div>
+                    </article>)}
+                  </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No playbooks match that filter.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'study-sessions' && (() => {
+                const query = librarySearch.trim().toLowerCase();
+                const sessions = studyPlanLayers.sessions.filter((session) => !query || [session.title, session.sessionType, session.purpose].join(' ').toLowerCase().includes(query));
+                const spacedPlans = studyPlanLayers.spacedPlans.filter((plan) => !query || plan.title.toLowerCase().includes(query));
+                const intervalLabel = (hours) => hours <= 0 ? 'Same day' : hours < 48 ? 'After ' + hours + ' hours' : 'After ' + Math.round(hours / 24) + ' days';
+                return <section className="space-y-4" aria-labelledby="library-study-sessions-title">
+                  <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-emerald-800">Original internal planning aid</p>
+                    <h4 id="library-study-sessions-title" className="mt-1 text-xl font-black text-slate-900">Study sessions and spaced review</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-emerald-950">Session plans are bounded study blocks with suggested minutes per step. Spaced-review plans suggest when to return to a topic. Both are flexible suggestions you can pause, reorder, or skip; they are not deadlines and do not predict readiness.</p>
+                    <label className="mt-4 block text-sm font-black text-slate-900">Filter sessions and topics<input aria-label="Filter study sessions" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-emerald-600" placeholder="Try unit launch, ladder, 3.2…" /></label>
+                  </div>
+                  {sessions.length > 0 && <div className="grid gap-4 md:grid-cols-2">
+                    {sessions.map((session) => <article key={session.id} className="flex flex-col rounded-2xl border border-emerald-300 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-wide text-emerald-800">{session.sessionType || 'Study session'}{session.durationMinutes ? ' · about ' + session.durationMinutes + ' minutes' : ''}</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{session.title}</h5>
+                      <p className="mt-2 text-sm leading-relaxed text-slate-700">{session.purpose}</p>
+                      {session.steps.length > 0 && <ol className="mt-3 flex-1 space-y-2 pl-5 text-sm text-slate-700" style={{ listStyleType: 'decimal' }}>{session.steps.map((step, index) => <li key={index}><span className="font-black text-slate-900">{step.label}</span>{step.durationMinutes ? <span className="text-xs font-bold text-slate-600"> · {step.durationMinutes} min</span> : null}<span className="block">{step.action}</span></li>)}</ol>}
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button type="button" disabled={!session.itemIds.length} onClick={() => startStudyPlanSet(session.title, session.itemIds)} className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-black text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start session practice ({session.itemIds.length})</button>
+                        {session.chapterId && <button type="button" onClick={() => openLibrarySection(session.chapterId, '')} className="rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-700">Open chapter</button>}
+                      </div>
+                    </article>)}
+                  </div>}
+                  {spacedPlans.length > 0 && <details className="rounded-2xl border border-emerald-300 bg-white p-5 shadow-sm" open={Boolean(query)}>
+                    <summary className="cursor-pointer text-lg font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">Spaced-review cadence by topic ({spacedPlans.length})</summary>
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="w-full text-left text-sm">
+                        <thead><tr className="border-b border-slate-300 text-xs font-black uppercase tracking-wide text-slate-700"><th scope="col" className="py-2 pr-3">Topic</th>{(spacedPlans[0].stages || []).map((stage, index) => <th key={index} scope="col" className="py-2 pr-3">{stage.label}<span className="block text-[11px] font-bold normal-case text-slate-600">{intervalLabel(stage.intervalHours)}</span></th>)}<th scope="col" className="py-2">Route</th></tr></thead>
+                        <tbody>{spacedPlans.map((plan) => {
+                          const route = studyPlanLayers.topicRoutes.find((entry) => entry.id === plan.diagnosticRouteId);
+                          const lastPracticed = route ? testPrepFoundationalDocumentRouteProgress(packAttempts, route).latestCompletedAt : 0;
+                          return <tr key={plan.id} className="border-b border-slate-200 align-top"><th scope="row" className="py-2 pr-3 font-black text-slate-900">{plan.title}{route && <span className="block text-[11px] font-bold text-slate-600">{testPrepStudyPlanAgoLabel(lastPracticed, Date.now())}</span>}</th>{plan.stages.map((stage, index) => <td key={index} className="py-2 pr-3 text-slate-700">{stage.action}</td>)}<td className="py-2">{plan.diagnosticRouteId && <button type="button" onClick={() => { setLibraryMode('study-plan'); setLibrarySearch(route ? route.title : plan.title); }} className="rounded-lg border border-sky-500 bg-sky-50 px-2 py-1 text-xs font-black text-sky-950 focus:ring-2 focus:ring-sky-700">Open route</button>}</td></tr>;
+                        })}</tbody>
+                      </table>
+                    </div>
+                  </details>}
+                  {!sessions.length && !spacedPlans.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No sessions or spaced-review plans match that filter.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'sources' && (() => {
+                const sources = studyPlanLayers.sources;
+                return <section className="space-y-4" aria-labelledby="library-sources-title">
+                  <div className="rounded-2xl border border-slate-300 bg-slate-100 p-5">
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-700">Provenance</p>
+                    <h4 id="library-sources-title" className="mt-1 text-xl font-black text-slate-900">Public sources this pack was checked against</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-800">These are the public frameworks and references used to verify blueprint coverage and lesson content. All practice items and lessons are original; no official questions or copyrighted text are reproduced. Listing a source is not an endorsement by its publisher.</p>
+                  </div>
+                  <ul className="grid gap-4 md:grid-cols-2">
+                    {sources.map((source) => <li key={source.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-wide text-slate-700">{source.sourceType || 'Source'}{source.organization ? ' · ' + source.organization : ''}</p>
+                      <h5 className="mt-1 text-lg font-black text-slate-900">{source.title}</h5>
+                      {source.credibility && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{source.credibility}</p>}
+                      <p className="mt-3 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-600">{source.reviewedAt && <span>Reviewed {source.reviewedAt}</span>}{source.url && <a href={source.url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">Open source (new tab)</a>}</p>
+                    </li>)}
+                  </ul>
                 </section>;
               })()}
 

@@ -4,8 +4,12 @@ import { readFileSync } from 'node:fs';
 const CANONICAL = 'stem_lab/stem_tool_raptorhunt.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js';
 
+// 3.26 MB per read; every gate below calls this. Read each file once so the
+// shared worker does not spend its budget on repeat OneDrive I/O.
+const sourceCache = new Map();
 function source(file = CANONICAL) {
-  return readFileSync(file, 'utf8');
+  if (!sourceCache.has(file)) sourceCache.set(file, readFileSync(file, 'utf8'));
+  return sourceCache.get(file);
 }
 
 function relativeLuminance(hex) {
@@ -130,6 +134,78 @@ describe('Raptor Hunt contrast regressions', () => {
     ['amber', 'cyan', 'emerald', 'teal', 'lime', 'purple', 'indigo', 'blue', 'rose'].forEach((color) => {
       expect(text).toContain(`from-${color}-700 to-${color}-800 text-white shadow`);
       expect(text).toContain(`border-${color}-400 hover:border-${color}-300`);
+    });
+  });
+
+  it('keeps the guided-mode key chips readable over any sky the scene can render', () => {
+    const text = source();
+
+    // The chips float over the WebGL canvas, so their translucent panel composites
+    // against rendered pixels, not against any CSS ancestor. Worst case is a white
+    // sky; a night ground is the easy end. Measured in a browser at 12.13:1 and
+    // 18.24:1 respectively, so this gate protects a real margin.
+    const chipRule = text.match(/\.rh-flight-key\{[^}]*\}/);
+    expect(chipRule).not.toBeNull();
+    const panel = chipRule[0].match(/background:rgba\((\d+),(\d+),(\d+),([.\d]+)\)/);
+    expect(panel).not.toBeNull();
+
+    const layer = {
+      r: Number(panel[1]), g: Number(panel[2]), b: Number(panel[3]), a: Number(panel[4]),
+    };
+    const composite = (base) => {
+      const channels = [layer.r, layer.g, layer.b].map((channel, index) => (
+        (channel * layer.a) + (base[index] * (1 - layer.a))
+      ));
+      return '#' + channels.map((c) => Math.round(c).toString(16).padStart(2, '0')).join('');
+    };
+    const overWhite = composite([255, 255, 255]);
+    const overBlack = composite([0, 0, 0]);
+
+    // Chip label, the amber primary variant, and the key cap. All are under 18.66px
+    // bold, so every one needs the 4.5:1 small-text ratio, not 3:1.
+    const chipText = chipRule[0].match(/color:(#[0-9a-f]{6})/)[1];
+    const primaryText = text.match(/\.rh-flight-key\[data-primary="true"\]\{[^}]*color:(#[0-9a-f]{6})/)[1];
+    [chipText, primaryText].forEach((foreground) => {
+      expect(contrast(foreground, overWhite)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(foreground, overBlack)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    // The key cap paints its own opaque ground, so it does not depend on the sky.
+    // relativeLuminance() slices two characters per channel, so #fff must be expanded
+    // first or it silently yields NaN and the assertion passes nothing.
+    const expand = (hex) => (hex.length === 4
+      ? '#' + hex.slice(1).split('').map((channel) => channel + channel).join('')
+      : hex);
+    const cap = text.match(/\.rh-flight-key kbd\{[^}]*\}/)[0];
+    expect(contrast(expand(cap.match(/color:(#[0-9a-f]{3,6})/)[1]), cap.match(/background:(#[0-9a-f]{6})/)[1]))
+      .toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('rings a cued control without relying on an opacity animation', () => {
+    const text = source();
+    // A pulse would fight reduced motion; the cue is a static ring instead.
+    const cueRule = text.match(/\.rh-flight-btn\[data-raptor-cue="primary"\]\{[^}]*\}/);
+    expect(cueRule).not.toBeNull();
+    expect(cueRule[0]).toContain('box-shadow');
+    expect(cueRule[0]).not.toContain('animation');
+    expect(cueRule[0]).not.toContain('opacity');
+
+    // Non-text UI boundaries need 3:1 against what they sit on (the button face).
+    const buttonFace = text.match(/\.rh-flight-btn\{[^}]*background:(#[0-9a-f]{6})/)[1];
+    ['primary', 'secondary'].forEach((state) => {
+      const rule = text.match(new RegExp('\\.rh-flight-btn\\[data-raptor-cue="' + state + '"\\]\\{[^}]*\\}'))[0];
+      const border = rule.match(/border-color:(#[0-9a-f]{6}|rgba\([^)]+\))/)[1];
+      const hex = border.startsWith('#')
+        ? border
+        : (() => {
+          const parts = border.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([.\d]+)\)/);
+          const alpha = Number(parts[4]);
+          const base = [23, 32, 51]; // #172033, the button face the ring sits on
+          return '#' + [1, 2, 3].map((index) => Math.round(
+            (Number(parts[index]) * alpha) + (base[index - 1] * (1 - alpha)),
+          ).toString(16).padStart(2, '0')).join('');
+        })();
+      expect(contrast(hex, buttonFace)).toBeGreaterThanOrEqual(3);
     });
   });
 

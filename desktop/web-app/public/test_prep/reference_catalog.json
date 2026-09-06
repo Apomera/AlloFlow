@@ -83,11 +83,60 @@
     "credibility": "apastyle.apa.org is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
     "metadataSource": "url-derived-reviewed-fallback"
   },
+  "https://apcentral.collegeboard.org/courses/ap-calculus-ab": {
+    "title": "AP Calculus AB Course Overview",
+    "organization": "College Board",
+    "summary": "This official course page gives the current public overview of AP Calculus AB, including course content, prerequisites, and the public resources available to students and teachers.",
+    "credibility": "College Board publishes and maintains this course page, so it is the primary public source for the current AP Calculus AB description. Course details change between academic years, so readers should confirm the year that applies to them.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/courses/ap-calculus-ab/exam": {
+    "title": "AP Calculus AB Exam",
+    "organization": "College Board",
+    "summary": "This official exam page describes the current AP Calculus AB exam format, section timing, question types, and scoring proportions, including the calculator and no-calculator sections.",
+    "credibility": "College Board owns and administers the AP Calculus AB exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/courses/ap-chemistry/exam": {
+    "title": "AP Chemistry Exam",
+    "organization": "College Board",
+    "summary": "This official exam page describes the current AP Chemistry exam format, section timing, question types, and scoring proportions, including the published formula sheet and calculator policy.",
+    "credibility": "College Board owns and administers the AP Chemistry exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/courses/ap-physics-1/exam": {
+    "title": "AP Physics 1 Exam",
+    "organization": "College Board",
+    "summary": "This official exam page describes the current AP Physics 1 exam format, section timing, question types, and scoring proportions, including the equation sheet and the published exam update.",
+    "credibility": "College Board owns and administers the AP Physics 1 exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.",
+    "metadataSource": "explicit-override"
+  },
   "https://apcentral.collegeboard.org/courses/ap-psychology/exam": {
     "title": "AP Psychology Exam",
     "organization": "College Board",
     "summary": "This official exam page describes the current AP Psychology exam format, section timing, question types, scoring proportions, and public preparation resources for students and educators.",
     "credibility": "College Board owns and administers the AP Psychology exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/courses/ap-statistics": {
+    "title": "AP Statistics Course Overview",
+    "organization": "College Board",
+    "summary": "This official course page gives the current public overview of AP Statistics, including course content, prerequisites, and the public resources available to students and teachers.",
+    "credibility": "College Board publishes and maintains this course page, so it is the primary public source for the current AP Statistics description. Course details change between academic years, so readers should confirm the year that applies to them.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/courses/ap-statistics/exam": {
+    "title": "AP Statistics Exam",
+    "organization": "College Board",
+    "summary": "This official exam page describes the current AP Statistics exam format, section timing, question types, and scoring proportions, including the published formula sheet and statistical tables.",
+    "credibility": "College Board owns and administers the AP Statistics exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics": {
+    "title": "AP U.S. Government and Politics Course Overview",
+    "organization": "College Board",
+    "summary": "This official course page gives the current public overview of AP U.S. Government and Politics, including course content, prerequisites, and the public resources available to students and teachers.",
+    "credibility": "College Board publishes and maintains this course page, so it is the primary public source for the current AP U.S. Government and Politics description. Course details change between academic years, so readers should confirm the year that applies to them.",
     "metadataSource": "explicit-override"
   },
   "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf": {
@@ -96,6 +145,27 @@
     "summary": "Current public course framework, science practices, unit descriptions, exam information, and content boundaries.",
     "credibility": "Current public course framework, science practices, unit descriptions, exam information, and content boundaries.",
     "metadataSource": "pack-authored"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf": {
+    "title": "AP Calculus AB and BC Course and Exam Description",
+    "organization": "College Board",
+    "summary": "This official course and exam description presents the current AP Calculus AB framework, including its units, topics, learning objectives, course skills or science practices, and the published exam design. It covers both Calculus AB and Calculus BC, so readers must confirm which units and topics apply to the AB course.",
+    "credibility": "College Board owns and administers the AP Calculus AB program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf": {
+    "title": "AP Chemistry Course and Exam Description",
+    "organization": "College Board",
+    "summary": "This official course and exam description presents the current AP Chemistry framework, including its units, topics, learning objectives, course skills or science practices, and the published exam design.",
+    "credibility": "College Board owns and administers the AP Chemistry program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf": {
+    "title": "AP Physics 1: Algebra-Based Course and Exam Description",
+    "organization": "College Board",
+    "summary": "This official course and exam description presents the current AP Physics 1 framework, including its units, topics, learning objectives, course skills or science practices, and the published exam design.",
+    "credibility": "College Board owns and administers the AP Physics 1 program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.",
+    "metadataSource": "explicit-override"
   },
   "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf": {
     "title": "AP Psychology Course and Exam Description Clarifications and Corrections",
@@ -109,6 +179,27 @@
     "organization": "College Board",
     "summary": "This official course and exam description presents the current AP Psychology framework, including units, topics, learning objectives, science practices, course skills, and the published exam design.",
     "credibility": "College Board owns and administers the AP Psychology program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852": {
+    "title": "AP Statistics Course and Exam Description",
+    "organization": "College Board",
+    "summary": "This official course and exam description presents the current AP Statistics framework, including its units, topics, learning objectives, course skills or science practices, and the published exam design.",
+    "credibility": "College Board owns and administers the AP Statistics program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf": {
+    "title": "AP U.S. Government and Politics Course Framework Clarifications, Effective Fall 2026",
+    "organization": "College Board",
+    "summary": "This official companion document records the clarifications to the AP U.S. Government and Politics course framework that take effect in fall 2026, including changes to the required foundational documents, and should be read alongside the current course and exam description.",
+    "credibility": "College Board publishes the AP U.S. Government and Politics framework and its clarifications, making this the primary source for official changes. Readers should confirm they are using the version that applies to their exam year.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf": {
+    "title": "AP U.S. Government and Politics Course and Exam Description",
+    "organization": "College Board",
+    "summary": "This official course and exam description presents the current AP U.S. Government and Politics framework, including its units, topics, learning objectives, course skills or science practices, and the published exam design.",
+    "credibility": "College Board owns and administers the AP U.S. Government and Politics program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.",
     "metadataSource": "explicit-override"
   },
   "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description-clarifications.pdf": {
@@ -145,6 +236,20 @@
     "summary": "Current public overview of course units, prerequisites, exam weighting, and available reference resources.",
     "credibility": "Current public overview of course units, prerequisites, exam weighting, and available reference resources.",
     "metadataSource": "pack-authored"
+  },
+  "https://apstudents.collegeboard.org/courses/ap-chemistry": {
+    "title": "AP Chemistry Course Overview",
+    "organization": "College Board",
+    "summary": "This official course page gives the current public overview of AP Chemistry, including course content, prerequisites, and the public resources available to students and teachers.",
+    "credibility": "College Board publishes and maintains this course page, so it is the primary public source for the current AP Chemistry description. Course details change between academic years, so readers should confirm the year that applies to them.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based": {
+    "title": "AP Physics 1 Course Overview",
+    "organization": "College Board",
+    "summary": "This official course page gives the current public overview of AP Physics 1, including course content, prerequisites, and the public resources available to students and teachers.",
+    "credibility": "College Board publishes and maintains this course page, so it is the primary public source for the current AP Physics 1 description. Course details change between academic years, so readers should confirm the year that applies to them.",
+    "metadataSource": "explicit-override"
   },
   "https://apstudents.collegeboard.org/courses/ap-united-states-history/assessment": {
     "title": "AP U.S. History Exam",
@@ -4210,12 +4315,47 @@
     "credibility": "OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed handbook provides transparent instructional guidance and examples, with corrections supported through OpenStax editorial and errata processes.",
     "metadataSource": "explicit-override"
   },
+  "https://openstax.org/details/books/american-government-3e": {
+    "title": "American Government 3e",
+    "organization": "OpenStax, Rice University",
+    "summary": "This peer-reviewed open textbook covers constitutional foundations, institutions, civil liberties, and participation and is used as an independent factual cross-check for AP U.S. Government and Politics content rather than as a source of exam questions.",
+    "credibility": "OpenStax textbooks are peer reviewed and openly licensed by Rice University, which makes them a citable secondary source for subject content. They are not published by College Board and do not define the AP framework or exam.",
+    "metadataSource": "explicit-override"
+  },
   "https://openstax.org/details/books/biology-2e": {
     "title": "Biology 2e Open Textbook",
     "organization": "OpenStax, Rice University",
     "summary": "Open college-level biology reference used for factual cross-checking; no prose, figures, or assessment content are reproduced.",
     "credibility": "Open college-level biology reference used for factual cross-checking; no prose, figures, or assessment content are reproduced.",
     "metadataSource": "pack-authored"
+  },
+  "https://openstax.org/details/books/calculus-volume-1": {
+    "title": "Calculus Volume 1",
+    "organization": "OpenStax, Rice University",
+    "summary": "This peer-reviewed open textbook covers limits, derivatives, and integrals with worked examples and is used as an independent factual cross-check for AP Calculus AB content rather than as a source of exam questions.",
+    "credibility": "OpenStax textbooks are peer reviewed and openly licensed by Rice University, which makes them a citable secondary source for subject content. They are not published by College Board and do not define the AP framework or exam.",
+    "metadataSource": "explicit-override"
+  },
+  "https://openstax.org/details/books/chemistry-2e": {
+    "title": "Chemistry 2e",
+    "organization": "OpenStax, Rice University",
+    "summary": "This peer-reviewed open textbook covers atomic structure, bonding, thermodynamics, kinetics, and equilibrium and is used as an independent factual cross-check for AP Chemistry content rather than as a source of exam questions.",
+    "credibility": "OpenStax textbooks are peer reviewed and openly licensed by Rice University, which makes them a citable secondary source for subject content. They are not published by College Board and do not define the AP framework or exam.",
+    "metadataSource": "explicit-override"
+  },
+  "https://openstax.org/details/books/college-physics-2e": {
+    "title": "College Physics 2e",
+    "organization": "OpenStax, Rice University",
+    "summary": "This peer-reviewed open textbook covers algebra-based kinematics, dynamics, energy, momentum, and rotation and is used as an independent factual cross-check for AP Physics 1 content rather than as a source of exam questions.",
+    "credibility": "OpenStax textbooks are peer reviewed and openly licensed by Rice University, which makes them a citable secondary source for subject content. They are not published by College Board and do not define the AP framework or exam.",
+    "metadataSource": "explicit-override"
+  },
+  "https://openstax.org/details/books/introductory-statistics-2e": {
+    "title": "Introductory Statistics 2e",
+    "organization": "OpenStax, Rice University",
+    "summary": "This peer-reviewed open textbook covers sampling, distributions, inference, and regression and is used as an independent factual cross-check for AP Statistics content rather than as a source of exam questions.",
+    "credibility": "OpenStax textbooks are peer reviewed and openly licensed by Rice University, which makes them a citable secondary source for subject content. They are not published by College Board and do not define the AP framework or exam.",
+    "metadataSource": "explicit-override"
   },
   "https://openstax.org/details/books/prealgebra-2e/": {
     "title": "Prealgebra 2e",

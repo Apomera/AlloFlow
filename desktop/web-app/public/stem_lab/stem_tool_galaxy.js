@@ -376,7 +376,7 @@ if (!window._galaxyHasLoadedOnce) {
 
           var starCount = d.starCount || 25000;
 
-          var cosmicAge = d.cosmicAge !== undefined ? d.cosmicAge : 10;
+          var cosmicAge = Number.isFinite(d.cosmicAge) ? Math.min(13.8, Math.max(0.1, d.cosmicAge)) : 10;
 
           var showLifecycle = d.showLifecycle || false;
 
@@ -484,17 +484,17 @@ if (!window._galaxyHasLoadedOnce) {
           // learner. Worth correcting if this field is ever wired up.
           var STAR_TYPES = [
 
-            { id: 'O', label: t('stem.galaxy.otype'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: __alloT('stem.galaxy.otype_desc', 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.'), whyItMatters: __alloT('stem.galaxy.otype_why', 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.'), luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
+            { id: 'O', label: t('stem.galaxy.otype'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: __alloT('stem.galaxy.otype_desc', 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.'), whyItMatters: __alloT('stem.galaxy.otype_why', 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.'), luminosity: '30,000-1,000,000x Sun', mass: '16.2-150 M\u2609', lifetime: '1-10 Myr' },
 
-            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Regulus', desc: __alloT('stem.galaxy.btype_desc', 'Blue-white giants. Often found in young OB associations and spiral arms.'), whyItMatters: __alloT('stem.galaxy.btype_why', 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.'), luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
+            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Regulus', desc: __alloT('stem.galaxy.btype_desc', 'Blue-white giants. Often found in young OB associations and spiral arms.'), whyItMatters: __alloT('stem.galaxy.btype_why', 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.'), luminosity: '25-30,000x Sun', mass: '2.36-16.2 M\u2609', lifetime: '10-100 Myr' },
 
-            { id: 'A', label: t('stem.galaxy.atype'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: __alloT('stem.galaxy.atype_desc', 'White stars with strong hydrogen absorption lines. Many are binary systems.'), whyItMatters: __alloT('stem.galaxy.atype_why', 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.'), luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
+            { id: 'A', label: t('stem.galaxy.atype'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: __alloT('stem.galaxy.atype_desc', 'White stars with strong hydrogen absorption lines. Many are binary systems.'), whyItMatters: __alloT('stem.galaxy.atype_why', 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.'), luminosity: '5-25x Sun', mass: '1.62-2.36 M\u2609', lifetime: '1-2 Gyr' },
 
-            { id: 'F', label: t('stem.galaxy.ftype'), color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: __alloT('stem.galaxy.ftype_desc', 'Yellow-white. Transition zone where convection begins in the outer layer.'), whyItMatters: __alloT('stem.galaxy.ftype_why', 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.'), luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
+            { id: 'F', label: t('stem.galaxy.ftype'), color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: __alloT('stem.galaxy.ftype_desc', 'Yellow-white. Transition zone where convection begins in the outer layer.'), whyItMatters: __alloT('stem.galaxy.ftype_why', 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.'), luminosity: '1.5-5x Sun', mass: '1.10-1.62 M\u2609', lifetime: '2-4 Gyr' },
 
-            { id: 'G', label: t('stem.galaxy.gtype'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: __alloT('stem.galaxy.gtype_desc', 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.'), whyItMatters: __alloT('stem.galaxy.gtype_why', 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.'), luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
+            { id: 'G', label: t('stem.galaxy.gtype'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: __alloT('stem.galaxy.gtype_desc', 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.'), whyItMatters: __alloT('stem.galaxy.gtype_why', 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.'), luminosity: '0.6-1.5x Sun', mass: '0.87-1.10 M\u2609', lifetime: '10 Gyr' },
 
-            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: '61 Cygni A', desc: __alloT('stem.galaxy.ktype_desc', 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.'), whyItMatters: __alloT('stem.galaxy.ktype_why', 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.'), luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
+            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: '61 Cygni A', desc: __alloT('stem.galaxy.ktype_desc', 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.'), whyItMatters: __alloT('stem.galaxy.ktype_why', 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.'), luminosity: '0.08-0.6x Sun', mass: '0.45-0.87 M\u2609', lifetime: '15-30 Gyr' },
 
             { id: 'M', label: t('stem.galaxy.mtype'), color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: __alloT('stem.galaxy.mtype_desc', 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).'), whyItMatters: __alloT('stem.galaxy.mtype_why', 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!'), luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
 
@@ -505,7 +505,7 @@ if (!window._galaxyHasLoadedOnce) {
 
           function spectralTypeForMass(mass) {
             if (mass < HYDROGEN_FUSION_LIMIT) return null;
-            return mass < M_DWARF_LIMIT ? 'M' : mass < 0.8 ? 'K' : mass < 1.04 ? 'G' : mass < 1.4 ? 'F' : mass < 2.1 ? 'A' : mass < 16 ? 'B' : 'O';
+            return mass < M_DWARF_LIMIT ? 'M' : mass < CLASS_MAX_K ? 'K' : mass < CLASS_MAX_G ? 'G' : mass < CLASS_MAX_F ? 'F' : mass < CLASS_MAX_A ? 'A' : mass < CLASS_MAX_B ? 'B' : 'O';
           }
 
           // A star's colour IS the lesson here, so it must stay on screen — but half
@@ -582,43 +582,96 @@ if (!window._galaxyHasLoadedOnce) {
           // Main-sequence radius in solar radii. Piecewise because the mass-radius
           // relation steepens either side of ~1 M☉. Shared by the Star Life canvas
           // read-out and the Size Comparison panel so the two cannot disagree.
-          function mainSequenceRadius(mass) {
-            var m = Math.max(0.01, mass);
-            return m < 0.8 ? Math.pow(m, 0.8) : m < 2 ? Math.pow(m, 0.57) : Math.pow(m, 0.78);
+          // ── Zero-age main-sequence table ──────────────────────────────────
+          // Temperature, luminosity and radius came from three unrelated
+          // approximations - buckets for T, M^3.5 for L, a piecewise power law for
+          // R - so the panel that prints all three together broke the relation that
+          // ties them, L = R^2 (T/Tsun)^4. At 7 solar masses it read T 20,000 K,
+          // L 907 Lsun, R 4.56 Rsun, where that radius and temperature imply 2,989
+          // Lsun: a 3.3x contradiction on one line, in a tool that teaches stars.
+          // One table now feeds all three. Interpolating in log space makes the
+          // relation hold EXACTLY (residual under 1e-14 across 0.03-50 Msun),
+          // because log L = 2 log R + 4 log(T/Tsun) is linear in the logs and
+          // log-linear interpolation preserves linear relations. Measured against
+          // a reference table, typical error falls from 57% (L), 31% (R) and 15%
+          // (T) to zero at the nodes.
+          var ZAMS_TABLE = [
+            [0.10, 2800, 0.0008], [0.20, 3200, 0.0056], [0.40, 3600, 0.024], [0.60, 4000, 0.077],
+            [0.80, 4900, 0.36], [1.00, 5778, 1.00], [1.25, 6300, 2.4], [1.50, 7000, 5.0],
+            [2.00, 9100, 16], [3.00, 11500, 80], [5.00, 16400, 550], [7.00, 19500, 1600],
+            [10.0, 24000, 5000], [15.0, 29000, 20000], [20.0, 33000, 45000], [30.0, 38000, 120000],
+            [40.0, 42000, 240000], [50.0, 44000, 350000]
+          ];
+          var ZAMS_NODES = ZAMS_TABLE.map(function (row) {
+            // Radius is solved from temperature and luminosity, so the nodes obey
+            // Stefan-Boltzmann before anything is interpolated between them.
+            return { lm: Math.log(row[0]), lt: Math.log(row[1]), ll: Math.log(row[2]),
+                     lr: 0.5 * Math.log(row[2]) + 2 * Math.log(5778 / row[1]) };
+          });
+          function zamsInterp(mass, key) {
+            var lm = Math.log(Math.max(0.02, mass)), i = 0;
+            while (i < ZAMS_NODES.length - 2 && ZAMS_NODES[i + 1].lm < lm) i++;
+            var a = ZAMS_NODES[i], b = ZAMS_NODES[i + 1];
+            return Math.exp(a[key] + (b[key] - a[key]) * ((lm - a.lm) / (b.lm - a.lm)));
+          }
+          function mainSequenceTemp(mass) { return zamsInterp(mass, 'lt'); }
+          function mainSequenceLuminosity(mass) { return zamsInterp(mass, 'll'); }
+          function mainSequenceRadius(mass) { return zamsInterp(mass, 'lr'); }
+
+
+          // Spectral class is DEFINED by temperature, so its mass boundaries have to be
+          // the masses at which the table above crosses 5200 / 6000 / 7500 / 10000 /
+          // 30000 K - solved from it, not picked independently. With the old values a
+          // 1.5-solar-mass star was labelled "A-type White" beside a displayed 7,000 K,
+          // which is an F star. (M_DWARF_LIMIT already sits within 0.006 of the 3700 K
+          // M/K crossing, so it serves as that boundary unchanged.)
+          var CLASS_MAX_K = 0.87, CLASS_MAX_G = 1.10, CLASS_MAX_F = 1.62, CLASS_MAX_A = 2.36, CLASS_MAX_B = 16.2;
+
+          // neb.type is compared (Dark, Emission) as well as shown, so it stays a machine
+          // value and the label is looked up only where it is displayed.
+          var NEBULA_TYPE_LABELS = {
+            'Emission': function () { return __alloT('stem.galaxy.nebtype_emission', 'Emission'); },
+            'Planetary': function () { return __alloT('stem.galaxy.nebtype_planetary', 'Planetary'); },
+            'Dark': function () { return __alloT('stem.galaxy.nebtype_dark', 'Dark'); },
+            'Supernova Remnant': function () { return __alloT('stem.galaxy.label_supernova_remnant', 'Supernova Remnant'); }
+          };
+          function nebulaTypeLabel(type) {
+            var make = NEBULA_TYPE_LABELS[type];
+            return make ? make() : (type || __alloT('stem.galaxy.inspect_nebula_type_fallback', 'Nebula'));
           }
 
           function lifecycleMassCategory(mass) {
-            if (mass < HYDROGEN_FUSION_LIMIT) return 'Brown dwarf';
-            if (mass < M_DWARF_LIMIT) return 'Red dwarf';
-            if (mass < 0.8) return 'Orange K-type star';
-            if (mass < 1.04) return 'Sun-like G-type star';
-            if (mass < 1.4) return 'Yellow-white F-type star';
-            if (mass < 2.1) return 'White A-type star';
-            if (mass < 8) return 'Hot B-type star';
-            if (mass < 25) return 'Massive star';
-            return 'Very massive O-type star';
+            if (mass < HYDROGEN_FUSION_LIMIT) return __alloT('stem.galaxy.masscat_brown_dwarf_plain', 'Brown dwarf');
+            if (mass < M_DWARF_LIMIT) return __alloT('stem.galaxy.masscat_red_dwarf_plain', 'Red dwarf');
+            if (mass < CLASS_MAX_K) return __alloT('stem.galaxy.masscat_orange_k', 'Orange K-type star');
+            if (mass < CLASS_MAX_G) return __alloT('stem.galaxy.masscat_sunlike_g', 'Sun-like G-type star');
+            if (mass < CLASS_MAX_F) return __alloT('stem.galaxy.masscat_yellow_f', 'Yellow-white F-type star');
+            if (mass < CLASS_MAX_A) return __alloT('stem.galaxy.masscat_white_a', 'White A-type star');
+            if (mass < 8) return __alloT('stem.galaxy.masscat_hot_b', 'Hot B-type star');
+            if (mass < 25) return __alloT('stem.galaxy.masscat_massive', 'Massive star');
+            return __alloT('stem.galaxy.masscat_very_massive_o', 'Very massive O-type star');
           }
 
           function lifecycleMassBadgeClass(mass) {
             return mass < HYDROGEN_FUSION_LIMIT ? "bg-stone-800 text-stone-300 border border-stone-600" :
               mass < M_DWARF_LIMIT ? "bg-red-900/60 text-red-300 border border-red-700/50" :
-              mass < 0.8 ? "bg-orange-900/60 text-orange-300 border border-orange-600/50" :
-              mass < 1.04 ? "bg-amber-900/60 text-amber-300 border border-amber-600/50" :
-              mass < 2.1 ? "bg-blue-900/60 text-blue-300 border border-blue-600/50" :
+              mass < CLASS_MAX_K ? "bg-orange-900/60 text-orange-300 border border-orange-600/50" :
+              mass < CLASS_MAX_G ? "bg-amber-900/60 text-amber-300 border border-amber-600/50" :
+              mass < CLASS_MAX_A ? "bg-blue-900/60 text-blue-300 border border-blue-600/50" :
               mass < 8 ? "bg-sky-900/60 text-sky-300 border border-sky-600/50" :
               mass < 25 ? "bg-violet-900/60 text-violet-300 border border-violet-600/50" :
               "bg-fuchsia-900/60 text-fuchsia-300 border border-fuchsia-600/50";
           }
 
           function lifecycleMassHint(mass) {
-            if (mass < HYDROGEN_FUSION_LIMIT) return "Below sustained hydrogen fusion";
-            if (mass < M_DWARF_LIMIT) return "Lives for trillions of years";
-            if (mass < 0.8) return "Stable, long-lived main sequence star";
-            if (mass < 1.04) return "Lives roughly 10 billion years";
-            if (mass < 2.1) return "Hotter and shorter-lived than the Sun";
-            if (mass < 8) return "Burns bright for tens to hundreds of millions of years";
-            if (mass < 25) return "Core collapse can leave a neutron star";
-            return "Core collapse can form a black hole";
+            if (mass < HYDROGEN_FUSION_LIMIT) return __alloT('stem.galaxy.masshint_below_fusion', 'Below sustained hydrogen fusion');
+            if (mass < M_DWARF_LIMIT) return __alloT('stem.galaxy.masshint_trillions', 'Lives for trillions of years');
+            if (mass < CLASS_MAX_K) return __alloT('stem.galaxy.masshint_stable', 'Stable, long-lived main sequence star');
+            if (mass < CLASS_MAX_G) return __alloT('stem.galaxy.masshint_ten_billion', 'Lives roughly 10 billion years');
+            if (mass < CLASS_MAX_A) return __alloT('stem.galaxy.masshint_hotter', 'Hotter and shorter-lived than the Sun');
+            if (mass < 8) return __alloT('stem.galaxy.masshint_burns_bright', 'Burns bright for tens to hundreds of millions of years');
+            if (mass < 25) return __alloT('stem.galaxy.masshint_neutron', 'Core collapse can leave a neutron star');
+            return __alloT('stem.galaxy.masshint_black_hole', 'Core collapse can form a black hole');
           }
 
 
@@ -1331,43 +1384,43 @@ if (!window._galaxyHasLoadedOnce) {
 
             { q: __alloT('stem.galaxy.quiz_sun_type', 'What type of star is our Sun?'), a: t('stem.galaxy.gtype'), options: [t('stem.galaxy.otype'), t('stem.galaxy.atype'), t('stem.galaxy.gtype'), t('stem.galaxy.mtype')] },
 
-            { q: __alloT('stem.galaxy.quiz_mw_center', 'What is at the center of the Milky Way?'), a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', t('stem.galaxy.nebula')] },
+            { q: __alloT('stem.galaxy.quiz_mw_center', 'What is at the center of the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_supermassive_black_hole', 'Supermassive black hole'), options: [__alloT('stem.galaxy.quiz_opt_supermassive_black_hole', 'Supermassive black hole'), __alloT('stem.galaxy.quiz_opt_giant_star', 'Giant star'), __alloT('stem.galaxy.quiz_opt_neutron_star', 'Neutron star'), t('stem.galaxy.nebula')] },
 
             { q: __alloT('stem.galaxy.quiz_hottest_type', 'Which star type is the hottest?'), a: t('stem.galaxy.otype'), options: [t('stem.galaxy.mtype'), t('stem.galaxy.gtype'), t('stem.galaxy.atype'), t('stem.galaxy.otype')] },
 
-            { q: __alloT('stem.galaxy.quiz_our_arm', 'Which spiral arm contains our Solar System?'), a: 'Orion Arm', options: [t('stem.galaxy.perseus_arm'), 'Orion Arm', t('stem.galaxy.sagittarius_arm'), 'Norma Arm'] },
+            { q: __alloT('stem.galaxy.quiz_our_arm', 'Which spiral arm contains our Solar System?'), a: __alloT('stem.galaxy.quiz_opt_orion_arm', 'Orion Arm'), options: [t('stem.galaxy.perseus_arm'), __alloT('stem.galaxy.quiz_opt_orion_arm', 'Orion Arm'), t('stem.galaxy.sagittarius_arm'), __alloT('stem.galaxy.quiz_opt_norma_arm', 'Norma Arm')] },
 
             { q: __alloT('stem.galaxy.quiz_mtype_pct', 'What percentage of stars are M-type red dwarfs?'), a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
 
-            { q: __alloT('stem.galaxy.quiz_what_nebula', 'What is a nebula?'), a: 'A cloud of gas and dust', options: ['The burnt-out core of a dead star', 'A cloud of gas and dust', 'A small, distant spiral galaxy', 'A black hole'] },
+            { q: __alloT('stem.galaxy.quiz_what_nebula', 'What is a nebula?'), a: __alloT('stem.galaxy.quiz_opt_a_cloud_of_gas_and_dust', 'A cloud of gas and dust'), options: [__alloT('stem.galaxy.quiz_opt_the_burnt_out_core_of_a_dead_star', 'The burnt-out core of a dead star'), __alloT('stem.galaxy.quiz_opt_a_cloud_of_gas_and_dust', 'A cloud of gas and dust'), __alloT('stem.galaxy.quiz_opt_a_small_distant_spiral_galaxy', 'A small, distant spiral galaxy'), __alloT('stem.galaxy.quiz_opt_a_black_hole', 'A black hole')] },
 
-            { q: __alloT('stem.galaxy.quiz_star_count', 'How many stars are in the Milky Way?'), a: '100-400 billion', options: ['100-400 thousand', '10-40 million', '100-400 billion', '1-4 trillion'] },
+            { q: __alloT('stem.galaxy.quiz_star_count', 'How many stars are in the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_100_400_billion', '100-400 billion'), options: [__alloT('stem.galaxy.quiz_opt_100_400_thousand', '100-400 thousand'), __alloT('stem.galaxy.quiz_opt_10_40_million', '10-40 million'), __alloT('stem.galaxy.quiz_opt_100_400_billion', '100-400 billion'), __alloT('stem.galaxy.quiz_opt_1_4_trillion', '1-4 trillion')] },
 
-            { q: __alloT('stem.galaxy.quiz_mw_type', 'What type of galaxy is the Milky Way?'), a: 'Barred spiral', options: [t('stem.galaxy.elliptical'), t('stem.galaxy.irregular'), 'Spiral', 'Barred spiral'] },
+            { q: __alloT('stem.galaxy.quiz_mw_type', 'What type of galaxy is the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_barred_spiral', 'Barred spiral'), options: [t('stem.galaxy.elliptical'), t('stem.galaxy.irregular'), __alloT('stem.galaxy.quiz_opt_spiral', 'Spiral'), __alloT('stem.galaxy.quiz_opt_barred_spiral', 'Barred spiral')] },
 
-            { q: __alloT('stem.galaxy.quiz_closest_star', 'Which star is closest to our Sun?'), a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
+            { q: __alloT('stem.galaxy.quiz_closest_star', 'Which star is closest to our Sun?'), a: __alloT('stem.galaxy.quiz_opt_proxima_centauri', 'Proxima Centauri'), options: [__alloT('stem.galaxy.quiz_opt_sirius', 'Sirius'), __alloT('stem.galaxy.quiz_opt_proxima_centauri', 'Proxima Centauri'), __alloT('stem.galaxy.quiz_opt_alpha_centauri_a', 'Alpha Centauri A'), __alloT('stem.galaxy.quiz_opt_barnards_star', 'Barnards Star')] },
 
-            { q: __alloT('stem.galaxy.quiz_hottest_color', 'What color are the hottest stars?'), a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
+            { q: __alloT('stem.galaxy.quiz_hottest_color', 'What color are the hottest stars?'), a: __alloT('stem.galaxy.quiz_opt_blue', 'Blue'), options: [__alloT('stem.galaxy.quiz_opt_red', 'Red'), __alloT('stem.galaxy.quiz_opt_yellow', 'Yellow'), __alloT('stem.galaxy.quiz_opt_white', 'White'), __alloT('stem.galaxy.quiz_opt_blue', 'Blue')] },
 
-            { q: __alloT('stem.galaxy.quiz_planetary_nebula', 'What is a planetary nebula?'), a: 'Outer layers shed by a dying star', options: ['A nebula where new planets are forming', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
+            { q: __alloT('stem.galaxy.quiz_planetary_nebula', 'What is a planetary nebula?'), a: __alloT('stem.galaxy.quiz_opt_outer_layers_shed_by_a_dying_star', 'Outer layers shed by a dying star'), options: [__alloT('stem.galaxy.quiz_opt_a_nebula_where_new_planets_are_forming', 'A nebula where new planets are forming'), __alloT('stem.galaxy.quiz_opt_outer_layers_shed_by_a_dying_star', 'Outer layers shed by a dying star'), __alloT('stem.galaxy.quiz_opt_gas_around_a_planet', 'Gas around a planet'), __alloT('stem.galaxy.quiz_opt_a_type_of_dark_matter', 'A type of dark matter')] },
 
-            { q: __alloT('stem.galaxy.quiz_mw_width', 'How wide is the Milky Way?'), a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
+            { q: __alloT('stem.galaxy.quiz_mw_width', 'How wide is the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_100_000_light_years', '~100,000 light-years'), options: [__alloT('stem.galaxy.quiz_opt_1_000_light_years', '~1,000 light-years'), __alloT('stem.galaxy.quiz_opt_10_000_light_years', '~10,000 light-years'), __alloT('stem.galaxy.quiz_opt_100_000_light_years', '~100,000 light-years'), __alloT('stem.galaxy.quiz_opt_1_million_light_years', '~1 million light-years')] },
 
-            { q: __alloT('stem.galaxy.quiz_supernova_cause', 'What causes a supernova?'), a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
+            { q: __alloT('stem.galaxy.quiz_supernova_cause', 'What causes a supernova?'), a: __alloT('stem.galaxy.quiz_opt_a_massive_star_exploding', 'A massive star exploding'), options: [__alloT('stem.galaxy.quiz_opt_two_galaxies_colliding', 'Two galaxies colliding'), __alloT('stem.galaxy.quiz_opt_a_massive_star_exploding', 'A massive star exploding'), __alloT('stem.galaxy.quiz_opt_a_nebula_igniting', 'A nebula igniting'), __alloT('stem.galaxy.quiz_opt_a_black_hole_evaporating', 'A black hole evaporating')] },
 
-            { q: __alloT('stem.galaxy.quiz_dark_matter', 'What is dark matter?'), a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'The empty space between galaxies', 'Antimatter left over from the Big Bang'] },
+            { q: __alloT('stem.galaxy.quiz_dark_matter', 'What is dark matter?'), a: __alloT('stem.galaxy.quiz_opt_invisible_matter_detected_by_gravity', 'Invisible matter detected by gravity'), options: [__alloT('stem.galaxy.quiz_opt_black_holes', 'Black holes'), __alloT('stem.galaxy.quiz_opt_invisible_matter_detected_by_gravity', 'Invisible matter detected by gravity'), __alloT('stem.galaxy.quiz_opt_the_empty_space_between_galaxies', 'The empty space between galaxies'), __alloT('stem.galaxy.quiz_opt_antimatter_left_over_from_the_big_bang', 'Antimatter left over from the Big Bang')] },
 
-            { q: __alloT('stem.galaxy.quiz_light_cross', 'How long does it take light to cross the Milky Way?'), a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] },
+            { q: __alloT('stem.galaxy.quiz_light_cross', 'How long does it take light to cross the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_100_000_years', '~100,000 years'), options: [__alloT('stem.galaxy.quiz_opt_1_000_years', '~1,000 years'), __alloT('stem.galaxy.quiz_opt_10_000_years', '~10,000 years'), __alloT('stem.galaxy.quiz_opt_100_000_years', '~100,000 years'), __alloT('stem.galaxy.quiz_opt_1_million_years', '~1 million years')] },
 
-            { q: __alloT('stem.galaxy.quiz_sun_fate', 'What will our Sun become at the end of its life?'), a: 'White dwarf', options: ['Black hole', 'Neutron star', 'White dwarf', 'Red dwarf'] },
+            { q: __alloT('stem.galaxy.quiz_sun_fate', 'What will our Sun become at the end of its life?'), a: __alloT('stem.galaxy.quiz_opt_white_dwarf', 'White dwarf'), options: [__alloT('stem.galaxy.quiz_opt_black_hole', 'Black hole'), __alloT('stem.galaxy.quiz_opt_neutron_star', 'Neutron star'), __alloT('stem.galaxy.quiz_opt_white_dwarf', 'White dwarf'), __alloT('stem.galaxy.quiz_opt_red_dwarf', 'Red dwarf')] },
 
-            { q: __alloT('stem.galaxy.quiz_after_red_giant', 'What stage comes after a Red Giant for a massive star?'), a: 'Supernova', options: ['White dwarf', 'Planetary nebula', 'Supernova', 'Protostar'] },
+            { q: __alloT('stem.galaxy.quiz_after_red_giant', 'What stage comes after a Red Supergiant for a massive star?'), a: __alloT('stem.galaxy.quiz_opt_supernova', 'Supernova'), options: [__alloT('stem.galaxy.quiz_opt_white_dwarf', 'White dwarf'), __alloT('stem.galaxy.quiz_opt_planetary_nebula', 'Planetary nebula'), __alloT('stem.galaxy.quiz_opt_supernova', 'Supernova'), __alloT('stem.galaxy.quiz_opt_protostar', 'Protostar')] },
 
-            { q: __alloT('stem.galaxy.quiz_solar_mass_life', 'How long does a star with 1 solar mass live?'), a: '~10 billion years', options: ['~1 million years', '~100 million years', '~10 billion years', '~1 trillion years'] },
+            { q: __alloT('stem.galaxy.quiz_solar_mass_life', 'How long does a star with 1 solar mass live?'), a: __alloT('stem.galaxy.quiz_opt_10_billion_years', '~10 billion years'), options: [__alloT('stem.galaxy.quiz_opt_1_million_years', '~1 million years'), __alloT('stem.galaxy.quiz_opt_100_million_years', '~100 million years'), __alloT('stem.galaxy.quiz_opt_10_billion_years', '~10 billion years'), __alloT('stem.galaxy.quiz_opt_1_trillion_years', '~1 trillion years')] },
 
-            { q: __alloT('stem.galaxy.quiz_what_protostar', 'What is a protostar?'), a: 'A star forming from a collapsing gas cloud', options: ['A star running out of nuclear fuel', 'A star forming from a collapsing gas cloud', 'The dense core left after a supernova explosion', 'A binary star system'] },
+            { q: __alloT('stem.galaxy.quiz_what_protostar', 'What is a protostar?'), a: __alloT('stem.galaxy.quiz_opt_a_star_forming_from_a_collapsing_gas_cloud', 'A star forming from a collapsing gas cloud'), options: [__alloT('stem.galaxy.quiz_opt_a_star_running_out_of_nuclear_fuel', 'A star running out of nuclear fuel'), __alloT('stem.galaxy.quiz_opt_a_star_forming_from_a_collapsing_gas_cloud', 'A star forming from a collapsing gas cloud'), __alloT('stem.galaxy.quiz_opt_the_dense_core_left_after_a_supernova_explos', 'The dense core left after a supernova explosion'), __alloT('stem.galaxy.quiz_opt_a_binary_star_system', 'A binary star system')] },
 
-            { q: __alloT('stem.galaxy.quiz_final_fate', 'What determines a star\'s final fate?'), a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] }
+            { q: __alloT('stem.galaxy.quiz_final_fate', 'What determines a star\'s final fate?'), a: __alloT('stem.galaxy.quiz_opt_its_mass', 'Its mass'), options: [__alloT('stem.galaxy.quiz_opt_its_color', 'Its color'), __alloT('stem.galaxy.quiz_opt_its_mass', 'Its mass'), __alloT('stem.galaxy.quiz_opt_its_age', 'Its age'), __alloT('stem.galaxy.quiz_opt_its_distance_from_earth', 'Its distance from Earth')] }
 
           ];
 
@@ -1404,17 +1457,17 @@ if (!window._galaxyHasLoadedOnce) {
 
           var SCALE_INFO = [
 
-            { label: t('stem.galaxy.galaxy_diameter'), value: '~100,000 light-years' },
+            { label: t('stem.galaxy.galaxy_diameter'), value: __alloT('stem.galaxy.scale_val_diameter', '~100,000 light-years') },
 
-            { label: t('stem.galaxy.disk_thickness'), value: '~2,000 light-years' },
+            { label: t('stem.galaxy.disk_thickness'), value: __alloT('stem.galaxy.scale_val_thickness', '~2,000 light-years') },
 
-            { label: t('stem.galaxy.central_bulge'), value: '~10,000 light-years' },
+            { label: t('stem.galaxy.central_bulge'), value: __alloT('stem.galaxy.scale_val_bulge', '~10,000 light-years') },
 
-            { label: t('stem.galaxy.sun_to_center'), value: '~26,000 light-years' },
+            { label: t('stem.galaxy.sun_to_center'), value: __alloT('stem.galaxy.scale_val_sun_distance', '~26,000 light-years') },
 
             { label: t('stem.galaxy.stars'), value: '100\u2013400 billion' },
 
-            { label: __alloT('stem.galaxy.scale_age', 'Age'), value: '~13.6 billion years' }
+            { label: __alloT('stem.galaxy.scale_age', 'Age'), value: __alloT('stem.galaxy.scale_val_age', '~13.6 billion years') }
 
           ];
 
@@ -1434,7 +1487,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             { age: 9.2, title: t('stem.galaxy.sun_is_born'), emoji: '\u2600\uFE0F', desc: __alloT('stem.galaxy.sun_is_born_desc', 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.') },
 
-            { age: 10.0, title: t('stem.galaxy.mature_galaxy'), emoji: '\uD83D\uDD2D', desc: __alloT('stem.galaxy.mature_galaxy_desc', 'The Milky Way settles into its current form with 200-400 billion stars. Star formation slows as gas reserves deplete.') },
+            { age: 10.0, title: t('stem.galaxy.mature_galaxy'), emoji: '\uD83D\uDD2D', desc: __alloT('stem.galaxy.mature_galaxy_desc', 'The Milky Way settles into its current form with 100-400 billion stars. Star formation slows as gas reserves deplete.') },
 
             { age: 13.0, title: t('stem.galaxy.present_era'), emoji: '\uD83C\uDF0D', desc: __alloT('stem.galaxy.present_era_desc', 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.') },
 
@@ -1445,16 +1498,42 @@ if (!window._galaxyHasLoadedOnce) {
           // How long each stage lasts. The lifecycle list already carried this table
           // inline; the star canvas needed it too, and a second copy is how the picture
           // and the list start disagreeing.
+          function mainSequenceLifetimeGyr(mass) { return Math.max(0.002, 10 / Math.pow(mass, 2.5)); }
+          function formatLifetimeShort(gyr) {
+            if (gyr >= 1) return __alloT('stem.galaxy.dur_gyr', '~{n} Gyr').replace('{n}', gyr >= 10 ? String(Math.round(gyr)) : gyr.toFixed(1));
+            var myr = gyr * 1000;
+            if (myr >= 1) return __alloT('stem.galaxy.dur_myr', '~{n} Myr').replace('{n}', myr >= 10 ? String(Math.round(myr)) : myr.toFixed(1));
+            return __alloT('stem.galaxy.dur_kyr', '~{n} kyr').replace('{n}', String(Math.round(myr * 1000)));
+          }
+          // The canvas heading and the timeline row directly beneath it name the SAME
+          // stage. They came from different sources: fourteen hardcoded English labels
+          // in the drawing code, and the localised `name` in getStagesForMass for the
+          // list. So a Spanish learner read "Red Giant" above a row saying "Gigante
+          // Roja" - one stage, two languages, on screen together. The emoji lives in
+          // that same table, so the heading now comes entirely from it.
+          function stageDisplayLabel(stageId, mass) {
+            var list = getStagesForMass(mass);
+            for (var i = 0; i < list.length; i++) {
+              if (list[i].id === stageId) return (list[i].emoji || '') + ' ' + list[i].name;
+            }
+            return '';
+          }
+
           function starStageDuration(stageId, mass) {
             if (stageId === 'nebula') return '';
             if (stageId === 'protostar') return '~100K yr';
             if (stageId === 'main_sequence') {
-              return mass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.dur_cools_over_time', 'cools over time')
-                : mass < M_DWARF_LIMIT ? '~Trillions of yr'
-                : mass < 2 ? '~10 Gyr' : mass < 8 ? '~1 Gyr' : mass < 25 ? '~10 Myr' : '~3 Myr';
+              if (mass < HYDROGEN_FUSION_LIMIT) return __alloT('stem.galaxy.dur_cools_over_time', 'cools over time');
+              if (mass < M_DWARF_LIMIT) return __alloT('stem.galaxy.dur_red_dwarf', '~100 Gyr+');
+              return formatLifetimeShort(mainSequenceLifetimeGyr(mass));
             }
-            if (stageId === 'red_giant') return mass < 2 ? '~1 Gyr' : '~100 Myr';
-            if (stageId === 'red_supergiant' || stageId === 'blue_supergiant') return '~1 Myr';
+            // The giant phases run roughly a tenth of the main-sequence lifetime. As
+            // fixed strings they contradicted it as soon as the main sequence became
+            // exact: a 7-solar-mass star showed a 77 Myr main sequence beside a
+            // 100 Myr red giant phase, i.e. a star spending longer dying than living.
+            if (stageId === 'red_giant' || stageId === 'red_supergiant' || stageId === 'blue_supergiant') {
+              return formatLifetimeShort(mainSequenceLifetimeGyr(mass) * 0.1);
+            }
             if (stageId === 'planetary_nebula') return '~10,000 yr';
             if (stageId === 'supernova') return '~Months';
             return __alloT('stem.galaxy.dur_forever', 'Forever');
@@ -1735,9 +1814,9 @@ if (!window._galaxyHasLoadedOnce) {
             canvasEl._galaxyRequestedQuality = initialRuntime.galaxyQuality;
             // Canvas Narration: galaxy init
             if (typeof initialRuntime.canvasNarrate === 'function') initialRuntime.canvasNarrate('galaxy', 'init', {
-              first: 'Galaxy Explorer loaded. A 3-D view of the Milky Way with ' + initialRuntime.starCount.toLocaleString() + ' stars. Drag or use arrow keys to orbit; scroll, pinch, or use plus and minus to zoom. Explore galaxy types, warp to locations, and travel through cosmic time.',
-              repeat: 'Galaxy Explorer ready.',
-              terse: 'Galaxy Explorer ready.'
+              first: __alloT('stem.galaxy.narrate_init_first', 'Galaxy Explorer loaded. A 3-D view of the Milky Way with ') + initialRuntime.starCount.toLocaleString() + __alloT('stem.galaxy.narrate_init_stars', ' stars. Drag or use arrow keys to orbit; scroll, pinch, or use plus and minus to zoom. Explore galaxy types, warp to locations, and travel through cosmic time.'),
+              repeat: __alloT('stem.galaxy.narrate_ready', 'Galaxy Explorer ready.'),
+              terse: __alloT('stem.galaxy.narrate_ready', 'Galaxy Explorer ready.')
             });
 
             var isCurrentCanvas = function () {
@@ -1845,7 +1924,7 @@ if (!window._galaxyHasLoadedOnce) {
               var THREE = window.THREE;
               scene = new THREE.Scene();
               camera = new THREE.PerspectiveCamera(48, 1, 0.01, 100);
-              try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' }); } catch (webglError) { var fallback = document.getElementById('black-hole-status'); if (fallback) fallback.textContent = 'The interactive 3-D view is unavailable because WebGL could not start. The labeled explanation remains available.'; canvas.setAttribute('aria-label', 'Black hole simulation unavailable because WebGL could not start. Read the adjacent explanation for the event horizon, photon ring, accretion disk, and jets.'); return; }
+              try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' }); } catch (webglError) { var fallback = document.getElementById('black-hole-status'); if (fallback) fallback.textContent = __alloT('stem.galaxy.bh_no_webgl', 'The interactive 3-D view is unavailable because WebGL could not start. The labeled explanation remains available.'); canvas.setAttribute('aria-label', __alloT('stem.galaxy.bh_status_no_webgl_runtime', 'Black hole simulation unavailable because WebGL could not start. Read the adjacent explanation for the event horizon, photon ring, accretion disk, and jets.')); return; }
               renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
               renderer.setClearColor(0x010208, 1);
               if ('outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
@@ -1972,8 +2051,8 @@ if (!window._galaxyHasLoadedOnce) {
                 }
                 var trailArray=new Float32Array(96*3), trailGeo=new THREE.BufferGeometry(); trailGeo.setAttribute('position',new THREE.BufferAttribute(trailArray,3)); trailGeo.setDrawRange(0,0);
                 var trail=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:massMode==='stellar'?0xff9b55:0x77bfff,transparent:true,opacity:.52,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(group); scene.add(trail);
-                var item={group:group,trail:trail,trailArray:trailArray,trailCount:0,progress:0,phase:0,launchAngle:.6+Math.random()*.4,lift:.3+Math.random()*.25,strength:massMode==='stellar'?1:.23,label:type==='astronaut'?'Astronaut':type==='star'?'Star':'Probe'}; fallingObjects.push(item);
-                var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width='100%';signalBar.style.backgroundColor='#38bdf8';}if(signalLabel)signalLabel.textContent='Distant received signal: 100%'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=item.label+(paused?' is ready to fall. Start animation to begin.':' released. Watch radial stretching and sideways compression increase toward the horizon.');
+                var item={group:group,trail:trail,trailArray:trailArray,trailCount:0,progress:0,phase:0,launchAngle:.6+Math.random()*.4,lift:.3+Math.random()*.25,strength:massMode==='stellar'?1:.23,label:type==='astronaut'?__alloT('stem.galaxy.bh_name_astronaut', 'Astronaut'):type==='star'?__alloT('stem.galaxy.bh_name_star', 'Star'):__alloT('stem.galaxy.bh_name_probe', 'Probe')}; fallingObjects.push(item);
+                var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width='100%';signalBar.style.backgroundColor='#38bdf8';}if(signalLabel)signalLabel.textContent=__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}','100'); var status=document.getElementById('black-hole-status'); if(status)status.textContent=(paused?__alloT('stem.galaxy.bh_status_ready', '{object} is ready to fall. Start animation to begin.'):__alloT('stem.galaxy.bh_status_released', '{object} released. Watch radial stretching and sideways compression increase toward the horizon.')).replace('{object}',item.label);
               };
               updateFalling=function(dt){
                 for(var fi=fallingObjects.length-1;fi>=0;fi--){
@@ -1982,11 +2061,11 @@ if (!window._galaxyHasLoadedOnce) {
                   var close=Math.max(0,(1.55-radius)/1.18), stretch=1+item.strength*close*close*10; item.group.scale.set(1/Math.sqrt(stretch),1/Math.sqrt(stretch),stretch);
                   var fade=Math.max(0,Math.min(1,(radius-.3)/.34)); item.group.traverse(function(node){if(node.material){node.material.opacity=Math.min(node.material.opacity,fade);}});
                   if(item.trailCount<96 && p>=item.trailCount/95){var ti=item.trailCount++;item.trailArray[ti*3]=item.group.position.x;item.trailArray[ti*3+1]=item.group.position.y;item.trailArray[ti*3+2]=item.group.position.z;item.trail.geometry.attributes.position.needsUpdate=true;item.trail.geometry.setDrawRange(0,item.trailCount);}
-                  if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent=item.label+' | '+(radius>.43?(radius/.43).toFixed(1)+' horizon radii':'inside horizon')+' | tidal stretch '+stretch.toFixed(1)+'x'; var signalRate=Math.max(0,Math.min(1,(radius-.43)/1.6)),signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width=(signalRate*100).toFixed(0)+'%';signalBar.style.backgroundColor=signalRate>.55?'#38bdf8':signalRate>.2?'#f59e0b':'#ef4444';}if(signalLabel)signalLabel.textContent='Distant received signal: '+(signalRate*100).toFixed(0)+'%';}
-                  if(close>.08&&item.phase<1){item.phase=1;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent='Tidal forces are now visibly stretching the '+item.label.toLowerCase()+' radially and squeezing it sideways.';}}
-                  if(radius<.75&&item.phase<2){item.phase=2;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=item.label+' is approaching the event horizon. Its light is fading from the distant observer view.';}}
-                  if(radius<=.43&&item.phase<3){item.phase=3;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=item.label+' crossed the event horizon. No signal from it can return.';}}
-                  if(p>=1){if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent='Drop complete | object no longer visible';var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar)signalBar.style.width='0%';if(signalLabel)signalLabel.textContent='Distant received signal: 0%';}disposeFalling(item);fallingObjects.splice(fi,1);}
+                  if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent=(radius>.43?__alloT('stem.galaxy.bh_readout_outside', '{object} | {radii} horizon radii | tidal stretch {stretch}x').replace('{radii}',(radius/.43).toFixed(1)):__alloT('stem.galaxy.bh_readout_inside', '{object} | inside horizon | tidal stretch {stretch}x')).replace('{object}',item.label).replace('{stretch}',stretch.toFixed(1)); var signalRate=Math.max(0,Math.min(1,(radius-.43)/1.6)),signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width=(signalRate*100).toFixed(0)+'%';signalBar.style.backgroundColor=signalRate>.55?'#38bdf8':signalRate>.2?'#f59e0b':'#ef4444';}if(signalLabel)signalLabel.textContent=__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}',(signalRate*100).toFixed(0));}
+                  if(close>.08&&item.phase<1){item.phase=1;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=__alloT('stem.galaxy.bh_status_stretching', 'Tidal forces are now visibly stretching the {object} radially and squeezing it sideways.').replace('{object}',item.label);}}
+                  if(radius<.75&&item.phase<2){item.phase=2;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=__alloT('stem.galaxy.bh_status_approaching', '{object} is approaching the event horizon. Its light is fading from the distant observer view.').replace('{object}',item.label);}}
+                  if(radius<=.43&&item.phase<3){item.phase=3;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=__alloT('stem.galaxy.bh_status_crossed', '{object} crossed the event horizon. No signal from it can return.').replace('{object}',item.label);}}
+                  if(p>=1){if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent=__alloT('stem.galaxy.bh_readout_complete', 'Drop complete | object no longer visible');var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar)signalBar.style.width='0%';if(signalLabel)signalLabel.textContent=__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}','0');}disposeFalling(item);fallingObjects.splice(fi,1);}
                 }
               }
 
@@ -2014,8 +2093,8 @@ if (!window._galaxyHasLoadedOnce) {
             canvas.addEventListener('pointercancel', onBhUp);
             canvas.addEventListener('wheel', onBhWheel, {passive:false});
             canvas.addEventListener('keydown', onBhKey);
-            function onContextLost(e){ e.preventDefault(); paused=true; var status=document.getElementById('black-hole-status'); if(status)status.textContent='The 3-D graphics context was interrupted. The simulation is paused while it recovers.'; }
-            function onContextRestored(){ paused=canvas.getAttribute('data-paused')==='true'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=paused?'The 3-D view recovered and remains paused.':'The 3-D view recovered and is running.'; }
+            function onContextLost(e){ e.preventDefault(); paused=true; var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_context_lost', 'The 3-D graphics context was interrupted. The simulation is paused while it recovers.'); }
+            function onContextRestored(){ paused=canvas.getAttribute('data-paused')==='true'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=paused?__alloT('stem.galaxy.bh_status_recovered_paused', 'The 3-D view recovered and remains paused.'):__alloT('stem.galaxy.bh_status_recovered_running', 'The 3-D view recovered and is running.'); }
             canvas.addEventListener('webglcontextlost',onContextLost,false);
             canvas.addEventListener('webglcontextrestored',onContextRestored,false);
             function onVisibilityChange(){ pageHidden=!!document.hidden; }
@@ -2072,7 +2151,7 @@ if (!window._galaxyHasLoadedOnce) {
               }
               canvas._blackHoleInit=false;
             };
-            if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(fallback)fallback.textContent='The 3-D library could not load. The labeled black-hole explanation remains available.'; }); }
+            if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(fallback)fallback.textContent=__alloT('stem.galaxy.bh_three_failed', 'The 3-D library could not load. The labeled black-hole explanation remains available.'); }); }
           }, []);
           React.useEffect(function () {
             var activeBlackHoleCanvas = blackHoleCanvasActive.current;
@@ -2729,7 +2808,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var starShaderMat = new THREE.ShaderMaterial({
 
-              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uDetail: { value: Math.min(1.5, detailScale) }, uPointScale: { value: morphologyVisual.pointScale }, uZoomPointScale: { value: 1 }, uZoomOpacity: { value: 1 }, uStellarOpacity: { value: morphologyVisual.stellarOpacity }, uDiffractionScale: { value: morphologyVisual.diffractionScale }, uElliptical: { value: galaxyType === 'elliptical' ? 1 : 0 }, uIrregular: { value: galaxyType === 'irregular' ? 1 : 0 }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 }, uObserve: { value: observeMode === 'infrared' ? 1 : observeMode === 'radio' ? 2 : observeMode === 'xray' ? 3 : observeMode === 'gravity' ? 4 : 0 }, uCameraDir: { value: new THREE.Vector3(0, 1, 0) }, uOpticalDetail: { value: resolvedQuality === 'cinematic' ? 1.35 : resolvedQuality === 'high' ? 1 : 0.78 }, uFocusDepth: { value: 1.2 }, uDepthOfField: { value: 0 } },
+              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uDetail: { value: Math.min(1.5, detailScale) }, uPointScale: { value: morphologyVisual.pointScale }, uZoomPointScale: { value: 1 }, uZoomOpacity: { value: 1 }, uAgeTint: { value: new THREE.Vector3(1, 1, 1) }, uStellarOpacity: { value: morphologyVisual.stellarOpacity }, uDiffractionScale: { value: morphologyVisual.diffractionScale }, uElliptical: { value: galaxyType === 'elliptical' ? 1 : 0 }, uIrregular: { value: galaxyType === 'irregular' ? 1 : 0 }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 }, uObserve: { value: observeMode === 'infrared' ? 1 : observeMode === 'radio' ? 2 : observeMode === 'xray' ? 3 : observeMode === 'gravity' ? 4 : 0 }, uCameraDir: { value: new THREE.Vector3(0, 1, 0) }, uOpticalDetail: { value: resolvedQuality === 'cinematic' ? 1.35 : resolvedQuality === 'high' ? 1 : 0.78 }, uFocusDepth: { value: 1.2 }, uDepthOfField: { value: 0 } },
 
               vertexShader: [
 
@@ -2850,6 +2929,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 'uniform float uOpticalDetail;',
                 'uniform float uStellarOpacity;',
+                'uniform vec3 uAgeTint;',
                 'uniform float uZoomOpacity;',
                 'uniform float uDiffractionScale;',
 
@@ -2948,6 +3028,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  }',
 
+                '  if (uObserve < 0.5) col *= uAgeTint;',
                 '  gl_FragColor = vec4(col, alpha * uStellarOpacity * uZoomOpacity);',
 
                 '}'
@@ -3755,7 +3836,7 @@ if (!window._galaxyHasLoadedOnce) {
               var young = Math.max(0, Math.min(1, (4.5 - age) / 4.5));
               var old = Math.max(0, Math.min(1, (age - 7) / 7));
               var mature = Math.max(0, 1 - Math.abs(age - 7) / 7);
-              return { gas: 0.48 + young * 1.38 + mature * 0.32, birth: 0.28 + young * 2.15 + mature * 0.5, thickness: 0.7 + old * 0.72 + young * 0.16, disturbance: 0.56 + young * 1.18, remnants: 0.58 + young * 0.9 + mature * 0.24, structure: 0.54 + mature * 0.7 + (galaxyType === 'irregular' ? young * 0.62 : 0), normalized: normalizedAge };
+              return { youth: young, warmth: Math.max(0, Math.min(1, (age - 4) / 9)), gas: 0.48 + young * 1.38 + mature * 0.32, birth: 0.28 + young * 2.15 + mature * 0.5, thickness: 0.7 + old * 0.72 + young * 0.16, disturbance: 0.56 + young * 1.18, remnants: 0.58 + young * 0.9 + mature * 0.24, structure: 0.54 + mature * 0.7 + (galaxyType === 'irregular' ? young * 0.62 : 0), normalized: normalizedAge };
             }
             var ageEvolutionVisual = getGalaxyEvolutionForAge(cosmicAge), ageEvolutionTarget = getGalaxyEvolutionForAge(cosmicAge);
             var volumetricVisual = { dust: 1, birth: 1, satellite: 1 };
@@ -5237,9 +5318,8 @@ if (!window._galaxyHasLoadedOnce) {
                 if (canvasEl._onSelectStar) canvasEl._onSelectStar(evolvedSelection, evolvedPosition);
               }
 
-              var nebOp = currentObserveMode === 'gravity' ? 0.012 : 0.2 + 0.5 * Math.max(0, 1 - age / 10);
-
-              nebulaSprites.forEach(function (s) { s.material.opacity = nebOp; });
+              // Nebula opacity is owned by the frame loop (nebAgeLevel), which reads
+              // ageEvolutionVisual.birth; setting it here was overwritten every frame.
 
             };
 
@@ -5362,15 +5442,15 @@ if (!window._galaxyHasLoadedOnce) {
               if (!hudHidden) {
                 if (!orientationEl || !orientationEl.isConnected) orientationEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-orientation]');
                 var tilt = cameraTilt;
-                var orientationLabel = tilt > 0.72 ? 'Face-on view' : tilt < 0.22 ? 'Edge-on view' : 'Angled view';
+                var orientationLabel = tilt > 0.72 ? __alloT('stem.galaxy.orient_face_on', 'Face-on view') : tilt < 0.22 ? __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') : __alloT('stem.galaxy.orient_angled', 'Angled view');
                 if (orientationEl && orientationLabel !== lastOrientationLabel) { orientationEl.textContent = orientationLabel; lastOrientationLabel = orientationLabel; }
                 if (!liveScaleEl || !liveScaleEl.isConnected) liveScaleEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-live-scale-value]');
                 var fieldSpanKpc = 2 * spherical.r * Math.tan(camera.fov * Math.PI / 360) * 15;
-                var liveScaleText = '~' + (fieldSpanKpc < 10 ? fieldSpanKpc.toFixed(1) : Math.round(fieldSpanKpc)) + ' kpc field';
+                var liveScaleText = '~' + (fieldSpanKpc < 10 ? fieldSpanKpc.toFixed(1) : Math.round(fieldSpanKpc)) + __alloT('stem.galaxy.unit_kpc_field', ' kpc field');
                 if (liveScaleEl && liveScaleText !== lastLiveScaleText) { liveScaleEl.textContent = liveScaleText; lastLiveScaleText = liveScaleText; }
                 if (!scaleRegimeEl || !scaleRegimeEl.isConnected) scaleRegimeEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-scale-regime]');
                 var regimeScale = spherical.r / galaxyOverviewRadius;
-                var scaleRegime = regimeScale < 0.35 ? 'Nuclear region' : regimeScale < 0.68 ? 'Spiral-arm detail' : regimeScale > 1.43 ? 'Halo context' : 'Galactic structure';
+                var scaleRegime = regimeScale < 0.35 ? __alloT('stem.galaxy.regime_nuclear', 'Nuclear region') : regimeScale < 0.68 ? __alloT('stem.galaxy.regime_arm', 'Spiral-arm detail') : regimeScale > 1.43 ? __alloT('stem.galaxy.regime_halo', 'Halo context') : __alloT('stem.galaxy.regime_structure', 'Galactic structure');
                 if (scaleRegimeEl && scaleRegime !== lastScaleRegime) { scaleRegimeEl.textContent = scaleRegime; lastScaleRegime = scaleRegime; }
               }
 
@@ -5847,7 +5927,7 @@ if (!window._galaxyHasLoadedOnce) {
                 xrayPointOpacity: xrayPointMaterial ? xrayPointMaterial.opacity : 0
               };
             };
-            canvasEl._galaxySetAutoRotate = function (enabled) { autoRotate = enabled !== false && !prefersReducedMotion; if (enabled && prefersReducedMotion && canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true); setCanvasStatus(autoRotate ? 'Gentle auto-rotation on' : prefersReducedMotion ? 'Auto-rotation remains off because reduced motion is enabled' : 'Auto-rotation paused'); };
+            canvasEl._galaxySetAutoRotate = function (enabled) { autoRotate = enabled !== false && !prefersReducedMotion; if (enabled && prefersReducedMotion && canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true); setCanvasStatus(autoRotate ? __alloT('stem.galaxy.status_autorotate_on', 'Gentle auto-rotation on') : prefersReducedMotion ? __alloT('stem.galaxy.status_autorotate_blocked', 'Auto-rotation remains off because reduced motion is enabled') : __alloT('stem.galaxy.status_autorotate_paused', 'Auto-rotation paused')); };
             canvasEl._galaxySetTour = function (enabled) {
               if (prefersReducedMotion && enabled) { tourActive = false; setCanvasStatus(__alloT('stem.galaxy.status_tour_reduced_motion', 'Cinematic tour is paused by reduced-motion settings')); if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); return; }
               tourActive = enabled === true; tourStart = Date.now(); tourLastStage = -1; warpTween = null; tourFrames = tourActive ? buildTourFrames() : null;
@@ -5952,7 +6032,7 @@ if (!window._galaxyHasLoadedOnce) {
               var pill = document.createElement('button');
               pill.type = 'button';
               pill.setAttribute('data-galaxy-exit-immersive', 'true');
-              pill.textContent = 'Exit fullscreen (Esc)';
+              pill.textContent = __alloT('stem.galaxy.exit_fullscreen_pill', 'Exit fullscreen (Esc)');
               // Bottom centre: the top-right corner belongs to the observe-mode panel,
               // the right edge to the camera toolbar and the bottom-left to the status
               // pill, all of which this would otherwise cover.
@@ -6122,6 +6202,18 @@ if (!window._galaxyHasLoadedOnce) {
 
               } else if (!isDragging && autoRotate) { spherical.theta -= 0.0003; updateCamera(); }
               starShaderMat.uniforms.uTime.value = elapsed;
+              // Integrated colour follows cosmic age. Measured before this: the visible
+              // scene at 0.5 Gyr and at 14 Gyr had the same mean colour to within one
+              // unit, because the star-type shift was buried under additive arm layers
+              // that saturate to white. A young disk is blue-white (B-V ~0.3); one whose
+              // star formation has wound down is warm (B-V ~0.9). Visible band only.
+              var ageYouth = ageEvolutionVisual.youth, ageWarmth = ageEvolutionVisual.warmth, ageMid = Math.max(0, 1 - ageYouth - ageWarmth);
+              var ageTintR = ageYouth * 0.72 + ageMid + ageWarmth, ageTintG = ageYouth * 0.84 + ageMid + ageWarmth * 0.84, ageTintB = ageYouth + ageMid + ageWarmth * 0.66;
+              var ageTintOn = currentObserveMode === 'visible';
+              starShaderMat.uniforms.uAgeTint.value.set(ageTintR, ageTintG, ageTintB);
+              if (armGlowMat) { if (ageTintOn) armGlowMat.color.setRGB(ageTintR, ageTintG, ageTintB); else armGlowMat.color.setRGB(1, 1, 1); }
+              if (diskSheenMat) { if (ageTintOn) diskSheenMat.color.setRGB(ageTintR, ageTintG, ageTintB); else diskSheenMat.color.setRGB(1, 1, 1); }
+              if (coreFlare && coreFlare.material) { if (ageTintOn) coreFlare.material.color.setRGB(1 - ageWarmth * 0.04, 1 - ageWarmth * 0.12, 1 - ageWarmth * 0.3); else coreFlare.material.color.setRGB(1, 1, 1); }
               var targetFov = 60 - cinematicMotion.warp * 4.5 + Math.sin(elapsed * 0.18) * 0.35;
               if (Math.abs(camera.fov - targetFov) > 0.02) { camera.fov = targetFov; camera.updateProjectionMatrix(); }
               if (cinematicMotion.aperture > 0.01) cinematicMotion.aperture *= 0.94;
@@ -6288,7 +6380,7 @@ if (!window._galaxyHasLoadedOnce) {
                 xrayOutflowSprites.forEach(function (outflowSprite) { var outflowSpriteData = outflowSprite.userData || {}, outflowSpritePulse = prefersReducedMotion ? 0.86 : 0.56 + 0.44 * Math.sin(elapsed * outflowSpriteData.frequency + outflowSpriteData.phase), outflowSpriteScale = (outflowSpriteData.baseScale || 0.01) * (0.88 + outflowSpritePulse * 0.34); outflowSprite.scale.set(outflowSpriteScale, outflowSpriteScale, 1); outflowSprite.material.opacity = (outflowSpriteData.baseOpacity || 0.32) * xrayOutflowDetailLevel * xrayOutflowEvolution * (0.56 + outflowSpritePulse * 0.44); });
                 if (!prefersReducedMotion) xrayNuclearOutflowGroup.rotation.y += 0.00022 * motionStep;              }
 
-              ['gas', 'birth', 'thickness', 'disturbance', 'remnants', 'structure', 'normalized'].forEach(function (ageKey) { ageEvolutionVisual[ageKey] += (ageEvolutionTarget[ageKey] - ageEvolutionVisual[ageKey]) * (prefersReducedMotion ? 1 : 0.035); });
+              ['gas', 'birth', 'thickness', 'disturbance', 'remnants', 'structure', 'normalized', 'youth', 'warmth'].forEach(function (ageKey) { ageEvolutionVisual[ageKey] += (ageEvolutionTarget[ageKey] - ageEvolutionVisual[ageKey]) * (prefersReducedMotion ? 1 : 0.035); });
               volumetricVisual.dust += (volumetricTarget.dust - volumetricVisual.dust) * (prefersReducedMotion ? 1 : 0.045);
               volumetricVisual.birth += (volumetricTarget.birth - volumetricVisual.birth) * (prefersReducedMotion ? 1 : 0.045);
               volumetricVisual.satellite += (volumetricTarget.satellite - volumetricVisual.satellite) * (prefersReducedMotion ? 1 : 0.045);
@@ -6426,10 +6518,14 @@ if (!window._galaxyHasLoadedOnce) {
               morphologySignatureMaterials.forEach(function (morphMaterial) { var morphData = morphMaterial.userData || {}; var morphPulse = prefersReducedMotion ? 1 : 0.9 + 0.1 * Math.sin(elapsed * 0.42 + morphData.phase); morphMaterial.opacity = (morphData.baseOpacity || 0.08) * ageEvolutionVisual.structure * morphPulse; });
               if (!prefersReducedMotion) morphologySignatureObjects.forEach(function (morphObject) { if (galaxyType === 'irregular' && morphObject.userData && morphObject.userData.baseScale) { var morphWave = 0.96 + 0.08 * Math.sin(elapsed * 0.36 + morphObject.userData.phase); var morphScale = morphObject.userData.baseScale * morphWave; morphObject.scale.set(morphScale * 1.25, morphScale, morphScale); } });
 
+              // Star-forming nebulae follow the birth rate. _updateAge used to set this
+              // opacity from age, and this loop overwrote it on the next frame without
+              // looking, so the one intended age effect on the nebulae never showed.
+              var nebAgeLevel = 0.5 + 0.5 * Math.min(1, ageEvolutionVisual.birth / 2.4);
               nebulaSprites.forEach(function (s, i) {
                 var nebBase = currentObserveMode === 'gravity' ? 0.012 : currentObserveMode === 'radio' ? 0.1 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'infrared' ? 0.18 : 0.25;
                 var nebPulse = currentObserveMode === 'gravity' ? 0.004 : currentObserveMode === 'radio' ? 0.06 : currentObserveMode === 'xray' ? 0.03 : 0.15;
-                s.material.opacity = (nebBase + nebPulse * Math.sin(elapsed * 0.5 + i * 1.8)) * extendedInstrumentDetail;
+                s.material.opacity = (nebBase + nebPulse * Math.sin(elapsed * 0.5 + i * 1.8)) * extendedInstrumentDetail * nebAgeLevel;
               });
               nebulaWispSprites.forEach(function (w, i) {
                 var wMode = currentObserveMode === 'infrared' ? 1.45 : currentObserveMode === 'radio' ? 0.62 : currentObserveMode === 'xray' ? 0.38 : currentObserveMode === 'gravity' ? 0.06 : 1;
@@ -6896,7 +6992,7 @@ if (!window._galaxyHasLoadedOnce) {
                 key: 'star:' + selStar.id,
                 icon: '\u2B50',
                 title: selStar.label + ' star',
-                type: 'Spectral class ' + selStar.id,
+                type: __alloT('stem.galaxy.inspect_spectral_class', 'Spectral class {id}').replace('{id}', selStar.id),
                 color: selStar.color,
                 desc: selStar.desc,
                 facts: [selStar.temp + ' K', selStar.mass || __alloT('stem.galaxy.inspect_mass_varies', 'Mass varies'), selStar.lifetime || __alloT('stem.galaxy.inspect_lifetime_varies', 'Lifetime varies')],
@@ -6913,10 +7009,10 @@ if (!window._galaxyHasLoadedOnce) {
                 key: 'nebula:' + selNeb.name,
                 icon: '\u2728',
                 title: selNeb.name,
-                type: selNeb.type || __alloT('stem.galaxy.inspect_nebula_type_fallback', 'Nebula'),
+                type: nebulaTypeLabel(selNeb.type),
                 color: selNeb.color,
                 desc: selNeb.desc,
-                facts: [selNeb.dist || __alloT('stem.galaxy.inspect_distance_varies', 'Distance varies'), __alloT('stem.galaxy.inspect_gas_dust_cloud', 'Gas and dust cloud'), selNeb.type || __alloT('stem.galaxy.inspect_deepsky_object', 'Deep-sky object')],
+                facts: [selNeb.dist || __alloT('stem.galaxy.inspect_distance_varies', 'Distance varies'), __alloT('stem.galaxy.inspect_gas_dust_cloud', 'Gas and dust cloud'), nebulaTypeLabel(selNeb.type) || __alloT('stem.galaxy.inspect_deepsky_object', 'Deep-sky object')],
                 factLabels: [__alloT('stem.galaxy.fact_distance', 'Distance'), __alloT('stem.galaxy.fact_made_of', 'Made of'), __alloT('stem.galaxy.fact_type', 'Type')],
                 evidence: __alloT('stem.galaxy.inspect_nebula_evidence', 'Color, emission lines, shape, and nearby stars tell whether this is a nursery, remnant, or dying-star shell.'),
                 question: __alloT('stem.galaxy.inspect_nebula_question', 'Is this object making stars, showing a dead star, or blocking light?')
@@ -7851,7 +7947,7 @@ if (!window._galaxyHasLoadedOnce) {
             } catch (e3) {}
             try {
               if (window.A && window.A.catalog && window.A.marker && aladin.addCatalog) {
-                var markerCat = window.A.catalog({ name: 'Classroom target', color: '#67e8f9', sourceSize: 10 });
+                var markerCat = window.A.catalog({ name: __alloT('stem.galaxy.realsky_marker_name', 'Classroom target'), color: '#67e8f9', sourceSize: 10 });
                 markerCat.addSources([window.A.marker(activeRealSkyTarget.ra, activeRealSkyTarget.dec, { popupTitle: activeRealSkyTarget.name, popupDesc: activeRealSkyTarget.story })]);
                 aladin.addCatalog(markerCat);
               }
@@ -7997,7 +8093,7 @@ if (!window._galaxyHasLoadedOnce) {
             if (cv && cv._setLayerVisibility) cv._setLayerVisibility(key, newLayers[key]);
             var layerDefinition = LAYER_TOGGLES.filter(function (layer) { return layer.key === key; })[0];
             var layerLabel = layerDefinition ? layerDefinition.label : key;
-            if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'layer:' + key, (newLayers[key] ? 'Showing ' : 'Hiding ') + layerLabel + ' layer.', { debounce: 250 });
+            if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'layer:' + key, (newLayers[key] ? __alloT('stem.galaxy.narrate_layer_shown', 'Showing {layer} layer.') : __alloT('stem.galaxy.narrate_layer_hidden', 'Hiding {layer} layer.')).replace('{layer}', layerLabel), { debounce: 250 });
 
           };
 
@@ -8124,10 +8220,10 @@ if (!window._galaxyHasLoadedOnce) {
                         if (m.key === 'star') upd("showLifecycle", true);
                         // Canvas Narration: sim mode switch
                         if (typeof canvasNarrate === 'function') {
-                          var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : m.key === 'blackHole' ? 'Black Hole Lab. Orbit an event horizon and observe an accretion disk, photon ring, relativistic beaming, and polar jets.' : m.key === 'realSky' ? 'Real Sky. Compare the model with live sky survey imagery and object catalogs.' : m.key === 'metalHunt' ? 'Metallicity. Investigate how star chemistry records galaxy history.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
+                          var modeDesc = m.key === 'galaxy' ? __alloT('stem.galaxy.modedesc_galaxy', 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.') : m.key === 'blackHole' ? __alloT('stem.galaxy.modedesc_blackhole', 'Black Hole Lab. Orbit an event horizon and observe an accretion disk, photon ring, relativistic beaming, and polar jets.') : m.key === 'realSky' ? __alloT('stem.galaxy.modedesc_realsky', 'Real Sky. Compare the model with live sky survey imagery and object catalogs.') : m.key === 'metalHunt' ? __alloT('stem.galaxy.modedesc_metalhunt', 'Metallicity. Investigate how star chemistry records galaxy history.') : __alloT('stem.galaxy.modedesc_starlife', 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.');
                           canvasNarrate('galaxy', 'simMode', {
                             first: 'Switched to ' + m.label + '. ' + modeDesc,
-                            repeat: m.label + ' mode active.',
+                            repeat: m.label + __alloT('stem.galaxy.narrate_mode_active', ' mode active.'),
                             terse: m.label
                           });
                         }
@@ -8163,9 +8259,9 @@ if (!window._galaxyHasLoadedOnce) {
                 patchGalaxy({ quizMode: false, simMode: 'realSky', realSkyStatus: 'idle', realSkyMessage: '' });
                 if (typeof canvasNarrate === 'function') {
                   canvasNarrate('galaxy', 'realSkyLauncher', {
-                    first: 'Opening the Real Sky Atlas. Compare the galaxy model with live telescope survey imagery.',
-                    repeat: 'Opening the Real Sky Atlas.',
-                    terse: 'Real Sky Atlas'
+                    first: __alloT('stem.galaxy.narrate_realsky_first', 'Opening the Real Sky Atlas. Compare the galaxy model with live telescope survey imagery.'),
+                    repeat: __alloT('stem.galaxy.narrate_realsky_repeat', 'Opening the Real Sky Atlas.'),
+                    terse: __alloT('stem.galaxy.narrate_realsky_terse', 'Real Sky Atlas')
                   });
                 }
               },
@@ -8207,8 +8303,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // Canvas Narration: galaxy type switch
                       if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'galaxyType', {
-                        first: 'Switched to ' + gt.label + ' galaxy. ' + gt.desc + ' Example: ' + gt.example + '.',
-                        repeat: gt.label + ' galaxy active.',
+                        first: __alloT('stem.galaxy.narrate_type_switched', 'Switched to {type} galaxy. {desc} Example: {example}.').replace('{type}', gt.label).replace('{desc}', gt.desc).replace('{example}', gt.example),
+                        repeat: gt.label + __alloT('stem.galaxy.announce_galaxy_active', ' galaxy active.'),
                         terse: gt.label
                       });
 
@@ -8229,7 +8325,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "relative rounded-2xl overflow-hidden border xl:sticky xl:top-4", style: { height: 'clamp(360px, 58vw, 620px)', background: 'radial-gradient(circle at 50% 44%, rgba(79,70,229,0.26), rgba(15,23,42,0.78) 42%, #020208 86%)', borderColor: 'rgba(129,140,248,0.42)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -46px 90px rgba(2,6,23,0.76), 0 22px 48px rgba(15,23,42,0.24)' } },
 
-                React.createElement("p", { id: "galaxy-canvas-description", className: "sr-only" }, __alloT('stem.galaxy.canvas_description', 'Interactive three-dimensional galaxy model.') + " " + gType.label + ", " + cosmicAge.toFixed(1) + " billion years old. " + activeObserve.label + " observing mode. " + __alloT('stem.galaxy.canvas_description_layers', 'Visible structures can include stars, dust lanes, gas, nebulae, the galactic core, and the dark-matter halo.')),
+                React.createElement("p", { id: "galaxy-canvas-description", className: "sr-only" }, __alloT('stem.galaxy.canvas_description', 'Interactive three-dimensional galaxy model.') + " " + gType.label + ", " + __alloT('stem.galaxy.canvas_description_age', 'seen {age} billion years after the Big Bang.').replace('{age}', cosmicAge.toFixed(1)) + " " + activeObserve.label + __alloT('stem.galaxy.canvas_description_mode', ' observing mode. ') + __alloT('stem.galaxy.canvas_description_layers', 'Visible structures can include stars, dust lanes, gas, nebulae, the galactic core, and the dark-matter halo.')),
                 React.createElement("p", { id: "galaxy-canvas-instructions", className: "sr-only" }, __alloT('stem.galaxy.canvas_keyboard_instructions', 'When the galaxy canvas has focus, use the arrow keys to orbit, plus and minus to zoom, left and right brackets or Page Up and Page Down to move between stars, Escape to clear a selection, and R to reset. Equivalent on-screen buttons are available after the canvas.')),
                 React.createElement("p", { id: "galaxy-motion-note", className: "sr-only" }, galaxyReducedMotion ? __alloT('stem.galaxy.motion_preference_on', 'Reduced-motion preference detected. Automatic rotation and cinematic tours are disabled.') : __alloT('stem.galaxy.motion_preference_off', 'The galaxy rotates gently by default. Use the pause rotation button to stop automatic motion.')),
                 React.createElement("span", { id: "galaxy-canvas-status", "data-galaxy-announcer": "true", className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, selStar ? __alloT('stem.galaxy.announcer_focused_on', 'Focused on {name}').replace('{name}', selStar.label) : selNeb ? __alloT('stem.galaxy.announcer_focused_on', 'Focused on {name}').replace('{name}', selNeb.name) : __alloT('stem.galaxy.canvas_status_ready', 'Galaxy canvas ready for exploration.')),
@@ -8386,7 +8482,7 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("span", null, __alloT('stem.galaxy.legend_cool', 'cool'))
                   )
                 ),
-                !galaxyHudHidden && React.createElement("div", { "data-galaxy-instrument-readout": "true", className: "absolute right-3 top-3 z-10 hidden w-52 rounded-xl border bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md md:block", style: { borderColor: activeObserve.accent + '55' }, role: "img", "aria-label": activeObserve.label + ' instrument readout. ' + activeInstrument.detector + '. Band ' + activeInstrument.band + '. Traces ' + activeInstrument.tracer + '.' },
+                !galaxyHudHidden && React.createElement("div", { "data-galaxy-instrument-readout": "true", className: "absolute right-3 top-3 z-10 hidden w-52 rounded-xl border bg-slate-950/80 p-2.5 text-white shadow-xl backdrop-blur-md md:block", style: { borderColor: activeObserve.accent + '55' }, role: "img", "aria-label": activeObserve.label + __alloT('stem.galaxy.aria_instrument_readout', ' instrument readout. ') + activeInstrument.detector + '. Band ' + activeInstrument.band + '. Traces ' + activeInstrument.tracer + '.' },
                   React.createElement("div", { className: "flex items-start justify-between gap-2" },
                     React.createElement("div", null,
                       React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.12em]", style: { color: hudAccentText(activeObserve.accent) } }, activeObserve.icon + " " + activeObserve.label),
@@ -8505,12 +8601,12 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("p", { className: "mt-0.5 text-[11px] leading-tight text-slate-300" }, mark.detail)
                   ); })
                 ),
-                !galaxyHudHidden && React.createElement("div", { "data-galaxy-orientation": "true", className: "absolute left-1/2 top-3 hidden -translate-x-1/2 rounded-full border border-cyan-200/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-md lg:block" }, "Angled view"),
+                !galaxyHudHidden && React.createElement("div", { "data-galaxy-orientation": "true", className: "absolute left-1/2 top-3 hidden -translate-x-1/2 rounded-full border border-cyan-200/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-md lg:block" }, __alloT('stem.galaxy.orient_angled_initial', "Angled view")),
                 !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-live-scale": "true", className: "pointer-events-none absolute left-1/2 top-14 z-[6] hidden -translate-x-1/2 items-center gap-2 rounded-full border border-violet-200/15 bg-slate-950/70 px-3 py-1.5 text-[11px] font-bold text-violet-100 shadow-lg backdrop-blur-md md:flex", role: "img", "aria-label": __alloT('stem.galaxy.live_scale_aria', 'Approximate field of view and current galactic scale regime') },
                   React.createElement("span", { className: "h-px w-5 bg-gradient-to-r from-transparent to-violet-300", "aria-hidden": true }),
-                  React.createElement("span", { "data-galaxy-live-scale-value": "true" }, "~21 kpc field"),
+                  React.createElement("span", { "data-galaxy-live-scale-value": "true" }, __alloT('stem.galaxy.scale_initial_field', "~21 kpc field")),
                   React.createElement("span", { className: "text-violet-300", "aria-hidden": true }, "·"),
-                  React.createElement("span", { "data-galaxy-scale-regime": "true", className: "text-cyan-100" }, "Galactic structure"),
+                  React.createElement("span", { "data-galaxy-scale-regime": "true", className: "text-cyan-100" }, __alloT('stem.galaxy.regime_structure', "Galactic structure")),
                   React.createElement("span", { className: "h-px w-5 bg-gradient-to-l from-transparent to-violet-300", "aria-hidden": true })
                 ),
                 // Held back until the scene exists — announcing "drag to orbit" to a
@@ -8576,8 +8672,8 @@ if (!window._galaxyHasLoadedOnce) {
                         patchGalaxy({ observeMode: mode.key, previousObserveMode: mode.key !== observeMode ? observeMode : d.previousObserveMode, observeHistory: nextObserveHistory.slice(-8), selectedStar: null, selectedStarMeasurement: null, selectedNebula: null, inspectTarget: mode.target, inspectLog: nextLog });
                         if (!seen && typeof awardStemXP === 'function') awardStemXP('galaxy_observe', 1, 'Used ' + mode.label + ' filter');
                         if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'observeMode', {
-                          first: mode.label + ' observing mode. ' + mode.desc,
-                          repeat: mode.label + ' observing mode active.',
+                          first: mode.label + __alloT('stem.galaxy.aria_observing_mode', ' observing mode. ') + mode.desc,
+                          repeat: mode.label + __alloT('stem.galaxy.announce_observe_active', ' observing mode active.'),
                           terse: mode.label
                         }, { debounce: 500 });
                       },
@@ -8643,7 +8739,7 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { className: "grid grid-cols-4 gap-1" },
                   ['auto', 'balanced', 'high', 'cinematic'].map(function (quality) {
                     var qualityActive = galaxyQuality === quality;
-                    return React.createElement("button", { type: "button", key: quality, "aria-label": "Set " + quality + " galaxy rendering detail", "aria-pressed": qualityActive, onClick: function () { upd('galaxyQuality', quality); }, className: "min-h-[44px] rounded-lg border px-1 py-2 text-[11px] font-black transition-colors " + (qualityActive ? "border-indigo-500 bg-indigo-600 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-white") }, quality === 'cinematic' ? "Cinema" : quality.charAt(0).toUpperCase() + quality.slice(1));
+                    return React.createElement("button", { type: "button", key: quality, "aria-label": "Set " + quality + __alloT('stem.galaxy.aria_rendering_detail', " galaxy rendering detail"), "aria-pressed": qualityActive, onClick: function () { upd('galaxyQuality', quality); }, className: "min-h-[44px] rounded-lg border px-1 py-2 text-[11px] font-black transition-colors " + (qualityActive ? "border-indigo-500 bg-indigo-600 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-white") }, quality === 'cinematic' ? "Cinema" : quality.charAt(0).toUpperCase() + quality.slice(1));
                   })
                 )
               ),
@@ -8717,7 +8813,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     return React.createElement("button", {
 
-                      key: rm.key, "aria-label": "Set rotation model: " + rm.label + " (" + rm.hint + ")", "aria-pressed": on,
+                      key: rm.key, "aria-label": __alloT('stem.galaxy.aria_set_rotation', "Set rotation model: ") + rm.label + " (" + rm.hint + ")", "aria-pressed": on,
 
                       onClick: function () {
 
@@ -8735,9 +8831,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                         if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'rotMode', {
 
-                          first: 'Rotation model: ' + rm.label + ' — ' + rm.hint + '. Inner and outer stars now orbit at ' + (rm.key === 'rigid' ? 'the same angular speed, like a solid disk' : rm.key === 'keplerian' ? 'Keplerian speeds — inner stars lap the outer ones dramatically' : 'the observed flat-curve speeds — outer stars keep up, which only dark matter can explain') + '.',
+                          first: __alloT('stem.galaxy.narrate_rotation_prefix', 'Rotation model: ') + rm.label + ' — ' + rm.hint + __alloT('stem.galaxy.narrate_rotation_join', '. Inner and outer stars now orbit at ') + (rm.key === 'rigid' ? __alloT('stem.galaxy.rot_desc_rigid', 'the same angular speed, like a solid disk') : rm.key === 'keplerian' ? __alloT('stem.galaxy.rot_desc_keplerian', 'Keplerian speeds — inner stars lap the outer ones dramatically') : __alloT('stem.galaxy.rot_desc_flat', 'the observed flat-curve speeds — outer stars keep up, which only dark matter can explain')) + '.',
 
-                          repeat: rm.label + ' rotation active.',
+                          repeat: rm.label + __alloT('stem.galaxy.announce_rotation_active', ' rotation active.'),
 
                           terse: rm.label
 
@@ -8760,7 +8856,7 @@ if (!window._galaxyHasLoadedOnce) {
                   var CW = 360, CH = 148, padL = 36, padR = 10, padT = 12, padB = 26;
                   if (galaxyType === 'elliptical') {
                     return React.createElement("div", { "data-galaxy-elliptical-kinematics": "true", className: "rounded-xl border border-fuchsia-300/20 bg-slate-950/55 p-3" },
-                      React.createElement("svg", { viewBox: "0 0 360 112", className: "w-full", style: { maxHeight: '122px' }, role: "img", "aria-label": __alloT('stem.galaxy.elliptical_orbits_aria', 'Stars cross an elliptical galaxy on many differently tilted orbital planes. Their velocity dispersion supports the galaxy against gravity.') },
+                      React.createElement("svg", { viewBox: "0 0 360 112", dir: "ltr", className: "w-full", style: { direction: 'ltr', maxHeight: '122px' }, role: "img", "aria-label": __alloT('stem.galaxy.elliptical_orbits_aria', 'Stars cross an elliptical galaxy on many differently tilted orbital planes. Their velocity dispersion supports the galaxy against gravity.') },
                         React.createElement("ellipse", { cx: 180, cy: 54, rx: 112, ry: 39, fill: "rgba(251,191,36,0.08)", stroke: "rgba(253,230,138,0.38)", strokeWidth: 1.4 }),
                         [{ rx: 90, ry: 20, rot: -18, color: '#67e8f9' }, { rx: 82, ry: 28, rot: 24, color: '#f0abfc' }, { rx: 104, ry: 13, rot: 4, color: '#fde68a' }, { rx: 58, ry: 34, rot: -42, color: '#c4b5fd' }].map(function (orbit, orbitIndex) { return React.createElement("ellipse", { key: orbitIndex, cx: 180, cy: 54, rx: orbit.rx, ry: orbit.ry, fill: "none", stroke: orbit.color, strokeWidth: 1.2, strokeDasharray: orbitIndex % 2 ? "4 3" : undefined, opacity: 0.72, transform: "rotate(" + orbit.rot + " 180 54)" }); }),
                         React.createElement("circle", { cx: 180, cy: 54, r: 5, fill: "#fff7d6", stroke: "#fbbf24", strokeWidth: 2 }),
@@ -8808,7 +8904,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   gapPath += 'Z';
 
-                  return React.createElement("svg", { viewBox: "0 0 " + CW + " " + CH, className: "w-full", style: { maxHeight: '160px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_rotation_curve', 'Rotation curve chart: orbital speed versus distance from the galactic center. The Keplerian prediction from visible matter falls off with distance, but the observed curve stays flat. The shaded gap between them is the evidence for dark matter.') },
+                  return React.createElement("svg", { viewBox: "0 0 " + CW + " " + CH, dir: "ltr", className: "w-full", style: { direction: 'ltr', maxHeight: '160px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_rotation_curve', 'Rotation curve chart: orbital speed versus distance from the galactic center. The Keplerian prediction from visible matter falls off with distance, but the observed curve stays flat. The shaded gap between them is the evidence for dark matter.') },
 
                     React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: CH - padB, stroke: "#475569", strokeWidth: 1 }),
 
@@ -8961,7 +9057,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("input", {
 
-                    type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
+                    type: "range", min: 0.1, max: 13.8, step: 0.1, value: cosmicAge,
 
                     'aria-label': __alloT('stem.galaxy.aria_cosmic_age', 'Cosmic age in billion years'),
                     'aria-valuetext': cosmicAge.toFixed(1) + ' ' + __alloT('stem.galaxy.aria_gyr_unit', 'billion years after the Big Bang'),
@@ -8980,7 +9076,7 @@ if (!window._galaxyHasLoadedOnce) {
                       // Canvas Narration: cosmic age change
                       if (typeof canvasNarrate === 'function') {
                         var ep = getEpochNarration(val);
-                        var msg = val.toFixed(1) + ' billion years' + (ep ? '. ' + ep.title : '');
+                        var msg = val.toFixed(1) + __alloT('stem.galaxy.unit_billion_years', ' billion years') + (ep ? '. ' + ep.title : '');
                         canvasNarrate('galaxy', 'cosmicAge', msg, { debounce: 800 });
                       }
 
@@ -8990,30 +9086,33 @@ if (!window._galaxyHasLoadedOnce) {
 
                   }),
 
-                  React.createElement("span", { className: "text-xs text-violet-400 whitespace-nowrap" }, "14 Gyr")
+                  React.createElement("span", { className: "text-xs text-violet-400 whitespace-nowrap" }, "13.8 Gyr")
 
                 ),
 
                 // Milestone markers. These carry real ages - 0.4, 1, 4.6, 9.2, 13.8 Gyr -
                 // but were laid out with `flex justify-between`, i.e. EVENLY SPACED under
-                // a linear 0-14 Gyr slider. "First stars" belongs at 3% of the axis and
-                // sat at 0%; "Galaxies form" belongs at 7% and sat at 25%. Clicking one
-                // jumped the thumb somewhere the label was not, and the row quietly
+                // a linear 0-13.8 Gyr slider, so clicking one jumped the thumb somewhere
+                // the label was not, and the row quietly
                 // taught that cosmic history is evenly paced when the point is that
                 // almost all of it happened after the first billion years. Positioned at
                 // their true fraction now, on two rows so the early pair does not
                 // collide. They were also click-handling <span>s: no keyboard, no role.
+                // Each age must name an EPOCH_NARRATION entry, or the tick and the
+                // paragraph it reveals describe different events: "First stars" sat at
+                // 0.4 Gyr, whose epoch is "First Galaxies", and "Galaxies form" sat at
+                // 1.0, whose epoch is "Galaxy Assembly".
                 React.createElement("div", { className: "relative mt-1 h-14 text-xs text-violet-400" },
                   React.createElement("div", { className: "absolute left-0 right-0 top-0 h-px bg-violet-200", "aria-hidden": true }),
                   [
-                    { age: 0.4, row: 0, label: t('stem.galaxy.first_stars') },
-                    { age: 1, row: 1, label: t('stem.galaxy.galaxies_form') },
+                    { age: 0.1, row: 0, label: t('stem.galaxy.first_stars') },
+                    { age: 0.4, row: 1, label: t('stem.galaxy.galaxies_form') },
                     { age: 4.6, row: 0, label: t('stem.galaxy.milky_way') },
                     { age: 9.2, row: 1, label: t('stem.galaxy.sun_born') },
                     { age: 13.8, row: 0, label: __alloT('stem.galaxy.milestone_now', 'Now') }
                   ].map(function (m) {
-                    var pct = (m.age / 14) * 100;
-                    var isHere = Math.abs(cosmicAge - m.age) < 0.3;
+                    var pct = (m.age / 13.8) * 100;
+                    var isHere = Math.abs(cosmicAge - m.age) < 0.15;
                     // Anchor the last one from the RIGHT edge: `left` plus a -100%
                     // transform sizes a shrink-to-fit box against the leftover space and
                     // squeezes it to one word per line.
@@ -9032,9 +9131,9 @@ if (!window._galaxyHasLoadedOnce) {
                       className: "flex min-h-[24px] items-center whitespace-nowrap rounded px-1 leading-tight hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500" + (isHere ? " font-bold text-violet-700" : "")
                     }, m.label);
                   }),
-                  [0.4, 1, 4.6, 9.2, 13.8].map(function (age) {
+                  [0.1, 0.4, 4.6, 9.2, 13.8].map(function (age) {
                     return React.createElement("span", { key: 'tick' + age, "aria-hidden": true,
-                      style: { position: 'absolute', top: 0, left: ((age / 14) * 100) + '%', width: '1px', height: '5px', background: '#c4b5fd' } });
+                      style: { position: 'absolute', top: 0, left: ((age / 13.8) * 100) + '%', width: '1px', height: '5px', background: '#c4b5fd' } });
                   })
                 ),
 
@@ -9063,7 +9162,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         age += 0.1;
 
-                        if (age > 14) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
+                        if (age > 13.85) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
 
                         upd("cosmicAge", parseFloat(age.toFixed(1)));
 
@@ -9088,15 +9187,15 @@ if (!window._galaxyHasLoadedOnce) {
                       var cv = galaxyCanvasActive.current;
 
                       var evt = (cv && cv._triggerSupernova) ? cv._triggerSupernova() : null;
-                      var msg = evt ? "Random supernova: " + evt.type + " star (" + evt.spectral + "-type)" : __alloT('stem.galaxy.supernova_unavailable', 'Supernova effect is not available yet.');
+                      var msg = evt ? __alloT('stem.galaxy.narrate_supernova_prefix', "Random supernova: ") + evt.type + " star (" + evt.spectral + "-type)" : __alloT('stem.galaxy.supernova_unavailable', 'Supernova effect is not available yet.');
                       patchGalaxy({ lastGalaxyEvent: msg, inspectLog: evt ? addInspectKey('supernovaEvent') : inspectLog });
                       if (evt && typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'supernovaEvent', {
-                        first: msg + ". The flash marks a massive star exploding and spreading heavy elements into space.",
+                        first: msg + __alloT('stem.galaxy.narrate_supernova_tail', ". The flash marks a massive star exploding and spreading heavy elements into space."),
                         repeat: msg,
-                        terse: "Supernova flash"
+                        terse: __alloT('stem.galaxy.narrate_supernova_terse', "Supernova flash")
                       }, { debounce: 600 });
                       if (evt && typeof awardStemXP === 'function') awardStemXP('galaxy_supernova', 2, 'Triggered a galaxy supernova');
-                      if (evt && typeof addToast === 'function') addToast('Supernova flash triggered', 'success');
+                      if (evt && typeof addToast === 'function') addToast(__alloT('stem.galaxy.toast_supernova', 'Supernova flash triggered'), 'success');
 
                     },
 
@@ -9166,8 +9265,8 @@ if (!window._galaxyHasLoadedOnce) {
                   patchGalaxy(warpPatch);
                   // Canvas Narration: warp navigation
                   if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'warp', {
-                    first: 'Warping to ' + wp.label + '. ' + (wp.desc || 'Camera repositioning to this location.'),
-                    repeat: 'Warped to ' + wp.label + '.',
+                    first: __alloT('stem.galaxy.narrate_warping_to', 'Warping to {target}. ').replace('{target}', wp.label) + (wp.desc || __alloT('stem.galaxy.status_camera_repositioning', 'Camera repositioning to this location.')),
+                    repeat: __alloT('stem.galaxy.narrate_warped_to', 'Warped to {target}.').replace('{target}', wp.label),
                     terse: wp.label
                   });
                 }, className: "min-h-[44px] w-full px-3 py-2 rounded-lg text-left text-xs font-bold border border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 hover:border-indigo-400 transition-colors" + (wpIndex === WARP_POINTS.length - 1 && WARP_POINTS.length % 2 === 1 ? " sm:col-span-2 xl:col-span-1" : "") }, React.createElement("span", { className: "block" }, "\uD83D\uDE80 " + wp.label), (wp.short || wp.desc) ? React.createElement("span", { className: "mt-0.5 block text-[11px] font-medium leading-snug text-indigo-700" }, wp.short || wp.desc) : null); })
@@ -9188,7 +9287,7 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("dt", { className: "font-bold text-slate-600" }, __alloT('stem.galaxy.summary_observation', 'Observation')),
                       React.createElement("dd", { className: "text-slate-900" }, activeObserve.label + ': ' + (activeObserve.note || activeObserve.desc)),
                       React.createElement("dt", { className: "font-bold text-slate-600" }, __alloT('stem.galaxy.summary_age', 'Cosmic age')),
-                      React.createElement("dd", { className: "text-slate-900" }, cosmicAge.toFixed(1) + ' billion years'),
+                      React.createElement("dd", { className: "text-slate-900" }, cosmicAge.toFixed(1) + __alloT('stem.galaxy.unit_billion_years', ' billion years')),
                       React.createElement("dt", { className: "font-bold text-slate-600" }, __alloT('stem.galaxy.summary_selection', 'Selection')),
                       React.createElement("dd", { className: "text-slate-900" }, galaxySelectionSummary),
                       React.createElement("dt", { className: "font-bold text-slate-600" }, __alloT('stem.galaxy.summary_motion', 'Motion')),
@@ -9224,7 +9323,7 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("h5", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, __alloT('stem.galaxy.hubble_tuning_fork_title', 'Hubble Tuning Fork — classified by shape')),
                 (function () {
                   var hl = { elliptical: { x: 78, y: 75 }, grandDesign: { x: 260, y: 40 }, barredSpiral: { x: 260, y: 112 }, irregular: { x: 338, y: 75 } }[galaxyType] || null;
-                  return React.createElement("svg", { viewBox: "0 0 360 150", className: "w-full", style: { maxHeight: '150px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_hubble_tuning_fork', 'Hubble tuning fork: ellipticals on the handle, spirals on the top prong, barred spirals on the bottom prong, and irregulars set apart because they do not fit the sequence, with the current galaxy type highlighted') },
+                  return React.createElement("svg", { viewBox: "0 0 360 150", dir: "ltr", className: "w-full", style: { direction: 'ltr', maxHeight: '150px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_hubble_tuning_fork', 'Hubble tuning fork: ellipticals on the handle, spirals on the top prong, barred spirals on the bottom prong, and irregulars set apart because they do not fit the sequence, with the current galaxy type highlighted') },
                     React.createElement("path", { d: "M30 75 H120 M120 75 C150 75 170 52 200 40 H304 M120 75 C150 75 170 100 200 112 H304", fill: "none", stroke: "#94a3b8", strokeWidth: 2 }),
                     React.createElement("ellipse", { cx: 45, cy: 75, rx: 9, ry: 9, fill: "#fca5a5" }),
                     React.createElement("ellipse", { cx: 75, cy: 75, rx: 11, ry: 7, fill: "#fca5a5" }),
@@ -9270,7 +9369,7 @@ if (!window._galaxyHasLoadedOnce) {
                       })
                     );
                   };
-                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + (2 * rowH + gap + 12), className: "w-full", style: { maxHeight: '108px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_two_spectra', "Two spectra: a nearby galaxy's absorption lines, and a distant galaxy's same lines shifted toward the red end (redshift).") },
+                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + (2 * rowH + gap + 12), dir: "ltr", className: "w-full", style: { direction: 'ltr', maxHeight: '108px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_two_spectra', "Two spectra: a nearby galaxy's absorption lines, and a distant galaxy's same lines shifted toward the red end (redshift).") },
                     React.createElement("defs", null,
                       React.createElement("linearGradient", { id: "galSpecGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
                         React.createElement("stop", { offset: "0%", stopColor: "#7c3aed" }),
@@ -9308,7 +9407,7 @@ if (!window._galaxyHasLoadedOnce) {
                       })
                     );
                   };
-                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full", style: { maxHeight: '168px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_doppler_spectrum', 'Doppler shift spectrum: absorption lines move left for blueshift and right for redshift.') },
+                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + H, dir: "ltr", className: "w-full", style: { direction: 'ltr', maxHeight: '168px' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_doppler_spectrum', 'Doppler shift spectrum: absorption lines move left for blueshift and right for redshift.') },
                     React.createElement("defs", null,
                       React.createElement("linearGradient", { id: "galDopplerGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
                         React.createElement("stop", { offset: "0%", stopColor: "#4338ca" }),
@@ -9320,7 +9419,7 @@ if (!window._galaxyHasLoadedOnce) {
                     spectrum(80, visualShift, __alloT('stem.galaxy.spectrum_observed', 'Observed spectrum'),dopplerVelocity < -8 ? "#2563eb" : dopplerVelocity > 8 ? "#dc2626" : "transparent"),
                     React.createElement("line", { x1: lineX(0.43, 0), y1: 54, x2: lineX(0.43, visualShift), y2: 76, stroke: dopplerColor, strokeWidth: 2, strokeDasharray: "4 3" }),
                     React.createElement("text", { x: lineX(0.43, visualShift), y: 124, fill: dopplerColor, textAnchor: "middle", style: { fontSize: '9px', fontWeight: '900' } }, dopplerVelocity < -8 ? __alloT('stem.galaxy.doppler_compressed_blue', 'compressed toward blue') : dopplerVelocity > 8 ? __alloT('stem.galaxy.doppler_stretched_red', 'stretched toward red') : __alloT('stem.galaxy.doppler_same_wavelength', 'same wavelength')),
-                    React.createElement("text", { x: 2, y: 144, fill: "#64748b", style: { fontSize: '8px', fontWeight: '700' } }, "Screen shift magnified for clarity; actual z = " + dopplerZ.toFixed(5))
+                    React.createElement("text", { x: 2, y: 144, fill: "#64748b", style: { fontSize: '8px', fontWeight: '700' } }, __alloT('stem.galaxy.doppler_magnified', "Screen shift magnified for clarity; actual z = ") + dopplerZ.toFixed(5))
                   );
                 })(),
                 React.createElement("div", { className: "mt-2" },
@@ -9342,7 +9441,7 @@ if (!window._galaxyHasLoadedOnce) {
                       var val = parseInt(e.target.value, 10);
                       var nextLog = addInspectKey('dopplerShift');
                       patchGalaxy({ dopplerVelocity: val, inspectLog: nextLog });
-                      if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'dopplerShift', (val < 0 ? 'Blueshift: source moving toward us at ' : val > 0 ? 'Redshift: source moving away at ' : 'No Doppler shift: source has zero radial velocity. ') + Math.abs(val) + ' kilometers per second.', { debounce: 500 });
+                      if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'dopplerShift', (val < 0 ? __alloT('stem.galaxy.doppler_blueshift', 'Blueshift: source moving toward us at ') : val > 0 ? __alloT('stem.galaxy.doppler_redshift', 'Redshift: source moving away at ') : __alloT('stem.galaxy.doppler_none', 'No Doppler shift: source has zero radial velocity. ')) + Math.abs(val) + __alloT('stem.galaxy.doppler_kms', ' kilometers per second.'), { debounce: 500 });
                     },
                     className: "w-full h-6 accent-indigo-500"
                   })
@@ -9539,7 +9638,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 selStar && React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-center" },
 
-                  React.createElement("p", { className: "text-xs text-indigo-600" }, "\uD83D\uDD2D If our Sun were a basketball, a" + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + "-type star would be " + ({ 'O': 'a hot tub (6\u201315x wider)', 'B': 'a beach ball (2\u20137x wider)', 'A': 'a soccer ball (1.4\u20132x wider)', 'F': 'a volleyball (slightly bigger)', 'G': 'another basketball (same size!)', 'K': 'a softball (a bit smaller)', 'M': 'a tennis ball or smaller' }[selStar.id] || 'similar in size') + ".")
+                  React.createElement("p", { className: "text-xs text-indigo-600" }, __alloT('stem.galaxy.size_intro', "\uD83D\uDD2D If our Sun were a basketball, a") + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + __alloT('stem.galaxy.size_join', "-type star would be ") + ({ 'O': __alloT('stem.galaxy.size_o', 'a hot tub (6\u201315x wider)'), 'B': __alloT('stem.galaxy.size_b', 'a beach ball (2\u20136x wider)'), 'A': __alloT('stem.galaxy.size_a', 'a soccer ball (1.4\u20132x wider)'), 'F': __alloT('stem.galaxy.size_f', 'a volleyball (slightly bigger)'), 'G': __alloT('stem.galaxy.size_g', 'another basketball (same size!)'), 'K': __alloT('stem.galaxy.size_k', 'a softball (a bit smaller)'), 'M': __alloT('stem.galaxy.size_m', 'a tennis ball or smaller') }[selStar.id] || __alloT('stem.galaxy.size_default', 'similar in size')) + ".")
 
                 )
 
@@ -9551,7 +9650,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto min-h-[44px] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.galaxy.snapshot', 'Snapshot'))
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_snapshot', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto min-h-[44px] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.galaxy.snapshot', 'Snapshot'))
 
               )
 
@@ -10099,7 +10198,7 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("span", { className: "font-bold text-green-700", title: __alloT('stem.galaxy.quiz_score_label', 'Correct answers'),
                       "aria-label": __alloT('stem.galaxy.quiz_score_label', 'Correct answers') + ": " + (d.quizScore || 0) }, "\u2714 " + (d.quizScore || 0)),
 
-                    React.createElement("span", { className: "font-bold text-amber-600", title: __alloT('stem.galaxy.quiz_streak_label', 'Current streak'),
+                    React.createElement("span", { className: "font-bold text-amber-700", title: __alloT('stem.galaxy.quiz_streak_label', 'Current streak'),
                       "aria-label": __alloT('stem.galaxy.quiz_streak_label', 'Current streak') + ": " + (d.quizStreak || 0) }, "\uD83D\uDD25 " + (d.quizStreak || 0))
 
                   )
@@ -10142,7 +10241,7 @@ if (!window._galaxyHasLoadedOnce) {
                       : "bg-slate-300 text-slate-700";
                     var marker = !answered ? null : isAnswer ? "\u2713 " : isMyPick ? "\u2717 " : "";
 
-                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
+                    return React.createElement("button", { "aria-label": __alloT('stem.galaxy.quiz_select_answer', 'Select answer: {option}').replace('{option}', opt),
 
                       key: opt, disabled: answered, type: "button",
 
@@ -10251,7 +10350,7 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("div", { className: "flex justify-between gap-2 text-xs font-bold text-slate-700" }, React.createElement("span", null, __alloT('stem.galaxy.bh_traveler_clock', "Traveler's local clock")), React.createElement("span", null, __alloT('stem.galaxy.bh_steady', 'steady'))),
                         React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200" }, React.createElement("div", { className: "h-full w-full rounded-full bg-indigo-500" }))),
                       React.createElement("div", null,
-                        React.createElement("div", { className: "flex justify-between gap-2 text-xs font-bold text-slate-700" }, React.createElement("span", { id: "black-hole-signal-label" }, "Distant received signal: 100%"), React.createElement("span", null, __alloT('stem.galaxy.bh_delayed_redshifted', 'delayed + redshifted'))),
+                        React.createElement("div", { className: "flex justify-between gap-2 text-xs font-bold text-slate-700" }, React.createElement("span", { id: "black-hole-signal-label" }, __alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%').replace('{percent}','100')), React.createElement("span", null, __alloT('stem.galaxy.bh_delayed_redshifted', 'delayed + redshifted'))),
                         React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200" }, React.createElement("div", { id: "black-hole-signal-bar", className: "h-full w-full rounded-full bg-sky-400 transition-all duration-300" })))
                     ),
                     React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-orange-900" }, __alloT('stem.galaxy.bh_observer_view_desc', 'Illustrative observer view: the traveler experiences their own clock normally, while a distant observer receives increasingly delayed and redshifted light signals.'))
@@ -10434,18 +10533,17 @@ if (!window._galaxyHasLoadedOnce) {
                       var coreColor, glowColor, coronaColor;
                       if (mass < HYDROGEN_FUSION_LIMIT) { coreColor = '#d6a35c'; glowColor = '#8b5a2b'; coronaColor = '#9f7a4426'; }
                       else if (mass < M_DWARF_LIMIT) { coreColor = '#ffaa44'; glowColor = '#ff7722'; coronaColor = '#ff550033'; }
-                      else if (mass < 0.8) { coreColor = '#ffcc6f'; glowColor = '#ff9944'; coronaColor = '#ff884422'; }
-                      else if (mass < 1.04) { coreColor = '#fff8e8'; glowColor = '#ffe4a8'; coronaColor = '#ffdd6622'; }
-                      else if (mass < 1.4) { coreColor = '#fff'; glowColor = '#f0f0ff'; coronaColor = '#dde4ff22'; }
-                      else if (mass < 2.1) { coreColor = '#e8eeff'; glowColor = '#cad7ff'; coronaColor = '#aabbff22'; }
-                      else if (mass < 16) { coreColor = '#d0ddff'; glowColor = '#aabfff'; coronaColor = '#8899ff33'; }
+                      else if (mass < CLASS_MAX_K) { coreColor = '#ffcc6f'; glowColor = '#ff9944'; coronaColor = '#ff884422'; }
+                      else if (mass < CLASS_MAX_G) { coreColor = '#fff8e8'; glowColor = '#ffe4a8'; coronaColor = '#ffdd6622'; }
+                      else if (mass < CLASS_MAX_F) { coreColor = '#fff'; glowColor = '#f0f0ff'; coronaColor = '#dde4ff22'; }
+                      else if (mass < CLASS_MAX_A) { coreColor = '#e8eeff'; glowColor = '#cad7ff'; coronaColor = '#aabbff22'; }
+                      else if (mass < CLASS_MAX_B) { coreColor = '#d0ddff'; glowColor = '#aabfff'; coronaColor = '#8899ff33'; }
                       else { coreColor = '#c0ccff'; glowColor = '#9bb0ff'; coronaColor = '#7788ff44'; }
 
-                      var stageLabel = '';
+                      var stageLabel = stageDisplayLabel(stage, mass);
 
                       // ── NEBULA: diffuse gas cloud ──
                       if (stage === 'nebula') {
-                        stageLabel = '\u2601\uFE0F Nebular Cloud';
                         for (var nc = 0; nc < 18; nc++) {
                           var na = (nc / 18) * Math.PI * 2 + tick * 0.003;
                           var nd = 30 + nc * 12 + 15 * Math.sin(tick * 0.008 + nc * 2);
@@ -10474,7 +10572,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── PROTOSTAR: forming star with accretion disk ──
                       else if (stage === 'protostar') {
-                        stageLabel = '\uD83D\uDFE0 Protostar';
                         var pr = baseR * 0.5;
                         var pp = 1 + 0.06 * Math.sin(tick * 0.06);
                         pr *= pp;
@@ -10511,7 +10608,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── RED GIANT: huge pulsing red-orange star ──
                       else if (stage === 'red_giant') {
-                        stageLabel = '\uD83D\uDD34 Red Giant';
                         var rgR = Math.min(baseR * 2.5, dim * 0.38);
                         var rgPulse = 1 + 0.08 * Math.sin(tick * 0.03) + 0.03 * Math.sin(tick * 0.07);
                         rgR *= rgPulse;
@@ -10540,7 +10636,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── PLANETARY NEBULA: expanding ring + white dwarf ──
                       else if (stage === 'planetary_nebula') {
-                        stageLabel = '\uD83D\uDFE3 Planetary Nebula';
                         var pnR = baseR * 0.15;
                         var ringR = baseR * 2 + 15 * Math.sin(tick * 0.015);
                         // Nebula rings
@@ -10569,7 +10664,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── WHITE DWARF: tiny dim star ──
                       else if (stage === 'white_dwarf') {
-                        stageLabel = '\u26AA White Dwarf';
                         var wdr = baseR * 0.12;
                         var wdpulse = 1 + 0.01 * Math.sin(tick * 0.02);
                         wdr *= wdpulse;
@@ -10591,7 +10685,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── SUPERNOVA: explosive burst ──
                       else if (stage === 'supernova') {
-                        stageLabel = '\uD83D\uDCA5 Supernova!';
                         var snPhase = (tick * 0.02) % (Math.PI * 2);
                         var snScale = 0.5 + 1.5 * Math.abs(Math.sin(snPhase));
                         // Shock waves
@@ -10625,7 +10718,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── NEUTRON STAR: tiny pulsar with beams ──
                       else if (stage === 'neutron_star') {
-                        stageLabel = '\u2B50 Neutron Star (Pulsar)';
                         var nsR = baseR * 0.08;
                         // Rotating beams
                         var beamA = tick * 0.05;
@@ -10655,7 +10747,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── BLACK HOLE: dark sphere with accretion disk ──
                       else if (stage === 'black_hole') {
-                        stageLabel = '\uD83D\uDD73\uFE0F Black Hole';
                         var bhR = baseR * 0.4;
                         // Accretion disk (behind)
                         ctx.save();
@@ -10696,7 +10787,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── BLACK DWARF: cold dead ember ──
                       else if (stage === 'black_dwarf') {
-                        stageLabel = mass < HYDROGEN_FUSION_LIMIT ? '\u26AB Cooling Brown Dwarf' : '\u26AB Black Dwarf';
                         var bdR = baseR * 0.1;
                         // Faint deep purple/grey glow
                         var bdg = ctx.createRadialGradient(cx, cy, bdR, cx, cy, bdR * 3);
@@ -10712,7 +10802,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── BLUE DWARF: intensely hot tiny star ──
                       else if (stage === 'blue_dwarf') {
-                        stageLabel = '🔵 Blue Dwarf';
                         var bldr = baseR * 0.4;
                         var bldPulse = 1 + 0.05 * Math.sin(tick * 0.1);
                         bldr *= bldPulse;
@@ -10728,7 +10817,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── RED SUPERGIANT: extremely massive, turbulent ──
                       else if (stage === 'red_supergiant') {
-                        stageLabel = '🔴 Red Supergiant';
                         var rsR = baseR * 3.5;
                         var rsPulse = 1 + 0.15 * Math.sin(tick * 0.02) + 0.05 * Math.sin(tick * 0.05);
                         rsR = Math.min(rsR * rsPulse, dim * 0.40);
@@ -10757,7 +10845,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── BLUE SUPERGIANT: hyper-luminous, fast winds ──
                       else if (stage === 'blue_supergiant') {
-                        stageLabel = '🔵 Blue Supergiant';
                         var bsR = Math.min(baseR * 2.5, dim * 0.38);
                         var bsPulse = 1 + 0.02 * Math.sin(tick * 0.15);
                         bsR *= bsPulse;
@@ -10784,7 +10871,6 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── MAIN SEQUENCE (default): normal star ──
                       else {
-                        stageLabel = '⭐ Main Sequence';
                         var msR = baseR;
                         var msPulse = 1 + 0.03 * Math.sin(tick * 0.04);
                         msR *= msPulse;
@@ -10840,7 +10926,7 @@ if (!window._galaxyHasLoadedOnce) {
                       ctx.fillStyle = 'rgba(255,255,255,0.92)';
                       ctx.fillText(stageLabel, cx, 22);
                       // Classification
-                      var cls = mass < HYDROGEN_FUSION_LIMIT ? 'Brown dwarf (substellar)' : mass < M_DWARF_LIMIT ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
+                      var cls = mass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.cls_brown_dwarf', 'Brown dwarf (substellar)') : mass < M_DWARF_LIMIT ? __alloT('stem.galaxy.cls_m_type', 'M-type Red Dwarf') : mass < CLASS_MAX_K ? __alloT('stem.galaxy.cls_k_type', 'K-type Orange') : mass < CLASS_MAX_G ? __alloT('stem.galaxy.cls_g_type', 'G-type (Sun-like)') : mass < CLASS_MAX_F ? __alloT('stem.galaxy.cls_f_type', 'F-type Yellow-White') : mass < CLASS_MAX_A ? __alloT('stem.galaxy.cls_a_type', 'A-type White') : mass < CLASS_MAX_B ? __alloT('stem.galaxy.cls_b_type', 'B-type Blue-White') : __alloT('stem.galaxy.cls_o_type', 'O-type Blue Giant');
                       if (stage === 'nebula') cls = __alloT('stem.galaxy.stage_will_form', 'will form a ') + mass + ' M☉' + __alloT('stem.galaxy.stage_from_progenitor_tail', ' star');
                       else if (stage !== 'main_sequence' && stage !== 'protostar') cls = __alloT('stem.galaxy.stage_from_progenitor', 'from a ') + mass + ' M' + '☉' + __alloT('stem.galaxy.stage_from_progenitor_tail', ' star');
                       ctx.font = '10px Inter, system-ui, sans-serif';
@@ -10848,33 +10934,29 @@ if (!window._galaxyHasLoadedOnce) {
                       ctx.fillText(cls, cx, 36);
 
                       // ── Physical properties panel (bottom center) ──
-                      var surfTemp = mass < HYDROGEN_FUSION_LIMIT ? 1800 : mass < M_DWARF_LIMIT ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
-                      var luminosity = Math.pow(mass, 3.5);
+                      var surfTemp = mainSequenceTemp(mass);
+                      var luminosity = mainSequenceLuminosity(mass);
                       var radius = mainSequenceRadius(mass);
-                      var lifetimeGyr = 10 / Math.pow(mass, 2.5);
-                      var lifetime = mass < 0.2 ? '>100' : lifetimeGyr.toFixed(mass < 1 ? 0 : 1);
+                      var lifetimeGyr = mainSequenceLifetimeGyr(mass);
                       var lifetimeText;
                       if (mass < HYDROGEN_FUSION_LIMIT) {
-                        lifetimeText = 'No sustained hydrogen fusion';
-                      } else if (mass < 0.2) {
-                        lifetimeText = 'Lifespan: >100 billion years';
-                      } else if (lifetimeGyr >= 1) {
-                        lifetimeText = 'Lifespan: ' + lifetimeGyr.toFixed(1) + ' billion years';
-                      } else if (lifetimeGyr >= 0.001) {
-                        lifetimeText = 'Lifespan: ' + (lifetimeGyr * 1000).toFixed(lifetimeGyr >= 0.01 ? 0 : 1) + ' million years';
+                        lifetimeText = __alloT('stem.galaxy.lifespan_no_fusion', 'No sustained hydrogen fusion');
+                      } else if (mass < M_DWARF_LIMIT) {
+                        lifetimeText = __alloT('stem.galaxy.lifespan_red_dwarf', 'Lifespan: hundreds of billions to trillions of years');
                       } else {
-                        lifetimeText = 'Lifespan: ' + Math.round(lifetimeGyr * 1000000).toLocaleString() + ' thousand years';
+                        lifetimeText = __alloT('stem.galaxy.lifespan_value', 'Lifespan: {value}').replace('{value}', formatLifetimeShort(lifetimeGyr).replace('~', ''));
                       }
                       ctx.font = 'bold 10px Inter, system-ui, sans-serif';
                       ctx.fillStyle = 'rgba(255,255,255,0.72)';
                       ctx.fillText(stage === 'main_sequence' || stage === 'protostar' || stage === 'nebula'
-                        ? mass + ' Solar Masses'
-                        : __alloT('stem.galaxy.stage_progenitor_mass', 'Started as a ') + mass + ' M☉ ' + __alloT('stem.galaxy.stage_progenitor_mass_tail', 'star'), cx, H - 42);
+                        ? __alloT('stem.galaxy.canvas_mass_solar', '{mass} Solar Masses').replace('{mass}', mass)
+                        : __alloT('stem.galaxy.canvas_progenitor_mass', 'Started as a {mass} M☉ star').replace('{mass}', mass), cx, H - 42);
                       var stageFacts = starStageFacts(stage, mass);
                       // On a narrow canvas this line ran off both edges. Shrink to fit,
                       // and split across two rows if even the smallest size overflows.
                       var lumText = (luminosity < 100 ? luminosity.toFixed(1) : Math.round(luminosity).toLocaleString()) + ' L\u2609';
-                      var statsLine = stageFacts || ('T: ' + surfTemp.toLocaleString() + ' K  |  L: ' + lumText + '  |  R: ' + radius.toFixed(2) + ' R\u2609');
+                      var shownTemp = surfTemp >= 10000 ? Math.round(surfTemp / 100) * 100 : Math.round(surfTemp / 10) * 10;
+                      var statsLine = stageFacts || ('T: ' + shownTemp.toLocaleString() + ' K  |  L: ' + lumText + '  |  R: ' + radius.toFixed(2) + ' R\u2609');
                       ctx.fillStyle = 'rgba(255,255,255,0.52)';
                       var statsSize = 9;
                       ctx.font = statsSize + 'px monospace';
@@ -10950,7 +11032,7 @@ if (!window._galaxyHasLoadedOnce) {
                         ctx.beginPath(); ctx.arc(cx, cy, sunRefR, 0, Math.PI * 2);
                         ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
                         // Park the label clear of whichever circle is larger.
-                        ctx.fillText('Sun (1 M\u2609)', cx, Math.max(50, cy - Math.max(sunRefR, baseR) - 6));
+                        ctx.fillText(__alloT('stem.galaxy.canvas_sun_reference', 'Sun (1 M\u2609)'), cx, Math.max(50, cy - Math.max(sunRefR, baseR) - 6));
                       }
                       ctx.restore();
 
@@ -10974,7 +11056,7 @@ if (!window._galaxyHasLoadedOnce) {
                 }),
 
                 // ── Snapshot button (overlay, bottom-right of canvas) ──
-                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "min-h-[44px] px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-full hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: __alloT('stem.galaxy.narrate_starlife_prefix', 'Star Life: ') + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_starlife_snapshot', '\uD83D\uDCF8 Star life snapshot saved!'), 'success'); }, className: "min-h-[44px] px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-full hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -11033,7 +11115,7 @@ if (!window._galaxyHasLoadedOnce) {
                       // Canvas Narration: star mass change
                       if (typeof canvasNarrate === 'function') {
                         var cat = lifecycleMassCategory(massVal);
-                        canvasNarrate('galaxy', 'starMass', cat + ' at ' + massVal + ' solar masses', { debounce: 800 });
+                        canvasNarrate('galaxy', 'starMass', cat + ' at ' + massVal + __alloT('stem.galaxy.unit_solar_masses', ' solar masses'), { debounce: 800 });
                       }
                     },
 
@@ -11057,9 +11139,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                     lifecycleMass < HYDROGEN_FUSION_LIMIT ? "\uD83E\uDEA8 " + __alloT('stem.galaxy.masscat_brown_dwarf', 'Brown Dwarf') :
                       lifecycleMass < M_DWARF_LIMIT ? "\uD83D\uDD34 " + __alloT('stem.galaxy.masscat_red_dwarf', 'Red Dwarf (M-type)') :
-                        lifecycleMass < 0.8 ? "\uD83D\uDFE0 " + __alloT('stem.galaxy.masscat_orange_dwarf', 'Orange Dwarf (K-type)') :
-                          lifecycleMass < 1.04 ? "\u2600\uFE0F " + __alloT('stem.galaxy.masscat_sunlike', 'Sun-like (G-type)') :
-                            lifecycleMass < 2.1 ? "\uD83D\uDD35 " + __alloT('stem.galaxy.masscat_hot_ms', 'Hot Main-Sequence Star') :
+                        lifecycleMass < CLASS_MAX_K ? "\uD83D\uDFE0 " + __alloT('stem.galaxy.masscat_orange_dwarf', 'Orange Dwarf (K-type)') :
+                          lifecycleMass < CLASS_MAX_G ? "\u2600\uFE0F " + __alloT('stem.galaxy.masscat_sunlike', 'Sun-like (G-type)') :
+                            lifecycleMass < CLASS_MAX_A ? "\uD83D\uDD35 " + __alloT('stem.galaxy.masscat_hot_ms', 'Hot Main-Sequence Star') :
                               lifecycleMass < 8 ? "\uD83D\uDD35 " + __alloT('stem.galaxy.masscat_b_type', 'Bright B-type Star') :
                                 lifecycleMass < 25 ? "\uD83D\uDCA5 " + __alloT('stem.galaxy.masscat_massive', 'Massive Star') :
                                   "\uD83D\uDD73\uFE0F " + __alloT('stem.galaxy.masscat_very_massive', 'Very Massive Star')
@@ -11077,18 +11159,18 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-4" },
                   [
                     { key: 'browndwarf', label: "\uD83E\uDEA8 " + __alloT('stem.galaxy.masspath_browndwarf_label', 'Brown-dwarf path'), sub: "0.05 M\u2609 substellar", mass: 0.05, stage: 'main_sequence', border: 'rgba(161,98,7,0.55)', bg: 'rgba(161,98,7,0.14)', text: '#fde68a' },
-                    { key: 'reddwarf', label: "\uD83D\uDD34 " + __alloT('stem.galaxy.masspath_reddwarf_label', 'Red-dwarf future'), sub: "0.2 M\u2609 blue-dwarf phase", mass: 0.2, stage: 'blue_dwarf', border: 'rgba(96,165,250,0.55)', bg: 'rgba(59,130,246,0.12)', text: '#bfdbfe' },
-                    { key: 'supernova', label: "\uD83D\uDCA5 " + __alloT('stem.galaxy.masspath_supernova_label', 'Supernova path'), sub: "12 M\u2609 core collapse", mass: 12, stage: 'supernova', border: 'rgba(251,191,36,0.55)', bg: 'rgba(251,191,36,0.12)', text: '#fde68a' },
+                    { key: 'reddwarf', label: "\uD83D\uDD34 " + __alloT('stem.galaxy.masspath_reddwarf_label', 'Red-dwarf future'), sub: __alloT('stem.galaxy.preset_blue_dwarf', "0.2 M\u2609 blue-dwarf phase"), mass: 0.2, stage: 'blue_dwarf', border: 'rgba(96,165,250,0.55)', bg: 'rgba(59,130,246,0.12)', text: '#bfdbfe' },
+                    { key: 'supernova', label: "\uD83D\uDCA5 " + __alloT('stem.galaxy.masspath_supernova_label', 'Supernova path'), sub: __alloT('stem.galaxy.preset_core_collapse', "12 M\u2609 core collapse"), mass: 12, stage: 'supernova', border: 'rgba(251,191,36,0.55)', bg: 'rgba(251,191,36,0.12)', text: '#fde68a' },
                     { key: 'blackhole', label: "\uD83D\uDD73\uFE0F " + __alloT('stem.galaxy.masspath_blackhole_label', 'Black-hole path'), sub: "30 M\u2609 remnant", mass: 30, stage: 'black_hole', border: 'rgba(168,85,247,0.55)', bg: 'rgba(168,85,247,0.14)', text: '#ddd6fe' }
                   ].map(function (path) {
                     return React.createElement("button", {
                       key: path.key,
                       type: "button",
                       "aria-pressed": (Math.abs(lifecycleMass - path.mass) < 0.001 && activeStage === path.stage) ? "true" : "false",
-                      "aria-label": "Show " + path.label.replace(/^[^\s]+\s/, '') + " at " + path.mass + " solar masses",
+                      "aria-label": "Show " + path.label.replace(/^[^\s]+\s/, '') + " at " + path.mass + __alloT('stem.galaxy.unit_solar_masses', " solar masses"),
                       onClick: function () {
                         patchGalaxy({ quizMode: false, simMode: "star", showLifecycle: true, lifecycleMass: path.mass, activeStage: path.stage });
-                        if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'lifePathPreset', path.label.replace(/^[^\s]+\s/, '') + " selected at " + path.mass + " solar masses.", { debounce: 500 });
+                        if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'lifePathPreset', path.label.replace(/^[^\s]+\s/, '') + " selected at " + path.mass + __alloT('stem.galaxy.narrate_solar_masses', " solar masses."), { debounce: 500 });
                         if (typeof awardStemXP === 'function') awardStemXP('galaxy_life_path', 2, 'Explored ' + path.label.replace(/^[^\s]+\s/, ''));
                       },
                       className: "min-h-[44px] text-left rounded-xl border px-3 py-2 transition-all hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300",
@@ -11144,12 +11226,12 @@ if (!window._galaxyHasLoadedOnce) {
                         )
                       ) : null,
 
-                      React.createElement("div", { role: "button", tabIndex: 0, "aria-pressed": isActive ? "true" : "false", "aria-label": "Select lifecycle stage: " + s.name + ". " + s.desc, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function() {
+                      React.createElement("div", { role: "button", tabIndex: 0, "aria-pressed": isActive ? "true" : "false", "aria-label": __alloT('stem.galaxy.aria_select_stage', "Select lifecycle stage: ") + s.name + ". " + s.desc, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function() {
                         upd('activeStage', s.id);
                         // Canvas Narration: lifecycle stage selection
                         if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'stageSelect', {
                           first: s.emoji + ' ' + s.name + '. ' + s.desc,
-                          repeat: s.name + ' stage selected.',
+                          repeat: s.name + __alloT('stem.galaxy.narrate_stage_selected', ' stage selected.'),
                           terse: s.name
                         });
                       }, className: "flex items-center gap-3 p-2 rounded-xl border transition-all cursor-pointer " + (isDeathBranch ? "ml-6 " : "") + (isActive ? "scale-[1.03] ring-2 ring-offset-1 ring-amber-400 shadow-lg" : "hover:scale-[1.01]"), style: { borderColor: isActive ? s.color : s.color + '55', background: isActive ? s.color + '25' : s.color + '15' } },
@@ -11248,9 +11330,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                 var mass = lifecycleMass;
 
-                var msT = mass < HYDROGEN_FUSION_LIMIT ? 1800 : mass < M_DWARF_LIMIT ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
+                var msT = mainSequenceTemp(mass);
 
-                var msL = Math.pow(mass, 3.5);
+                var msL = mainSequenceLuminosity(mass);
                 var massNoun = mass < HYDROGEN_FUSION_LIMIT ? "object" : "star";
 
                 var STAGE_HR = {
@@ -11323,7 +11405,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, __alloT('stem.galaxy.hr_diagram_intro', "Every star is one dot: temperature across (hot on the LEFT — astronomers' quirk), luminosity up. Stars aren't scattered randomly. Drag the mass slider and click lifecycle stages — the dashed line traces YOUR star's whole journey.")),
 
-                  React.createElement("svg", { viewBox: "0 0 " + HW + " " + HH, className: "w-full", role: "img", "aria-label": __alloT('stem.galaxy.aria_hr_diagram', "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted.") },
+                  React.createElement("svg", { viewBox: "0 0 " + HW + " " + HH, dir: "ltr", className: "w-full", style: { direction: 'ltr' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_hr_diagram', "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted.") },
 
                     // temperature color strip along the bottom
 
@@ -11357,7 +11439,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("path", { d: msBandTop + msBandBot + 'Z', fill: "rgba(99,102,241,0.16)", stroke: "rgba(129,140,248,0.35)", strokeWidth: 0.7 }),
 
-                    React.createElement("text", { x: xOf(9500), y: yOf(6) + 4, fill: "#a5b4fc", fontSize: 9, fontWeight: 700, transform: "rotate(24 " + xOf(9500) + " " + yOf(6) + ")" }, __alloT('stem.galaxy.hr_main_sequence_label', 'MAIN SEQUENCE (90% of stars)')),
+                    React.createElement("text", { x: xOf(9500), y: yOf(6) + 4, fill: "#a5b4fc", fontSize: 9, fontWeight: 700, textAnchor: "middle", textLength: 150, lengthAdjust: "spacingAndGlyphs", transform: "rotate(24 " + xOf(9500) + " " + yOf(6) + ")" }, __alloT('stem.galaxy.hr_main_sequence_label', 'MAIN SEQUENCE (90% of stars)')),
 
                     React.createElement("text", { x: xOf(4200), y: yOf(600), fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.hr_giants_label', 'Giants')),
 
@@ -11428,7 +11510,7 @@ if (!window._galaxyHasLoadedOnce) {
                       key: st.id,
                       type: "button",
                       "aria-pressed": isMatch ? "true" : "false",
-                      "aria-label": "Set mass to " + st.id + "-type star, " + st.mass + ", " + st.lifetime + " lifetime",
+                      "aria-label": __alloT('stem.galaxy.aria_set_mass', "Set mass to ") + st.id + __alloT('stem.galaxy.aria_set_mass_join', "-type star, ") + st.mass + ", " + st.lifetime + " lifetime",
 
                       className: "text-center p-2 rounded-xl border-2 bg-transparent transition-all cursor-pointer  " +
 
@@ -11488,7 +11570,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("div", { className: "grid grid-cols-3 gap-2 text-xs" },
 
-                      [{ l: "Luminosity", v: st.luminosity }, { l: "Mass Range", v: st.mass || '?' }, { l: "Lifetime", v: st.lifetime || '?' }].map(function (item) {
+                      [{ l: "Luminosity", v: st.luminosity }, { l: __alloT('stem.galaxy.label_mass_range', "Mass Range"), v: st.mass || '?' }, { l: "Lifetime", v: st.lifetime || '?' }].map(function (item) {
 
                         return React.createElement("div", { key: item.l, className: "bg-white rounded-lg p-1.5 text-center border border-slate-100" },
 
@@ -11528,19 +11610,19 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("p", { className: "text-xs text-indigo-800 leading-relaxed" },
 
-                  lifecycleMass < HYDROGEN_FUSION_LIMIT ? "Brown dwarfs are sometimes called 'failed stars.' They glow faintly from leftover formation heat, but never sustain hydrogen fusion. They begin around 13 Jupiter masses, so Jupiter itself is far below the brown-dwarf range." :
+                  lifecycleMass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.blurb_brown_dwarf', "Brown dwarfs are sometimes called 'failed stars.' They glow faintly from leftover formation heat, but never sustain hydrogen fusion. They begin around 13 Jupiter masses, so Jupiter itself is far below the brown-dwarf range.") :
 
-                    lifecycleMass < M_DWARF_LIMIT ? "M-type red dwarfs are the most common true stars. They burn fuel so slowly that no red dwarf has had time to die since the universe began." :
+                    lifecycleMass < M_DWARF_LIMIT ? __alloT('stem.galaxy.blurb_red_dwarf', "M-type red dwarfs are the most common true stars. They burn fuel so slowly that no red dwarf has had time to die since the universe began.") :
 
-                    lifecycleMass < 0.8 ? "K-type orange dwarfs are stable, long-lived stars. Astronomers like them for exoplanet studies because their habitable zones can last for many billions of years." :
+                    lifecycleMass < CLASS_MAX_K ? __alloT('stem.galaxy.blurb_orange_dwarf', "K-type orange dwarfs are stable, long-lived stars. Astronomers like them for exoplanet studies because their habitable zones can last for many billions of years.") :
 
-                    lifecycleMass < 1.4 ? "Stars near the Sun's mass live for billions of years. Our Sun is about halfway through its main-sequence life and will eventually become a red giant before shedding a planetary nebula." :
+                    lifecycleMass < CLASS_MAX_F ? __alloT('stem.galaxy.blurb_sunlike', "Stars near the Sun's mass live for billions of years. Our Sun is about halfway through its main-sequence life and will eventually become a red giant before shedding a planetary nebula.") :
 
-                      lifecycleMass < 8 ? "Larger main-sequence stars burn hotter and die sooner. A 2 M\u2609 star lives only about 1-2 billion years, much shorter than the Sun." :
+                      lifecycleMass < 8 ? __alloT('stem.galaxy.blurb_larger_ms', "Larger main-sequence stars burn hotter and die sooner. A 2 M\u2609 star lives only about 1-2 billion years, much shorter than the Sun.") :
 
-                        lifecycleMass < 25 ? "Neutron stars are so dense that a sugar-cube-sized piece weighs about 1 billion tons! They can spin up to 716 times per second and have magnetic fields trillions of times stronger than Earth's." :
+                        lifecycleMass < 25 ? __alloT('stem.galaxy.blurb_neutron_star', "Neutron stars are so dense that a sugar-cube-sized piece weighs about 1 billion tons! They can spin up to 716 times per second and have magnetic fields trillions of times stronger than Earth's.") :
 
-                          "Stellar black holes form when the collapsed cores of very massive stars become compact enough for gravity to trap light. Astronomers find them with X-ray binaries, stellar orbits, and gravitational waves."
+                          __alloT('stem.galaxy.blurb_black_hole', "Stellar black holes form when the collapsed cores of very massive stars become compact enough for gravity to trap light. Astronomers find them with X-ray binaries, stellar orbits, and gravitational waves.")
 
                 )
 
@@ -11554,17 +11636,17 @@ if (!window._galaxyHasLoadedOnce) {
 
                 var ORIGINS = {
 
-                  bb: { label: 'Big Bang', color: '#7dd3fc' },
+                  bb: { label: __alloT('stem.galaxy.label_big_bang', 'Big Bang'), color: '#7dd3fc' },
 
-                  cr: { label: 'Cosmic-ray collisions', color: '#86efac' },
+                  cr: { label: __alloT('stem.galaxy.origin_cosmic_ray', 'Cosmic-ray collisions'), color: '#86efac' },
 
-                  lm: { label: 'Dying low-mass stars', color: '#d8b4fe' },
+                  lm: { label: __alloT('stem.galaxy.origin_dying_low_mass', 'Dying low-mass stars'), color: '#d8b4fe' },
 
-                  ms: { label: 'Massive-star supernovae', color: '#60a5fa' },
+                  ms: { label: __alloT('stem.galaxy.origin_massive_supernovae', 'Massive-star supernovae'), color: '#60a5fa' },
 
-                  wd: { label: 'Exploding white dwarfs', color: '#fde047' },
+                  wd: { label: __alloT('stem.galaxy.origin_exploding_wd', 'Exploding white dwarfs'), color: '#fde047' },
 
-                  nsm: { label: 'Merging neutron stars', color: '#fb7185' }
+                  nsm: { label: __alloT('stem.galaxy.origin_merging_ns', 'Merging neutron stars'), color: '#fb7185' }
 
                 };
 
@@ -11590,25 +11672,25 @@ if (!window._galaxyHasLoadedOnce) {
 
                   (activeStage === 'white_dwarf' || (activeStage === 'black_dwarf' && lifecycleMass >= HYDROGEN_FUSION_LIMIT)) ? { wd: true } : {};
 
-                var stageMsg = activeStage === 'supernova' ? "💥 This explosion is forging oxygen, silicon, and calcium RIGHT NOW — glowing below." :
+                var stageMsg = activeStage === 'supernova' ? __alloT('stem.galaxy.nucleo_supernova', "💥 This explosion is forging oxygen, silicon, and calcium RIGHT NOW — glowing below.") :
 
-                  activeStage === 'planetary_nebula' ? "The dying star's winds are scattering fresh carbon and nitrogen into space — glowing below." :
+                  activeStage === 'planetary_nebula' ? __alloT('stem.galaxy.nucleo_planetary', "The dying star's winds are scattering fresh carbon and nitrogen into space — glowing below.") :
 
-                  activeStage === 'red_giant' ? "Deep inside, helium is fusing into carbon — the backbone atom of all known life." :
+                  activeStage === 'red_giant' ? __alloT('stem.galaxy.nucleo_helium', "Deep inside, helium is fusing into carbon — the backbone atom of all known life.") :
 
-                  activeStage === 'neutron_star' ? "If two neutron stars collide, they forge gold, platinum, and uranium in seconds." :
+                  activeStage === 'neutron_star' ? __alloT('stem.galaxy.nucleo_neutron_merger', "If two neutron stars collide, they forge gold, platinum, and uranium in seconds.") :
 
-                  activeStage === 'white_dwarf' ? "If a companion star dumps gas onto it, a white dwarf can detonate — the source of much of the iron in your blood." :
+                  activeStage === 'white_dwarf' ? __alloT('stem.galaxy.nucleo_white_dwarf', "If a companion star dumps gas onto it, a white dwarf can detonate — the source of much of the iron in your blood.") :
 
-                  activeStage === 'main_sequence' && lifecycleMass < HYDROGEN_FUSION_LIMIT ? "This brown dwarf is substellar: it glows from leftover heat, but it never sustains hydrogen fusion." :
+                  activeStage === 'main_sequence' && lifecycleMass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.nucleo_brown_dwarf', "This brown dwarf is substellar: it glows from leftover heat, but it never sustains hydrogen fusion.") :
 
-                  activeStage === 'main_sequence' ? "Right now this star fuses hydrogen into helium. Heavier elements come from later stellar stages, explosions, and compact-object mergers." : null;
+                  activeStage === 'main_sequence' ? __alloT('stem.galaxy.nucleo_main_sequence', "Right now this star fuses hydrogen into helium. Heavier elements come from later stellar stages, explosions, and compact-object mergers.") : null;
 
                 return React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 rounded-2xl border border-violet-400/30 p-4 shadow-lg" },
 
                   React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "✨"), __alloT('stem.galaxy.star_stuff_title', 'You Are Star Stuff')),
 
-                  React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, "Almost every atom heavier than helium was forged inside a star. Colors show where each element in your body — and your phone — came from."),
+                  React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, __alloT('stem.galaxy.nucleo_intro', "Almost every atom heavier than helium was forged inside a star. Colors show where each element in your body — and your phone — came from.")),
 
                   stageMsg && React.createElement("p", { className: "text-xs font-bold text-violet-300 bg-violet-900/40 border border-violet-700/50 rounded-lg px-2.5 py-1.5 mb-2" }, stageMsg),
 
@@ -11652,13 +11734,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                     [
 
-                      { e: '🦴', txt: 'Calcium in your bones', src: 'massive supernovae', c: '#60a5fa' },
+                      { e: '🦴', txt: __alloT('stem.galaxy.body_calcium', 'Calcium in your bones'), src: __alloT('stem.galaxy.source_massive_supernovae_inline', 'massive supernovae'), c: '#60a5fa' },
 
-                      { e: '🩸', txt: 'Iron in your blood', src: 'exploding white dwarfs', c: '#fde047' },
+                      { e: '🩸', txt: __alloT('stem.galaxy.body_iron', 'Iron in your blood'), src: __alloT('stem.galaxy.source_exploding_wd_inline', 'exploding white dwarfs'), c: '#fde047' },
 
-                      { e: '🫁', txt: 'Oxygen in every breath', src: 'massive supernovae', c: '#60a5fa' },
+                      { e: '🫁', txt: __alloT('stem.galaxy.body_oxygen', 'Oxygen in every breath'), src: __alloT('stem.galaxy.source_massive_supernovae_inline', 'massive supernovae'), c: '#60a5fa' },
 
-                      { e: '💍', txt: 'Gold in jewelry', src: 'neutron-star mergers', c: '#fb7185' }
+                      { e: '💍', txt: __alloT('stem.galaxy.body_gold', 'Gold in jewelry'), src: __alloT('stem.galaxy.source_ns_mergers_inline', 'neutron-star mergers'), c: '#fb7185' }
 
                     ].map(function (f) {
 
@@ -11672,7 +11754,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2 leading-relaxed" }, "Colors show each element's dominant source today — many have more than one. Gold's neutron-star origin was confirmed in 2017, when telescopes watched the glow of freshly forged heavy elements after gravitational-wave event GW170817.")
+                  React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2 leading-relaxed" }, __alloT('stem.galaxy.nucleo_footnote', "Colors show each element's dominant source today — many have more than one. Gold's neutron-star origin was confirmed in 2017, when telescopes watched the glow of freshly forged heavy elements after gravitational-wave event GW170817."))
 
                 );
 
@@ -11701,11 +11783,11 @@ if (!window._galaxyHasLoadedOnce) {
                   var starPx = Math.max(8, Math.min(MAX_PX, rawPx));
                   var clipped = rawPx > MAX_PX;
                   var starGradient = lifecycleMass < 0.45 ? 'linear-gradient(135deg, #ffcc6f, #ff9944)' :
-                    lifecycleMass < 0.8 ? 'linear-gradient(135deg, #ffd2a1, #ffaa66)' :
-                      lifecycleMass < 1.04 ? 'linear-gradient(135deg, #fff4ea, #ffdd99)' :
-                        lifecycleMass < 1.4 ? 'linear-gradient(135deg, #f8f7ff, #dddddd)' :
-                          lifecycleMass < 2.1 ? 'linear-gradient(135deg, #cad7ff, #99aaee)' :
-                            lifecycleMass < 16 ? 'linear-gradient(135deg, #aabfff, #7799ff)' :
+                    lifecycleMass < CLASS_MAX_K ? 'linear-gradient(135deg, #ffd2a1, #ffaa66)' :
+                      lifecycleMass < CLASS_MAX_G ? 'linear-gradient(135deg, #fff4ea, #ffdd99)' :
+                        lifecycleMass < CLASS_MAX_F ? 'linear-gradient(135deg, #f8f7ff, #dddddd)' :
+                          lifecycleMass < CLASS_MAX_A ? 'linear-gradient(135deg, #cad7ff, #99aaee)' :
+                            lifecycleMass < CLASS_MAX_B ? 'linear-gradient(135deg, #aabfff, #7799ff)' :
                               'linear-gradient(135deg, #9bb0ff, #6677ff)';
                   var luminosity = Math.pow(lifecycleMass, 3.5);
                   var sizeVerdict = starRadius < 0.92 ? __alloT('stem.galaxy.size_smaller', 'Your star is smaller and cooler than the Sun.')
@@ -11729,7 +11811,7 @@ if (!window._galaxyHasLoadedOnce) {
                             width: starPx + 'px',
                             height: starPx + 'px',
                             background: starGradient,
-                            boxShadow: '0 0 ' + Math.min(24, 4 + starRadius * 5).toFixed(0) + 'px ' + (lifecycleMass < 0.8 ? '#ffd2a166' : lifecycleMass < 2.1 ? '#fff4ea66' : '#aabfff66')
+                            boxShadow: '0 0 ' + Math.min(24, 4 + starRadius * 5).toFixed(0) + 'px ' + (lifecycleMass < CLASS_MAX_K ? '#ffd2a166' : lifecycleMass < CLASS_MAX_A ? '#fff4ea66' : '#aabfff66')
                           }
                         }),
                         React.createElement("span", { className: "text-xs text-slate-600 mt-1 font-bold" }, lifecycleMass + " M\u2609"),
@@ -11780,10 +11862,11 @@ if (!window._galaxyHasLoadedOnce) {
 
               // Mass and age used to be inert decoration. Two textbook relations make
               // them do real work, without turning the widget into a scored quiz:
-              //   • main-sequence lifetime ≈ 10 / M^2.5 Gyr
+              //   • main-sequence lifetime ≈ 10 / M^2.5 Gyr (mainSequenceLifetimeGyr,
+              //     shared with Star Life so the two modes cannot disagree)
               //   • the interstellar medium was enriched over cosmic time, so a star's
               //     age constrains the metallicity it could have been born with.
-              var msLifetime = 10 / Math.pow(Math.max(0.08, starMass), 2.5);
+              var msLifetime = mainSequenceLifetimeGyr(Math.max(0.08, starMass));
               var formationTime = Math.max(0.2, 13.8 - starAge);
               var expectedZ = Math.min(1.6, Math.pow(formationTime / 9, 1.6));
               var stillBurning = starAge <= msLifetime;
@@ -11813,7 +11896,7 @@ if (!window._galaxyHasLoadedOnce) {
               var sliders = [
                 { k: 'metallicity', v: metallicity, l: __alloT('stem.galaxy.mh_slider_metallicity', 'Metallicity (Z☉)'), mn: 0.001, mx: 2, st: 0.01, unit: ' Z☉' },
                 { k: 'mass', v: starMass, l: __alloT('stem.galaxy.mh_slider_mass', 'Mass (M☉)'), mn: 0.1, mx: 50, st: 0.1, unit: ' M☉' },
-                { k: 'age', v: starAge, l: __alloT('stem.galaxy.mh_slider_age', 'Age (Gyr)'), mn: 0, mx: 14, st: 0.1, unit: __alloT('stem.galaxy.mh_unit_gyr', ' billion years') }
+                { k: 'age', v: starAge, l: __alloT('stem.galaxy.mh_slider_age', 'Age (Gyr)'), mn: 0, mx: 13.8, st: 0.1, unit: __alloT('stem.galaxy.mh_unit_gyr', ' billion years') }
               ];
               return h('div', { className: 'p-4 rounded-xl bg-slate-900 text-slate-100 border border-purple-400 space-y-3' },
                 h('h3', { className: 'text-sm font-black text-purple-300' }, '🌟 ' + __alloT('stem.galaxy.mh_title', 'Stellar metallicity discovery')),

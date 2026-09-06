@@ -107,11 +107,22 @@
  * The stub now humanises the last segment. Any stub that can return a
  * placeholder longer than the real value belongs on the false-positive list.
  *
- * ★A SINGLE-FILE --deep RUN AND A LAB-WIDE ONE DO NOT COVER THE SAME VIEWS.
+ * ★★★A SINGLE-FILE --deep RUN AND A LAB-WIDE ONE DO NOT COVER THE SAME VIEWS.
  * DEEP_CAP is 30 alone and 12 under --all, and the walk dedupes by control
- * label, so neither pass is a superset of the other: the final sweep found live
- * findings in decomposer and base10 views that per-tool runs had reported clean.
- * Finish with --all --deep, not with a per-tool victory lap.
+ * label, so neither pass is a superset of the other: one sweep found live
+ * findings in decomposer and base10 views that per-tool runs had reported clean,
+ * and — the other direction — magnetism reports 2 svg-text findings alone and 0
+ * in all three axes of a full sweep, because its later controls sit past the
+ * twelfth. Finish with --all --deep, not with a per-tool victory lap; but do not
+ * read a sweep as a clean bill of health either.
+ *   ★This paragraph existed BEFORE 2026-09-05 and I still burned an afternoon
+ *   rediscovering it — a flakiness test, a contention test, a path-separator
+ *   test — while debugging THIS FILE. Read the header before bisecting the code
+ *   it describes. What made the fact actionable was not writing it down again
+ *   but making the gate SAY it at runtime: every board now prints
+ *   "N of M matched controls" per file, --deep-cap=N|all overrides the cap, and
+ *   --only=<substr> runs the --all path over a subset so the two can be compared
+ *   in one command instead of inferred.
  *
  * ★RUN IT IN BOTH THEMES. --dark is where the own-ground family lives, because
  * stem_lab renders every tool on a WHITE card in both themes. The first light
@@ -132,6 +143,13 @@ const path = require('path');
 const ROOT = process.cwd();
 const args = process.argv.slice(2);
 const ALL = args.includes('--all');
+// ★ --only=<substring> runs the --all CODE PATH over a subset. Added to bisect a
+// real disagreement: magnetism reports 2 svg-text findings run on its own and 0
+// inside a full sweep, both reproducibly. Restricting `--all` to just that file
+// separates "the --all path measures differently" from "the browser is 84 files
+// deep by then". Useful beyond that: re-checking one tool the way the board saw
+// it, without a 25-minute run.
+const ONLY = (args.find((a) => a.startsWith('--only=')) || '').slice(7);
 const DARK = args.includes('--dark');
 const JSON_OUT = args.includes('--json');
 const GATE = args.includes('--gate');
@@ -170,13 +188,33 @@ const VIEWPORT = (function () {
 })();
 // One re-mount per control, so this is the runtime knob. 30 covers the Pets
 // Lab's 28 menu tiles; --all --deep is a long run by design.
-const DEEP_CAP = ALL ? 12 : 30;
+// ★★★ THE SWEEP PROBES FEWER VIEWS THAN A SINGLE-FILE RUN. 12 under --all vs 30
+// alone is a deliberate wall-clock tradeoff, but it silently means any tool with
+// more than 12 top-level controls has its later views UNEXAMINED in every
+// lab-wide board. That is exactly how magnetism reported 2 svg-text findings on
+// its own and 0 in all three sweep axes: "Measurement lab" and "Magnetometer
+// Hunt" sit past the twelfth control. A truncated measurement must never read as
+// a clean one, so the cap is now (a) overridable with --deep-cap=N and (b)
+// reported per file whenever it actually bites.
+// ★ --settle-cap=N (ms) makes the animation wait testable. A hardcoded 1200ms
+// cap cannot be distinguished from "long enough": when the light axis reported 4
+// files measured mid-animation, the only way to learn whether their "clean" was
+// real was to wait longer and compare.
+const settleArg = (args.find((a) => a.startsWith('--settle-cap=')) || '').slice(13);
+const SETTLE_CAP = settleArg ? Math.max(100, parseInt(settleArg, 10) || 1200) : 1200;
+const capArg = (args.find((a) => a.startsWith('--deep-cap=')) || '').slice(11);
+// `--deep-cap=all` probes every view. The first full-depth pass had to be a bash
+// loop that read a file list and passed each tool's own total back in; the whole
+// point of measuring coverage is to be able to close it in one command.
+const DEEP_CAP = (capArg === 'all' || capArg === 'auto')
+  ? Infinity
+  : (capArg ? Math.max(1, parseInt(capArg, 10) || 0) : (ALL ? 12 : 30));
 const toolArg = args.find((a) => !a.startsWith('--'));
 const statesArg = (args.find((a) => a.startsWith('--states=')) || '').slice(9);
 const stateArg = (args.find((a) => a.startsWith('--state=')) || '').slice(8);
 
 if (!ALL && !toolArg) {
-  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast [--no-host-css]] [--narrow|--viewport=WxH] [--deep] [--json] [--gate]');
+  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast [--no-host-css]] [--narrow|--viewport=WxH] [--deep] [--json] [--gate] [--only=<substr> with --all] [--deep-cap=N|all] [--settle-cap=MS]');
   process.exit(2);
 }
 
@@ -206,6 +244,40 @@ function extractStemPalette() {
 // including its enclosing `@media screen { ... }` wrapper and multi-line
 // selector lists. Rules with `${...}` interpolations (typography props) are
 // skipped; none of the theme rules use them.
+// ★★★ MEASURE THE SETTLED LAYOUT, NOT THE ENTRY ANIMATION. A CSS animation
+// beats an inline style in the cascade, so while `arch-panel-in` runs,
+// archstudio's onboarding panel loses the `translate(-50%,-50%)` that centres
+// it and sits half a stage off — 56px past the tool column. The gate waited
+// 450ms after mount, but that element only APPEARS once WebGL goes live, so its
+// 0.2s animation started after the wait and was sampled 26% in. The finding was
+// real for ~200ms and gone by the time a reader could see it.
+// Waiting for running animations to finish (capped, because spinners and other
+// infinite loops never do) is the difference between reporting a layout and
+// reporting a frame of an animation.
+// ★ Returns true when the 1200ms cap expired with animations STILL RUNNING —
+// i.e. the measurement that follows is of a frame, not of a settled layout. The
+// cap has to exist (infinite animations never finish), but an instrument that
+// silently gives up and measures anyway is the exact failure this whole file has
+// been chasing: "nothing went wrong" must not be spelled like "I stopped
+// waiting". Callers surface it as a per-file caveat.
+async function settle(page) {
+  const gaveUp = await page.evaluate((cap) => {
+    const running = (document.getAnimations ? document.getAnimations() : [])
+      .filter((a) => a.playState === 'running' &&
+        // An infinite animation never finishes; don't wait on it at all.
+        !(a.effect && a.effect.getTiming && a.effect.getTiming().iterations === Infinity));
+    if (!running.length) return false;
+    return Promise.race([
+      Promise.all(running.map((a) => a.finished.catch(() => {}))).then(() => false),
+      new Promise((r) => setTimeout(() => r(true), cap))
+    ]);
+  }, SETTLE_CAP);
+  // Two settled frames after the animations, for the same reason as before: a
+  // style read taken mid-flush can mix values across elements.
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  return gaveUp;
+}
+
 function extractHostThemeRules(theme) {
   const src = read('app_styles_module.js');
   const needle = '.theme-' + theme;
@@ -395,11 +467,46 @@ const PROBE = function (CONTRAST) {
     svg.querySelectorAll('text').forEach((t) => {
       const r = t.getBoundingClientRect();
       if (!r.width || !r.height) return;
+      // ★★★ A RECT AROUND TEXT IS THE EM BOX, NOT THE INK. It includes the
+      // font's internal leading, which is empty. For a label rotated -90 that
+      // empty band becomes HORIZONTAL, so a y-axis title can overhang its canvas
+      // by a couple of px with no glyph anywhere near the edge: magnetism's
+      // "y position" measured 17px thick at an 11px font and reported a 2.6px
+      // left clip that cut nothing. Canvas TextMetrics gives the real ink
+      // extent, so the leading can be discounted instead of guessed at.
+      // ★The slack applies ONLY to the axis PERPENDICULAR to the text run —
+      // along the run, an overhang really is a cut-off glyph. Widening the raw
+      // threshold instead would have hidden exactly that.
+      const inkSlack = (function () {
+        try {
+          // ★ Single-line only. A <text> with stacked <tspan> lines measures as
+          // ONE line in canvas but occupies several in the rect, which would
+          // inflate the slack and start excusing real clipping. Untested case,
+          // so it gets no slack rather than a guess.
+          if (t.querySelector('tspan')) return { x: 0, y: 0 };
+          const cs2 = getComputedStyle(t);
+          const font = (cs2.fontStyle || 'normal') + ' ' + (cs2.fontWeight || '400') + ' ' +
+            (cs2.fontSize || '10px') + ' ' + (cs2.fontFamily || 'sans-serif');
+          window.__inkCanvas = window.__inkCanvas || document.createElement('canvas');
+          const g = window.__inkCanvas.getContext('2d');
+          g.font = font;
+          const m = g.measureText(t.textContent || '');
+          const ink = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
+          if (!ink) return { x: 0, y: 0 };
+          const thin = Math.min(r.width, r.height);
+          const long = Math.max(r.width, r.height);
+          // Only meaningful for a single line clearly longer than it is thick.
+          if (long < thin * 1.5) return { x: 0, y: 0 };
+          const slack = Math.max(0, (thin - ink) / 2);
+          // Rotated (taller than wide) -> the empty band is horizontal.
+          return r.height > r.width ? { x: slack, y: 0 } : { x: 0, y: slack };
+        } catch (e) { return { x: 0, y: 0 }; }
+      })();
       const over = [];
-      if (r.right > sr.right + 1) over.push('right by ' + (r.right - sr.right).toFixed(1));
-      if (r.left < sr.left - 1) over.push('left by ' + (sr.left - r.left).toFixed(1));
-      if (r.bottom > sr.bottom + 1) over.push('bottom by ' + (r.bottom - sr.bottom).toFixed(1));
-      if (r.top < sr.top - 1) over.push('top by ' + (sr.top - r.top).toFixed(1));
+      if (r.right > sr.right + 1 + inkSlack.x) over.push('right by ' + (r.right - sr.right).toFixed(1));
+      if (r.left < sr.left - 1 - inkSlack.x) over.push('left by ' + (sr.left - r.left).toFixed(1));
+      if (r.bottom > sr.bottom + 1 + inkSlack.y) over.push('bottom by ' + (r.bottom - sr.bottom).toFixed(1));
+      if (r.top < sr.top - 1 - inkSlack.y) over.push('top by ' + (sr.top - r.top).toFixed(1));
       if (!over.length) return;
       findings.push({
         kind: 'svg-text-outside-viewbox',
@@ -438,9 +545,26 @@ const PROBE = function (CONTRAST) {
     // Parked off-canvas until focused — the standard skip-link pattern
     // (transform: translateY(-180%)). dissection stacks two of them at the same
     // coordinates on purpose; only the focused one ever translates into view.
+    //
+    // ★★★ BUT "OUTSIDE THE SLOT" ALSO DESCRIBES THE WORST OVERFLOW THERE IS,
+    // AND THIS CLAUSE WAS SWALLOWING IT. `r.left > sr.right` is true for a
+    // skip-link parked to the right AND for any control shoved entirely past
+    // the edge by a too-wide row — exactly what `overflows-tool-column` exists
+    // to catch. coding's header spills seven buttons; the gate reported the ONE
+    // that straddles the boundary (💾 Save, 2px over, left edge still inside)
+    // and silently dropped 📂 Load, 📌 Pick, 🔇 Music, 🎨 FG at 65-262px over,
+    // because those are wholly outside. **The worse the defect, the more
+    // certainly it was invisible** — a detector inverted against itself.
+    // Parked means MOVED BY A TRANSFORM; pushed means laid out there. Only the
+    // former is deliberate, so only the former is invisible.
     const sr = slot.getBoundingClientRect();
     const r = el.getBoundingClientRect();
-    if (r.bottom < sr.top || r.right < sr.left || r.top > sr.bottom || r.left > sr.right) return true;
+    const outside = r.bottom < sr.top || r.right < sr.left || r.top > sr.bottom || r.left > sr.right;
+    if (!outside) return false;
+    for (let n = el; n && n !== slot.parentElement; n = n.parentElement) {
+      const t = getComputedStyle(n).transform;
+      if (t && t !== 'none') return true;
+    }
     return false;
   }
 
@@ -466,7 +590,9 @@ const PROBE = function (CONTRAST) {
       .map((n) => n.textContent)
       .join('')
       .trim();
-    if (own.length < 2 || !/[A-Za-z0-9]/.test(own)) return;
+    // ★ \p{L}/\p{N}, not [A-Za-z0-9]: the ASCII form silently skipped clipped
+    // Japanese, Arabic and Cyrillic labels in a lab that ships language packs.
+    if (own.length < 2 || !/[\p{L}\p{N}]/u.test(own)) return;
     if (invisible(el)) return;
     const cs = getComputedStyle(el);
     if (cs.overflow !== 'hidden' && cs.overflowX !== 'hidden' && cs.overflowY !== 'hidden') return;
@@ -475,6 +601,15 @@ const PROBE = function (CONTRAST) {
     // sr-only / visually-hidden: a 1px clipped box is the whole point.
     const r = el.getBoundingClientRect();
     if (r.width <= 2 || r.height <= 2) return;
+    // ★ GUARD THE CONTENT BOX TOO, NOT JUST THE BORDER BOX. anatomy's
+    // `.anatomy-skip-link` is a textbook hidden-until-focused affordance
+    // (width:1px;height:1px;overflow:hidden;clip-path:inset(50%), revealed on
+    // :focus) and it reported "content 173x24 in a 0x0 box" — the rect guard
+    // reads getBoundingClientRect while the message reads clientWidth, and
+    // those are different boxes. A ~zero CONTENT box is the signature of a
+    // hidden affordance, never of clipped prose; clientWidth/clientHeight are
+    // also 0 for inline boxes, which cannot be clipped by overflow at all.
+    if (el.clientWidth <= 2 || el.clientHeight <= 2) return;
     // 2px of slack absorbs sub-pixel layout noise; a real cut is bigger.
     const overX = cs.overflowX === 'hidden' ? el.scrollWidth - el.clientWidth : 0;
     const overY = cs.overflowY === 'hidden' ? el.scrollHeight - el.clientHeight : 0;
@@ -522,24 +657,40 @@ const PROBE = function (CONTRAST) {
       //   • clipping ancestor + CONTENT → REPORT. The columns past the edge are
       //     cut off with no way to scroll to them, which is worse than a
       //     scrollbar, not better.
+      // ★ DO NOT STOP AT THE FIRST CLIP — KEEP LOOKING FOR A SCROLLER. A clipping
+      // box nested inside a scrolling one is still reachable: magnetism's
+      // station tabs each carry `overflow:hidden` (their labels truncate with
+      // `text-overflow: ellipsis`, which is correct), and breaking on that
+      // `hidden` meant never discovering whether the tab STRIP scrolls. Scroll-
+      // ability anywhere up the chain wins, so walk the whole chain and let
+      // `scrollable` override `clipped` regardless of which comes first.
       let scrollable = false, clipped = false;
       for (let n = el.parentElement; n && n !== slot.parentElement; n = n.parentElement) {
         const cs = getComputedStyle(n);
         const ox = cs.overflowX, oy = cs.overflow;
         if (ox === 'auto' || ox === 'scroll' || oy === 'auto' || oy === 'scroll') { scrollable = true; break; }
-        if (ox === 'hidden' || ox === 'clip' || oy === 'hidden' || oy === 'clip') { clipped = true; break; }
+        if (ox === 'hidden' || ox === 'clip' || oy === 'hidden' || oy === 'clip') clipped = true;
       }
       if (scrollable) return;
       if (clipped) {
-        // Decorative = carries no text of its own, or the author declared the
-        // whole subtree hidden from assistive tech. Either way nothing is lost.
-        let decorative = !(el.textContent || '').trim();
-        if (!decorative) {
-          for (let n = el; n && n !== slot; n = n.parentElement) {
-            if (n.getAttribute && n.getAttribute('aria-hidden') === 'true') { decorative = true; break; }
-          }
-        }
-        if (decorative) return;
+        // ★ DECORATIVE MEANS "CARRIES NO TEXT", NOT "aria-hidden". An earlier
+        // version also treated an `aria-hidden` ancestor as proof of decoration.
+        // skatelab disproves that: its phase-marker labels (START, RAMP, APEX,
+        // CONTACT, PULSE END) live inside an `aria-hidden="true"` strip and are
+        // very much visible text — aria-hidden says "not exposed to assistive
+        // tech", which is not the same as "not seen". Clipping one of those
+        // would have been silenced. The case that motivated the clause,
+        // sourcebook's ring, is an empty bordered div, so the text test alone
+        // already covers it and the risky clause buys nothing.
+        // ★ "Carries text" must mean "carries a LETTER or a NUMBER". Dropping the
+        // aria-hidden clause (rightly — skatelab's aria-hidden phase labels are
+        // visible text) made rocks and spacecolony report their decorative
+        // corner watermarks: `absolute -right-6 -top-8 text-8xl opacity-[.06]`
+        // holding a single 🪨 / 🌍. An emoji is Unicode Symbol-other, so asking
+        // for \p{L} or \p{N} drops watermarks while keeping every real label —
+        // and unlike /[A-Za-z0-9]/ it does not go blind to Japanese or Arabic
+        // prose, which matters in a lab that ships language packs.
+        if (!/[\p{L}\p{N}]/u.test(el.textContent || '')) return;
       }
       // Fixed/sticky chrome is positioned against the viewport on purpose.
       const cs = getComputedStyle(el);
@@ -758,6 +909,7 @@ const PROBE = function (CONTRAST) {
   if (ALL) {
     files = fs.readdirSync(path.join(ROOT, 'stem_lab'))
       .filter((f) => /^stem_tool_.*\.js$/.test(f))
+      .filter((f) => !ONLY || f.indexOf(ONLY) !== -1)
       .map((f) => path.join('stem_lab', f));
   } else {
     files = [toolArg];
@@ -798,6 +950,17 @@ const PROBE = function (CONTRAST) {
 
     const toolId = toolIds[0];
     const findings = lintNonUniformRx(src, file);
+    // ★★★ SWALLOWED DEEP ERRORS ARE INVISIBLE MISSING FINDINGS. The deep loop
+    // used to end in a bare `catch (e) {}` on the theory that "a control that
+    // unmounts itself is not a defect" — true, but it discarded genuine probe
+    // failures the same way, so a view that errored counted as a view with no
+    // defects. magnetism reports 2 svg-text findings in every theme when run on
+    // its own and 0 in every axis of the full sweep; both are reproducible, and
+    // the swallow is why the difference left no trace anywhere. Silence must not
+    // be spelled the same way as success.
+    const deepErrors = [];
+    let deepTruncated = 0;
+    let settleGaveUp = 0;
 
     const page = await browser.newPage({ viewport: VIEWPORT });
     const pageErrors = [];
@@ -822,7 +985,7 @@ const PROBE = function (CONTRAST) {
         // particlelab3d protocol click the span already reported its active
         // cyan-300 ink while the button still reported a stale slate-50 ground,
         // manufacturing a 1.39:1 finding on a card that is really slate-950.
-        await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+        if (await settle(page)) settleGaveUp += 1;
         const found = await page.evaluate(PROBE, CONTRAST);
         found.forEach((f) => { f.file = file; f.tool = tid; f.state = JSON.stringify(state); findings.push(f); });
 
@@ -850,6 +1013,9 @@ const PROBE = function (CONTRAST) {
           }).map(function (el) { return (el.textContent || '').trim().slice(0, 40); });
         })()`;
         const labels = await page.evaluate(COLLECT);
+        if (labels.length > DEEP_CAP) {
+          deepTruncated = Math.max(deepTruncated, labels.length);
+        }
         const seen = new Set();
         for (let ti = 0; ti < Math.min(labels.length, DEEP_CAP); ti += 1) {
           if (seen.has(labels[ti])) continue;
@@ -882,7 +1048,7 @@ const PROBE = function (CONTRAST) {
             // is white on sky-800, purely because the probe ran before the rule
             // landed. A settle time too short manufactures contrast findings.
             await page.waitForTimeout(700);
-            await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+            if (await settle(page)) settleGaveUp += 1;
             const deepFound = await page.evaluate(PROBE, CONTRAST);
             deepFound.forEach((f) => {
               f.file = file;
@@ -890,7 +1056,11 @@ const PROBE = function (CONTRAST) {
               f.state = JSON.stringify(state) + ' → “' + labels[ti] + '”';
               findings.push(f);
             });
-          } catch (e) { /* a control that unmounts itself is not a defect */ }
+          } catch (e) {
+            // A control that unmounts itself is normal; a timeout is not. Keep
+            // both, and let the summary below make them visible.
+            deepErrors.push((labels[ti] || ('control#' + ti)) + ': ' + String(e && e.message).slice(0, 90));
+          }
         }
       }
       checked += 1;
@@ -898,6 +1068,11 @@ const PROBE = function (CONTRAST) {
     } catch (e) {
       findings.push({ kind: 'mount-error', file: file, detail: String(e.message).slice(0, 160) });
     }
+    // ★ COVERAGE IS NOT A FINDING. A first cut pushed these into `findings`,
+    // which broke every calibration baseline at once (known-bad 7 -> 8, pets
+    // 0 -> 1) — because a caveat about what was MEASURED is not a defect that
+    // was FOUND. They ride alongside the findings instead, so defect counts stay
+    // comparable across runs while the limits of the run stay visible.
     await page.close();
     // ★★★ --deep RE-MOUNTS, SO ONE DEFECT REPORTS ONCE PER VIEW. A first
     // light board read "56 findings across 6 files"; the true figure was 13
@@ -907,7 +1082,10 @@ const PROBE = function (CONTRAST) {
     // merely grew a tab, and it buries the one new defect among its own echoes.
     // Collapse on (kind, element, detail) and keep a `seen` tally so the deep
     // coverage is still visible.
-    if (findings.length) {
+    const coverage = (deepTruncated > DEEP_CAP && Number.isFinite(DEEP_CAP))
+      ? { probed: DEEP_CAP, total: deepTruncated }
+      : null;
+    if (findings.length || coverage || deepErrors.length || settleGaveUp) {
       const byKey = new Map();
       for (const f of findings) {
         // ★ EVERY FIELD THAT DISTINGUISHES A DEFECT MUST BE IN THE KEY. A first
@@ -925,7 +1103,11 @@ const PROBE = function (CONTRAST) {
         byKey.set(key, f);
       }
       const distinct = Array.from(byKey.values());
-      report.push({ file: file, tool: toolId, findings: distinct, raw: findings.length });
+      const entry = { file: file, tool: toolId, findings: distinct, raw: findings.length };
+      if (coverage) entry.coverage = coverage;
+      if (deepErrors.length) entry.deepErrors = deepErrors.slice(0, 5);
+      if (settleGaveUp) entry.settleGaveUp = settleGaveUp;
+      report.push(entry);
     }
   }
   await browser.close();
@@ -946,8 +1128,42 @@ const PROBE = function (CONTRAST) {
         if (f.snippet) console.log('    ' + f.snippet);
       });
     });
+    const partial = report.filter((e) => e.coverage);
+    const errored = report.filter((e) => e.deepErrors && e.deepErrors.length);
     console.log('\n[check_stem_layout_defects] ' + checked + ' tool(s) rendered, ' +
-      total + ' finding(s) across ' + report.length + ' file(s).');
+      total + ' finding(s) across ' + report.filter((e) => e.findings.length).length + ' file(s).');
+    if (partial.length) {
+      console.log('  ! ' + partial.length + ' file(s) only partly probed — those views are ' +
+        'UNMEASURED, not clean:');
+      partial.slice(0, 8).forEach((e) => {
+        console.log('      ' + e.file + ': ' + e.coverage.probed + ' of ' + e.coverage.total +
+          ' matched controls (re-run with --deep-cap=' + e.coverage.total + ')');
+      });
+      if (partial.length > 8) console.log('      ... and ' + (partial.length - 8) + ' more');
+    }
+    const unsettled = report.filter((e) => e.settleGaveUp);
+    if (unsettled.length) {
+      // ★ Report the cap in force, not a literal. The message said "(1200ms cap)"
+      // even under --settle-cap=6000, which is the same species of lie the whole
+      // file exists to remove: a diagnostic that misreports its own conditions.
+      console.log('  ! ' + unsettled.length + ' file(s) were measured while an animation was ' +
+        'still running (' + SETTLE_CAP + 'ms cap) — those readings are frames, not settled ' +
+        'layout. Compare with --settle-cap=<bigger>: if the findings match, the reading stands:');
+      unsettled.slice(0, 5).forEach((e) => {
+        console.log('      ' + e.file + ': ' + e.settleGaveUp + ' measurement(s)');
+      });
+    }
+    if (errored.length) {
+      console.log('  ! ' + errored.length + ' file(s) had view(s) fail to probe:');
+      errored.slice(0, 5).forEach((e) => {
+        console.log('      ' + e.file + ': ' + e.deepErrors.join(' | ').slice(0, 150));
+      });
+    }
   }
-  if (GATE && report.length) process.exit(1);
+  // ★ FAIL ON DEFECTS, NOT ON CAVEATS. `report` now also carries entries that
+  // hold only a coverage note or a probe error, so `report.length` would fail a
+  // build for a lab with zero defects — a regression introduced by the very
+  // change that made partial measurement visible. A caveat tells you the run was
+  // incomplete; it is not itself a defect.
+  if (GATE && report.some((e) => e.findings.length)) process.exit(1);
 })().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });

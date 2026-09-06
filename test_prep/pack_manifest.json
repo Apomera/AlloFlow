@@ -861,7 +861,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_psychology_pilot_qa.json",
       "learningLibrarySha256": "adb370d048c1e22b8279fd1465db62e14b7d9bfe3d2ea3b90ab514c9ab89e2c6",
-      "nativeQaSha256": "05225eb205ff754bdcad7327093dada35a8553872fd043070dcb232b330a5fbf"
+      "nativeQaSha256": "b62ebd3eaa64c388926337dc518bc005e4063818bf8ad9a97698311bdde1a119"
     },
     {
       "id": "ap-biology-foundation-pilot",
@@ -895,7 +895,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_biology_foundation_pilot_qa.json",
       "learningLibrarySha256": "3c708bc45dab3dbd99b126416dde30286d1a21845c3c411bb379dd65391e4610",
-      "nativeQaSha256": "3faf18e78e4db13173cdfea9cc8b751096c4574969687eedfe2b7114ce91d241"
+      "nativeQaSha256": "4fcd87f71884a23b04b91dcf69fdea6e918ea64cff924b6611f50919c3ce8608"
     },
     {
       "id": "ap-us-history-foundation-pilot",
@@ -929,7 +929,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_us_history_foundation_pilot_qa.json",
       "learningLibrarySha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88",
-      "nativeQaSha256": "fe5c7734a8ed00a97758e6a4aa0233c786731b4c70d9a60d0836692bef8a9253"
+      "nativeQaSha256": "bc4fd59eb1de58809c75d6cd20ad63db2f919507042e2bab9ed1c8f557b2d09e"
     },
     {
       "id": "ap-us-government-foundation-pilot",
@@ -963,7 +963,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_us_government_foundation_pilot_qa.json",
       "learningLibrarySha256": "a06f24fd72c1d94af58ac7a349a8f114893482ffb5cdddfb11b2660304992834",
-      "nativeQaSha256": "da01a68fa19fc2360bcad7695b8a9a88a67f8d45b21e8fd118cdf76761abc246"
+      "nativeQaSha256": "deb57addd6079cf8e01abc5825d85d55c6a6c056eb182bd601e86f9a0762b6f5"
     },
     {
       "id": "ap-statistics-foundation-pilot",
@@ -997,7 +997,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_statistics_foundation_pilot_qa.json",
       "learningLibrarySha256": "ce65e23e6f6735c9c8a5508049558864a853278c89abc52119bc7a7282947744",
-      "nativeQaSha256": "ebac42136fbec51764cc2ab31131f0e32a42c9bc819d4741b905cc91dfecbbae"
+      "nativeQaSha256": "bf5b11fb9025bc94ae4c77168d9e1cc80d0340c97f683330aad030a44ad7fc86"
     },
     {
       "id": "ap-chemistry-foundation-pilot",
@@ -1031,7 +1031,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_chemistry_foundation_pilot_qa.json",
       "learningLibrarySha256": "19c62bb27051c382064742ddd31107358704c8e41346dd4f77cd00ec9ccd6d68",
-      "nativeQaSha256": "5275cda293aedcd279e8b5b508780dd7c897ba3d0e2f1c6db16d5bcb0544e5bc"
+      "nativeQaSha256": "986b65c2c25fa31748f474aa0dd2d9e102617d2592cb1b8638669baec923e235"
     },
     {
       "id": "ap-physics-1-foundation-pilot",
@@ -1065,7 +1065,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_physics_1_foundation_pilot_qa.json",
       "learningLibrarySha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5",
-      "nativeQaSha256": "ae7889a7e9d99db3af9723750ad963fb0b2995be4ce95d52f9e5c51cefe6347f"
+      "nativeQaSha256": "5ae86f077d90d239663ea88c305021961c4a57804b6117c74da0da388be14139"
     },
     {
       "id": "ap-calculus-ab-foundation-pilot",
@@ -1099,7 +1099,7 @@
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_calculus_ab_foundation_pilot_qa.json",
       "learningLibrarySha256": "74140810a6b836d2c67fb938971a2ca7ed895bba44ce884684e5f4c515957522",
-      "nativeQaSha256": "1f7043161064b46ecb718737d20f274d55282186aed518629a1edaee4c2bd11e"
+      "nativeQaSha256": "cab971ea0d3df321f90397deed2baf4082b3e9c9004cec2ec474dbd549f38cbb"
     }
   ]
 }

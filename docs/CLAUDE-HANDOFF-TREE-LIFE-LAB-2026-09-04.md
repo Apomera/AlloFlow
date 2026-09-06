@@ -207,3 +207,205 @@ Keyboard flow and sharing: `focusLater`, `tabIndex: -1` on setup/forecast/ending
 Moved off the campaign to the lab views. Measured first: Grow/Chemistry/Spread/Check are all axe-clean with no phone overflow, the scene sticky works (canvas moved 293px over a 1400px scroll), and the Grow layout measures 667x578 canvas in a 695/620 workbench split. Two "defects" seen in the first capture were downscaling artifacts - do not trust a 4500px screenshot rendered at 607px wide. Real finding: view heights are grow 4500, transport 3236, chem 2174, spread 1928, quiz 1124 desktop; grow is 7015 on a 390px phone.
 
 Added a Grow section navigator: `GROW_SECTIONS`, `growSection(node, id, label)` wrapping five `pushKeyed` panels in labelled focusable `<section>`s, and `growNav()` rendering the pill links (inline theme tokens plus CSS for hover/focus only - the tool defines `--tree-ink`/`--tree-muted`/`--tree-accent`/`--tree-focus`, NOT `--tree-border`/`--tree-card`). New files `tests/tree_lab_grow_nav.test.js` (3) and `tests/e2e/treelab-grow-nav.spec.ts` (2); main suite reran green at 180. Local, uncommitted, undeployed.
+
+## Fifteenth pass (Claude, September 5, 2026) - Transport
+
+Generalised last pass's navigator instead of copying it: `GROW_SECTIONS` -> `LAB_SECTIONS[viewId]`, `growSection` -> `labSection`, `growNav()` -> `sectionNav(viewId)`, CSS class `.allo-tree-grow-section` -> `.allo-tree-lab-section` (nav class `.allo-tree-grow-nav` kept). Transport ids: `xport-sec-pipes|sugar|trunk|girdling`. Transport is a plain card list, NOT the workbench layout - it has no `.allo-tree-workbench-mission`. Its cards close with `], undefined, '<class>'));`, which is the anchor to use; counting parentheses fails because they appear inside string literals. Heights: transport 3236 desktop / 6172 phone, axe-clean. Tests: 5 units, 3 browser; main suite + units = 185 green. A per-theme screenshot inside a loop is flaky here (races the 3D settle) - assert axe in the loop, capture once outside. Local, uncommitted, undeployed.
+
+## Sixteenth pass (Claude, September 5, 2026) - Chemistry + tab strip
+
+Chemistry navigator: unlike Grow/Transport its cards are band-gated (trade = g68+, bill = g912+) and K-2 returns early, so `viewChem` collects `chemNav` via a local `chemPart(node, id, label)` wrapper and does `kids.unshift(sectionNav('chem', chemNav))` after the list is complete. `sectionNav(viewId, sections)` now takes an optional explicit list and returns null below two destinations. Ids: `chem-sec-reaction|curves|limits|trade|bill`.
+
+Tab strip: already a correct ARIA tabs implementation (TABS is filtered BEFORE `.map`, so the roving indices match the rendered set) but had ZERO test coverage anywhere. Traced every key: arrows/wrap/Home/End all correct, focus follows, one roving tabindex. Now covered by a browser test.
+
+Test lessons: a fixed `waitForTimeout(300)` after activating a tab is too short when a heavy view re-renders - use `expect.poll`. And do not assert `boundingBox().y < 400` on a short page; a 2174px view cannot scroll its last section to the top, so use `toBeInViewport()`. 8 units + 5 browser; main + nav + grove evidence = 205 green. Local, uncommitted, undeployed.
+
+## Seventeenth pass (Claude, September 5, 2026) - Compare chart series identity
+
+Compare was never measured before: 3118px, third-longest view, axe-clean. Real defect found by RUNNING the palette validator with `--pairs all` (adjacent-only passes and hides it): dark `#d55181` vs `#199e70` = CVD Delta E 1.6 deutan; dark yellow vs orange 10.6 normal; light magenta vs orange 12.9 normal. Five lines on one chart were colour-only.
+
+Fix: `SPECIES_DASH[i % 5]` now applies in EVERY theme for both the polyline and the legend swatch (it was `isContrast ? ... : ''` in both places). No hex changed, so every other use of the species hues is untouched. This follows the shared palette's own rule: past three all-pairs-safe slots the remedy is secondary encoding, not re-stepping. New file `tests/tree_lab_compare_series.test.js` (3). Main + compare + nav = 191 green. Local, uncommitted, undeployed.
+
+## Eighteenth pass (Claude, September 5, 2026) - colour sweep + species grid
+
+Swept for the colour-only defect class found last pass. Results: FACTOR_HUES (light/co2/water/temperature) PASS all-pairs in both modes - no action. Allocation hues (`#22c55e,#a16207,#f59e0b,#ec4899,#38bdf8`) FAIL all-pairs CVD (amber vs green 5.7 protan) but the strip has a full `aria-label` listing every part and percentage plus five labelled sliders beneath, which is the documented direct-label remedy - no action, and no 5-colour set can clear all-pairs anyway. Quiz status already ships glyph + srSay + inset bar + dashed border for wrong - no action.
+
+Real find: `.allo-tree-species-grid` used `repeat(auto-fit,minmax(285px,1fr))`, which resolves to FOUR columns on the 1331px panel and strands the fifth of five species cards beside three empty slots. Now explicit: 5 columns >=1180px, 3 by default, 2 <=900px, 1 <=620px (existing rule). At 1365px that is 258px per card, verified no overflow and all five the same height, so the stat bars align across species. New file `tests/e2e/treelab-compare-layout.spec.ts` pins per-row counts at 5 widths and asserts no row of four. Main + compare + nav = 191 green. Local, uncommitted, undeployed.
+
+## Nineteenth pass (Claude, September 5, 2026) - fixed-count grids + curve axis
+
+Applied the pass-18 rule tool-wide. FIRST fix the measurement: bucketing children into rows by exact `getBoundingClientRect().top` reports a false [1,3] because a highlighted panel sits ~2px proud - bucket within 6px. Corrected data: `.allo-tree-pipe-grid` (2) and `.allo-tree-habitat-ribbon` (4) are fine everywhere.
+
+Two real orphans at ~860px, both fixed with explicit counts: `.allo-tree-curve-grid` (4 items) went 3+1, now `repeat(2,...)` base + `min-width:920px` -> 4 + `max-width:460px` -> 1; `.allo-tree-quiz-story-path` (6 items) went 5+1, now `repeat(3,...)` base + `min-width:940px` -> 6 (its existing 760px->2 and 460px->1 rules still apply).
+
+Separate real defect: the curve y-axis max used `round(yMax, 1)`, and a SEEDLING's gross photosynthesis is <0.05, so on FIRST LOAD both axis ends read "0". Now `yMax >= 1 ? round(yMax,1) : round(yMax,2)`. Test the DEFAULT mount (`{ view: 'chem' }` with no tree), not just a synthetic grown tree - the bug only appears in the state every learner starts in.
+
+Test gotchas hit: `page.evaluate(stringCallback, arg)` DROPS the arg - pass a real function. Curve axis labels cannot be picked by document order (the limiting panel adds an end-anchored annotation) - filter to purely numeric text. And a bash heredoc ate `\d` in a regex; use the Edit tool for regex literals. New file `tests/e2e/treelab-grid-orphans.spec.ts` (2). Main + compare + nav = 192 green.
+
+**Repo state:** concurrent commit d15f79d50 (2026-09-05 13:02, "Deploy everyone's work") swept in Tree Lab through the Grow navigator (pass 14) and deployed it. Passes 15-19 (labSection rename, Transport + Chemistry navigators, always-on SPECIES_DASH, species grid, curve axis) are still local and uncommitted.
+
+## Twentieth pass (Claude, September 5, 2026) - printing
+
+First-load sweep across all six views (mount `{ treeLab: {} }`, no tree): clean, only honest seedling zeros. Then added the missing print support - treelab had 0 `@media print` rules against 38 sibling tools that have them.
+
+Print rules hide `.allo-tree-tabs`, `.allo-tree-grow-nav`, `.grove-skip`, `.grove-camera-controls`, `.grove-view-switch`, `.grove-action`, `.allo-tree-button`, `canvas`, `input[type=range]`; clear background-color AND background-image (gradients are background-image - clearing only the colour leaves the washes); flatten shadows; release `.allo-tree-workbench-sticky`; `break-inside:avoid` on cards/sections/patches. Do NOT blanket-hide `button`: `.grove-patch` and `.allo-tree-quiz-opt` are content.
+
+★★★ A closed `<details>` is not laid out at all in Chromium, so NO print CSS can reveal it, and `getComputedStyle(child).display` still reads 'block' - a vacuous assertion that passes while nothing renders. `ensurePrintExpansion()` (module-level, registered once, guarded by `PRINT_HOOKED`) sets `open` on `beforeprint` and restores on `afterprint`. `page.emulateMedia({media:'print'})` does NOT fire beforeprint - dispatch it, then assert the content's `getBoundingClientRect().height > 0`.
+
+New file `tests/e2e/treelab-print.spec.ts` (2). Main + compare + nav + grove evidence = 209 green. Local, uncommitted.
+
+## Twenty-first pass (Claude, September 5, 2026) - read-aloud
+
+Sibling-marker comparison across 147 stem tools: speechSynthesis 17 tools / treelab 0 (the gap); forced-colors 7/11 ok; aria-live 135/9 ok; localStorage 37/0 (n/a, uses platform save); requestFullscreen 14/0 (n/a, has its own viewerFull stage).
+
+Added `receiptSpeechText`, `stopSpeaking`, `speakReceipt`, `readAloudButton` in `viewGrove`, plus `.grove-speak` CSS (hidden in print). Refactored `whereList` into `whereLines(r)` (data) + `whereList(r)` (render) so speech and list share ONE derivation. State: `d.groveSpeaking`. Rate 0.85 for K-2, else 0.95.
+
+★★★ **`window.speechSynthesis` is a read-only accessor**: `w.speechSynthesis = stub` silently does nothing, the tool then calls the REAL engine (mute in headless), and the feature looks completely dead. Use `Object.defineProperty(w, 'speechSynthesis', { configurable: true, value: stub })`. Suspect the stub before the code when a feature appears inert.
+
+★★★ A heredoc-written script put REAL line breaks inside the GROVE_CSS string and broke the file. Repaired by converting bare LF (not preceded by CR) back to the two-char escape, via a script written with the Write tool - never a shell heredoc for anything containing backslashes. Verify with `node --check` AND the full unit suite.
+
+New file `tests/e2e/treelab-read-aloud.spec.ts` (3). 209 units + print/grove browser suites green. Local, uncommitted.
+
+## Twenty-second pass (Claude, September 5, 2026) - Compare section navigator
+
+Measured body scrollHeight per view at 1365x1000, grown oak: grow 4584 (nav), transport 3302 (nav), compare 2663 (NO nav), chem 2240 (nav), spread 1928 (none), quiz 1124 (none). Compare was the tallest view without a jump strip.
+
+`viewCompare` now uses the chemPart pattern (`cmpPart` collector) so band-gated blocks never leave dangling links: `cmp-sec-experiment` (hero card), `cmp-sec-trail` (reasoning trail), `cmp-sec-species`, `cmp-sec-next` (conclusion). `kids.unshift(sectionNav('compare', cmpNav))`.
+
+The species stage was ALREADY `h('section', {aria-label: 'Five species strategies'})`. It got `id` + `tabIndex:-1` in place instead of a labSection wrapper (which would have nested two labelled regions with the same name), and its nav entry reuses `stem.treelab.species_strategies` so link text == region label, matching the invariant labSection gives the others.
+
+★ Compare is `min: 'g35'` in TABS, so `{view:'compare', bandOverride:'k2'}` falls back to Grow - a band loop over compare must exclude k2 or it silently asserts against the Grow view.
+
+★ Four full Compare renders in one jsdom test exceed the 5s vitest default (five simulated species each); that test carries an explicit 30000ms timeout.
+
+3 unit tests appended to `tests/tree_lab_grow_nav.test.js`, 1 browser test appended to `tests/e2e/treelab-grow-nav.spec.ts` (includes a uniform-pill-style assertion). 246 units / 9 browser tests green. Local, uncommitted.
+
+## Twenty-third pass (Claude, September 5, 2026) - heading outline
+
+Measured outline per view: `h3 🌳 Tree Life Lab` FIRST, then `h2` chapter title, then h3 cards. The document opened at h3 and jumped UP. ★★★ axe never reports this: `heading-order` only flags levels SKIPPED going down; a rising level is legal, and the rule is best-practice (excluded by the wcag2a/2aa tag filter) anyway.
+
+Changes (5 sites, all measured for visual parity): hero `.allo-tree-hero-title` h3 -> h2; grove header tagline h2 -> h3 + `.grove-header h2{` -> `h3{` (2 occurrences, base + 480px media); quiz finale title h2 -> h3 + `.allo-tree-quiz-finale-copy h2{` -> `h3{`. Chapter title stays h2. Remaining `h('h2'` sites: hero, chapter, fullscreen sr-only dialog title.
+
+★ The app resets headings to 14px/400, so ALL visible sizes come from class or inline rules - retagging is visually inert PROVIDED the paired CSS selector is renamed. Verified by inserting an h2 twin next to the retagged h3 in the live page and diffing computed size/weight/margin/line-height (h3 42px vs h2 14px = the rule followed the tag correctly).
+
+New file `tests/tree_lab_headings.test.js` (4 tests, 7 views x 4 bands): highest heading first, no skipped level, no empty heading, exactly two h2s.
+
+★★★ `27-treelab-a11y.spec.ts` "the app stylesheet is actually applied" was failing BEFORE this pass - verified by running it against `git show HEAD:` of the tool. The root paints a GRADIENT, so `getComputedStyle(root).backgroundColor` is transparent on a fully styled page. Guard now compares `backgroundColor + ' | ' + backgroundImage` against `'rgba(0, 0, 0, 0) | none'`. Third gradient/background-color confusion in this project.
+
+250 units / a11y + grove + grove-evidence + print + evidence browser suites green. Local, uncommitted.
+
+## Twenty-fourth pass (Claude, September 5, 2026) - quiz answer position bias
+
+★★★ The existing gate `does not let a student score the quiz by answer position` measures ALL 16 questions and PASSED (A=2,B=4,C=5,D=5). Students never see that set. Per band pool the old rotation `shift=(i*3+1)%4` gave: k2 A1/B1/C2/D1, g35 A1/B2/C2/D3, g68 **A1**/B3/C4/D4, g912 A2/B4/C5/D5. "Never A" was nearly a strategy for grades 6-8.
+
+`QUIZ` is now built by an IIFE that keeps a per-band load table and gives each question the position with the lightest load across the pools that will SHOW it (`BANDS.filter(b => atLeast(b, item.band))`), tie-broken by `(p + i) % n`. Result: g35/g68/g912 exactly even, k2 even to within 1 (5 questions), longest same-position run 2. Adding a question rebalances automatically.
+
+Two new tests in `tests/tree_lab.test.js` beside the old gate: per-pool spread <= 1 with every position used, and no position three times running. Both fail on the old placement.
+
+★ A fixture in `turns the knowledge check into an evidence-led mastery journey` hard-coded `quizPicks: {0: 0}` as a WRONG pick; question 0's answer is now at index 0. It derives the wrong pick from `E.QUIZ[0].correct` instead - never write an answer index as a literal.
+
+★ Migration note: a saved `quizPicks` index from an older build points at a different option now; `quizSeen` (right/wrong) is unaffected.
+
+252 units green + print, grid-orphans, quiz a11y browser suites. Local, uncommitted.
+
+## Twenty-fifth pass (Claude, September 5, 2026) - phone sweep of the knowledge check
+
+`.allo-tree-quiz-leaf-trail` was `display:flex;flex-wrap:wrap` with 22px chips; at 390px twelve chips wrapped 11 + 1. Now module-scope `trailColumns(n)` (exported on the engine) picks the widest count from 6 down to 3 whose remainder is not exactly 1; the trail element carries `gridTemplateColumns: repeat(N,22px)` inline and the `max-width:760px` rule switches it to `display:grid` (the inline value is inert under flex at desktop, which is why it can be set unconditionally). Pool sizes 5/8/12/16 -> rows [5] [6,2] [6,6] [6,6,4].
+
+★ NO DEFECT (measured, no change): the tab strip already reveals the selected tab on a phone - on mount via the `ref` on the selected tab, after a resize from desktop, and after keyboard End. The screenshot that suggested otherwise was an artefact of resizing after mounting wide.
+
+New: 1 unit test in `tests/tree_lab.test.js` (column choice for n=1..24 plus the four real pool sizes), 1 browser test appended to `treelab-grid-orphans.spec.ts` (four bands x five widths, fails on the old flex wrap).
+
+★ Unit files run together on a loaded machine hit the 5s vitest default; `--pool=forks --maxWorkers=2` is the reliable local invocation, and the heading tests now carry explicit 20000/30000ms limits.
+
+253 units + quiz a11y + print browser suites green. Local, uncommitted.
+
+## Twenty-sixth pass (Claude, September 5, 2026) - sampled contrast (axe incomplete)
+
+★★★ axe returns 85-261 `color-contrast` nodes as INCOMPLETE per surface (gradient backgrounds); the a11y suite asserts on VIOLATIONS only, so none of that text was ever checked. Zero violations on the previously uncovered surfaces (Grove x4, Transport dark/contrast, Quiz dark/contrast) - the gap was never a violation, it was the incomplete bucket.
+
+Method: hide every glyph (`color:transparent` AND `svg text{fill:transparent}`), one full-page screenshot, sample the pixel under each text box, worst pixel of a 7x7 patch, compare to the axe-reported text colour. 977 nodes decided across 5 surfaces; 20 under AA.
+
+Fixes: new `--tree-accent-text` var = `#047857` in light (5.48:1 on white), `T.accent` in dark/contrast; all 44 `color:var(--tree-accent)` sites moved to it. The accent FILL keeps `#059669` because the near-black onAccent ink on it is 4.95:1 and darkening the fill would break that. `.allo-tree-memory-year-state` (8px) muted grey on the green chip was 3.16:1 in dark -> `--tree-ink` (6.57:1). Hero stat value set its accent INLINE (`tree.seedsBanked > 0 ? T.accent : T.text`) so the var swap missed it.
+
+★★★ MEASUREMENT TRAP: SVG text uses `fill`, not `color`, so a `color:transparent` overlay leaves it painted and the sample under an axis label is the GLYPH - five "failures" in the compare chart at 1.00-2.23:1 were my own error. Always hide `svg text`/`tspan` fill too.
+
+★ `.allo-tree-memory-compare-arrow` stays at 3.46:1: aria-hidden decorative glyph = graphical object, 3:1 floor. Listed in the spec's GRAPHICAL allowlist with that reasoning.
+
+New: `tests/e2e/treelab-contrast-sampled.spec.ts` (5 surfaces) + `tests/e2e/helpers/png_pixels.ts` (dependency-free PNG reader on node:zlib; Chromium writes 8-bit RGB/RGBA non-interlaced). Gate proven non-vacuous by re-injecting `#059669`: 8 failures on Grow (light).
+
+★ Writing several MB of screenshots into the OneDrive tree makes the next vitest run crawl (114s for 17 tests, spurious 5s timeouts). Delete the captures before running units.
+
+253 units + 24 a11y browser tests green. Local, uncommitted.
+
+## Twenty-seventh pass (Claude, September 6, 2026) - contrast across every surface
+
+Ran the sampled measurement over 16 surfaces: 2515 nodes, 15 under the floor.
+
+REAL 1 - season field guide identity hues used as TEXT on the light cards: `#f59e0b` 2.04, `#eab308` 1.91, `#38bdf8` 2.13, `#22c55e` 2.26, `#ea580c` 3.54. Added `inkTone(hex)` beside `tone(hex)` with `SEASON_INK` (`#22c55e->#15803d`, `#f59e0b->#b45309`, `#eab308->#a16207`, `#ea580c->#c2410c`, `#38bdf8->#0369a1`), published `--season-ink` / `--ledger-ink` beside `--season-hue` / `--ledger-tone`, and moved the 10 TEXT `color:` rules onto the ink vars with `/([;{])color:var\(--x\)/` so `border-color:` is not caught. Graphics keep the hue.
+
+REAL 2 - `'--tab-icon': isContrast ? T.cardAlt` gave the selected tab a near-black chip while the tab's ink is `T.onAccent` (black on the yellow tab): an invisible glyph. Now `'transparent'` in that theme.
+
+★★★ PHANTOM (my measurement): worst-pixel-in-a-7x7-patch reads a 1px white chip BORDER as the background in high contrast and reports white-on-white at 1.00:1 on legible text. Switched to the MEDIAN pixel of the patch; three phantoms vanished, both real faults stayed. Also un-pin `position:sticky/fixed` before a stitched full-page capture.
+
+`treelab-contrast-sampled.spec.ts` now covers 12 surfaces (was 5), all green. 253 units + 24 a11y green. Local, uncommitted.
+
+## Twenty-eighth pass (September 6, 2026) - focus indicator visibility
+
+★★★ `--tree-focus` in light was `#34d399`: 1.92:1 on white, 1.75:1 on the slate card, under the 3:1 for a focus indicator. Now `#047857` (5.48:1). Dark `#a7f3d0` 11.4:1 and contrast `#ffffff` were already fine - this was a LIGHT-theme-only fault, i.e. the default.
+
+Two more found by measuring on the page: `.grove-patch.is-selected` drew `outline:3px var(--grove-accent);outline-offset:1px`, so the focus ring at offset 3px landed ON that ring (1.46:1) - selection moved to `box-shadow:inset 0 0 0 3px` + border-color, leaving the outline to focus. And `[tabindex="0"]` containers (the discovery card) had NO focus rule and fell back to the UA ring: near-black, 2.94:1 on the dark card - added `.allo-tree-lab [tabindex="0"]:focus-visible`.
+
+★ A computed-style diff (before/after focus) says every control "changes on focus" and proves nothing about visibility. Measure the ring colour against the sampled pixels it is drawn over.
+
+★ A first sweep flagged 5 controls as having NO indicator; they were inside a CLOSED `<details>`, where `.focus()` silently does nothing. Skip anything where `document.activeElement !== el` after focusing, or open the folds first.
+
+★ Two screenshots per control (focused/unfocused diff) took 13-20 min for 4 surfaces under SwiftShader. One unfocused full-page capture plus computed ring colours does the same job in ~3 min. Also give `page.screenshot` an explicit `timeout: 180_000` - the 30s default fails under 3-worker parallelism here.
+
+New file `tests/e2e/treelab-focus-visible.spec.ts` (5 surfaces, 205 rings). Proven non-vacuous by injecting `--tree-focus:#34d399`: fails at 1.60-1.86:1. 253 units + 36 browser tests (contrast + a11y) + 6 grove browser tests green. Local, uncommitted.
+
+## Twenty-ninth pass (September 6, 2026) - chart mark contrast (WCAG 1.4.11)
+
+Measured SVG marks the same way as text (hide marks, capture, sample underneath). Light growth lines: `#1baf7a` 2.82:1, `#eda100` 2.17:1, `#e87ba4` 2.69:1 against the white chart - under the 3:1 for a meaningful graphic. Dashes (added earlier) fix IDENTITY, not visibility.
+
+Rebuilt both palettes by SEARCHING with the dataviz validator's exported `validate()` (`--pairs all`), not by eye:
+- LIGHT `['#1f68c0','#b45309','#15803d','#5b21b6','#9d174d']` - ALL CHECKS PASS, >=4.8:1 on the card.
+- DARK `['#38bdf8','#fdba74','#16a34a','#8b5cf6','#ec4899']` - deutan 8.8 / tritan 12.2 / normal 22.6, all >=3:1, FAILS the lightness band on two steps. Deliberate: the OLD dark palette had deutan ΔE **1.6** (pink vs green indistinguishable) and failed the normal floor too, and a search over ~4500 in-band combinations found NONE that separates five hues inside the dark band.
+
+★ The validator's report rows are `[label, status, detail]` where the first two rows use booleans and the rest strings - a `status === 'fail'` filter silently counts band failures as passes.
+
+★ Measuring ALL svg marks produces false positives by design: marker halos are stroked in the SURFACE colour on purpose (overlap separator) and gridlines are meant to be recessive. The durable spec measures `polyline[data-species]` only.
+
+New file `tests/e2e/treelab-chart-marks.spec.ts` (3 themes). 253 units + 37 browser tests green. Local, uncommitted.
+
+## Thirtieth pass (September 6, 2026) - response curve contrast
+
+Same fault class as pass 29 in the Chemistry curves: light `#ca8a04` 2.94:1 on the white panel, dark `#7c3aed` 2.57:1 on the dark card. `FACTOR_HUES(dark)` shared three of four hues between themes; it now returns a per-theme set, searched with the validator:
+- light `{ light:'#a16207', co2:'#7c3aed', water:'#0369a1', temperature:'#9f1239' }` - all checks pass, CVD 11.3, >=4.5:1.
+- dark `{ light:'#bf8700', co2:'#8b5cf6', water:'#0284c7', temperature:'#e11d48' }` - all checks pass, CVD 7.5 (legal: each curve has its own labelled panel).
+
+The curve stroke path now carries `data-curve: c.id`, so a measurement targets the line rather than the 0.1-opacity area or the here-dot.
+
+★★★ `tests/tree_lab.test.js` `paths()` matched the literal `<path d="`; adding `data-curve` BEFORE `d` made it match zero paths, and its assertion (a gated input plots FLAT) would then have passed vacuously on an empty array had `expect(shade.length).toBe(4)` not been there. Attribute-order-sensitive regexes over rendered HTML are a standing trap - key off the data attribute.
+
+`treelab-chart-marks.spec.ts` now covers Compare (5 lines) and Chemistry (4 curves) x 3 themes = 6 tests. 253 units + 42 browser tests green. Local, uncommitted.
+
+## Thirty-first pass (September 6, 2026) - meter fill vs track
+
+Measured fill-against-track for `.allo-tree-habitat-fill`, `.allo-tree-species-trait-fill`, `.allo-tree-strategy-fill`, `.grove-patch-water i`. Failures: strategy bars 1.53/1.44:1, trait meters 1.44:1, grove water 2.54:1, dark factor bars ~2.5:1, and high contrast drew `#ffff00` on a `#ffffff` track = **1.07:1**.
+
+Fixes: new `--meter-track` token (`#e2e8f0` light / `#0f172a` dark / `#000000` contrast) on `.allo-tree-habitat-track` and `.allo-tree-strategy-track,.allo-tree-species-trait-track`, plus `--grove-track` (`#eef2f7` / `#0f172a` / `#000000`) on `.grove-patch-water`; tracks previously used `--chapter-border`/`--grove-line`, which is too close to the fills in every theme. Meter fills moved from `tone()` to `inkTone()`, and `SEASON_INK` gained `'#ec4899': '#9d174d'` and `'#8b5cf6': '#5b21b6'`. All measured meters now 3.06-8.3:1.
+
+New file `tests/e2e/treelab-meter-contrast.spec.ts` (7 surfaces). 253 units + 47 browser tests green. Local, uncommitted.
+
+## Thirty-second pass (September 6, 2026) - WCAG 1.4.12 text spacing
+
+Applied the four reader overrides (line-height 1.5, letter-spacing .12em, word-spacing .16em, p margin 2em) and looked for leaf text whose scrollWidth/Height exceeds its client box.
+
+Two truncations: `.allo-tree-tab-hint` was `white-space:nowrap;overflow:hidden;text-overflow:ellipsis` (clipped at 101-111px in a 90px box), and `.allo-tree-quiz-story-copy strong` / `>span` the same. Both now `white-space:normal;overflow-wrap:anywhere`. No visual change at default spacing; also removes a translation-length truncation that predates this criterion.
+
+★ Measure LEAF text elements only (p/span/strong/li/label/button/h*/td/summary). Cards with decorative blobs overflow their own box for unrelated reasons - a first version reported 5 "clipped" cards per view and 0 real findings.
+
+★ Verify the overrides actually applied (compare computed letterSpacing before/after) - the first run reported identical before/after counts because the style tag had not taken effect, which reads exactly like a pass.
+
+New file `tests/e2e/treelab-text-spacing.spec.ts` (7 views; also asserts nothing was clipped BEFORE the overrides). 253 units + 40 browser tests green. Local, uncommitted.

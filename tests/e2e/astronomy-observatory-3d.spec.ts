@@ -222,6 +222,29 @@ test('steps around the sky from the keyboard and identifies what it lands on', a
   expect(errors).toEqual([]);
 });
 
+test('paints the observatory catalogue behind the flat sky map', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(`${base}/__harness`);
+  await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'portland', skyHourOffset: 6, bortleClass: 3 }));
+  const field = page.locator('[data-sky-layer="catalog-stars"]');
+  await expect.poll(async () => Number((await field.getAttribute('data-catalog-stars')) || 0), { timeout: 60000 }).toBeGreaterThan(200);
+  const dark = Number((await field.getAttribute('data-catalog-stars'))!);
+  expect(await field.locator('circle').count()).toBe(dark);
+  // A brighter sky admits fewer stars, on the same limiting magnitude the
+  // Observatory uses.
+  await page.evaluate(() => (window as any).__destroy?.());
+  await page.evaluate(() => (window as any).__mount({ tab: 'skymap', skyLoc: 'portland', skyHourOffset: 6, bortleClass: 8 }));
+  await expect.poll(async () => Number((await page.locator('[data-sky-layer="catalog-stars"]').getAttribute('data-catalog-stars')) || 0), { timeout: 60000 }).toBeGreaterThan(0);
+  const town = Number((await page.locator('[data-sky-layer="catalog-stars"]').getAttribute('data-catalog-stars'))!);
+  expect(town).toBeLessThan(dark);
+  // The layer button turns it off.
+  await page.getByRole('button', { name: 'Catalogue star field', exact: true }).click();
+  await expect(page.locator('[data-sky-layer="catalog-stars"]')).toHaveCount(0);
+  await expect(page.locator('[data-sky-layer="stars"]')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
 test('place, hemisphere, daylight and time steps change the computed sky', async ({ page }) => {
   const { sky, errors } = await mountObservatory(page, EVENING);
   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);

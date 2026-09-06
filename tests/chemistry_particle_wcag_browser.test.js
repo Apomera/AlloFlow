@@ -178,7 +178,7 @@ describe('Chemistry and particle tools WCAG regression in a real browser', () =>
 
   afterAll(async () => {
     if (browser) await browser.close();
-  }, 30000);
+  }, 60000); // closing Chromium has exceeded 30 s when other sessions saturate the CPU
 
   for (const testCase of CASES) {
     it(testCase.name + ' passes WCAG A/AA, 320px reflow, and text-spacing checks', async () => {

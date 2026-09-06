@@ -69,13 +69,38 @@ function findBorrows() {
  *   universe -> galaxy : two astronomy labels shared between two astronomy
  *     tools. Same referent.
  * `solarsystem -> stem.periodic` is deliberately ABSENT: that was the real bug.
+ *
+ * Reviewed 2026-09-05, the tool-picker borrows in PICKER_OWN_NAMES below: the
+ * picker in stem_lab_module labels each card with the name that tool already
+ * ships in its OWN namespace, rather than a second English name a translator
+ * would have to translate again. `rocks -> stem.tools_menu` above is the same
+ * arrangement seen from the other side. Checked against the packs, not English:
+ * each key resolves to the tool's name (ja stem.astronomy.night_sky_astronomy,
+ * ru stem.assessment.number_line = "Числовая прямая", ar
+ * stem.allobotsage.space_explorer = "مستكشف الفضاء"), so the referent is the
+ * card's own tool in every case.
  */
+const PICKER_OWN_NAMES = [
+  'stem.allobotsage', 'stem.alphaFold', 'stem.astronomy', 'stem.autorepair',
+  'stem.bridgelab', 'stem.cephalopodlab', 'stem.climateExplorer', 'stem.coding',
+  'stem.companionplanting', 'stem.echolocation', 'stem.fireecology',
+  'stem.firstresponse', 'stem.freeforms', 'stem.geo', 'stem.geology',
+  'stem.geometryworld', 'stem.gisstudio', 'stem.kitchenlab', 'stem.lawNav',
+  'stem.llm_literacy', 'stem.logiclab', 'stem.machinelab', 'stem.microbiology',
+  'stem.optics', 'stem.organismid', 'stem.paperTrail', 'stem.parentingLab',
+  'stem.platetectonics', 'stem.playlab', 'stem.raptorhunt', 'stem.renewables',
+  'stem.roadready', 'stem.schoolbehaviortoolkit', 'stem.semiconductor',
+  'stem.solarsystem', 'stem.throwlab', 'stem.timeschedule', 'stem.titration',
+  'stem.trajectorycomputing', 'stem.treelab', 'stem.typingpractice',
+];
+
 const REVIEWED = [
   'money -> stem.dissection',
   'music -> stem.synth_ui',
   'rocks -> stem.tools_menu',
   'universe -> stem.galaxy',
   'watercycle -> stem.tools_menu',
+  ...PICKER_OWN_NAMES.map((space) => `stem_lab_module -> ${space}`),
 ].sort();
 
 describe('STEM i18n namespace borrowing', () => {

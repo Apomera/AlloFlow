@@ -202,7 +202,11 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
   .reading{background:none;box-shadow:none;}
   .wrap{max-width:none;padding:0;}
   table,blockquote,.good,.doc{break-inside:avoid;page-break-inside:avoid;}
+  /* Figures stay breakable so a tall screenshot can carry its caption to the
+     next sheet, but a short diagram, the at-a-glance box, and a table and its
+     wrapper are read as one thing and are kept whole (2026-09-05). */
   figure{break-inside:auto;page-break-inside:auto;}
+  figure.diagram,.glance,.tablewrap{break-inside:avoid;page-break-inside:avoid;}
   figure img{max-height:8.6in;width:auto;max-width:100%;margin:0 auto;object-fit:contain;}
   figure.phone-shot img{max-height:7.8in;}
   h2{break-after:avoid;page-break-after:avoid;}
@@ -222,8 +226,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="docmeta">
 <span>13 sections</span><span class="dot" aria-hidden="true"></span>
 <span>about 25 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>reviewed September 4, 2026</span><span class="dot" aria-hidden="true"></span>
-<span>prints to about 14 pages</span>
+<span>reviewed September 5, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>prints to about 29 pages</span>
 </p>
 
 <div class="start">
@@ -442,7 +446,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>Classroom roster bridge.</strong> Exports the teacher's roster groups as a CSV template: the group becomes the homeroom and the codename a cross-reference column, while first name, last initial, grade, and managed email are left blank for an administrator to complete from the SIS before importing in the portal's Admin tab. The importer ignores the two extra columns. Nothing leaves the device in this step.</li>
 </ul>
 <h2 id="printlab">8. The 3D Print Lab</h2>
-<p>The Print Lab lets a student submit a small 3D design from AlloFlow's STEAM Lab, have staff review and quote it in points, and reserve those points until the print is fulfilled. It is a large surface with its own safety and review workflow, and most pilots will not use it at first. An administrator can hide the tab under <strong>School settings</strong> until the school has a reviewed printer workflow; existing print records stay in the ledger, and hiding the tab is a display setting rather than an access control. The full workflow, formats, and safety boundaries are documented in the package README and the Print Lab design note.</p>
+<p>The Print Lab lets a student submit a small 3D design from AlloFlow's STEAM Lab, have staff review and quote it in points, and reserve those points until the print is fulfilled. Four tools can produce that design: the <strong>3D Print Lab</strong> itself, where a student builds a model from primitive shapes or opens a GLB or STL file; <strong>Geometry World</strong>, which sends a selected block build straight into Print Lab; <strong>Architecture Studio</strong>, whose block buildings in any style continue into Print Lab with one button; and <strong>Art Studio</strong>'s sculpt mode, whose primitive-shape sculptures do the same. No other tool makes printable geometry. The links run both ways: Print Lab opens with buttons to start in any of the three, and each handed-in model gets a way back. Geometry World and Art Studio receive the editable model itself (blocks, or the primitive recipe as edited in Print Lab); Architecture Studio keeps its own save, so its button simply returns you to the studio. It is a large surface with its own safety and review workflow, and most pilots will not use it at first. A new deployment starts with the tab <strong>hidden</strong>. An administrator turns it on under <strong>School settings</strong> once the school has a reviewed printer workflow; existing print records stay in the ledger either way, and the switch is a display setting rather than an access control. The full workflow, formats, and safety boundaries are documented in the package README and the Print Lab design note.</p>
 <h2 id="admin">9. Administration</h2>
 <p><strong>First-week checklist.</strong> The top card on the Admin setup tab works itself out from the ledger: staff and cashier members, students on the roster, categories, a prize, a store window in preview, the first award, and the first checkout. Nothing is ticked by hand, and each open line names the card that completes it and carries a button that opens that card or tab. It is also the honest way to confirm each role works: when a teacher's first award appears, their sign-in and role are proven.</p>
 <p><strong>How the tab is laid out.</strong> Admin setup opens with the checklist and School settings expanded and every other card collapsed, so a new administrator meets two cards rather than nineteen. The section links at the top expand a card, scroll to it, and move keyboard focus to its heading. <em>Adjust stock</em> on a prize opens the separate inventory card, because editing a prize never changes its stock.</p>

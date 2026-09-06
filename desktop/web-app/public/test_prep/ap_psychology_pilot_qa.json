@@ -1,4 +1,109 @@
 {
+  "blueprintCoverage": {
+    "schemaVersion": 1,
+    "packId": "ap-psychology-pilot",
+    "packVersion": "0.5.0-internal-preview",
+    "blueprintLabel": "AP Psychology Course and Exam Description, effective Fall 2025, Course Framework V.1",
+    "itemCount": 500,
+    "units": {
+      "declaredCount": 5,
+      "representedCount": 5,
+      "missing": [],
+      "itemsPerUnit": {
+        "biological-bases-of-behavior": 100,
+        "cognition": 100,
+        "development-and-learning": 100,
+        "social-psychology-and-personality": 100,
+        "mental-and-physical-health": 100
+      }
+    },
+    "topics": {
+      "universeDeclared": false,
+      "declaredCount": null,
+      "representedCount": null,
+      "coveragePercent": null,
+      "missing": [],
+      "offBlueprint": [],
+      "observedCount": 35,
+      "minItemsPerDeclaredTopic": null,
+      "medianItemsPerDeclaredTopic": null,
+      "itemsPerTopic": {
+        "1.3": 17,
+        "1.5": 16,
+        "1.4": 17,
+        "1.2": 17,
+        "2.2": 13,
+        "2.4": 13,
+        "2.6": 13,
+        "2.7": 12,
+        "3.1": 12,
+        "3.7": 11,
+        "3.8": 11,
+        "3.9": 11,
+        "4.1": 15,
+        "4.2": 15,
+        "4.5": 14,
+        "5.1": 20,
+        "5.5": 20,
+        "1.1": 17,
+        "1.6": 16,
+        "2.8": 12,
+        "3.2": 11,
+        "3.4": 11,
+        "3.5": 11,
+        "4.3": 14,
+        "4.4": 14,
+        "4.6": 14,
+        "4.7": 14,
+        "5.3": 20,
+        "5.4": 20,
+        "2.1": 13,
+        "5.2": 20,
+        "3.3": 11,
+        "2.3": 13,
+        "2.5": 12,
+        "3.6": 11
+      }
+    },
+    "answerBalance": {
+      "keyedItemCount": 500,
+      "counts": {
+        "0": 125,
+        "1": 125,
+        "2": 125,
+        "3": 125
+      },
+      "dominantSharePercent": 25
+    },
+    "library": {
+      "chapters": 5,
+      "sections": 15,
+      "knowledgeChecks": 25,
+      "flashcards": 30,
+      "memoryAids": 15,
+      "diagrams": 5,
+      "diagramPlacements": 5,
+      "glossaryTerms": 0,
+      "constructedResponseWorkshops": 2,
+      "topicDiagnosticRoutes": 0,
+      "remediationPlaybooks": 0,
+      "studySessionPlans": 0,
+      "spacedReviewPlans": 0,
+      "sourceCatalog": 5
+    },
+    "emptyLibraryLayers": [
+      "glossaryTerms",
+      "topicDiagnosticRoutes",
+      "remediationPlaybooks",
+      "studySessionPlans",
+      "spacedReviewPlans"
+    ],
+    "gaps": [
+      "topic-universe-not-declared"
+    ],
+    "assessment": "gaps-present",
+    "boundary": "Structural blueprint coverage only. Not content validity, fairness, accessibility conformance, rights clearance, psychometric quality, score meaning, or release eligibility."
+  },
   "schemaVersion": 1,
   "reportId": "ap-psychology-pilot-qa",
   "generatedAt": "2026-08-20T00:00:00.000Z",

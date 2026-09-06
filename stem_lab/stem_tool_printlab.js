@@ -736,8 +736,60 @@
       clearanceMm: rotated.clearanceMm
     };
   }
+  // Art Studio's sculpt mode builds the same constrained Prim3D recipe the Design
+  // tab edits, so its handoff is the recipe itself: no bytes, nothing persisted
+  // beyond what the Design tab would keep anyway (2026-09-05).
+  function readPendingRecipeHandoff(pending) {
+    if (!pending || pending.schema !== 'alloflow-print-source/1' || pending.format !== 'RECIPE' || pending.sourceTool !== 'artStudio') return null;
+    var recipe = normalizePersistedRecipe(pending.recipe);
+    if (!recipe || !recipe.parts || !recipe.parts.length) return null;
+    return {
+      id: safeText(pending.id, 80),
+      sourceTool: 'artStudio',
+      format: 'RECIPE',
+      bytes: null,
+      sourceName: '',
+      title: safeText(pending.title, 100) || safeText(recipe.name, 100) || 'Art Studio sculpture',
+      description: safeText(pending.description, 500),
+      unitMm: clamp(pending.unitMm, 0.01, 1000, 20),
+      recipe: recipe,
+      sourceModel: null,
+      summary: { partCount: recipe.parts.length, name: safeText(recipe.name, 80) }
+    };
+  }
+  // Architecture Studio (2026-09-05) exports the same binary STL it already
+  // downloads, so its handoff is checked exactly like Geometry World's bytes.
+  // It carries no editable source: the studio keeps the block model itself.
+  function readPendingArchStudioHandoff(pending) {
+    if (!pending || pending.schema !== 'alloflow-print-source/1' || pending.format !== 'STL' || pending.sourceTool !== 'archStudio') return null;
+    var bytes = pending.bytes instanceof Uint8Array ? pending.bytes
+      : pending.bytes instanceof ArrayBuffer ? new Uint8Array(pending.bytes) : null;
+    if (!bytes || bytes.byteLength < 84 || bytes.byteLength > MAX_FILE_BYTES) return null;
+    var triangleCount;
+    try { triangleCount = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(80, true); } catch (_) { return null; }
+    if (!triangleCount || triangleCount > 250000 || 84 + triangleCount * 50 !== bytes.byteLength) return null;
+    var meshDimensions = inspectGeometryWorldBinaryStl(bytes, triangleCount);
+    if (!meshDimensions) return null;
+    var blockCount = Math.max(0, Math.floor(Number(pending.summary && pending.summary.blockCount) || 0));
+    return {
+      id: safeText(pending.id, 80),
+      sourceTool: 'archStudio',
+      format: 'STL',
+      bytes: bytes,
+      sourceName: safeText(pending.sourceName, 120) || 'architecture-studio-build.stl',
+      title: safeText(pending.title, 100) || 'Architecture Studio build',
+      description: safeText(pending.description, 500),
+      unitMm: clamp(pending.unitMm, 0.01, 1000, 5),
+      sourceModel: null,
+      summary: { blockCount: blockCount, triangleCount: triangleCount, meshDimensions: meshDimensions }
+    };
+  }
   function readPendingLocalHandoff(candidate) {
     var pending = arguments.length ? candidate : (typeof window !== 'undefined' ? window.__alloPrintLabPendingHandoff : null);
+    var recipeHandoff = readPendingRecipeHandoff(pending);
+    if (recipeHandoff) return recipeHandoff;
+    var archHandoff = readPendingArchStudioHandoff(pending);
+    if (archHandoff) return archHandoff;
     if (!pending || pending.schema !== 'alloflow-print-source/1' || pending.format !== 'STL' || pending.sourceTool !== 'geometryWorld') return null;
     var bytes = pending.bytes instanceof Uint8Array ? pending.bytes
       : pending.bytes instanceof ArrayBuffer ? new Uint8Array(pending.bytes) : null;
@@ -777,6 +829,9 @@
     sourceExtension: sourceExtension,
     normalizeRewardsPortalUrl: normalizeRewardsPortalUrl,
     normalizePersistedRecipe: normalizePersistedRecipe,
+    readPendingRecipeHandoff: readPendingRecipeHandoff,
+    readPendingArchStudioHandoff: readPendingArchStudioHandoff,
+    readPendingLocalHandoff: readPendingLocalHandoff,
     normalizePrinterProfile: normalizePrinterProfile,
     normalizePersistedPreflight: normalizePersistedPreflight,
     persistedPreflightBinding: persistedPreflightBinding,
@@ -808,7 +863,7 @@
       var pendingHandoffRef = React.useRef(undefined);
       if (pendingHandoffRef.current === undefined) pendingHandoffRef.current = readPendingLocalHandoff(pendingSlotRef.current);
       var pendingHandoff = pendingHandoffRef.current;
-      var initialRecipe = pendingHandoff ? null : normalizePersistedRecipe(stored.recipe);
+      var initialRecipe = pendingHandoff ? (pendingHandoff.recipe || null) : normalizePersistedRecipe(stored.recipe);
       var initialFormat = pendingHandoff ? pendingHandoff.format : 'RECIPE';
       var initialUnitMm = pendingHandoff ? pendingHandoff.unitMm : clamp(stored.unitMm, 0.01, 1000, 20);
       var initialProfile = normalizePrinterProfile(stored.profile);
@@ -826,7 +881,7 @@
       var _hash = React.useState(''), contentHash = _hash[0], setContentHash = _hash[1];
       var _unit = React.useState(initialUnitMm), unitMm = _unit[0], setUnitMm = _unit[1];
       var _report = React.useState(initialReport), report = _report[0], setReport = _report[1];
-      var _status = React.useState(pendingHandoff ? 'Loaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.' : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
+      var _status = React.useState(pendingHandoff ? (pendingHandoff.sourceTool === 'artStudio' ? 'Loaded an Art Studio sculpture locally as an editable primitive recipe. Set its physical scale, preview, and run the advisory preflight.' : pendingHandoff.sourceTool === 'archStudio' ? 'Loaded an Architecture Studio build locally. Confirm its scale, preview, and advisory preflight.' : 'Loaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.') : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
       var _revision = React.useState(0), revision = _revision[0], setRevision = _revision[1];
       var _subject = React.useState(''), aiSubject = _subject[0], setAiSubject = _subject[1];
       var _refine = React.useState(''), aiRefinement = _refine[0], setAiRefinement = _refine[1];
@@ -880,7 +935,7 @@
         if (!pendingHandoff) return;
         // Persist only small form defaults. The STL bytes and editable source model
         // intentionally remain in component memory and disappear when Print Lab closes.
-        persist({ activeTab: 'Design', recipe: null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description });
+        persist({ activeTab: 'Design', recipe: pendingHandoff.recipe || null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description });
       }, []);
 
       React.useEffect(function () {
@@ -1010,6 +1065,33 @@
         announce('Downloaded the editable Geometry World block recipe. It contains shapes and rotations, not the physical print settings.');
       }
 
+      function downloadArtStudioRecipe() {
+        var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = recipe && P3D && P3D.normalizeRecipe ? P3D.normalizeRecipe(recipe) : recipe;
+        if (!clean || !clean.parts || !clean.parts.length) { announce('There is no primitive recipe to send back yet.'); return; }
+        downloadBlob(new Blob([JSON.stringify(clean, null, 2)], { type: 'application/json' }), 'print-lab-sculpture.sculpture.json');
+        announce('Downloaded the editable sculpture recipe. Load it in Art Studio with its Load model button.');
+      }
+      function returnToArtStudio() {
+        var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = recipe && P3D && P3D.normalizeRecipe ? P3D.normalizeRecipe(recipe) : recipe;
+        if (!clean || !clean.parts || !clean.parts.length) { announce('There is no primitive recipe to send back yet.'); return; }
+        if (typeof ctx.setStemLabTool !== 'function') { downloadArtStudioRecipe(); return; }
+        window.__alloArtStudioPendingSculpt = {
+          schema: 'alloflow-artstudio-sculpt/1',
+          id: 'pl-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+          recipe: JSON.parse(JSON.stringify(clean))
+        };
+        if (typeof ctx.updateMulti === 'function') ctx.updateMulti('artStudio', { tab: 'sculpt3d', studioStarted: true });
+        announce('Returning the editable sculpture to Art Studio. Print settings remain in Print Lab only.');
+        ctx.setStemLabTool('artStudio');
+      }
+      // Starting points for a student who opens Print Lab first: the three
+      // tools that can build printable geometry, each with its own way back.
+      function startInTool(toolId) {
+        if (typeof ctx.setStemLabTool !== 'function') { announce('That tool is not available here.'); return; }
+        if (toolId === 'geometryWorld' && typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
+        if (toolId === 'artStudio' && typeof ctx.updateMulti === 'function') ctx.updateMulti('artStudio', { tab: 'sculpt3d', studioStarted: true });
+        ctx.setStemLabTool(toolId);
+      }
       function returnToGeometryWorld() {
         var source = sourceContext && sourceContext.sourceModel;
         if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce('No editable Geometry World source is available in this session.'); return; }
@@ -1333,6 +1415,37 @@
       function designPanel() {
         return h('div', { className: 'grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,.9fr)]' },
           h('div', { className: 'space-y-4' },
+            sourceContext && sourceContext.sourceTool === 'archStudio' && h('section', { className: 'rounded-2xl border border-amber-500/70 bg-gradient-to-br from-amber-950/70 via-slate-900 to-slate-950 p-4', 'aria-labelledby': 'print-lab-archstudio-source-title' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', null,
+                  h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] text-amber-300' }, 'Local connected-tool handoff'),
+                  h('h2', { id: 'print-lab-archstudio-source-title', className: 'mt-1 text-lg font-black text-white' }, 'From Architecture Studio'),
+                  h('p', { className: 'mt-1 max-w-2xl text-xs leading-5 text-slate-200' }, 'The STL preview is the building as physical geometry. The editable block model stays in Architecture Studio, which keeps its own save.')
+                ),
+                h('span', { className: 'rounded-full border border-amber-400/50 bg-amber-950 px-3 py-1 text-[0.625rem] font-black text-amber-100' }, 'Default: 5 mm / block')
+              ),
+              h('dl', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3' },
+                [['Blocks', sourceContext.summary && sourceContext.summary.blockCount || 0], ['STL triangles', sourceContext.summary && sourceContext.summary.triangleCount || 0], ['Mesh envelope', sourceContext.summary && sourceContext.summary.meshDimensions ? sourceContext.summary.meshDimensions.L + ' × ' + sourceContext.summary.meshDimensions.W + ' × ' + sourceContext.summary.meshDimensions.H + ' units' : '-']].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-400' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
+              ),
+              geometryPhysicalSize && h('p', { className: 'mt-3 rounded-xl border border-emerald-400/50 bg-emerald-950/35 p-3 text-sm font-black text-white', 'aria-live': 'polite' }, 'Current physical size: ' + geometryPhysicalSize.label),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool('archStudio'); }, className: 'min-h-[42px] rounded-xl bg-amber-700 px-4 text-xs font-black text-white' }, 'Revise in Architecture Studio')
+              ),
+              h('p', { className: 'mt-3 text-[0.6875rem] leading-5 text-amber-100' }, 'Stone, wood, glass, and the other studio materials describe appearance only. Choose the physical scale below and the actual school filament in Materials.')
+            ),
+            sourceContext && sourceContext.sourceTool === 'artStudio' && h('section', { className: 'rounded-2xl border border-pink-500/70 bg-gradient-to-br from-pink-950/70 via-slate-900 to-violet-950/80 p-4', 'aria-labelledby': 'print-lab-artstudio-source-title' },
+              h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[.16em] text-pink-300' }, 'Local connected-tool handoff'),
+              h('h2', { id: 'print-lab-artstudio-source-title', className: 'mt-1 text-lg font-black text-white' }, 'From Art Studio'),
+              h('p', { className: 'mt-1 max-w-2xl text-xs leading-5 text-slate-200' }, 'This sculpture arrived as the same editable primitive recipe the Design tab uses, so every part can still be changed here. Nothing was uploaded and nothing about the student travelled with it.'),
+              h('dl', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [['Sculpture', sourceContext.summary && sourceContext.summary.name || title || 'Untitled'], ['Parts', sourceContext.summary && sourceContext.summary.partCount || (recipe && recipe.parts ? recipe.parts.length : 0)]].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-400' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
+              ),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: returnToArtStudio, className: 'min-h-[42px] rounded-xl bg-pink-700 px-4 text-xs font-black text-white' }, 'Revise in Art Studio'),
+                h('button', { type: 'button', onClick: downloadArtStudioRecipe, className: 'min-h-[42px] rounded-xl border border-pink-400 px-4 text-xs font-black text-pink-100' }, 'Download editable sculpture recipe')
+              ),
+              h('p', { className: 'mt-3 text-[0.6875rem] leading-5 text-amber-100' }, 'Colours and finishes in Art Studio describe appearance only. Choose the physical scale below and the actual school filament in Materials.')
+            ),
             sourceContext && sourceContext.sourceTool === 'geometryWorld' && h('section', { className: 'rounded-2xl border border-cyan-500/70 bg-gradient-to-br from-cyan-950/80 via-slate-900 to-violet-950/80 p-4', 'aria-labelledby': 'print-lab-geometry-source-title' },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                 h('div', null,
@@ -1367,6 +1480,15 @@
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-create-title' },
               h('h2', { id: 'print-lab-create-title', className: 'text-lg font-black text-white' }, 'Design with primitives'),
               h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Build directly, bring in a Geometry Sandbox sculpture, or ask AI for an editable starting recipe. Every AI result uses the same constrained primitive format.'),
+              !sourceContext && h('div', { className: 'mt-3 rounded-xl border border-slate-700 bg-slate-950/50 p-3' },
+                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, 'Or start in another tool'),
+                h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Geometry World and Architecture Studio build with blocks; Art Studio sculpts with primitive shapes. Each one has a Print Lab button that brings the model here, and each Print Lab card has a way back.'),
+                h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                  h('button', { type: 'button', onClick: function () { startInTool('geometryWorld'); }, className: 'min-h-[40px] rounded-lg border border-cyan-400/60 px-3 text-xs font-black text-cyan-100' }, 'Start in Geometry World'),
+                  h('button', { type: 'button', onClick: function () { startInTool('archStudio'); }, className: 'min-h-[40px] rounded-lg border border-amber-400/60 px-3 text-xs font-black text-amber-100' }, 'Start in Architecture Studio'),
+                  h('button', { type: 'button', onClick: function () { startInTool('artStudio'); }, className: 'min-h-[40px] rounded-lg border border-pink-400/60 px-3 text-xs font-black text-pink-100' }, 'Start in Art Studio')
+                )
+              ),
               runtimeError && h('p', { role: 'alert', className: 'mt-2 rounded-lg border border-rose-700 bg-rose-950/40 p-2 text-xs text-rose-100' }, runtimeError),
               h('div', { className: 'mt-3 flex flex-wrap gap-2', 'aria-label': 'Add a primitive' }, SHAPES.map(function (shape) { return h('button', { key: shape, type: 'button', disabled: !runtimeReady, onClick: function () { addPrimitive(shape); }, className: 'min-h-[42px] rounded-xl bg-cyan-700 px-3 text-xs font-black text-white disabled:opacity-50' }, '+ ' + shape); })),
               recipe && field('Model name', recipe.name || '', function (value) { updateRecipe(Object.assign({}, recipe, { name: safeText(value, 80) })); }),
@@ -1397,7 +1519,7 @@
             h(PrintPreview, { React: React, ready: runtimeReady, format: format, recipe: recipe, bytes: fileBytes, glbRoot: glbRoot, unitMm: unitMm, revision: revision }),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4' },
               h('h2', { className: 'text-sm font-black text-white' }, 'Physical scale'),
-              sourceContext && sourceContext.sourceTool === 'geometryWorld' && h('div', { className: 'mt-3', 'aria-label': 'Geometry World scale presets' },
+              sourceContext && (sourceContext.sourceTool === 'geometryWorld' || sourceContext.sourceTool === 'archStudio') && h('div', { className: 'mt-3', 'aria-label': sourceContext.sourceTool === 'archStudio' ? 'Architecture Studio scale presets' : 'Geometry World scale presets' },
                 h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, 'Scale presets'),
                 h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
                   [
@@ -1416,7 +1538,7 @@
                   })
                 )
               ),
-              field(sourceContext && sourceContext.sourceTool === 'geometryWorld' ? 'Millimeters per Geometry World block' : 'Millimeters per model unit', unitMm, function (value) { applyUnitScale(value); }, { type: 'number', min: 0.01, max: 1000, step: 0.1 }),
+              field(sourceContext && sourceContext.sourceTool === 'geometryWorld' ? 'Millimeters per Geometry World block' : sourceContext && sourceContext.sourceTool === 'archStudio' ? 'Millimeters per Architecture Studio block' : 'Millimeters per model unit', unitMm, function (value) { applyUnitScale(value); }, { type: 'number', min: 0.01, max: 1000, step: 0.1 }),
               geometryPhysicalSize && h('p', { className: 'mt-2 rounded-lg border border-emerald-800 bg-emerald-950/30 p-2 text-xs font-bold text-emerald-100' }, 'Current mesh envelope: ' + geometryPhysicalSize.label + ' (width × depth × height).'),
               geometryPrinterFit && h('div', {
                 className: 'mt-2 rounded-lg border p-2 text-[0.6875rem] leading-5 ' + (geometryClearanceFit ? 'border-emerald-700 bg-emerald-950/30 text-emerald-100' : 'border-amber-600 bg-amber-950/30 text-amber-100'),

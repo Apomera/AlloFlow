@@ -98,17 +98,29 @@ const PROBE = function () {
     b: fg.b * fg.a + bg.b * (1 - fg.a),
     a: 1,
   });
+  // Returns the composited backdrop AND how it was arrived at. Two outcomes must
+  // never be scored:
+  //   * an ancestor paints a GRADIENT - no single colour describes it;
+  //   * nothing opaque was found and the walk ran out - defaulting to white then
+  //     invents failures for light text that actually sits on a dark surface.
+  // Both used to end at plain white. That is how 45 phantom contrast failures were
+  // reported for the Star Life panel, whose card is a dark
+  // `bg-gradient-to-br from-slate-900 ...`: the viewport hit test below misses any
+  // element under the fold, so the gradient went unnoticed and the ancestor walk
+  // fell through to the harness page's white body.
   function effectiveBg(el) {
     let node = el, acc = null;
     while (node && node !== document.documentElement) {
-      const c = parse(getComputedStyle(node).backgroundColor);
+      const cs = getComputedStyle(node);
+      if (/gradient/.test(cs.backgroundImage || '')) return { gradient: true };
+      const c = parse(cs.backgroundColor);
       if (c && c.a > 0) {
         acc = acc ? over(acc, c) : c;
-        if (acc.a >= 1 || c.a >= 1) return acc;
+        if (acc.a >= 1 || c.a >= 1) return { bg: acc };
       }
       node = node.parentElement;
     }
-    return acc || { r: 255, g: 255, b: 255, a: 1 };
+    return { fellThrough: true, bg: acc };
   }
   const ratio = (a, b) => {
     const la = lum(a.r, a.g, a.b), lb = lum(b.r, b.g, b.b);
@@ -147,6 +159,7 @@ const PROBE = function () {
   // Scoring those anyway is how "white on white" appears for legible white text.
   const contrast = [];
   const ungraded = [];
+  const disabledText = [];
   for (const el of root.querySelectorAll('*')) {
     if (el.children.length) continue;
     const t = (el.textContent || '').trim();
@@ -159,6 +172,16 @@ const PROBE = function () {
     if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) continue;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) continue;
+    // Screen-reader-only text is clipped to a 1px box on purpose. Grading its colour
+    // reported "black on near-black at 1.04:1" for a recovery hint nobody can see.
+    if (r.width <= 1 || r.height <= 1) continue;
+    if (/inset\(50%\)|rect\(0px,\s*0px,\s*0px,\s*0px\)/.test(cs.clipPath + ' ' + cs.clip)) continue;
+    // WCAG 1.4.3 exempts inactive components, so a disabled control's greyed label is
+    // not a violation. Counting them put two 4.34:1 "failures" on a compliant page.
+    if (el.closest('button:disabled, input:disabled, select:disabled, textarea:disabled, [aria-disabled="true"]')) {
+      disabledText.push({ text: t.slice(0, 46), color: cs.color });
+      continue;
+    }
     const fg = parse(cs.color);
     if (!fg) continue;
 
@@ -182,7 +205,16 @@ const PROBE = function () {
       ungraded.push({ text: t.slice(0, 46), why: overCanvas ? 'over 3-D canvas' : 'gradient backdrop', color: cs.color, size, bold });
       continue;
     }
-    const bg = effectiveBg(el);
+    const resolved = effectiveBg(el);
+    if (resolved.gradient || resolved.fellThrough) {
+      ungraded.push({
+        text: t.slice(0, 46),
+        why: resolved.gradient ? 'gradient backdrop' : 'no opaque backdrop found',
+        color: cs.color, size, bold,
+      });
+      continue;
+    }
+    const bg = resolved.bg;
     const solidFg = fg.a < 1 ? over(fg, bg) : fg;
     const large = size >= 24 || (size >= 18.66 && bold);
     const need = large ? 3 : 4.5;
@@ -209,8 +241,25 @@ const PROBE = function () {
     const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
     if (!t || t.length > 46) continue;
     if (el.closest('button, a, label, [role="tab"]')) continue;
+    // Uppercase + tracking + weight is this design system's LABEL style, not only its
+    // heading style, so three kinds of text matched that are correctly not headings:
+    //   * a group label already wired up with aria-labelledby ("Galaxy shape" names the
+    //     role="group" holding the shape buttons - turning it into a heading is wrong);
+    //   * cells that already carry semantics (dt, th, legend, figcaption, caption);
+    //   * legend scraps like "hot", "cool" and the arrow between them.
+    if (el.id && root.querySelector('[aria-labelledby~="' + CSS.escape(el.id) + '"], [aria-describedby~="' + CSS.escape(el.id) + '"]')) continue;
+    if (el.closest('dt, th, legend, figcaption, caption, [role="columnheader"], [role="rowheader"]')) continue;
+    const wordish = t.match(/[\p{L}\p{N}]{3,}/gu) || [];
+    if (!wordish.length) continue;
     const looksHeading = cs.textTransform === 'uppercase' && parseFloat(cs.letterSpacing) > 0 && +cs.fontWeight >= 600;
-    if (looksHeading) fakeHeadings.push({ text: t, cls: (el.getAttribute('class') || '').slice(0, 70) });
+    if (looksHeading) {
+      fakeHeadings.push({
+        text: t,
+        cls: (el.getAttribute('class') || '').slice(0, 70),
+        // Context helps a reader judge whether it should have been a heading at all.
+        parentRole: (el.parentElement && (el.parentElement.getAttribute('role') || el.parentElement.tagName.toLowerCase())) || '',
+      });
+    }
   }
 
   return { controls, contrast, ungraded, headings, fakeHeadings };

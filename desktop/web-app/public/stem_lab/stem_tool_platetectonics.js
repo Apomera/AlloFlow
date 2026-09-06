@@ -251,6 +251,17 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       '.pt-control-grid{display:grid;grid-template-columns:minmax(170px,1fr) repeat(3,max-content);gap:10px;align-items:center}',
       '.pt-chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800}',
       '.pt-primary-canvas{width:100%;min-height:360px;border-radius:14px;border:1px solid rgba(251,146,60,.28);box-shadow:inset 0 0 46px rgba(251,146,60,.12);touch-action:none}',
+      // Every slider in this tool was a 16 px-tall target — under the 24 px
+      // WCAG 2.5.8 asks for, and the rate slider rides the reference shelf onto
+      // all 54 tabs. This grows the HIT AREA only: the track and thumb are still
+      // drawn by the browser at their own size, so nothing is restyled and the
+      // accent colours these sliders already set are untouched.
+      // SCOPED: this stylesheet goes in the document head, so a bare
+      // `input[type=range]` rule would resize every slider in the host app.
+      '.pt-sim-shell input[type=range],.plate-tectonics-container input[type=range]{min-height:24px}',
+      // Same rule for the small check boxes: 16 px is under target size, and a
+      // checkbox is exactly the control a student on a tablet has to hit.
+      '.pt-sim-shell input[type=checkbox],.plate-tectonics-container input[type=checkbox]{min-width:24px;min-height:24px}',
       '.pt-tb-shell{aspect-ratio:16/5.8}',
       '@media(max-width:640px){.pt-tb-shell{aspect-ratio:16/21}}',
       '.pt-eq-shell{aspect-ratio:16/5.6}',
@@ -298,6 +309,17 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     var palette = (props && props.palette) || { bg: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), text: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#0f172a'), border: isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1') };
     var announceToSR = props && props.announceToSR;
     var addToast = (props && props.addToast) || null;
+    // This widget is a top-level component, NOT part of the render closure, so
+    // the tool's own __alloT is out of scope here. Every string below was
+    // therefore a hardcoded English literal that no language pack could reach -
+    // an entire panel, invisible to the translation pipeline. The host passes
+    // its `t` in; the fallback keeps the panel working standalone.
+    var __alloT = function (k, fb) {
+      var f = props && props.t;
+      var v = null;
+      try { if (typeof f === 'function') v = f(k, fb); } catch (e) { v = null; }
+      return (v == null) ? (fb != null ? fb : k) : v;
+    };
     var useState = React.useState;
     var useRef = React.useRef;
     var useEffect = React.useEffect;
@@ -433,7 +455,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       // Scale bar
       ctx.fillStyle = isContrast ? palette.text : (isDark ? 'rgba(226,232,240,0.7)' : 'rgba(15,23,42,0.7)');
       ctx.font = 'bold ' + (9 * ui) + 'px sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText('100 km', 12, H_CANVAS - 10);
+      ctx.fillText(__alloT('stem.platetectonics.fig_scale_100_km', '100 km'), 12, H_CANVAS - 10);
       ctx.strokeStyle = isContrast ? palette.border : (isDark ? '#e2e8f0' : '#0f172a'); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(50, H_CANVAS - 14); ctx.lineTo(50 + stepPx, H_CANVAS - 14); ctx.stroke();
 
@@ -484,7 +506,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           ctx.font = 'bold ' + (9 * ui) + 'px sans-serif'; ctx.textAlign = 'left';
           // Below-right of the fit, not above: 'epicenter (drag)' sits above the
           // marker, and once both grow for a phone they ran into each other.
-          ctx.fillText('triangulated', fit.x + 12, fit.y + 6 + 10 * ui);
+          ctx.fillText(__alloT('stem.platetectonics.fig_triangulated', 'triangulated'), fit.x + 12, fit.y + 6 + 10 * ui);
         }
       }
 
@@ -520,7 +542,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       // Label
       ctx.fillStyle = isDark ? '#fecaca' : '#7f1d1d';
       ctx.font = 'bold ' + (10 * ui) + 'px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('epicenter (drag)', ex, ey - 14);
+      ctx.fillText(__alloT('stem.platetectonics.fig_epicenter_drag', 'epicenter (drag)'), ex, ey - 14);
 
       // HUD: readings table (every dimension follows `ui`, so the box grows
       // with its text instead of the rows spilling out of it on a phone)
@@ -530,7 +552,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       ctx.fillRect(hudX, 8, hudW, hudH);
       ctx.fillStyle = '#fde047';
       ctx.font = 'bold ' + (10 * ui) + 'px sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText('Station   S-P     distance', hudX + 6, 8 + 12 * ui);
+      ctx.fillText(__alloT('stem.platetectonics.epi_hud_columns', 'Station   S-P     distance'), hudX + 6, 8 + 12 * ui);
       ctx.font = 'bold ' + (10 * ui) + 'px monospace'; ctx.fillStyle = 'white';
       stations.forEach(function(stn, i) {
         var sp = spTime(stn, cur.epicenter);
@@ -571,7 +593,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       if (hit) {
         update({ dragging: hit });
         if (typeof announceToSR === 'function') {
-          announceToSR(hit === 'epicenter' ? 'Dragging epicenter' : 'Dragging station ' + hit);
+          announceToSR(hit === 'epicenter' ? __alloT('stem.platetectonics.epi_dragging_epicenter', 'Dragging epicenter') : __alloT('stem.platetectonics.epi_dragging_station', 'Dragging station {id}').replace('{id}', hit));
         }
       }
     }
@@ -604,7 +626,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     function reset() {
       stationsRef.current = STATIONS_INIT.map(function(st){ return Object.assign({}, st); });
       update({ epicenter: { x: 280, y: 180 } });
-      if (typeof announceToSR === 'function') announceToSR('Reset epicenter and stations');
+      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.epi_reset_announce', 'Reset epicenter and stations'));
     }
 
     // Move epicenter via keyboard for a11y
@@ -627,7 +649,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
             var sp = spTime(stn, { x: nx, y: ny });
             return stn.id + ' ' + sp.toFixed(1) + ' seconds';
           }).join(', ');
-          announceToSR('Epicenter moved. S-P readings: ' + msg);
+          announceToSR(__alloT('stem.platetectonics.epi_moved_readings', 'Epicenter moved. S-P readings: {readings}').replace('{readings}', msg));
         }
       }
     }
@@ -648,19 +670,20 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     var titleClass = 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-900');
     var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-emerald-800');
 
-    return h('div', { className: containerClass, style: containerStyle, role: 'region', 'aria-label': 'Interactive epicenter triangulation', 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
+    return h('div', { className: containerClass, style: containerStyle, role: 'region', 'aria-label': __alloT('stem.platetectonics.epi_region_label', 'Interactive epicenter triangulation'), 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
       h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b ' + (isDark ? 'border-slate-800' : 'border-emerald-300'), style: headerStyle },
         h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white', style: { background: '#047857' } }, '🎮 INTERACTIVE'),
-        h('span', { className: titleClass }, 'Epicenter Triangulation'),
+        h('span', { className: titleClass }, __alloT('stem.platetectonics.epi_heading', 'Epicenter Triangulation')),
         h('span', { className: subtitleClass }, '- drag the red star; three stations triangulate the epicenter from S-P times')
       ),
       h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
         h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-emerald-400 bg-white') },
           h('canvas', {
             ref: canvasRef,
+            'data-pt-epicenter-canvas': 'true',
             role: 'img',
             tabIndex: 0,
-            'aria-label': 'Map with three seismograph stations (Berkeley, Pasadena, Mt Hamilton) and a draggable epicenter. Each station shows a distance circle; their intersection is the triangulated location. Use arrow keys to move the epicenter; hold Shift for larger steps. Current S-P readings: ' + readings.map(function(r){ return r.id + ' ' + r.sp.toFixed(1) + ' seconds, ' + r.dist.toFixed(0) + ' kilometers'; }).join('; ') + '.',
+            'aria-label': __alloT('stem.platetectonics.epi_canvas_aria', 'Map with three seismograph stations (Berkeley, Pasadena, Mt Hamilton) and a draggable epicenter. Each station shows a distance circle; their intersection is the triangulated location. Use arrow keys to move the epicenter; hold Shift for larger steps. Current S-P readings: ') + readings.map(function(r){ return r.id + ' ' + r.sp.toFixed(1) + ' seconds, ' + r.dist.toFixed(0) + ' kilometers'; }).join('; ') + '.',
             style: { width: '100%', height: 'auto', aspectRatio: W_CANVAS + ' / ' + H_CANVAS, display: 'block', cursor: s.dragging ? 'grabbing' : 'grab', touchAction: 'none' },
             onMouseDown: onDown, onMouseMove: onMove, onMouseUp: onUp, onMouseLeave: onUp,
             onTouchStart: onDown, onTouchMove: onMove, onTouchEnd: onUp,
@@ -670,7 +693,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         h('div', { className: 'flex flex-col gap-2' },
           // Readings card
           h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-emerald-300 text-slate-800') },
-            h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, 'Station readings'),
+            h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, __alloT('stem.platetectonics.epi_station_readings', 'Station readings')),
             readings.map(function(r) {
               return h('div', { key: r.id, className: 'flex items-center gap-2 text-[11px] py-0.5' },
                 h('span', { style: { width: 8, height: 8, borderRadius: '50%', background: r.color, display: 'inline-block' } }),
@@ -684,20 +707,58 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-emerald-300 text-slate-800') },
             h('label', { className: 'flex items-center gap-2 text-[11px] cursor-pointer' },
               h('input', { type: 'checkbox', checked: s.showCircles, onChange: function(e) { update({ showCircles: e.target.checked }); }, className: 'h-6 w-6 shrink-0' }),
-              'Show distance circles'
+              __alloT('stem.platetectonics.epi_show_circles', 'Show distance circles')
             ),
             h('label', { className: 'flex items-center gap-2 text-[11px] cursor-pointer mt-1' },
               h('input', { type: 'checkbox', checked: s.showFit, onChange: function(e) { update({ showFit: e.target.checked }); }, className: 'h-6 w-6 shrink-0' }),
-              'Show triangulated fit'
+              __alloT('stem.platetectonics.epi_show_fit', 'Show triangulated fit')
             )
           ),
           h('button', {
             onClick: reset,
             className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700' : 'transition-colors bg-emerald-200 text-emerald-900 hover:bg-emerald-300')
           }, '↻ Reset stations & epicenter'),
-          h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'platetectonics_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: { padding: '6px 10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', background: '#0e7490', color: '#fff', border: 'none', cursor: 'pointer', marginLeft: '6px' } }, '\uD83D\uDCF8 PNG'),
+          // Saves THIS figure, not whichever canvas happens to be biggest.
+          //
+          // It used to run `document.querySelectorAll('canvas')` and take the
+          // largest by area. Measured on the sim tab: six canvases, and the
+          // button - which sits in the triangulation panel, under "Reset
+          // stations & epicenter" - exported the 2152x940 plate simulation
+          // instead of this 540x360 map. A student saving their triangulation
+          // got a picture of something else entirely. The ref was in scope the
+          // whole time.
+          h('button', {
+            'aria-label': __alloT('stem.platetectonics.save_epicenter_png_aria', 'Save this triangulation map as a PNG image'),
+            onClick: function() {
+              var _c = canvasRef.current;
+              var fail = function(msg) {
+                // Silence was the old behaviour: an empty catch and a bare
+                // return, so a student who clicked and got nothing had no way
+                // to tell 'saved' from 'broken'.
+                if (typeof addToast === 'function') addToast('\u26a0\ufe0f ' + msg, 'error');
+                if (typeof announceToSR === 'function') announceToSR(msg);
+              };
+              if (!_c) { fail(__alloT('stem.platetectonics.png_map_not_ready', 'The map is not ready yet. Give it a moment and try again.')); return; }
+              try {
+                var _a = document.createElement('a');
+                _a.href = _c.toDataURL('image/png');
+                _a.download = 'epicenter_triangulation_' + Date.now() + '.png';
+                // Firefox ignores a click on an anchor that is not in the
+                // document, so it goes in and comes straight back out.
+                document.body.appendChild(_a);
+                _a.click();
+                document.body.removeChild(_a);
+                var okMsg = __alloT('stem.platetectonics.png_saved_map', 'Triangulation map saved as a PNG.');
+                if (typeof addToast === 'function') addToast('\uD83D\uDCF8 ' + okMsg, 'success');
+                if (typeof announceToSR === 'function') announceToSR(okMsg);
+              } catch (e) {
+                fail(__alloT('stem.platetectonics.png_save_failed', 'This browser would not let the image be saved.'));
+              }
+            },
+            style: { padding: '6px 10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', background: '#0e7490', color: '#fff', border: 'none', cursor: 'pointer', marginLeft: '6px' }
+          }, '\uD83D\uDCF8 ' + __alloT('stem.platetectonics.png_button', 'Save PNG')),
           h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-emerald-800') },
-            'Tip: stations are also draggable. Arrow keys move the epicenter when canvas is focused.'
+            __alloT('stem.platetectonics.epi_tip_draggable', 'Tip: stations are also draggable. Arrow keys move the epicenter when canvas is focused.')
           )
         )
       ),
@@ -707,16 +768,16 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '📐 The math'),
           h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
             h('div', { className: 'font-mono mb-1' }, 'distance = (S-P seconds) × Vp·Vs / (Vp − Vs)'),
-            'P-waves race through continental crust at ~' + VP.toFixed(1) + ' km/s; slower S-waves trail at ~' + VS.toFixed(1) + ' km/s. The lag between them grows by ~' + KM_PER_SP.toFixed(1) + ' km for every second of S-P time (≈ 12 s of S-P delay per 100 km — a handy rule of thumb). One station gives you a circle of possible locations; two narrow it to two intersection points; three pin down the epicenter. This is exactly how the 1906 San Francisco, 1989 Loma Prieta, and 2011 Tōhoku epicenters were located before GPS-based methods.'
+            __alloT('stem.platetectonics.epi_math_body', 'P-waves race through continental crust at ~{vp} km/s; slower S-waves trail at ~{vs} km/s. The lag between them grows by ~{km} km for every second of S-P time (≈ 12 s of S-P delay per 100 km — a handy rule of thumb). One station gives you a circle of possible locations; two narrow it to two intersection points; three pin down the epicenter. This is exactly how the 1906 San Francisco, 1989 Loma Prieta, and 2011 Tōhoku epicenters were located before GPS-based methods.').replace('{vp}', VP.toFixed(1)).replace('{vs}', VS.toFixed(1)).replace('{km}', KM_PER_SP.toFixed(1))
           )
         ),
         h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-emerald-300 text-slate-800') },
           h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '🎯 Try this'),
           h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
-            h('li', null, 'Drag the red star directly on top of a station  -  its S-P time drops to 0 (you are AT the epicenter).'),
-            h('li', null, 'Move the star far away  -  every S-P time grows by ~12 seconds per 100 km. Triple-check by counting grid squares (100 km each).'),
-            h('li', null, 'Drag the stations into a straight line  -  triangulation becomes unstable (the math has no unique answer when stations are collinear).'),
-            h('li', null, 'Turn off "Show circles" and rebuild them mentally from the readings  -  this is the job real analysts did with paper and compass before computers.')
+            h('li', null, __alloT('stem.platetectonics.epi_try_on_station', 'Drag the red star directly on top of a station  -  its S-P time drops to 0 (you are AT the epicenter).')),
+            h('li', null, __alloT('stem.platetectonics.epi_try_far_away', 'Move the star far away  -  every S-P time grows by ~12 seconds per 100 km. Triple-check by counting grid squares (100 km each).')),
+            h('li', null, __alloT('stem.platetectonics.epi_try_collinear', 'Drag the stations into a straight line  -  triangulation becomes unstable (the math has no unique answer when stations are collinear).')),
+            h('li', null, __alloT('stem.platetectonics.epi_try_no_circles', 'Turn off "Show circles" and rebuild them mentally from the readings  -  this is the job real analysts did with paper and compass before computers.'))
           )
         )
       )
@@ -751,6 +812,14 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
   // Simplification, stated plainly for honesty: real Benioff zones commonly
   // shallow near the trench and steepen with depth (~30 deg to ~60 deg), and
   // each arc differs. One constant dip is a teaching model, not a survey.
+  // The one definition of "the view you started with" for the 3D block.
+  //
+  // Driven with dev-tools/pt_block_keys.cjs, there were THREE: the initial
+  // state opened at (-22, -38), the Home key reset to (-18, -28), and the
+  // "Reset view" button went back to (-22, -38) AND cleared the cutaway. So the
+  // two controls that both say "reset" disagreed with each other, and Home
+  // never returned a student to the view they were given.
+  var TECT_VIEW_HOME = { rotX: -22, rotY: -38, scale: 1, cut: null };
   var TECT_DIP_DEG = 45;
   var TECT_MAX_DEPTH_KM = 700;
   // Section pixels per km. Matches the depth scale the 2D view already used
@@ -2046,6 +2115,16 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
   window.AlloTectonicsInteractive = function(props) {
     var React = window.React;
     var h = React.createElement;
+    // Second top-level component with the same hole as the epicentre widget:
+    // it lives outside the render closure, so the tool's __alloT is not in
+    // scope and every string below was English for every language. This is the
+    // panel the quiz's own comment says answers four of the eight questions.
+    var __alloT = function (k, fb) {
+      var f = props && props.t;
+      var v = null;
+      try { if (typeof f === 'function') v = f(k, fb); } catch (e) { v = null; }
+      return (v == null) ? (fb != null ? fb : k) : v;
+    };
     var isContrast = !!(props && props.isContrast);
     var isDark = !!(props && props.darkMode) || isContrast;
     var palette = (props && props.palette) || { bg: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), text: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#0f172a'), border: isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1') };
@@ -2065,6 +2144,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       years: 0,
       quakes: [],
       quakeTotal: 0,
+      // Deepest focus reached since the last reset. Monotonic, so the screen
+      // reader summary below changes at most twice per boundary type instead
+      // of once a second.
+      deepestKm: 0,
       mountainHeight: 0,
       rift: 0,
       offset: 0
@@ -2079,7 +2162,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     // dominate here. The 2D section is a well-annotated diagram with a HUD and
     // labels; the block adds the three things a section structurally cannot
     // show, so it complements rather than replaces it.
-    var v3 = useState({ on: false, rotX: -22, rotY: -38, scale: 1, cut: null });
+    var v3 = useState(Object.assign({ on: false }, TECT_VIEW_HOME));
     var view3d = v3[0];
     var setView3d = v3[1];
     var updView = function(patch) { setView3d(function(prev) { return Object.assign({}, prev, patch); }); };
@@ -2095,28 +2178,28 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     drawRef.current = draw;
 
     var BOUNDARY = {
-      convergent: { name: 'Convergent', color: '#dc2626', icon: '🗻', desc: 'Plates collide -> mountains rise. Andes, Himalayas, Cascades.' },
-      divergent:  { name: 'Divergent',  color: '#0ea5e9', icon: '🌊', desc: 'Plates separate -> magma fills rift -> new crust. Mid-Atlantic Ridge.' },
-      transform:  { name: 'Transform',  color: '#f59e0b', icon: '⚡', desc: 'Plates slide past -> friction -> quakes. San Andreas Fault.' }
+      convergent: { name: __alloT('stem.platetectonics.sim_convergent', 'Convergent'), color: '#dc2626', icon: '🗻', desc: __alloT('stem.platetectonics.sim_desc_convergent', 'Plates collide -> mountains rise. Andes, Himalayas, Cascades.') },
+      divergent:  { name: __alloT('stem.platetectonics.sim_divergent', 'Divergent'),  color: '#0ea5e9', icon: '🌊', desc: __alloT('stem.platetectonics.sim_desc_divergent', 'Plates separate -> magma fills rift -> new crust. Mid-Atlantic Ridge.') },
+      transform:  { name: __alloT('stem.platetectonics.sim_transform', 'Transform'),  color: '#f59e0b', icon: '⚡', desc: __alloT('stem.platetectonics.sim_desc_transform', 'Plates slide past -> friction -> quakes. San Andreas Fault.') }
     };
     var BOUNDARY_EVIDENCE = {
       convergent: {
-        motion: 'Toward each other',
-        crust: 'Recycled at subduction zones or thickened in collision',
-        quakes: 'Shallow to deep at subduction zones',
-        volcanoes: 'Common above many subduction zones'
+        motion: __alloT('stem.platetectonics.sim_ev_motion_convergent', 'Toward each other'),
+        crust: __alloT('stem.platetectonics.sim_ev_crust_convergent', 'Recycled at subduction zones or thickened in collision'),
+        quakes: __alloT('stem.platetectonics.sim_ev_quakes_convergent', 'Shallow to deep at subduction zones'),
+        volcanoes: __alloT('stem.platetectonics.sim_ev_volc_convergent', 'Common above many subduction zones')
       },
       divergent: {
-        motion: 'Away from each other',
-        crust: 'Created at a ridge or rift',
-        quakes: 'Mostly shallow',
-        volcanoes: 'Common along ridges and rifts'
+        motion: __alloT('stem.platetectonics.sim_ev_motion_divergent', 'Away from each other'),
+        crust: __alloT('stem.platetectonics.sim_ev_crust_divergent', 'Created at a ridge or rift'),
+        quakes: __alloT('stem.platetectonics.sim_ev_quakes_shallow', 'Mostly shallow'),
+        volcanoes: __alloT('stem.platetectonics.sim_ev_volc_divergent', 'Common along ridges and rifts')
       },
       transform: {
-        motion: 'Side by side',
-        crust: 'Neither created nor destroyed',
-        quakes: 'Mostly shallow',
-        volcanoes: 'Usually not caused by the boundary'
+        motion: __alloT('stem.platetectonics.sim_ev_motion_transform', 'Side by side'),
+        crust: __alloT('stem.platetectonics.sim_ev_crust_transform', 'Neither created nor destroyed'),
+        quakes: __alloT('stem.platetectonics.sim_ev_quakes_shallow', 'Mostly shallow'),
+        volcanoes: __alloT('stem.platetectonics.sim_ev_volc_transform', 'Usually not caused by the boundary')
       }
     };
 
@@ -2178,6 +2261,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
             if (newQ.length > 40) newQ.shift();
             patch.quakes = newQ;
             patch.quakeTotal = (cur.quakeTotal || 0) + 1;
+            patch.deepestKm = Math.max(cur.deepestKm || 0, depthKm);
             playQuakeRumble();
           } else if (cur.quakes && cur.quakes.length) {
             patch.quakes = cur.quakes.map(function(q) { return Object.assign({}, q, { age: q.age + dt }); }).filter(function(q) { return q.age < 3; });
@@ -2306,9 +2390,9 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ctx.bezierCurveTo(284, H * 0.66, 295, H * 0.76, 302, H * 0.96);
         ctx.closePath(); ctx.fill();
         ctx.shadowBlur = 0;
-        fieldChip('hot rock rises here', 270, H * 0.70, '#fdba74');
-        fieldChip('cool rock sinks', 74, H * 0.91, '#93c5fd');
-        fieldChip('cool rock sinks', 466, H * 0.91, '#93c5fd');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_hot_rises_here', 'hot rock rises here'), 270, H * 0.70, '#fdba74');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_cool_sinks', 'cool rock sinks'), 74, H * 0.91, '#93c5fd');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_cool_sinks', 'cool rock sinks'), 466, H * 0.91, '#93c5fd');
       } else if (limb === 'down') {
         // Cold, dense lithosphere going down. Wide at the top and tapering, and
         // BLUE rather than orange: the whole reason it sinks is that it is the
@@ -2327,9 +2411,9 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ctx.bezierCurveTo(276, H * 0.70, 296, H * 0.82, 322, H * 0.98);
         ctx.bezierCurveTo(340, H * 0.82, 322, H * 0.70, 300, H * 0.55);
         ctx.closePath(); ctx.fill();
-        fieldChip('cool rock sinks here', 176, H * 0.68, '#bfdbfe');
-        fieldChip('hot rock rises', 74, H * 0.91, '#fdba74');
-        fieldChip('hot rock rises', 466, H * 0.91, '#fdba74');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_cool_sinks_here', 'cool rock sinks here'), 176, H * 0.68, '#bfdbfe');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_hot_rises', 'hot rock rises'), 74, H * 0.91, '#fdba74');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_hot_rises', 'hot rock rises'), 466, H * 0.91, '#fdba74');
       } else {
         // No limb under the seam at all. Saying so in the picture is the point:
         // a transform boundary is the one place where plate is neither made nor
@@ -2341,9 +2425,9 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ctx.beginPath(); ctx.moveTo(270, H * 0.55); ctx.lineTo(270, H * 0.95); ctx.stroke();
         ctx.setLineDash([]);
         ctx.restore();
-        fieldChip('no rising or sinking here', 270, H * 0.70, '#fde68a');
-        fieldChip('no new plate made', 270, H * 0.845, '#fde68a');
-        fieldChip('none destroyed either', 270, H * 0.925, '#fde68a');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_no_limb', 'no rising or sinking here'), 270, H * 0.70, '#fde68a');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_no_new_plate', 'no new plate made'), 270, H * 0.845, '#fde68a');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_none_destroyed', 'none destroyed either'), 270, H * 0.925, '#fde68a');
       }
       ctx.restore();
 
@@ -2424,8 +2508,8 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       ctx.fillStyle = isDark ? '#e0e7ff' : '#a16207';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      var leftMotionLabel = cur.mode === 'divergent' ? '<- PLATE A' : (cur.mode === 'transform' ? 'PLATE A ↑' : 'PLATE A ->');
-      var rightMotionLabel = cur.mode === 'divergent' ? 'PLATE B ->' : (cur.mode === 'transform' ? 'PLATE B ↓' : '<- PLATE B');
+      var leftMotionLabel = cur.mode === 'divergent' ? __alloT('stem.platetectonics.sim_plate_a_left', '<- PLATE A') : (cur.mode === 'transform' ? __alloT('stem.platetectonics.sim_plate_a_up', 'PLATE A ↑') : __alloT('stem.platetectonics.sim_plate_a_right', 'PLATE A ->'));
+      var rightMotionLabel = cur.mode === 'divergent' ? __alloT('stem.platetectonics.sim_plate_b_right', 'PLATE B ->') : (cur.mode === 'transform' ? __alloT('stem.platetectonics.sim_plate_b_down', 'PLATE B ↓') : __alloT('stem.platetectonics.sim_plate_b_left', '<- PLATE B'));
       ctx.fillText(leftMotionLabel, lRight / 2, lTop + lH / 2 + 4);
       ctx.fillText(rightMotionLabel, rLeft + (W - rLeft) / 2, rTop + rH / 2 + 4);
       if (typed) {
@@ -2434,9 +2518,9 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         // fell straight out of the bottom of a plate only ~28 px thick and sat on
         // the mantle. The continental plate is thick enough to hold its own.
         ctx.fillStyle = '#bae6fd';
-        ctx.fillText('oceanic — thin, dense', lRight / 2, lTop - 6);
+        ctx.fillText(__alloT('stem.platetectonics.sim_lbl_oceanic', 'oceanic — thin, dense'), lRight / 2, lTop - 6);
         ctx.fillStyle = '#fde68a';
-        ctx.fillText('continental — thick, buoyant', rLeft + (W - rLeft) / 2, rTop + rH / 2 + 17);
+        ctx.fillText(__alloT('stem.platetectonics.sim_lbl_continental', 'continental — thick, buoyant'), rLeft + (W - rLeft) / 2, rTop + rH / 2 + 17);
       }
 
       // Mode-specific rendering on top of plates
@@ -2521,7 +2605,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ctx.save();
         ctx.translate(sx0 + slabRun * 0.30, sy0 + slabReach * 0.30);
         ctx.rotate(slabDip);
-        ctx.fillText('same plate, going down', 8, 13);
+        ctx.fillText(__alloT('stem.platetectonics.sim_lbl_same_plate_down', 'same plate, going down'), 8, 13);
         ctx.restore();
         ctx.textAlign = 'center';
 
@@ -2614,7 +2698,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           // On a chip. 8px navy over a red-orange mantle gradient was the least
           // readable line on this canvas, and it names the single piece of
           // evidence that proved sea-floor spreading.
-          fieldChip('new crust • magnetic stripes mirror across the ridge', bx, plateY + plateH + 16, '#bae6fd');
+          fieldChip(__alloT('stem.platetectonics.sim_lbl_new_crust_stripes', 'new crust • magnetic stripes mirror across the ridge'), bx, plateY + plateH + 16, '#bae6fd');
         }
       } else if (cur.mode === 'transform') {
         // ── The fault plane, in section ────────────────────────────────────────
@@ -2647,7 +2731,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         // the direction the plates actually go.
         // Left of the inset, and short enough to clear it: at full width and
         // centred on the fault this ran straight under the map view panel.
-        fieldChip('motion is into and out of this page', 118, plateY - 16, '#fde68a');
+        fieldChip(__alloT('stem.platetectonics.sim_lbl_into_page', 'motion is into and out of this page'), 118, plateY - 16, '#fde68a');
 
         // ── Map view inset ─────────────────────────────────────────────────────
         // The one boundary type the rest of this tool could not show. A section is
@@ -2684,7 +2768,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ctx.fillStyle = isDark ? '#fde68a' : '#78350f';
         ctx.font = 'bold 8px sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('one stream, cut in two', mvX + 8, mvY + 58 + mapOffset);
+        ctx.fillText(__alloT('stem.platetectonics.sim_lbl_stream_cut', 'one stream, cut in two'), mvX + 8, mvY + 58 + mapOffset);
 
         // The fault trace itself.
         ctx.strokeStyle = '#dc2626';
@@ -2714,7 +2798,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ctx.fillStyle = '#451a03';
         ctx.font = 'bold 9px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('MAP VIEW — LOOKING STRAIGHT DOWN', mvX + mvW / 2, mvY + 11);
+        ctx.fillText(__alloT('stem.platetectonics.sim_lbl_map_view', 'MAP VIEW — LOOKING STRAIGHT DOWN'), mvX + mvW / 2, mvY + 11);
         ctx.restore();
 
         ctx.textAlign = 'center';
@@ -2746,10 +2830,10 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       ctx.textAlign = 'left';
       ctx.font = 'bold 8px sans-serif';
       ctx.fillStyle = '#e2e8f0';
-      ctx.fillText('FOCUS DEPTH, BY COLOUR', keyX + 6, keyY + 10);
-      [['#f43f5e', 'shallow — under 70 km'],
-       ['#fb923c', 'intermediate — 70 to 300 km'],
-       ['#a78bfa', 'deep — over 300 km']].forEach(function (row, i) {
+      ctx.fillText(__alloT('stem.platetectonics.sim_lbl_focus_depth_key', 'FOCUS DEPTH, BY COLOUR'), keyX + 6, keyY + 10);
+      [['#f43f5e', __alloT('stem.platetectonics.sim_key_shallow', 'shallow — under 70 km')],
+       ['#fb923c', __alloT('stem.platetectonics.sim_key_intermediate', 'intermediate — 70 to 300 km')],
+       ['#a78bfa', __alloT('stem.platetectonics.sim_key_deep', 'deep — over 300 km')]].forEach(function (row, i) {
         var ry = keyY + 19 + i * 8.5;
         ctx.fillStyle = row[0];
         ctx.beginPath(); ctx.arc(keyX + 11, ry - 3, 2.6, 0, Math.PI * 2); ctx.fill();
@@ -2814,25 +2898,25 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       ctx.fillStyle = '#fef3c7';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(BOUNDARY[cur.mode].name + ' boundary', 14, 22);
+      ctx.fillText(__alloT('stem.platetectonics.sim_hud_boundary', '{type} boundary').replace('{type}', BOUNDARY[cur.mode].name), 14, 22);
       ctx.fillStyle = '#fbbf24';
       ctx.font = '10px monospace';
-      ctx.fillText('Years: ' + Math.round(cur.years).toLocaleString(), 14, 36);
-      ctx.fillText('Rate: ' + cur.rate + ' cm/yr', 14, 48);
-      ctx.fillText('Events: ' + (cur.quakeTotal || 0), 14, 60);
+      ctx.fillText(__alloT('stem.platetectonics.sim_hud_years', 'Years: {n}').replace('{n}', Math.round(cur.years).toLocaleString()), 14, 36);
+      ctx.fillText(__alloT('stem.platetectonics.sim_hud_rate', 'Rate: {n} cm/yr').replace('{n}', cur.rate), 14, 48);
+      ctx.fillText(__alloT('stem.platetectonics.sim_hud_events', 'Events: {n}').replace('{n}', (cur.quakeTotal || 0)), 14, 60);
 
       // Mode-specific stat, inside the HUD box. Printed at the top RIGHT it ran
       // straight across the transform map view's header band, and it sat under
       // the sun in the other two modes.
       ctx.fillStyle = '#a3e635';
-      var modeStat = cur.mode === 'convergent' ? 'Mountain: ' + Math.round(cur.mountainHeight) + ' m'
-                   : cur.mode === 'divergent' ? 'Rift width: ' + Math.round(cur.rift) + ' km'
+      var modeStat = cur.mode === 'convergent' ? __alloT('stem.platetectonics.sim_hud_mountain', 'Mountain: {n} m').replace('{n}', Math.round(cur.mountainHeight))
+                   : cur.mode === 'divergent' ? __alloT('stem.platetectonics.sim_hud_rift', 'Rift width: {n} km').replace('{n}', Math.round(cur.rift))
                    : 'Offset: ' + Math.round(cur.offset) + ' m';
       ctx.fillText(modeStat, 14, 72);
     }
 
   function reset() {
-    update({ years: 0, quakes: [], quakeTotal: 0, mountainHeight: 0, rift: 0, offset: 0 });
+    update({ years: 0, quakes: [], quakeTotal: 0, deepestKm: 0, mountainHeight: 0, rift: 0, offset: 0 });
   }
 
   var info = BOUNDARY[s.mode];
@@ -2845,14 +2929,26 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
   // mode button had already told them, and heard nothing at all about the map
   // view that transform mode now puts on the canvas.
   var sectionScene = s.mode === 'convergent'
-    ? 'The left plate is thin, dense oceanic lithosphere sitting below sea level; the right plate is thicker, more buoyant continental lithosphere standing above it. A trench marks where the oceanic plate bends down, and the same plate is drawn continuing beneath the other as a descending slab. Melt rises from the slab to a volcanic arc set back from the trench, and a mountain range grows on the overriding plate. In the mantle below, the flow is sinking beneath the boundary.'
+    ? __alloT('stem.platetectonics.sim_scn_convergent', 'The left plate is thin, dense oceanic lithosphere sitting below sea level; the right plate is thicker, more buoyant continental lithosphere standing above it. A trench marks where the oceanic plate bends down, and the same plate is drawn continuing beneath the other as a descending slab. Melt rises from the slab to a volcanic arc set back from the trench, and a mountain range grows on the overriding plate. In the mantle below, the flow is sinking beneath the boundary.')
     : s.mode === 'divergent'
-      ? 'The two plates are separating and new crust fills the gap between them, banded with the mirrored magnetic stripes that recorded sea-floor spreading. In the mantle below, hot rock rises beneath the boundary and sinks again at the edges.'
-      : 'A near-vertical fault cuts the whole plate, with locked rough patches on it that produce shallow earthquakes. The plates slide along the fault, which in a cross-section means into and out of the page, so a map view is drawn above the section: seen from above, a single stream is cut in two and offset across the fault trace, and arrows show the two blocks travelling in opposite directions. In the mantle below there is no rising or sinking limb beneath this boundary, because a transform boundary creates no new plate and destroys none.';
-  var depthSummary = deepestActive == null ? 'No active events yet' :
-    (deepestActive >= 300 ? 'Deepest active focus: ' + deepestActive + ' km (deep)' :
-     deepestActive >= 70 ? 'Deepest active focus: ' + deepestActive + ' km (intermediate)' :
-     'Deepest active focus: ' + deepestActive + ' km (shallow)');
+      ? __alloT('stem.platetectonics.sim_scn_divergent', 'The two plates are separating and new crust fills the gap between them, banded with the mirrored magnetic stripes that recorded sea-floor spreading. In the mantle below, hot rock rises beneath the boundary and sinks again at the edges.')
+      : __alloT('stem.platetectonics.sim_scn_transform', 'A near-vertical fault cuts the whole plate, with locked rough patches on it that produce shallow earthquakes. The plates slide along the fault, which in a cross-section means into and out of the page, so a map view is drawn above the section: seen from above, a single stream is cut in two and offset across the fault trace, and arrows show the two blocks travelling in opposite directions. In the mantle below there is no rising or sinking limb beneath this boundary, because a transform boundary creates no new plate and destroys none.');
+  // Derived from the deepest focus SEEN, not the deepest currently on screen:
+  // an active-only figure flips band as events fade, which is what made the
+  // live region chatter.
+  var deepestSeen = Math.round(s.deepestKm || 0);
+  var depthBand = deepestSeen >= 300 ? 'deep' : deepestSeen >= 70 ? 'intermediate' : deepestSeen > 0 ? 'shallow' : 'none';
+  var depthBandLine = depthBand === 'deep'
+    ? __alloT('stem.platetectonics.sim_band_deep', 'This boundary has now produced deep earthquakes, more than 300 kilometres down.')
+    : depthBand === 'intermediate'
+      ? __alloT('stem.platetectonics.sim_band_intermediate', 'This boundary has now produced intermediate earthquakes, 70 to 300 kilometres down.')
+      : depthBand === 'shallow'
+        ? __alloT('stem.platetectonics.sim_band_shallow', 'This boundary is producing shallow earthquakes, less than 70 kilometres down.')
+        : __alloT('stem.platetectonics.sim_band_none', 'No earthquakes yet at this boundary.');
+  var depthSummary = deepestActive == null ? __alloT('stem.platetectonics.sim_no_events_yet', 'No active events yet') :
+    (deepestActive >= 300 ? __alloT('stem.platetectonics.sim_deepest_deep', 'Deepest active focus: {n} km (deep)').replace('{n}', deepestActive) :
+     deepestActive >= 70 ? __alloT('stem.platetectonics.sim_deepest_intermediate', 'Deepest active focus: {n} km (intermediate)').replace('{n}', deepestActive) :
+     __alloT('stem.platetectonics.sim_deepest_shallow', 'Deepest active focus: {n} km (shallow)').replace('{n}', deepestActive));
 
   // `dark` is not decorative here. Every dark-theme rule this file installs is
   // written as `.plate-tectonics-container.dark ...` — eighteen of them, covering
@@ -2870,13 +2966,13 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
 
   // ── Hand the 3D block this frame's model (plain data; no GPU work here) ──
   var deepCount = (s.quakes || []).filter(function(q) { return (q.depthKm || 0) >= 70; }).length;
-  var tectGlAlt = 'Rotatable 3D block of a ' + info.name.toLowerCase() + ' boundary. '
+  var tectGlAlt = __alloT('stem.platetectonics.sim_alt_intro', 'Rotatable 3D block of a {type} boundary. ').replace('{type}', info.name.toLowerCase())
     + (s.mode === 'convergent'
-        ? ('Oceanic plate descending beneath continental plate at about ' + TECT_DIP_DEG + ' degrees. '
-           + deepCount + ' of ' + (s.quakes || []).length + ' shown earthquakes are 70 km or deeper, lying on the slab.')
+        ? (__alloT('stem.platetectonics.sim_alt_convergent', 'Oceanic plate descending beneath continental plate at about {dip} degrees. {deep} of {total} shown earthquakes are 70 km or deeper, lying on the slab.')
+             .replace('{dip}', TECT_DIP_DEG).replace('{deep}', deepCount).replace('{total}', (s.quakes || []).length))
         : s.mode === 'divergent'
-          ? 'Two plates separating, with new crust filling the ridge between them. Earthquakes are shallow.'
-          : 'Two plates sliding past each other along the fault, offset along strike. Earthquakes are shallow.');
+          ? __alloT('stem.platetectonics.sim_alt_divergent', 'Two plates separating, with new crust filling the ridge between them. Earthquakes are shallow.')
+          : __alloT('stem.platetectonics.sim_alt_transform', 'Two plates sliding past each other along the fault, offset along strike. Earthquakes are shallow.'));
   var tectGlModel = {
     mode: s.mode,
     mountainHeight: s.mountainHeight, rift: s.rift, offset: s.offset,
@@ -2885,11 +2981,11 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     showScale: view3d.showScale !== false,
     onReady: function() {
       updView({ readyAt: Date.now() });   // flips tectGlLive on the next render
-      if (typeof announceToSR === 'function') announceToSR('3D block view ready.');
+      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_3d_ready', '3D block view ready.'));
     },
     onFail: function() {
       updView({ on: false });
-      if (typeof announceToSR === 'function') announceToSR('The 3D block could not load. Showing the 2D cross-section.');
+      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_3d_failed', 'The 3D block could not load. Showing the 2D cross-section.'));
     },
     sig: [s.mode, Math.round(s.mountainHeight), Math.round(s.rift), Math.round(s.offset),
           (s.quakes || []).length, view3d.cut, view3d.showScale !== false,
@@ -2905,7 +3001,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
   return h('div', { id: 'pt-boundary-simulator', className: containerClass, style: containerStyle, 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
     h('div', { className: headerBorderClass, style: headerStyle },
       h('span', { className: badgeClass, style: badgeStyle }, '🎮 INTERACTIVE'),
-      h('span', { className: titleClass }, 'Plate Boundary Simulator'),
+      h('span', { className: titleClass }, __alloT('stem.platetectonics.sim_title', 'Plate Boundary Simulator')),
       h('span', { className: subtitleClass }, '- pick a boundary type and watch geology happen in fast-forward')
     ),
     h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
@@ -2932,6 +3028,11 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
           'aria-describedby': 'tect-gl-description',
           ref: tectGlRef,
           'data-tect-gl': 'true',
+          // The block's orientation lives in WebGL, so nothing about it is
+          // observable from the DOM. Published here so the keyboard promise in
+          // the help text ("arrow keys to turn it, Shift for bigger steps,
+          // Home to reset") can be DRIVEN rather than read off the handler.
+          'data-tect-view': view3d.rotX + ',' + view3d.rotY + ',' + view3d.scale.toFixed(2),
           'data-a11y-static': 'true',
           // Same gap as the volcano cutaway: the label calls this a "Rotatable 3D
           // block" and only a mouse could rotate it. The whole point of this view
@@ -2947,12 +3048,12 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
             else if (k === 'ArrowDown') patch = { rotX: Math.min(88, view3d.rotX + step) };
             else if (k === '+' || k === '=') patch = { scale: Math.min(2.6, view3d.scale + 0.15) };
             else if (k === '-' || k === '_') patch = { scale: Math.max(0.4, view3d.scale - 0.15) };
-            else if (k === 'Home') patch = { rotX: -18, rotY: -28, scale: 1 };
+            else if (k === 'Home') patch = Object.assign({}, TECT_VIEW_HOME);
             if (!patch) return;
             ev.preventDefault();
             updView(patch);
             if (typeof announceToSR === 'function' && k === 'Home') {
-              announceToSR('Block view reset.');
+              announceToSR(__alloT('stem.platetectonics.sim_block_reset_sr', 'Block view reset.'));
             }
           },
           style: {
@@ -2979,18 +3080,18 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         }),
         view3d.on && !tectGlLive && h('div', {
           className: 'pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-bold text-orange-200/80'
-        }, 'Loading 3D block…'),
+        }, __alloT('stem.platetectonics.sim_loading_block', 'Loading 3D block…')),
         h('div', { className: 'pt-tect-swipe text-[11px] font-bold px-2 py-1 ' + (isDark ? 'text-orange-200 bg-slate-900' : 'text-orange-900 bg-orange-50'), style: { position: 'sticky', left: 0 }, 'aria-hidden': 'true' },
           '\u2194 Swipe the section sideways to see all of it'),
         h('p', { id: 'tect-gl-description', className: 'sr-only' },
-          'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. A rotatable 3D block of the boundary. Drag it, or use the rotate buttons, to see that the deep earthquakes lie on a single dipping plane rather than scattered through the mantle. Use the cutaway slider to slice the block down to the same cross-section the 2D view shows.')
+          __alloT('stem.platetectonics.sim_block_keys_help', 'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. A rotatable 3D block of the boundary. Drag it, or use the rotate buttons, to see that the deep earthquakes lie on a single dipping plane rather than scattered through the mantle. Use the cutaway slider to slice the block down to the same cross-section the 2D view shows.'))
       ),
       h('div', { className: 'flex flex-col gap-2' },
         // ── View: 2D section vs 3D block ──
         h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
           h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'View'),
-          h('div', { className: 'flex gap-1', role: 'group', 'aria-label': 'Choose the cross-section or the 3D block view' },
-            [['2d', 'Cross-section'], ['3d', '3D block']].map(function(o) {
+          h('div', { className: 'flex gap-1', role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_view_group_label', 'Choose the cross-section or the 3D block view') },
+            [['2d', __alloT('stem.platetectonics.sim_view_cross_section', 'Cross-section')], ['3d', '3D block']].map(function(o) {
               var active = (o[0] === '3d') === view3d.on;
               return h('button', {
                 key: o[0],
@@ -3002,7 +3103,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
                   if (want === view3d.on) return;
                   updView({ on: want });
                   if (typeof announceToSR === 'function') {
-                    announceToSR(want ? 'Switched to the 3D block view.' : 'Switched to the 2D cross-section.');
+                    announceToSR(want ? __alloT('stem.platetectonics.sim_switched_3d', 'Switched to the 3D block view.') : __alloT('stem.platetectonics.sim_switched_2d', 'Switched to the 2D cross-section.'));
                   }
                 },
                 className: 'flex-1 px-2 py-1.5 text-[11px] rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-orange-700 text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100'))
@@ -3010,9 +3111,9 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
             })
           ),
           view3d.on && h('div', { className: 'mt-2' },
-            h('div', { className: 'flex gap-1 mb-1', role: 'group', 'aria-label': 'Rotate the 3D block' },
-              [['Turn left', { rotY: view3d.rotY - 20 }], ['Turn right', { rotY: view3d.rotY + 20 }],
-               ['Tilt up', { rotX: Math.max(-88, view3d.rotX - 15) }], ['Tilt down', { rotX: Math.min(88, view3d.rotX + 15) }]]
+            h('div', { className: 'flex gap-1 mb-1', role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_rotate_group', 'Rotate the 3D block') },
+              [[__alloT('stem.platetectonics.sim_turn_left', 'Turn left'), { rotY: view3d.rotY - 20 }], [__alloT('stem.platetectonics.sim_turn_right', 'Turn right'), { rotY: view3d.rotY + 20 }],
+               ['Tilt up', { rotX: Math.max(-88, view3d.rotX - 15) }], [__alloT('stem.platetectonics.sim_tilt_down', 'Tilt down'), { rotX: Math.min(88, view3d.rotX + 15) }]]
                 .map(function(b, i) {
                   return h('button', {
                     key: i, type: 'button', 'aria-label': b[0],
@@ -3024,11 +3125,11 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
             // The cutaway is the bridge between the two views: slide it all
             // the way in and the block becomes the 2D section on the left.
             h('label', { htmlFor: 'tect-cut', className: 'text-[10px] font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') },
-              view3d.cut == null ? 'Cutaway: off' : 'Cutaway: slicing to the cross-section'),
+              view3d.cut == null ? __alloT('stem.platetectonics.sim_cutaway_off', 'Cutaway: off') : __alloT('stem.platetectonics.sim_cutaway_on', 'Cutaway: slicing to the cross-section')),
             h('input', {
               id: 'tect-cut', type: 'range', min: 0, max: 100, step: 1,
               value: view3d.cut == null ? 100 : Math.round((view3d.cut / TECT_HALF_Z) * 100),
-              'aria-label': 'Cut the 3D block away along the boundary to reveal the cross-section',
+              'aria-label': __alloT('stem.platetectonics.sim_cutaway_help', 'Cut the 3D block away along the boundary to reveal the cross-section'),
               onChange: function(e) {
                 var pct = parseInt(e.target.value, 10);
                 updView({ cut: pct >= 100 ? null : (pct / 100) * TECT_HALF_Z });
@@ -3044,21 +3145,21 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
                 var next = view3d.showScale === false;
                 updView({ showScale: next });
                 if (typeof announceToSR === 'function') {
-                  announceToSR(next ? 'Depth scale shown.' : 'Depth scale hidden.');
+                  announceToSR(next ? __alloT('stem.platetectonics.sim_depth_scale_on', 'Depth scale shown.') : __alloT('stem.platetectonics.sim_depth_scale_off', 'Depth scale hidden.'));
                 }
               },
               className: 'w-full mt-1 px-2 py-1 text-[10px] rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (view3d.showScale !== false ? 'border-orange-400 bg-orange-700 text-white font-bold' : (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100'))
-            }, 'Depth scale (70 / 300 / 700 km)'),
+            }, __alloT('stem.platetectonics.sim_depth_scale_label', 'Depth scale (70 / 300 / 700 km)')),
             h('button', {
               type: 'button',
-              onClick: function() { updView({ rotX: -22, rotY: -38, scale: 1, cut: null }); },
+              onClick: function() { updView(Object.assign({}, TECT_VIEW_HOME)); },
               className: 'w-full mt-1 px-2 py-1 text-[10px] rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100')
-            }, 'Reset view')
+            }, __alloT('stem.platetectonics.sim_reset_view', 'Reset view'))
           )
         ),
         // Mode selector
         h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
-          h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'Boundary type'),
+          h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, __alloT('stem.platetectonics.sim_boundary_type', 'Boundary type')),
           ['convergent', 'divergent', 'transform'].map(function(k) {
             var b = BOUNDARY[k];
             return h('button', {
@@ -3071,7 +3172,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
               onClick: function() {
                 update({ mode: k });
                 reset();
-                if (typeof announceToSR === 'function') announceToSR('Switched boundary type to ' + b.name);
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_sr_switched_boundary', 'Switched boundary type to {type}').replace('{type}', b.name));
               },
               className: 'w-full px-2 py-1.5 mb-1 text-[11px] text-left rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.mode === k ? 'text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100')),
               style: { background: s.mode === k ? b.color : undefined }
@@ -3080,20 +3181,20 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         ),
         // Rate slider
         h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
-          h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') + ' uppercase' }, 'Plate rate: ' + s.rate + ' cm/year'),
+          h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') + ' uppercase' }, __alloT('stem.platetectonics.sim_rate_label', 'Plate rate: {n} cm/year').replace('{n}', s.rate)),
           h('input', {
             type: 'range', min: 1, max: 15, step: 1, value: s.rate,
-            'aria-label': 'Plate movement rate in centimeters per year',
+            'aria-label': __alloT('stem.platetectonics.sim_rate_aria', 'Plate movement rate in centimeters per year'),
             onChange: function(e) {
               var newRate = parseInt(e.target.value);
               update({ rate: newRate });
-              if (typeof announceToSR === 'function') announceToSR('Plate rate changed to ' + newRate + ' centimeters per year');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_sr_rate_changed', 'Plate rate changed to {n} centimeters per year').replace('{n}', newRate));
             },
             className: 'focus:ring-2 focus:ring-yellow-500 focus:outline-none',
             style: { width: '100%', accentColor: '#ea580c' }
           }),
           h('div', { className: 'text-[10px] ' + (isDark ? 'text-orange-300' : 'text-orange-700') },
-            s.rate <= 3 ? 'Slow (like NA plate)' : s.rate <= 7 ? 'Medium (like Africa)' : 'Fast (like Pacific)'
+            s.rate <= 3 ? __alloT('stem.platetectonics.sim_rate_slow', 'Slow (like NA plate)') : s.rate <= 7 ? __alloT('stem.platetectonics.sim_rate_medium', 'Medium (like Africa)') : __alloT('stem.platetectonics.sim_rate_fast', 'Fast (like Pacific)')
           )
         ),
         // Controls
@@ -3102,14 +3203,14 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
             onClick: function() {
               var nextRunning = !s.running;
               update({ running: nextRunning });
-              if (typeof announceToSR === 'function') announceToSR(nextRunning ? 'Simulation playing' : 'Simulation paused');
+              if (typeof announceToSR === 'function') announceToSR(nextRunning ? __alloT('stem.platetectonics.sim_playing', 'Simulation playing') : __alloT('stem.platetectonics.sim_paused', 'Simulation paused'));
             },
             className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.running ? 'bg-amber-500 text-slate-900' : 'bg-emerald-700 text-white')
           }, s.running ? '⏸ Pause' : '▶ Play'),
           h('button', {
             onClick: function() {
               reset();
-              if (typeof announceToSR === 'function') announceToSR('Simulation reset');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_reset_sr', 'Simulation reset'));
             },
             className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700' : 'transition-colors bg-orange-200 text-orange-900 hover:bg-orange-300')
           }, '↻ Reset')
@@ -3123,19 +3224,36 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     },
       h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
         h('div', null,
-          h('div', { className: 'text-[10px] font-bold uppercase ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, 'Boundary evidence'),
-          h('h4', { id: 'ptEvidenceTitle', className: 'text-sm font-black ' + (isDark ? 'text-slate-100' : 'text-slate-900') }, 'What observations support ' + info.name.toLowerCase() + '?')
+          h('div', { className: 'text-[10px] font-bold uppercase ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, __alloT('stem.platetectonics.sim_evidence_heading', 'Boundary evidence')),
+          h('h4', { id: 'ptEvidenceTitle', className: 'text-sm font-black ' + (isDark ? 'text-slate-100' : 'text-slate-900') }, __alloT('stem.platetectonics.sim_evidence_question', 'What observations support {type}?').replace('{type}', info.name.toLowerCase()))
         ),
-        h('span', { className: 'text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-600'), role: 'status', 'aria-live': 'polite' },
+        // ── The readout, and what is actually worth announcing ──
+        // Measured with dev-tools/pt_live_chatter.cjs: as one live region this
+        // changed 19 times in 20 seconds - 57 announcements a minute, forever,
+        // with nobody touching anything. The count ticks up and the deepest
+        // ACTIVE focus jumps around as events decay, so a screen reader was
+        // interrupted about once a second and nothing else on the page could be
+        // read. The tool already had the right pattern a few hundred lines away
+        // (pt-scene-live): publish on a real state change only.
+        //
+        // So the running numbers stay on screen for a sighted student, outside
+        // any live region, and the announcement carries the one thing that is a
+        // finding rather than a tick: the deepest band this boundary type has
+        // reached. That changes at most twice, and it is the teaching point -
+        // only convergent boundaries get down into the deep band.
+        h('span', { className: 'text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-600'), 'data-pt-sim-readout': 'true' },
           (s.quakeTotal || 0) + ' events | ' + depthSummary
+        ),
+        h('span', { className: 'sr-only', role: 'status', 'aria-live': 'polite', 'data-pt-sim-depth-band': depthBand },
+          depthBandLine
         )
       ),
       h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2' },
         [
-          ['Relative motion', evidence.motion],
-          ['Crustal outcome', evidence.crust],
-          ['Quake-depth clue', evidence.quakes],
-          ['Volcanism clue', evidence.volcanoes]
+          [__alloT('stem.platetectonics.sim_ev_row_motion', 'Relative motion'), evidence.motion],
+          [__alloT('stem.platetectonics.sim_ev_row_crust', 'Crustal outcome'), evidence.crust],
+          [__alloT('stem.platetectonics.sim_ev_row_quakes', 'Quake-depth clue'), evidence.quakes],
+          [__alloT('stem.platetectonics.sim_ev_row_volcanoes', 'Volcanism clue'), evidence.volcanoes]
         ].map(function(item) {
           return h('div', { key: item[0], className: 'border-l-2 border-cyan-500 pl-2 py-1' },
             h('span', { className: 'block text-[10px] font-bold uppercase ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
@@ -3144,9 +3262,9 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         })
       ),
       h('div', { className: 'mt-2 text-[10px] leading-relaxed ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
-        (s.mode === 'convergent' ? 'Scenario note: this cross-section depicts oceanic lithosphere subducting beneath another plate. Continental collision looks different. ' : ''),
-        'Model note: event cadence and landscape growth are accelerated qualitative cues, not forecasts or calibrated rates. ',
-        h('span', { className: 'font-bold' }, 'Depth colors: '),
+        (s.mode === 'convergent' ? __alloT('stem.platetectonics.sim_scenario_note', 'Scenario note: this cross-section depicts oceanic lithosphere subducting beneath another plate. Continental collision looks different. ') : ''),
+        __alloT('stem.platetectonics.sim_model_note', 'Model note: event cadence and landscape growth are accelerated qualitative cues, not forecasts or calibrated rates. '),
+        h('span', { className: 'font-bold' }, __alloT('stem.platetectonics.sim_depth_colors_label', 'Depth colors: ')),
         h('span', { style: { color: isDark ? '#fb7185' : '#be123c' } }, 'shallow'), ' | ',
         h('span', { style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'intermediate'), ' | ',
         h('span', { style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, 'deep')
@@ -3157,16 +3275,16 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
       h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
         h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '📐 The math'),
         h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
-          'Plate speeds are commonly measured in centimeters per year. At a constant 2-15 cm/year, a plate would travel about 200-1500 km in 10 million years. Real rates and directions change through time. Earthquake magnitude is logarithmic: one whole moment-magnitude unit represents about 10x recorded wave amplitude and roughly 32x energy release.'
+          __alloT('stem.platetectonics.sim_try_speeds', 'Plate speeds are commonly measured in centimeters per year. At a constant 2-15 cm/year, a plate would travel about 200-1500 km in 10 million years. Real rates and directions change through time. Earthquake magnitude is logarithmic: one whole moment-magnitude unit represents about 10x recorded wave amplitude and roughly 32x energy release.')
         )
       ),
       h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
         h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '🎯 Try this'),
         h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
-          h('li', null, 'Switch to Convergent and compare shallow, intermediate, and deep event colors. Deep-focus earthquakes are strong evidence of a subducting slab.'),
-          h('li', null, 'Switch to Divergent - see the mid-ocean ridge open and magma fill in (this is happening at the Mid-Atlantic Ridge right now).'),
-          h('li', null, 'Switch to Transform and observe shallow events plus horizontal offset, as at the San Andreas, North Anatolian, and Alpine faults.'),
-          h('li', null, 'Compare patterns, not raw counts: this accelerated model emphasizes quake depth and crustal outcome rather than predicting real hazard.')
+          h('li', null, __alloT('stem.platetectonics.sim_try_convergent', 'Switch to Convergent and compare shallow, intermediate, and deep event colors. Deep-focus earthquakes are strong evidence of a subducting slab.')),
+          h('li', null, __alloT('stem.platetectonics.sim_try_divergent', 'Switch to Divergent - see the mid-ocean ridge open and magma fill in (this is happening at the Mid-Atlantic Ridge right now).')),
+          h('li', null, __alloT('stem.platetectonics.sim_try_transform', 'Switch to Transform and observe shallow events plus horizontal offset, as at the San Andreas, North Anatolian, and Alpine faults.')),
+          h('li', null, __alloT('stem.platetectonics.sim_try_compare', 'Compare patterns, not raw counts: this accelerated model emphasizes quake depth and crustal outcome rather than predicting real hazard.'))
         )
       )
     )
@@ -3267,22 +3385,55 @@ var d = labToolData.plateTectonics || {};
           // which was impossible, because the answer was printed in the same card
           // with nothing to hide it. Same defect class as the reference shelf that
           // used to sit under the quiz: an assessment cannot show its own answers.
+          // How many review cards the markup actually contains. "Show all answers"
+          // has to name them, and a test counts the ptReviewAnswer calls against
+          // this number so the two cannot drift apart.
+          var PT_REVIEW_CARDS = 60;
+          // Card counts for the two hand-written catalogues. Their intro
+          // sentences claimed 60 while both lists hold 61; a test counts the
+          // cards in each block against these, so the sentence cannot drift
+          // from the content again.
+          var PT_MINERAL_CARDS = 61;
+          var PT_INSIGHT_CARDS = 61;
+          // The button STAYS and flips to "Hide answer" rather than being replaced
+          // by the answer: replacing it removes the focused element from the page,
+          // so a keyboard user is dumped back to the top of the document with
+          // nothing announced, and a card once turned over could never be turned
+          // back. aria-expanded/aria-controls say the same thing to a reader.
           var ptReviewAnswer = function (n, text) {
-            var open = !!(d._ptRevealAll || (d._ptRevealed || {})[n]);
+            var open = !!(d._ptRevealed || {})[n];
+            var aid = 'pt-review-answer-' + n;
             return React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1', 'data-pt-review-answer': String(n) },
-              open
-                ? [React.createElement('span', { key: 'lab', className: 'font-bold text-indigo-700' }, 'Answer: '), ptStripLabel('Answer', text)]
-                : React.createElement('button', {
-                    type: 'button', 'data-pt-review-reveal': String(n),
-                    onClick: function () { var m = Object.assign({}, d._ptRevealed || {}); m[n] = true; upd({ _ptRevealed: m }); },
-                    className: 'px-2 py-1 rounded text-[11px] font-bold border bg-indigo-50 text-indigo-900 border-indigo-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none'
-                  }, __alloT('stem.platetectonics.show_answer', 'Show answer')));
+              React.createElement('button', {
+                type: 'button', 'data-pt-review-reveal': String(n),
+                'aria-expanded': open ? 'true' : 'false', 'aria-controls': aid,
+                // Sixty buttons whose only name is "Show answer" are sixty
+                // identical stops to anyone reading by ear or by tab. The number
+                // is the one thing that tells them apart. The visible words stay
+                // at the FRONT of the name, so speaking the label still matches
+                // what is written on the control (WCAG 2.5.3).
+                'aria-label': (open ? __alloT('stem.platetectonics.hide_answer', 'Hide answer') : __alloT('stem.platetectonics.show_answer', 'Show answer')) +
+                  ' — ' + __alloT('stem.platetectonics.review_question_n', 'review question') + ' ' + n,
+                onClick: function () {
+                  var m = Object.assign({}, d._ptRevealed || {});
+                  if (open) { delete m[n]; } else { m[n] = true; }
+                  upd({ _ptRevealed: m });
+                },
+                className: 'px-2 py-1 rounded text-[11px] font-bold border bg-indigo-50 text-indigo-900 border-indigo-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none'
+              }, open ? __alloT('stem.platetectonics.hide_answer', 'Hide answer') : __alloT('stem.platetectonics.show_answer', 'Show answer')),
+              open && React.createElement('div', { id: aid, className: 'mt-1' },
+                React.createElement('span', { className: 'font-bold text-indigo-700' }, 'Answer: '),
+                ptStripLabel('Answer', text)));
           };
 
           var ptEmptyOr = function (term, list) {
             if (list.length || !term) return list;
+            // NOT theme-branched. This message has no background of its own, and
+            // every catalogue card it lands in (bg-red-50, bg-rose-50) is light in
+            // BOTH themes — this tool is a light card inside a dark shell. The
+            // dark branch put slate-300 on rose-50 and measured 1.35:1.
             return [React.createElement('div', { key: 'pt-no-match', 'data-pt-no-matches': 'true', role: 'status',
-              className: 'p-3 rounded-lg text-xs italic border ' + (isDark ? 'text-slate-300 border-slate-700' : 'text-slate-600 border-slate-300') },
+              className: 'p-3 rounded-lg text-xs italic border text-slate-600 border-slate-300' },
               __alloT('stem.platetectonics.no_matches_for', 'No matches for') + ' “' + term + '”. ' +
               __alloT('stem.platetectonics.try_a_shorter_word', 'Try a shorter word, or clear the search.'))];
           };
@@ -3444,7 +3595,7 @@ var d = labToolData.plateTectonics || {};
             // Toasts and sound live OUT here: an updater can legitimately run
             // twice, and a student should not hear the fanfare twice for one win.
             earned.forEach(function(ch) {
-              if (typeof addToast === 'function') addToast('🏆 Challenge: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
+              if (typeof addToast === 'function') addToast('🏆 ' + __alloT('stem.platetectonics.toast_challenge_won', 'Challenge: {name} (+{rp} RP)').replace('{name}', ch.name).replace('{rp}', ch.rp), 'success');
               sfxTectCorrect();
             });
           }
@@ -5966,747 +6117,389 @@ var d = labToolData.plateTectonics || {};
               id: 1,
               name: __alloT('stem.platetectonics.alfred_wegener', "Alfred Wegener"),
               years: "1880-1930",
-              country: "Germany",
-              contribution: "Proposed continental drift (1912). Ridiculed in his time. Vindicated 50 years later."
+              country: __alloT('stem.platetectonics.geo_coun_germany', "Germany"),
+              contribution: __alloT('stem.platetectonics.geo_cont_proposed_continental_drift_1912_ridi', "Proposed continental drift (1912). Ridiculed in his time. Vindicated 50 years later.")
             },
             {
               id: 2,
               name: __alloT('stem.platetectonics.harry_hess', "Harry Hess"),
               years: "1906-1969",
-              country: "USA",
-              contribution: "Developed seafloor spreading theory (1962). Helped establish plate tectonics."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_developed_seafloor_spreading_theory', "Developed seafloor spreading theory (1962). Helped establish plate tectonics.")
             },
             {
               id: 3,
               name: __alloT('stem.platetectonics.john_tuzo_wilson', "John Tuzo Wilson"),
               years: "1908-1993",
-              country: "Canada",
-              contribution: "Proposed Wilson Cycle + transform faults. Synthesized plate tectonics theory."
+              country: __alloT('stem.platetectonics.geo_coun_canada', "Canada"),
+              contribution: __alloT('stem.platetectonics.geo_cont_proposed_wilson_cycle_transform_faul', "Proposed Wilson Cycle + transform faults. Synthesized plate tectonics theory.")
             },
             {
               id: 4,
               name: __alloT('stem.platetectonics.marie_tharp', "Marie Tharp"),
               years: "1920-2006",
-              country: "USA",
-              contribution: "Mapped Mid-Atlantic Ridge. Discovered rift valley confirming seafloor spreading."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_mapped_mid_atlantic_ridge_discovered', "Mapped Mid-Atlantic Ridge. Discovered rift valley confirming seafloor spreading.")
             },
             {
               id: 5,
               name: __alloT('stem.platetectonics.bruce_heezen', "Bruce Heezen"),
               years: "1924-1977",
-              country: "USA",
-              contribution: "Worked with Tharp. Mapped ocean floor topography."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_worked_with_tharp_mapped_ocean_floor', "Worked with Tharp. Mapped ocean floor topography.")
             },
             {
               id: 6,
               name: __alloT('stem.platetectonics.frederick_vine', "Frederick Vine"),
               years: "1939-2024",
               country: "UK",
-              contribution: "Vine-Matthews-Morley hypothesis. Magnetic stripes on seafloor."
+              contribution: __alloT('stem.platetectonics.geo_cont_vine_matthews_morley_hypothesis_magn', "Vine-Matthews-Morley hypothesis. Magnetic stripes on seafloor.")
             },
             {
               id: 7,
               name: __alloT('stem.platetectonics.drummond_matthews', "Drummond Matthews"),
               years: "1931-1997",
               country: "UK",
-              contribution: "Co-discovered magnetic stripes pattern."
+              contribution: __alloT('stem.platetectonics.geo_cont_co_discovered_magnetic_stripes_patte', "Co-discovered magnetic stripes pattern.")
             },
             {
               id: 8,
               name: __alloT('stem.platetectonics.lawrence_morley', "Lawrence Morley"),
               years: "1920-2013",
-              country: "Canada",
-              contribution: "Independent co-discovery of magnetic stripes."
+              country: __alloT('stem.platetectonics.geo_coun_canada', "Canada"),
+              contribution: __alloT('stem.platetectonics.geo_cont_independent_co_discovery_of_magnetic', "Independent co-discovery of magnetic stripes.")
             },
             {
               id: 9,
               name: __alloT('stem.platetectonics.james_hutton', "James Hutton"),
               years: "1726-1797",
-              country: "Scotland",
-              contribution: "Father of modern geology. Deep time concept. Uniformitarianism."
+              country: __alloT('stem.platetectonics.geo_coun_scotland', "Scotland"),
+              contribution: __alloT('stem.platetectonics.geo_cont_father_of_modern_geology_deep_time_c', "Father of modern geology. Deep time concept. Uniformitarianism.")
             },
             {
               id: 10,
               name: __alloT('stem.platetectonics.charles_lyell', "Charles Lyell"),
               years: "1797-1875",
               country: "UK",
-              contribution: "Principles of Geology (1830). Influenced Darwin."
+              contribution: __alloT('stem.platetectonics.geo_cont_principles_of_geology_1830_influence', "Principles of Geology (1830). Influenced Darwin.")
             },
             {
               id: 11,
               name: __alloT('stem.platetectonics.eduard_suess', "Eduard Suess"),
               years: "1831-1914",
-              country: "Austria",
-              contribution: "Coined Gondwana + Tethys. Early continental drift advocate."
+              country: __alloT('stem.platetectonics.geo_coun_austria', "Austria"),
+              contribution: __alloT('stem.platetectonics.geo_cont_coined_gondwana_tethys_early_contine', "Coined Gondwana + Tethys. Early continental drift advocate.")
             },
             {
               id: 12,
               name: __alloT('stem.platetectonics.charles_richter', "Charles Richter"),
               years: "1900-1985",
-              country: "USA",
-              contribution: "Developed Richter magnitude scale (1935)."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_developed_richter_magnitude_scale_19', "Developed Richter magnitude scale (1935).")
             },
             {
               id: 13,
               name: __alloT('stem.platetectonics.beno_gutenberg', "Beno Gutenberg"),
               years: "1889-1960",
-              country: "Germany/USA",
-              contribution: "Internal Earth structure. Co-developed Richter scale."
+              country: __alloT('stem.platetectonics.geo_coun_germany_usa', "Germany/USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_internal_earth_structure_co_develope', "Internal Earth structure. Co-developed Richter scale.")
             },
             {
               id: 14,
               name: __alloT('stem.platetectonics.inge_lehmann', "Inge Lehmann"),
               years: "1888-1993",
-              country: "Denmark",
-              contribution: "Discovered Earth has solid inner core (1936)."
+              country: __alloT('stem.platetectonics.geo_coun_denmark', "Denmark"),
+              contribution: __alloT('stem.platetectonics.geo_cont_discovered_earth_has_solid_inner_cor', "Discovered Earth has solid inner core (1936).")
             },
             {
               id: 15,
               name: __alloT('stem.platetectonics.harry_reid', "Harry Reid"),
               years: "1859-1944",
-              country: "USA",
-              contribution: "Elastic rebound theory of earthquakes."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_elastic_rebound_theory_of_earthquake', "Elastic rebound theory of earthquakes.")
             },
             {
               id: 16,
               name: __alloT('stem.platetectonics.andrija_mohorovi_i', "Andrija Mohorovičić"),
               years: "1857-1936",
-              country: "Croatia",
-              contribution: "Discovered crust-mantle boundary (Moho)."
+              country: __alloT('stem.platetectonics.geo_coun_croatia', "Croatia"),
+              contribution: __alloT('stem.platetectonics.geo_cont_discovered_crust_mantle_boundary_moh', "Discovered crust-mantle boundary (Moho).")
             },
             {
               id: 17,
               name: __alloT('stem.platetectonics.emil_wiechert', "Emil Wiechert"),
               years: "1861-1928",
-              country: "Germany",
-              contribution: "Earth core hypothesis (1897)."
+              country: __alloT('stem.platetectonics.geo_coun_germany', "Germany"),
+              contribution: __alloT('stem.platetectonics.geo_cont_earth_core_hypothesis_1897', "Earth core hypothesis (1897).")
             },
             {
               id: 18,
               name: __alloT('stem.platetectonics.richard_oldham', "Richard Oldham"),
               years: "1858-1936",
               country: "UK",
-              contribution: "Confirmed Earth's core via seismology."
+              contribution: __alloT('stem.platetectonics.geo_cont_confirmed_earth_s_core_via_seismolog', "Confirmed Earth's core via seismology.")
             },
             {
               id: 19,
               name: __alloT('stem.platetectonics.joaqu_n_camu_as', "Joaquín Camuñas"),
               years: "1858-1939",
-              country: "Spain",
-              contribution: "Mountain building theories."
+              country: __alloT('stem.platetectonics.geo_coun_spain', "Spain"),
+              contribution: __alloT('stem.platetectonics.geo_cont_mountain_building_theories', "Mountain building theories.")
             },
             {
               id: 20,
               name: __alloT('stem.platetectonics.lord_kelvin', "Lord Kelvin"),
               years: "1824-1907",
               country: "UK",
-              contribution: "Estimated Earth's age (initially incorrect - too short)."
+              contribution: __alloT('stem.platetectonics.geo_cont_estimated_earth_s_age_initially_inco', "Estimated Earth's age (initially incorrect - too short).")
             },
             {
               id: 21,
               name: __alloT('stem.platetectonics.ernest_rutherford', "Ernest Rutherford"),
               years: "1871-1937",
               country: "NZ/UK",
-              contribution: "Showed radioactivity dates Earth as billions of years old."
+              contribution: __alloT('stem.platetectonics.geo_cont_showed_radioactivity_dates_earth_as', "Showed radioactivity dates Earth as billions of years old.")
             },
             {
               id: 22,
               name: __alloT('stem.platetectonics.arthur_holmes', "Arthur Holmes"),
               years: "1890-1965",
               country: "UK",
-              contribution: "First accurate radiometric dating of Earth (~4.5 billion years)."
+              contribution: __alloT('stem.platetectonics.geo_cont_first_accurate_radiometric_dating_of', "First accurate radiometric dating of Earth (~4.5 billion years).")
             },
             {
               id: 23,
               name: __alloT('stem.platetectonics.clair_patterson', "Clair Patterson"),
               years: "1922-1995",
-              country: "USA",
-              contribution: "Determined Earth's age precisely. Lead pollution research."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_determined_earth_s_age_precisely_lea', "Determined Earth's age precisely. Lead pollution research.")
             },
             {
               id: 24,
               name: __alloT('stem.platetectonics.william_smith', "William Smith"),
               years: "1769-1839",
               country: "UK",
-              contribution: "First geological map of Britain. Principle of faunal succession."
+              contribution: __alloT('stem.platetectonics.geo_cont_first_geological_map_of_britain_prin', "First geological map of Britain. Principle of faunal succession.")
             },
             {
               id: 25,
               name: __alloT('stem.platetectonics.charles_darwin', "Charles Darwin"),
               years: "1809-1882",
               country: "UK",
-              contribution: "Coral atoll subsidence. Beagle voyage geological observations."
+              contribution: __alloT('stem.platetectonics.geo_cont_coral_atoll_subsidence_beagle_voyage', "Coral atoll subsidence. Beagle voyage geological observations.")
             },
             {
               id: 26,
               name: __alloT('stem.platetectonics.louis_agassiz', "Louis Agassiz"),
               years: "1807-1873",
-              country: "Switzerland/USA",
-              contribution: "Ice age theory. Glacial geology."
+              country: __alloT('stem.platetectonics.geo_coun_switzerland_usa', "Switzerland/USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_ice_age_theory_glacial_geology', "Ice age theory. Glacial geology.")
             },
             {
               id: 27,
               name: __alloT('stem.platetectonics.charles_doolittle_walcott', "Charles Doolittle Walcott"),
               years: "1850-1927",
-              country: "USA",
-              contribution: "Burgess Shale fossils."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_burgess_shale_fossils', "Burgess Shale fossils.")
             },
             {
               id: 28,
               name: __alloT('stem.platetectonics.suzanne_mahlburg_kay', "Suzanne Mahlburg Kay"),
               years: "1942-",
-              country: "USA",
-              contribution: "Andes geology."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_andes_geology', "Andes geology.")
             },
             {
               id: 29,
               name: __alloT('stem.platetectonics.marcia_mcnutt', "Marcia McNutt"),
               years: "1952-",
-              country: "USA",
-              contribution: "Director of US Geological Survey. Marine geophysics."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_director_of_us_geological_survey_mar', "Director of US Geological Survey. Marine geophysics.")
             },
             {
               id: 30,
               name: __alloT('stem.platetectonics.robert_berner', "Robert Berner"),
               years: "1935-2015",
-              country: "USA",
-              contribution: "Global carbon cycle."
+              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
+              contribution: __alloT('stem.platetectonics.geo_cont_global_carbon_cycle', "Global carbon cycle.")
             }
           ];
 
           // GEOLOGY GLOSSARY
           var GEO_GLOSSARY = [
-            {
-              id: 1,
-              term: "Asthenosphere",
-              definition: "Hot, plastic upper-mantle layer beneath the lithosphere. Plates float on it."
-            },
-            {
-              id: 2,
-              term: "Continental drift",
-              definition: "Theory that continents move over geological time. Proposed by Wegener."
-            },
-            {
-              id: 3,
-              term: "Convection current",
-              definition: "Heat-driven flow in mantle. Drives plate motion."
-            },
-            {
-              id: 4,
-              term: "Convergent boundary",
-              definition: "Two plates collide. Forms mountains, trenches, volcanoes."
-            },
-            {
-              id: 5,
-              term: "Core",
-              definition: "Innermost layer. Outer core liquid, inner core solid."
-            },
-            {
-              id: 6,
-              term: "Crust",
-              definition: "Outer rocky layer. Continental (lighter, thicker) or oceanic (denser, thinner)."
-            },
-            {
-              id: 7,
-              term: "Divergent boundary",
-              definition: "Plates pull apart. Forms mid-ocean ridges + rift valleys."
-            },
-            {
-              id: 8,
-              term: "Earthquake",
-              definition: "Sudden release of energy along a fault."
-            },
-            {
-              id: 9,
-              term: "Epicenter",
-              definition: "Point on surface above earthquake focus."
-            },
-            {
-              id: 10,
-              term: "Fault",
-              definition: "Fracture in rock where movement has occurred."
-            },
-            {
-              id: 11,
-              term: "Focus (hypocenter)",
-              definition: "Point below ground where earthquake originates."
-            },
-            {
-              id: 12,
-              term: "Gondwana",
-              definition: "Southern supercontinent. Africa + S. America + India + Australia + Antarctica."
-            },
-            {
-              id: 13,
-              term: "Hotspot",
-              definition: "Stationary heat plume in mantle. Forms volcano chains."
-            },
-            {
-              id: 14,
-              term: "Inner core",
-              definition: "Solid iron-nickel center."
-            },
-            {
-              id: 15,
-              term: "Laurasia",
-              definition: "Northern supercontinent. N. America + Eurasia."
-            },
-            {
-              id: 16,
-              term: "Lithosphere",
-              definition: "Rigid outer layer. Crust + uppermost mantle. Tectonic plates."
-            },
-            {
-              id: 17,
-              term: "Magma",
-              definition: "Molten rock below surface."
-            },
-            {
-              id: 18,
-              term: "Magnetic reversal",
-              definition: "Periodic flip of Earth's magnetic field."
-            },
-            {
-              id: 19,
-              term: "Mantle",
-              definition: "Layer between crust + core. Mostly solid but flows over time."
-            },
-            {
-              id: 20,
-              term: "Mid-ocean ridge",
-              definition: "Underwater mountain range at divergent boundary."
-            },
-            {
-              id: 21,
-              term: "Moho (Mohorovičić discontinuity)",
-              definition: "Boundary between crust + mantle."
-            },
-            {
-              id: 22,
-              term: "Oceanic crust",
-              definition: "Dense basaltic crust. Forms ocean floor."
-            },
-            {
-              id: 23,
-              term: "Outer core",
-              definition: "Liquid iron-nickel layer. Generates Earth's magnetic field."
-            },
-            {
-              id: 24,
-              term: "Pangaea",
-              definition: "Last supercontinent. ~335-175 Ma."
-            },
-            {
-              id: 25,
-              term: "Plate boundary",
-              definition: "Edge where two tectonic plates meet."
-            },
-            {
-              id: 26,
-              term: "Plate tectonics",
-              definition: "Theory that lithosphere is broken into plates that move."
-            },
-            {
-              id: 27,
-              term: "Rift valley",
-              definition: "Linear depression where continent splits."
-            },
-            {
-              id: 28,
-              term: "Ring of Fire",
-              definition: "Pacific volcanic + seismic zone. 75% of world's volcanoes."
-            },
-            {
-              id: 29,
-              term: "Seafloor spreading",
-              definition: "New ocean crust forms at ridges. Plates push apart."
-            },
-            {
-              id: 30,
-              term: "Seismic wave",
-              definition: "Energy wave from earthquake. P + S + surface waves."
-            },
-            {
-              id: 31,
-              term: "Subduction",
-              definition: "One plate slides under another. Forms trenches + volcanoes."
-            },
-            {
-              id: 32,
-              term: "Supercontinent",
-              definition: "Single landmass containing most continental crust."
-            },
-            {
-              id: 33,
-              term: "Tectonic plate",
-              definition: "Rigid lithospheric segment that moves over asthenosphere."
-            },
-            {
-              id: 34,
-              term: "Transform boundary",
-              definition: "Plates slide past each other. Strike-slip faults."
-            },
-            {
-              id: 35,
-              term: "Trench",
-              definition: "Deep ocean depression at subduction zone."
-            },
-            {
-              id: 36,
-              term: "Volcano",
-              definition: "Surface vent for magma + gases."
-            },
-            {
-              id: 37,
-              term: "P-wave",
-              definition: "Primary wave. Compression. Fastest seismic wave."
-            },
-            {
-              id: 38,
-              term: "S-wave",
-              definition: "Secondary wave. Shear. Cannot travel through liquid."
-            },
-            {
-              id: 39,
-              term: "Surface wave",
-              definition: "Slowest but most destructive seismic wave."
-            },
-            {
-              id: 40,
-              term: "Richter magnitude",
-              definition: "The original 1935 logarithmic scale of earthquake size; each unit = 10x amplitude. It saturates above about M7, so moment magnitude is used for large quakes."
-            },
-            {
-              id: 41,
-              term: "Moment magnitude (Mw)",
-              definition: "The modern scale, based on fault area times slip times rigidity. It does not saturate, so it is used for earthquakes of every size."
-            },
-            {
-              id: 42,
-              term: "Mercalli intensity",
-              definition: "Scale of earthquake damage at specific location."
-            },
-            {
-              id: 43,
-              term: "Aftershock",
-              definition: "Smaller earthquake after main shock."
-            },
-            {
-              id: 44,
-              term: "Foreshock",
-              definition: "Small earthquake before main shock."
-            },
-            {
-              id: 45,
-              term: "Tsunami",
-              definition: "Ocean wave caused by earthquake or volcanic activity."
-            },
-            {
-              id: 46,
-              term: "Liquefaction",
-              definition: "Solid ground behaves like liquid during earthquake."
-            },
-            {
-              id: 47,
-              term: "Strike-slip fault",
-              definition: "Horizontal displacement along fault."
-            },
-            {
-              id: 48,
-              term: "Normal fault",
-              definition: "Hanging wall drops down. Tension."
-            },
-            {
-              id: 49,
-              term: "Reverse fault",
-              definition: "Hanging wall pushed up. Compression."
-            },
-            {
-              id: 50,
-              term: "Thrust fault",
-              definition: "Low-angle reverse fault."
-            },
-            {
-              id: 51,
-              term: "Caldera",
-              definition: "Large depression from magma chamber collapse."
-            },
-            {
-              id: 52,
-              term: "Lava",
-              definition: "Molten rock at surface."
-            },
-            {
-              id: 53,
-              term: "Lahar",
-              definition: "Mudflow of volcanic ash + water."
-            },
-            {
-              id: 54,
-              term: "Pyroclastic flow",
-              definition: "Hot gas + rock + ash flow down volcano."
-            },
-            {
-              id: 55,
-              term: "Tephra",
-              definition: "All solid material ejected from volcano."
-            },
-            {
-              id: 56,
-              term: "Volcanic Explosivity Index (VEI)",
-              definition: "Scale of volcanic eruption size. 0-8."
-            },
-            {
-              id: 57,
-              term: "Shield volcano",
-              definition: "Broad gentle volcano. Hawaiian-style."
-            },
-            {
-              id: 58,
-              term: "Stratovolcano",
-              definition: "Steep symmetric volcano. Most familiar shape."
-            },
-            {
-              id: 59,
-              term: "Cinder cone",
-              definition: "Small steep cone of ejected ash + scoria."
-            },
-            {
-              id: 60,
-              term: "Composite volcano",
-              definition: "Same as stratovolcano."
-            },
-            {
-              id: 61,
-              term: "Supervolcano",
-              definition: "Volcano capable of producing >1000 km³ of erupted material."
-            },
-            {
-              id: 62,
-              term: "Fissure eruption",
-              definition: "Eruption from elongated crack."
-            },
-            {
-              id: 63,
-              term: "Pumice",
-              definition: "Light rock with many gas bubbles."
-            },
-            {
-              id: 64,
-              term: "Obsidian",
-              definition: "Volcanic glass from rapid cooling."
-            },
-            {
-              id: 65,
-              term: "Basalt",
-              definition: "Dark volcanic rock. Common in oceanic crust."
-            },
-            {
-              id: 66,
-              term: "Granite",
-              definition: "Light intrusive rock. Common in continental crust."
-            },
-            {
-              id: 67,
-              term: "Igneous rock",
-              definition: "Rock formed from cooled magma/lava."
-            },
-            {
-              id: 68,
-              term: "Sedimentary rock",
-              definition: "Rock formed from compacted sediments."
-            },
-            {
-              id: 69,
-              term: "Metamorphic rock",
-              definition: "Rock changed by heat + pressure."
-            },
-            {
-              id: 70,
-              term: "Mineral",
-              definition: "Naturally occurring inorganic solid with specific composition."
-            },
-            {
-              id: 71,
-              term: "Mohs hardness scale",
-              definition: "Scale 1-10 of mineral hardness. Talc to diamond."
-            },
-            {
-              id: 72,
-              term: "Density",
-              definition: "Mass per unit volume. Differentiates rock types."
-            },
-            {
-              id: 73,
-              term: "Cleavage",
-              definition: "Pattern of breaking in mineral or rock."
-            },
-            {
-              id: 74,
-              term: "Fracture",
-              definition: "Pattern of breaking without preferred direction."
-            },
-            {
-              id: 75,
-              term: "Streak",
-              definition: "Color of powdered mineral."
-            },
-            {
-              id: 76,
-              term: "Luster",
-              definition: "How light reflects from mineral surface."
-            },
-            {
-              id: 77,
-              term: "Crystal system",
-              definition: "Geometry class. Cubic, tetragonal, hexagonal, etc."
-            },
-            {
-              id: 78,
-              term: "Wilson cycle",
-              definition: "Repeated opening + closing of ocean basins. Coined by J.T. Wilson."
-            },
-            {
-              id: 79,
-              term: "Geological time scale",
-              definition: "Hierarchy of eons, eras, periods."
-            },
-            {
-              id: 80,
-              term: "Eon",
-              definition: "Largest geological time unit (e.g., Phanerozoic)."
-            },
-            {
-              id: 81,
-              term: "Era",
-              definition: "Subdivision of eon (e.g., Mesozoic)."
-            },
-            {
-              id: 82,
-              term: "Period",
-              definition: "Subdivision of era (e.g., Jurassic)."
-            },
-            {
-              id: 83,
-              term: "Epoch",
-              definition: "Subdivision of period (e.g., Pleistocene)."
-            },
-            {
-              id: 84,
-              term: "Anthropocene",
-              definition: "Proposed current epoch of human impact."
-            },
-            {
-              id: 85,
-              term: "Snowball Earth",
-              definition: "Earth almost entirely frozen ~700 Ma."
-            },
-            {
-              id: 86,
-              term: "Mass extinction",
-              definition: "Catastrophic loss of biodiversity. 5 major events."
-            },
-            {
-              id: 87,
-              term: "K-T boundary",
-              definition: "Cretaceous-Tertiary mass extinction 65 Ma. Asteroid + volcanism."
-            },
-            {
-              id: 88,
-              term: "Permian-Triassic extinction",
-              definition: "Largest ever extinction 252 Ma. ~96% marine species lost."
-            },
-            {
-              id: 89,
-              term: "Bolide",
-              definition: "Large impactor (meteor, asteroid)."
-            },
-            {
-              id: 90,
-              term: "Iridium anomaly",
-              definition: "High Ir layer at K-T boundary. Asteroid evidence."
-            },
-            {
-              id: 91,
-              term: "Continental shelf",
-              definition: "Submerged continental margin."
-            },
-            {
-              id: 92,
-              term: "Continental slope",
-              definition: "Steep drop from shelf to deep ocean."
-            },
-            {
-              id: 93,
-              term: "Continental rise",
-              definition: "Gentler slope at base of continent."
-            },
-            {
-              id: 94,
-              term: "Abyssal plain",
-              definition: "Flat deep ocean floor."
-            },
-            {
-              id: 95,
-              term: "Seamount",
-              definition: "Underwater mountain. Often extinct volcano."
-            },
-            {
-              id: 96,
-              term: "Guyot",
-              definition: "Flat-topped seamount."
-            },
-            {
-              id: 97,
-              term: "Glacier",
-              definition: "Persistent body of dense ice."
-            },
-            {
-              id: 98,
-              term: "Glaciation",
-              definition: "Period when glaciers expanded."
-            },
-            {
-              id: 99,
-              term: "Interglacial",
-              definition: "Warm period between glaciations."
-            },
-            {
-              id: 100,
-              term: "Ice age",
-              definition: "Long cool period. Multiple glaciations."
-            },
-            {
-              id: 101,
-              term: "Moraine",
-              definition: "Ridge of glacial debris."
-            },
-            {
-              id: 102,
-              term: "Erratic",
-              definition: "Boulder transported by glacier."
-            },
-            {
-              id: 103,
-              term: "Glacial striation",
-              definition: "Scratches on rock from glacier."
-            },
-            {
-              id: 104,
-              term: "Drumlin",
-              definition: "Streamlined glacial hill."
-            },
-            {
-              id: 105,
-              term: "Esker",
-              definition: "Sinuous ridge of glacial sediment."
-            },
-            {
-              id: 106,
-              term: "Kettle hole",
-              definition: "Depression from melted ice block."
-            }
-          ];
+              { id: 1, term: "Abyssal plain", definition: "Flat, deep-ocean floor." },
+              { id: 2, term: "Accretionary wedge", definition: "Sediment scraped off a subducting plate onto the overriding plate." },
+              { id: 3, term: "Aftershock", definition: "A smaller earthquake that follows a mainshock in the same area." },
+              { id: 4, term: "Anthropocene", definition: "Proposed current epoch of human impact." },
+              { id: 5, term: "Asthenosphere", definition: "The plastic, partially molten layer of the upper mantle (~100-350 km depth) where plates move." },
+              { id: 6, term: "Atoll", definition: "A ring-shaped coral reef around a sunken volcano." },
+              { id: 7, term: "Backarc basin", definition: "An ocean basin formed behind a volcanic arc by extension." },
+              { id: 8, term: "Basalt", definition: "Dark volcanic rock. Common in oceanic crust." },
+              { id: 9, term: "Batholith", definition: "A very large intrusive igneous body (e.g., Sierra Nevada batholith)." },
+              { id: 10, term: "Blueschist", definition: "A low-temperature high-pressure metamorphic rock; subduction zone marker." },
+              { id: 11, term: "Bolide", definition: "Large impactor (meteor, asteroid)." },
+              { id: 12, term: "Caldera", definition: "A large, basin-shaped depression formed when a volcano collapses after a major eruption (e.g., Yellowstone, Crater Lake)." },
+              { id: 13, term: "Cinder cone", definition: "A small, steep volcano built from ejected ash and cinders (e.g., Paricutin, Sunset Crater)." },
+              { id: 14, term: "Cleavage", definition: "Pattern of breaking in mineral or rock." },
+              { id: 15, term: "Composite volcano", definition: "Same as stratovolcano." },
+              { id: 16, term: "Continental crust", definition: "The lower-density, thicker crust beneath continents; ~30-70 km thick." },
+              { id: 17, term: "Continental drift", definition: "Theory that continents move over geological time. Proposed by Wegener." },
+              { id: 18, term: "Continental rise", definition: "Gentler slope at base of continent." },
+              { id: 19, term: "Continental shelf", definition: "Submerged extension of a continent; gently sloping." },
+              { id: 20, term: "Continental slope", definition: "Steeper edge of a continent leading from shelf to deep ocean." },
+              { id: 21, term: "Convection", definition: "The transfer of heat by movement of fluid; drives plate motion in the mantle." },
+              { id: 22, term: "Convection current", definition: "Heat-driven flow in mantle. Drives plate motion." },
+              { id: 23, term: "Convergent boundary", definition: "Where two plates push together; produces mountains, trenches, and volcanic arcs." },
+              { id: 24, term: "Core", definition: "Innermost layer. Outer core liquid, inner core solid." },
+              { id: 25, term: "Craton", definition: "An ancient and stable interior of a continent (e.g., Canadian Shield, Baltic Shield)." },
+              { id: 26, term: "Crust", definition: "Outer rocky layer. Continental (lighter, thicker) or oceanic (denser, thinner)." },
+              { id: 27, term: "Crustal recycling", definition: "The process by which crustal material returns to the mantle at subduction zones." },
+              { id: 28, term: "Crystal system", definition: "Geometry class. Cubic, tetragonal, hexagonal, etc." },
+              { id: 29, term: "Decollement", definition: "A near-horizontal fault surface separating deformed rocks above from undeformed below." },
+              { id: 30, term: "Density", definition: "Mass per unit volume. Differentiates rock types." },
+              { id: 31, term: "Diffuse plate boundary", definition: "A wide zone where deformation is distributed rather than localized." },
+              { id: 32, term: "Dike", definition: "A vertical or steeply-dipping intrusion of magma cutting across rock layers." },
+              { id: 33, term: "Divergent boundary", definition: "Where two plates move apart; produces mid-ocean ridges and continental rifts." },
+              { id: 34, term: "Drumlin", definition: "Streamlined glacial hill." },
+              { id: 35, term: "Earthquake", definition: "Sudden release of energy along a fault." },
+              { id: 36, term: "Eclogite", definition: "A high-pressure metamorphic rock formed from subducted oceanic crust." },
+              { id: 37, term: "Eon", definition: "Largest geological time unit (e.g., Phanerozoic)." },
+              { id: 38, term: "Epicenter", definition: "The point on Earth surface directly above an earthquake focus." },
+              { id: 39, term: "Epoch", definition: "Subdivision of period (e.g., Pleistocene)." },
+              { id: 40, term: "Era", definition: "Subdivision of eon (e.g., Mesozoic)." },
+              { id: 41, term: "Erratic", definition: "Boulder transported by glacier." },
+              { id: 42, term: "Esker", definition: "Sinuous ridge of glacial sediment." },
+              { id: 43, term: "Euler pole", definition: "The point about which a tectonic plate rotates relative to another." },
+              { id: 44, term: "Exotic terrane", definition: "A terrane that originated far from its current location." },
+              { id: 45, term: "Fault", definition: "A fracture in Earth crust along which rocks have moved." },
+              { id: 46, term: "Fissure eruption", definition: "Eruption from elongated crack." },
+              { id: 47, term: "Focus (hypocenter)", definition: "Point below ground where earthquake originates." },
+              { id: 48, term: "Fore-arc basin", definition: "A sedimentary basin between a trench and volcanic arc." },
+              { id: 49, term: "Foreland basin", definition: "A depression formed in front of an advancing mountain range." },
+              { id: 50, term: "Foreshock", definition: "A smaller earthquake that precedes a mainshock in the same area." },
+              { id: 51, term: "Fracture", definition: "Pattern of breaking without preferred direction." },
+              { id: 52, term: "Fumarole", definition: "A vent emitting steam and volcanic gases." },
+              { id: 53, term: "Geological time scale", definition: "Hierarchy of eons, eras, periods." },
+              { id: 54, term: "Geothermal gradient", definition: "Rate of temperature increase with depth in Earth (~25 C/km in crust)." },
+              { id: 55, term: "Geyser", definition: "A hot spring that periodically erupts steam and hot water." },
+              { id: 56, term: "Glacial isostatic rebound", definition: "Land slowly rising after melting of glacial ice loaded it down." },
+              { id: 57, term: "Glacial striation", definition: "Scratches on rock from glacier." },
+              { id: 58, term: "Glaciation", definition: "Period when glaciers expanded." },
+              { id: 59, term: "Glacier", definition: "Persistent body of dense ice." },
+              { id: 60, term: "Gondwana", definition: "Southern supercontinent: Africa, South America, Antarctica, Australia, India." },
+              { id: 61, term: "Granite", definition: "Light intrusive rock. Common in continental crust." },
+              { id: 62, term: "Guyot", definition: "A flat-topped seamount; eroded former island, then subsided." },
+              { id: 63, term: "Hotspot", definition: "A localized region of upwelling mantle that produces volcanism (e.g., Hawaii, Yellowstone)." },
+              { id: 64, term: "Hotspot track", definition: "A chain of progressively older volcanoes formed as a plate moves over a hotspot." },
+              { id: 65, term: "Hydrothermal vent", definition: "Underwater hot spring at mid-ocean ridges; supports chemosynthetic life." },
+              { id: 66, term: "Hypocenter (focus)", definition: "The actual underground location where an earthquake originates." },
+              { id: 67, term: "Ice age", definition: "Long cool period. Multiple glaciations." },
+              { id: 68, term: "Igneous rock", definition: "Rock formed from cooled magma/lava." },
+              { id: 69, term: "Inner core", definition: "Solid iron-nickel layer (~5100-6371 km depth)." },
+              { id: 70, term: "Intensity", definition: "A measure of earthquake shaking effects at a location (Mercalli scale); varies by site." },
+              { id: 71, term: "Interglacial", definition: "Warm period between glaciations." },
+              { id: 72, term: "Iridium anomaly", definition: "High Ir layer at K-T boundary. Asteroid evidence." },
+              { id: 73, term: "Island arc", definition: "A volcanic arc formed where two oceanic plates converge (e.g., Mariana, Tonga)." },
+              { id: 74, term: "Isostasy", definition: "The balance between Earth crust and mantle; like icebergs floating in water." },
+              { id: 75, term: "K-T boundary", definition: "Cretaceous-Tertiary mass extinction 65 Ma. Asteroid + volcanism." },
+              { id: 76, term: "Kettle hole", definition: "Depression from melted ice block." },
+              { id: 77, term: "Lahar", definition: "Mudflow of volcanic ash + water." },
+              { id: 78, term: "Lahars", definition: "Volcanic mudflows; can travel far and fast, very destructive." },
+              { id: 79, term: "Laurasia", definition: "Northern supercontinent: North America and Eurasia (minus India)." },
+              { id: 80, term: "Lava", definition: "Molten rock that has reached Earth surface." },
+              { id: 81, term: "Liquefaction", definition: "Solid ground behaves like liquid during earthquake." },
+              { id: 82, term: "Lithosphere", definition: "The rigid outer shell of Earth, including crust and uppermost mantle (~0-100 km)." },
+              { id: 83, term: "Luster", definition: "How light reflects from mineral surface." },
+              { id: 84, term: "Magma", definition: "Molten rock beneath Earth surface." },
+              { id: 85, term: "Magnetic reversal", definition: "A complete flip of Earth magnetic field (averages ~250,000 years between reversals)." },
+              { id: 86, term: "Magnitude", definition: "A measure of earthquake size based on the seismic waves it generates. Logarithmic scale." },
+              { id: 87, term: "Mantle", definition: "Layer between crust + core. Mostly solid but flows over time." },
+              { id: 88, term: "Mantle plume", definition: "A column of hot mantle rising from deep within Earth that creates hotspots." },
+              { id: 89, term: "Mantle viscosity", definition: "Resistance to flow in the mantle; varies with depth and temperature." },
+              { id: 90, term: "Mantle wedge", definition: "The wedge-shaped piece of mantle between a subducting slab and overriding plate." },
+              { id: 91, term: "Mass extinction", definition: "Catastrophic loss of biodiversity. 5 major events." },
+              { id: 92, term: "Mercalli intensity", definition: "Scale of earthquake damage at specific location." },
+              { id: 93, term: "Metamorphic rock", definition: "Rock changed by heat + pressure." },
+              { id: 94, term: "Microplate", definition: "A small tectonic plate (e.g., Juan de Fuca, Caribbean)." },
+              { id: 95, term: "Mid-ocean ridge", definition: "Underwater mountain range where new ocean crust forms at divergent boundaries." },
+              { id: 96, term: "Mineral", definition: "Naturally occurring inorganic solid with specific composition." },
+              { id: 97, term: "Moho", definition: "The Mohorovicic discontinuity; boundary between crust and mantle." },
+              { id: 98, term: "Moho (Mohorovičić discontinuity)", definition: "Boundary between crust + mantle." },
+              { id: 99, term: "Mohs hardness scale", definition: "Scale 1-10 of mineral hardness. Talc to diamond." },
+              { id: 100, term: "Moment magnitude (Mw)", definition: "Modern scale used for all earthquake sizes; supplants Richter for large events." },
+              { id: 101, term: "Moraine", definition: "Ridge of glacial debris." },
+              { id: 102, term: "Normal fault", definition: "A fault where the hanging wall drops down relative to the footwall; tensional." },
+              { id: 103, term: "Oblique-slip fault", definition: "A fault with both horizontal and vertical motion." },
+              { id: 104, term: "Obsidian", definition: "Volcanic glass from rapid cooling." },
+              { id: 105, term: "Oceanic crust", definition: "The denser, thinner crust beneath oceans; ~5-10 km thick." },
+              { id: 106, term: "Ophiolite", definition: "A section of oceanic crust and upper mantle thrust onto a continent during collision." },
+              { id: 107, term: "Orogeny", definition: "Mountain-building episode." },
+              { id: 108, term: "Outer core", definition: "Liquid iron-nickel layer (~2900-5100 km depth); source of magnetic field." },
+              { id: 109, term: "P-wave", definition: "Primary wave; compressional; fastest seismic wave; travels through solids and liquids." },
+              { id: 110, term: "Paleomagnetism", definition: "The study of ancient magnetic field directions preserved in rocks." },
+              { id: 111, term: "Pangaea", definition: "Supercontinent assembled by ~300 million years ago; broke apart starting ~200 Ma." },
+              { id: 112, term: "Period", definition: "Subdivision of era (e.g., Jurassic)." },
+              { id: 113, term: "Permian-Triassic extinction", definition: "Largest ever extinction 252 Ma. ~96% marine species lost." },
+              { id: 114, term: "Pillow lava", definition: "Bulbous lava formed when basalt erupts underwater." },
+              { id: 115, term: "Plate boundary", definition: "The edge of a tectonic plate where it meets another plate; can be divergent, convergent, or transform." },
+              { id: 116, term: "Plate reconstruction", definition: "Models of past plate positions based on geological and paleomagnetic data." },
+              { id: 117, term: "Plate tectonics", definition: "Theory that lithosphere is broken into plates that move." },
+              { id: 118, term: "Plate velocity", definition: "Speed of plate motion in cm per year; fastest ~24 cm/yr (Pacific-Tonga); slowest ~1 cm/yr." },
+              { id: 119, term: "Pluton", definition: "A smaller igneous intrusion than a batholith." },
+              { id: 120, term: "Pumice", definition: "Light rock with many gas bubbles." },
+              { id: 121, term: "Pyroclastic flow", definition: "A fast-moving cloud of hot gas and volcanic debris; one of the deadliest volcanic hazards." },
+              { id: 122, term: "Reverse (thrust) fault", definition: "A fault where the hanging wall moves up relative to the footwall; compressional." },
+              { id: 123, term: "Reverse fault", definition: "Hanging wall pushed up. Compression." },
+              { id: 124, term: "Richter magnitude", definition: "The original 1935 logarithmic scale of earthquake size; each unit = 10x amplitude. It saturates above about M7, so moment magnitude is used for large quakes." },
+              { id: 125, term: "Richter scale", definition: "Original 1935 magnitude scale; works well for small or local quakes; saturates above M7." },
+              { id: 126, term: "Ridge push", definition: "A force from elevated mid-ocean ridges sliding plates away." },
+              { id: 127, term: "Rift", definition: "A continental zone where the crust is being pulled apart (e.g., East African Rift)." },
+              { id: 128, term: "Rift valley", definition: "Linear depression where continent splits." },
+              { id: 129, term: "Ring of Fire", definition: "Pacific volcanic + seismic zone. 75% of world's volcanoes." },
+              { id: 130, term: "S-wave", definition: "Secondary wave; shear; slower than P; travels only through solids." },
+              { id: 131, term: "Seafloor spreading", definition: "New ocean crust forms at ridges. Plates push apart." },
+              { id: 132, term: "Seamount", definition: "An underwater mountain rising from the seafloor; usually volcanic." },
+              { id: 133, term: "Sedimentary rock", definition: "Rock formed from compacted sediments." },
+              { id: 134, term: "Seismic moment", definition: "A measure of earthquake size based on fault area times slip times rigidity." },
+              { id: 135, term: "Seismic wave", definition: "Energy wave from earthquake. P + S + surface waves." },
+              { id: 136, term: "Seismograph", definition: "Instrument that records ground motion during an earthquake." },
+              { id: 137, term: "Shield volcano", definition: "A broad, gently sloping volcano built from low-viscosity basaltic lava (e.g., Mauna Loa)." },
+              { id: 138, term: "Sill", definition: "A horizontal intrusion of magma between rock layers." },
+              { id: 139, term: "Slab pull", definition: "A force from a dense subducting slab pulling the rest of the plate behind it." },
+              { id: 140, term: "Slab rollback", definition: "Backward motion of a subducting slab; causes overriding plate extension." },
+              { id: 141, term: "Snowball Earth", definition: "Earth almost entirely frozen ~700 Ma." },
+              { id: 142, term: "Solfatara", definition: "A volcanic vent emitting sulfurous gases." },
+              { id: 143, term: "Stratovolcano", definition: "A steep-sided, conical volcano built from alternating layers of lava and ash (e.g., Fuji, Mt St Helens)." },
+              { id: 144, term: "Stratovolcano cone", definition: "The classic volcanic mountain shape: tall, steep, alternating ash and lava." },
+              { id: 145, term: "Streak", definition: "Color of powdered mineral." },
+              { id: 146, term: "Strike-slip fault", definition: "A fault where blocks slide horizontally past each other (e.g., San Andreas)." },
+              { id: 147, term: "Subduction", definition: "One plate slides under another. Forms trenches + volcanoes." },
+              { id: 148, term: "Subduction zone", definition: "A convergent boundary where one plate dives beneath another, recycling crust into the mantle." },
+              { id: 149, term: "Supercontinent", definition: "Single landmass containing most continental crust." },
+              { id: 150, term: "Supervolcano", definition: "Volcano capable of producing >1000 km³ of erupted material." },
+              { id: 151, term: "Surface wave", definition: "Seismic wave traveling along Earth surface; causes most damage (Love, Rayleigh)." },
+              { id: 152, term: "Suture zone", definition: "A zone where two continents collided and joined (e.g., Indus-Tsangpo, Urals)." },
+              { id: 153, term: "Tectonic plate", definition: "Rigid lithospheric segment that moves over asthenosphere." },
+              { id: 154, term: "Tephra", definition: "Fragmental material ejected by a volcano; ash, lapilli, blocks." },
+              { id: 155, term: "Terrane", definition: "A fragment of crust with a distinct geological history accreted to a larger landmass." },
+              { id: 156, term: "Thrust fault", definition: "Low-angle reverse fault." },
+              { id: 157, term: "Transform boundary", definition: "Where two plates slide past each other (e.g., San Andreas Fault)." },
+              { id: 158, term: "Trench", definition: "A deep, narrow depression in the ocean floor at a subduction zone." },
+              { id: 159, term: "Triple junction", definition: "Where three plate boundaries meet (e.g., Afar Triangle)." },
+              { id: 160, term: "Tsunami", definition: "A series of ocean waves caused by underwater displacement (quake, landslide, eruption, impact)." },
+              { id: 161, term: "Underplating", definition: "Addition of magma or sediment to the base of crust." },
+              { id: 162, term: "VEI", definition: "Volcanic Explosivity Index; logarithmic 0-8 scale." },
+              { id: 163, term: "Volcanic arc", definition: "A chain of volcanoes formed parallel to a subduction zone (e.g., Cascades, Aleutians)." },
+              { id: 164, term: "Volcanic bomb", definition: "A blob of molten rock ejected during an eruption." },
+              { id: 165, term: "Volcanic Explosivity Index (VEI)", definition: "Scale of volcanic eruption size. 0-8." },
+              { id: 166, term: "Volcanic gas", definition: "Gases released during volcanic eruptions; mainly H2O, CO2, SO2." },
+              { id: 167, term: "Volcanic neck", definition: "Solidified magma in a volcano throat, exposed by erosion (e.g., Devils Tower)." },
+              { id: 168, term: "Volcano", definition: "Surface vent for magma + gases." },
+              { id: 169, term: "Welded tuff", definition: "Pyroclastic rock formed when hot ash particles fuse on landing." },
+              { id: 170, term: "Wilson cycle", definition: "Repeated opening + closing of ocean basins. Coined by J.T. Wilson." },
+              { id: 171, term: "Wilson Cycle", definition: "Theory that ocean basins open and close in cycles of ~500 million years." },
+              { id: 172, term: "Xenolith", definition: "A foreign rock fragment incorporated into magma; samples the deep crust or mantle." }
+            ];
 
           // LESSON PLANS - 30 classroom activities
           var GEO_LESSONS = [
@@ -6955,163 +6748,163 @@ var d = labToolData.plateTectonics || {};
 
         // ========== TSUNAMI HISTORY DB ==========
         var TSUNAMI_DB = [
-          { year: 2004, place: "Indian Ocean", mag: 9.1, source: 9.1, deaths: 230000, notes: "Megathrust quake; waves reached 30m; 14 countries hit; sparked global tsunami warning system" },
-          { year: 2011, place: "Japan (Tohoku)", mag: 9.1, source: 9.1, deaths: 19759, notes: "Fukushima nuclear disaster followed; waves 40m at Miyako; coast subsided 1.2m" },
-          { year: 1960, place: "Chile (Valdivia)", mag: 9.5, source: 9.5, deaths: 5700, notes: "Largest quake ever recorded; tsunami reached Hawaii, Japan, Philippines" },
-          { year: 1755, place: "Lisbon, Portugal", mag: 8.7, source: 8.7, deaths: 60000, notes: "Followed by fires; All Saints Day; reshaped European Enlightenment philosophy" },
-          { year: 1883, place: "Krakatoa", mag: 0, source: 0, deaths: 36000, notes: "Volcanic eruption tsunami; waves 30m; heard 4800km away" },
-          { year: 1908, place: "Messina, Italy", mag: 7.1, source: 7.1, deaths: 80000, notes: "Strait quake + tsunami; 90% of Messina destroyed" },
-          { year: 1896, place: "Sanriku, Japan", mag: 8.5, source: 8.5, deaths: 27000, notes: "Wave 38m at Ryori; almost no shaking felt before strike" },
-          { year: 1946, place: "Aleutian Islands", mag: 8.6, source: 8.6, deaths: 165, notes: "Hilo Hawaii hit by 14m wave; led to Pacific Tsunami Warning System founding" },
-          { year: 2010, place: "Chile (Maule)", mag: 8.8, source: 8.8, deaths: 525, notes: "Earth axis shifted 8cm; day shortened by 1.26 microseconds" },
-          { year: 1964, place: "Alaska (Good Friday)", mag: 9.2, source: 9.2, deaths: 139, notes: "2nd largest ever; tsunami hit Crescent City CA; ground rose 11m" },
-          { year: 1908, place: "Karachi tsunami", mag: 8.1, source: 8.1, deaths: 4000, notes: "Indian Ocean Makran zone; under-studied region; awareness still low" },
-          { year: 1700, place: "Cascadia (Pacific NW)", mag: 9, source: 9, deaths: 0, notes: "Native oral history + Japan orphan tsunami records confirmed by Atwater" },
-          { year: 1929, place: "Grand Banks, Newfoundland", mag: 7.2, source: 7.2, deaths: 28, notes: "Submarine landslide tsunami; broke transatlantic cables" },
-          { year: 1998, place: "Papua New Guinea", mag: 7, source: 7, deaths: 2200, notes: "Submarine slump amplified wave to 15m; deceptively small quake" },
-          { year: 1976, place: "Mindanao, Philippines", mag: 7.9, source: 7.9, deaths: 8000, notes: "Sulu Sea tsunami; Cotabato gulf devastated" },
-          { year: 1854, place: "Ansei Nankai, Japan", mag: 8.4, source: 8.4, deaths: 3000, notes: "Hamaguchi Goryo's burning rice straw saved village; tsunami stones inscribed" },
-          { year: 2018, place: "Sulawesi (Palu)", mag: 7.5, source: 7.5, deaths: 4340, notes: "Strike-slip fault triggered unusual tsunami; bay geometry funneled wave 11m" },
-          { year: 2018, place: "Anak Krakatau", mag: 0, source: 0, deaths: 437, notes: "Volcanic flank collapse; no warning; sound system failure exposed" },
-          { year: 1992, place: "Nicaragua", mag: 7.7, source: 7.7, deaths: 170, notes: "Tsunami earthquake - slow rupture produced bigger wave than shaking suggested" },
-          { year: 1991, place: "Costa Rica (Limon)", mag: 7.6, source: 7.6, deaths: 47, notes: "Modest tsunami; Atlantic side rare events" },
-          { year: 2007, place: "Solomon Islands", mag: 8.1, source: 8.1, deaths: 52, notes: "Megathrust at junction of 3 plates" },
-          { year: 2009, place: "Samoa", mag: 8.1, source: 8.1, deaths: 189, notes: "Doublet earthquake; waves 14m at Tafahi" },
-          { year: 1933, place: "Showa Sanriku", mag: 8.4, source: 8.4, deaths: 3000, notes: "Outer-rise normal-fault quake; counter to typical subduction quakes" },
-          { year: 1923, place: "Great Kanto, Japan", mag: 7.9, source: 7.9, deaths: 142000, notes: "Tokyo + Yokohama firestorms; tsunami in Sagami Bay" },
-          { year: 1707, place: "Hoei Nankai, Japan", mag: 8.6, source: 8.6, deaths: 5000, notes: "Triggered Mt Fuji's last eruption 49 days later" },
-          { year: 1737, place: "Kamchatka", mag: 9, source: 9, deaths: 1000, notes: "Reported by Krasheninnikov; 60m wave at Cape Lopatka" },
-          { year: 1965, place: "Rat Islands", mag: 8.7, source: 8.7, deaths: 0, notes: "No casualties; mostly uninhabited" },
-          { year: 1992, place: "Flores, Indonesia", mag: 7.8, source: 7.8, deaths: 2500, notes: "Three waves; max height 26m at Riang Kroko" },
-          { year: 1797, place: "Sumatra (Padang)", mag: 8.7, source: 8.7, deaths: 0, notes: "Historical Mentawai earthquake; coral microatolls dated" },
-          { year: 1833, place: "Sumatra (Bengkulu)", mag: 8.9, source: 8.9, deaths: 0, notes: "Mentawai cycle pair to 1797; expected late in cycle" },
-          { year: 1868, place: "Arica, Peru/Chile border", mag: 8.8, source: 8.8, deaths: 25000, notes: "U.S.S. Wateree carried 3 miles inland and survived" },
-          { year: 365, place: "Crete (Roman era)", mag: 8.5, source: 8.5, deaths: 5000, notes: "Alexandria Egypt devastated; Ammianus Marcellinus eyewitness account" },
-          { year: 1303, place: "Crete", mag: 8, source: 8, deaths: 10000, notes: "Damaged Lighthouse of Alexandria; Pharos toppled" },
-          { year: 1693, place: "Sicily (Val di Noto)", mag: 7.4, source: 7.4, deaths: 60000, notes: "Triggered Sicilian Baroque rebuild; Catania, Noto, Ragusa" },
-          { year: 1456, place: "Naples (Italy)", mag: 7.2, source: 7.2, deaths: 30000, notes: "Largest historic Italian quake; Aragonese kingdom era" },
-          { year: 1857, place: "Fort Tejon, California", mag: 7.9, source: 7.9, deaths: 2, notes: "350km surface rupture; smallest casualty count for that magnitude" },
-          { year: 1906, place: "San Francisco", mag: 7.9, source: 7.9, deaths: 3000, notes: "Firestorm caused most deaths; sparked elastic rebound theory (Reid)" },
-          { year: 1989, place: "Loma Prieta", mag: 6.9, source: 6.9, deaths: 63, notes: "Bay Bridge collapse during World Series broadcast" },
-          { year: 1994, place: "Northridge, CA", mag: 6.7, source: 6.7, deaths: 60, notes: "Hidden fault - surprise; freeway collapses; $20B+ damage" },
-          { year: 2014, place: "South Napa, CA", mag: 6, source: 6, deaths: 1, notes: "Brick chimney damage; Napa Wine Train derailed casks" },
-          { year: 1886, place: "Charleston, SC", mag: 7.0, source: 7.0, deaths: 60, notes: "Far from any plate boundary; East Coast quake" },
-          { year: 1811, place: "New Madrid, MO", mag: 7.7, source: 7.7, deaths: 1, notes: "Mississippi flowed backward briefly; rang church bells in Boston" },
-          { year: 1812, place: "New Madrid, MO sequence", mag: 7.5, source: 7.5, deaths: 0, notes: "Three M7+ in 3 months; created Reelfoot Lake; oral history" },
-          { year: 2010, place: "Haiti", mag: 7, source: 7, deaths: 230000, notes: "Strike-slip; Port-au-Prince devastated; relief failure case study" },
-          { year: 2003, place: "Bam, Iran", mag: 6.6, source: 6.6, deaths: 26271, notes: "Mud-brick architecture amplified deaths; UNESCO site lost" },
-          { year: 2008, place: "Sichuan, China", mag: 7.9, source: 7.9, deaths: 87000, notes: "School collapses prompted accountability movement" },
-          { year: 1976, place: "Tangshan, China", mag: 7.6, source: 7.6, deaths: 242000, notes: "Hidden urban fault; deadliest 20th-century quake by some counts" },
-          { year: 1995, place: "Kobe (Hyogo)", mag: 6.9, source: 6.9, deaths: 6434, notes: "Urban quake-fire chain; reshaped Japan building codes" },
-          { year: 2023, place: "Turkey-Syria", mag: 7.8, source: 7.8, deaths: 59259, notes: "Doublet sequence (M7.8+M7.5); 14M people displaced" },
-          { year: 2015, place: "Gorkha, Nepal", mag: 7.8, source: 7.8, deaths: 8964, notes: "Triggered Everest avalanche; Kathmandu Valley shifted 3m south" },
-          { year: 2005, place: "Kashmir (Pakistan)", mag: 7.6, source: 7.6, deaths: 87351, notes: "Mountain villages cut off for weeks; military relief" },
-          { year: 1999, place: "Izmit, Turkey", mag: 7.6, source: 7.6, deaths: 17127, notes: "Earthquake-cycle stress transfer prediction realized" },
-          { year: 1939, place: "Erzincan, Turkey", mag: 7.8, source: 7.8, deaths: 32700, notes: "Largest North Anatolian event; westward migrating sequence" },
-          { year: 2009, place: "L'Aquila, Italy", mag: 6.3, source: 6.3, deaths: 309, notes: "Scientist trial controversy on risk communication" },
-          { year: 1980, place: "Irpinia, Italy", mag: 6.9, source: 6.9, deaths: 2914, notes: "Southern Italian Apennines extensional quake" },
-          { year: 1960, place: "Agadir, Morocco", mag: 5.8, source: 5.8, deaths: 12000, notes: "Small magnitude but shallow; tsunami in harbor" },
-          { year: 2017, place: "Iran-Iraq (Sarpol-e Zahab)", mag: 7.3, source: 7.3, deaths: 630, notes: "Stiff buildings outperformed retrofitted ones" },
-          { year: 1990, place: "Manjil-Rudbar, Iran", mag: 7.4, source: 7.4, deaths: 40000, notes: "Northern Iran; landslides took out villages" },
-          { year: 2002, place: "Hindu Kush, Afghanistan", mag: 7.3, source: 7.3, deaths: 166, notes: "Intermediate-depth slab quake; usually less damaging" }
+          { year: 2004, place: __alloT('stem.platetectonics.tsu_place_indian_ocean', "Indian Ocean"), mag: 9.1, deaths: 230000, notes: __alloT('stem.platetectonics.tsu_note_megathrust_quake_waves_reached_30m_14', "Megathrust quake; waves reached 30m; 14 countries hit; sparked global tsunami warning system") },
+          { year: 2011, place: __alloT('stem.platetectonics.tsu_place_japan_tohoku', "Japan (Tohoku)"), mag: 9.1, deaths: 19759, notes: __alloT('stem.platetectonics.tsu_note_fukushima_nuclear_disaster_followed_wa', "Fukushima nuclear disaster followed; waves 40m at Miyako; coast subsided 1.2m") },
+          { year: 1960, place: __alloT('stem.platetectonics.tsu_place_chile_valdivia', "Chile (Valdivia)"), mag: 9.5, deaths: 5700, notes: __alloT('stem.platetectonics.tsu_note_largest_quake_ever_recorded_tsunami_re', "Largest quake ever recorded; tsunami reached Hawaii, Japan, Philippines") },
+          { year: 1755, place: __alloT('stem.platetectonics.tsu_place_lisbon_portugal', "Lisbon, Portugal"), mag: 8.7, deaths: 60000, notes: __alloT('stem.platetectonics.tsu_note_followed_by_fires_all_saints_day_resha', "Followed by fires; All Saints Day; reshaped European Enlightenment philosophy") },
+          { year: 1883, place: __alloT('stem.platetectonics.tsu_place_krakatoa', "Krakatoa"), mag: 0, deaths: 36000, notes: __alloT('stem.platetectonics.tsu_note_volcanic_eruption_tsunami_waves_30m_he', "Volcanic eruption tsunami; waves 30m; heard 4800km away") },
+          { year: 1908, place: __alloT('stem.platetectonics.tsu_place_messina_italy', "Messina, Italy"), mag: 7.1, deaths: 80000, notes: __alloT('stem.platetectonics.tsu_note_strait_quake_tsunami_90_of_messina_des', "Strait quake + tsunami; 90% of Messina destroyed") },
+          { year: 1896, place: __alloT('stem.platetectonics.tsu_place_sanriku_japan', "Sanriku, Japan"), mag: 8.5, deaths: 27000, notes: __alloT('stem.platetectonics.tsu_note_wave_38m_at_ryori_almost_no_shaking_fe', "Wave 38m at Ryori; almost no shaking felt before strike") },
+          { year: 1946, place: __alloT('stem.platetectonics.tsu_place_aleutian_islands', "Aleutian Islands"), mag: 8.6, deaths: 165, notes: __alloT('stem.platetectonics.tsu_note_hilo_hawaii_hit_by_14m_wave_led_to_pac', "Hilo Hawaii hit by 14m wave; led to Pacific Tsunami Warning System founding") },
+          { year: 2010, place: __alloT('stem.platetectonics.tsu_place_chile_maule', "Chile (Maule)"), mag: 8.8, deaths: 525, notes: __alloT('stem.platetectonics.tsu_note_earth_axis_shifted_8cm_day_shortened_b', "Earth axis shifted 8cm; day shortened by 1.26 microseconds") },
+          { year: 1964, place: __alloT('stem.platetectonics.tsu_place_alaska_good_friday', "Alaska (Good Friday)"), mag: 9.2, deaths: 139, notes: __alloT('stem.platetectonics.tsu_note_2nd_largest_ever_tsunami_hit_crescent', "2nd largest ever; tsunami hit Crescent City CA; ground rose 11m") },
+          { year: 1908, place: __alloT('stem.platetectonics.tsu_place_karachi_tsunami', "Karachi tsunami"), mag: 8.1, deaths: 4000, notes: __alloT('stem.platetectonics.tsu_note_indian_ocean_makran_zone_under_studied', "Indian Ocean Makran zone; under-studied region; awareness still low") },
+          { year: 1700, place: __alloT('stem.platetectonics.tsu_place_cascadia_pacific_nw', "Cascadia (Pacific NW)"), mag: 9, deaths: 0, notes: __alloT('stem.platetectonics.tsu_note_native_oral_history_japan_orphan_tsuna', "Native oral history + Japan orphan tsunami records confirmed by Atwater") },
+          { year: 1929, place: __alloT('stem.platetectonics.tsu_place_grand_banks_newfoundland', "Grand Banks, Newfoundland"), mag: 7.2, deaths: 28, notes: __alloT('stem.platetectonics.tsu_note_submarine_landslide_tsunami_broke_tran', "Submarine landslide tsunami; broke transatlantic cables") },
+          { year: 1998, place: __alloT('stem.platetectonics.tsu_place_papua_new_guinea', "Papua New Guinea"), mag: 7, deaths: 2200, notes: __alloT('stem.platetectonics.tsu_note_submarine_slump_amplified_wave_to_15m', "Submarine slump amplified wave to 15m; deceptively small quake") },
+          { year: 1976, place: __alloT('stem.platetectonics.tsu_place_mindanao_philippines', "Mindanao, Philippines"), mag: 7.9, deaths: 8000, notes: __alloT('stem.platetectonics.tsu_note_sulu_sea_tsunami_cotabato_gulf_devasta', "Sulu Sea tsunami; Cotabato gulf devastated") },
+          { year: 1854, place: __alloT('stem.platetectonics.tsu_place_ansei_nankai_japan', "Ansei Nankai, Japan"), mag: 8.4, deaths: 3000, notes: __alloT('stem.platetectonics.tsu_note_hamaguchi_goryo_s_burning_rice_straw_s', "Hamaguchi Goryo's burning rice straw saved village; tsunami stones inscribed") },
+          { year: 2018, place: __alloT('stem.platetectonics.tsu_place_sulawesi_palu', "Sulawesi (Palu)"), mag: 7.5, deaths: 4340, notes: __alloT('stem.platetectonics.tsu_note_strike_slip_fault_triggered_unusual_ts', "Strike-slip fault triggered unusual tsunami; bay geometry funneled wave 11m") },
+          { year: 2018, place: __alloT('stem.platetectonics.tsu_place_anak_krakatau', "Anak Krakatau"), mag: 0, deaths: 437, notes: __alloT('stem.platetectonics.tsu_note_volcanic_flank_collapse_no_warning_sou', "Volcanic flank collapse; no warning; sound system failure exposed") },
+          { year: 1992, place: __alloT('stem.platetectonics.tsu_place_nicaragua', "Nicaragua"), mag: 7.7, deaths: 170, notes: __alloT('stem.platetectonics.tsu_note_tsunami_earthquake_slow_rupture_produc', "Tsunami earthquake - slow rupture produced bigger wave than shaking suggested") },
+          { year: 1991, place: __alloT('stem.platetectonics.tsu_place_costa_rica_limon', "Costa Rica (Limon)"), mag: 7.6, deaths: 47, notes: __alloT('stem.platetectonics.tsu_note_modest_tsunami_atlantic_side_rare_even', "Modest tsunami; Atlantic side rare events") },
+          { year: 2007, place: __alloT('stem.platetectonics.tsu_place_solomon_islands', "Solomon Islands"), mag: 8.1, deaths: 52, notes: __alloT('stem.platetectonics.tsu_note_megathrust_at_junction_of_3_plates', "Megathrust at junction of 3 plates") },
+          { year: 2009, place: __alloT('stem.platetectonics.tsu_place_samoa', "Samoa"), mag: 8.1, deaths: 189, notes: __alloT('stem.platetectonics.tsu_note_doublet_earthquake_waves_14m_at_tafahi', "Doublet earthquake; waves 14m at Tafahi") },
+          { year: 1933, place: __alloT('stem.platetectonics.tsu_place_showa_sanriku', "Showa Sanriku"), mag: 8.4, deaths: 3000, notes: __alloT('stem.platetectonics.tsu_note_outer_rise_normal_fault_quake_counter', "Outer-rise normal-fault quake; counter to typical subduction quakes") },
+          { year: 1923, place: __alloT('stem.platetectonics.tsu_place_great_kanto_japan', "Great Kanto, Japan"), mag: 7.9, deaths: 142000, notes: __alloT('stem.platetectonics.tsu_note_tokyo_yokohama_firestorms_tsunami_in_s', "Tokyo + Yokohama firestorms; tsunami in Sagami Bay") },
+          { year: 1707, place: __alloT('stem.platetectonics.tsu_place_hoei_nankai_japan', "Hoei Nankai, Japan"), mag: 8.6, deaths: 5000, notes: __alloT('stem.platetectonics.tsu_note_triggered_mt_fuji_s_last_eruption_49_d', "Triggered Mt Fuji's last eruption 49 days later") },
+          { year: 1737, place: __alloT('stem.platetectonics.tsu_place_kamchatka', "Kamchatka"), mag: 9, deaths: 1000, notes: __alloT('stem.platetectonics.tsu_note_reported_by_krasheninnikov_60m_wave_at', "Reported by Krasheninnikov; 60m wave at Cape Lopatka") },
+          { year: 1965, place: __alloT('stem.platetectonics.tsu_place_rat_islands', "Rat Islands"), mag: 8.7, deaths: 0, notes: __alloT('stem.platetectonics.tsu_note_no_casualties_mostly_uninhabited', "No casualties; mostly uninhabited") },
+          { year: 1992, place: __alloT('stem.platetectonics.tsu_place_flores_indonesia', "Flores, Indonesia"), mag: 7.8, deaths: 2500, notes: __alloT('stem.platetectonics.tsu_note_three_waves_max_height_26m_at_riang_kr', "Three waves; max height 26m at Riang Kroko") },
+          { year: 1797, place: __alloT('stem.platetectonics.tsu_place_sumatra_padang', "Sumatra (Padang)"), mag: 8.7, deaths: 0, notes: __alloT('stem.platetectonics.tsu_note_historical_mentawai_earthquake_coral_m', "Historical Mentawai earthquake; coral microatolls dated") },
+          { year: 1833, place: __alloT('stem.platetectonics.tsu_place_sumatra_bengkulu', "Sumatra (Bengkulu)"), mag: 8.9, deaths: 0, notes: __alloT('stem.platetectonics.tsu_note_mentawai_cycle_pair_to_1797_expected_l', "Mentawai cycle pair to 1797; expected late in cycle") },
+          { year: 1868, place: __alloT('stem.platetectonics.tsu_place_arica_peru_chile_border', "Arica, Peru/Chile border"), mag: 8.8, deaths: 25000, notes: __alloT('stem.platetectonics.tsu_note_u_s_s_wateree_carried_3_miles_inland_a', "U.S.S. Wateree carried 3 miles inland and survived") },
+          { year: 365, place: __alloT('stem.platetectonics.tsu_place_crete_roman_era', "Crete (Roman era)"), mag: 8.5, deaths: 5000, notes: __alloT('stem.platetectonics.tsu_note_alexandria_egypt_devastated_ammianus_m', "Alexandria Egypt devastated; Ammianus Marcellinus eyewitness account") },
+          { year: 1303, place: __alloT('stem.platetectonics.tsu_place_crete', "Crete"), mag: 8, deaths: 10000, notes: __alloT('stem.platetectonics.tsu_note_damaged_lighthouse_of_alexandria_pharo', "Damaged Lighthouse of Alexandria; Pharos toppled") },
+          { year: 1693, place: __alloT('stem.platetectonics.tsu_place_sicily_val_di_noto', "Sicily (Val di Noto)"), mag: 7.4, deaths: 60000, notes: __alloT('stem.platetectonics.tsu_note_triggered_sicilian_baroque_rebuild_cat', "Triggered Sicilian Baroque rebuild; Catania, Noto, Ragusa") },
+          { year: 1456, place: __alloT('stem.platetectonics.tsu_place_naples_italy', "Naples (Italy)"), mag: 7.2, deaths: 30000, notes: __alloT('stem.platetectonics.tsu_note_largest_historic_italian_quake_aragone', "Largest historic Italian quake; Aragonese kingdom era") },
+          { year: 1857, place: __alloT('stem.platetectonics.tsu_place_fort_tejon_california', "Fort Tejon, California"), mag: 7.9, deaths: 2, notes: __alloT('stem.platetectonics.tsu_note_350km_surface_rupture_smallest_casualt', "350km surface rupture; smallest casualty count for that magnitude") },
+          { year: 1906, place: __alloT('stem.platetectonics.tsu_place_san_francisco', "San Francisco"), mag: 7.9, deaths: 3000, notes: __alloT('stem.platetectonics.tsu_note_firestorm_caused_most_deaths_sparked_e', "Firestorm caused most deaths; sparked elastic rebound theory (Reid)") },
+          { year: 1989, place: __alloT('stem.platetectonics.tsu_place_loma_prieta', "Loma Prieta"), mag: 6.9, deaths: 63, notes: __alloT('stem.platetectonics.tsu_note_bay_bridge_collapse_during_world_serie', "Bay Bridge collapse during World Series broadcast") },
+          { year: 1994, place: __alloT('stem.platetectonics.tsu_place_northridge_ca', "Northridge, CA"), mag: 6.7, deaths: 60, notes: __alloT('stem.platetectonics.tsu_note_hidden_fault_surprise_freeway_collapse', "Hidden fault - surprise; freeway collapses; $20B+ damage") },
+          { year: 2014, place: __alloT('stem.platetectonics.tsu_place_south_napa_ca', "South Napa, CA"), mag: 6, deaths: 1, notes: __alloT('stem.platetectonics.tsu_note_brick_chimney_damage_napa_wine_train_d', "Brick chimney damage; Napa Wine Train derailed casks") },
+          { year: 1886, place: __alloT('stem.platetectonics.tsu_place_charleston_sc', "Charleston, SC"), mag: 7.0, deaths: 60, notes: __alloT('stem.platetectonics.tsu_note_far_from_any_plate_boundary_east_coast', "Far from any plate boundary; East Coast quake") },
+          { year: 1811, place: __alloT('stem.platetectonics.tsu_place_new_madrid_mo', "New Madrid, MO"), mag: 7.7, deaths: 1, notes: __alloT('stem.platetectonics.tsu_note_mississippi_flowed_backward_briefly_ra', "Mississippi flowed backward briefly; rang church bells in Boston") },
+          { year: 1812, place: __alloT('stem.platetectonics.tsu_place_new_madrid_mo_sequence', "New Madrid, MO sequence"), mag: 7.5, deaths: 0, notes: __alloT('stem.platetectonics.tsu_note_three_m7_in_3_months_created_reelfoot', "Three M7+ in 3 months; created Reelfoot Lake; oral history") },
+          { year: 2010, place: __alloT('stem.platetectonics.tsu_place_haiti', "Haiti"), mag: 7, deaths: 230000, notes: __alloT('stem.platetectonics.tsu_note_strike_slip_port_au_prince_devastated', "Strike-slip; Port-au-Prince devastated; relief failure case study") },
+          { year: 2003, place: __alloT('stem.platetectonics.tsu_place_bam_iran', "Bam, Iran"), mag: 6.6, deaths: 26271, notes: __alloT('stem.platetectonics.tsu_note_mud_brick_architecture_amplified_death', "Mud-brick architecture amplified deaths; UNESCO site lost") },
+          { year: 2008, place: __alloT('stem.platetectonics.tsu_place_sichuan_china', "Sichuan, China"), mag: 7.9, deaths: 87000, notes: __alloT('stem.platetectonics.tsu_note_school_collapses_prompted_accountabili', "School collapses prompted accountability movement") },
+          { year: 1976, place: __alloT('stem.platetectonics.tsu_place_tangshan_china', "Tangshan, China"), mag: 7.6, deaths: 242000, notes: __alloT('stem.platetectonics.tsu_note_hidden_urban_fault_deadliest_20th_cent', "Hidden urban fault; deadliest 20th-century quake by some counts") },
+          { year: 1995, place: __alloT('stem.platetectonics.tsu_place_kobe_hyogo', "Kobe (Hyogo)"), mag: 6.9, deaths: 6434, notes: __alloT('stem.platetectonics.tsu_note_urban_quake_fire_chain_reshaped_japan', "Urban quake-fire chain; reshaped Japan building codes") },
+          { year: 2023, place: __alloT('stem.platetectonics.tsu_place_turkey_syria', "Turkey-Syria"), mag: 7.8, deaths: 59259, notes: __alloT('stem.platetectonics.tsu_note_doublet_sequence_m7_8_m7_5_14m_people', "Doublet sequence (M7.8+M7.5); 14M people displaced") },
+          { year: 2015, place: __alloT('stem.platetectonics.tsu_place_gorkha_nepal', "Gorkha, Nepal"), mag: 7.8, deaths: 8964, notes: __alloT('stem.platetectonics.tsu_note_triggered_everest_avalanche_kathmandu', "Triggered Everest avalanche; Kathmandu Valley shifted 3m south") },
+          { year: 2005, place: __alloT('stem.platetectonics.tsu_place_kashmir_pakistan', "Kashmir (Pakistan)"), mag: 7.6, deaths: 87351, notes: __alloT('stem.platetectonics.tsu_note_mountain_villages_cut_off_for_weeks_mi', "Mountain villages cut off for weeks; military relief") },
+          { year: 1999, place: __alloT('stem.platetectonics.tsu_place_izmit_turkey', "Izmit, Turkey"), mag: 7.6, deaths: 17127, notes: __alloT('stem.platetectonics.tsu_note_earthquake_cycle_stress_transfer_predi', "Earthquake-cycle stress transfer prediction realized") },
+          { year: 1939, place: __alloT('stem.platetectonics.tsu_place_erzincan_turkey', "Erzincan, Turkey"), mag: 7.8, deaths: 32700, notes: __alloT('stem.platetectonics.tsu_note_largest_north_anatolian_event_westward', "Largest North Anatolian event; westward migrating sequence") },
+          { year: 2009, place: __alloT('stem.platetectonics.tsu_place_l_aquila_italy', "L'Aquila, Italy"), mag: 6.3, deaths: 309, notes: __alloT('stem.platetectonics.tsu_note_scientist_trial_controversy_on_risk_co', "Scientist trial controversy on risk communication") },
+          { year: 1980, place: __alloT('stem.platetectonics.tsu_place_irpinia_italy', "Irpinia, Italy"), mag: 6.9, deaths: 2914, notes: __alloT('stem.platetectonics.tsu_note_southern_italian_apennines_extensional', "Southern Italian Apennines extensional quake") },
+          { year: 1960, place: __alloT('stem.platetectonics.tsu_place_agadir_morocco', "Agadir, Morocco"), mag: 5.8, deaths: 12000, notes: __alloT('stem.platetectonics.tsu_note_small_magnitude_but_shallow_tsunami_in', "Small magnitude but shallow; tsunami in harbor") },
+          { year: 2017, place: __alloT('stem.platetectonics.tsu_place_iran_iraq_sarpol_e_zahab', "Iran-Iraq (Sarpol-e Zahab)"), mag: 7.3, deaths: 630, notes: __alloT('stem.platetectonics.tsu_note_stiff_buildings_outperformed_retrofitt', "Stiff buildings outperformed retrofitted ones") },
+          { year: 1990, place: __alloT('stem.platetectonics.tsu_place_manjil_rudbar_iran', "Manjil-Rudbar, Iran"), mag: 7.4, deaths: 40000, notes: __alloT('stem.platetectonics.tsu_note_northern_iran_landslides_took_out_vill', "Northern Iran; landslides took out villages") },
+          { year: 2002, place: __alloT('stem.platetectonics.tsu_place_hindu_kush_afghanistan', "Hindu Kush, Afghanistan"), mag: 7.3, deaths: 166, notes: __alloT('stem.platetectonics.tsu_note_intermediate_depth_slab_quake_usually', "Intermediate-depth slab quake; usually less damaging") }
         ];
 
         // ========== FAULT DB (50 major faults) ==========
         var FAULT_DB = [
-          { name: __alloT('stem.platetectonics.san_andreas', "San Andreas"), region: "California", type: "transform", lengthKm: 1300, notes: "Pacific/North American; right-lateral; 1906 SF earthquake; ~150-300 yr return on major segments" },
-          { name: __alloT('stem.platetectonics.north_anatolian', "North Anatolian"), region: "Turkey", type: "transform", lengthKm: 1500, notes: "Right-lateral; sequential westward migrating earthquakes since 1939" },
-          { name: __alloT('stem.platetectonics.alpine_fault', "Alpine Fault"), region: "New Zealand", type: "transform", lengthKm: 600, notes: "Pacific/Australian; locked for 300+ years; expected M8 overdue" },
-          { name: __alloT('stem.platetectonics.dead_sea_transform', "Dead Sea Transform"), region: "Israel/Jordan", type: "transform", lengthKm: 1000, notes: "Left-lateral; created Sea of Galilee + Dead Sea + Red Sea triple junction" },
-          { name: __alloT('stem.platetectonics.hayward_fault', "Hayward Fault"), region: "California", type: "transform", lengthKm: 119, notes: "East Bay; mean recurrence 150 years; last 1868; 'tectonic time bomb'" },
-          { name: __alloT('stem.platetectonics.calaveras_fault', "Calaveras Fault"), region: "California", type: "transform", lengthKm: 123, notes: "Branch of San Andreas; creeping section" },
-          { name: __alloT('stem.platetectonics.east_anatolian_fault', "East Anatolian Fault"), region: "Turkey/Syria", type: "transform", lengthKm: 700, notes: "Left-lateral; 2023 doublet sequence" },
-          { name: __alloT('stem.platetectonics.denali_fault', "Denali Fault"), region: "Alaska", type: "transform", lengthKm: 2100, notes: "Right-lateral; 2002 M7.9 rupture damaged Trans-Alaska Pipeline supports" },
-          { name: __alloT('stem.platetectonics.queen_charlotte_fault', "Queen Charlotte Fault"), region: "British Columbia", type: "transform", lengthKm: 900, notes: "Pacific/North American; offshore BC; 1949 M8.1" },
-          { name: __alloT('stem.platetectonics.wasatch_fault', "Wasatch Fault"), region: "Utah", type: "normal", lengthKm: 383, notes: "Normal fault; Salt Lake City exposure; M7+ possible" },
-          { name: __alloT('stem.platetectonics.reelfoot_fault', "Reelfoot Fault"), region: "Missouri", type: "thrust", lengthKm: 70, notes: "New Madrid Seismic Zone; intraplate; 1811-12 sequence" },
-          { name: __alloT('stem.platetectonics.cascadia_subduction_zone', "Cascadia Subduction Zone"), region: "Pacific NW US/BC", type: "convergent", lengthKm: 1000, notes: "Juan de Fuca subducting; 1700 M9 confirmed by Atwater + Japan records" },
-          { name: __alloT('stem.platetectonics.hikurangi_margin', "Hikurangi Margin"), region: "New Zealand", type: "convergent", lengthKm: 800, notes: "Pacific subducting beneath Australian; slow-slip events documented" },
-          { name: __alloT('stem.platetectonics.aleutian_trench', "Aleutian Trench"), region: "Alaska", type: "convergent", lengthKm: 3400, notes: "Pacific subducting under N American; 1964 M9.2 Good Friday" },
-          { name: __alloT('stem.platetectonics.japan_trench', "Japan Trench"), region: "Japan", type: "convergent", lengthKm: 800, notes: "Pacific under Okhotsk plate; 2011 M9 Tohoku" },
-          { name: __alloT('stem.platetectonics.nankai_trough', "Nankai Trough"), region: "Japan", type: "convergent", lengthKm: 750, notes: "Philippine Sea under Eurasia; ~100-150 yr recurrence; overdue" },
-          { name: __alloT('stem.platetectonics.sunda_trench', "Sunda Trench"), region: "Indonesia", type: "convergent", lengthKm: 5600, notes: "Indo-Australian under Sunda; 2004 M9.1 Sumatra" },
-          { name: __alloT('stem.platetectonics.peru_chile_trench', "Peru-Chile Trench"), region: "Pacific S America", type: "convergent", lengthKm: 7000, notes: "Nazca under S American; longest trench; 1960 M9.5" },
-          { name: __alloT('stem.platetectonics.mariana_trench', "Mariana Trench"), region: "Pacific", type: "convergent", lengthKm: 2550, notes: "Pacific under Mariana microplate; deepest point Challenger Deep" },
-          { name: __alloT('stem.platetectonics.manila_trench', "Manila Trench"), region: "Philippines", type: "convergent", lengthKm: 1400, notes: "Sunda under Philippine Sea; tsunami potential to South China Sea coast" },
-          { name: __alloT('stem.platetectonics.java_trench', "Java Trench"), region: "Indonesia", type: "convergent", lengthKm: 0, notes: "Part of Sunda system" },
-          { name: __alloT('stem.platetectonics.tonga_trench', "Tonga Trench"), region: "Pacific", type: "convergent", lengthKm: 2500, notes: "Pacific under Tonga plate; fastest subduction known (~24 cm/yr)" },
-          { name: __alloT('stem.platetectonics.kermadec_trench', "Kermadec Trench"), region: "Pacific", type: "convergent", lengthKm: 1200, notes: "North of NZ; Pacific subducting under Australian" },
-          { name: __alloT('stem.platetectonics.puerto_rico_trench', "Puerto Rico Trench"), region: "Caribbean", type: "convergent", lengthKm: 800, notes: "Atlantic/Caribbean transition; deepest in Atlantic basin" },
-          { name: __alloT('stem.platetectonics.hellenic_arc', "Hellenic Arc"), region: "Mediterranean", type: "convergent", lengthKm: 1500, notes: "African plate under Aegean; Crete + Cyprus; 365 CE megaquake" },
-          { name: __alloT('stem.platetectonics.calabrian_arc', "Calabrian Arc"), region: "Italy", type: "convergent", lengthKm: 250, notes: "African slab under Italy; produces deep Tyrrhenian quakes" },
-          { name: __alloT('stem.platetectonics.makran_subduction', "Makran Subduction"), region: "Pakistan/Iran", type: "convergent", lengthKm: 900, notes: "Arabian under Eurasian; 1945 M8.1 + tsunami" },
-          { name: __alloT('stem.platetectonics.south_sandwich_trench', "South Sandwich Trench"), region: "Atlantic", type: "convergent", lengthKm: 1000, notes: "S America under Scotia plate; remote" },
-          { name: __alloT('stem.platetectonics.middle_america_trench', "Middle America Trench"), region: "Central America", type: "convergent", lengthKm: 2900, notes: "Cocos under Caribbean + N American; 1985 Mexico City M8.0" },
-          { name: __alloT('stem.platetectonics.wadati_benioff_zones', "Wadati-Benioff zones"), region: "subduction inclined", type: "convergent", lengthKm: 0, notes: "Conceptual; inclined seismic zone showing slab descent" },
-          { name: __alloT('stem.platetectonics.mid_atlantic_ridge', "Mid-Atlantic Ridge"), region: "Atlantic Ocean", type: "divergent", lengthKm: 10000, notes: "Eurasian/N American + African/S American; ~2.5 cm/yr" },
-          { name: __alloT('stem.platetectonics.east_pacific_rise', "East Pacific Rise"), region: "Pacific Ocean", type: "divergent", lengthKm: 8000, notes: "Pacific/Nazca; fastest spreading on Earth (15+ cm/yr)" },
-          { name: __alloT('stem.platetectonics.carlsberg_ridge', "Carlsberg Ridge"), region: "Indian Ocean", type: "divergent", lengthKm: 4000, notes: "Indian Ocean spreading; Y-shaped junction with Central Indian Ridge" },
-          { name: __alloT('stem.platetectonics.east_african_rift_system', "East African Rift System"), region: "Africa", type: "divergent", lengthKm: 6000, notes: "Continental rift splitting Somalia + Nubia; future ocean basin" },
-          { name: __alloT('stem.platetectonics.iceland_rift', "Iceland Rift"), region: "Iceland", type: "divergent", lengthKm: 200, notes: "Mid-Atlantic on land; Þingvellir National Park visible boundary" },
-          { name: __alloT('stem.platetectonics.rio_grande_rift', "Rio Grande Rift"), region: "New Mexico/Colorado", type: "divergent", lengthKm: 1000, notes: "Continental rift; Rio Grande follows it" },
-          { name: __alloT('stem.platetectonics.baikal_rift', "Baikal Rift"), region: "Russia/Mongolia", type: "divergent", lengthKm: 2000, notes: "Lake Baikal sits in deepest continental rift; oldest lake on Earth" },
-          { name: __alloT('stem.platetectonics.red_sea_rift', "Red Sea Rift"), region: "Saudi Arabia/Africa", type: "divergent", lengthKm: 1900, notes: "Young ocean basin; ~5 mm/yr; eventually full ocean" },
-          { name: __alloT('stem.platetectonics.basin_and_range', "Basin and Range"), region: "Nevada/Utah", type: "extensional", lengthKm: 1600, notes: "Extended crust; alternating uplifted ranges + dropped basins" },
-          { name: __alloT('stem.platetectonics.walker_lane', "Walker Lane"), region: "Nevada/California", type: "transform", lengthKm: 800, notes: "Diffuse transform zone east of Sierra Nevada" },
-          { name: __alloT('stem.platetectonics.garlock_fault', "Garlock Fault"), region: "California", type: "transform", lengthKm: 250, notes: "Left-lateral; bounds Mojave Desert north edge" },
-          { name: __alloT('stem.platetectonics.owens_valley_fault', "Owens Valley Fault"), region: "California", type: "oblique (strike-slip + normal)", lengthKm: 100, notes: "Eastern Sierra escarpment; 1872 M7.8 quake was mostly right-lateral" },
-          { name: __alloT('stem.platetectonics.idaho_montana_detachment', "Idaho-Montana detachment"), region: "Northern Rockies", type: "normal", lengthKm: 0, notes: "Cordilleran extension; metamorphic core complexes" },
-          { name: __alloT('stem.platetectonics.tintina_fault', "Tintina Fault"), region: "Yukon", type: "transform", lengthKm: 1000, notes: "Right-lateral; part of N American interior strike-slip" },
-          { name: __alloT('stem.platetectonics.olympic_wallowa_lineament', "Olympic-Wallowa Lineament"), region: "Pacific NW", type: "lineament", lengthKm: 800, notes: "Linear feature; tectonic significance debated" },
-          { name: __alloT('stem.platetectonics.brevard_zone', "Brevard Zone"), region: "Appalachians", type: "thrust (ancient)", lengthKm: 700, notes: "Paleozoic suture; Iapetus closure; major terrane boundary" },
-          { name: __alloT('stem.platetectonics.caledonian_suture', "Caledonian Suture"), region: "Scotland/Norway", type: "thrust (ancient)", lengthKm: 1500, notes: "Closed Iapetus Ocean; brought Laurentia + Baltica together" },
-          { name: __alloT('stem.platetectonics.ural_suture', "Ural Suture"), region: "Russia", type: "thrust (ancient)", lengthKm: 2500, notes: "Joined Siberia + Baltica into Eurasia; Permian" },
-          { name: __alloT('stem.platetectonics.indus_tsangpo_suture', "Indus-Tsangpo Suture"), region: "Tibet", type: "thrust", lengthKm: 2000, notes: "India-Asia collision; classic suture zone" },
-          { name: __alloT('stem.platetectonics.mht_main_himalayan_thrust', "MHT (Main Himalayan Thrust)"), region: "Himalaya", type: "thrust", lengthKm: 2400, notes: "Underlies whole Himalaya; M8+ events; 1934 Nepal-Bihar" }
+          { name: __alloT('stem.platetectonics.san_andreas', "San Andreas"), region: __alloT('stem.platetectonics.fa_regi_california', "California"), type: "transform", lengthKm: 1300, notes: __alloT('stem.platetectonics.fa_note_pacific_north_american_right_lateral', "Pacific/North American; right-lateral; 1906 SF earthquake; ~150-300 yr return on major segments") },
+          { name: __alloT('stem.platetectonics.north_anatolian', "North Anatolian"), region: __alloT('stem.platetectonics.fa_regi_turkey', "Turkey"), type: "transform", lengthKm: 1500, notes: __alloT('stem.platetectonics.fa_note_right_lateral_sequential_westward_mi', "Right-lateral; sequential westward migrating earthquakes since 1939") },
+          { name: __alloT('stem.platetectonics.alpine_fault', "Alpine Fault"), region: __alloT('stem.platetectonics.fa_regi_new_zealand', "New Zealand"), type: "transform", lengthKm: 600, notes: __alloT('stem.platetectonics.fa_note_pacific_australian_locked_for_300_ye', "Pacific/Australian; locked for 300+ years; expected M8 overdue") },
+          { name: __alloT('stem.platetectonics.dead_sea_transform', "Dead Sea Transform"), region: __alloT('stem.platetectonics.fa_regi_israel_jordan', "Israel/Jordan"), type: "transform", lengthKm: 1000, notes: __alloT('stem.platetectonics.fa_note_left_lateral_created_sea_of_galilee', "Left-lateral; created Sea of Galilee + Dead Sea + Red Sea triple junction") },
+          { name: __alloT('stem.platetectonics.hayward_fault', "Hayward Fault"), region: __alloT('stem.platetectonics.fa_regi_california', "California"), type: "transform", lengthKm: 119, notes: __alloT('stem.platetectonics.fa_note_east_bay_mean_recurrence_150_years_l', "East Bay; mean recurrence 150 years; last 1868; 'tectonic time bomb'") },
+          { name: __alloT('stem.platetectonics.calaveras_fault', "Calaveras Fault"), region: __alloT('stem.platetectonics.fa_regi_california', "California"), type: "transform", lengthKm: 123, notes: __alloT('stem.platetectonics.fa_note_branch_of_san_andreas_creeping_secti', "Branch of San Andreas; creeping section") },
+          { name: __alloT('stem.platetectonics.east_anatolian_fault', "East Anatolian Fault"), region: __alloT('stem.platetectonics.fa_regi_turkey_syria', "Turkey/Syria"), type: "transform", lengthKm: 700, notes: __alloT('stem.platetectonics.fa_note_left_lateral_2023_doublet_sequence', "Left-lateral; 2023 doublet sequence") },
+          { name: __alloT('stem.platetectonics.denali_fault', "Denali Fault"), region: __alloT('stem.platetectonics.fa_regi_alaska', "Alaska"), type: "transform", lengthKm: 2100, notes: __alloT('stem.platetectonics.fa_note_right_lateral_2002_m7_9_rupture_dama', "Right-lateral; 2002 M7.9 rupture damaged Trans-Alaska Pipeline supports") },
+          { name: __alloT('stem.platetectonics.queen_charlotte_fault', "Queen Charlotte Fault"), region: __alloT('stem.platetectonics.fa_regi_british_columbia', "British Columbia"), type: "transform", lengthKm: 900, notes: __alloT('stem.platetectonics.fa_note_pacific_north_american_offshore_bc_1', "Pacific/North American; offshore BC; 1949 M8.1") },
+          { name: __alloT('stem.platetectonics.wasatch_fault', "Wasatch Fault"), region: __alloT('stem.platetectonics.fa_regi_utah', "Utah"), type: "normal", lengthKm: 383, notes: __alloT('stem.platetectonics.fa_note_normal_fault_salt_lake_city_exposure', "Normal fault; Salt Lake City exposure; M7+ possible") },
+          { name: __alloT('stem.platetectonics.reelfoot_fault', "Reelfoot Fault"), region: __alloT('stem.platetectonics.fa_regi_missouri', "Missouri"), type: "thrust", lengthKm: 70, notes: __alloT('stem.platetectonics.fa_note_new_madrid_seismic_zone_intraplate_1', "New Madrid Seismic Zone; intraplate; 1811-12 sequence") },
+          { name: __alloT('stem.platetectonics.cascadia_subduction_zone', "Cascadia Subduction Zone"), region: __alloT('stem.platetectonics.fa_regi_pacific_nw_us_bc', "Pacific NW US/BC"), type: "convergent", lengthKm: 1000, notes: __alloT('stem.platetectonics.fa_note_juan_de_fuca_subducting_1700_m9_conf', "Juan de Fuca subducting; 1700 M9 confirmed by Atwater + Japan records") },
+          { name: __alloT('stem.platetectonics.hikurangi_margin', "Hikurangi Margin"), region: __alloT('stem.platetectonics.fa_regi_new_zealand', "New Zealand"), type: "convergent", lengthKm: 800, notes: __alloT('stem.platetectonics.fa_note_pacific_subducting_beneath_australia', "Pacific subducting beneath Australian; slow-slip events documented") },
+          { name: __alloT('stem.platetectonics.aleutian_trench', "Aleutian Trench"), region: __alloT('stem.platetectonics.fa_regi_alaska', "Alaska"), type: "convergent", lengthKm: 3400, notes: __alloT('stem.platetectonics.fa_note_pacific_subducting_under_n_american', "Pacific subducting under N American; 1964 M9.2 Good Friday") },
+          { name: __alloT('stem.platetectonics.japan_trench', "Japan Trench"), region: __alloT('stem.platetectonics.fa_regi_japan', "Japan"), type: "convergent", lengthKm: 800, notes: __alloT('stem.platetectonics.fa_note_pacific_under_okhotsk_plate_2011_m9', "Pacific under Okhotsk plate; 2011 M9 Tohoku") },
+          { name: __alloT('stem.platetectonics.nankai_trough', "Nankai Trough"), region: __alloT('stem.platetectonics.fa_regi_japan', "Japan"), type: "convergent", lengthKm: 750, notes: __alloT('stem.platetectonics.fa_note_philippine_sea_under_eurasia_100_150', "Philippine Sea under Eurasia; ~100-150 yr recurrence; overdue") },
+          { name: __alloT('stem.platetectonics.sunda_trench', "Sunda Trench"), region: __alloT('stem.platetectonics.fa_regi_indonesia', "Indonesia"), type: "convergent", lengthKm: 5600, notes: __alloT('stem.platetectonics.fa_note_indo_australian_under_sunda_2004_m9', "Indo-Australian under Sunda; 2004 M9.1 Sumatra") },
+          { name: __alloT('stem.platetectonics.peru_chile_trench', "Peru-Chile Trench"), region: __alloT('stem.platetectonics.fa_regi_pacific_s_america', "Pacific S America"), type: "convergent", lengthKm: 7000, notes: __alloT('stem.platetectonics.fa_note_nazca_under_s_american_longest_trenc', "Nazca under S American; longest trench; 1960 M9.5") },
+          { name: __alloT('stem.platetectonics.mariana_trench', "Mariana Trench"), region: __alloT('stem.platetectonics.fa_regi_pacific', "Pacific"), type: "convergent", lengthKm: 2550, notes: __alloT('stem.platetectonics.fa_note_pacific_under_mariana_microplate_dee', "Pacific under Mariana microplate; deepest point Challenger Deep") },
+          { name: __alloT('stem.platetectonics.manila_trench', "Manila Trench"), region: __alloT('stem.platetectonics.fa_regi_philippines', "Philippines"), type: "convergent", lengthKm: 1400, notes: __alloT('stem.platetectonics.fa_note_sunda_under_philippine_sea_tsunami_p', "Sunda under Philippine Sea; tsunami potential to South China Sea coast") },
+          { name: __alloT('stem.platetectonics.java_trench', "Java Trench"), region: __alloT('stem.platetectonics.fa_regi_indonesia', "Indonesia"), type: "convergent", lengthKm: 0, notes: __alloT('stem.platetectonics.fa_note_part_of_sunda_system', "Part of Sunda system") },
+          { name: __alloT('stem.platetectonics.tonga_trench', "Tonga Trench"), region: __alloT('stem.platetectonics.fa_regi_pacific', "Pacific"), type: "convergent", lengthKm: 2500, notes: __alloT('stem.platetectonics.fa_note_pacific_under_tonga_plate_fastest_su', "Pacific under Tonga plate; fastest subduction known (~24 cm/yr)") },
+          { name: __alloT('stem.platetectonics.kermadec_trench', "Kermadec Trench"), region: __alloT('stem.platetectonics.fa_regi_pacific', "Pacific"), type: "convergent", lengthKm: 1200, notes: __alloT('stem.platetectonics.fa_note_north_of_nz_pacific_subducting_under', "North of NZ; Pacific subducting under Australian") },
+          { name: __alloT('stem.platetectonics.puerto_rico_trench', "Puerto Rico Trench"), region: __alloT('stem.platetectonics.fa_regi_caribbean', "Caribbean"), type: "convergent", lengthKm: 800, notes: __alloT('stem.platetectonics.fa_note_atlantic_caribbean_transition_deepes', "Atlantic/Caribbean transition; deepest in Atlantic basin") },
+          { name: __alloT('stem.platetectonics.hellenic_arc', "Hellenic Arc"), region: __alloT('stem.platetectonics.fa_regi_mediterranean', "Mediterranean"), type: "convergent", lengthKm: 1500, notes: __alloT('stem.platetectonics.fa_note_african_plate_under_aegean_crete_cyp', "African plate under Aegean; Crete + Cyprus; 365 CE megaquake") },
+          { name: __alloT('stem.platetectonics.calabrian_arc', "Calabrian Arc"), region: __alloT('stem.platetectonics.fa_regi_italy', "Italy"), type: "convergent", lengthKm: 250, notes: __alloT('stem.platetectonics.fa_note_african_slab_under_italy_produces_de', "African slab under Italy; produces deep Tyrrhenian quakes") },
+          { name: __alloT('stem.platetectonics.makran_subduction', "Makran Subduction"), region: __alloT('stem.platetectonics.fa_regi_pakistan_iran', "Pakistan/Iran"), type: "convergent", lengthKm: 900, notes: __alloT('stem.platetectonics.fa_note_arabian_under_eurasian_1945_m8_1_tsu', "Arabian under Eurasian; 1945 M8.1 + tsunami") },
+          { name: __alloT('stem.platetectonics.south_sandwich_trench', "South Sandwich Trench"), region: __alloT('stem.platetectonics.fa_regi_atlantic', "Atlantic"), type: "convergent", lengthKm: 1000, notes: __alloT('stem.platetectonics.fa_note_s_america_under_scotia_plate_remote', "S America under Scotia plate; remote") },
+          { name: __alloT('stem.platetectonics.middle_america_trench', "Middle America Trench"), region: __alloT('stem.platetectonics.fa_regi_central_america', "Central America"), type: "convergent", lengthKm: 2900, notes: __alloT('stem.platetectonics.fa_note_cocos_under_caribbean_n_american_198', "Cocos under Caribbean + N American; 1985 Mexico City M8.0") },
+          { name: __alloT('stem.platetectonics.wadati_benioff_zones', "Wadati-Benioff zones"), region: __alloT('stem.platetectonics.fa_regi_subduction_inclined', "subduction inclined"), type: "convergent", lengthKm: 0, notes: __alloT('stem.platetectonics.fa_note_conceptual_inclined_seismic_zone_sho', "Conceptual; inclined seismic zone showing slab descent") },
+          { name: __alloT('stem.platetectonics.mid_atlantic_ridge', "Mid-Atlantic Ridge"), region: __alloT('stem.platetectonics.fa_regi_atlantic_ocean', "Atlantic Ocean"), type: "divergent", lengthKm: 10000, notes: __alloT('stem.platetectonics.fa_note_eurasian_n_american_african_s_americ', "Eurasian/N American + African/S American; ~2.5 cm/yr") },
+          { name: __alloT('stem.platetectonics.east_pacific_rise', "East Pacific Rise"), region: __alloT('stem.platetectonics.fa_regi_pacific_ocean', "Pacific Ocean"), type: "divergent", lengthKm: 8000, notes: __alloT('stem.platetectonics.fa_note_pacific_nazca_fastest_spreading_on_e', "Pacific/Nazca; fastest spreading on Earth (15+ cm/yr)") },
+          { name: __alloT('stem.platetectonics.carlsberg_ridge', "Carlsberg Ridge"), region: __alloT('stem.platetectonics.fa_regi_indian_ocean', "Indian Ocean"), type: "divergent", lengthKm: 4000, notes: __alloT('stem.platetectonics.fa_note_indian_ocean_spreading_y_shaped_junc', "Indian Ocean spreading; Y-shaped junction with Central Indian Ridge") },
+          { name: __alloT('stem.platetectonics.east_african_rift_system', "East African Rift System"), region: __alloT('stem.platetectonics.fa_regi_africa', "Africa"), type: "divergent", lengthKm: 6000, notes: __alloT('stem.platetectonics.fa_note_continental_rift_splitting_somalia_n', "Continental rift splitting Somalia + Nubia; future ocean basin") },
+          { name: __alloT('stem.platetectonics.iceland_rift', "Iceland Rift"), region: __alloT('stem.platetectonics.fa_regi_iceland', "Iceland"), type: "divergent", lengthKm: 200, notes: __alloT('stem.platetectonics.fa_note_mid_atlantic_on_land_ingvellir_natio', "Mid-Atlantic on land; Þingvellir National Park visible boundary") },
+          { name: __alloT('stem.platetectonics.rio_grande_rift', "Rio Grande Rift"), region: __alloT('stem.platetectonics.fa_regi_new_mexico_colorado', "New Mexico/Colorado"), type: "divergent", lengthKm: 1000, notes: __alloT('stem.platetectonics.fa_note_continental_rift_rio_grande_follows', "Continental rift; Rio Grande follows it") },
+          { name: __alloT('stem.platetectonics.baikal_rift', "Baikal Rift"), region: __alloT('stem.platetectonics.fa_regi_russia_mongolia', "Russia/Mongolia"), type: "divergent", lengthKm: 2000, notes: __alloT('stem.platetectonics.fa_note_lake_baikal_sits_in_deepest_continen', "Lake Baikal sits in deepest continental rift; oldest lake on Earth") },
+          { name: __alloT('stem.platetectonics.red_sea_rift', "Red Sea Rift"), region: __alloT('stem.platetectonics.fa_regi_saudi_arabia_africa', "Saudi Arabia/Africa"), type: "divergent", lengthKm: 1900, notes: __alloT('stem.platetectonics.fa_note_young_ocean_basin_5_mm_yr_eventually', "Young ocean basin; ~5 mm/yr; eventually full ocean") },
+          { name: __alloT('stem.platetectonics.basin_and_range', "Basin and Range"), region: __alloT('stem.platetectonics.fa_regi_nevada_utah', "Nevada/Utah"), type: "extensional", lengthKm: 1600, notes: __alloT('stem.platetectonics.fa_note_extended_crust_alternating_uplifted', "Extended crust; alternating uplifted ranges + dropped basins") },
+          { name: __alloT('stem.platetectonics.walker_lane', "Walker Lane"), region: __alloT('stem.platetectonics.fa_regi_nevada_california', "Nevada/California"), type: "transform", lengthKm: 800, notes: __alloT('stem.platetectonics.fa_note_diffuse_transform_zone_east_of_sierr', "Diffuse transform zone east of Sierra Nevada") },
+          { name: __alloT('stem.platetectonics.garlock_fault', "Garlock Fault"), region: __alloT('stem.platetectonics.fa_regi_california', "California"), type: "transform", lengthKm: 250, notes: __alloT('stem.platetectonics.fa_note_left_lateral_bounds_mojave_desert_no', "Left-lateral; bounds Mojave Desert north edge") },
+          { name: __alloT('stem.platetectonics.owens_valley_fault', "Owens Valley Fault"), region: __alloT('stem.platetectonics.fa_regi_california', "California"), type: "oblique (strike-slip + normal)", lengthKm: 100, notes: __alloT('stem.platetectonics.fa_note_eastern_sierra_escarpment_1872_m7_8', "Eastern Sierra escarpment; 1872 M7.8 quake was mostly right-lateral") },
+          { name: __alloT('stem.platetectonics.idaho_montana_detachment', "Idaho-Montana detachment"), region: __alloT('stem.platetectonics.fa_regi_northern_rockies', "Northern Rockies"), type: "normal", lengthKm: 0, notes: __alloT('stem.platetectonics.fa_note_cordilleran_extension_metamorphic_co', "Cordilleran extension; metamorphic core complexes") },
+          { name: __alloT('stem.platetectonics.tintina_fault', "Tintina Fault"), region: __alloT('stem.platetectonics.fa_regi_yukon', "Yukon"), type: "transform", lengthKm: 1000, notes: __alloT('stem.platetectonics.fa_note_right_lateral_part_of_n_american_int', "Right-lateral; part of N American interior strike-slip") },
+          { name: __alloT('stem.platetectonics.olympic_wallowa_lineament', "Olympic-Wallowa Lineament"), region: __alloT('stem.platetectonics.fa_regi_pacific_nw', "Pacific NW"), type: "lineament", lengthKm: 800, notes: __alloT('stem.platetectonics.fa_note_linear_feature_tectonic_significance', "Linear feature; tectonic significance debated") },
+          { name: __alloT('stem.platetectonics.brevard_zone', "Brevard Zone"), region: __alloT('stem.platetectonics.fa_regi_appalachians', "Appalachians"), type: "thrust (ancient)", lengthKm: 700, notes: __alloT('stem.platetectonics.fa_note_paleozoic_suture_iapetus_closure_maj', "Paleozoic suture; Iapetus closure; major terrane boundary") },
+          { name: __alloT('stem.platetectonics.caledonian_suture', "Caledonian Suture"), region: __alloT('stem.platetectonics.fa_regi_scotland_norway', "Scotland/Norway"), type: "thrust (ancient)", lengthKm: 1500, notes: __alloT('stem.platetectonics.fa_note_closed_iapetus_ocean_brought_laurent', "Closed Iapetus Ocean; brought Laurentia + Baltica together") },
+          { name: __alloT('stem.platetectonics.ural_suture', "Ural Suture"), region: __alloT('stem.platetectonics.fa_regi_russia', "Russia"), type: "thrust (ancient)", lengthKm: 2500, notes: __alloT('stem.platetectonics.fa_note_joined_siberia_baltica_into_eurasia', "Joined Siberia + Baltica into Eurasia; Permian") },
+          { name: __alloT('stem.platetectonics.indus_tsangpo_suture', "Indus-Tsangpo Suture"), region: __alloT('stem.platetectonics.fa_regi_tibet', "Tibet"), type: "thrust", lengthKm: 2000, notes: __alloT('stem.platetectonics.fa_note_india_asia_collision_classic_suture', "India-Asia collision; classic suture zone") },
+          { name: __alloT('stem.platetectonics.mht_main_himalayan_thrust', "MHT (Main Himalayan Thrust)"), region: __alloT('stem.platetectonics.fa_regi_himalaya', "Himalaya"), type: "thrust", lengthKm: 2400, notes: __alloT('stem.platetectonics.fa_note_underlies_whole_himalaya_m8_events_1', "Underlies whole Himalaya; M8+ events; 1934 Nepal-Bihar") }
         ];
 
         // ========== HOTSPOT DB (40 mantle plumes) ==========
         var HOTSPOT_DB = [
-          { name: __alloT('stem.platetectonics.hawaiian', "Hawaiian"), plate: "Pacific", volcanoes: "Mauna Loa, Kilauea", notes: "Classic textbook plume; Emperor seamount bend at 47 Ma showed Pacific plate direction change" },
-          { name: __alloT('stem.platetectonics.yellowstone', "Yellowstone"), plate: "N America", volcanoes: "Yellowstone caldera", notes: "Continental hotspot; track from Oregon (16 Ma) to current location" },
-          { name: __alloT('stem.platetectonics.iceland', "Iceland"), plate: "N Atlantic", volcanoes: "Eyjafjallajökull, Hekla, Grímsvötn", notes: "On the mid-ocean ridge - combination plume + ridge" },
-          { name: __alloT('stem.platetectonics.galapagos_2', "Galapagos"), plate: "Pacific", volcanoes: "Wolf, Cerro Azul", notes: "Created Galapagos archipelago; Darwin observed; Charles Island volcanism" },
-          { name: __alloT('stem.platetectonics.reunion', "Reunion"), plate: "Indian Ocean", volcanoes: "Piton de la Fournaise", notes: "Track back to Deccan Traps (66 Ma) - caused mass extinction debate" },
-          { name: __alloT('stem.platetectonics.tristan_da_cunha', "Tristan da Cunha"), plate: "S Atlantic", volcanoes: "Queen Mary's Peak", notes: "World's most remote inhabited island; track to Walvis Ridge" },
-          { name: __alloT('stem.platetectonics.easter_island', "Easter Island"), plate: "Pacific", volcanoes: "Terevaka", notes: "Rapa Nui; track to Sala y Gomez" },
-          { name: __alloT('stem.platetectonics.macdonald', "Macdonald"), plate: "Pacific", volcanoes: "Macdonald Seamount", notes: "South Pacific superplume region" },
-          { name: __alloT('stem.platetectonics.pitcairn', "Pitcairn"), plate: "Pacific", volcanoes: "Adams Seamount", notes: "Bounty mutineers' island; new seamount discovered 1989" },
-          { name: __alloT('stem.platetectonics.marquesas', "Marquesas"), plate: "Pacific", volcanoes: "Eiao, Hatutu", notes: "French Polynesia; unusual age progression" },
-          { name: __alloT('stem.platetectonics.society_islands', "Society Islands"), plate: "Pacific", volcanoes: "Tahiti, Bora Bora", notes: "Classic plume track; eroded high islands to atolls" },
-          { name: __alloT('stem.platetectonics.samoa', "Samoa"), plate: "Pacific", volcanoes: "Vailulu'u Seamount", notes: "Active submarine volcano east of Ta'u" },
-          { name: __alloT('stem.platetectonics.cape_verde', "Cape Verde"), plate: "Atlantic", volcanoes: "Pico do Fogo", notes: "African plate hotspot; Fogo eruption 2014" },
-          { name: __alloT('stem.platetectonics.canary_islands', "Canary Islands"), plate: "Atlantic", volcanoes: "Teide, Cumbre Vieja", notes: "African margin; Cumbre Vieja flank instability research" },
-          { name: __alloT('stem.platetectonics.azores', "Azores"), plate: "Atlantic", volcanoes: "Pico, Furnas, Sete Cidades", notes: "Triple junction location; Eurasia/N America/Africa" },
-          { name: "Tristan-Gough", plate: "S Atlantic", volcanoes: "Edinburgh Peak", notes: "Track to Etendeka traps (Africa) + Parana traps (S America)" },
-          { name: __alloT('stem.platetectonics.comores', "Comores"), plate: "Indian Ocean", volcanoes: "Karthala", notes: "African plate; Anjouan + Grande Comore" },
-          { name: __alloT('stem.platetectonics.marion', "Marion"), plate: "S Indian Ocean", volcanoes: "Marion Island", notes: "Sub-Antarctic; Crozet plateau track" },
-          { name: __alloT('stem.platetectonics.kerguelen', "Kerguelen"), plate: "S Indian Ocean", volcanoes: "Big Ben (Heard Is.)", notes: "Second-largest oceanic plateau (after Ontong Java); Cretaceous super-eruption" },
-          { name: __alloT('stem.platetectonics.crozet', "Crozet"), plate: "S Indian Ocean", volcanoes: "L'Alouette peak", notes: "French sub-Antarctic islands" },
-          { name: __alloT('stem.platetectonics.bouvet', "Bouvet"), plate: "S Atlantic", volcanoes: "Bouvetøya", notes: "World's most remote island; Norway" },
-          { name: __alloT('stem.platetectonics.balleny', "Balleny"), plate: "Antarctic", volcanoes: "Sturge Is.", notes: "Antarctica's most active modern hotspot" },
-          { name: __alloT('stem.platetectonics.erebus', "Erebus"), plate: "Antarctic", volcanoes: "Mt Erebus", notes: "Active lava lake; phonolitic magma" },
-          { name: __alloT('stem.platetectonics.jan_mayen', "Jan Mayen"), plate: "N Atlantic", volcanoes: "Beerenberg", notes: "Northernmost volcano in N hemisphere; Norway" },
-          { name: __alloT('stem.platetectonics.eifel', "Eifel"), plate: "Germany", volcanoes: "Laacher See", notes: "Continental Europe; last erupted 12,900 years ago" },
-          { name: __alloT('stem.platetectonics.mt_cameroon_2', "Mt Cameroon"), plate: "W Africa", volcanoes: "Cameroon line", notes: "Active stratovolcano; Lake Nyos disaster (1986) on same line" },
-          { name: __alloT('stem.platetectonics.tibesti', "Tibesti"), plate: "Sahara", volcanoes: "Emi Koussi", notes: "Sahara's highest peak; quiescent" },
-          { name: __alloT('stem.platetectonics.hoggar', "Hoggar"), plate: "Algeria", volcanoes: "Mt Tahat", notes: "Saharan volcanic massif" },
-          { name: __alloT('stem.platetectonics.tasmantid', "Tasmantid"), plate: "Australia", volcanoes: "Lord Howe, Norfolk", notes: "Australian plate track; sub-Sydney" },
-          { name: __alloT('stem.platetectonics.east_australia', "East Australia"), plate: "Australia", volcanoes: "Glasshouse Mountains", notes: "Track from Cape Hillsborough to Tasmania over 30 Ma" },
-          { name: __alloT('stem.platetectonics.newer_volcanics', "Newer Volcanics"), plate: "Australia", volcanoes: "Mt Schank, Mt Gambier", notes: "Last erupted ~5000 years ago; recorded by Aboriginal oral tradition" },
-          { name: __alloT('stem.platetectonics.tibesti_2', "Tibesti"), plate: "Africa", volcanoes: "Pic Toussidé", notes: "Northern Chad volcanic massif" },
-          { name: __alloT('stem.platetectonics.darfur', "Darfur"), plate: "Sudan", volcanoes: "Jebel Marra", notes: "Sudan; last activity ~3500 years ago" },
-          { name: __alloT('stem.platetectonics.bayuda', "Bayuda"), plate: "Sudan", volcanoes: "Bayuda volcanic field", notes: "Cinder cones; Holocene activity possible" },
-          { name: __alloT('stem.platetectonics.afar', "Afar"), plate: "E Africa", volcanoes: "Erta Ale", notes: "Permanent lava lake; triple junction Africa-Arabia-Somalia" },
-          { name: __alloT('stem.platetectonics.lord_howe', "Lord Howe"), plate: "Tasman Sea", volcanoes: "Mt Gower", notes: "World Heritage; UNESCO; weird endemic biota" },
-          { name: __alloT('stem.platetectonics.norfolk', "Norfolk"), plate: "Tasman Sea", volcanoes: "Mt Bates", notes: "Pacific plate trail south" },
-          { name: __alloT('stem.platetectonics.hovgaard', "Hovgaard"), plate: "Arctic", volcanoes: "submarine", notes: "Gakkel Ridge plume influence; under sea ice" },
-          { name: "Cobb-Eickelberg", plate: "Pacific NW", volcanoes: "Cobb Seamount", notes: "Juan de Fuca plate track" },
-          { name: __alloT('stem.platetectonics.san_felix', "San Felix"), plate: "Pacific (Chile)", volcanoes: "San Felix Island", notes: "Chile's most isolated island" }
+          { name: __alloT('stem.platetectonics.hawaiian', "Hawaiian"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Mauna Loa, Kilauea", notes: __alloT('stem.platetectonics.hs_note_classic_textbook_plume_emperor_seamo', "Classic textbook plume; Emperor seamount bend at 47 Ma showed Pacific plate direction change") },
+          { name: __alloT('stem.platetectonics.yellowstone', "Yellowstone"), plate: __alloT('stem.platetectonics.hs_plat_n_america', "N America"), volcanoes: "Yellowstone caldera", notes: __alloT('stem.platetectonics.hs_note_continental_hotspot_track_from_orego', "Continental hotspot; track from Oregon (16 Ma) to current location") },
+          { name: __alloT('stem.platetectonics.iceland', "Iceland"), plate: __alloT('stem.platetectonics.hs_plat_n_atlantic', "N Atlantic"), volcanoes: "Eyjafjallajökull, Hekla, Grímsvötn", notes: __alloT('stem.platetectonics.hs_note_on_the_mid_ocean_ridge_combination_p', "On the mid-ocean ridge - combination plume + ridge") },
+          { name: __alloT('stem.platetectonics.galapagos_2', "Galapagos"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Wolf, Cerro Azul", notes: __alloT('stem.platetectonics.hs_note_created_galapagos_archipelago_darwin', "Created Galapagos archipelago; Darwin observed; Charles Island volcanism") },
+          { name: __alloT('stem.platetectonics.reunion', "Reunion"), plate: __alloT('stem.platetectonics.hs_plat_indian_ocean', "Indian Ocean"), volcanoes: "Piton de la Fournaise", notes: __alloT('stem.platetectonics.hs_note_track_back_to_deccan_traps_66_ma_cau', "Track back to Deccan Traps (66 Ma) - caused mass extinction debate") },
+          { name: __alloT('stem.platetectonics.tristan_da_cunha', "Tristan da Cunha"), plate: __alloT('stem.platetectonics.hs_plat_s_atlantic', "S Atlantic"), volcanoes: "Queen Mary's Peak", notes: __alloT('stem.platetectonics.hs_note_world_s_most_remote_inhabited_island', "World's most remote inhabited island; track to Walvis Ridge") },
+          { name: __alloT('stem.platetectonics.easter_island', "Easter Island"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Terevaka", notes: __alloT('stem.platetectonics.hs_note_rapa_nui_track_to_sala_y_gomez', "Rapa Nui; track to Sala y Gomez") },
+          { name: __alloT('stem.platetectonics.macdonald', "Macdonald"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Macdonald Seamount", notes: __alloT('stem.platetectonics.hs_note_south_pacific_superplume_region', "South Pacific superplume region") },
+          { name: __alloT('stem.platetectonics.pitcairn', "Pitcairn"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Adams Seamount", notes: __alloT('stem.platetectonics.hs_note_bounty_mutineers_island_new_seamount', "Bounty mutineers' island; new seamount discovered 1989") },
+          { name: __alloT('stem.platetectonics.marquesas', "Marquesas"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Eiao, Hatutu", notes: __alloT('stem.platetectonics.hs_note_french_polynesia_unusual_age_progres', "French Polynesia; unusual age progression") },
+          { name: __alloT('stem.platetectonics.society_islands', "Society Islands"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Tahiti, Bora Bora", notes: __alloT('stem.platetectonics.hs_note_classic_plume_track_eroded_high_isla', "Classic plume track; eroded high islands to atolls") },
+          { name: __alloT('stem.platetectonics.samoa', "Samoa"), plate: __alloT('stem.platetectonics.hs_plat_pacific', "Pacific"), volcanoes: "Vailulu'u Seamount", notes: __alloT('stem.platetectonics.hs_note_active_submarine_volcano_east_of_ta', "Active submarine volcano east of Ta'u") },
+          { name: __alloT('stem.platetectonics.cape_verde', "Cape Verde"), plate: __alloT('stem.platetectonics.hs_plat_atlantic', "Atlantic"), volcanoes: "Pico do Fogo", notes: __alloT('stem.platetectonics.hs_note_african_plate_hotspot_fogo_eruption', "African plate hotspot; Fogo eruption 2014") },
+          { name: __alloT('stem.platetectonics.canary_islands', "Canary Islands"), plate: __alloT('stem.platetectonics.hs_plat_atlantic', "Atlantic"), volcanoes: "Teide, Cumbre Vieja", notes: __alloT('stem.platetectonics.hs_note_african_margin_cumbre_vieja_flank_in', "African margin; Cumbre Vieja flank instability research") },
+          { name: __alloT('stem.platetectonics.azores', "Azores"), plate: __alloT('stem.platetectonics.hs_plat_atlantic', "Atlantic"), volcanoes: "Pico, Furnas, Sete Cidades", notes: __alloT('stem.platetectonics.hs_note_triple_junction_location_eurasia_n_a', "Triple junction location; Eurasia/N America/Africa") },
+          { name: "Tristan-Gough", plate: __alloT('stem.platetectonics.hs_plat_s_atlantic', "S Atlantic"), volcanoes: "Edinburgh Peak", notes: __alloT('stem.platetectonics.hs_note_track_to_etendeka_traps_africa_paran', "Track to Etendeka traps (Africa) + Parana traps (S America)") },
+          { name: __alloT('stem.platetectonics.comores', "Comores"), plate: __alloT('stem.platetectonics.hs_plat_indian_ocean', "Indian Ocean"), volcanoes: "Karthala", notes: __alloT('stem.platetectonics.hs_note_african_plate_anjouan_grande_comore', "African plate; Anjouan + Grande Comore") },
+          { name: __alloT('stem.platetectonics.marion', "Marion"), plate: __alloT('stem.platetectonics.hs_plat_s_indian_ocean', "S Indian Ocean"), volcanoes: "Marion Island", notes: __alloT('stem.platetectonics.hs_note_sub_antarctic_crozet_plateau_track', "Sub-Antarctic; Crozet plateau track") },
+          { name: __alloT('stem.platetectonics.kerguelen', "Kerguelen"), plate: __alloT('stem.platetectonics.hs_plat_s_indian_ocean', "S Indian Ocean"), volcanoes: "Big Ben (Heard Is.)", notes: __alloT('stem.platetectonics.hs_note_second_largest_oceanic_plateau_after', "Second-largest oceanic plateau (after Ontong Java); Cretaceous super-eruption") },
+          { name: __alloT('stem.platetectonics.crozet', "Crozet"), plate: __alloT('stem.platetectonics.hs_plat_s_indian_ocean', "S Indian Ocean"), volcanoes: "L'Alouette peak", notes: __alloT('stem.platetectonics.hs_note_french_sub_antarctic_islands', "French sub-Antarctic islands") },
+          { name: __alloT('stem.platetectonics.bouvet', "Bouvet"), plate: __alloT('stem.platetectonics.hs_plat_s_atlantic', "S Atlantic"), volcanoes: "Bouvetøya", notes: __alloT('stem.platetectonics.hs_note_world_s_most_remote_island_norway', "World's most remote island; Norway") },
+          { name: __alloT('stem.platetectonics.balleny', "Balleny"), plate: __alloT('stem.platetectonics.hs_plat_antarctic', "Antarctic"), volcanoes: "Sturge Is.", notes: __alloT('stem.platetectonics.hs_note_antarctica_s_most_active_modern_hots', "Antarctica's most active modern hotspot") },
+          { name: __alloT('stem.platetectonics.erebus', "Erebus"), plate: __alloT('stem.platetectonics.hs_plat_antarctic', "Antarctic"), volcanoes: "Mt Erebus", notes: __alloT('stem.platetectonics.hs_note_active_lava_lake_phonolitic_magma', "Active lava lake; phonolitic magma") },
+          { name: __alloT('stem.platetectonics.jan_mayen', "Jan Mayen"), plate: __alloT('stem.platetectonics.hs_plat_n_atlantic', "N Atlantic"), volcanoes: "Beerenberg", notes: __alloT('stem.platetectonics.hs_note_northernmost_volcano_in_n_hemisphere', "Northernmost volcano in N hemisphere; Norway") },
+          { name: __alloT('stem.platetectonics.eifel', "Eifel"), plate: __alloT('stem.platetectonics.hs_plat_germany', "Germany"), volcanoes: "Laacher See", notes: __alloT('stem.platetectonics.hs_note_continental_europe_last_erupted_12_9', "Continental Europe; last erupted 12,900 years ago") },
+          { name: __alloT('stem.platetectonics.mt_cameroon_2', "Mt Cameroon"), plate: __alloT('stem.platetectonics.hs_plat_w_africa', "W Africa"), volcanoes: "Cameroon line", notes: __alloT('stem.platetectonics.hs_note_active_stratovolcano_lake_nyos_disas', "Active stratovolcano; Lake Nyos disaster (1986) on same line") },
+          { name: __alloT('stem.platetectonics.tibesti', "Tibesti"), plate: __alloT('stem.platetectonics.hs_plat_sahara', "Sahara"), volcanoes: "Emi Koussi", notes: __alloT('stem.platetectonics.hs_note_sahara_s_highest_peak_quiescent', "Sahara's highest peak; quiescent") },
+          { name: __alloT('stem.platetectonics.hoggar', "Hoggar"), plate: __alloT('stem.platetectonics.hs_plat_algeria', "Algeria"), volcanoes: "Mt Tahat", notes: __alloT('stem.platetectonics.hs_note_saharan_volcanic_massif', "Saharan volcanic massif") },
+          { name: __alloT('stem.platetectonics.tasmantid', "Tasmantid"), plate: __alloT('stem.platetectonics.hs_plat_australia', "Australia"), volcanoes: "Lord Howe, Norfolk", notes: __alloT('stem.platetectonics.hs_note_australian_plate_track_sub_sydney', "Australian plate track; sub-Sydney") },
+          { name: __alloT('stem.platetectonics.east_australia', "East Australia"), plate: __alloT('stem.platetectonics.hs_plat_australia', "Australia"), volcanoes: "Glasshouse Mountains", notes: __alloT('stem.platetectonics.hs_note_track_from_cape_hillsborough_to_tasm', "Track from Cape Hillsborough to Tasmania over 30 Ma") },
+          { name: __alloT('stem.platetectonics.newer_volcanics', "Newer Volcanics"), plate: __alloT('stem.platetectonics.hs_plat_australia', "Australia"), volcanoes: "Mt Schank, Mt Gambier", notes: __alloT('stem.platetectonics.hs_note_last_erupted_5000_years_ago_recorded', "Last erupted ~5000 years ago; recorded by Aboriginal oral tradition") },
+          { name: __alloT('stem.platetectonics.tibesti_2', "Tibesti"), plate: __alloT('stem.platetectonics.hs_plat_africa', "Africa"), volcanoes: "Pic Toussidé", notes: __alloT('stem.platetectonics.hs_note_northern_chad_volcanic_massif', "Northern Chad volcanic massif") },
+          { name: __alloT('stem.platetectonics.darfur', "Darfur"), plate: __alloT('stem.platetectonics.hs_plat_sudan', "Sudan"), volcanoes: "Jebel Marra", notes: __alloT('stem.platetectonics.hs_note_sudan_last_activity_3500_years_ago', "Sudan; last activity ~3500 years ago") },
+          { name: __alloT('stem.platetectonics.bayuda', "Bayuda"), plate: __alloT('stem.platetectonics.hs_plat_sudan', "Sudan"), volcanoes: "Bayuda volcanic field", notes: __alloT('stem.platetectonics.hs_note_cinder_cones_holocene_activity_possi', "Cinder cones; Holocene activity possible") },
+          { name: __alloT('stem.platetectonics.afar', "Afar"), plate: __alloT('stem.platetectonics.hs_plat_e_africa', "E Africa"), volcanoes: "Erta Ale", notes: __alloT('stem.platetectonics.hs_note_permanent_lava_lake_triple_junction', "Permanent lava lake; triple junction Africa-Arabia-Somalia") },
+          { name: __alloT('stem.platetectonics.lord_howe', "Lord Howe"), plate: __alloT('stem.platetectonics.hs_plat_tasman_sea', "Tasman Sea"), volcanoes: "Mt Gower", notes: __alloT('stem.platetectonics.hs_note_world_heritage_unesco_weird_endemic', "World Heritage; UNESCO; weird endemic biota") },
+          { name: __alloT('stem.platetectonics.norfolk', "Norfolk"), plate: __alloT('stem.platetectonics.hs_plat_tasman_sea', "Tasman Sea"), volcanoes: "Mt Bates", notes: __alloT('stem.platetectonics.hs_note_pacific_plate_trail_south', "Pacific plate trail south") },
+          { name: __alloT('stem.platetectonics.hovgaard', "Hovgaard"), plate: __alloT('stem.platetectonics.hs_plat_arctic', "Arctic"), volcanoes: "submarine", notes: __alloT('stem.platetectonics.hs_note_gakkel_ridge_plume_influence_under_s', "Gakkel Ridge plume influence; under sea ice") },
+          { name: "Cobb-Eickelberg", plate: __alloT('stem.platetectonics.hs_plat_pacific_nw', "Pacific NW"), volcanoes: "Cobb Seamount", notes: __alloT('stem.platetectonics.hs_note_juan_de_fuca_plate_track', "Juan de Fuca plate track") },
+          { name: __alloT('stem.platetectonics.san_felix', "San Felix"), plate: __alloT('stem.platetectonics.hs_plat_pacific_chile', "Pacific (Chile)"), volcanoes: "San Felix Island", notes: __alloT('stem.platetectonics.hs_note_chile_s_most_isolated_island', "Chile's most isolated island") }
         ];
 
         // ========== ROCK DB (60 rocks across igneous/metamorphic/sedimentary) ==========
@@ -7560,30 +7353,42 @@ var d = labToolData.plateTectonics || {};
           // practise it on a bank where the answer never changes. The interesting
           // half is a claim that sounds like a tall tale and is simply true, so
           // each band now carries those too.
+          // MAGMA lives at module scope, where the tool's __alloT is NOT defined -
+          // wrapping its fields in place crashed the whole tool with
+          // "__alloT is not defined", the same trap as the two top-level
+          // components. Its `id` is compared against ptVentMagma so it stays a
+          // literal; the words a student reads are translated HERE, in the
+          // render closure, under static keys a harvester can find.
+          var PT_MAGMA_TEXT = {
+              basalt: { label: __alloT('stem.platetectonics.magma_basalt_label', 'Basaltic'), silica: __alloT('stem.platetectonics.magma_basalt_silica', 'Low silica (~50%)'), visc: __alloT('stem.platetectonics.magma_basalt_visc', 'Runny'), gas: __alloT('stem.platetectonics.magma_basalt_gas', 'Little trapped gas'), landform: __alloT('stem.platetectonics.magma_basalt_landform', 'Broad shield volcano'), example: __alloT('stem.platetectonics.magma_basalt_example', 'Mauna Loa, Kilauea') },
+              andesite: { label: __alloT('stem.platetectonics.magma_andesite_label', 'Andesitic'), silica: __alloT('stem.platetectonics.magma_andesite_silica', 'Medium silica (~60%)'), visc: __alloT('stem.platetectonics.magma_andesite_visc', 'Sticky'), gas: __alloT('stem.platetectonics.magma_andesite_gas', 'Some trapped gas'), landform: __alloT('stem.platetectonics.magma_andesite_landform', 'Steep stratovolcano'), example: __alloT('stem.platetectonics.magma_andesite_example', 'Mt Fuji, Mt St Helens') },
+              rhyolite: { label: __alloT('stem.platetectonics.magma_rhyolite_label', 'Rhyolitic'), silica: __alloT('stem.platetectonics.magma_rhyolite_silica', 'High silica (~72%)'), visc: __alloT('stem.platetectonics.magma_rhyolite_visc', 'Stiff'), gas: __alloT('stem.platetectonics.magma_rhyolite_gas', 'Lots of trapped gas'), landform: __alloT('stem.platetectonics.magma_rhyolite_landform', 'Caldera complex'), example: __alloT('stem.platetectonics.magma_rhyolite_example', 'Yellowstone, Toba') }
+          };
+          var ptMagmaText = function (row) { return (row && PT_MAGMA_TEXT[row.id]) || row || {}; };
           var PT_MYTHS_35 = [
-            { s: 'The ground under your feet is completely still — nothing moves down there.', t: false, why: 'The plates carrying the continents creep along about as fast as your fingernails grow — a few centimeters a year. It is slow, but it never stops.', tryIt: 'Play the Continental Drift time-lapse on the Timeline tab and watch the continents crawl.' },
-            { s: 'Earthquakes and volcanoes pop up in totally random places.', t: false, why: 'They cluster along the SAME lines — the edges of the plates. The "Ring of Fire" around the Pacific is one giant plate boundary.', tryIt: 'On the Earthquake tab, trigger a quake at a plate boundary and see where the energy concentrates.' },
-            { s: 'Mountains have always been exactly where they are and never change.', t: false, why: 'Colliding plates crumple the crust upward over millions of years — the Himalayas are STILL rising a few millimeters a year as India pushes into Asia.', tryIt: 'In the simulator, push two continental plates together (convergent boundary) and watch the crust buckle up.' },
-            { s: 'The continents have always looked just like they do on today’s map.', t: false, why: 'About 200 million years ago they were joined in one supercontinent, Pangaea. They have been drifting apart ever since — and are still moving.', tryIt: 'Open the Timeline tab and rewind to Pangaea.' },
-            { s: 'The Atlantic Ocean is a little wider today than it was when your grandparents were born.', t: true, why: 'New seafloor is being made along the ridge that runs down the middle of the Atlantic, and it pushes the two sides apart a few centimetres a year. Over a lifetime that adds up to a couple of metres.', tryIt: 'Open the Boundaries tab and find the Mid-Atlantic Ridge.' },
-            { s: 'You can find fossils of sea creatures near the top of some of the highest mountains.', t: true, why: 'Those rocks formed on an ancient seafloor and were lifted up when two plates collided. Marine fossils really do turn up high in the Himalayas.', tryIt: 'Open the Fossils tab and see where marine fossils turn up.' },
-            { s: 'Iceland is being slowly pulled in two by a plate boundary running right through it.', t: true, why: 'The Mid-Atlantic Ridge crosses Iceland, so the island straddles a divergent boundary. You can walk down into the rift valley it has opened.', tryIt: 'Open the Hotspots tab: Iceland sits on a ridge AND a hotspot.' },
+            { s: __alloT('stem.platetectonics.myth_the_ground_under_your_feet_is_complete', 'The ground under your feet is completely still — nothing moves down there.'), t: false, why: __alloT('stem.platetectonics.mythwhy_the_plates_carrying_the_continents_cre', 'The plates carrying the continents creep along about as fast as your fingernails grow — a few centimeters a year. It is slow, but it never stops.'), tryIt: 'Play the Continental Drift time-lapse on the Timeline tab and watch the continents crawl.' },
+            { s: __alloT('stem.platetectonics.myth_earthquakes_and_volcanoes_pop_up_in_to', 'Earthquakes and volcanoes pop up in totally random places.'), t: false, why: __alloT('stem.platetectonics.mythwhy_they_cluster_along_the_same_lines_the', 'They cluster along the SAME lines — the edges of the plates. The "Ring of Fire" around the Pacific is one giant plate boundary.'), tryIt: 'On the Earthquake tab, trigger a quake at a plate boundary and see where the energy concentrates.' },
+            { s: __alloT('stem.platetectonics.myth_mountains_have_always_been_exactly_whe', 'Mountains have always been exactly where they are and never change.'), t: false, why: __alloT('stem.platetectonics.mythwhy_colliding_plates_crumple_the_crust_upw', 'Colliding plates crumple the crust upward over millions of years — the Himalayas are STILL rising a few millimeters a year as India pushes into Asia.'), tryIt: 'In the simulator, push two continental plates together (convergent boundary) and watch the crust buckle up.' },
+            { s: __alloT('stem.platetectonics.myth_the_continents_have_always_looked_just', 'The continents have always looked just like they do on today’s map.'), t: false, why: __alloT('stem.platetectonics.mythwhy_about_200_million_years_ago_they_were', 'About 200 million years ago they were joined in one supercontinent, Pangaea. They have been drifting apart ever since — and are still moving.'), tryIt: 'Open the Timeline tab and rewind to Pangaea.' },
+            { s: __alloT('stem.platetectonics.myth_the_atlantic_ocean_is_a_little_wider_t', 'The Atlantic Ocean is a little wider today than it was when your grandparents were born.'), t: true, why: __alloT('stem.platetectonics.mythwhy_new_seafloor_is_being_made_along_the_r', 'New seafloor is being made along the ridge that runs down the middle of the Atlantic, and it pushes the two sides apart a few centimetres a year. Over a lifetime that adds up to a couple of metres.'), tryIt: 'Open the Boundaries tab and find the Mid-Atlantic Ridge.' },
+            { s: __alloT('stem.platetectonics.myth_you_can_find_fossils_of_sea_creatures', 'You can find fossils of sea creatures near the top of some of the highest mountains.'), t: true, why: __alloT('stem.platetectonics.mythwhy_those_rocks_formed_on_an_ancient_seafl', 'Those rocks formed on an ancient seafloor and were lifted up when two plates collided. Marine fossils really do turn up high in the Himalayas.'), tryIt: 'Open the Fossils tab and see where marine fossils turn up.' },
+            { s: __alloT('stem.platetectonics.myth_iceland_is_being_slowly_pulled_in_two', 'Iceland is being slowly pulled in two by a plate boundary running right through it.'), t: true, why: __alloT('stem.platetectonics.mythwhy_the_mid_atlantic_ridge_crosses_iceland', 'The Mid-Atlantic Ridge crosses Iceland, so the island straddles a divergent boundary. You can walk down into the rift valley it has opened.'), tryIt: 'Open the Hotspots tab: Iceland sits on a ridge AND a hotspot.' },
           ];
           var PT_MYTHS_68 = PT_MYTHS_35.concat([
-            { s: 'The mantle is an ocean of liquid magma, and the plates float on it like rafts.', t: false, why: 'The mantle is SOLID rock. It flows — but incredibly slowly, like cold putty over thousands of years. Plates ride on the solid-but-bendable asthenosphere, not on liquid.', tryIt: 'Turn on Convection currents in the simulator: those are loops of SOLID rock creeping in slow circles, not sloshing lava.' },
-            { s: 'Continents plow through the ocean floor like ships cutting through water.', t: false, why: 'That was Wegener’s original mistake, and why his idea was rejected for decades. A plate carries its continent AND its seafloor together — new seafloor is born at ridges and swallowed at trenches.', tryIt: 'Watch a divergent boundary in the sim: new crust forms in the gap and spreads both directions.' },
-            { s: 'When a plate subducts, that crust is destroyed and gone forever.', t: false, why: 'It melts and RECYCLES — some rises again as volcanic magma at the arc above. Plate tectonics and the rock cycle are the same engine.', tryIt: 'Read the Cascadia Subduction Zone tab to follow crust down and magma back up.' },
-            { s: 'The rock of the ocean floor is far younger than the rock of the continents.', t: true, why: 'Ocean floor is created at ridges and destroyed at trenches, so almost none of it is older than about 200 million years. Parts of the continents are billions of years old, because there is no conveyor belt carrying them away.', tryIt: 'Open the Seafloor tab and look at the age of the crust.' },
-            { s: 'The Himalayas are still growing taller right now.', t: true, why: 'India is still pushing north into Eurasia, so the range keeps rising a few millimetres a year. Erosion strips it back at a similar rate, which is why it does not simply climb forever.', tryIt: 'Open the Mountains tab and read how the range is still rising.' },
-            { s: 'Some earthquakes begin hundreds of kilometres down, far below the crust.', t: true, why: 'They happen inside slabs that have already subducted, which is a large part of how we know those slabs are down there at all. The deepest reach about 700 kilometres.', tryIt: 'In the Simulator, push an ocean plate under a continent and watch the quake dots get deeper away from the trench.' },
+            { s: __alloT('stem.platetectonics.myth_the_mantle_is_an_ocean_of_liquid_magma', 'The mantle is an ocean of liquid magma, and the plates float on it like rafts.'), t: false, why: __alloT('stem.platetectonics.mythwhy_the_mantle_is_solid_rock_it_flows_but', 'The mantle is SOLID rock. It flows — but incredibly slowly, like cold putty over thousands of years. Plates ride on the solid-but-bendable asthenosphere, not on liquid.'), tryIt: 'Turn on Convection currents in the simulator: those are loops of SOLID rock creeping in slow circles, not sloshing lava.' },
+            { s: __alloT('stem.platetectonics.myth_continents_plow_through_the_ocean_floo', 'Continents plow through the ocean floor like ships cutting through water.'), t: false, why: __alloT('stem.platetectonics.mythwhy_that_was_wegener_s_original_mistake_an', 'That was Wegener’s original mistake, and why his idea was rejected for decades. A plate carries its continent AND its seafloor together — new seafloor is born at ridges and swallowed at trenches.'), tryIt: 'Watch a divergent boundary in the sim: new crust forms in the gap and spreads both directions.' },
+            { s: __alloT('stem.platetectonics.myth_when_a_plate_subducts_that_crust_is_de', 'When a plate subducts, that crust is destroyed and gone forever.'), t: false, why: __alloT('stem.platetectonics.mythwhy_it_melts_and_recycles_some_rises_again', 'It melts and RECYCLES — some rises again as volcanic magma at the arc above. Plate tectonics and the rock cycle are the same engine.'), tryIt: 'Read the Cascadia Subduction Zone tab to follow crust down and magma back up.' },
+            { s: __alloT('stem.platetectonics.myth_the_rock_of_the_ocean_floor_is_far_you', 'The rock of the ocean floor is far younger than the rock of the continents.'), t: true, why: __alloT('stem.platetectonics.mythwhy_ocean_floor_is_created_at_ridges_and_d', 'Ocean floor is created at ridges and destroyed at trenches, so almost none of it is older than about 200 million years. Parts of the continents are billions of years old, because there is no conveyor belt carrying them away.'), tryIt: 'Open the Seafloor tab and look at the age of the crust.' },
+            { s: __alloT('stem.platetectonics.myth_the_himalayas_are_still_growing_taller', 'The Himalayas are still growing taller right now.'), t: true, why: __alloT('stem.platetectonics.mythwhy_india_is_still_pushing_north_into_eura', 'India is still pushing north into Eurasia, so the range keeps rising a few millimetres a year. Erosion strips it back at a similar rate, which is why it does not simply climb forever.'), tryIt: 'Open the Mountains tab and read how the range is still rising.' },
+            { s: __alloT('stem.platetectonics.myth_some_earthquakes_begin_hundreds_of_kil', 'Some earthquakes begin hundreds of kilometres down, far below the crust.'), t: true, why: __alloT('stem.platetectonics.mythwhy_they_happen_inside_slabs_that_have_alr', 'They happen inside slabs that have already subducted, which is a large part of how we know those slabs are down there at all. The deepest reach about 700 kilometres.'), tryIt: 'In the Simulator, push an ocean plate under a continent and watch the quake dots get deeper away from the trench.' },
           ]);
           var PT_MYTHS_912 = PT_MYTHS_68.concat([
-            { s: 'Plates move mainly because mantle convection drags them along from below.', t: false, why: 'The dominant force is SLAB PULL — the weight of the cold, dense subducting slab sinking and pulling the rest of the plate behind it. Ridge push and convection help, but slab pull leads.', tryIt: 'Compare fast plates (Pacific, lots of subducting edge) with slow ones (few subduction zones) on the plate info panels.' },
-            { s: 'Earth’s inner core is molten liquid because it is the hottest part of the planet.', t: false, why: 'The inner core is SOLID iron even at ~5,400°C — about as hot as the Sun’s surface. The crushing pressure raises iron’s melting point above that temperature. It is the OUTER core that is liquid — and its churning makes Earth’s magnetic field.', tryIt: 'Open the Earth’s Layers educational panel and compare solid inner core vs liquid outer core.' },
-            { s: 'Pangaea was the only supercontinent that ever existed.', t: false, why: 'It was just the most recent. Earlier ones assembled and broke apart too — Rodinia ~1 billion years ago, Columbia/Nuna ~1.8 billion. The "supercontinent cycle" repeats roughly every 300–500 million years.', tryIt: 'On the Timeline, note that Pangaea forms only near the recent end of Earth’s 4.5-billion-year history.' },
-            { s: 'The ocean floor carries a magnetic record of Earth reversing its magnetic field.', t: true, why: 'New rock at a ridge locks in the field direction as it cools, so the seafloor is striped with alternating polarity, symmetrical either side of the ridge. That pattern is the evidence that settled seafloor spreading in the 1960s.', tryIt: 'Open the History tab and read how seafloor spreading was confirmed.' },
-            { s: 'Plate motion is measured directly today, not only inferred from old rocks.', t: true, why: 'Permanent GPS stations track the ground to within millimetres a year, and the rates they return agree with the ones worked out from magnetic stripes. Two independent methods, one answer.', tryIt: 'Open the Plate Encyclopedia and compare the measured motion of two plates.' },
-            { s: 'A single plate can carry ocean floor and a continent at the same time.', t: true, why: 'Most of them do. The South American plate carries the continent AND a wide slice of the South Atlantic floor, with no plate boundary at the coastline. The edge of a plate and the edge of a continent are different things.', tryIt: 'Open the Plate Encyclopedia and look at the South American plate.' },
+            { s: __alloT('stem.platetectonics.myth_plates_move_mainly_because_mantle_conv', 'Plates move mainly because mantle convection drags them along from below.'), t: false, why: __alloT('stem.platetectonics.mythwhy_the_dominant_force_is_slab_pull_the_we', 'The dominant force is SLAB PULL — the weight of the cold, dense subducting slab sinking and pulling the rest of the plate behind it. Ridge push and convection help, but slab pull leads.'), tryIt: 'Compare fast plates (Pacific, lots of subducting edge) with slow ones (few subduction zones) on the plate info panels.' },
+            { s: __alloT('stem.platetectonics.myth_earth_s_inner_core_is_molten_liquid_be', 'Earth’s inner core is molten liquid because it is the hottest part of the planet.'), t: false, why: __alloT('stem.platetectonics.mythwhy_the_inner_core_is_solid_iron_even_at_5', 'The inner core is SOLID iron even at ~5,400°C — about as hot as the Sun’s surface. The crushing pressure raises iron’s melting point above that temperature. It is the OUTER core that is liquid — and its churning makes Earth’s magnetic field.'), tryIt: 'Open the Earth’s Layers educational panel and compare solid inner core vs liquid outer core.' },
+            { s: __alloT('stem.platetectonics.myth_pangaea_was_the_only_supercontinent_th', 'Pangaea was the only supercontinent that ever existed.'), t: false, why: __alloT('stem.platetectonics.mythwhy_it_was_just_the_most_recent_earlier_on', 'It was just the most recent. Earlier ones assembled and broke apart too — Rodinia ~1 billion years ago, Columbia/Nuna ~1.8 billion. The "supercontinent cycle" repeats roughly every 300–500 million years.'), tryIt: 'On the Timeline, note that Pangaea forms only near the recent end of Earth’s 4.5-billion-year history.' },
+            { s: __alloT('stem.platetectonics.myth_the_ocean_floor_carries_a_magnetic_rec', 'The ocean floor carries a magnetic record of Earth reversing its magnetic field.'), t: true, why: __alloT('stem.platetectonics.mythwhy_new_rock_at_a_ridge_locks_in_the_field', 'New rock at a ridge locks in the field direction as it cools, so the seafloor is striped with alternating polarity, symmetrical either side of the ridge. That pattern is the evidence that settled seafloor spreading in the 1960s.'), tryIt: 'Open the History tab and read how seafloor spreading was confirmed.' },
+            { s: __alloT('stem.platetectonics.myth_plate_motion_is_measured_directly_toda', 'Plate motion is measured directly today, not only inferred from old rocks.'), t: true, why: __alloT('stem.platetectonics.mythwhy_permanent_gps_stations_track_the_groun', 'Permanent GPS stations track the ground to within millimetres a year, and the rates they return agree with the ones worked out from magnetic stripes. Two independent methods, one answer.'), tryIt: 'Open the Plate Encyclopedia and compare the measured motion of two plates.' },
+            { s: __alloT('stem.platetectonics.myth_a_single_plate_can_carry_ocean_floor_a', 'A single plate can carry ocean floor and a continent at the same time.'), t: true, why: __alloT('stem.platetectonics.mythwhy_most_of_them_do_the_south_american_pla', 'Most of them do. The South American plate carries the continent AND a wide slice of the South Atlantic floor, with no plate boundary at the coastline. The edge of a plate and the edge of a continent are different things.'), tryIt: 'Open the Plate Encyclopedia and look at the South American plate.' },
           ]);
           var PT_MYTH_BANK = ptBand === '9-12' ? PT_MYTHS_912 : ptBand === '6-8' ? PT_MYTHS_68 : PT_MYTHS_35;
           function ptStartMyth() {
@@ -7599,7 +7404,10 @@ var d = labToolData.plateTectonics || {};
             if (right) { sfxTectCorrect(); if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Tectonics myth busted'); }
             else { sfxTectQuake(); }
             upd({ ptMyth: Object.assign({}, m, { answered: true, chosen: val }), ptMythsDone: (d.ptMythsDone || 0) + 1, ptMythsRight: (d.ptMythsRight || 0) + (right ? 1 : 0), ptMythStreak: right ? (d.ptMythStreak || 0) + 1 : 0, ptMythBest: Math.max(d.ptMythBest || 0, right ? (d.ptMythStreak || 0) + 1 : 0) });
-            if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (m.t ? 'True. ' : 'False. ') + m.why);
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_myth_verdict', '{verdict} {answer} {why}')
+              .replace('{verdict}', right ? __alloT('stem.platetectonics.sr_correct', 'Correct.') : __alloT('stem.platetectonics.sr_not_quite', 'Not quite.'))
+              .replace('{answer}', m.t ? __alloT('stem.platetectonics.sr_true', 'True.') : __alloT('stem.platetectonics.sr_false', 'False.'))
+              .replace('{why}', m.why));
             setTimeout(checkChallenges, 50);
           }
 
@@ -7651,7 +7459,7 @@ var d = labToolData.plateTectonics || {};
                   } catch(e) {}
                 }, 100);
 
-                if (typeof announceToSR === 'function') announceToSR('Sonification sweep active. Playing geological friction hum.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_sonify_on', 'Sonification sweep active. Playing geological friction hum.'));
               } catch(e) {}
             } else {
               stopSonify();
@@ -7671,7 +7479,7 @@ var d = labToolData.plateTectonics || {};
               try { sonifyGainRef.current.disconnect(); } catch(e) {}
               sonifyGainRef.current = null;
             }
-            if (typeof announceToSR === 'function') announceToSR('Sonification sweep stopped.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_sonify_off', 'Sonification sweep stopped.'));
           }
 
           React.useEffect(function() {
@@ -7701,8 +7509,16 @@ var d = labToolData.plateTectonics || {};
               // challenge if you can see how close you are getting and which
               // boundary got you there.
               ['Events', quakeTotal + ' quakes', eruptionTotal + ' eruptions'],
+              // The sub-line carries the LATEST quake once there is one. The
+              // on-canvas M readout fades after about 200 frames, so a student
+              // who looks away has no record of the quake they just made — only
+              // of the biggest. `lastQuakeMag` was written for exactly this and
+              // then read nowhere, which is why the badge tile only ever spoke
+              // about the record.
               ['Strongest quake', d.maxQuakeMag ? 'M ' + d.maxQuakeMag.toFixed(1) : '--',
-                d.maxQuakeMag ? (d.maxQuakeMag >= 8 ? 'megathrust territory' : 'try a subduction zone') : 'drag plates together'],
+                d.lastQuakeMag
+                  ? 'latest M ' + d.lastQuakeMag.toFixed(1) + (d.maxQuakeMag >= 8 ? ' · megathrust territory' : ' · try a subduction zone')
+                  : (d.maxQuakeMag ? (d.maxQuakeMag >= 8 ? 'megathrust territory' : 'try a subduction zone') : 'drag plates together')],
               ['Research', challengeTotal + '/' + CHALLENGES.length, (d.researchPoints || 0) + ' RP']
             ];
             return React.createElement('div', {
@@ -7733,9 +7549,9 @@ var d = labToolData.plateTectonics || {};
                     className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showConvection ? 'bg-orange-700 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-orange-700 border border-orange-200'))
                   }, showConvection ? 'Hide currents' : 'Show currents'),
                   React.createElement('button', {
-                    onClick: function() { upd({ ptDrift: !ptDrift }); if (typeof announceToSR === 'function') announceToSR(ptDrift ? 'Mantle drift paused. Plates now move only when you move them.' : 'Mantle drift running. The convection currents are now carrying the plates.'); },
+                    onClick: function() { upd({ ptDrift: !ptDrift }); if (typeof announceToSR === 'function') announceToSR(ptDrift ? __alloT('stem.platetectonics.sr_drift_paused', 'Mantle drift paused. Plates now move only when you move them.') : __alloT('stem.platetectonics.sr_drift_running', 'Mantle drift running. The convection currents are now carrying the plates.')); },
                     'aria-pressed': ptDrift,
-                    title: 'Let the mantle currents carry the plates, or freeze them so only you move them',
+                    title: __alloT('stem.platetectonics.drift_tooltip', 'Let the mantle currents carry the plates, or freeze them so only you move them'),
                     className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (ptDrift ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-900 text-amber-300 border border-slate-700' : 'bg-white text-amber-800 border border-amber-300'))
                   }, ptDrift ? '⏸ Pause mantle drift' : '▶ Let the mantle drive'),
                   React.createElement('button', Object.assign({
@@ -8534,7 +8350,7 @@ var d = labToolData.plateTectonics || {};
                     ctx.fillStyle = '#2b2630';
                     ctx.fillRect(ccx - cellLabelW / 2 - 5, cellCy - 9, cellLabelW + 10, 18);
                     ctx.fillStyle = '#fed7aa';
-                    ctx.fillText('convection cell', ccx, cellCy + 4);
+                    ctx.fillText(__alloT('stem.platetectonics.fig_convection_cell', 'convection cell'), ccx, cellCy + 4);
                   }
                 }
 
@@ -8875,7 +8691,7 @@ var d = labToolData.plateTectonics || {};
                     // Clamped: at the right-hand edge (where drift piles the
                     // plates) it read 'crustal roo' on a phone.
                     var rootLblW = ctx.measureText('crustal root').width;
-                    ctx.fillText('crustal root', Math.max(rootLblW / 2 + 6, Math.min(cW - rootLblW / 2 - 6, B.mid)), rootTop + rootD + 16);
+                    ctx.fillText(__alloT('stem.platetectonics.fig_crustal_root', 'crustal root'), Math.max(rootLblW / 2 + 6, Math.min(cW - rootLblW / 2 - 6, B.mid)), rootTop + rootD + 16);
                   }
                 }
               }
@@ -9140,7 +8956,7 @@ var d = labToolData.plateTectonics || {};
                     ctx.fillStyle = 'rgba(2,6,23,0.8)';
                     ctx.fillRect(C.mid - trW / 2 - 5, trLY - 12, trW + 10, 17);
                     ctx.fillStyle = '#93c5fd';
-                    ctx.fillText('trench', C.mid, trLY);
+                    ctx.fillText(__alloT('stem.platetectonics.fig_trench', 'trench'), C.mid, trLY);
                   }
                   // Volcanic arc, standing where the melt reaches the surface.
                   if (C._arcX != null) {
@@ -9174,7 +8990,7 @@ var d = labToolData.plateTectonics || {};
                       ctx.fillStyle = 'rgba(2,6,23,0.8)';
                       ctx.fillRect(arcLX - 5, arcLY - 12, arcW + 10, 17);
                       ctx.fillStyle = '#fdba74';
-                      ctx.fillText('volcanic arc', arcLX, arcLY);
+                      ctx.fillText(__alloT('stem.platetectonics.fig_volcanic_arc', 'volcanic arc'), arcLX, arcLY);
                       ctx.textAlign = 'center';
                     }
                   }
@@ -9308,7 +9124,7 @@ var d = labToolData.plateTectonics || {};
               ctx.textAlign = 'left';
               ctx.fillStyle = '#fdba74';
               ctx.font = 'bold 11px system-ui';
-              ctx.fillText('70 km', 6, GEO.dY(70) - 4);   // above its own line, clear of the 100 km tick label below and the plates to the right
+              ctx.fillText(__alloT('stem.platetectonics.fig_depth_70_km', '70 km'), 6, GEO.dY(70) - 4);   // above its own line, clear of the 100 km tick label below and the plates to the right
               ctx.restore();
 
               // Names for the compressed strip, plus the notes the frame needs in
@@ -9317,10 +9133,10 @@ var d = labToolData.plateTectonics || {};
                 ctx.textAlign = 'center';
                 ctx.fillStyle = 'rgba(255,255,255,0.88)';
                 ctx.font = 'bold 13px system-ui';
-                ctx.fillText('Lower mantle', cW / 2, (deepTop + cH * 0.845) / 2);
-                ctx.fillText('Outer core (liquid)', cW / 2, cH * 0.892);
+                ctx.fillText(__alloT('stem.platetectonics.fig_lower_mantle', 'Lower mantle'), cW / 2, (deepTop + cH * 0.845) / 2);
+                ctx.fillText(__alloT('stem.platetectonics.fig_outer_core', 'Outer core (liquid)'), cW / 2, cH * 0.892);
                 ctx.fillStyle = '#422006';
-                ctx.fillText('Inner core (solid)', cW / 2, cH * 0.968);
+                ctx.fillText(__alloT('stem.platetectonics.fig_inner_core', 'Inner core (solid)'), cW / 2, cH * 0.968);
                 ctx.fillStyle = isDark ? 'rgba(253,186,116,0.95)' : 'rgba(255,237,213,0.95)';
                 ctx.font = 'bold 11px system-ui';
                 var scaleNote = cW < 720 ? 'Scale break · deeper layers compressed' : 'scale break — everything below is squeezed to fit';
@@ -9334,7 +9150,7 @@ var d = labToolData.plateTectonics || {};
                 ctx.fillStyle = 'rgba(226,232,240,0.85)';
                 ctx.font = '11px system-ui';
                 ctx.fillText(cW < 720 ? '0–400 km to scale' : 'Depths to scale above the break. Surface heights exaggerated.', 82, zoneBot - (cW < 720 ? 23 : 12));
-                if (cW < 720) ctx.fillText('Surface heights exaggerated', 82, zoneBot - 9);
+                if (cW < 720) ctx.fillText(__alloT('stem.platetectonics.fig_heights_exaggerated', 'Surface heights exaggerated'), 82, zoneBot - 9);
                 // The outline colours mean something, so say what — in the SKY,
                 // on a chip. Sitting at seaY + 16 put the legend inside the ocean
                 // and on top of the first plate, which is the one place on this
@@ -9983,11 +9799,11 @@ var d = labToolData.plateTectonics || {};
               sCtx.font = 'bold 11px system-ui';
               sCtx.textAlign = 'left';
               sCtx.fillStyle = isDark ? '#fca5a5' : '#991b1b';
-              sCtx.fillText('M ' + eqMagnitude.toFixed(1) + '  ·  ' + Math.round(eqDistKm) + ' km away', 8, 16);
+              sCtx.fillText(__alloT('stem.platetectonics.fig_quake_header', 'M {mag}  ·  {km} km away').replace('{mag}', eqMagnitude.toFixed(1)).replace('{km}', Math.round(eqDistKm)), 8, 16);
               sCtx.textAlign = 'right';
               sCtx.fillStyle = isDark ? '#94a3b8' : '#57534e';
               sCtx.font = '10px system-ui';
-              sCtx.fillText('seconds after the quake →', sW - 10, sH - 6);
+              sCtx.fillText(__alloT('stem.platetectonics.fig_seconds_after_quake', 'seconds after the quake →'), sW - 10, sH - 6);
               // Time ticks on the axis at the FOOT of the panel. Printed near the
               // top they ran straight through the arrival labels.
               sCtx.font = '10px system-ui';
@@ -10013,7 +9829,12 @@ var d = labToolData.plateTectonics || {};
 
           // ── Keyboard shortcuts (WCAG 2.1.1): 1-4 switch tabs ──
           var _PT_TABS = ['sim', 'earthquake', 'timeline', 'quiz'];
-          var _PT_TAB_LABELS = { sim: 'Simulation', earthquake: 'Earthquake Lab', timeline: 'Timeline', quiz: 'Quiz' };
+          var _PT_TAB_LABELS = {
+            sim: __alloT('stem.platetectonics.tab_name_sim', 'Simulation'),
+            earthquake: __alloT('stem.platetectonics.tab_name_earthquake', 'Earthquake Lab'),
+            timeline: __alloT('stem.platetectonics.tab_name_timeline', 'Timeline'),
+            quiz: __alloT('stem.platetectonics.tab_name_quiz', 'Quiz')
+          };
           function onPtKey(e) {
             var tgt = e.target || {};
             var tn = (tgt.tagName || '').toUpperCase();
@@ -10024,12 +9845,12 @@ var d = labToolData.plateTectonics || {};
               if (_PT_TABS[idx]) {
                 e.preventDefault();
                 upd({ simTab: _PT_TABS[idx] });
-                if (typeof announceToSR === 'function') announceToSR('Switched to ' + _PT_TAB_LABELS[_PT_TABS[idx]] + '.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_switched_to_tab', 'Switched to {tab}.').replace('{tab}', _PT_TAB_LABELS[_PT_TABS[idx]]));
               }
             } else if (k === 'l' || k === 'L') {
-              if (simTab === 'sim') { e.preventDefault(); upd({ showLabels: !showLabels }); if (typeof announceToSR === 'function') announceToSR('Labels ' + (!showLabels ? 'on' : 'off') + '.'); }
+              if (simTab === 'sim') { e.preventDefault(); upd({ showLabels: !showLabels }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_labels_state', 'Labels {state}.').replace('{state}', !showLabels ? __alloT('stem.platetectonics.sr_on', 'on') : __alloT('stem.platetectonics.sr_off', 'off'))); }
             } else if (k === 'c' || k === 'C') {
-              if (simTab === 'sim') { e.preventDefault(); upd({ showConvection: !showConvection }); if (typeof announceToSR === 'function') announceToSR('Convection currents ' + (!showConvection ? 'on' : 'off') + '.'); }
+              if (simTab === 'sim') { e.preventDefault(); upd({ showConvection: !showConvection }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_convection_state', 'Convection currents {state}.').replace('{state}', !showConvection ? __alloT('stem.platetectonics.sr_on', 'on') : __alloT('stem.platetectonics.sr_off', 'off'))); }
             }
           }
 
@@ -10140,7 +9961,7 @@ var d = labToolData.plateTectonics || {};
                   activeCat && !atHub && React.createElement("span", { className: "px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-red-700 border border-red-200" }, activeCat.icon + " " + activeCat.label),
                   React.createElement("input", {
                     type: "text",
-                    "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"),
+                    "aria-label": __alloT('stem.platetectonics.search_input_tools', "Search the tools in Plate Tectonics"),
                     placeholder: __alloT('stem.platetectonics.search_tools', "Search tools..."),
                     value: d._ptSearch || "",
                     onChange: function(e) { upd({ _ptSearch: e.target.value, _ptCategory: null }); },
@@ -10233,7 +10054,7 @@ var d = labToolData.plateTectonics || {};
                               try { focusable.focus({ preventScroll: true }); } catch (e2) { focusable.focus(); }
                             }
                             if (typeof announceToSR === 'function') {
-                              announceToSR('Moved to the Plate Boundary Simulator. Pick a boundary type on the right to compare what each one builds.');
+                              announceToSR(__alloT('stem.platetectonics.sr_moved_to_simulator', 'Moved to the Plate Boundary Simulator. Pick a boundary type on the right to compare what each one builds.'));
                             }
                           },
                           className: 'text-left p-2.5 rounded-xl border transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none',
@@ -10451,7 +10272,8 @@ var d = labToolData.plateTectonics || {};
                         e.preventDefault();
                         var picked = el._ptKb.select(k === 'ArrowDown' ? 1 : -1);
                         if (picked) {
-                          say(picked.name + ', ' + picked.type + ' plate, selected. Left and right arrows move it.');
+                          say(__alloT('stem.platetectonics.sr_plate_selected', '{name}, {type} plate, selected. Left and right arrows move it.')
+                            .replace('{name}', picked.name).replace('{type}', picked.type));
                         }
                         return;
                       }
@@ -10467,16 +10289,23 @@ var d = labToolData.plateTectonics || {};
                           ptKbSettle = null;
                           var done = el._ptKb.settle();
                           if (done && done.collided) {
-                            say('Boundary formed with the ' + done.withName + ' plate. '
-                              + (done.magnitude ? 'Magnitude ' + done.magnitude.toFixed(1) + ' earthquake' : 'Earthquake triggered')
-                              + (done.erupted ? ' and a volcano erupted' : '') + '.');
+                            say(__alloT('stem.platetectonics.sr_boundary_formed', 'Boundary formed with the {name} plate. {event}{eruption}.')
+                              .replace('{name}', done.withName)
+                              .replace('{event}', done.magnitude
+                                ? __alloT('stem.platetectonics.sr_magnitude_quake', 'Magnitude {m} earthquake').replace('{m}', done.magnitude.toFixed(1))
+                                : __alloT('stem.platetectonics.sr_quake_triggered', 'Earthquake triggered'))
+                              .replace('{eruption}', done.erupted ? __alloT('stem.platetectonics.sr_and_a_volcano_erupted', ' and a volcano erupted') : ''));
                           }
                         }, 350);
                         if (!res.moved) {
-                          say(res.plate.name + ' is already at the ' + (k === 'ArrowRight' ? 'right' : 'left') + ' edge.');
+                          say(__alloT('stem.platetectonics.sr_plate_at_edge', '{name} is already at the {edge} edge.')
+                            .replace('{name}', res.plate.name)
+                            .replace('{edge}', k === 'ArrowRight' ? __alloT('stem.platetectonics.sr_edge_right', 'right') : __alloT('stem.platetectonics.sr_edge_left', 'left')));
                           return;
                         }
-                        say(res.plate.name + ' moved ' + (k === 'ArrowRight' ? 'right' : 'left') + '.');
+                        say(__alloT('stem.platetectonics.sr_plate_moved', '{name} moved {dir}.')
+                          .replace('{name}', res.plate.name)
+                          .replace('{dir}', k === 'ArrowRight' ? __alloT('stem.platetectonics.sr_edge_right', 'right') : __alloT('stem.platetectonics.sr_edge_left', 'left')));
                       }
                     },
 
@@ -10496,7 +10325,7 @@ var d = labToolData.plateTectonics || {};
                       try { upd({ ptVent3D: false, ptVentFail: true }); } catch (e) {}
                     });
                     VentGL.onReady(function () {
-                      if (typeof announceToSR === 'function') announceToSR('3D volcano cutaway ready.');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_volcano_3d_ready', '3D volcano cutaway ready.'));
                     });
                     return React.createElement("canvas", {
                       key: 'pt-vent-gl',
@@ -10526,7 +10355,7 @@ var d = labToolData.plateTectonics || {};
                         // the model — the failure that makes a canvas feel dead.
                         ev.preventDefault();
                         if (typeof announceToSR === 'function' && k === 'Home') {
-                          announceToSR('Volcano cutaway view reset.');
+                          announceToSR(__alloT('stem.platetectonics.sr_volcano_view_reset', 'Volcano cutaway view reset.'));
                         }
                       },
                       'aria-label': __alloT('stem.platetectonics.vent_3d_label', 'Rotatable 3D cutaway of a volcano showing the magma chamber, conduit, dikes, sill and vent, shaped by the chosen magma composition.'),
@@ -10565,7 +10394,7 @@ var d = labToolData.plateTectonics || {};
               ),
 
               showLabels && !ptVent3D && React.createElement('div', {
-                className: 'pt-plate-key', role: 'group', 'aria-label': 'Plate identification key',
+                className: 'pt-plate-key', role: 'group', 'aria-label': __alloT('stem.platetectonics.aria_plate_key', 'Plate identification key'),
                 style: { display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 2px', color: isDark ? '#e2e8f0' : '#334155' }
               }, PLATES.map(function (p, i) {
                 var active = d.selectedPlate === p.name;
@@ -10723,14 +10552,14 @@ var d = labToolData.plateTectonics || {};
                         // empty black box.
                         if (want && VentGL.hasFailed()) {
                           upd({ ptVentFail: true });
-                          if (typeof announceToSR === 'function') announceToSR('The 3D engine is unavailable. Staying on the 2D simulation.');
+                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_3d_unavailable', 'The 3D engine is unavailable. Staying on the 2D simulation.'));
                           return;
                         }
                         upd({ ptVent3D: want, ptVentFail: false });
                         if (typeof announceToSR === 'function') {
                           announceToSR(want
-                            ? 'Switched to the 3D volcano cutaway. Drag to rotate, or use the rotate buttons.'
-                            : 'Switched to the 2D simulation.');
+                            ? __alloT('stem.platetectonics.sr_switched_volcano_3d', 'Switched to the 3D volcano cutaway. Drag to rotate, or use the rotate buttons.')
+                            : __alloT('stem.platetectonics.sr_switched_volcano_2d', 'Switched to the 2D simulation.'));
                         }
                       },
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (active ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-700 border border-red-200 hover:bg-red-50"))
@@ -10791,11 +10620,13 @@ var d = labToolData.plateTectonics || {};
                             if (on) return;
                             upd({ ptVentMagma: t2.id });
                             if (typeof announceToSR === 'function') {
-                              announceToSR(t2.label + ' magma. ' + t2.visc + ', ' + t2.gas.toLowerCase() + '. Builds a ' + t2.landform.toLowerCase() + '.');
+                              announceToSR(__alloT('stem.platetectonics.sr_magma_summary', '{type} magma. {visc}, {gas}. Builds a {landform}.')
+                                .replace('{type}', ptMagmaText(t2).label).replace('{visc}', ptMagmaText(t2).visc)
+                                .replace('{gas}', ptMagmaText(t2).gas.toLowerCase()).replace('{landform}', ptMagmaText(t2).landform.toLowerCase()));
                             }
                           },
                           className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (on ? "bg-orange-700 text-white" : (isDark ? "bg-slate-900 text-orange-300 border border-slate-700 hover:bg-slate-800" : "bg-white text-orange-800 border border-orange-200 hover:bg-orange-50"))
-                        }, t2.label);
+                        }, ptMagmaText(t2).label);
                       })
                     ),
                     // The causal chain in words, next to the model that shows it.
@@ -10807,8 +10638,8 @@ var d = labToolData.plateTectonics || {};
                     // dark branch put slate-300 on white at 1.48:1 and lost the one
                     // line that connects the three mountains to their composition.
                     React.createElement("span", { className: "text-[11px] leading-snug text-slate-600" + (ctx.isContrast ? " text-white" : "") },
-                      cur.silica + ' → ' + cur.visc.toLowerCase() + ', ' + cur.gas.toLowerCase() +
-                      ' → ' + cur.landform.toLowerCase() + '. e.g. ' + cur.example + '.')
+                      ptMagmaText(cur).silica + ' → ' + ptMagmaText(cur).visc.toLowerCase() + ', ' + ptMagmaText(cur).gas.toLowerCase() +
+                      ' → ' + ptMagmaText(cur).landform.toLowerCase() + '. e.g. ' + ptMagmaText(cur).example + '.')
                   );
                 })(),
 
@@ -10897,7 +10728,7 @@ var d = labToolData.plateTectonics || {};
 
                 // 🌋 Erupt! button
                 React.createElement("button", Object.assign({
-                  "aria-label": "Trigger a volcanic eruption in the plate tectonics simulation",
+                  "aria-label": __alloT('stem.platetectonics.aria_trigger_eruption', "Trigger a volcanic eruption in the plate tectonics simulation"),
                   'data-pt-erupt': 'true',
                   onClick: eruptClick,
                   // The attention pulse actively misleads once the button is inert.
@@ -10966,7 +10797,7 @@ var d = labToolData.plateTectonics || {};
                   }
                   aiPromise.then(function (resp) {
                     upd({ aiExplain: String(resp || '').trim(), aiLoading: false });
-                    if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sr_explanation_ready', 'Explanation ready.'));
                   }).catch(function () {
                     upd({ aiLoading: false, aiError: 'Could not reach AI tutor. Try again in a moment.' });
                   });
@@ -10984,7 +10815,7 @@ var d = labToolData.plateTectonics || {};
                         return React.createElement("button", {
                           key: L.id,
                           onClick: function () { upd({ aiLevel: L.id }); },
-                          "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                          "aria-label": __alloT('stem.platetectonics.aria_reading_level', 'Reading level: {level}').replace('{level}', L.label) + (active ? __alloT('stem.platetectonics.aria_selected_suffix', ' (selected)') : ""),
                           "aria-pressed": active,
                           className: "px-2 py-0.5 rounded text-[10px] font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (active ? 'bg-purple-600 text-white' : (isDark ? 'transition-colors bg-slate-900 text-purple-300 border border-purple-800 hover:bg-slate-800' : 'transition-colors bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
                         }, L.label);
@@ -10993,13 +10824,13 @@ var d = labToolData.plateTectonics || {};
                     React.createElement("button", {
                       onClick: explain,
                       disabled: aiLoading,
-                      "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                      "aria-label": __alloT('stem.platetectonics.aria_generate_at_level', 'Generate AI explanation at {level} level').replace('{level}', ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5')),
                       className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain')),
                     React.createElement("button", {
                       onClick: function() { upd({ aiCoachOpen: false }); },
                       className: "transition-colors px-2 py-1 rounded-lg text-[11px] font-bold " + (isDark ? "bg-slate-900 text-purple-300 border border-purple-900 hover:bg-slate-800" : "bg-white text-purple-700 border border-purple-200 hover:bg-purple-100"),
-                      "aria-label": "Close AI tectonics tutor"
+                      "aria-label": __alloT('stem.platetectonics.aria_close_tutor', "Close AI tectonics tutor")
                     }, "Close")
                   ),
                   aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
@@ -11498,7 +11329,7 @@ var d = labToolData.plateTectonics || {};
                         React.createElement('span', { className: 'text-[12px] font-bold text-amber-200' }, eraNow.mya)),
                       React.createElement('p', { className: 'text-[12.5px] font-semibold text-indigo-100 leading-snug' }, eraNow.keyEvent),
                       React.createElement('p', { className: 'text-[11.5px] text-indigo-200 leading-snug', style: { display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } }, eraNow.desc),
-                      React.createElement('div', { className: 'mt-auto flex items-center gap-2 flex-wrap', role: 'group', 'aria-label': 'Step through geological eras' },
+                      React.createElement('div', { className: 'mt-auto flex items-center gap-2 flex-wrap', role: 'group', 'aria-label': __alloT('stem.platetectonics.aria_step_eras', 'Step through geological eras') },
                         React.createElement('button', { type: 'button', disabled: !canPrev, 'data-pt-era-step': 'prev', onClick: function () { if (canPrev) upd({ timelineEra: timelineEra - 1 }); },
                           className: 'min-h-10 px-3 rounded-lg border border-indigo-400/60 bg-indigo-900/70 text-[12px] font-bold text-white disabled:opacity-40' }, '\u25C0 Earlier era'),
                         React.createElement('span', { className: 'text-[11px] font-bold text-indigo-200', 'aria-live': 'polite' }, (timelineEra + 1) + ' / ' + ERAS_COUNT),
@@ -12114,8 +11945,17 @@ var d = labToolData.plateTectonics || {};
 
             simTab === 'quiz' && (function() {
 
-              var qz = QUIZZES[quizIdx % QUIZZES.length];
+              // The bank is finite, so the pass is finite. Previously the index
+              // wrapped with `% QUIZZES.length`, which meant question 8 was
+              // followed by question 1 with no summary and a score that kept
+              // climbing past its own denominator - the probe reached
+              // "Score: 3 | Question 3 / 8" after ten answers. The tool already
+              // knew the pass was over (ptQuizPassDone opens the reference
+              // shelf); it just never told the student.
+              var qDone = quizIdx >= QUIZZES.length;
+              var qz = QUIZZES[qDone ? QUIZZES.length - 1 : quizIdx];
               var isAnswered = quizAnswer !== null;
+              var qMissed = d.quizMissed || [];
 
               var chosenOpt = null;
               if (quizAnswer && quizAnswer.indexOf('wrong_') === 0) {
@@ -12132,15 +11972,18 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("h3", { className: "font-black " + (isDark ? "text-slate-100" : "text-red-900") }, __alloT('stem.platetectonics.plate_tectonics_quiz', "Plate Tectonics Quiz")),
 
-                  React.createElement("span", { className: "ml-auto text-xs font-bold " + (isDark ? "text-red-300" : "text-red-700") },
-                    "Score: " + (d.quizScore || 0) + " | Question " + (quizIdx % QUIZZES.length + 1) + " / " + QUIZZES.length
+                  React.createElement("span", { 'data-pt-quiz-header': String(quizIdx), className: "ml-auto text-xs font-bold " + (isDark ? "text-red-300" : "text-red-700") },
+                    qDone
+                      ? __alloT('stem.platetectonics.quiz_pass_complete', 'Pass complete') + ' — ' + (d.quizScore || 0) + ' / ' + QUIZZES.length
+                      : __alloT('stem.platetectonics.quiz_score_label', 'Score') + ': ' + (d.quizScore || 0) +
+                        ' | ' + __alloT('stem.platetectonics.quiz_question_label', 'Question') + ' ' + (quizIdx + 1) + ' / ' + QUIZZES.length
                   )
 
                 ),
 
-                React.createElement("div", { className: "p-4 rounded-xl border mb-4 text-sm font-bold " + (isDark ? "bg-slate-950 border-slate-800 text-slate-200" : "bg-white border-red-200 text-slate-700") }, qz.q),
+                !qDone && React.createElement("div", { className: "p-4 rounded-xl border mb-4 text-sm font-bold " + (isDark ? "bg-slate-950 border-slate-800 text-slate-200" : "bg-white border-red-200 text-slate-700") }, qz.q),
 
-                !isAnswered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                !qDone && !isAnswered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
                   qz.opts.map(function(opt, oi) {
 
@@ -12156,7 +11999,21 @@ var d = labToolData.plateTectonics || {};
                         var newAnswer = correct ? 'correct' : 'wrong_' + oi;
                         var newScore = correct ? (d.quizScore || 0) + 1 : (d.quizScore || 0);
 
-                        upd({ quizAnswer: newAnswer, quizScore: newScore });
+                        // A miss is remembered by CONCEPT, so the results card can
+                        // name what to revisit instead of only printing a number.
+                        var missed = (d.quizMissed || []).slice();
+                        if (!correct && qz.concept && missed.indexOf(qz.concept) === -1) missed.push(qz.concept);
+
+                        upd({ quizAnswer: newAnswer, quizScore: newScore, quizMissed: missed });
+
+                        // The option buttons are about to be replaced by plain
+                        // divs, so the verdict has to be spoken: without this a
+                        // screen-reader user clicks an answer and hears nothing.
+                        if (typeof announceToSR === 'function') {
+                          announceToSR(correct
+                            ? __alloT('stem.platetectonics.quiz_sr_correct', 'Correct.') + ' ' + qz.explain
+                            : __alloT('stem.platetectonics.quiz_sr_incorrect', 'Not quite.') + ' ' + qz.explain);
+                        }
 
                         if (correct) {
                           sfxTectCorrect();
@@ -12176,7 +12033,7 @@ var d = labToolData.plateTectonics || {};
 
                 ),
 
-                isAnswered && React.createElement("div", { className: "space-y-4" },
+                !qDone && isAnswered && React.createElement("div", { className: "space-y-4" },
 
                   React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
@@ -12198,7 +12055,8 @@ var d = labToolData.plateTectonics || {};
 
                   ),
 
-                  React.createElement("div", { className: "p-3 rounded-xl border " + (quizAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-200") },
+                  React.createElement("div", { role: 'status', 'data-pt-quiz-verdict': quizAnswer === 'correct' ? 'correct' : 'wrong',
+                    className: "p-3 rounded-xl border " + (quizAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-200") },
 
                     React.createElement("div", { className: "text-xs font-bold " + (quizAnswer === 'correct' ? "text-emerald-700" : "text-red-700") },
                       quizAnswer === 'correct' ? "🎉 Correct!" : "🤔 Not quite!"
@@ -12243,6 +12101,15 @@ var d = labToolData.plateTectonics || {};
 
                     React.createElement("button", { "aria-label": __alloT('stem.platetectonics.next_question', "Next Question"),
 
+                      'data-pt-quiz-next': 'true',
+
+                      // Answering unmounts the option button that had focus, and
+                      // focus falls to <body> - the probe measured exactly that on
+                      // all eight questions. Pick it back up here, but ONLY if it
+                      // really was lost, so a student who has already tabbed on is
+                      // not yanked back.
+                      ref: function(el) { if (el && document.activeElement === document.body) el.focus(); },
+
                       onClick: function() { upd({ quizAnswer: null, quizIdx: quizIdx + 1 }); },
 
                       className: "px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all"
@@ -12250,6 +12117,46 @@ var d = labToolData.plateTectonics || {};
                     }, __alloT('stem.platetectonics.next_question_2', "Next Question ➔"))
 
                   )
+
+                ),
+
+                // -- End of the pass --
+                // Reached only from question 8's "Next Question", so a student
+                // always sees where the pass landed before deciding to go again.
+                qDone && React.createElement("div", { 'data-pt-quiz-results': String(d.quizScore || 0), role: 'status', className: "space-y-3" },
+
+                  React.createElement("div", { className: "p-4 rounded-xl border-2 border-emerald-300 bg-emerald-50" },
+                    React.createElement("div", { className: "text-2xl font-black text-emerald-800" },
+                      (d.quizScore || 0) + ' / ' + QUIZZES.length),
+                    React.createElement("div", { className: "text-xs font-bold text-emerald-700 mt-1" },
+                      (d.quizScore || 0) >= QUIZZES.length
+                        ? __alloT('stem.platetectonics.quiz_band_all', 'Every question, first pass. Try the myth bank next.')
+                        : (d.quizScore || 0) >= 5
+                          ? __alloT('stem.platetectonics.quiz_band_pass', 'Solid pass. The misses below are the ones worth a second look.')
+                          : __alloT('stem.platetectonics.quiz_band_low', 'Worth another lap. Read the boundary cards below first, then run it again.'))
+                  ),
+
+                  qMissed.length ? React.createElement("div", { className: "p-3 rounded-xl border border-amber-300 bg-amber-50" },
+                    React.createElement("div", { className: "text-xs font-bold text-amber-900 mb-1" },
+                      __alloT('stem.platetectonics.quiz_review_these', 'Concepts to revisit')),
+                    React.createElement("ul", { className: "text-xs text-slate-700 list-disc pl-5" },
+                      qMissed.map(function(c) {
+                        return React.createElement("li", { key: c },
+                          React.createElement("span", { className: "font-bold" }, c),
+                          TECT_VOCAB[c] ? ' — ' + TECT_VOCAB[c] : '');
+                      }))
+                  ) : null,
+
+                  React.createElement("div", { className: "text-[11px] text-slate-600 italic" },
+                    __alloT('stem.platetectonics.quiz_shelf_open_now', 'The reference cards below are open again now that the pass is done.')),
+
+                  React.createElement("div", { className: "text-center pt-1" },
+                    React.createElement("button", {
+                      'data-pt-quiz-restart': 'true',
+                      ref: function(el) { if (el && document.activeElement === document.body) el.focus(); },
+                      onClick: function() { upd({ quizIdx: 0, quizScore: 0, quizAnswer: null, quizMissed: [] }); },
+                      className: "px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all"
+                    }, __alloT('stem.platetectonics.quiz_run_it_again', 'Run the eight again')))
 
                 )
 
@@ -12277,7 +12184,7 @@ var d = labToolData.plateTectonics || {};
                   !m.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                     [true, false].map(function(val) {
                       return React.createElement("button", { key: String(val),
-                        "aria-label": "Answer " + (val ? 'true' : 'false'),
+                        "aria-label": __alloT('stem.platetectonics.aria_answer_value', 'Answer {value}').replace('{value}', val ? __alloT('stem.platetectonics.sr_word_true', 'true') : __alloT('stem.platetectonics.sr_word_false', 'false')),
                         onClick: function() { ptAnswerMyth(val); },
                         className: "p-3 rounded-xl text-sm font-bold border-2 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "border-violet-900/50 bg-slate-900 text-slate-200 hover:border-violet-500" : "border-violet-200 bg-white text-slate-700 hover:border-violet-400 hover:bg-violet-50")
                       }, val ? '✅ True' : '❌ False');
@@ -12373,14 +12280,37 @@ var d = labToolData.plateTectonics || {};
             simTab === "encyclopedia" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-red-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-red-800 mb-2' }, __alloT('stem.platetectonics.plate_encyclopedia', "🌍 Plate Encyclopedia")),
-                React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, __alloT('stem.platetectonics.complete_catalog_of_earth_tectonic_pla', "Complete catalog of Earth tectonic plates: 7 majors, ~10 minors, and ~50 microplates. Filter by tier or motion. Each plate links to bordering boundaries and notable earthquake or volcanic features.")),
+                // The sentence used to hard-code "7 majors, ~10 minors, and ~50
+                // microplates" while the catalogue held 87 microplates — a claim
+                // its own content contradicted, and one no test would notice
+                // because nothing tied the two together. Counted from the data
+                // instead, so the sentence cannot drift from the rows again.
+                (function () {
+                  var tierCount = { major: 0, minor: 0, micro: 0 };
+                  PLATE_DB.forEach(function (pl) { if (tierCount[pl.tier] != null) tierCount[pl.tier]++; });
+                  var sentence = __alloT('stem.platetectonics.plate_catalog_counts',
+                    'Complete catalog of Earth tectonic plates: {major} major, {minor} minor and {micro} microplates. Filter by tier or search by name. Each plate lists its area, motion and the features it builds.')
+                    .replace('{major}', tierCount.major).replace('{minor}', tierCount.minor).replace('{micro}', tierCount.micro);
+                  // If a translation drops a token the number would vanish
+                  // silently, so fall back to a plain composed line.
+                  if (sentence.indexOf('{') !== -1) {
+                    sentence = tierCount.major + ' major, ' + tierCount.minor + ' minor, ' + tierCount.micro + ' microplates.';
+                  }
+                  return React.createElement('p', { className: 'text-xs text-red-700 mb-3', 'data-pt-plate-counts': tierCount.major + '/' + tierCount.minor + '/' + tierCount.micro }, sentence);
+                })(),
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'major', 'minor', 'micro'].map(function(tier) {
                     var active = (d._plateTier || 'all') === tier;
-                    return React.createElement('button', { key: tier, onClick: function() { upd({ _plateTier: tier }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-red-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-red-700 border border-red-300 hover:bg-red-50')) }, tier === 'all' ? 'All Plates' : tier.charAt(0).toUpperCase() + tier.slice(1));
+                    // The chip carries its own count, so picking a tier and
+                    // finding a different number of cards is impossible.
+                    var n = tier === 'all' ? PLATE_DB.length : PLATE_DB.filter(function (pl) { return pl.tier === tier; }).length;
+                    return React.createElement('button', { key: tier, onClick: function() { upd({ _plateTier: tier }); },
+                      'aria-pressed': active ? 'true' : 'false', 'data-pt-tier-chip': tier, 'data-pt-tier-count': String(n),
+                      className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-red-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-red-700 border border-red-300 hover:bg-red-50')) },
+                      (tier === 'all' ? 'All Plates' : tier.charAt(0).toUpperCase() + tier.slice(1)) + ' (' + n + ')');
                   })
                 ),
-                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: __alloT('stem.platetectonics.search_plates_by_name_or_region', 'Search plates by name or region...'), value: d._plateSearch || '', onChange: function(e) { upd({ _plateSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
+                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input_plates', "Search plates by name or region"), placeholder: __alloT('stem.platetectonics.search_plates_by_name_or_region', 'Search plates by name or region...'), value: d._plateSearch || '', onChange: function(e) { upd({ _plateSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
                   ptEmptyOr(d._plateSearch, PLATE_DB.filter(function(p) {
                     if (d._plateTier && d._plateTier !== 'all' && p.tier !== d._plateTier) return false;
@@ -12390,10 +12320,27 @@ var d = labToolData.plateTectonics || {};
                     }
                     return true;
                   }).map(function(p) {
-                    return React.createElement('button', { key: p.id, onClick: function() { upd({ _plateFocus: p.id }); }, className: 'text-left p-3 rounded-lg border transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-800 hover:border-red-500 hover:bg-slate-900 text-slate-300' : 'bg-white border-red-200 hover:border-red-500 hover:bg-red-50 text-slate-700') },
+                    // These 102 cards wrote `_plateFocus`, which nothing anywhere
+                    // read: every one of them looked clickable, carried a hover
+                    // style and a focus ring, and did nothing at all. The state
+                    // that IS wired is `selectedPlate` — the sim highlights it, the
+                    // scene description names it, and the "Study a tectonic plate"
+                    // challenge checks it — so studying a plate here now counts,
+                    // and the click has a visible result.
+                    var plateOn = d.selectedPlate === p.name;
+                    return React.createElement('button', { key: p.id, type: 'button',
+                      'aria-pressed': plateOn ? 'true' : 'false', 'data-pt-plate-card': p.name,
+                      onClick: function() { upd({ selectedPlate: plateOn ? null : p.name }); },
+                      className: 'text-left p-3 rounded-lg border transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 hover:border-red-500 hover:bg-slate-900 text-slate-300 ' : 'bg-white hover:border-red-500 hover:bg-red-50 text-slate-700 ') + (plateOn ? 'border-2 border-red-600' : (isDark ? 'border border-slate-800' : 'border border-red-200')) },
                       React.createElement('div', { className: 'font-bold text-sm ' + (isDark ? 'text-red-300' : 'text-red-800') }, p.name),
                       React.createElement('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.tier + ' / ' + p.type),
-                      p.area ? React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, 'Area: ' + p.area.toLocaleString() + ' km2') : null,
+                      // All 102 rows store area as a STRING that already carries its
+                      // unit ("103M km²"), so toLocaleString was a no-op and the
+                      // appended " km2" printed the unit twice, in a second spelling:
+                      // every row read "Area: 103M km² km2". Number rows are still
+                      // formatted and given the unit.
+                      p.area ? React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                        'Area: ' + (typeof p.area === 'number' ? p.area.toLocaleString() + ' km²' : String(p.area))) : null,
                       p.motion ? React.createElement('div', { className: 'text-[10px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, p.motion) : null,
                       p.notes ? React.createElement('div', { className: 'text-[10px] mt-1 ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, p.notes) : null
                     );
@@ -12435,7 +12382,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "tsunamis" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-blue-200 bg-blue-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-blue-800 mb-2' }, __alloT('stem.platetectonics.tsunami_history', "Tsunami History")),
-                React.createElement('p', { className: 'text-xs text-blue-700 mb-3' }, __alloT('stem.platetectonics.tsunamis_are_ocean_waves_triggered_by_', "Tsunamis are ocean waves triggered by earthquakes, volcanoes, landslides, or impacts. 60 events from 365 CE to 2023 are catalogued here. Sort by deaths, magnitude, or year.")),
+                React.createElement('p', { className: 'text-xs text-blue-700 mb-3' }, __alloT('stem.platetectonics.tsunami_intro_counted', "Tsunamis are ocean waves triggered by earthquakes, volcanoes, landslides, or impacts. {n} events from 365 CE to 2023 are catalogued here. Sort by deaths, magnitude, or year.").replace('{n}', TSUNAMI_DB.length)),
                 React.createElement('div', { className: 'flex gap-2 text-xs mb-3' },
                   [['year', 'Year'], ['deaths', 'Deaths'], ['mag', 'Magnitude']].map(function(sm) {
                     var active = (d._tsunamiSort || 'year') === sm[0];
@@ -12486,7 +12433,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "rocks" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-stone-200 bg-stone-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-stone-800 mb-2' }, __alloT('stem.platetectonics.rock_catalog', "Rock Catalog")),
-                React.createElement('p', { className: 'text-xs text-stone-700 mb-3' }, __alloT('stem.platetectonics.rocks_tell_the_story_of_how_the_earth_', "Rocks tell the story of how the Earth assembles itself. 60 rocks span igneous (from magma), sedimentary (from sediments), and metamorphic (transformed by heat and pressure). Filter by group.")),
+                React.createElement('p', { className: 'text-xs text-stone-700 mb-3' }, __alloT('stem.platetectonics.rocks_intro_counted', "Rocks tell the story of how the Earth assembles itself. {n} rocks span igneous (from magma), sedimentary (from sediments), and metamorphic (transformed by heat and pressure). Filter by group.").replace('{n}', ROCK_DB.length)),
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function(g) {
                     var active = (d._rockGroup || 'all') === g;
@@ -12570,8 +12517,8 @@ var d = labToolData.plateTectonics || {};
             simTab === "volcanoes" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-red-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-red-800 mb-2' }, __alloT('stem.platetectonics.volcano_catalog', "Volcano Catalog")),
-                React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, __alloT('stem.platetectonics.over_1500_volcanoes_have_been_active_i', "Over 1500 volcanoes have been active in the last 10,000 years. 60 of the most significant and studied volcanoes are here: subduction-zone strato-volcanoes, hotspot shields, and continental calderas.")),
-                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: __alloT('stem.platetectonics.search_volcanoes', 'Search volcanoes...'), value: d._volcanoSearch || '', onChange: function(e) { upd({ _volcanoSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
+                React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, __alloT('stem.platetectonics.volcano_intro_counted', "Over 1500 volcanoes have been active in the last 10,000 years. {n} of the most significant and studied volcanoes are here: subduction-zone strato-volcanoes, hotspot shields, and continental calderas.").replace('{n}', VOLCANO_DB.length)),
+                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input_volcanoes', "Search the volcano catalog"), placeholder: __alloT('stem.platetectonics.search_volcanoes', 'Search volcanoes...'), value: d._volcanoSearch || '', onChange: function(e) { upd({ _volcanoSearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                   ptEmptyOr(d._volcanoSearch, VOLCANO_DB.filter(function(v) {
                     if (!d._volcanoSearch) return true;
@@ -12671,10 +12618,10 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-rose-200 bg-rose-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-rose-800 mb-2' }, __alloT('stem.platetectonics.geology_glossary', "Geology Glossary")),
                 React.createElement('p', { className: 'text-xs text-rose-700 mb-3' }, __alloT('stem.platetectonics.quick_reference_for_plate_tectonic_sei', "Quick reference for plate tectonic, seismic, volcanic, and structural terms.")),
-                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: __alloT('stem.platetectonics.search_glossary', 'Search glossary...'), value: d._glossarySearch || '', onChange: function(e) { upd({ _glossarySearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-rose-300 bg-white text-slate-700') }),
+                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input_glossary', "Search the glossary"), placeholder: __alloT('stem.platetectonics.search_glossary', 'Search glossary...'), value: d._glossarySearch || '', onChange: function(e) { upd({ _glossarySearch: e.target.value }); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-rose-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-1' },
                   (function() {
-                    var G = [["Asthenosphere","The plastic, partially molten layer of the upper mantle (~100-350 km depth) where plates move."],["Lithosphere","The rigid outer shell of Earth, including crust and uppermost mantle (~0-100 km)."],["Plate boundary","The edge of a tectonic plate where it meets another plate; can be divergent, convergent, or transform."],["Divergent boundary","Where two plates move apart; produces mid-ocean ridges and continental rifts."],["Convergent boundary","Where two plates push together; produces mountains, trenches, and volcanic arcs."],["Transform boundary","Where two plates slide past each other (e.g., San Andreas Fault)."],["Subduction zone","A convergent boundary where one plate dives beneath another, recycling crust into the mantle."],["Hotspot","A localized region of upwelling mantle that produces volcanism (e.g., Hawaii, Yellowstone)."],["Mantle plume","A column of hot mantle rising from deep within Earth that creates hotspots."],["Magma","Molten rock beneath Earth surface."],["Lava","Molten rock that has reached Earth surface."],["Pyroclastic flow","A fast-moving cloud of hot gas and volcanic debris; one of the deadliest volcanic hazards."],["Caldera","A large, basin-shaped depression formed when a volcano collapses after a major eruption (e.g., Yellowstone, Crater Lake)."],["Stratovolcano","A steep-sided, conical volcano built from alternating layers of lava and ash (e.g., Fuji, Mt St Helens)."],["Shield volcano","A broad, gently sloping volcano built from low-viscosity basaltic lava (e.g., Mauna Loa)."],["Cinder cone","A small, steep volcano built from ejected ash and cinders (e.g., Paricutin, Sunset Crater)."],["Epicenter","The point on Earth surface directly above an earthquake focus."],["Hypocenter (focus)","The actual underground location where an earthquake originates."],["Magnitude","A measure of earthquake size based on the seismic waves it generates. Logarithmic scale."],["Moment magnitude (Mw)","Modern scale used for all earthquake sizes; supplants Richter for large events."],["Richter scale","Original 1935 magnitude scale; works well for small or local quakes; saturates above M7."],["Intensity","A measure of earthquake shaking effects at a location (Mercalli scale); varies by site."],["Aftershock","A smaller earthquake that follows a mainshock in the same area."],["Foreshock","A smaller earthquake that precedes a mainshock in the same area."],["P-wave","Primary wave; compressional; fastest seismic wave; travels through solids and liquids."],["S-wave","Secondary wave; shear; slower than P; travels only through solids."],["Surface wave","Seismic wave traveling along Earth surface; causes most damage (Love, Rayleigh)."],["Seismograph","Instrument that records ground motion during an earthquake."],["Seismic moment","A measure of earthquake size based on fault area times slip times rigidity."],["Fault","A fracture in Earth crust along which rocks have moved."],["Strike-slip fault","A fault where blocks slide horizontally past each other (e.g., San Andreas)."],["Normal fault","A fault where the hanging wall drops down relative to the footwall; tensional."],["Reverse (thrust) fault","A fault where the hanging wall moves up relative to the footwall; compressional."],["Oblique-slip fault","A fault with both horizontal and vertical motion."],["Pangaea","Supercontinent assembled by ~300 million years ago; broke apart starting ~200 Ma."],["Gondwana","Southern supercontinent: Africa, South America, Antarctica, Australia, India."],["Laurasia","Northern supercontinent: North America and Eurasia (minus India)."],["Wilson Cycle","Theory that ocean basins open and close in cycles of ~500 million years."],["Mid-ocean ridge","Underwater mountain range where new ocean crust forms at divergent boundaries."],["Trench","A deep, narrow depression in the ocean floor at a subduction zone."],["Volcanic arc","A chain of volcanoes formed parallel to a subduction zone (e.g., Cascades, Aleutians)."],["Island arc","A volcanic arc formed where two oceanic plates converge (e.g., Mariana, Tonga)."],["Accretionary wedge","Sediment scraped off a subducting plate onto the overriding plate."],["Continental shelf","Submerged extension of a continent; gently sloping."],["Continental slope","Steeper edge of a continent leading from shelf to deep ocean."],["Abyssal plain","Flat, deep-ocean floor."],["Triple junction","Where three plate boundaries meet (e.g., Afar Triangle)."],["Paleomagnetism","The study of ancient magnetic field directions preserved in rocks."],["Magnetic reversal","A complete flip of Earth magnetic field (averages ~250,000 years between reversals)."],["Convection","The transfer of heat by movement of fluid; drives plate motion in the mantle."],["Hotspot track","A chain of progressively older volcanoes formed as a plate moves over a hotspot."],["Mantle wedge","The wedge-shaped piece of mantle between a subducting slab and overriding plate."],["Slab pull","A force from a dense subducting slab pulling the rest of the plate behind it."],["Ridge push","A force from elevated mid-ocean ridges sliding plates away."],["Plate velocity","Speed of plate motion in cm per year; fastest ~24 cm/yr (Pacific-Tonga); slowest ~1 cm/yr."],["Rift","A continental zone where the crust is being pulled apart (e.g., East African Rift)."],["Suture zone","A zone where two continents collided and joined (e.g., Indus-Tsangpo, Urals)."],["Ophiolite","A section of oceanic crust and upper mantle thrust onto a continent during collision."],["Foreland basin","A depression formed in front of an advancing mountain range."],["Backarc basin","An ocean basin formed behind a volcanic arc by extension."],["Fore-arc basin","A sedimentary basin between a trench and volcanic arc."],["Tsunami","A series of ocean waves caused by underwater displacement (quake, landslide, eruption, impact)."],["Seamount","An underwater mountain rising from the seafloor; usually volcanic."],["Guyot","A flat-topped seamount; eroded former island, then subsided."],["Atoll","A ring-shaped coral reef around a sunken volcano."],["Mantle viscosity","Resistance to flow in the mantle; varies with depth and temperature."],["Slab rollback","Backward motion of a subducting slab; causes overriding plate extension."],["Underplating","Addition of magma or sediment to the base of crust."],["Crustal recycling","The process by which crustal material returns to the mantle at subduction zones."],["Plate reconstruction","Models of past plate positions based on geological and paleomagnetic data."],["Euler pole","The point about which a tectonic plate rotates relative to another."],["Diffuse plate boundary","A wide zone where deformation is distributed rather than localized."],["Microplate","A small tectonic plate (e.g., Juan de Fuca, Caribbean)."],["Craton","An ancient and stable interior of a continent (e.g., Canadian Shield, Baltic Shield)."],["Orogeny","Mountain-building episode."],["Terrane","A fragment of crust with a distinct geological history accreted to a larger landmass."],["Exotic terrane","A terrane that originated far from its current location."],["Volcanic gas","Gases released during volcanic eruptions; mainly H2O, CO2, SO2."],["Tephra","Fragmental material ejected by a volcano; ash, lapilli, blocks."],["Lahars","Volcanic mudflows; can travel far and fast, very destructive."],["VEI","Volcanic Explosivity Index; logarithmic 0-8 scale."],["Geyser","A hot spring that periodically erupts steam and hot water."],["Fumarole","A vent emitting steam and volcanic gases."],["Solfatara","A volcanic vent emitting sulfurous gases."],["Hydrothermal vent","Underwater hot spring at mid-ocean ridges; supports chemosynthetic life."],["Continental crust","The lower-density, thicker crust beneath continents; ~30-70 km thick."],["Oceanic crust","The denser, thinner crust beneath oceans; ~5-10 km thick."],["Moho","The Mohorovicic discontinuity; boundary between crust and mantle."],["Outer core","Liquid iron-nickel layer (~2900-5100 km depth); source of magnetic field."],["Inner core","Solid iron-nickel layer (~5100-6371 km depth)."],["Geothermal gradient","Rate of temperature increase with depth in Earth (~25 C/km in crust)."],["Isostasy","The balance between Earth crust and mantle; like icebergs floating in water."],["Glacial isostatic rebound","Land slowly rising after melting of glacial ice loaded it down."],["Eclogite","A high-pressure metamorphic rock formed from subducted oceanic crust."],["Blueschist","A low-temperature high-pressure metamorphic rock; subduction zone marker."],["Decollement","A near-horizontal fault surface separating deformed rocks above from undeformed below."],["Stratovolcano cone","The classic volcanic mountain shape: tall, steep, alternating ash and lava."],["Welded tuff","Pyroclastic rock formed when hot ash particles fuse on landing."],["Pillow lava","Bulbous lava formed when basalt erupts underwater."],["Volcanic neck","Solidified magma in a volcano throat, exposed by erosion (e.g., Devils Tower)."],["Sill","A horizontal intrusion of magma between rock layers."],["Dike","A vertical or steeply-dipping intrusion of magma cutting across rock layers."],["Batholith","A very large intrusive igneous body (e.g., Sierra Nevada batholith)."],["Pluton","A smaller igneous intrusion than a batholith."],["Xenolith","A foreign rock fragment incorporated into magma; samples the deep crust or mantle."],["Volcanic bomb","A blob of molten rock ejected during an eruption."]];
+                    var G = GEO_GLOSSARY.map(function (e) { return [e.term, e.definition]; });
                     var s = (d._glossarySearch || '').toLowerCase();
                     return ptEmptyOr(d._glossarySearch, G.filter(function(g) { return !s || g[0].toLowerCase().indexOf(s) !== -1 || g[1].toLowerCase().indexOf(s) !== -1; }).map(function(g, i) {
                       return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-rose-200' },
@@ -12809,8 +12756,8 @@ var d = labToolData.plateTectonics || {};
                       React.createElement('input', {
                         key: 'search',
                         type: 'text',
-                        'aria-label': 'Search classroom activities',
-                        placeholder: 'Search activities...',
+                        'aria-label': __alloT('stem.platetectonics.aria_search_activities', 'Search classroom activities'),
+                        placeholder: __alloT('stem.platetectonics.search_activities_placeholder', 'Search activities...'),
                         value: d._lessonSearch || '',
                         onChange: function(e) { upd({ _lessonSearch: e.target.value }); },
                         className: 'w-full px-3 py-2 rounded-lg text-xs mb-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' +
@@ -12863,7 +12810,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-red-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-red-800 mb-2' }, __alloT('stem.platetectonics.earthquake_case_studies', "Earthquake Case Studies")),
                 React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, __alloT('stem.platetectonics.ten_major_historical_earthquakes_in_de', "Ten major historical earthquakes in depth: what happened, what evidence remains, and what we learned. From the 1700 Cascadia event recorded in Japanese orphan tsunami records to modern instrumented megathrusts.")),
-                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: 'Search...', value: d['_quakeStoriesSearch'] || '', onChange: function(e) { var u = {}; u['_quakeStoriesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
+                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input_quakestories', "Search earthquake stories"), placeholder: __alloT('stem.platetectonics.search_placeholder', 'Search...'), value: d['_quakeStoriesSearch'] || '', onChange: function(e) { var u = {}; u['_quakeStoriesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
                     var ENTRIES = [{"name":__alloT('stem.platetectonics.1700_cascadia_m9', "1700 Cascadia M9"),"date":"January 26, 1700","region":"Pacific Northwest, USA/Canada","magnitude":"M9.0 (estimated)","boundary":"Cascadia Subduction Zone (Juan de Fuca plate diving under North American plate)","deaths":"Unknown (precontact)","duration":"~5-7 minutes (estimated)","evidence":"Ghost forests of drowned cedars dated by tree rings to 1699-1700; Japan's 'orphan tsunami' records pinpoint the date and time; Native American oral histories describe a great shaking","impact":"Tsunami waves up to 30m on local shore reached Japan ~10 hours later. Land subsided 1-2m along 1000km of coast.","legacy":"First confirmed in the 1980s by Brian Atwater (USGS) combining sediment cores, tree-ring dating, and Japanese tsunami records. Now drives Pacific Northwest building codes, ShakeAlert system, school drills.","lesson":"Pre-instrumental megaquakes leave detectable signatures in trees, soils, and oral history. Aaron Bock (Quileute), Mary Kallappa (Hoh), and Henry Adams (Quinault) had recorded oral histories long before scientific confirmation."},{"name":__alloT('stem.platetectonics.1755_lisbon_m8_7', "1755 Lisbon M8.7"),"date":"November 1, 1755","region":"Atlantic Ocean off Portugal","magnitude":"M8.5-9.0 (estimated)","boundary":"Africa-Eurasia plate boundary (Azores-Gibraltar fracture zone)","deaths":"30,000-60,000 in Lisbon alone, more across Iberia and Morocco","duration":"3-5 minutes","evidence":"Contemporary descriptions by survivors including Voltaire's correspondence, Marquês de Pombal's reconstruction records, geological evidence in deep sea sediments and uplifted coral.","impact":"Tsunami swept up Tagus River into central Lisbon. Six-day fires destroyed remaining structures. Felt as far as Sweden and the Caribbean.","legacy":"Catalyzed European Enlightenment philosophy: Voltaire's Poem on the Lisbon Disaster (1756) and Candide (1759) challenged Leibniz's optimism. Pombal's interview-based recovery (the 'Pombaline' rebuild with quake-resistant timber cages) was the first systematic engineering response.","lesson":"Atlantic Ocean is not exempt from megaquake hazards. Catholic Portugal's All Saints Day liturgy meant churches were packed, multiplying casualties."},{"name":__alloT('stem.platetectonics.1811_12_new_madrid', "1811-12 New Madrid"),"date":"December 16, 1811 - February 7, 1812","region":"New Madrid, Missouri","magnitude":"M7.5, M7.3, M7.5 (three main shocks)","boundary":"Intraplate (Reelfoot Rift, Mississippi embayment)","deaths":"Few documented (sparsely settled)","duration":"Multiple events over 2 months","evidence":"Eli Bowman, John James Audubon, Tecumseh's people, riverboat pilots all left accounts. Sand blows preserved geologic record.","impact":"Mississippi River briefly reversed course; created Reelfoot Lake; church bells rang in Boston and Charleston; chimneys fell as far as Cincinnati.","legacy":"Largest intraplate earthquake sequence in continental US history. Defined the New Madrid Seismic Zone, which would devastate modern Memphis, St Louis, and Little Rock if repeated.","lesson":"Far-from-plate-boundary regions can produce major quakes. Tecumseh allegedly predicted the shaking, using it to rally indigenous resistance."},{"name":__alloT('stem.platetectonics.1857_fort_tejon_m7_9', "1857 Fort Tejon M7.9"),"date":"January 9, 1857","region":"Southern California (San Andreas Fault)","magnitude":"M7.9","boundary":"Pacific-North American transform (San Andreas)","deaths":"2","duration":"~2-3 minutes","evidence":"350km surface rupture from Cholame to Wrightwood. Trees along Carrizo Plain offset by ~9m. Mission San Fernando reportedly damaged.","impact":"Largest historical California quake. The Kern River reportedly flowed backward briefly.","legacy":"Together with the 1906 SF quake, defined two great segments of the southern San Andreas. Pallett Creek paleoseismology shows ~150-year intervals for southern segment, so it is 'overdue.'","lesson":"Quiet centuries on a fault do not mean safety. The San Andreas accumulates strain steadily."},{"name":__alloT('stem.platetectonics.1886_charleston_m7_3', "1886 Charleston M7.3"),"date":"August 31, 1886","region":"Charleston, South Carolina","magnitude":"M7.3 (estimated)","boundary":"Intraplate (Atlantic margin)","deaths":"60","duration":"~1 minute","evidence":"60% of Charleston buildings damaged. Earthquake of August 31, 1886 (Dutton 1889) - first major US earthquake studied with modern scientific methods.","impact":"Felt from Cuba to NY to Bermuda to Wisconsin. Sand boils, liquefaction, cracked plaster as far as Boston.","legacy":"Showed eastern US faults remain seismically dangerous. Helped found USGS earthquake studies. Maine and other east-coast cities lack code preparation for similar events.","lesson":"East coast quakes are infrequent but possible. Buildings shake longer because crust transmits seismic waves more efficiently than the more fractured west."},{"name":__alloT('stem.platetectonics.1906_san_francisco_m7_9', "1906 San Francisco M7.9"),"date":"April 18, 1906","region":"San Francisco, California","magnitude":"M7.9 (Mw)","boundary":"Pacific-North American transform (San Andreas)","deaths":"~3000 (recent revised estimates; original count was 700)","duration":"~45-60 seconds","evidence":"G.K. Gilbert and H.F. Reid (Carnegie) led the State Earthquake Investigation Commission, which produced the foundational geological survey of any earthquake. Reid's elastic rebound theory was born here.","impact":"Three-day firestorm destroyed 80% of San Francisco. Chinatown leveled. Estimated $400 million 1906 damage ($11 billion 2020).","legacy":"Established that earthquakes are caused by rapid slip on faults, not vice versa. Reid's elastic rebound theory remains the basic model. The San Andreas Fault entered popular consciousness.","lesson":"Earthquakes do not kill: collapsed buildings and post-quake fires do. Modern California is more resilient but still vulnerable to fire after large quakes."},{"name":__alloT('stem.platetectonics.1923_great_kanto_m7_9', "1923 Great Kanto M7.9"),"date":"September 1, 1923","region":"Sagami Bay, Japan","magnitude":"M7.9","boundary":"Sagami Trough (Philippine Sea plate under Okhotsk plate)","deaths":"142,000 (most from fire)","duration":"4-10 minutes (multiple sub-events)","evidence":"Imperial Earthquake Investigation Committee detailed records. Hongo Tokyo seismograph trace.","impact":"Tokyo and Yokohama both devastated. Fires consumed 38% of Tokyo. Tsunami in Sagami Bay. Korean residents falsely blamed for fires, leading to a massacre of 6,000+.","legacy":"Drove Japanese seismic engineering revolution. Spurred building code reforms that made modern Japanese buildings among the most quake-resistant globally.","lesson":"Quake disasters can amplify pre-existing prejudices. Japanese government has formally acknowledged the 1923 Korean massacre."},{"name":__alloT('stem.platetectonics.1933_long_beach_m6_4', "1933 Long Beach M6.4"),"date":"March 10, 1933","region":"Long Beach, California (Newport-Inglewood Fault)","magnitude":"M6.4","boundary":"Strike-slip fault east of Pacific margin","deaths":"120","duration":"~10 seconds","evidence":"70 schools were severely damaged or destroyed. Catalyzed California's Field Act (1933) requiring all California schools meet earthquake standards.","impact":"If the quake had struck during school hours, casualties would have been catastrophic.","legacy":"Field Act remains a model for life-safety legislation. Modern California schools survived the 1994 Northridge quake with no fatalities.","lesson":"Building codes save lives when enforced before the next event. Charles Richter developed his magnitude scale partly with Long Beach data."},{"name":__alloT('stem.platetectonics.1960_valdivia_m9_5', "1960 Valdivia M9.5"),"date":"May 22, 1960","region":"Valdivia, Chile","magnitude":"M9.5 (Mw) - largest ever recorded","boundary":"Peru-Chile Trench (Nazca plate under South American plate)","deaths":"5700 (Chile), plus deaths from tsunami across Pacific basin","duration":"10-15 minutes","evidence":"Pacific-wide tsunami; the Cordon Caulle vent (Puyehue-Cordon Caulle complex) erupted 2 days later, one of the clearest cases of a megathrust earthquake triggering an eruption. Modern instrumental record.","impact":"Coastal subsidence up to 5m. Tsunami waves reached Hawaii (14m), Japan (5m), Philippines. Earth's free oscillations measurable for weeks.","legacy":"Defined the upper limit of earthquake size in the modern record. Sparked global Pacific Tsunami Warning System founding (Pacific Tsunami Warning Center, Honolulu).","lesson":"Subduction megathrusts dominate the largest earthquakes. South America's western edge remains active and produces ~M8+ quakes every few decades."},{"name":__alloT('stem.platetectonics.1964_alaska_good_friday_m9_2', "1964 Alaska Good Friday M9.2"),"date":"March 27, 1964","region":"Prince William Sound, Alaska","magnitude":"M9.2 (Mw)","boundary":"Aleutian Trench (Pacific under North American)","deaths":"139 (most from tsunami)","duration":"4-5 minutes","evidence":"First systematic megathrust study. George Plafker (USGS) walked the coast measuring uplift and subsidence. Established the subduction-zone earthquake mechanism.","impact":"Coast uplifted 11m in places, subsided 2m elsewhere. Tsunami struck Crescent City, California (11 deaths). Anchorage Turnagain Heights neighborhood slid into the sea.","legacy":"Plafker's 1965 paper definitively linked great earthquakes to subduction. This finding revolutionized understanding of plate tectonics.","lesson":"Megathrust earthquakes shape entire coastlines in minutes. Native Alaskan villages (especially Chenega Bay) suffered catastrophic damage and tsunami."}];
@@ -12895,7 +12842,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-orange-200 bg-orange-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-orange-800 mb-2' }, __alloT('stem.platetectonics.volcano_eruption_case_studies', "Volcano Eruption Case Studies")),
                 React.createElement('p', { className: 'text-xs text-orange-700 mb-3' }, __alloT('stem.platetectonics.ten_devastating_eruptions_from_vesuviu', "Ten devastating eruptions from Vesuvius 79 CE to Hunga Tonga 2022, with phase-by-phase eruption narratives, eyewitness accounts, and modern context.")),
-                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: 'Search...', value: d['_eruptionsSearch'] || '', onChange: function(e) { var u = {}; u['_eruptionsSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-orange-300 bg-white text-slate-700') }),
+                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input_eruptions', "Search the eruption catalog"), placeholder: __alloT('stem.platetectonics.search_placeholder', 'Search...'), value: d['_eruptionsSearch'] || '', onChange: function(e) { var u = {}; u['_eruptionsSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-orange-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
                     var ENTRIES = [{"name":__alloT('stem.platetectonics.vesuvius_79_ce', "Vesuvius (79 CE)"),"region":"Italy","date":"August 24, 79 CE (traditional) or October-November 79 CE (recent)","VEI":"5","deaths":"~16,000","phase1":"Plinian eruption phase: 18-hour ash and pumice column rose 32 km. Pumice fell at 15 cm/hour. Roofs collapsed under accumulated weight.","phase2":"Pyroclastic phase: 6 surges and flows raced down Vesuvius, reaching Pompeii (8 km away), Herculaneum (6 km), and Stabiae. Surges traveled at ~700°C and 100 km/h.","witnesses":"Pliny the Younger described his uncle Pliny the Elder's death (asphyxiated rescuing fleeing locals). Gave us the term 'Plinian eruption.'","legacy":"Pompeii and Herculaneum preserve daily Roman life under 4-6m of ash. Excavation began in 1748 and continues today.","modern":"3 million people live in the red zone today. Vesuvius is monitored continuously; evacuation plans target the 700,000 nearest residents."},{"name":__alloT('stem.platetectonics.tambora_1815', "Tambora (1815)"),"region":"Sumbawa, Indonesia","date":"April 10, 1815","VEI":"7","deaths":"71,000 (direct + global famine)","phase1":"Two months of preliminary tremors. Major Plinian phase ejected 150 km³ of material. Eruption column reached 43 km.","phase2":"Climate impact: '1816 Year Without a Summer.' New England saw June frosts; crops failed across Europe; the Pacific Northwest had snow in July. Estimated 1°C global cooling.","witnesses":"Sir Stamford Raffles ordered immediate investigation. Lieutenant Owen Phillips reached Tambora 10 days post-eruption, finding the volcano's elevation had dropped from 4300m to 2800m.","legacy":"Frankenstein (Mary Shelley, 1816) and 'Darkness' (Lord Byron, 1816) were written during the volcanic winter. Birth of the bicycle (Karl Drais, 1817) attributed to horse-feed shortages.","modern":"Indonesia's volcanic explosivity remains a global climate concern. Modern monitoring includes ground deformation, gas chemistry, and seismicity at all 130 Indonesian active volcanoes."},{"name":__alloT('stem.platetectonics.krakatoa_1883', "Krakatoa (1883)"),"region":"Sunda Strait, Indonesia","date":"August 26-27, 1883","VEI":"6","deaths":"36,000 (mostly tsunami)","phase1":"Initial activity began May 1883. August 26 Plinian eruption ejected 20 km³. Climactic eruption August 27 at 10:02 AM heard 4800 km away in Perth and Mauritius - loudest sound in recorded history.","phase2":"Caldera collapse generated 30m tsunami; reached Calcutta, Japan, and Britain (as small wave). Aerial waves circled Earth 3-4 times, recorded on barometers.","witnesses":"Telegraph and steamship era allowed first global news coverage of disaster. Royal Society of London compiled the most detailed account.","legacy":"Spectacular sunsets globally for 2 years (Edvard Munch's The Scream 1893 is sometimes attributed to such after-glows). Stratospheric aerosols cooled the planet 1.2°C.","modern":"Anak Krakatau (Child of Krakatoa) emerged 1927, collapsed in 2018 generating a 5m tsunami that killed 437 people."},{"name":__alloT('stem.platetectonics.mt_pel_e_1902', "Mt Pelée (1902)"),"region":"Martinique, Caribbean","date":"May 8, 1902","VEI":"4","deaths":"29,000 (St-Pierre)","phase1":"Months of premonitory activity. On May 8, a nuee ardente (glowing cloud, pyroclastic surge) raced down the mountain, reached St-Pierre in 1 minute, killing everyone except 2 survivors. Lava temperature: ~1075°C; speed: 670 km/h.","phase2":"One famous survivor: Louis-Auguste Cyparis (Ludger Sylbaris), imprisoned in a partially underground stone cell. He toured with the Barnum & Bailey Circus afterward as 'the man who lived through Doomsday.'","witnesses":"Geologist Alfred Lacroix published the foundational study, coining 'nuée ardente' (glowing cloud). Established pyroclastic flows as the deadliest volcanic hazard.","legacy":"St-Pierre had been the cultural capital of Martinique. The disaster shifted economic and political power to Fort-de-France permanently.","modern":"Pelée is monitored continuously. The 1929-32 eruption built a new lava dome; the volcano is considered active. Caribbean monitoring through Université des Antilles."},{"name":__alloT('stem.platetectonics.novarupta_1912', "Novarupta (1912)"),"region":"Alaska Peninsula","date":"June 6-9, 1912","VEI":"6","deaths":"0","phase1":"Largest 20th century eruption. 13 km³ of magma erupted (3x more than Pinatubo 1991). Sucked magma from Mt Katmai 10 km away, leaving Katmai's caldera collapsed.","phase2":"Valley of Ten Thousand Smokes formed: 100m thick pyroclastic flow deposits steaming for years afterward. Visible from Kodiak, 100 miles away.","witnesses":"Remote location meant few direct witnesses. Robert F. Griggs led 1916 National Geographic expedition that named the Valley of Ten Thousand Smokes.","legacy":"Established Katmai National Monument (1918), now Katmai National Park (1980). Type locality for explosive eruption mechanics.","modern":"Alaska Peninsula has 40+ active volcanoes monitored by Alaska Volcano Observatory (AVO). Eruptions threaten Anchorage and trans-Pacific aviation."},{"name":__alloT('stem.platetectonics.mt_st_helens_1980', "Mt St Helens (1980)"),"region":"Washington State, USA","date":"May 18, 1980","VEI":"5","deaths":"57","phase1":"After 2 months of bulging (1.5m/day on the north flank) and earthquakes, a M5.1 earthquake at 8:32 AM triggered the largest landslide in recorded history (2.3 km³). The depressurized magma exploded laterally.","phase2":"Lateral blast flattened 600 km² of forest. Plinian column reached 24 km. Lahars destroyed 200 homes and 27 bridges down the Toutle River. Ash fell as far as Minnesota.","witnesses":"USGS volcanologist David Johnston, monitoring from Coldwater II ridge, transmitted 'Vancouver! Vancouver! This is it!' before dying. His memorial Johnston Ridge Observatory now sits where he stood.","legacy":"First major US eruption with continuous instrumental monitoring. Mt St Helens National Volcanic Monument established 1982. Active eruption resumed 2004-2008, building a new lava dome.","modern":"Cascade Volcano Observatory (USGS Vancouver, WA) monitors all Cascade volcanoes. Rainier remains the highest-threat Cascade volcano due to glacier-fed lahar risk for Tacoma."},{"name":__alloT('stem.platetectonics.nevado_del_ruiz_1985', "Nevado del Ruiz (1985)"),"region":"Colombia","date":"November 13, 1985","VEI":"3","deaths":"23,000 (Armero)","phase1":"Modest eruption of small VEI 3 magnitude. The summit ice cap (covering an active glacier) melted partially.","phase2":"Resulting lahars surged down the Lagunilla River, reaching Armero (50 km away) at 11:30 PM. Town of 29,000 buried in 5m of mud.","witnesses":"Tragically, Colombian government scientists had warned officials and INGEOMINAS had published hazard maps showing exactly this scenario, but warnings were dismissed in political turmoil. Omayra Sánchez, a 13-year-old girl trapped for 60 hours before dying on live TV, became the disaster's tragic face.","legacy":"Driver of modern hazard communication research. The Armero disaster prompted UN designation of the 1990s as the International Decade for Natural Disaster Reduction.","modern":"Colombia has dramatically improved hazard monitoring. INGEOMINAS (now Colombian Geological Service) maintains volcano observatories. Lessons applied at Mt Pinatubo (1991) and Soufrière Hills (1995)."},{"name":__alloT('stem.platetectonics.pinatubo_1991', "Pinatubo (1991)"),"region":"Philippines (Luzon)","date":"June 15, 1991","VEI":"6","deaths":"847 (847 direct, 1991-92 famine added more)","phase1":"Largely dormant 600 years. Months of preparation: USGS-PHIVOLCS team led by Chris Newhall and Ray Punongbayan installed monitoring network. Forecasted the climactic eruption.","phase2":"10 km³ ejected; column 35 km high. SO2 release of 17 million tonnes cooled global climate by ~0.5°C. Successful evacuation of 200,000 people. US Clark Air Base permanently closed (decommissioned anyway, but accelerated).","witnesses":"Newhall, Punongbayan, and Sandy Brantley led the warning effort. The successful prediction-evacuation is considered volcanology's greatest triumph.","legacy":"Validated modern volcano monitoring (seismic, deformation, gas, thermal). PHIVOLCS hazard maps. Cooled Earth enough to mask anthropogenic warming briefly.","modern":"Pinatubo's caldera now hosts a deep crater lake. Active monitoring continues. Aerosol-engineering geoengineering proposals draw on Pinatubo's atmospheric chemistry data."},{"name":__alloT('stem.platetectonics.eyjafjallaj_kull_2010', "Eyjafjallajökull (2010)"),"region":"Iceland","date":"March-October 2010","VEI":"4","deaths":"0","phase1":"Initial fissure eruption March 20 was tourist-friendly. April 14 phreatomagmatic phase (under the glacier) produced a fine ash plume reaching jet-stream altitudes.","phase2":"European airspace closed for 6 days (April 15-21), grounding 100,000+ flights and 10 million passengers. Cost $1.7 billion in aviation losses.","witnesses":"Real-time webcams and social media made this the most documented eruption in history. Pronunciation videos went viral.","legacy":"First major demonstration of volcanic ash's modern transportation cost. London Volcanic Ash Advisory Centre (VAAC) protocols revised.","modern":"Iceland sits on the Mid-Atlantic Ridge; eruptions are frequent (~30 in past century). 2021 Fagradalsfjall and 2022 Reykjanes Peninsula activity sparked ongoing concern for nearby Grindavik town."},{"name":__alloT('stem.platetectonics.hunga_tonga_2022', "Hunga Tonga (2022)"),"region":"Tonga","date":"January 15, 2022","VEI":"5-6","deaths":"6 (Tonga + Peru tsunami)","phase1":"Submarine eruption built up over 2 months. January 15 climactic eruption was largest atmospheric explosion ever recorded by modern instruments. Plume reached 58 km, entering the mesosphere.","phase2":"Tsunamis raced across the Pacific. Tonga cable-cut and ash-coated. Audible 10,000 km away. Atmospheric pressure waves circled Earth multiple times.","witnesses":"Satellite imagery (Himawari-8, GOES-17) caught the eruption from above. Tonga Geological Services worked under enormous strain.","legacy":"Largest recorded eruption since Pinatubo 1991. Injected ~150 million tonnes of water vapor into the stratosphere - a unique chemistry given the submarine source.","modern":"Tonga rebuilt; underwater volcano now restless again. Submarine volcanoes globally need better monitoring; many are unstudied."}];
@@ -12926,7 +12873,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-red-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-red-800 mb-2' }, __alloT('stem.platetectonics.plate_deep_profiles', "Plate Deep Profiles")),
                 React.createElement('p', { className: 'text-xs text-red-700 mb-3' }, __alloT('stem.platetectonics.in_depth_profile_of_15_major_and_minor', "In-depth profile of 15 major and minor plates: area, motion, boundaries, history, key features, and an interesting fact each. Reading these in sequence helps build a mental model of the global plate system.")),
-                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input', "Search this Plate Tectonics section"), placeholder: 'Search...', value: d['_plateProfilesSearch'] || '', onChange: function(e) { var u = {}; u['_plateProfilesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
+                React.createElement('input', { type: 'text', "aria-label": __alloT('stem.platetectonics.search_input_plateprofiles', "Search plate profiles"), placeholder: __alloT('stem.platetectonics.search_placeholder', 'Search...'), value: d['_plateProfilesSearch'] || '', onChange: function(e) { var u = {}; u['_plateProfilesSearch'] = e.target.value; upd(u); }, className: 'w-full px-3 py-2 text-sm border rounded-lg mb-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-red-300 bg-white text-slate-700') }),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
                     var ENTRIES = [{"name":__alloT('stem.platetectonics.pacific_plate', "Pacific Plate"),"area":"103,000,000 km²","motion":"WNW at 7-11 cm/yr","boundaries":"Pacific Plate is bordered by the East Pacific Rise (divergent), Aleutian + Japan + Tonga + Kermadec trenches (convergent), San Andreas + Queen Charlotte faults (transform), and many smaller boundaries.","history":"Originated ~190 Ma from breakup of larger Farallon Plate. Has been the dominant Pacific Basin plate for the last 50+ Ma.","features":"Hosts most of the world's seafloor, Hawaiian-Emperor seamount chain, Pacific Ring of Fire on its borders. Mostly oceanic crust.","interesting":"The Hawaiian-Emperor bend at 47 Ma records a major change in Pacific Plate motion direction. Why? Active research."},{"name":__alloT('stem.platetectonics.north_american_plate', "North American Plate"),"area":"75,900,000 km²","motion":"SW at 1-2 cm/yr (relative to Pacific)","boundaries":"Bounded by Mid-Atlantic Ridge (divergent, east), Caribbean and Cocos plates (south), San Andreas Fault and Cascadia subduction (west), Aleutian Trench (NW), Eurasian convergence (Arctic).","history":"Includes continental North America plus surrounding ocean floor. Has been a distinct plate since the breakup of Pangaea ~200 Ma.","features":"Stable craton (Canadian Shield) in the interior, mobile Cordillera in the west, Atlantic passive margin in the east, Greenland on its NE.","interesting":"The Yellowstone hotspot track records ~16 Ma of NA Plate motion. Future hotspot positions will be in Wyoming-Montana."},{"name":__alloT('stem.platetectonics.eurasian_plate', "Eurasian Plate"),"area":"67,800,000 km²","motion":"Variable; very slow","boundaries":"Mid-Atlantic Ridge (W), Indian-Eurasian collision (S), Pacific subduction zones (E), Arctic Ocean (N), African convergence (SE).","history":"Formed by long process of accretion. India docked ~55 Ma, building the Himalaya. Pacific Plate has been subducting beneath the eastern margin for over 100 Ma.","features":"Contains 90% of world population and most of Earth's continental land area. Major mountain ranges: Himalaya, Alps, Caucasus, Ural Mountains.","interesting":"The Tethys Ocean once separated Eurasia from Africa-India-Australia. Its closure created the Alpide belt of mountains from Spain to Indonesia."},{"name":__alloT('stem.platetectonics.african_plate', "African Plate"),"area":"61,300,000 km²","motion":"N-NE at 2 cm/yr","boundaries":"Mid-Atlantic Ridge (W), Carlsberg Ridge (E), East African Rift (E, internal), Eurasian convergence (N).","history":"Has been moving north for over 100 Ma. Closing the Tethys/Mediterranean. Will eventually push into Europe entirely.","features":"Contains Africa, the eastern Atlantic, much of the Mediterranean and Red Sea, parts of the Arabian Sea.","interesting":"The East African Rift is splitting the African Plate. Somalia is moving away from Nubia at ~7 mm/yr. In ~10 million years there will be a new ocean basin."},{"name":__alloT('stem.platetectonics.antarctic_plate', "Antarctic Plate"),"area":"60,900,000 km²","motion":"Very slow, fragmented motion","boundaries":"Mid-ocean ridges on all sides (Pacific-Antarctic, Southwest Indian, Southeast Indian, American-Antarctic).","history":"Has been mostly stationary since Eocene. Antarctica was at the South Pole by 35 Ma, leading to glaciation.","features":"Continental Antarctica, surrounding ocean floor including the Southern Ocean. Almost no convergent boundaries.","interesting":"The Antarctic Plate's relative stillness shaped Earth's modern climate by trapping ice at the pole. Continental glaciation began ~35 Ma."},{"name":__alloT('stem.platetectonics.south_american_plate', "South American Plate"),"area":"43,600,000 km²","motion":"W at 3-4 cm/yr","boundaries":"Mid-Atlantic Ridge (E), Nazca-Cocos subduction (W), Caribbean-Scotia plates (N+S), Antarctic ridge (S).","history":"Separated from Africa ~110 Ma during Gondwana breakup. Andean orogeny ongoing for 50+ Ma.","features":"Continental South America + surrounding ocean. Andes Mountains run the entire west coast.","interesting":"The Andes are the longest continental mountain range. They control South American weather, biology, and water resources."},{"name":__alloT('stem.platetectonics.indo_australian_plate', "Indo-Australian Plate"),"area":"58,900,000 km²","motion":"NE at 5-7 cm/yr","boundaries":"Sunda Trench (N), Mid-Indian Ridge (S+W), Tonga + Hikurangi (E), Carlsberg Ridge (W).","history":"India broke from Antarctica ~130 Ma, then collided with Asia ~55 Ma. Australia later docked with India ~40 Ma forming a single plate.","features":"Subcontinent India, Australia, much of the Indian Ocean.","interesting":"Some researchers argue India and Australia are slowly splitting along a diffuse boundary in the Indian Ocean. Could be re-divided into 2 plates eventually."},{"name":__alloT('stem.platetectonics.nazca_plate', "Nazca Plate"),"area":"15,600,000 km²","motion":"E at 6-8 cm/yr","boundaries":"East Pacific Rise (W), Peru-Chile Trench (E), Galapagos-Cocos junction (N), Antarctic ridge (S).","history":"Formed by breakup of the Farallon Plate (~25 Ma). Continues to be consumed by South American Plate subduction.","features":"Almost entirely oceanic crust. Hosts the Easter, San Felix, Juan Fernandez, and Galapagos hotspot tracks.","interesting":"Will entirely subduct beneath South America in ~30 Ma if current motion continues. The Nazca Plate has fueled Andean volcanism for 50+ Ma."},{"name":__alloT('stem.platetectonics.cocos_plate', "Cocos Plate"),"area":"2,900,000 km²","motion":"NE at 7-8 cm/yr","boundaries":"East Pacific Rise (W), Middle America Trench (E), Galapagos junction (S).","history":"Sibling of the Nazca Plate, formed simultaneously from Farallon Plate breakup.","features":"Small but volcanically prolific. Drives Central American volcanism + earthquakes.","interesting":"1985 Mexico City quake (M8.0) was a subduction-zone Cocos event 350 km away. Site-effect amplification in Mexico City's lake-bed soil multiplied damage."},{"name":__alloT('stem.platetectonics.juan_de_fuca_plate', "Juan de Fuca Plate"),"area":"200,000 km²","motion":"E at 4-5 cm/yr","boundaries":"Juan de Fuca Ridge (W), Cascadia subduction (E), Mendocino fracture zone (S), Explorer microplate (N).","history":"Remnant of the larger Farallon Plate. Originally extended along all of N America's west coast but most has been consumed.","features":"Drives Pacific Northwest geology: Cascade volcanoes, Cascadia earthquakes, Puget Sound geology.","interesting":"Smallest plate not classified as a microplate. Will eventually be consumed entirely; in ~10 Ma there will be no more subduction in the Pacific Northwest."},{"name":__alloT('stem.platetectonics.caribbean_plate', "Caribbean Plate"),"area":"3,200,000 km²","motion":"E at 2 cm/yr (slow)","boundaries":"Cocos subduction (W), Lesser Antilles subduction (E, Atlantic side), N+S American transform/diffuse boundaries.","history":"Formed by complex interactions of Pacific, Atlantic, N and S American plates. Origin debated (in-place vs Pacific-origin).","features":"Caribbean Sea, Central American isthmus + Greater + Lesser Antilles arcs.","interesting":"Hosts Hispaniola (Haiti, DR), site of 2010 quake. Cuba, Jamaica, Puerto Rico are on small attached fragments."},{"name":__alloT('stem.platetectonics.arabian_plate', "Arabian Plate"),"area":"5,000,000 km²","motion":"N at 2 cm/yr","boundaries":"Red Sea Rift (SW), Gulf of Aden Ridge (S), Owen Fracture Zone (E), Zagros suture (N, with Eurasia).","history":"Broke from Africa ~25 Ma when Red Sea rift opened. Continues northward, colliding with Asia.","features":"Saudi Arabia, Yemen, Oman, Iraq, Kuwait, Iran's Zagros foothills.","interesting":"The Zagros Mountains are an active continent-continent collision zone like a young Himalaya. Iran experiences M7+ earthquakes regularly."},{"name":__alloT('stem.platetectonics.philippine_sea_plate', "Philippine Sea Plate"),"area":"5,500,000 km²","motion":"NW at 5 cm/yr","boundaries":"Mariana + Izu-Bonin trenches (E), Japan Trench (NE), Philippine + Nankai trenches (W).","history":"Surrounded by subduction zones on all sides. Internal hotspots, no spreading ridges.","features":"Mostly oceanic. Bounded by some of the world's deepest trenches (Mariana, Philippine).","interesting":"The Mariana Trench (deepest point on Earth, ~11 km) is on its eastern boundary. Hosts incredibly deep earthquakes (down to 660 km depth)."},{"name":__alloT('stem.platetectonics.scotia_plate', "Scotia Plate"),"area":"1,600,000 km²","motion":"E at 2 cm/yr","boundaries":"South Sandwich Trench (E), Shackleton fracture zone (W), American-Antarctic Ridge (S).","history":"Formed ~30 Ma as the South American + Antarctic plates separated. Houses the most remote islands on Earth.","features":"Mostly oceanic. South Sandwich volcanic arc on eastern margin.","interesting":"South Georgia, South Sandwich, Falklands all in this region. Ernest Shackleton's 1916 voyage took him across this plate."},{"name":__alloT('stem.platetectonics.burma_microplate_sunda_trench_sliver', "Burma Microplate (Sunda Trench Sliver)"),"area":"Small","motion":"Complex","boundaries":"Sunda Trench (W), Sagaing Fault (E), Andaman spreading center.","history":"Microplate slivered off Sunda Plate. Hosts active strike-slip fault and Andaman backarc spreading.","features":"Includes Burma (Myanmar), Andaman + Nicobar islands.","interesting":"The 2004 Sumatra-Andaman quake (M9.1) ruptured along its western edge, generating the deadliest tsunami in modern history."}];
@@ -12954,7 +12901,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "minerals" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-amber-200 bg-amber-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-amber-800 mb-2' }, __alloT('stem.platetectonics.mineral_catalog', "Mineral Catalog")),
-                React.createElement('p', { className: 'text-xs text-amber-700 mb-3' }, __alloT('stem.platetectonics.60_minerals_with_composition_hardness_', "60 minerals with composition, hardness, cleavage, and economic uses. Organized to support rock identification and economic geology.")),
+                React.createElement('p', { className: 'text-xs text-amber-700 mb-3' }, __alloT('stem.platetectonics.minerals_intro_counted', "{n} minerals with composition, hardness, cleavage, and economic uses. Organized to support rock identification and economic geology.").replace('{n}', PT_MINERAL_CARDS)),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-amber-200' },
                     React.createElement('div', { className: 'font-bold text-amber-800 text-sm mb-1' }, __alloT('stem.platetectonics.quartz', "Quartz")),
@@ -14885,7 +14832,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_siberian_traps_volcanism_10_mil', "Causes: Siberian Traps volcanism (10 million km³ of basalt over 1 million years) released massive CO2 + SO2. Ocean acidification + warming + anoxia followed.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_siberian_traps_volcanism_10_mil', "Causes: Siberian Traps volcanism (10 million km³ of basalt over 1 million years) released massive CO2 + SO2. Ocean acidification + warming + anoxia followed."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_3', "What died: ")),
@@ -14904,7 +14851,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_camp_volcanism_central_atlantic', "Causes: CAMP volcanism (Central Atlantic Magmatic Province as Pangaea broke apart) released massive CO2. Ocean acidification + warming.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_camp_volcanism_central_atlantic', "Causes: CAMP volcanism (Central Atlantic Magmatic Province as Pangaea broke apart) released massive CO2. Ocean acidification + warming."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_4', "What died: ")),
@@ -14923,7 +14870,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_chicxulub_asteroid_impact_10_km', "Causes: Chicxulub asteroid impact (10 km, Yucatán) + Deccan Traps volcanism. Impact threw debris worldwide; fires + cold + acid rain.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_chicxulub_asteroid_impact_10_km', "Causes: Chicxulub asteroid impact (10 km, Yucatán) + Deccan Traps volcanism. Impact threw debris worldwide; fires + cold + acid rain."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_5', "What died: ")),
@@ -14942,7 +14889,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_antarctic_glaciation_began_ocea', "Causes: Antarctic glaciation began. Ocean cooling. Greenhouse-to-icehouse transition.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_antarctic_glaciation_began_ocea', "Causes: Antarctic glaciation began. Ocean cooling. Greenhouse-to-icehouse transition."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_6', "What died: ")),
@@ -14961,7 +14908,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_climate_change_human_hunting_se', "Causes: climate change + human hunting. Selective for largest species.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_climate_change_human_hunting_se', "Causes: climate change + human hunting. Selective for largest species."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_7', "What died: ")),
@@ -14980,7 +14927,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_habitat_loss_climate_change_inv', "Causes: habitat loss, climate change, invasive species, pollution, overhunting. All human-driven.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_habitat_loss_climate_change_inv', "Causes: habitat loss, climate change, invasive species, pollution, overhunting. All human-driven."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_8', "What died: ")),
@@ -14999,7 +14946,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_emeishan_traps_volcanism_china_', "Causes: Emeishan Traps volcanism (China). Pre-cursor to greater End-Permian.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_emeishan_traps_volcanism_china_', "Causes: Emeishan Traps volcanism (China). Pre-cursor to greater End-Permian."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_9', "What died: ")),
@@ -15018,7 +14965,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, "Causes: "),
-                      __alloT('stem.platetectonics.causes_karoo_ferrar_volcanic_province_', "Causes: Karoo-Ferrar volcanic province. Ocean anoxia + warming.")
+                      ptStripLabel("Causes", __alloT('stem.platetectonics.causes_karoo_ferrar_volcanic_province_', "Causes: Karoo-Ferrar volcanic province. Ocean anoxia + warming."))
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-amber-700' }, __alloT('stem.platetectonics.what_died_10', "What died: ")),
@@ -16161,7 +16108,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_vredefort_dome_unesco_near_parys', "Visit: Vredefort Dome (UNESCO) near Parys, South Africa.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_vredefort_dome_unesco_near_parys', "Visit: Vredefort Dome (UNESCO) near Parys, South Africa."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16180,7 +16127,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_sudbury_ontario_big_nickel_monum', "Visit: Sudbury, Ontario; Big Nickel monument; Dynamic Earth museum + mine tour.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_sudbury_ontario_big_nickel_monum', "Visit: Sudbury, Ontario; Big Nickel monument; Dynamic Earth museum + mine tour."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16199,7 +16146,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_driving_from_norfolk_to_easton_m', "Visit: Driving from Norfolk to Easton MD crosses the impact zone.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_driving_from_norfolk_to_easton_m', "Visit: Driving from Norfolk to Easton MD crosses the impact zone."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16218,7 +16165,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_daniel_johnson_dam_tour_remote_f', "Visit: Daniel-Johnson Dam tour; remote - fly into Baie-Comeau.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_daniel_johnson_dam_tour_remote_f', "Visit: Daniel-Johnson Dam tour; remote - fly into Baie-Comeau."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16237,7 +16184,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_remote_russian_far_east_mostly_i', "Visit: Remote Russian Far East. Mostly inaccessible.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_remote_russian_far_east_mostly_i', "Visit: Remote Russian Far East. Mostly inaccessible."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16256,7 +16203,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_gawler_ranges_national_park_near', "Visit: Gawler Ranges National Park nearby.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_gawler_ranges_national_park_near', "Visit: Gawler Ranges National Park nearby."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16275,7 +16222,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_remote_south_african_kalahari_no', "Visit: Remote South African Kalahari; not directly accessible.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_remote_south_african_kalahari_no', "Visit: Remote South African Kalahari; not directly accessible."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16294,7 +16241,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_vorkuta_russia_arctic_russia_nea', "Visit: Vorkuta, Russia (Arctic Russia near Ural Mountains).")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_vorkuta_russia_arctic_russia_nea', "Visit: Vorkuta, Russia (Arctic Russia near Ural Mountains)."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16313,7 +16260,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_remote_siberian_vanavara_village', "Visit: Remote Siberian Vanavara village can be base for expeditions.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_remote_siberian_vanavara_village', "Visit: Remote Siberian Vanavara village can be base for expeditions."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16332,7 +16279,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_chelyabinsk_state_museum_has_fra', "Visit: Chelyabinsk State Museum has fragments + displays.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_chelyabinsk_state_museum_has_fra', "Visit: Chelyabinsk State Museum has fragments + displays."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16351,7 +16298,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_privately_owned_museum_guided_to', "Visit: Privately owned; museum + guided tours from Flagstaff or Winslow AZ.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_privately_owned_museum_guided_to', "Visit: Privately owned; museum + guided tours from Flagstaff or Winslow AZ."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16370,7 +16317,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_halls_creek_western_australia_re', "Visit: Halls Creek, Western Australia; remote.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_halls_creek_western_australia_re', "Visit: Halls Creek, Western Australia; remote."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16389,7 +16336,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_henbury_meteorites_conservation_', "Visit: Henbury Meteorites Conservation Reserve, north of Alice Springs.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_henbury_meteorites_conservation_', "Visit: Henbury Meteorites Conservation Reserve, north of Alice Springs."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16408,7 +16355,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_kaali_main_crater_accessible_lak', "Visit: Kaali main crater accessible; lake fills it.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_kaali_main_crater_accessible_lak', "Visit: Kaali main crater accessible; lake fills it."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16427,7 +16374,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_lonar_town_5_hours_from_aurangab', "Visit: Lonar town, 5 hours from Aurangabad. Hotel + temples around lake.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_lonar_town_5_hours_from_aurangab', "Visit: Lonar town, 5 hours from Aurangabad. Hotel + temples around lake."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16446,7 +16393,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_saudi_government_restrictions_ra', "Visit: Saudi government restrictions; rarely accessible.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_saudi_government_restrictions_ra', "Visit: Saudi government restrictions; rarely accessible."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16465,7 +16412,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_russian_sikhote_alin_reserve', "Visit: Russian Sikhote-Alin Reserve.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_russian_sikhote_alin_reserve', "Visit: Russian Sikhote-Alin Reserve."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16484,7 +16431,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_tagish_lake_region_accessible_vi', "Visit: Tagish Lake region accessible via Atlin BC or Whitehorse YT.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_tagish_lake_region_accessible_vi', "Visit: Tagish Lake region accessible via Atlin BC or Whitehorse YT."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-red-200' },
@@ -16503,7 +16450,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-red-700' }, "Visit: "),
-                      __alloT('stem.platetectonics.visit_bayan_lgii_province_nomadic_arch', "Visit: Bayan-Ölgii Province; nomadic + archaeological tourism.")
+                      ptStripLabel("Visit", __alloT('stem.platetectonics.visit_bayan_lgii_province_nomadic_arch', "Visit: Bayan-Ölgii Province; nomadic + archaeological tourism."))
                     )
                   )
                 )
@@ -16587,12 +16534,12 @@ var d = labToolData.plateTectonics || {};
                     });
                     kids.push(e('text', { key: 'wlN', x: 8, y: H - 6, fontSize: 10, fill: muted, fontWeight: 700 }, 'WEST'));
                     kids.push(e('text', { key: 'elN', x: W - 8, y: H - 6, fontSize: 10, fill: muted, fontWeight: 700, textAnchor: 'end' }, 'EAST'));
-                    kids.push(e('text', { key: 'noteN', x: W / 2, y: H - 6, fontSize: 9, fill: muted, textAnchor: 'middle' }, 'schematic — see the key below'));
+                    kids.push(e('text', { key: 'noteN', x: W / 2, y: H - 6, fontSize: 10, fill: muted, textAnchor: 'middle' }, 'schematic — see the key below'));
                     void bgEl;
                   }
                   return e('svg', { key: narrow ? 'narrow' : 'wide', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
                       className: narrow ? 'pt-casc-narrow' : 'pt-casc-wide', 'data-pt-cascadia-layout': narrow ? 'narrow' : 'wide',
-                      'aria-label': 'Cross-section of the Cascadia subduction zone from west to east: the Juan de Fuca plate slides under North America at about 4 centimetres a year. The shallow part of the contact, from the offshore trench to the coast, is locked and releases as a magnitude 9 earthquake every roughly 500 years. Deeper, under the coast ranges, the contact creeps in slow-slip and tremor episodes. Where the plate reaches about 100 kilometres, water drives melting that feeds the Cascade volcanoes.' }, kids);
+                      'aria-label': __alloT('stem.platetectonics.aria_cascadia_section', 'Cross-section of the Cascadia subduction zone from west to east: the Juan de Fuca plate slides under North America at about 4 centimetres a year. The shallow part of the contact, from the offshore trench to the coast, is locked and releases as a magnitude 9 earthquake every roughly 500 years. Deeper, under the coast ranges, the contact creeps in slow-slip and tremor episodes. Where the plate reaches about 100 kilometres, water drives melting that feeds the Cascade volcanoes.') }, kids);
                   };
                   return e('div', { className: 'mb-3 rounded-xl overflow-hidden border ' + (dk ? 'border-blue-900' : 'border-blue-200'), 'data-pt-cascadia-section': 'true' },
                     buildCasc(false), buildCasc(true),
@@ -22513,7 +22460,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_any_patterns_compare_to_nea', "Discussion: any patterns? Compare to nearest plate boundary.")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_any_patterns_compare_to_nea', "Discussion: any patterns? Compare to nearest plate boundary."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22528,7 +22475,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_where_does_stream_incise_wh', "Discussion: where does stream incise + where does it deposit? Why?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_where_does_stream_incise_wh', "Discussion: where does stream incise + where does it deposit? Why?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22543,7 +22490,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_what_is_your_local_geology', "Discussion: what is your local geology?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_what_is_your_local_geology', "Discussion: what is your local geology?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22558,7 +22505,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_prioritize_remaining_items_', "Discussion: prioritize remaining items by cost-benefit.")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_prioritize_remaining_items_', "Discussion: prioritize remaining items by cost-benefit."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22588,7 +22535,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_what_evidence_convinced_you', "Discussion: what evidence convinced you?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_what_evidence_convinced_you', "Discussion: what evidence convinced you?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22603,7 +22550,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_which_plate_does_rate_match', "Discussion: which plate? Does rate match published?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_which_plate_does_rate_match', "Discussion: which plate? Does rate match published?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22618,7 +22565,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_how_did_geology_shape_ances', "Discussion: how did geology shape ancestral economies?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_how_did_geology_shape_ances', "Discussion: how did geology shape ancestral economies?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22633,7 +22580,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_how_long_did_this_profile_t', "Discussion: how long did this profile take to form?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_how_long_did_this_profile_t', "Discussion: how long did this profile take to form?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22648,7 +22595,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_what_s_missing_from_your_mo', "Discussion: what's missing from your model? What real volcanoes do differently.")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_what_s_missing_from_your_mo', "Discussion: what's missing from your model? What real volcanoes do differently."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22678,7 +22625,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_what_controls_crystal_size', "Discussion: what controls crystal size?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_what_controls_crystal_size', "Discussion: what controls crystal size?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22693,7 +22640,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_depositional_environment', "Discussion: depositional environment?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_depositional_environment', "Discussion: depositional environment?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22708,7 +22655,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_is_your_area_at_earthquake_', "Discussion: is your area at earthquake risk?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_is_your_area_at_earthquake_', "Discussion: is your area at earthquake risk?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22723,7 +22670,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_which_minerals_are_mined_lo', "Discussion: which minerals are mined locally + why?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_which_minerals_are_mined_lo', "Discussion: which minerals are mined locally + why?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22738,7 +22685,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_how_does_climate_change_his', "Discussion: how does climate change historically?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_how_does_climate_change_his', "Discussion: how does climate change historically?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22753,7 +22700,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_where_are_steepest_slopes_f', "Discussion: where are steepest slopes + flattest areas?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_where_are_steepest_slopes_f', "Discussion: where are steepest slopes + flattest areas?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22768,7 +22715,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_1_mm_of_unconformity_how_ma', "Discussion: 1 mm of unconformity = how many million years missing?")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_1_mm_of_unconformity_how_ma', "Discussion: 1 mm of unconformity = how many million years missing?"))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22783,7 +22730,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_what_is_wrong_with_this_mod', "Discussion: what is wrong with this model? Real boundaries are wider + more complex.")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_what_is_wrong_with_this_mod', "Discussion: what is wrong with this model? Real boundaries are wider + more complex."))
                     )
                   ),
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-teal-200' },
@@ -22798,7 +22745,7 @@ var d = labToolData.plateTectonics || {};
                     ),
                     React.createElement('div', { className: 'text-[11px] text-slate-700 mb-1' },
                       React.createElement('span', { className: 'font-bold text-teal-700' }, "Discussion: "),
-                      __alloT('stem.platetectonics.discussion_causes_consequences_public_', "Discussion: causes, consequences, public response.")
+                      ptStripLabel("Discussion", __alloT('stem.platetectonics.discussion_causes_consequences_public_', "Discussion: causes, consequences, public response."))
                     )
                   )
                 )
@@ -23118,13 +23065,25 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-indigo-200 bg-indigo-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-indigo-800 mb-2' }, __alloT('stem.platetectonics.quick_review_questions', "Quick-Review Questions")),
                 React.createElement('p', { className: 'text-xs text-indigo-700 mb-3' }, __alloT('stem.platetectonics.60_quick_review_questions_covering_key', "60 quick review questions covering key plate tectonic concepts. Use as flash cards: read the question, try to answer in your head, then check below.")),
-                React.createElement('button', {
-                  type: 'button', 'data-pt-review-reveal-all': String(!!d._ptRevealAll),
-                  onClick: function () { upd({ _ptRevealAll: !d._ptRevealAll, _ptRevealed: {} }); },
-                  className: 'mb-3 px-3 py-1.5 rounded-lg text-[12px] font-bold border bg-white text-indigo-900 border-indigo-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none'
-                }, d._ptRevealAll
-                  ? __alloT('stem.platetectonics.hide_all_answers', 'Hide all answers')
-                  : __alloT('stem.platetectonics.show_all_answers', 'Show all answers')),
+                // Drives the SAME per-card state the individual buttons write, so
+                // the two can never disagree: a separate "reveal all" flag meant a
+                // card's own Hide button had nothing to switch off.
+                (function () {
+                  var opened = Object.keys(d._ptRevealed || {}).length;
+                  var allOpen = opened >= PT_REVIEW_CARDS;
+                  return React.createElement('button', {
+                    type: 'button', 'data-pt-review-reveal-all': String(allOpen),
+                    onClick: function () {
+                      if (allOpen) { upd({ _ptRevealed: {} }); return; }
+                      var m = {};
+                      for (var k = 1; k <= PT_REVIEW_CARDS; k++) m[k] = true;
+                      upd({ _ptRevealed: m });
+                    },
+                    className: 'mb-3 px-3 py-1.5 rounded-lg text-[12px] font-bold border bg-white text-indigo-900 border-indigo-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none'
+                  }, allOpen
+                    ? __alloT('stem.platetectonics.hide_all_answers', 'Hide all answers')
+                    : __alloT('stem.platetectonics.show_all_answers', 'Show all answers'));
+                })(),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                     React.createElement('div', { className: 'font-bold text-indigo-800 text-sm mb-1' }, __alloT('stem.platetectonics.review_question_1', "Review question 1")),
@@ -24723,7 +24682,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "insights" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-sky-200 bg-sky-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-sky-800 mb-2' }, __alloT('stem.platetectonics.big_ideas_insights', "Big Ideas + Insights")),
-                React.createElement('p', { className: 'text-xs text-sky-700 mb-3' }, __alloT('stem.platetectonics.60_insights_into_how_plate_tectonics_s', "60 insights into how plate tectonics shapes Earth + life. Each idea ties an observation to a mechanism + a detail. Browse to build connections across the whole picture.")),
+                React.createElement('p', { className: 'text-xs text-sky-700 mb-3' }, __alloT('stem.platetectonics.insights_intro_counted', "{n} insights into how plate tectonics shapes Earth + life. Each idea ties an observation to a mechanism + a detail. Browse to build connections across the whole picture.").replace('{n}', PT_INSIGHT_CARDS)),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-sky-200' },
                     React.createElement('div', { className: 'font-bold text-sky-800 text-sm mb-1' }, __alloT('stem.platetectonics.why_mountains_exist', "Why mountains exist")),
@@ -26147,7 +26106,9 @@ var d = labToolData.plateTectonics || {};
                   kids.push(h('text', { key: 'st', x: meterX, y: meterY + 98, fontSize: 12 * mf, fill: fMeta.color, fontWeight: 900 }, failed ? 'SLIPPING — the fault gave way' : 'LOCKED — friction is winning'));
                   return h('svg', { key: narrow ? 'narrow' : 'wide', viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-pt-stress-diagram': failure, 'data-pt-stress-net': String(Math.round(netStress)),
                     'data-pt-stress-layout': narrow ? 'narrow' : 'wide',
-                    'aria-label': 'Fault diagram for a ' + iq.btype + ' boundary. Net stress ' + Math.round(netStress) + ' against a failure line of ' + threshold + ': the fault is ' + (failed ? 'slipping' : 'locked') + '.',
+                    'aria-label': __alloT('stem.platetectonics.aria_fault_diagram', 'Fault diagram for a {type} boundary. Net stress {net} against a failure line of {threshold}: the fault is {state}.')
+                      .replace('{type}', iq.btype).replace('{net}', Math.round(netStress)).replace('{threshold}', threshold)
+                      .replace('{state}', failed ? __alloT('stem.platetectonics.sr_slipping', 'slipping') : __alloT('stem.platetectonics.sr_locked', 'locked')),
                     className: (narrow ? 'pt-stress-narrow ' : 'pt-stress-wide ') + 'rounded-lg border ' + (dk ? 'border-slate-700' : 'border-slate-300'), style: { background: dk ? '#0f172a' : '#f8fafc', maxHeight: narrow ? 400 : 220 } }, kids);
                   };
                   return h(React.Fragment, null, buildStress(false), buildStress(true));
@@ -26172,6 +26133,49 @@ var d = labToolData.plateTectonics || {};
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ bt: iq.btype, f: iq.force, fr: iq.friction, st: failure }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.platetectonics.log', '📋 Log')),
                   h('button', { onClick: function() { setIQ({ btype: 'convergent', force: 50, friction: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.platetectonics.reset', '↺ Reset'))
                 ),
+                // The Log button appended trials to `iq.log` and NOTHING rendered
+                // it: the one control that promises a record of your experiments
+                // gave no feedback at all, and the evidence the hypothesis box
+                // asks for was invisible. The table is the point of the activity —
+                // "compare the three types at the same settings" is a question you
+                // answer by reading rows, not by remembering them.
+                (iq.log || []).length ? h('div', {
+                  'data-pt-stress-log': String(iq.log.length),
+                  className: 'rounded-lg border border-amber-300 overflow-x-auto'
+                },
+                  h('table', { className: 'w-full text-[11px] text-slate-700' },
+                    h('caption', { className: 'text-[11px] font-bold text-amber-800 text-left px-2 pt-2 pb-1' },
+                      __alloT('stem.platetectonics.logged_trials', 'Logged trials — newest last, last 8 kept')),
+                    h('thead', null,
+                      h('tr', { className: 'bg-amber-50 text-amber-900' },
+                        // Each heading names its own STATIC key. Building the key
+                        // by concatenation ('trial_col_' + c[0]) hides it from the
+                        // harvester that registers strings for translation, and a
+                        // key that never reaches ui_strings.js is never translated
+                        // for anyone, in any language.
+                        [['bt', __alloT('stem.platetectonics.trial_col_boundary', 'Boundary')],
+                         ['f', __alloT('stem.platetectonics.trial_col_stress', 'Stress')],
+                         ['fr', __alloT('stem.platetectonics.trial_col_friction', 'Friction')],
+                         ['st', __alloT('stem.platetectonics.trial_col_result', 'Result')]].map(function (c) {
+                          return h('th', { key: c[0], scope: 'col', className: 'text-left font-bold px-2 py-1' }, c[1]);
+                        }))),
+                    h('tbody', null, (iq.log || []).map(function (row, ri) {
+                      // The result word is the mode of failure, which is what the
+                      // student is comparing across boundary types.
+                      var RESULT = {
+                        thrust: __alloT('stem.platetectonics.trial_thrust', 'Thrust faulting'),
+                        normal: __alloT('stem.platetectonics.trial_normal', 'Normal faulting'),
+                        strikeSlip: __alloT('stem.platetectonics.trial_strikeslip', 'Strike-slip'),
+                        stable: __alloT('stem.platetectonics.trial_stable', 'Held — no slip')
+                      };
+                      return h('tr', { key: ri, className: ri % 2 ? 'bg-white' : 'bg-amber-50/40' },
+                        h('td', { className: 'px-2 py-1' }, row.bt),
+                        h('td', { className: 'px-2 py-1 font-mono' }, row.f + '%'),
+                        h('td', { className: 'px-2 py-1 font-mono' }, row.fr + '%'),
+                        h('td', { className: 'px-2 py-1 font-bold', style: { color: row.st === 'stable' ? '#047857' : '#b45309' } },
+                          RESULT[row.st] || row.st));
+                    }))
+                  )) : null,
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': __alloT('stem.platetectonics.hypothesis_input', 'Fault stability hypothesis'), placeholder: __alloT('stem.platetectonics.hypothesis_when_does_friction_make_a_f', 'Hypothesis: When does friction make a fault stable?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.platetectonics.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
@@ -26246,7 +26250,7 @@ var d = labToolData.plateTectonics || {};
                   // drawn from above. The old label listed the three words and
                   // nothing else, so a nonvisual reader got no more than the
                   // heading already gave them.
-                  'aria-label': 'Three diagrams comparing the plate boundary types. Convergent, seen in side view: a thin oceanic plate sits lower than a thicker continental plate, bends down at a trench and carries on beneath it as a slab, and a volcano stands on the upper plate set back from the trench. Divergent, seen in side view: two plates move apart and melt rises into the gap and freezes as new crust between them. Transform, seen from above rather than in section, because the motion runs along the boundary: a single stream is cut in two and carried apart across the fault trace, with earthquakes on the fault and the two blocks moving in opposite directions.',
+                  'aria-label': __alloT('stem.platetectonics.aria_three_boundaries', 'Three diagrams comparing the plate boundary types. Convergent, seen in side view: a thin oceanic plate sits lower than a thicker continental plate, bends down at a trench and carries on beneath it as a slab, and a volcano stands on the upper plate set back from the trench. Divergent, seen in side view: two plates move apart and melt rises into the gap and freezes as new crust between them. Transform, seen from above rather than in section, because the motion runs along the boundary: a single stream is cut in two and carried apart across the fault trace, with earthquakes on the fault and the two blocks moving in opposite directions.'),
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     // Live theme channel. React re-fires an inline ref on every
@@ -26455,7 +26459,7 @@ var d = labToolData.plateTectonics || {};
                           c2.fillRect(cx - gap / 2, gy, gap, pt * 0.55);
                           c2.fillStyle = dk ? '#fca5a5' : '#9a3412';
                           c2.font = 'bold 9px sans-serif';
-                          c2.fillText('new crust', cx + gap * 2.4, gy + pt * 0.5);
+                          c2.fillText(__alloT('stem.platetectonics.fig_new_crust', 'new crust'), cx + gap * 2.4, gy + pt * 0.5);
                           var ay1 = Math.max(stageTop + 8, gy - 12);
                           arrow(cx - gap / 2 - hw * 0.5, ay1, -1, cell.ink);
                           arrow(cx + gap / 2 + hw * 0.5, ay1, 1, cell.ink);
@@ -26502,7 +26506,7 @@ var d = labToolData.plateTectonics || {};
                           c2.fillStyle = dk ? '#fde68a' : '#78350f';
                           c2.font = 'bold 10px sans-serif';
                           c2.textAlign = 'center';
-                          c2.fillText('one stream, cut in two', cx, mBot + 11);
+                          c2.fillText(__alloT('stem.platetectonics.fig_one_stream_cut', 'one stream, cut in two'), cx, mBot + 11);
                         }
 
                         // ── Caption ───────────────────────────────────────────────
@@ -26604,7 +26608,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'pt-eq-shell rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-orange-200'), style: { background: isDark ? '#0a0410' : '#fdf4ff' } },
                 React.createElement('canvas', {
                   role: 'img', tabIndex: 0,
-                  'aria-label': 'Two columns comparing the two earthquake scales. On the left, magnitude: three traces for a magnitude 4, 6 and 8 earthquake, each about ten times the shaking of the one above it — one number for the whole earthquake, read off a recording. On the right, intensity for a single magnitude 7 earthquake felt at four distances: Mercalli nine at ten kilometres, buildings shifted off their foundations; seven at sixty kilometres, chimneys fall and it is hard to stand; five at two hundred kilometres, dishes rattle and sleepers wake; two at six hundred kilometres, felt only by a few people at rest. Magnitude is what the earthquake did; intensity is what it did to you, where you were standing.',
+                  'aria-label': __alloT('stem.platetectonics.aria_magnitude_vs_intensity', 'Two columns comparing the two earthquake scales. On the left, magnitude: three traces for a magnitude 4, 6 and 8 earthquake, each about ten times the shaking of the one above it — one number for the whole earthquake, read off a recording. On the right, intensity for a single magnitude 7 earthquake felt at four distances: Mercalli nine at ten kilometres, buildings shifted off their foundations; seven at sixty kilometres, chimneys fall and it is hard to stand; five at two hundred kilometres, dishes rattle and sleepers wake; two at six hundred kilometres, felt only by a few people at rest. Magnitude is what the earthquake did; intensity is what it did to you, where you were standing.'),
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     // Live theme channel: the loop starts once and would otherwise
@@ -26797,10 +26801,10 @@ var d = labToolData.plateTectonics || {};
             ),
 
             // ═══ INTERACTIVE PLATE BOUNDARY SIMULATOR ═══
-            ptShelfOpen && React.createElement(window.AlloTectonicsInteractive, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR }),
+            ptShelfOpen && React.createElement(window.AlloTectonicsInteractive, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR, t: __alloT }),
 
             // ═══ INTERACTIVE EPICENTER TRIANGULATION ═══
-            ptShelfOpen && React.createElement(window.AlloTectonicsEpicenter, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR, addToast: addToast })
+            ptShelfOpen && React.createElement(window.AlloTectonicsEpicenter, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR, addToast: addToast, t: __alloT })
 
           );
       })();

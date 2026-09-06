@@ -2946,10 +2946,12 @@
     // ══════════════════════════════════════════════════════════════
     // ── STL Export ──
     // ══════════════════════════════════════════════════════════════
-    var exportSTL = function () {
-      if (blocks.length === 0) return;
+    // Builds the binary STL once for both the download and the Print Lab handoff
+    // (2026-09-05). Returns null when the 3D engine has no geometry yet.
+    var buildArchStl = function () {
+      if (blocks.length === 0) return null;
       var geos = ArchGL.stlGeometries(blocks);
-      if (geos.length === 0) { if (ctx.addToast) ctx.addToast('\u26A0\uFE0F 3D engine is not ready for STL export', 'error'); return; }
+      if (geos.length === 0) return null;
       var positions = [], normals = [];
       geos.forEach(function (g) {
         var idx = g.index, pos = g.getAttribute('position'), nrm = g.getAttribute('normal');
@@ -2968,10 +2970,35 @@
         for (var v = 0; v < 3; v++) { var pi = t * 9 + v * 3; dv.setFloat32(offset, positions[pi], true); dv.setFloat32(offset + 4, positions[pi + 1], true); dv.setFloat32(offset + 8, positions[pi + 2], true); offset += 12; }
         dv.setUint16(offset, 0, true); offset += 2;
       }
-      var blob = new Blob([buf], { type: 'application/octet-stream' }), url = URL.createObjectURL(blob);
+      return { buffer: buf, triangleCount: triCount, blockCount: blocks.length };
+    };
+    var exportSTL = function () {
+      var bundle = buildArchStl();
+      if (!bundle) { if (blocks.length && ctx.addToast) ctx.addToast('\u26A0\uFE0F 3D engine is not ready for STL export', 'error'); return; }
+      var blob = new Blob([bundle.buffer], { type: 'application/octet-stream' }), url = URL.createObjectURL(blob);
       var a = document.createElement('a'); a.href = url; a.download = 'architecture_studio_' + Date.now() + '.stl'; a.click();
       URL.revokeObjectURL(url);
       if (ctx.addToast) ctx.addToast('\uD83C\uDFD7\uFE0F Exported as STL!', 'success');
+    };
+    // Continue in Print Lab: hand the same STL over locally, the way Geometry
+    // World does, instead of asking the student to download and re-open it.
+    var sendToPrintLab = function () {
+      var bundle = buildArchStl();
+      if (!bundle) { if (blocks.length && ctx.addToast) ctx.addToast('\u26A0\uFE0F 3D engine is not ready to hand the model to Print Lab', 'error'); return; }
+      if (typeof ctx.setStemLabTool !== 'function') { exportSTL(); if (ctx.addToast) ctx.addToast('Print Lab navigation is unavailable here, so the STL was downloaded instead.', 'info'); return; }
+      window.__alloPrintLabPendingHandoff = {
+        schema: 'alloflow-print-source/1',
+        id: 'arch-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+        sourceTool: 'archStudio', format: 'STL',
+        bytes: new Uint8Array(bundle.buffer),
+        sourceName: 'architecture-studio-build.stl',
+        title: 'Architecture Studio build - ' + bundle.blockCount + ' blocks',
+        description: 'Created in Architecture Studio. Studio materials are appearance labels; choose the physical scale and filament in Print Lab.',
+        unitMm: 5,
+        summary: { blockCount: bundle.blockCount, triangleCount: bundle.triangleCount }
+      };
+      if (typeof announceToSR === 'function') announceToSR('Building handed to Print Lab as an STL model. Opening Print Lab.');
+      ctx.setStemLabTool('printLab');
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -3425,6 +3452,8 @@
         + '#arch-studio-region .arch-studio-coach{box-shadow:0 -8px 22px rgba(2,6,23,.16);}'
         + '#arch-studio-region .arch-studio-inquiry{max-height:42vh;overflow-y:auto;flex:none;}'
         + '@keyframes arch-panel-in{from{opacity:0;transform:translateY(5px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}'
+        + '#arch-studio-region [data-arch-empty-state]{animation-name:arch-panel-in-centered;}'
+        + '@keyframes arch-panel-in-centered{from{opacity:0;transform:translate(-50%,-50%) translateY(5px) scale(.985)}to{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1)}}'
         + '.theme-contrast #arch-studio-region{background:#000!important;box-shadow:none!important;'
         + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
         + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
@@ -3516,6 +3545,7 @@
         // Export buttons
         el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG'),
         el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG'),
+        el('button', { type: 'button', onClick: sendToPrintLab, disabled: !blocks.length, 'aria-label': t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), title: t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDA8\uFE0F ' + t('stem.archstudio.print_lab', 'Print Lab')),
         el('button', { onClick: exportSTL, disabled: !blocks.length, style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDCE5 STL')
         )
       ),
@@ -3665,6 +3695,18 @@
               el('button', { type: 'button', onClick: mirrorBuildZ, disabled: showReplay || !blocks.length, 'aria-label': 'Mirror entire build across the Z axis', title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the Z axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
               el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, 'aria-pressed': symmetryMode, 'aria-label': 'Symmetry: mirror edits across X equals zero', title: 'Mirror place, paint, and erase edits across X=0', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
             )
+          ),
+
+          // Print & export (2026-09-05). The toolbar's export group sits at the far
+          // right of a row that scrolls off-screen on ordinary displays, so the two
+          // actions a student is most likely to want live in the sidebar as well.
+          el('div', null,
+            el('div', { id: 'arch-print-heading', style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDA8\uFE0F ' + t('stem.archstudio.print_export', 'Print & export')),
+            el('div', { role: 'group', 'aria-labelledby': 'arch-print-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 4 } },
+              el('button', { type: 'button', onClick: sendToPrintLab, disabled: !blocks.length, 'aria-label': t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), title: t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), style: { minHeight: 40, padding: '6px 5px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: '2px solid ' + (blocks.length ? '#a78bfa' : '#334155'), background: blocks.length ? 'rgba(124,58,237,.18)' : 'transparent', color: blocks.length ? '#ede9fe' : '#64748b', cursor: blocks.length ? 'pointer' : 'default' } }, '\uD83D\uDDA8\uFE0F ' + t('stem.archstudio.print_lab', 'Print Lab')),
+              el('button', { type: 'button', onClick: exportSTL, disabled: !blocks.length, 'aria-label': t('stem.archstudio.export_stl_aria', 'Download this building as an STL file'), title: t('stem.archstudio.export_stl_aria', 'Download this building as an STL file'), style: { minHeight: 40, padding: '6px 5px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: '2px solid ' + (blocks.length ? '#f59e0b' : '#334155'), background: blocks.length ? 'rgba(180,83,9,.18)' : 'transparent', color: blocks.length ? '#fde68a' : '#64748b', cursor: blocks.length ? 'pointer' : 'default' } }, '\uD83D\uDCE5 ' + t('stem.archstudio.export_stl', 'STL file'))
+            ),
+            el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, lineHeight: 1.35 } }, t('stem.archstudio.print_note', 'Print Lab previews the real geometry, sets scale, and prepares a staff-reviewed request. Nothing here spends points.'))
           ),
 
           // Budget bar (when enabled)

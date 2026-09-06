@@ -171,6 +171,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   function bandRank(b) { var i = BANDS.indexOf(b); return i < 0 ? 2 : i; }
   // atLeast('g68') is the gate used throughout: a feature appears from that band up.
   function atLeast(band, floor) { return bandRank(band) >= bandRank(floor); }
+  // Chips in the knowledge-check trail wrap by row on a phone. Twelve of them left one
+  // chip alone on a second row, so the column count is chosen to keep at least two on the
+  // final row: the widest count that fits the narrow layout, stepping down until the
+  // remainder is not exactly one.
+  function trailColumns(n) {
+    for (var c = 6; c >= 3; c--) { if (n <= c) return c; var rem = n % c; if (rem === 0 || rem >= 2) return c; }
+    return 6;
+  }
 
   // ─────────────────────────────────────────────────────────
   // SECTION 2: SPECIES
@@ -1322,7 +1330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     return out;
   }
 
-  var GROVE_CSS = ".allo-tree-grove{color:var(--grove-ink);font-size:14px;line-height:1.55;min-width:0;position:relative}\n.allo-tree-grove *{box-sizing:border-box}\n.allo-tree-grove h2,.allo-tree-grove h3,.allo-tree-grove p{margin:0}\n.allo-tree-grove p+p{margin-top:9px}\n.grove-header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px}\n.grove-header h2{font-size:clamp(28px,3.8vw,42px);line-height:1.12;letter-spacing:-.035em;margin:6px 0 10px}\n.grove-header p{max-width:650px;color:var(--grove-muted)}\n.grove-eyebrow{font-size:10px;font-weight:850;letter-spacing:.13em;color:var(--grove-muted)}\n.grove-year{display:grid;min-width:110px;text-align:center;border-left:1px solid var(--grove-line);padding-left:24px}\n.grove-year strong{font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:-.03em}.grove-year span{font-size:11px;color:var(--grove-muted)}\n.grove-progress{display:flex;gap:7px;margin-bottom:20px}.grove-progress span{flex:1;border-radius:5px;border:1px solid var(--grove-line);text-align:center;font-size:12px;padding:2px 0;font-variant-numeric:tabular-nums;background:var(--grove-card)}\n.grove-progress .is-complete{background:var(--grove-accent);color:var(--grove-on-accent);border-color:var(--grove-accent)}\n.grove-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,1fr);gap:22px;align-items:start}\n.grove-landscape{min-width:0;padding:15px;border:1px solid var(--grove-line);border-radius:22px;background:var(--grove-wash)}\n.grove-stats{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 4px 14px;font-size:11px;color:var(--grove-muted)}\n.grove-stats strong{font-size:19px;color:var(--grove-ink);font-variant-numeric:tabular-nums;margin-right:3px}\n.grove-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;isolation:isolate}\n.grove-patch{position:relative;border:1px solid var(--grove-line);background:var(--grove-patch);border-radius:15px;padding:9px 4px 7px;cursor:pointer;min-width:0;color:var(--grove-ink);font:inherit;text-align:center;transition:box-shadow .15s ease}\n.grove-patch.is-damp{background:var(--grove-damp)}.grove-patch.is-exposed{background:var(--grove-exposed)}\n.grove-patch:hover{box-shadow:inset 0 0 0 2px var(--grove-accent)}.grove-patch.is-selected{outline:3px solid var(--grove-accent);outline-offset:1px;z-index:1}\n.grove-patch-name{display:block;font-size:10px;font-weight:750;line-height:1.25;min-height:25px}.grove-patch-count{display:block;font-size:10px;font-weight:650;line-height:1.2}\n.grove-patch svg{display:block;width:100%;height:auto;max-height:116px;overflow:visible}\n.grove-caption{font-size:12px;line-height:1.5;color:var(--grove-muted);margin-top:9px!important}\n.grove-inspect{padding:15px 3px 0;margin-top:12px;border-top:1px solid var(--grove-line)}.grove-inspect h3{font-size:16px}\n.grove-inspect p,.grove-inspect li{font-size:12px}.grove-inspect ul{padding-left:18px;margin:9px 0}\n.grove-inspect details{margin-top:10px}.allo-tree-grove summary{cursor:pointer;font-weight:750;padding:8px 0;font-size:13px;min-height:36px}\n.grove-decisions{min-width:0}.grove-decisions h3{font-size:21px;line-height:1.25;margin:5px 0 10px;letter-spacing:-.02em}\n.grove-setup,.grove-forecast,.grove-ending{padding:18px;background:var(--grove-card);border:1px solid var(--grove-line);border-radius:17px}\n.grove-setup>label,.grove-turn>div>label{display:block;font-size:12px;font-weight:750;margin:16px 0 5px}\n.allo-tree-grove select,.allo-tree-grove input:not([type=radio]){width:100%;min-width:0;min-height:42px;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;padding:7px 9px}\n.grove-priorities{border:0;margin:17px 0 10px;padding:0;min-width:0}.grove-priorities legend{font-size:13px;font-weight:800;margin-bottom:8px}\n.grove-priority{display:flex;align-items:start;gap:10px;padding:12px;margin-bottom:8px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card);cursor:pointer}\n.grove-priority.is-selected{border-color:var(--grove-accent);box-shadow:inset 3px 0 var(--grove-accent);background:var(--grove-wash)}\n.grove-priority input{margin-top:4px;accent-color:var(--grove-accent);flex-shrink:0;width:16px;height:16px}.grove-priority strong{display:block;font-size:14px}.grove-priority span span{display:block;font-size:12px;color:var(--grove-muted);margin-top:2px}\n.grove-action{display:block;width:100%;border:1px solid var(--grove-accent);border-radius:10px;background:var(--grove-accent);color:var(--grove-on-accent);font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:10px 12px;margin-top:14px;cursor:pointer}\n.grove-action:disabled{opacity:.5;cursor:not-allowed}.grove-replay{border-top:1px solid var(--grove-line);margin-top:16px;padding-top:3px}.grove-replay .grove-action{background:var(--grove-card);color:var(--grove-ink);border-color:var(--grove-line);font-weight:650;font-size:12px;margin-top:9px}\n.grove-receipt{margin-top:22px;padding:20px;border:1px solid var(--grove-line);border-left:4px solid var(--grove-accent);border-radius:14px;background:var(--grove-card)}.grove-receipt h3{font-size:20px;margin:4px 0 10px}\n.grove-notebook{margin-top:12px;border-top:1px solid var(--grove-line);padding:8px 2px}.grove-notebook p,.grove-notebook li{font-size:13px}.grove-notebook li+li{margin-top:5px}.grove-notebook a{color:var(--grove-ink);text-decoration:underline}\n.allo-tree-grove button:focus-visible,.allo-tree-grove summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px}\n.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-stats,.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-field:has(#treelab-species),.allo-tree-lab:has(.allo-tree-grove) .allo-tree-setup-label{display:none!important}\n@media(max-width:960px){.grove-layout{grid-template-columns:1fr}.grove-map{max-width:680px;margin:auto}.grove-patch svg{max-height:130px}.grove-decisions{display:block}.grove-header{gap:12px}.grove-year{padding-left:12px;min-width:85px}}\n@media(max-width:480px){.grove-landscape{padding:10px;border-radius:16px}.grove-map{gap:6px}.grove-patch{border-radius:10px;padding:8px 2px}.grove-patch-name{font-size:9px}.grove-patch-count{font-size:9px}.grove-stats{gap:6px}.grove-stats strong{font-size:16px}.grove-stats span{flex:1;min-width:65px}.grove-header h2{font-size:28px}.grove-year strong{font-size:23px}.grove-progress{gap:4px}}\n.grove-patch-badge{position:absolute;top:5px;right:5px;font-size:10px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;background:var(--grove-accent);color:var(--grove-on-accent)}.grove-patch-badge.is-loss{background:var(--grove-ink);color:var(--grove-card)}\n.grove-predict{margin-top:14px;padding:12px 14px 14px;border:1px dashed var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-predict .grove-eyebrow{display:block}\n.grove-receipt h4,.grove-ending h4{font-size:13px;margin:14px 0 4px}.grove-where,.grove-ledger{padding-left:18px;margin:6px 0}.grove-where li,.grove-ledger li{font-size:13px}.grove-where li+li,.grove-ledger li+li{margin-top:4px}\n.grove-prediction{margin-top:12px;padding:10px 12px;border-left:3px solid var(--grove-accent);background:var(--grove-wash);border-radius:6px}.grove-prediction h4{margin-top:0}\n.grove-chart{margin:12px 0;padding:10px 12px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-chart svg{display:block;width:100%;max-width:520px;height:auto}.grove-chart figcaption{font-size:12px;font-weight:750;margin-bottom:6px}\n.grove-chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--grove-muted);margin-top:6px}.grove-chart-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}\n.grove-patch-dry{position:absolute;top:5px;left:5px;font-size:9px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;border:1px solid var(--grove-ink);color:var(--grove-ink);background:var(--grove-card)}.grove-patch.is-dry-next{border-style:dashed;border-color:var(--grove-ink)}\n.grove-risk{margin-top:10px!important;padding:8px 10px;border-radius:8px;border:1px dashed var(--grove-line);font-size:12px;line-height:1.5;color:var(--grove-ink)}\n.grove-notebook ul{list-style:disc;padding-left:20px;margin:8px 0}.grove-notebook ol{list-style:decimal;padding-left:24px;margin:8px 0}\n.allo-tree-grove textarea{width:100%;min-width:0;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;font-size:13px;padding:8px 9px;resize:vertical}.grove-ending label{display:block;font-size:12px;font-weight:750;margin:14px 0 5px}\n.grove-glyph.is-new{animation:grove-pop .7s cubic-bezier(.2,.9,.3,1.2) both;transform-box:fill-box;transform-origin:50% 100%}@keyframes grove-pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}\n.grove-patch-water{display:block;height:4px;border-radius:2px;background:var(--grove-line);margin:6px 12px 0;overflow:hidden}.grove-patch-water i{display:block;height:100%;background:var(--grove-accent);border-radius:2px}\n.grove-discovery{margin:6px 0 10px;padding:8px 11px;border-radius:9px;background:var(--grove-wash);border:1px solid var(--grove-accent);font-weight:750;font-size:13px}\n.grove-progress span{white-space:nowrap;overflow:hidden;text-overflow:clip}\n.grove-skip{position:absolute;left:-9999px;top:0;padding:8px 12px;border-radius:8px;background:var(--grove-accent);color:var(--grove-on-accent);font-weight:750;font-size:13px;z-index:5}.grove-skip:focus{left:0;outline:3px solid var(--tree-focus);outline-offset:3px}\n.grove-decisions:focus{outline:none}.allo-tree-grove h3:focus{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:4px}\n.grove-goal-dots{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}.grove-goal-dots i{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--grove-accent);background:transparent}.grove-goal-dots i.is-filled{background:var(--grove-accent)}\n.grove-share{margin-top:10px}.grove-share-buttons{display:flex;gap:8px;flex-wrap:wrap}.grove-share-buttons .grove-action{flex:1 1 140px;margin-top:0}.grove-share-text{margin-top:8px;font-size:12px}\n.grove-evidence-link{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--grove-ink);text-decoration:underline;text-underline-offset:3px;min-height:24px}.grove-evidence-link:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px;border-radius:4px}\n.grove-receipt:focus{outline:3px solid var(--tree-focus);outline-offset:2px}\n@media(prefers-reduced-motion:reduce){.grove-patch{transition:none}.grove-glyph.is-new{animation:none}}\n";
+  var GROVE_CSS = ".allo-tree-grove{color:var(--grove-ink);font-size:14px;line-height:1.55;min-width:0;position:relative}\n.allo-tree-grove *{box-sizing:border-box}\n.allo-tree-grove h2,.allo-tree-grove h3,.allo-tree-grove p{margin:0}\n.allo-tree-grove p+p{margin-top:9px}\n.grove-header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:18px}\n.grove-header h3{font-size:clamp(28px,3.8vw,42px);line-height:1.12;letter-spacing:-.035em;margin:6px 0 10px}\n.grove-header p{max-width:650px;color:var(--grove-muted)}\n.grove-eyebrow{font-size:10px;font-weight:850;letter-spacing:.13em;color:var(--grove-muted)}\n.grove-year{display:grid;min-width:110px;text-align:center;border-left:1px solid var(--grove-line);padding-left:24px}\n.grove-year strong{font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:-.03em}.grove-year span{font-size:11px;color:var(--grove-muted)}\n.grove-progress{display:flex;gap:7px;margin-bottom:20px}.grove-progress span{flex:1;border-radius:5px;border:1px solid var(--grove-line);text-align:center;font-size:12px;padding:2px 0;font-variant-numeric:tabular-nums;background:var(--grove-card)}\n.grove-progress .is-complete{background:var(--grove-accent);color:var(--grove-on-accent);border-color:var(--grove-accent)}\n.grove-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,1fr);gap:22px;align-items:start}\n.grove-landscape{min-width:0;padding:15px;border:1px solid var(--grove-line);border-radius:22px;background:var(--grove-wash)}\n.grove-stats{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 4px 14px;font-size:11px;color:var(--grove-muted)}\n.grove-stats strong{font-size:19px;color:var(--grove-ink);font-variant-numeric:tabular-nums;margin-right:3px}\n.grove-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;isolation:isolate}\n.grove-patch{position:relative;border:1px solid var(--grove-line);background:var(--grove-patch);border-radius:15px;padding:9px 4px 7px;cursor:pointer;min-width:0;color:var(--grove-ink);font:inherit;text-align:center;transition:box-shadow .15s ease}\n.grove-patch.is-damp{background:var(--grove-damp)}.grove-patch.is-exposed{background:var(--grove-exposed)}\n.grove-patch:hover{box-shadow:inset 0 0 0 2px var(--grove-accent)}.grove-patch.is-selected{box-shadow:inset 0 0 0 3px var(--grove-accent);border-color:var(--grove-accent);z-index:1}\n.grove-patch-name{display:block;font-size:10px;font-weight:750;line-height:1.25;min-height:25px}.grove-patch-count{display:block;font-size:10px;font-weight:650;line-height:1.2}\n.grove-patch svg{display:block;width:100%;height:auto;max-height:116px;overflow:visible}\n.grove-caption{font-size:12px;line-height:1.5;color:var(--grove-muted);margin-top:9px!important}\n.grove-inspect{padding:15px 3px 0;margin-top:12px;border-top:1px solid var(--grove-line)}.grove-inspect h3{font-size:16px}\n.grove-inspect p,.grove-inspect li{font-size:12px}.grove-inspect ul{padding-left:18px;margin:9px 0}\n.grove-inspect details{margin-top:10px}.allo-tree-grove summary{cursor:pointer;font-weight:750;padding:8px 0;font-size:13px;min-height:36px}\n.grove-decisions{min-width:0}.grove-decisions h3{font-size:21px;line-height:1.25;margin:5px 0 10px;letter-spacing:-.02em}\n.grove-setup,.grove-forecast,.grove-ending{padding:18px;background:var(--grove-card);border:1px solid var(--grove-line);border-radius:17px}\n.grove-setup>label,.grove-turn>div>label{display:block;font-size:12px;font-weight:750;margin:16px 0 5px}\n.allo-tree-grove select,.allo-tree-grove input:not([type=radio]){width:100%;min-width:0;min-height:42px;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;padding:7px 9px}\n.grove-priorities{border:0;margin:17px 0 10px;padding:0;min-width:0}.grove-priorities legend{font-size:13px;font-weight:800;margin-bottom:8px}\n.grove-priority{display:flex;align-items:start;gap:10px;padding:12px;margin-bottom:8px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card);cursor:pointer}\n.grove-priority.is-selected{border-color:var(--grove-accent);box-shadow:inset 3px 0 var(--grove-accent);background:var(--grove-wash)}\n.grove-priority input{margin-top:4px;accent-color:var(--grove-accent);flex-shrink:0;width:16px;height:16px}.grove-priority strong{display:block;font-size:14px}.grove-priority span span{display:block;font-size:12px;color:var(--grove-muted);margin-top:2px}\n.grove-action{display:block;width:100%;border:1px solid var(--grove-accent);border-radius:10px;background:var(--grove-accent);color:var(--grove-on-accent);font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:10px 12px;margin-top:14px;cursor:pointer}\n.grove-action:disabled{opacity:.5;cursor:not-allowed}.grove-replay{border-top:1px solid var(--grove-line);margin-top:16px;padding-top:3px}.grove-replay .grove-action{background:var(--grove-card);color:var(--grove-ink);border-color:var(--grove-line);font-weight:650;font-size:12px;margin-top:9px}\n.grove-receipt{margin-top:22px;padding:20px;border:1px solid var(--grove-line);border-left:4px solid var(--grove-accent);border-radius:14px;background:var(--grove-card)}.grove-receipt h3{font-size:20px;margin:4px 0 10px}\n.grove-notebook{margin-top:12px;border-top:1px solid var(--grove-line);padding:8px 2px}.grove-notebook p,.grove-notebook li{font-size:13px}.grove-notebook li+li{margin-top:5px}.grove-notebook a{color:var(--grove-ink);text-decoration:underline}\n.allo-tree-grove button:focus-visible,.allo-tree-grove summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px}\n.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-stats,.allo-tree-lab:has(.allo-tree-grove) .allo-tree-hero-field:has(#treelab-species),.allo-tree-lab:has(.allo-tree-grove) .allo-tree-setup-label{display:none!important}\n@media(max-width:960px){.grove-layout{grid-template-columns:1fr}.grove-map{max-width:680px;margin:auto}.grove-patch svg{max-height:130px}.grove-decisions{display:block}.grove-header{gap:12px}.grove-year{padding-left:12px;min-width:85px}}\n@media(max-width:480px){.grove-landscape{padding:10px;border-radius:16px}.grove-map{gap:6px}.grove-patch{border-radius:10px;padding:8px 2px}.grove-patch-name{font-size:9px}.grove-patch-count{font-size:9px}.grove-stats{gap:6px}.grove-stats strong{font-size:16px}.grove-stats span{flex:1;min-width:65px}.grove-header h3{font-size:28px}.grove-year strong{font-size:23px}.grove-progress{gap:4px}}\n.grove-patch-badge{position:absolute;top:5px;right:5px;font-size:10px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;background:var(--grove-accent);color:var(--grove-on-accent)}.grove-patch-badge.is-loss{background:var(--grove-ink);color:var(--grove-card)}\n.grove-predict{margin-top:14px;padding:12px 14px 14px;border:1px dashed var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-predict .grove-eyebrow{display:block}\n.grove-receipt h4,.grove-ending h4{font-size:13px;margin:14px 0 4px}.grove-where,.grove-ledger{padding-left:18px;margin:6px 0}.grove-where li,.grove-ledger li{font-size:13px}.grove-where li+li,.grove-ledger li+li{margin-top:4px}\n.grove-prediction{margin-top:12px;padding:10px 12px;border-left:3px solid var(--grove-accent);background:var(--grove-wash);border-radius:6px}.grove-prediction h4{margin-top:0}\n.grove-chart{margin:12px 0;padding:10px 12px;border:1px solid var(--grove-line);border-radius:12px;background:var(--grove-card)}.grove-chart svg{display:block;width:100%;max-width:520px;height:auto}.grove-chart figcaption{font-size:12px;font-weight:750;margin-bottom:6px}\n.grove-chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--grove-muted);margin-top:6px}.grove-chart-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}\n.grove-patch-dry{position:absolute;top:5px;left:5px;font-size:9px;font-weight:800;line-height:1;border-radius:999px;padding:3px 6px;border:1px solid var(--grove-ink);color:var(--grove-ink);background:var(--grove-card)}.grove-patch.is-dry-next{border-style:dashed;border-color:var(--grove-ink)}\n.grove-risk{margin-top:10px!important;padding:8px 10px;border-radius:8px;border:1px dashed var(--grove-line);font-size:12px;line-height:1.5;color:var(--grove-ink)}\n.grove-notebook ul{list-style:disc;padding-left:20px;margin:8px 0}.grove-notebook ol{list-style:decimal;padding-left:24px;margin:8px 0}\n.allo-tree-grove textarea{width:100%;min-width:0;border:1px solid var(--grove-line);border-radius:8px;background:var(--grove-card);color:var(--grove-ink);font:inherit;font-size:13px;padding:8px 9px;resize:vertical}.grove-ending label{display:block;font-size:12px;font-weight:750;margin:14px 0 5px}\n.grove-glyph.is-new{animation:grove-pop .7s cubic-bezier(.2,.9,.3,1.2) both;transform-box:fill-box;transform-origin:50% 100%}@keyframes grove-pop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}\n.grove-patch-water{display:block;height:4px;border-radius:2px;background:var(--grove-track);margin:6px 12px 0;overflow:hidden}.grove-patch-water i{display:block;height:100%;background:var(--grove-accent);border-radius:2px}\n.grove-discovery{margin:6px 0 10px;padding:8px 11px;border-radius:9px;background:var(--grove-wash);border:1px solid var(--grove-accent);font-weight:750;font-size:13px}\n.grove-progress span{white-space:nowrap;overflow:hidden;text-overflow:clip}\n.grove-skip{position:absolute;left:-9999px;top:0;padding:8px 12px;border-radius:8px;background:var(--grove-accent);color:var(--grove-on-accent);font-weight:750;font-size:13px;z-index:5}.grove-skip:focus{left:0;outline:3px solid var(--tree-focus);outline-offset:3px}\n.grove-decisions:focus{outline:none}.allo-tree-grove h3:focus{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:4px}\n.grove-goal-dots{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}.grove-goal-dots i{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--grove-accent);background:transparent}.grove-goal-dots i.is-filled{background:var(--grove-accent)}\n.grove-share{margin-top:10px}.grove-share-buttons{display:flex;gap:8px;flex-wrap:wrap}.grove-share-buttons .grove-action{flex:1 1 140px;margin-top:0}.grove-share-text{margin-top:8px;font-size:12px}\n.grove-evidence-link{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--grove-ink);text-decoration:underline;text-underline-offset:3px;min-height:24px}.grove-evidence-link:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px;border-radius:4px}\n.grove-receipt:focus{outline:3px solid var(--tree-focus);outline-offset:2px}\n.grove-speak{margin-top:10px;border:1px solid var(--grove-line);border-radius:999px;background:var(--grove-card);color:var(--grove-ink);font:inherit;font-size:12px;font-weight:700;padding:6px 12px;min-height:32px;cursor:pointer}.grove-speak[aria-pressed=true]{background:var(--grove-accent);color:var(--grove-on-accent);border-color:var(--grove-accent)}\n@media print{.grove-speak{display:none!important}}\n@media(prefers-reduced-motion:reduce){.grove-patch{transition:none}.grove-glyph.is-new{animation:none}}\n";
   GROVE_CSS += "\n.grove-view-switch{display:flex;flex-wrap:wrap;margin:0 0 10px}.grove-closeup-selectors{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.grove-closeup label{display:block;font-size:12px;font-weight:750;margin-bottom:4px}.grove-closeup-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px;margin:12px 0 8px}.grove-closeup-heading span{font-size:12px;color:var(--grove-muted)}.grove-closeup-canvas{height:clamp(350px,48vh,540px);width:100%;border:1px solid var(--grove-line);border-radius:13px;overflow:hidden;background:var(--grove-card)}.grove-camera-controls{display:flex;flex-wrap:wrap;gap:2px;margin-top:10px}.grove-closeup-empty{padding:60px 20px;text-align:center;border:1px dashed var(--grove-line);border-radius:14px;min-height:240px;display:grid;align-content:center;gap:12px}.grove-closeup-empty p{color:var(--grove-muted)}@media(max-width:480px){.grove-closeup-selectors{grid-template-columns:1fr}.grove-closeup-canvas{height:360px}}\n";
   var QUIZ_RAW = [
     { q: 'A young tree grows in deep shade. Then sunlight reaches it, and it grows faster. What did it need more of?', a: ['Sunlight', 'Wind', 'Cold air', 'Darkness'], correct: 0, band: 'k2',
@@ -1361,13 +1369,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     { q: 'Mia wants to learn whether extra water helps a seedling grow. What is the fairest test?', a: ['Keep everything the same except the water', 'Give one tree more water and more sunlight', 'Use two different kinds of tree', 'Measure one tree now and another next year'], correct: 0, band: 'k2',
       why: 'A fair test changes one thing at a time. Then the result can show whether the extra water made the difference.' },
   ];
-  // Rotate once, at module scope, deterministically.
-  var QUIZ = QUIZ_RAW.map(function (item, i) {
-    var shift = (i * 3 + 1) % item.a.length;
-    var opts = item.a.slice(shift).concat(item.a.slice(0, shift));
-    var newCorrect = (item.correct - shift + item.a.length * 2) % item.a.length;
-    return Object.assign({}, item, { a: opts, correct: newCorrect });
-  });
+  // Place each answer once, at module scope, deterministically, so that EVERY band's pool
+  // is spread across the option positions. The earlier fixed rotation (i * 3 + 1) was
+  // deterministic but blind to the bands: authored answers sit mostly at index 0 or 1, and
+  // rotating them by that cycle left the first option correct in just 1 of the 12 questions
+  // grades 6-8 ever see. A student could learn the position instead of the biology.
+  //
+  // Each question is given the position carrying the lightest load across the pools that
+  // will show it, so adding a question keeps the spread even without hand-tuning.
+  var QUIZ = (function () {
+    var load = {};
+    BANDS.forEach(function (b) { load[b] = [0, 0, 0, 0, 0, 0, 0, 0]; });
+    return QUIZ_RAW.map(function (item, i) {
+      var pools = BANDS.filter(function (b) { return atLeast(b, item.band); });
+      var best = 0, bestScore = Infinity;
+      for (var p = 0; p < item.a.length; p++) {
+        var used = 0;
+        for (var k = 0; k < pools.length; k++) used += load[pools[k]][p];
+        // Counts first; the offset only breaks ties, and walking it with the question
+        // index keeps equally loaded slots from stacking into a run of one letter.
+        var score = used * 16 + ((p + i) % item.a.length);
+        if (score < bestScore) { bestScore = score; best = p; }
+      }
+      pools.forEach(function (b) { load[b][best] += 1; });
+      var shift = (item.correct - best + item.a.length * 2) % item.a.length;
+      var opts = item.a.slice(shift).concat(item.a.slice(0, shift));
+      return Object.assign({}, item, { a: opts, correct: best });
+    });
+  })();
 
   // ─────────────────────────────────────────────────────────
   // SECTION 6: 3D SCENE
@@ -1765,13 +1794,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // Validated, not eyeballed. The previous set put CO2 on #60a5fa and water on
   // #38bdf8 — 6.7 ΔE apart for normal vision (floor 15) and 5.0 under deuteranopia —
   // which are precisely the two the tool teaches students to distinguish.
+  var PRINT_HOOKED = false;
+  // Printing a collapsed disclosure loses the field journal, the saved evidence and the
+  // science boundaries. Chromium does not lay out a closed <details> at all, so no print
+  // stylesheet can reveal it: the open state is set before the print and restored after.
+  function ensurePrintExpansion() {
+    if (PRINT_HOOKED || typeof window === 'undefined' || !window.addEventListener || typeof document === 'undefined') return;
+    PRINT_HOOKED = true;
+    var opened = [];
+    window.addEventListener('beforeprint', function () {
+      opened = [];
+      var all = document.querySelectorAll('.allo-tree-lab details:not([open])');
+      for (var i = 0; i < all.length; i++) { opened.push(all[i]); all[i].open = true; }
+    });
+    window.addEventListener('afterprint', function () {
+      for (var i = 0; i < opened.length; i++) opened[i].open = false;
+      opened = [];
+    });
+  }
+
   function FACTOR_HUES(dark) {
-    return {
-      light: dark ? '#bf8700' : '#ca8a04',
-      co2: '#7c3aed',
-      water: '#0284c7',
-      temperature: '#dc2626'
-    };
+    // Both sets pass every check in the palette validator with all pairs compared: the
+    // light set separates by 11.3 under colour-blind simulation at 4.5:1 or better, the
+    // dark set by 7.5 with its own labels as the second channel.
+    return dark
+      ? { light: '#bf8700', co2: '#8b5cf6', water: '#0284c7', temperature: '#e11d48' }
+      : { light: '#a16207', co2: '#7c3aed', water: '#0369a1', temperature: '#9f1239' };
   }
 
   function mixHex(a, b, t) {
@@ -4276,6 +4324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var isContrast = !!ctx.isContrast;
       var reduceMotion = !!ctx.reduceMotion;
       var band = resolveBand(ctx, d);
+      ensurePrintExpansion();
 
       function upd(k, v) {
         if (k && typeof k === 'object') { return updMulti(k); }
@@ -4334,12 +4383,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-setup-label{flex:1 0 100%;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-workbench{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);grid-template-areas:"scene mission" "scene controls";grid-template-rows:auto minmax(0,1fr);gap:20px;align-items:start;}',
         '.allo-tree-workbench-mission{grid-area:mission;min-width:0;}',
-        '.allo-tree-grow-section:focus{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:18px;}',
+        '.allo-tree-lab-section:focus{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:18px;}',
         '.allo-tree-grow-nav{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;border-radius:14px;}',
         '.allo-tree-grow-nav-label{font-size:10px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;}',
         '.allo-tree-grow-nav ul{display:flex;flex-wrap:wrap;gap:6px 8px;list-style:none;margin:0;padding:0;}',
         '.allo-tree-grow-nav a{display:inline-block;font-size:12px;font-weight:700;text-decoration:none;padding:5px 10px;min-height:24px;border-radius:999px;}',
-        '.allo-tree-grow-nav a:hover{border-color:var(--tree-accent);}',
+        '.allo-tree-grow-nav a:hover{border-color:var(--tree-accent-text);}',
         '.allo-tree-grow-nav a:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px;}',
         '.allo-tree-workbench-mission>.allo-tree-mission>.allo-tree-card{margin-bottom:0!important;}',
         '.allo-tree-workbench-scene{grid-area:scene;min-width:0;align-self:stretch;}',
@@ -4379,7 +4428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;}',
         '.allo-tree-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;background-clip:padding-box;}',
         '.allo-tree-quiz-opt{transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;}',
-        '.allo-tree-quiz-opt:not(:disabled):hover{border-color:var(--tree-accent);transform:translateY(-1px);box-shadow:0 4px 12px var(--tree-shadow);}',
+        '.allo-tree-quiz-opt:not(:disabled):hover{border-color:var(--tree-accent-text);transform:translateY(-1px);box-shadow:0 4px 12px var(--tree-shadow);}',
 
         '.allo-tree-button,.allo-tree-tab{transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease;}',
         '.allo-tree-button:not(:disabled):hover,.allo-tree-tab:hover{transform:translateY(-1px);box-shadow:0 5px 14px var(--tree-shadow);}',
@@ -4390,29 +4439,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-tab-icon{display:inline-flex;flex:0 0 32px;width:32px;height:32px;align-items:center;justify-content:center;border-radius:10px;background:var(--tab-icon);font-size:16px;}',
         '.allo-tree-tab-copy{display:grid;min-width:0;gap:1px;}',
         '.allo-tree-tab-label{font-size:13px;font-weight:850;line-height:1.15;}',
-        '.allo-tree-tab-hint{font-size:9.5px;font-weight:650;line-height:1.2;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+        '.allo-tree-tab-hint{font-size:9.5px;font-weight:650;line-height:1.2;opacity:.78;white-space:normal;overflow-wrap:anywhere;}',
         '.allo-tree-tab[aria-selected="true"]{box-shadow:0 8px 20px var(--accent-shadow);}',
         '.allo-tree-tab[aria-selected="true"]:after{content:"";position:absolute;left:13px;right:13px;bottom:4px;height:3px;border-radius:99px;background:currentColor;opacity:.48;}',
         '.allo-tree-chapter{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;margin:-2px 0 16px;padding:12px 15px;border-radius:15px;background:var(--chapter-bg);border:1px solid var(--chapter-border);box-shadow:0 10px 28px var(--tree-shadow);}',
         '.allo-tree-chapter-number{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--tree-accent);color:var(--accent-ink);font-size:12px;font-weight:950;box-shadow:0 8px 18px var(--accent-shadow);}',
         '.allo-tree-chapter-title{margin:0;font-size:15px;font-weight:900;line-height:1.2;color:var(--tree-ink);}',
         '.allo-tree-chapter-title:focus-visible{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:5px;}',
+        '.allo-tree-lab [tabindex="0"]:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px;border-radius:6px;}',
         '.allo-tree-chapter-copy{font-size:11px;line-height:1.45;color:var(--tree-muted);margin-top:2px;}',
         '.allo-tree-chapter-cue{max-width:205px;padding-left:12px;border-left:1px solid var(--chapter-border);font-size:10px;line-height:1.4;color:var(--tree-muted);}',
         '.allo-tree-chapter-bridge{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;margin:16px 0 10px;padding:15px 16px;border:1px solid var(--mission-border);border-radius:16px;background:var(--mission-bg);box-shadow:0 14px 32px var(--mission-shadow);}',
         '.allo-tree-chapter-bridge:after{content:"";position:absolute;width:120px;height:120px;right:-58px;top:-72px;border-radius:50%;background:var(--mission-orb);pointer-events:none;}',
         '.allo-tree-chapter-bridge-copy,.allo-tree-chapter-bridge-actions{position:relative;z-index:1;}',
         '.allo-tree-chapter-bridge-copy{display:grid;gap:4px;min-width:0;}',
-        '.allo-tree-chapter-bridge-eyebrow{font-size:9.5px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-chapter-bridge-eyebrow{font-size:9.5px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-chapter-bridge-title{font-size:15px;line-height:1.25;color:var(--tree-ink);}',
         '.allo-tree-chapter-bridge-note{max-width:720px;font-size:11px;line-height:1.5;color:var(--tree-muted);}',
         '.allo-tree-chapter-bridge-path{display:flex;align-items:center;gap:7px;margin-top:4px;color:var(--tree-muted);font-size:10px;font-weight:850;}',
         '.allo-tree-chapter-bridge-node{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--hero-chip);}',
-        '.allo-tree-chapter-bridge-node.is-next{border-color:var(--tree-accent);color:var(--tree-ink);}',
+        '.allo-tree-chapter-bridge-node.is-next{border-color:var(--tree-accent-text);color:var(--tree-ink);}',
         '.allo-tree-chapter-bridge-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px;}',
         '.allo-tree-chapter-bridge-actions .allo-tree-button{margin:0!important;}',
         '.allo-tree-flow-marker{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin:7px 2px 11px;padding:2px 4px;}',
-        '.allo-tree-flow-number{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:var(--flow-badge);border:1px solid var(--chapter-border);color:var(--tree-accent);font-size:11px;font-weight:950;}',
+        '.allo-tree-flow-number{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:var(--flow-badge);border:1px solid var(--chapter-border);color:var(--tree-accent-text);font-size:11px;font-weight:950;}',
         '.allo-tree-flow-title{font-size:12px;font-weight:900;color:var(--tree-ink);}',
         '.allo-tree-flow-copy{font-size:10.5px;line-height:1.4;color:var(--tree-muted);}',
         '.allo-tree-science-trail{position:relative;overflow:hidden;margin:0 0 14px;padding:14px;border:1px solid var(--chapter-border);border-radius:18px;background:linear-gradient(135deg,var(--chapter-bg),var(--mission-bg));box-shadow:0 15px 34px var(--tree-shadow);}',
@@ -4420,13 +4470,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-science-head,.allo-tree-science-grid{position:relative;z-index:1;}',
         '.allo-tree-science-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 11px;align-items:center;}',
         '.allo-tree-science-compass{grid-row:1/3;display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--tree-accent);color:var(--accent-ink);font-size:20px;box-shadow:0 9px 20px var(--accent-shadow);}',
-        '.allo-tree-science-kicker{font-size:9.5px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-science-kicker{font-size:9.5px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-science-title{margin:0;font-size:14px;font-weight:950;line-height:1.25;color:var(--tree-ink);}',
         '.allo-tree-science-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;list-style:none;margin:12px 0 0;padding:0;}',
         '.allo-tree-science-step{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-content:start;min-width:0;padding:11px;border:1px solid var(--chapter-border);border-top:3px solid var(--tree-accent);border-radius:13px;background:var(--hero-chip);box-shadow:0 8px 18px var(--tree-shadow);}',
-        '.allo-tree-science-step:not(:last-child):after{content:"\\2192";position:absolute;z-index:2;right:-16px;top:50%;display:grid;place-items:center;width:20px;height:20px;margin-top:-10px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-accent);font-size:12px;font-weight:950;}',
-        '.allo-tree-science-index{grid-row:1/3;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--flow-badge);color:var(--tree-accent);font-size:11px;font-weight:950;}',
-        '.allo-tree-science-label{font-size:9.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-science-step:not(:last-child):after{content:"\\2192";position:absolute;z-index:2;right:-16px;top:50%;display:grid;place-items:center;width:20px;height:20px;margin-top:-10px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-accent-text);font-size:12px;font-weight:950;}',
+        '.allo-tree-science-index{grid-row:1/3;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--flow-badge);color:var(--tree-accent-text);font-size:11px;font-weight:950;}',
+        '.allo-tree-science-label{font-size:9.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-science-step strong{font-size:11.5px;line-height:1.3;color:var(--tree-ink);}',
         '.allo-tree-science-copy{grid-column:1/-1;margin-top:3px;font-size:10.5px;line-height:1.48;color:var(--tree-muted);}',
         '@media (max-width:760px){.allo-tree-science-grid{grid-template-columns:minmax(0,1fr)}.allo-tree-science-step:not(:last-child):after{display:none}.allo-tree-science-step{grid-template-columns:auto minmax(0,1fr);padding:10px 11px}.allo-tree-science-copy{grid-column:2}}',
@@ -4434,7 +4484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-mission>.allo-tree-card:after{content:"";position:absolute;width:130px;height:130px;right:-54px;top:-72px;border-radius:50%;background:var(--mission-orb);pointer-events:none;}',
         '.allo-tree-mission-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0;}',
         '.allo-tree-mission-step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:center;padding:8px;border-radius:10px;background:var(--mission-step);border:1px solid var(--chapter-border);font-size:10.5px;line-height:1.3;color:var(--tree-ink);}',
-        '.allo-tree-mission-dot{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--flow-badge);border:1px solid var(--chapter-border);color:var(--tree-accent);font-size:10px;font-weight:950;}',
+        '.allo-tree-mission-dot{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--flow-badge);border:1px solid var(--chapter-border);color:var(--tree-accent-text);font-size:10px;font-weight:950;}',
         '.allo-tree-viewer-card{position:relative;padding:12px!important;background:var(--chapter-bg)!important;border-color:var(--scene-edge)!important;box-shadow:0 24px 54px var(--scene-shadow)!important;}',
         '.allo-tree-viewer-card:before{content:"";position:absolute;inset:0 0 auto;height:4px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--tree-accent),transparent 72%);pointer-events:none;}',
         '.allo-tree-viewer-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:7px 6px 10px;}',
@@ -4448,14 +4498,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-habitat-top{display:flex;align-items:center;justify-content:space-between;gap:4px;}',
         '.allo-tree-habitat-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-habitat-value{display:block;margin-top:2px;font-size:12px;font-weight:900;color:var(--tree-ink);}',
-        '.allo-tree-habitat-badge{padding:2px 4px;border-radius:999px;background:var(--flow-badge);font-size:8.5px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--tree-accent);}',
-        '.allo-tree-habitat-track{display:block;height:3px;margin-top:6px;border-radius:99px;background:var(--chapter-border);overflow:hidden;}',
+        '.allo-tree-habitat-badge{padding:2px 4px;border-radius:999px;background:var(--flow-badge);font-size:8.5px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--tree-accent-text);}',
+        '.allo-tree-habitat-track{display:block;height:3px;margin-top:6px;border-radius:99px;background:var(--meter-track);overflow:hidden;}',
         '.allo-tree-habitat-fill{display:block;height:100%;border-radius:99px;}',
         '.allo-tree-season-observatory{position:relative;overflow:hidden;margin-top:11px;padding:12px;border:1px solid var(--chapter-border);border-radius:17px;background:var(--mission-bg);box-shadow:0 12px 26px var(--tree-shadow);}',
         '.allo-tree-season-observatory:after{content:"";position:absolute;width:150px;height:150px;right:-88px;top:-98px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 23px var(--hero-ring-soft);pointer-events:none;}',
         '.allo-tree-season-head,.allo-tree-season-choices,.allo-tree-season-portrait,.allo-tree-season-ledger,.allo-tree-season-note,.allo-tree-season-boundary{position:relative;z-index:1;}',
         '.allo-tree-season-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}',
-        '.allo-tree-season-kicker{display:flex;align-items:center;gap:6px;font-size:9.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--season-hue);}',
+        '.allo-tree-season-kicker{display:flex;align-items:center;gap:6px;font-size:9.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--season-ink);}',
         '.allo-tree-season-status{padding:3px 7px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--hero-chip);font-size:9px;font-weight:850;color:var(--tree-muted);}',
         '.allo-tree-season-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}',
         '.allo-tree-season-choice{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;min-height:46px;padding:7px 8px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--hero-chip);color:var(--tree-ink);font:inherit;text-align:left;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
@@ -4479,29 +4529,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-phenology-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px;margin-bottom:8px}.allo-tree-phenology-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-phenology-head span{font-size:10px;font-weight:850;color:var(--tree-muted)}',
         '.allo-tree-phenology-trail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}.allo-tree-phenology-stage{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-top:3px solid var(--phenology-tone);border-radius:11px;background:var(--mission-step)}.allo-tree-phenology-stage:not(:last-child):after{content:"\\2192";position:absolute;right:-13px;top:50%;z-index:2;display:grid;place-items:center;width:18px;height:18px;margin-top:-9px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-muted);font-size:10px;font-weight:950}',
         '.allo-tree-phenology-stage[aria-current="step"]{border-color:var(--season-hue);box-shadow:inset 0 -3px 0 var(--season-hue),0 7px 16px var(--tree-shadow)}.allo-tree-phenology-icon{grid-row:1/3;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:var(--flow-badge);font-size:15px}.allo-tree-phenology-stage strong{font-size:10.5px;color:var(--tree-ink)}.allo-tree-phenology-stage span:last-child{font-size:10.5px;line-height:1.35;color:var(--tree-muted)}',
-        '.allo-tree-phenology-stage.is-leaf-fall[aria-current="step"] .allo-tree-phenology-icon{animation:tree-leaf-drift 2.4s ease-in-out infinite}.allo-tree-phenology-process{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-phenology-process b{color:var(--season-hue)}',
+        '.allo-tree-phenology-stage.is-leaf-fall[aria-current="step"] .allo-tree-phenology-icon{animation:tree-leaf-drift 2.4s ease-in-out infinite}.allo-tree-phenology-process{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-phenology-process b{color:var(--season-ink)}',
         '.allo-tree-season-ledger{overflow:hidden;margin-top:10px;padding:11px;border:1px solid var(--chapter-border);border-radius:15px;background:linear-gradient(145deg,var(--chapter-bg),var(--mission-bg));box-shadow:0 10px 23px var(--tree-shadow)}',
         '.allo-tree-season-ledger:after{content:"";position:absolute;right:-62px;bottom:-72px;width:126px;height:126px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 20px var(--hero-ring-soft);pointer-events:none}',
         '.allo-tree-season-ledger-head,.allo-tree-season-ledger-grid,.allo-tree-season-ledger-annual,.allo-tree-season-ledger-evidence{position:relative;z-index:1}',
-        '.allo-tree-season-ledger-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 9px;align-items:center;margin-bottom:9px}.allo-tree-season-ledger-head>.allo-tree-season-ledger-icon{display:grid;place-items:center;width:37px;height:37px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--flow-badge);color:var(--season-hue);font-size:19px;font-weight:950}.allo-tree-season-ledger-head>strong{font-size:12px;line-height:1.25;color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 9px;align-items:center;margin-bottom:9px}.allo-tree-season-ledger-head>.allo-tree-season-ledger-icon{display:grid;place-items:center;width:37px;height:37px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--flow-badge);color:var(--season-ink);font-size:19px;font-weight:950}.allo-tree-season-ledger-head>strong{font-size:12px;line-height:1.25;color:var(--tree-ink)}',
         '.allo-tree-season-ledger-scope{padding:4px 8px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--hero-chip);font-size:10px;font-weight:900;color:var(--tree-muted)}',
         '.allo-tree-season-ledger-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}',
         '.allo-tree-season-ledger-stage{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-content:start;min-width:0;padding:9px;border:1px solid var(--chapter-border);border-top:4px solid var(--ledger-tone);border-radius:12px;background:var(--mission-step);box-shadow:0 7px 16px var(--tree-shadow)}',
-        '.allo-tree-season-ledger-stage:not(:last-child):after{content:"\\2192";position:absolute;z-index:3;right:-13px;top:22px;display:grid;place-items:center;width:19px;height:19px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--ledger-tone);font-size:10px;font-weight:950}',
+        '.allo-tree-season-ledger-stage:not(:last-child):after{content:"\\2192";position:absolute;z-index:3;right:-13px;top:22px;display:grid;place-items:center;width:19px;height:19px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--ledger-ink);font-size:10px;font-weight:950}',
         '.allo-tree-season-ledger-stage[aria-current="step"]{border-color:var(--season-hue);box-shadow:inset 0 -3px 0 var(--season-hue),0 10px 22px var(--tree-shadow)}',
-        '.allo-tree-season-ledger-stage>.allo-tree-season-ledger-icon{grid-row:1/3;display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:var(--flow-badge);font-size:16px}.allo-tree-season-ledger-action{min-width:0}.allo-tree-season-ledger-action span{display:block;font-size:9.5px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;color:var(--ledger-tone)}.allo-tree-season-ledger-action strong{display:block;margin-top:1px;font-size:11px;line-height:1.3;color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-stage>.allo-tree-season-ledger-icon{grid-row:1/3;display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:var(--flow-badge);font-size:16px}.allo-tree-season-ledger-action{min-width:0}.allo-tree-season-ledger-action span{display:block;font-size:9.5px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;color:var(--ledger-ink)}.allo-tree-season-ledger-action strong{display:block;margin-top:1px;font-size:11px;line-height:1.3;color:var(--tree-ink)}',
         '.allo-tree-season-ledger-copy{grid-column:1/-1;margin:2px 0 0;font-size:10.5px;line-height:1.48;color:var(--tree-muted)}',
         '.allo-tree-season-ledger-metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:2px 0 0}.allo-tree-season-ledger-metrics>div{min-width:0;padding:5px 6px;border:1px solid var(--chapter-border);border-radius:8px;background:var(--hero-chip)}.allo-tree-season-ledger-metrics dt{font-size:9.5px;font-weight:900;color:var(--tree-muted)}.allo-tree-season-ledger-metrics dd{overflow:hidden;text-overflow:ellipsis;margin:2px 0 0;font-size:10.5px;font-weight:950;color:var(--tree-ink)}',
         '.allo-tree-season-ledger-balance{grid-column:1/-1;padding:6px 7px;border-radius:8px;background:var(--flow-badge);font-size:10.5px;color:var(--tree-ink)}.allo-tree-season-ledger-reserve{grid-column:1/-1;padding-top:6px;border-top:1px dashed var(--chapter-border);font-size:10px;line-height:1.4;color:var(--tree-muted)}',
         '.allo-tree-season-ledger-annual{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(180px,.65fr);gap:8px;align-items:stretch;margin-top:9px;padding-top:9px;border-top:1px dashed var(--chapter-border)}',
-        '.allo-tree-season-ledger-equation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:5px;align-items:stretch;padding:8px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--hero-chip)}.allo-tree-season-ledger-equation>span,.allo-tree-season-ledger-equation>strong{display:grid;place-content:center;min-width:0;padding:5px;border-radius:8px;background:var(--flow-badge);text-align:center}.allo-tree-season-ledger-equation b{display:block;font-size:9.5px;color:var(--tree-muted)}.allo-tree-season-ledger-equation strong{display:block;margin-top:2px;font-size:11px;color:var(--tree-ink)}.allo-tree-season-ledger-equation>i{align-self:center;font-size:15px;font-style:normal;font-weight:950;color:var(--season-hue)}',
+        '.allo-tree-season-ledger-equation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:5px;align-items:stretch;padding:8px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--hero-chip)}.allo-tree-season-ledger-equation>span,.allo-tree-season-ledger-equation>strong{display:grid;place-content:center;min-width:0;padding:5px;border-radius:8px;background:var(--flow-badge);text-align:center}.allo-tree-season-ledger-equation b{display:block;font-size:9.5px;color:var(--tree-muted)}.allo-tree-season-ledger-equation strong{display:block;margin-top:2px;font-size:11px;color:var(--tree-ink)}.allo-tree-season-ledger-equation>i{align-self:center;font-size:15px;font-style:normal;font-weight:950;color:var(--season-ink)}',
         '.allo-tree-season-ledger-fact{margin:0;padding:9px;border-left:4px solid var(--season-hue);border-radius:10px;background:var(--flow-badge);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-season-ledger-fact strong{color:var(--tree-ink)}',
-        '.allo-tree-season-ledger-evidence{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin:8px 0 0;font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-season-ledger-evidence b{color:var(--season-hue)}.allo-tree-season-ledger.is-stopped{border-style:dashed}.allo-tree-season-ledger.is-stopped .allo-tree-season-ledger-evidence{padding:9px;border-radius:10px;background:var(--flow-badge);color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-evidence{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin:8px 0 0;font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-season-ledger-evidence b{color:var(--season-ink)}.allo-tree-season-ledger.is-stopped{border-style:dashed}.allo-tree-season-ledger.is-stopped .allo-tree-season-ledger-evidence{padding:9px;border-radius:10px;background:var(--flow-badge);color:var(--tree-ink)}',
         '.allo-tree-autumn-lab{position:relative;z-index:1;overflow:hidden;margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-left:4px solid var(--season-hue);border-radius:14px;background:linear-gradient(135deg,var(--chapter-bg),var(--mission-bg));}',
         '.allo-tree-autumn-lab-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center;margin-bottom:8px}.allo-tree-autumn-lab-mark{grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--flow-badge);font-size:17px}.allo-tree-autumn-lab-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-autumn-lab-head span:last-child{font-size:10.5px;line-height:1.45;color:var(--tree-muted)}',
         '.allo-tree-autumn-evidence-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.allo-tree-autumn-lab[data-tree-autumn-lab="needle-cohorts"] .allo-tree-autumn-evidence-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.allo-tree-autumn-evidence{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;padding:7px 8px;border:1px solid var(--chapter-border);border-top:3px solid var(--autumn-tone);border-radius:10px;background:var(--mission-step)}',
         '.allo-tree-autumn-swatch{grid-row:1/3;display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:var(--autumn-tone);border:1px solid var(--chapter-border);color:#fff;font-size:9.5px;font-weight:950;text-shadow:0 1px 2px #000}.allo-tree-autumn-evidence strong{font-size:10.5px;color:var(--tree-ink)}.allo-tree-autumn-evidence span:last-child{font-size:10.5px;line-height:1.42;color:var(--tree-muted)}',
-        '.allo-tree-autumn-boundary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-autumn-boundary b{color:var(--season-hue)}',
+        '.allo-tree-autumn-boundary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-autumn-boundary b{color:var(--season-ink)}',
         '.allo-tree-autumn-detective{margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--hero-chip);box-shadow:inset 0 3px 0 var(--detective-tone)}.allo-tree-autumn-detective-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center}.allo-tree-autumn-detective-icon{grid-row:1/3;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--flow-badge);font-size:16px}.allo-tree-autumn-detective-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-autumn-detective-head span:last-child{font-size:10.5px;line-height:1.45;color:var(--tree-muted)}',
         '.allo-tree-autumn-reasoning-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:8px 0;padding:0;list-style:none}.allo-tree-autumn-reasoning-step{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;min-height:31px;padding:6px 8px;border:1px solid var(--chapter-border);border-radius:99px;background:var(--mission-step);font-size:10px;font-weight:900;color:var(--tree-muted);text-align:center}.allo-tree-autumn-reasoning-step:not(:last-child):after{content:"\\2192";position:absolute;right:-13px;color:var(--detective-tone);font-size:11px;font-weight:950}',
         '.allo-tree-autumn-observation{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:center;padding:8px;border:1px dashed var(--chapter-border);border-radius:11px;background:var(--mission-step)}.allo-tree-autumn-observation-copy{display:grid;gap:2px}.allo-tree-autumn-observation-copy b{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--detective-tone)}.allo-tree-autumn-observation-copy span{font-size:10.5px;line-height:1.48;color:var(--tree-ink)}',
@@ -4511,16 +4561,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-autumn-release{margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--chapter-bg)}.allo-tree-autumn-release-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center;margin-bottom:8px}.allo-tree-autumn-release-mark{grid-row:1/3;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--flow-badge);font-size:16px}.allo-tree-autumn-release-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-autumn-release-head span:last-child{font-size:10.5px;line-height:1.45;color:var(--tree-muted)}',
         '.allo-tree-autumn-release-body{display:grid;grid-template-columns:138px minmax(0,1fr);gap:8px;align-items:stretch}.allo-tree-autumn-release-visual{display:grid;place-items:center;min-height:92px;padding:6px;border:1px solid var(--chapter-border);border-radius:11px;background:radial-gradient(circle at 50% 45%,var(--flow-badge),transparent 68%);overflow:hidden}.allo-tree-autumn-release-visual svg{display:block;width:100%;height:auto;max-height:94px}.allo-tree-autumn-release-fall{transform-box:fill-box;transform-origin:center;animation:tree-release-float 3s ease-in-out infinite}',
         '.allo-tree-autumn-release-trail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.allo-tree-autumn-release-stage{position:relative;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-top:3px solid var(--release-tone);border-radius:10px;background:var(--mission-step)}.allo-tree-autumn-release-stage:not(:last-child):after{content:"\\2192";position:absolute;right:-10px;top:50%;z-index:2;color:var(--release-tone);font-size:11px;font-weight:950}.allo-tree-autumn-release-stage-head{display:flex;align-items:center;gap:5px}.allo-tree-autumn-release-number{display:grid;place-items:center;flex:0 0 auto;width:22px;height:22px;border-radius:7px;background:var(--flow-badge);font-size:9.5px;font-weight:950;color:var(--release-tone)}.allo-tree-autumn-release-stage strong{font-size:10px;line-height:1.3;color:var(--tree-ink)}.allo-tree-autumn-release-stage p{margin:5px 0 0;font-size:10px;line-height:1.45;color:var(--tree-muted)}',
-        '.allo-tree-autumn-release-note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin:8px 0 0;padding:8px 9px;border-left:4px solid var(--season-hue);border-radius:8px;background:var(--flow-badge);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-autumn-release-note b{color:var(--season-hue)}',
+        '.allo-tree-autumn-release-note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin:8px 0 0;padding:8px 9px;border-left:4px solid var(--season-hue);border-radius:8px;background:var(--flow-badge);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-autumn-release-note b{color:var(--season-ink)}',
         '.allo-tree-season-note{margin-top:8px;padding:9px 10px;border-left:4px solid var(--season-hue);border-radius:10px;background:var(--hero-chip);font-size:11px;line-height:1.55;color:var(--tree-ink);}',
-        '.allo-tree-season-note strong{color:var(--season-hue);}',
+        '.allo-tree-season-note strong{color:var(--season-ink);}',
         '.allo-tree-season-boundary{display:flex;gap:7px;align-items:flex-start;margin-top:7px;font-size:9.5px;line-height:1.45;color:var(--tree-muted);}',
         '.allo-tree-species-context{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px 13px;margin-top:4px;padding:13px;border:1px solid var(--chapter-border);border-left:4px solid var(--tree-accent);border-radius:15px;background:var(--chapter-bg);box-shadow:0 12px 28px var(--tree-shadow);}',
         '.allo-tree-species-context:after{content:"";position:absolute;width:135px;height:135px;right:-75px;bottom:-91px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 21px var(--hero-ring-soft);pointer-events:none;}',
         '.allo-tree-species-portrait,.allo-tree-species-identity,.allo-tree-species-lens,.allo-tree-species-tradeoff{position:relative;z-index:1;}',
         '.allo-tree-species-portrait{display:grid;place-items:center;width:56px;height:56px;border:1px solid var(--chapter-border);border-radius:19px 19px 19px 7px;background:var(--flow-badge);font-size:27px;box-shadow:0 9px 20px var(--tree-shadow);}',
         '.allo-tree-species-identity{align-self:center;}',
-        '.allo-tree-species-eyebrow{display:block;font-size:8.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-species-eyebrow{display:block;font-size:8.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-species-name{display:block;margin-top:2px;font-size:13px;color:var(--tree-ink);}',
         '.allo-tree-species-story{display:block;margin-top:3px;font-size:10.5px;line-height:1.48;color:var(--tree-muted);}',
         '.allo-tree-species-lens{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;}',
@@ -4546,7 +4596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-timescales-head p{margin:0;font-size:10.5px;line-height:1.45;color:var(--tree-muted);}',
         '.allo-tree-clock-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:0;padding:0;list-style:none;}',
         '.allo-tree-clock{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 9px;align-content:start;min-width:0;padding:11px;border:1px solid var(--chapter-border);border-top:4px solid var(--clock-tone);border-radius:14px;background:var(--hero-chip);box-shadow:0 9px 21px var(--tree-shadow);}',
-        '.allo-tree-clock:not(:last-child):after{content:"\\2192";position:absolute;z-index:2;right:-20px;top:50%;display:grid;place-items:center;width:22px;height:22px;margin-top:-11px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-accent);font-size:12px;font-weight:950;}',
+        '.allo-tree-clock:not(:last-child):after{content:"\\2192";position:absolute;z-index:2;right:-20px;top:50%;display:grid;place-items:center;width:22px;height:22px;margin-top:-11px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-accent-text);font-size:12px;font-weight:950;}',
         '.allo-tree-clock-icon{grid-row:1/5;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--flow-badge);font-size:19px;}',
         '.allo-tree-clock-horizon{font-size:8.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--clock-tone);}',
         '.allo-tree-clock-title{font-size:10px;color:var(--tree-muted);}',
@@ -4576,10 +4626,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-memory-ring{align-self:end;width:21px;min-height:10px;border:2px solid var(--memory-limit);border-radius:999px 999px 8px 8px;background:linear-gradient(90deg,var(--flow-badge),var(--hero-chip),var(--flow-badge));transition:height .2s ease,transform .2s ease;}',
         '.allo-tree-memory-year.is-selected .allo-tree-memory-ring{transform:scaleX(1.13);}',
         '.allo-tree-memory-year-label{font-size:9px;font-weight:950;color:var(--tree-ink);}',
-        '.allo-tree-memory-year-state{font-size:8px;font-weight:850;color:var(--tree-muted);}',
+        '.allo-tree-memory-year-state{font-size:8px;font-weight:850;color:var(--tree-ink);}',
         '.allo-tree-memory-detail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(240px,.9fr);gap:10px;margin-top:3px;padding:11px;border:1px solid var(--chapter-border);border-left:4px solid var(--memory-selected);border-radius:14px;background:var(--chapter-bg);}',
         '.allo-tree-memory-detail-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 9px;align-items:center;}',
-        '.allo-tree-memory-detail-year{grid-row:1/3;display:grid;place-items:center;width:45px;height:45px;border-radius:14px;background:var(--flow-badge);color:var(--tree-accent);font-size:11px;font-weight:950;}',
+        '.allo-tree-memory-detail-year{grid-row:1/3;display:grid;place-items:center;width:45px;height:45px;border-radius:14px;background:var(--flow-badge);color:var(--tree-accent-text);font-size:11px;font-weight:950;}',
         '.allo-tree-memory-detail-head strong{font-size:13px;color:var(--tree-ink);}',
         '.allo-tree-memory-detail-head span:last-child{font-size:9.5px;color:var(--tree-muted);}',
         '.allo-tree-memory-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:9px 0 0;}',
@@ -4587,7 +4637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-memory-fact dt{font-size:8px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-memory-fact dd{overflow:hidden;text-overflow:ellipsis;margin:3px 0 0;font-size:10px;font-weight:900;color:var(--tree-ink);}',
         '.allo-tree-memory-story{align-self:stretch;padding:9px 10px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--mission-step);font-size:10.5px;line-height:1.5;color:var(--tree-ink);}',
-        '.allo-tree-memory-story strong{display:block;margin-bottom:3px;color:var(--tree-accent);}',
+        '.allo-tree-memory-story strong{display:block;margin-bottom:3px;color:var(--tree-accent-text);}',
         '.allo-tree-memory-note{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed var(--chapter-border);font-size:9px;line-height:1.42;color:var(--tree-muted);}',
         '.allo-tree-memory-key{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 9px;padding:0;list-style:none;}',
         '.allo-tree-memory-key-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:center;padding:6px 8px;border:1px solid var(--chapter-border);border-radius:10px;background:var(--mission-step);font-size:9px;line-height:1.35;color:var(--tree-muted);}',
@@ -4606,7 +4656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-memory-compare-copy{grid-column:1/-1;margin:0;font-size:9px;line-height:1.45;color:var(--tree-muted);}',
         '.allo-tree-memory-causal{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none;}',
         '.allo-tree-memory-causal-step{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 7px;align-content:start;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-top:3px solid var(--causal-tone);border-radius:11px;background:var(--hero-chip);}',
-        '.allo-tree-memory-causal-step:not(:last-child):after{content:"\\2192";position:absolute;z-index:2;right:-13px;top:50%;display:grid;place-items:center;width:18px;height:18px;margin-top:-9px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-accent);font-size:10px;font-weight:950;}',
+        '.allo-tree-memory-causal-step:not(:last-child):after{content:"\\2192";position:absolute;z-index:2;right:-13px;top:50%;display:grid;place-items:center;width:18px;height:18px;margin-top:-9px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-accent-text);font-size:10px;font-weight:950;}',
         '.allo-tree-memory-causal-icon{grid-row:1/4;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:var(--flow-badge);font-size:14px;}',
         '.allo-tree-memory-causal-label{font-size:8px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-memory-causal-value{overflow:hidden;text-overflow:ellipsis;font-size:10px;font-weight:900;color:var(--tree-ink);}',
@@ -4616,7 +4666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-memory-field>summary::-webkit-details-marker{display:none}.allo-tree-memory-field>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:-3px;}',
         '.allo-tree-memory-field-icon{grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--flow-badge);font-size:17px;}',
         '.allo-tree-memory-field-title{font-size:10.5px;font-weight:900}.allo-tree-memory-field-teaser{font-size:8.5px;line-height:1.35;color:var(--tree-muted);}',
-        '.allo-tree-memory-field-chevron{grid-row:1/3;transition:transform .16s ease;color:var(--tree-accent);font-size:15px;font-weight:950}.allo-tree-memory-field[open] .allo-tree-memory-field-chevron{transform:rotate(90deg);}',
+        '.allo-tree-memory-field-chevron{grid-row:1/3;transition:transform .16s ease;color:var(--tree-accent-text);font-size:15px;font-weight:950}.allo-tree-memory-field[open] .allo-tree-memory-field-chevron{transform:rotate(90deg);}',
         '.allo-tree-memory-field-body{padding:0 10px 10px;border-top:1px dashed var(--chapter-border);}',
         '.allo-tree-memory-field-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding-top:9px;}',
         '.allo-tree-memory-field-note{min-width:0;padding:7px 8px;border-top:3px solid var(--field-tone);border-radius:9px;background:var(--mission-step);}',
@@ -4641,13 +4691,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-memory-replay-controls,.allo-tree-memory-replay-context{grid-column:2/-1;margin-top:4px;padding-top:7px;border-top:1px dashed var(--chapter-border);}',
         '.allo-tree-memory-replay-controls-head,.allo-tree-memory-replay-context-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:3px 8px;margin-bottom:6px}.allo-tree-memory-replay-controls-head strong,.allo-tree-memory-replay-context-head strong{font-size:9px;color:var(--tree-ink)}.allo-tree-memory-replay-controls-head span,.allo-tree-memory-replay-context-head span{font-size:8px;line-height:1.4;color:var(--tree-muted)}',
         '.allo-tree-memory-replay-control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.allo-tree-memory-replay-control{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 6px;align-items:center;min-width:0;padding:6px 7px;border:1px solid var(--chapter-border);border-radius:9px;background:linear-gradient(135deg,var(--mission-step),var(--hero-chip))}.allo-tree-memory-replay-control[data-control-state="changed"]{border-color:var(--replay-tone);box-shadow:inset 0 -3px 0 var(--replay-tone)}',
-        '.allo-tree-memory-replay-control-mark{grid-row:1/3;display:grid;place-items:center;width:20px;height:20px;border-radius:7px;background:var(--flow-badge);font-size:10px;font-weight:950;color:var(--tree-accent)}.allo-tree-memory-replay-control[data-control-state="changed"] .allo-tree-memory-replay-control-mark{color:var(--replay-tone)}.allo-tree-memory-replay-control span:nth-child(2){font-size:7.5px;font-weight:900;color:var(--tree-muted)}.allo-tree-memory-replay-control strong{overflow-wrap:anywhere;font-size:8.5px;color:var(--tree-ink)}',
+        '.allo-tree-memory-replay-control-mark{grid-row:1/3;display:grid;place-items:center;width:20px;height:20px;border-radius:7px;background:var(--flow-badge);font-size:10px;font-weight:950;color:var(--tree-accent-text)}.allo-tree-memory-replay-control[data-control-state="changed"] .allo-tree-memory-replay-control-mark{color:var(--replay-tone)}.allo-tree-memory-replay-control span:nth-child(2){font-size:7.5px;font-weight:900;color:var(--tree-muted)}.allo-tree-memory-replay-control strong{overflow-wrap:anywhere;font-size:8.5px;color:var(--tree-ink)}',
         '.allo-tree-memory-replay-context-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.allo-tree-memory-replay-context-card{position:relative;overflow:hidden;padding:7px 8px 7px 11px;border-radius:9px;background:var(--mission-step)}.allo-tree-memory-replay-context-card:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--tree-accent)}.allo-tree-memory-replay-context-card span{display:block;font-size:7.5px;font-weight:900;color:var(--tree-muted)}.allo-tree-memory-replay-context-card strong{display:block;margin-top:3px;font-size:9px;color:var(--tree-ink)}',
         '.allo-tree-memory-replay-specimens{grid-column:2/-1;margin-top:4px;padding:8px;border:1px solid var(--chapter-border);border-radius:11px;background:linear-gradient(135deg,var(--hero-chip),var(--mission-step));}',
         '.allo-tree-memory-replay-specimens-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:3px 8px;margin-bottom:7px}.allo-tree-memory-replay-specimens-head strong{font-size:9.5px;color:var(--tree-ink)}.allo-tree-memory-replay-specimens-head span{font-size:8px;color:var(--tree-muted)}',
         '.allo-tree-memory-replay-specimen-stage{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center}.allo-tree-memory-replay-specimen-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 9px;align-items:center;min-width:0;padding:7px 9px;border-radius:10px;background:var(--hero-chip)}',
         '.allo-tree-memory-ring-disc{grid-row:1/4;position:relative;width:58px;height:58px;box-sizing:border-box;border:var(--specimen-band) solid var(--specimen-tone);border-radius:50%;background:repeating-radial-gradient(circle at center,#f3d8a7 0 5px,#b87938 6px 7px,#e8c486 8px 12px);box-shadow:0 6px 14px var(--tree-shadow),inset 0 0 0 2px var(--hero-chip)}.allo-tree-memory-ring-disc:after{content:"";position:absolute;inset:50% auto auto 50%;width:9px;height:9px;border-radius:50%;background:#7c3f18;transform:translate(-50%,-50%)}',
-        '.allo-tree-memory-replay-specimen-card span{font-size:7.5px;font-weight:900;color:var(--tree-muted)}.allo-tree-memory-replay-specimen-card strong{font-size:10px;color:var(--tree-ink)}.allo-tree-memory-replay-specimen-card em{font-size:8px;font-style:normal;color:var(--tree-muted)}.allo-tree-memory-replay-specimen-bridge{text-align:center;color:var(--tree-muted)}.allo-tree-memory-replay-specimen-bridge b{display:block;font-size:17px;color:var(--tree-accent)}.allo-tree-memory-replay-specimen-bridge strong{display:block;font-size:9px;color:var(--tree-ink)}.allo-tree-memory-replay-specimen-bridge span{display:block;margin-top:2px;font-size:7.5px}',
+        '.allo-tree-memory-replay-specimen-card span{font-size:7.5px;font-weight:900;color:var(--tree-muted)}.allo-tree-memory-replay-specimen-card strong{font-size:10px;color:var(--tree-ink)}.allo-tree-memory-replay-specimen-card em{font-size:8px;font-style:normal;color:var(--tree-muted)}.allo-tree-memory-replay-specimen-bridge{text-align:center;color:var(--tree-muted)}.allo-tree-memory-replay-specimen-bridge b{display:block;font-size:17px;color:var(--tree-accent-text)}.allo-tree-memory-replay-specimen-bridge strong{display:block;font-size:9px;color:var(--tree-ink)}.allo-tree-memory-replay-specimen-bridge span{display:block;margin-top:2px;font-size:7.5px}',
         '.allo-tree-memory-replay-specimen-note{margin:7px 0 0;font-size:8px;line-height:1.4;color:var(--tree-muted)}',
         '.allo-tree-memory-replay-metrics{grid-column:2/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:3px}.allo-tree-memory-replay-metric{padding:6px 7px;border-radius:8px;background:var(--mission-step)}.allo-tree-memory-replay-metric span{display:block;font-size:8px;font-weight:900;color:var(--tree-muted)}.allo-tree-memory-replay-metric strong{display:block;margin-top:2px;font-size:10px;color:var(--tree-ink)}',
         '.allo-tree-memory-replay-note{grid-column:2/-1;margin:2px 0 0;font-size:8.5px;line-height:1.42;color:var(--tree-muted);}',
@@ -4696,9 +4746,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-factor-control input[type="range"]{display:block;height:20px;margin:1px 0 0;cursor:pointer;}',
         '.allo-tree-factor-control input[type="range"]:disabled{cursor:not-allowed;}',
         '.allo-tree-mission-step.is-done{background:var(--flow-badge);border-color:var(--mission-border);}',
-        '.allo-tree-mission-step.is-done strong{color:var(--tree-accent);}',
+        '.allo-tree-mission-step.is-done strong{color:var(--tree-accent-text);}',
         '.allo-tree-mission-step.is-done .allo-tree-mission-dot{background:var(--tree-accent);color:var(--accent-ink);}',
-        '.allo-tree-mission-step.is-next{border-color:var(--tree-accent);box-shadow:0 6px 14px var(--tree-shadow);}',
+        '.allo-tree-mission-step.is-next{border-color:var(--tree-accent-text);box-shadow:0 6px 14px var(--tree-shadow);}',
         '.allo-tree-chem-story,.allo-tree-transport-story{position:relative;overflow:hidden;border-color:var(--scene-edge)!important;box-shadow:0 18px 42px var(--scene-shadow)!important;}',
         '.allo-tree-chem-story:after,.allo-tree-transport-story:after{content:"";position:absolute;width:190px;height:190px;right:-96px;top:-106px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 24px var(--hero-ring-soft);pointer-events:none;}',
         '.allo-tree-chem-story>*,.allo-tree-transport-story>*{position:relative;z-index:1;}',
@@ -4711,18 +4761,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-stopped-step{display:grid;gap:3px;padding:10px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);}',
         '.allo-tree-stopped-step strong{font-size:11px;color:var(--tree-ink);}.allo-tree-stopped-step span{font-size:10px;line-height:1.45;color:var(--tree-muted);}',
         '.allo-tree-stopped-actions{display:flex;justify-content:flex-end;}',
-        '.allo-tree-story-eyebrow{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:4px 8px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--flow-badge);font-size:9.5px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-story-eyebrow{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:4px 8px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--flow-badge);font-size:9.5px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-story-eyebrow:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tree-accent);box-shadow:0 0 0 3px var(--hero-ring-soft);}',
         '.allo-tree-reaction{display:grid;grid-template-columns:minmax(0,1.25fr) 28px minmax(130px,.72fr) 28px minmax(0,.9fr);gap:8px;align-items:stretch;margin-top:12px;}',
         '.allo-tree-reaction-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}',
         '.allo-tree-reaction-outputs{display:grid;grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;}',
         '.allo-tree-molecule{display:grid;align-content:center;justify-items:center;min-width:0;padding:10px 7px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);text-align:center;box-shadow:0 7px 16px var(--tree-shadow);}',
-        '.allo-tree-molecule.is-limiting,.allo-tree-leaf-engine.is-limiting{border-color:var(--tree-accent)!important;box-shadow:inset 0 0 0 2px var(--hero-ring-soft),0 10px 24px var(--accent-shadow);}',
+        '.allo-tree-molecule.is-limiting,.allo-tree-leaf-engine.is-limiting{border-color:var(--tree-accent-text)!important;box-shadow:inset 0 0 0 2px var(--hero-ring-soft),0 10px 24px var(--accent-shadow);}',
         '.allo-tree-pace-badge{display:inline-flex;margin-top:6px;padding:3px 6px;border-radius:999px;background:var(--tree-accent);color:var(--accent-ink);font-size:8.5px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;}',
-        '.allo-tree-molecule-icon{display:grid;place-items:center;min-height:27px;font-size:23px;font-weight:950;color:var(--tree-accent);}',
+        '.allo-tree-molecule-icon{display:grid;place-items:center;min-height:27px;font-size:23px;font-weight:950;color:var(--tree-accent-text);}',
         '.allo-tree-molecule-label{margin-top:4px;font-size:9px;font-weight:900;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-molecule-value{margin-top:3px;font-size:11px;font-weight:900;line-height:1.25;color:var(--tree-ink);font-variant-numeric:tabular-nums;}',
-        '.allo-tree-reaction-arrow{display:grid;place-items:center;color:var(--tree-accent);font-size:21px;font-weight:950;}',
+        '.allo-tree-reaction-arrow{display:grid;place-items:center;color:var(--tree-accent-text);font-size:21px;font-weight:950;}',
         '.allo-tree-leaf-engine{display:grid;place-items:center;align-content:center;min-height:142px;padding:12px 9px;border:1px solid var(--mission-border);border-radius:18px;background:linear-gradient(145deg,var(--flow-badge),var(--chapter-bg));box-shadow:inset 0 0 0 5px var(--hero-ring-soft),0 12px 25px var(--tree-shadow);text-align:center;}',
         '.allo-tree-leaf-orbit{display:grid;place-items:center;width:51px;height:51px;border-radius:50%;background:var(--tree-accent);color:var(--accent-ink);font-size:27px;box-shadow:0 9px 20px var(--accent-shadow);}',
         '.allo-tree-engine-kicker{margin-top:8px;font-size:8px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;color:var(--tree-muted);}',
@@ -4734,10 +4784,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-story-verdict-copy{font-size:10.5px;line-height:1.4;color:var(--tree-muted);}',
         '.allo-tree-curves-card,.allo-tree-chem-limits,.allo-tree-chem-trade,.allo-tree-chem-bill,.allo-tree-sugar-map,.allo-tree-trunk-card,.allo-tree-girdling-card{position:relative;overflow:hidden;}',
         '.allo-tree-curves-card:before,.allo-tree-chem-limits:before,.allo-tree-chem-trade:before,.allo-tree-chem-bill:before,.allo-tree-sugar-map:before,.allo-tree-trunk-card:before,.allo-tree-girdling-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--tree-accent),transparent 74%);pointer-events:none;}',
-        '.allo-tree-curve-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;}',
+        // Printing: 38 sibling STEM tools carry print rules and this one had none, so a
+        // teacher printing a lab got interactive chrome, black WebGL rectangles and ink-heavy
+        // panels. Paper keeps the readings, the map and the explanations, and drops only the
+        // controls that need a pointer. Content that happens to be a button - the habitat
+        // patches, the quiz answers - stays, flattened.
+        '@media print{',
+        '  .allo-tree-lab .allo-tree-tabs,.allo-tree-lab .allo-tree-grow-nav,.allo-tree-lab .grove-skip,',
+        '  .allo-tree-lab .grove-camera-controls,.allo-tree-lab .grove-view-switch,',
+        '  .allo-tree-lab .grove-action,.allo-tree-lab .allo-tree-button,',
+        '  .allo-tree-lab canvas,.allo-tree-lab input[type=range]{display:none!important}',
+        '  .allo-tree-lab,.allo-tree-lab *{background-color:#fff!important;background-image:none!important;color:#000!important;',
+        '    box-shadow:none!important;text-shadow:none!important}',
+        '  .allo-tree-lab .allo-tree-card,.allo-tree-lab .grove-receipt,.allo-tree-lab .grove-forecast,',
+        '  .allo-tree-lab .grove-patch{border:1px solid #767676!important;border-radius:0!important}',
+        // Sticky positioning repeats or overlaps across printed pages.
+        '  .allo-tree-lab .allo-tree-workbench-sticky{position:static!important}',
+        '  .allo-tree-lab .allo-tree-card,.allo-tree-lab .allo-tree-lab-section,',
+        '  .allo-tree-lab .grove-patch{break-inside:avoid;page-break-inside:avoid}',
+        '  .allo-tree-lab h2,.allo-tree-lab h3,.allo-tree-lab h4{break-after:avoid;page-break-after:avoid}',
+        // A collapsed disclosure would print as a bare summary line, losing the field journal,
+        // the science boundaries and the saved evidence.
+        '  .allo-tree-lab details>*{display:revert!important}',
+        '  .allo-tree-lab summary{list-style:none;font-weight:800}',
+        // SVG evidence keeps its own ink: fills and strokes are set as attributes, so the
+        // blanket colour rule above must not reach inside the drawings.
+        '  .allo-tree-lab svg,.allo-tree-lab svg *{background-color:transparent!important}',
+        '  .allo-tree-lab svg text{fill:#000!important}',
+        '}',
+        '.allo-tree-curve-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}',
+        '@media (min-width:920px){.allo-tree-curve-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}',
+        '@media (max-width:460px){.allo-tree-curve-grid{grid-template-columns:minmax(0,1fr);}}',
         '.allo-tree-curve-key{display:flex;flex-wrap:wrap;gap:6px 10px;margin:-2px 0 10px;padding:8px 9px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);}',
         '.allo-tree-curve-key>span{display:inline-flex;align-items:center;gap:6px;flex:1 1 190px;min-width:0;font-size:10px;line-height:1.35;color:var(--tree-muted);}',
-        '.allo-tree-curve-mark{display:inline-grid;place-items:center;flex:0 0 auto;width:13px;height:13px;color:var(--tree-accent);font-style:normal;font-size:13px;font-weight:950;}',
+        '.allo-tree-curve-mark{display:inline-grid;place-items:center;flex:0 0 auto;width:13px;height:13px;color:var(--tree-accent-text);font-style:normal;font-size:13px;font-weight:950;}',
         '.allo-tree-curve-mark.is-now{width:9px;height:9px;margin:2px;border-radius:50%;background:var(--tree-accent);box-shadow:0 0 0 2px var(--chapter-bg);}',
         '.allo-tree-curve-mark.is-best{width:9px;height:9px;margin:2px;border:2px solid var(--tree-accent);border-radius:50%;}',
         '.allo-tree-curve-mark.is-flat{height:8px;border-bottom:2px solid var(--tree-accent);}',
@@ -4751,16 +4831,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-pipe-heading{margin:0 0 4px;font-size:14px;font-weight:900;line-height:1.3;color:var(--tree-ink);}',
         '.allo-tree-pipe-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:7px;align-items:stretch;margin-top:10px;padding:8px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--mission-step);}',
         '.allo-tree-pipe-term{display:grid;gap:2px;padding:7px 9px;border-radius:9px;background:var(--hero-chip);}',
-        '.allo-tree-pipe-term strong{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-pipe-term strong{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-pipe-term span,.allo-tree-pipe-now{font-size:10.5px;line-height:1.4;color:var(--tree-muted);}',
         '.allo-tree-pipe-now{display:flex;align-items:center;padding:7px 9px;border-left:1px dashed var(--chapter-border);color:var(--tree-ink);font-weight:800;}',
         '@media (max-width:620px){.allo-tree-pipe-key{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-pipe-now{grid-column:1/-1;border-left:0;border-top:1px dashed var(--chapter-border)}}',
         '.allo-tree-pipe-path{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);gap:4px;align-items:center;margin:10px 0;padding:8px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--chapter-bg);}',
         '.allo-tree-pipe-node{display:grid;align-content:center;justify-items:center;min-width:0;min-height:64px;padding:5px 3px;border-radius:9px;background:var(--hero-chip);text-align:center;}',
-        '.allo-tree-pipe-icon{font-size:19px;font-weight:950;color:var(--tree-accent);}',
+        '.allo-tree-pipe-icon{font-size:19px;font-weight:950;color:var(--tree-accent-text);}',
         '.allo-tree-pipe-label{margin-top:2px;font-size:9.5px;font-weight:950;line-height:1.15;color:var(--tree-ink);}',
         '.allo-tree-pipe-note{margin-top:2px;font-size:7.5px;font-weight:800;line-height:1.15;text-transform:uppercase;color:var(--tree-muted);}',
-        '.allo-tree-pipe-arrow{display:grid;place-items:center;color:var(--tree-accent);font-size:15px;font-weight:950;}',
+        '.allo-tree-pipe-arrow{display:grid;place-items:center;color:var(--tree-accent-text);font-size:15px;font-weight:950;}',
         '.allo-tree-sink-list{display:grid;gap:8px;}',
         '.allo-tree-source-card,.allo-tree-sink-deficit{padding:11px!important;border-radius:12px!important;box-shadow:0 8px 18px var(--tree-shadow);}',
         '.allo-tree-sink-rows{display:grid;gap:2px;padding:3px 2px 0;}',
@@ -4785,9 +4865,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-spread-journey-icon{display:grid;place-items:center;width:38px;height:38px;margin-bottom:6px;border-radius:12px;background:var(--flow-badge);font-size:21px;}',
         '.allo-tree-spread-journey-step strong{font-size:10.5px;line-height:1.2;color:var(--tree-ink);}',
         '.allo-tree-spread-journey-step>span:last-child{margin-top:3px;font-size:8.5px;line-height:1.3;color:var(--tree-muted);}',
-        '.allo-tree-spread-journey-arrow{display:grid;place-items:center;color:var(--tree-accent);font-size:16px;font-weight:950;}',
+        '.allo-tree-spread-journey-arrow{display:grid;place-items:center;color:var(--tree-accent-text);font-size:16px;font-weight:950;}',
         '.allo-tree-spread-budget-meter{margin:12px 0 8px;padding:11px 12px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--chapter-bg);}',
-        '.allo-tree-spread-budget-meter.is-over{border-color:var(--tree-accent);box-shadow:0 7px 17px var(--tree-shadow);}',
+        '.allo-tree-spread-budget-meter.is-over{border-color:var(--tree-accent-text);box-shadow:0 7px 17px var(--tree-shadow);}',
         '.allo-tree-spread-budget-head{display:flex;justify-content:space-between;gap:10px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--tree-muted);}',
         '.allo-tree-spread-budget-head strong{font-size:11px;color:var(--tree-ink);}',
         '.allo-tree-spread-budget-track{display:block;height:9px;margin-top:7px;border:1px solid var(--chapter-border);border-radius:99px;background:var(--mission-step);overflow:hidden;}',
@@ -4800,14 +4880,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-strategy-slot>.allo-tree-card,.allo-tree-species-slot>.allo-tree-card{height:100%;margin-bottom:0!important;box-sizing:border-box;}',
         '.allo-tree-strategy-card{position:relative;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
         '.allo-tree-strategy-card:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--tree-accent),transparent 78%);pointer-events:none;}',
-        '.allo-tree-strategy-card:hover,.allo-tree-strategy-card.is-active{transform:translateY(-2px);border-color:var(--tree-accent)!important;box-shadow:0 15px 32px var(--tree-shadow)!important;}',
+        '.allo-tree-strategy-card:hover,.allo-tree-strategy-card.is-active{transform:translateY(-2px);border-color:var(--tree-accent-text)!important;box-shadow:0 15px 32px var(--tree-shadow)!important;}',
         '.allo-tree-strategy-head{min-height:92px;}',
         '.allo-tree-strategy-meta{display:grid;justify-items:end;gap:3px;}',
         '.allo-tree-strategy-meta>div{padding:3px 6px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--mission-step);font-size:8.5px;font-weight:800;}',
         '.allo-tree-strategy-profile{display:grid;gap:7px;margin:10px 0;padding:9px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--chapter-bg);}',
         '.allo-tree-strategy-metric-head,.allo-tree-species-trait-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8.5px;font-weight:850;color:var(--tree-muted);}',
         '.allo-tree-strategy-metric-head strong,.allo-tree-species-trait-head strong{color:var(--tree-ink);font-variant-numeric:tabular-nums;}',
-        '.allo-tree-strategy-track,.allo-tree-species-trait-track{display:block;height:5px;margin-top:4px;border-radius:99px;background:var(--chapter-border);overflow:hidden;}',
+        '.allo-tree-strategy-track,.allo-tree-species-trait-track{display:block;height:5px;margin-top:4px;border-radius:99px;background:var(--meter-track);overflow:hidden;}',
         '.allo-tree-strategy-fill,.allo-tree-species-trait-fill{display:block;height:100%;border-radius:99px;}',
         '.allo-tree-strategy-slider{padding-top:9px;border-top:1px dashed var(--chapter-border);}',
         '.allo-tree-spread-launch{position:relative;overflow:hidden;border-color:var(--mission-border)!important;background:var(--mission-bg)!important;box-shadow:0 16px 36px var(--mission-shadow)!important;}',
@@ -4833,7 +4913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-spread-record-row{padding:8px 10px!important;border:1px solid var(--chapter-border)!important;border-radius:10px;background:var(--mission-step);}',
         '.allo-tree-compare-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0 12px;}',
         '.allo-tree-compare-control{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;padding:9px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);}',
-        '.allo-tree-compare-control.is-variable{border-color:var(--tree-accent);background:var(--flow-badge);box-shadow:0 8px 18px var(--tree-shadow);}',
+        '.allo-tree-compare-control.is-variable{border-color:var(--tree-accent-text);background:var(--flow-badge);box-shadow:0 8px 18px var(--tree-shadow);}',
         '.allo-tree-compare-control-icon{grid-row:1/3;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:var(--hero-chip);font-size:15px;}',
         '.allo-tree-compare-control-label{font-size:8px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-compare-control-value{overflow:hidden;font-size:9.5px;line-height:1.3;color:var(--tree-ink);}',
@@ -4854,10 +4934,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-compare-insight-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--tree-ink);}',
         '.allo-tree-compare-insight-detail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8.5px;color:var(--tree-muted);}',
         '.allo-tree-compare-insight-prompt{margin:9px 0 0;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10px;line-height:1.45;color:var(--tree-muted);}',
-        '.allo-tree-species-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:12px;align-items:stretch;}',
+        '.allo-tree-species-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;}',
+        '@media (min-width:1180px){.allo-tree-species-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;}}',
+        '@media (max-width:900px){.allo-tree-species-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
         '.allo-tree-species-card{position:relative;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
         '.allo-tree-species-card:hover{transform:translateY(-2px);box-shadow:0 15px 32px var(--tree-shadow)!important;}',
-        '.allo-tree-species-card.is-current{border-color:var(--tree-accent)!important;box-shadow:0 15px 34px var(--accent-shadow)!important;}',
+        '.allo-tree-species-card.is-current{border-color:var(--tree-accent-text)!important;box-shadow:0 15px 34px var(--accent-shadow)!important;}',
         '.allo-tree-species-card-head{min-height:45px;}',
         '.allo-tree-species-spark{filter:drop-shadow(0 6px 10px var(--tree-shadow));}',
         '.allo-tree-species-traits{margin-top:9px;padding:9px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--chapter-bg);}',
@@ -4873,7 +4955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-compare-next-copy strong{font-size:11px;color:var(--tree-ink);}',
         '.allo-tree-compare-next-copy span{font-size:9.5px;line-height:1.4;color:var(--tree-muted);}',
         '.allo-tree-spread-lesson{margin-top:10px;padding:10px 11px;border:1px solid var(--chapter-border);border-left:4px solid var(--tree-accent);border-radius:12px;background:var(--flow-badge);}',
-        '.allo-tree-spread-lesson-title{display:block;font-size:10px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-spread-lesson-title{display:block;font-size:10px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-spread-lesson p{margin:4px 0 0;font-size:11px;line-height:1.52;color:var(--tree-ink);}',
         '.allo-tree-compare-scroll-cue{display:none;}',
         '.allo-tree-compare-chart-shell:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px;}',
@@ -4888,13 +4970,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-quiz-experience>*,.allo-tree-quiz-finale>*{position:relative;z-index:1;}',
         '.allo-tree-quiz-story{margin:12px 0;padding:11px;border:1px solid var(--chapter-border);border-radius:15px;background:var(--chapter-bg);}',
         '.allo-tree-quiz-story-title{margin-bottom:8px;font-size:9px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-muted);}',
-        '.allo-tree-quiz-story-path{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px;}',
+        '.allo-tree-quiz-story-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}',
+        '@media (min-width:940px){.allo-tree-quiz-story-path{grid-template-columns:repeat(6,minmax(0,1fr));}}',
         '.allo-tree-quiz-story-node{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:6px;align-items:center;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--mission-step);}',
         '.allo-tree-quiz-story-number{display:grid;place-items:center;width:19px;height:19px;border-radius:7px;background:var(--tree-accent);color:var(--accent-ink);font-size:8px;font-weight:950;}',
         '.allo-tree-quiz-story-icon{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:var(--flow-badge);font-size:14px;}',
         '.allo-tree-quiz-story-copy{display:grid;min-width:0;gap:1px;}',
-        '.allo-tree-quiz-story-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;color:var(--tree-ink);}',
-        '.allo-tree-quiz-story-copy>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px;color:var(--tree-muted);}',
+        '.allo-tree-quiz-story-copy strong{white-space:normal;overflow-wrap:anywhere;font-size:10.5px;color:var(--tree-ink);}',
+        '.allo-tree-quiz-story-copy>span{white-space:normal;overflow-wrap:anywhere;font-size:9.5px;color:var(--tree-muted);}',
         '.allo-tree-quiz-progress{display:grid;grid-template-columns:auto minmax(0,1fr);gap:13px;align-items:center;margin:12px 0 15px;padding:12px;border:1px solid var(--mission-border);border-radius:16px;background:var(--mission-bg);box-shadow:0 12px 28px var(--mission-shadow);}',
         '.allo-tree-quiz-progress-ring{position:relative;display:grid;place-items:center;align-content:center;width:88px;height:88px;border-radius:50%;background:conic-gradient(var(--tree-accent) var(--quiz-progress),var(--mission-step) 0);box-shadow:0 10px 23px var(--tree-shadow);}',
         '.allo-tree-quiz-progress-ring:before{content:"";position:absolute;inset:7px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--hero-chip);}',
@@ -4903,14 +4986,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-quiz-progress-ring strong{margin-top:2px;font-size:13px;line-height:1;color:var(--tree-ink);font-variant-numeric:tabular-nums;}',
         '.allo-tree-quiz-progress-ring>span:last-child{margin-top:3px;font-size:8px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-quiz-progress-body{display:grid;min-width:0;gap:3px;}',
-        '.allo-tree-quiz-progress-kicker{font-size:9px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-quiz-progress-kicker{font-size:9px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-quiz-progress-title{font-size:13px;line-height:1.25;color:var(--tree-ink);}',
         '.allo-tree-quiz-progress-score{font-size:10.5px;color:var(--tree-muted);}',
         '.allo-tree-quiz-progress-track{display:block;height:8px;margin-top:5px;border:1px solid var(--chapter-border);border-radius:99px;background:var(--mission-step);overflow:hidden;}',
         '.allo-tree-quiz-progress-fill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--tree-accent),var(--tree-focus));transition:width .24s ease;}',
         '.allo-tree-quiz-leaf-trail{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}',
         '.allo-tree-quiz-leaf{display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--chapter-border);border-radius:8px;background:var(--hero-chip);color:var(--tree-muted);font-size:9px;font-weight:950;}',
-        '.allo-tree-quiz-leaf.is-right{border-color:var(--mission-border);background:var(--flow-badge);color:var(--tree-accent);}',
+        '.allo-tree-quiz-leaf.is-right{border-color:var(--mission-border);background:var(--flow-badge);color:var(--tree-accent-text);}',
         '.allo-tree-quiz-leaf.is-wrong{border-style:dashed;color:var(--tree-ink);}',
         '.allo-tree-quiz-leaf.is-current{outline:2px solid var(--tree-focus);outline-offset:2px;}',
         '.allo-tree-quiz-question-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;margin-top:13px;padding:11px;border:1px solid var(--chapter-border);border-radius:14px;background:var(--chapter-bg);}',
@@ -4920,11 +5003,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-quiz-topic-copy strong{font-size:12px;line-height:1.25;color:var(--tree-ink);}',
         '.allo-tree-quiz-question-count{padding:4px 8px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--mission-step);font-size:9.5px;font-weight:850;color:var(--tree-muted);}',
         '.allo-tree-quiz-revisit{display:flex;align-items:center;gap:7px;margin-top:8px;padding:8px 10px;border:1px dashed var(--chapter-border);border-radius:10px;background:var(--mission-step);font-size:10.5px;line-height:1.4;color:var(--tree-muted);}',
-        '.allo-tree-quiz-revisit>span:first-child{display:grid;place-items:center;width:23px;height:23px;border-radius:8px;background:var(--flow-badge);color:var(--tree-accent);font-weight:950;}',
+        '.allo-tree-quiz-revisit>span:first-child{display:grid;place-items:center;width:23px;height:23px;border-radius:8px;background:var(--flow-badge);color:var(--tree-accent-text);font-weight:950;}',
         '.allo-tree-quiz-question{margin:12px 0!important;padding:13px 14px;border-left:4px solid var(--tree-accent);border-radius:12px;background:var(--mission-step);font-size:15px!important;}',
         '.allo-tree-quiz-options{display:grid;gap:7px;}',
         '.allo-tree-quiz-opt{min-height:48px!important;margin:0!important;border-radius:12px!important;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
-        '.allo-tree-quiz-opt:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 9px 20px var(--tree-shadow);border-color:var(--tree-accent)!important;}',
+        '.allo-tree-quiz-opt:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 9px 20px var(--tree-shadow);border-color:var(--tree-accent-text)!important;}',
         '.allo-tree-quiz-opt:disabled{opacity:1;}',
         '.allo-tree-quiz-opt.is-correct{box-shadow:inset 4px 0 0 var(--tree-accent),0 7px 16px var(--tree-shadow);}',
         '.allo-tree-quiz-opt.is-chosen-wrong{border-style:dashed!important;box-shadow:inset 4px 0 0 var(--tree-ink);}',
@@ -4936,7 +5019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-quiz-feedback-copy>span{font-size:9px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-quiz-feedback-copy strong{font-size:12px;color:var(--tree-ink);}',
         '.allo-tree-quiz-evidence{margin-top:10px;padding-top:9px;border-top:1px dashed var(--chapter-border);}',
-        '.allo-tree-quiz-evidence strong,.allo-tree-quiz-scientist-move>span{font-size:9px;font-weight:950;letter-spacing:.075em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-quiz-evidence strong,.allo-tree-quiz-scientist-move>span{font-size:9px;font-weight:950;letter-spacing:.075em;text-transform:uppercase;color:var(--tree-accent-text);}',
         '.allo-tree-quiz-evidence p,.allo-tree-quiz-scientist-move p{margin:4px 0 0;font-size:11px;line-height:1.55;color:var(--tree-ink);}',
         '.allo-tree-quiz-scientist-move{margin-top:9px;padding:9px 10px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--mission-step);}',
         '.allo-tree-quiz-feedback-actions{display:flex;justify-content:flex-end;margin-top:9px;}',
@@ -4944,19 +5027,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-quiz-nav-position{justify-self:center;font-size:10.5px;font-weight:900;color:var(--tree-muted);font-variant-numeric:tabular-nums;}',
         '.allo-tree-quiz-celebration{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;padding:13px;border:1px solid var(--mission-border);border-radius:16px;background:var(--mission-bg);}',
         '.allo-tree-quiz-finale-mark{position:relative;display:grid;place-items:center;width:76px;height:76px;border-radius:24px 24px 24px 8px;background:var(--tree-accent);color:var(--accent-ink);font-size:31px;box-shadow:0 13px 27px var(--accent-shadow);transform:rotate(-4deg);}',
-        '.allo-tree-quiz-finale-mark>span:last-child{position:absolute;right:-5px;bottom:-5px;display:grid;place-items:center;width:27px;height:27px;border:3px solid var(--chapter-bg);border-radius:50%;background:var(--hero-chip);color:var(--tree-accent);font-size:12px;}',
-        '.allo-tree-quiz-finale-copy h2{margin:0;font-size:19px;line-height:1.15;color:var(--tree-ink);}',
+        '.allo-tree-quiz-finale-mark>span:last-child{position:absolute;right:-5px;bottom:-5px;display:grid;place-items:center;width:27px;height:27px;border:3px solid var(--chapter-bg);border-radius:50%;background:var(--hero-chip);color:var(--tree-accent-text);font-size:12px;}',
+        '.allo-tree-quiz-finale-copy h3{margin:0;font-size:19px;line-height:1.15;color:var(--tree-ink);}',
         '.allo-tree-quiz-finale-copy p{margin:5px 0;font-size:11px;line-height:1.5;color:var(--tree-muted);}',
-        '.allo-tree-quiz-finale-copy strong{font-size:11px;color:var(--tree-accent);}',
+        '.allo-tree-quiz-finale-copy strong{font-size:11px;color:var(--tree-accent-text);}',
         '.allo-tree-quiz-reasoning-ladder{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0;}',
         '.allo-tree-quiz-reasoning-step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 8px;align-items:center;padding:10px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);}',
-        '.allo-tree-quiz-reasoning-number{grid-row:1/3;display:grid;place-items:center;width:29px;height:29px;border-radius:10px;background:var(--flow-badge);color:var(--tree-accent);font-size:10px;font-weight:950;}',
+        '.allo-tree-quiz-reasoning-number{grid-row:1/3;display:grid;place-items:center;width:29px;height:29px;border-radius:10px;background:var(--flow-badge);color:var(--tree-accent-text);font-size:10px;font-weight:950;}',
         '.allo-tree-quiz-reasoning-step strong{font-size:11px;color:var(--tree-ink);}',
         '.allo-tree-quiz-reasoning-step>span:last-child{font-size:9.5px;line-height:1.35;color:var(--tree-muted);}',
         '.allo-tree-quiz-finale-note{margin:0;padding:10px 11px;border-left:4px solid var(--tree-accent);border-radius:10px;background:var(--chapter-bg);font-size:10.5px;line-height:1.5;color:var(--tree-muted);}',
         '.allo-tree-quiz-finale-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px;margin-top:11px;}',
         '@media (prefers-reduced-motion:reduce){.allo-tree-quiz-progress-fill,.allo-tree-quiz-opt{transition:none!important}.allo-tree-quiz-opt:hover{transform:none!important}.allo-tree-quiz-finale-mark{transform:none!important}}',
-        '@media (max-width:760px){.allo-tree-quiz-story-path{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-quiz-progress{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.allo-tree-quiz-progress-body{width:100%;text-align:left}.allo-tree-quiz-leaf-trail{justify-content:center}.allo-tree-quiz-reasoning-ladder{grid-template-columns:minmax(0,1fr)}}',
+        '@media (max-width:760px){.allo-tree-quiz-story-path{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-quiz-progress{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.allo-tree-quiz-progress-body{width:100%;text-align:left}.allo-tree-quiz-leaf-trail{display:grid;justify-content:center}.allo-tree-quiz-reasoning-ladder{grid-template-columns:minmax(0,1fr)}}',
         '@media (max-width:460px){.allo-tree-quiz-story-path{grid-template-columns:minmax(0,1fr)}.allo-tree-quiz-question-head{grid-template-columns:auto minmax(0,1fr)}.allo-tree-quiz-question-count{grid-column:1/-1;justify-self:start}.allo-tree-quiz-celebration{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.allo-tree-quiz-nav{grid-template-columns:1fr 1fr}.allo-tree-quiz-nav-position{grid-column:1/-1;grid-row:1}.allo-tree-quiz-nav>.allo-tree-button{width:100%;margin:0!important}}',
         '@media (forced-colors:active){.allo-tree-quiz-progress-ring,.allo-tree-quiz-topic-icon,.allo-tree-quiz-finale-mark,.allo-tree-quiz-feedback-icon{border:2px solid ButtonText;background:Canvas;color:CanvasText}.allo-tree-quiz-leaf,.allo-tree-quiz-opt,.allo-tree-quiz-feedback,.allo-tree-quiz-reasoning-step{border-color:ButtonText!important}.allo-tree-quiz-leaf.is-current{outline-color:Highlight}}',
         '.allo-tree-effect{position:relative;overflow:hidden;margin-top:12px;padding:12px;border:1px solid var(--chapter-border);border-left:4px solid var(--tree-accent);border-radius:13px;background:var(--chapter-bg);box-shadow:0 10px 24px var(--tree-shadow);animation:tree-effect-in .28s ease-out;}',
@@ -6931,7 +7014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 'data-ledger-balance': phase.net > 0.005
                   ? 'surplus' : (phase.net < -0.005 ? 'deficit' : 'balanced'),
                 'aria-current': current ? 'step' : undefined,
-                style: { '--ledger-tone': tone(phaseTone[phase.id]) }
+                style: { '--ledger-tone': tone(phaseTone[phase.id]), '--ledger-ink': inkTone(phaseTone[phase.id]) }
               }, [
                 h('span', { key: 'icon', className: 'allo-tree-season-ledger-icon', 'aria-hidden': 'true' },
                   phaseIcon[phase.id]),
@@ -7418,7 +7501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           className: 'allo-tree-season-observatory',
           'data-tree-season-guide': season,
           'aria-label': __alloT('stem.treelab.season_observatory_label', 'Season field guide'),
-          style: { '--season-hue': tone(seasonHue) }
+          style: { '--season-hue': tone(seasonHue), '--season-ink': inkTone(seasonHue) }
         }, [
           h('div', { key: 'head', className: 'allo-tree-season-head' }, [
             h('span', { key: 'k', id: 'treelab-season-label', className: 'allo-tree-season-kicker' }, [
@@ -9090,25 +9173,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // 1365px desktop and 7015px on a 390px phone). Each major step becomes a labelled,
       // focusable landmark so the navigator below - and screen reader region navigation - can
       // reach it directly instead of scrolling past everything in between.
-      var GROW_SECTIONS = [
+      var LAB_SECTIONS = { grow: [
         { id: 'grow-sec-clock', key: 'stem.treelab.playback', label: 'Run the clock' },
         { id: 'grow-sec-budget', key: 'stem.treelab.nav_budget', label: 'Carbon budget' },
         { id: 'grow-sec-memory', key: 'stem.treelab.nav_memory', label: 'Tree memory' },
         { id: 'grow-sec-conditions', key: 'stem.treelab.conditions', label: 'Conditions' },
         { id: 'grow-sec-surplus', key: 'stem.treelab.nav_surplus', label: 'Where the surplus goes' }
-      ];
-      function growSection(node, id, label) {
+        ], transport: [
+        { id: 'xport-sec-pipes', key: 'stem.treelab.two_pipes', label: 'Two separate plumbing systems' },
+        { id: 'xport-sec-sugar', key: 'stem.treelab.nav_sugar', label: 'Where the carbon goes' },
+        { id: 'xport-sec-trunk', key: 'stem.treelab.xs_title', label: 'Inside the trunk' },
+        { id: 'xport-sec-girdling', key: 'stem.treelab.nav_girdling', label: 'Cutting a ring of bark' }
+      ] };
+      function labSection(node, id, label) {
         if (node == null) return null;
-        return h('section', { id: id, tabIndex: -1, className: 'allo-tree-grow-section', 'aria-label': label }, node);
+        return h('section', { id: id, tabIndex: -1, className: 'allo-tree-lab-section', 'aria-label': label }, node);
       }
-      function growNav() {
+      function sectionNav(viewId, sections) {
         var title = __alloT('stem.treelab.jump_to', 'Jump to a step');
+        var list = sections || LAB_SECTIONS[viewId] || [];
+        // One destination is not navigation, so the strip stays out of the way entirely.
+        if (list.length < 2) return null;
         // Colours come from the same theme tokens the cards use, so high contrast is covered;
         // only hover and focus need real CSS rules.
-        return h('nav', { className: 'allo-tree-grow-nav', 'aria-label': title,
+        return h('nav', { className: 'allo-tree-grow-nav', 'aria-label': title, key: 'nav-' + viewId,
           style: { background: T.card, border: '1px solid ' + T.border } }, [
           h('span', { key: 'label', className: 'allo-tree-grow-nav-label', style: { color: T.dim } }, title),
-          h('ul', { key: 'list' }, GROW_SECTIONS.map(function (section) {
+          h('ul', { key: 'list' }, list.map(function (section) {
             return h('li', { key: section.id }, h('a', {
               href: '#' + section.id,
               style: { color: T.text, background: T.cardAlt, border: '1px solid ' + T.border },
@@ -9130,12 +9221,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var kids = [];
         var scene = viewerPanel();
         var mission = missionPanel();
-        pushKeyed(kids, growNav(), 'grow-nav');
+        pushKeyed(kids, sectionNav('grow'), 'grow-nav');
         pushKeyed(kids, flowMarker('1',
           __alloT('stem.treelab.flow_observe', 'Observe and grow'),
           __alloT('stem.treelab.flow_observe_note', 'Read the living tree, move time forward, and see what its carbon budget can afford.')), 'grow-flow-observe');
         pushKeyed(kids, foldPanel('timescales', __alloT('stem.treelab.explore_timescales', 'How tree time works'), timeScaleRibbon()), 'grow-timescales');
-        pushKeyed(kids, growSection(playbackPanel(), 'grow-sec-clock', __alloT('stem.treelab.playback', 'Run the clock')), 'grow-playback');
+        pushKeyed(kids, labSection(playbackPanel(), 'grow-sec-clock', __alloT('stem.treelab.playback', 'Run the clock')), 'grow-playback');
         pushKeyed(kids, yearOutcomePanel(), 'grow-outcome');
         pushKeyed(kids, reflectionPanel(), 'grow-reflection');
 
@@ -9233,9 +9324,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           modelNote(__alloT('stem.treelab.model_note',
             'Qualitative teaching model, not a forest growth model or a measurement. The shapes are real (saturating light response, a smallest-factor gate, respiration that scales with living tissue) and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
         ], undefined, 'allo-tree-budget-card');
-        pushKeyed(kids, growSection(band === 'k2' ? simpleFoodPanel() : budgetCard, 'grow-sec-budget', __alloT('stem.treelab.nav_budget', 'Carbon budget')), 'grow-budget');
+        pushKeyed(kids, labSection(band === 'k2' ? simpleFoodPanel() : budgetCard, 'grow-sec-budget', __alloT('stem.treelab.nav_budget', 'Carbon budget')), 'grow-budget');
         if (band === 'k2') pushKeyed(kids, foldPanel('budget', __alloT('stem.treelab.explore_numbers', 'See the carbon numbers'), budgetCard), 'grow-budget-details');
-        pushKeyed(kids, growSection(treeMemoryPanel(), 'grow-sec-memory', __alloT('stem.treelab.nav_memory', 'Tree memory')), 'grow-memory');
+        pushKeyed(kids, labSection(treeMemoryPanel(), 'grow-sec-memory', __alloT('stem.treelab.nav_memory', 'Tree memory')), 'grow-memory');
 
         // ── The objective ───────────────────────────────────────────────────
         //
@@ -9350,7 +9441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         pushKeyed(kids, flowMarker('2',
           __alloT('stem.treelab.flow_shape', 'Shape the next year'),
           __alloT('stem.treelab.flow_shape_note', 'Change the environment and choose where the tree invests whatever carbon remains.')), 'grow-flow-shape');
-        pushKeyed(kids, growSection(card([
+        pushKeyed(kids, labSection(card([
           heading(__alloT('stem.treelab.conditions', 'Conditions'),
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
           // Each condition wears the same hue its factor carries everywhere else —
@@ -9462,7 +9553,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           }, yearOutcomeAnnouncement()),
           !tree.alive ? postMortem() : null
         ]);
-        pushKeyed(kids, growSection(band === 'k2' ? foldPanel('allocation', __alloT('stem.treelab.explore_allocation', 'Explore where food goes'), allocationCard) : allocationCard, 'grow-sec-surplus', __alloT('stem.treelab.nav_surplus', 'Where the surplus goes')), 'grow-spend');
+        pushKeyed(kids, labSection(band === 'k2' ? foldPanel('allocation', __alloT('stem.treelab.explore_allocation', 'Explore where food goes'), allocationCard) : allocationCard, 'grow-sec-surplus', __alloT('stem.treelab.nav_surplus', 'Where the surplus goes')), 'grow-spend');
 
         pushKeyed(kids, advancedGateway(), 'grow-advanced-gateway');
         var advancedKids = [];
@@ -10073,6 +10164,12 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
       // Decorative hues are meaningful in normal themes and actively harmful in high
       // contrast, where everything must resolve to the black/white/yellow ramp.
       function tone(hex) { return isContrast ? T.accent : hex; }
+      // Same hue, dark enough to read as text on the light cards. High contrast keeps its
+      // single accent, and the dark theme keeps the bright hue, which already passes there.
+      var SEASON_INK = { '#22c55e': '#15803d', '#f59e0b': '#b45309', '#eab308': '#a16207',
+        '#ea580c': '#c2410c', '#38bdf8': '#0369a1', '#15803d': '#15803d',
+        '#ec4899': '#9d174d', '#8b5cf6': '#5b21b6' };
+      function inkTone(hex) { return isContrast ? T.accent : (isDark ? hex : (SEASON_INK[hex] || hex)); }
 
       function allocSlider(k, labelTxt, hex) {
         var pct = Math.round(alloc[k] * 100);
@@ -10391,7 +10488,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               ]),
               h('path', { key: 'area', d: area, fill: hue, fillOpacity: 0.1, stroke: 'none' }),
               h('path', {
-                key: 'line', d: line, fill: 'none', stroke: hue,
+                key: 'line', 'data-curve': c.id, d: line, fill: 'none', stroke: hue,
                 strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round'
               }),
               // Where this tree is standing right now. Drag a condition slider on the
@@ -10421,7 +10518,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               h('text', {
                 key: 'y1', x: PADL - 5, y: PADT + 4, textAnchor: 'end',
                 style: { fontSize: '10px', fill: T.dim, fontVariantNumeric: 'tabular-nums' }
-              }, round(yMax, 1)),
+              }, yMax >= 1 ? round(yMax, 1) : round(yMax, 2)),
               h('text', {
                 key: 'y0', x: PADL - 5, y: PADT + PH, textAnchor: 'end',
                 style: { fontSize: '10px', fill: T.dim, fontVariantNumeric: 'tabular-nums' }
@@ -10471,6 +10568,14 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
       }
 
       function viewChem() {
+        // Two cards below are band-gated and K-2 returns before them, so the navigator is
+        // built from the parts that actually rendered rather than a fixed list.
+        var chemNav = [];
+        function chemPart(node, id, label) {
+          if (node == null) return null;
+          chemNav.push({ id: id, label: label });
+          return labSection(node, id, label);
+        }
         var kids = [];
         if (!tree.alive) {
           var stoppedTitle = band === 'k2'
@@ -10524,15 +10629,15 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         // The same reasoning rhythm now connects the reaction picture to the response
         // curves: notice the live constraint, predict one controlled change, then use
         // the curve shape to explain why the rate did or did not move.
-        kids.push(chemStoryPanel());
+        kids.push(chemPart(chemStoryPanel(), 'chem-sec-reaction', __alloT('stem.treelab.nav_reaction', 'The live reaction')));
         kids.push(scienceTrail('chem', __alloT('stem.treelab.chem_reasoning', 'Turn the live reaction into a testable explanation'), [
           { title: chemLimiterLabel + ' ' + __alloT('stem.treelab.sets_pace_now', 'sets the pace now'), copy: __alloT('stem.treelab.chem_observe_copy', 'The marked input matches the smallest usable factor. This tree is making ') + round(live.gross, 2) + ' kg C/year.' },
           { title: __alloT('stem.treelab.change_bottleneck', 'Change the bottleneck first'), copy: __alloT('stem.treelab.chem_predict_copy', 'Raise ') + chemLimiterLabel + __alloT('stem.treelab.chem_predict_copy_2', '; the dot should climb until a different factor becomes smallest.') },
           { title: __alloT('stem.treelab.scarce_sets_rate', 'Extra supply cannot replace what is scarce'), copy: __alloT('stem.treelab.chem_explain_copy', 'Use the marked response curve as evidence, then change just one condition in Grow to test the prediction.') }
         ]));
-        kids.push(curvePanel());
+        kids.push(chemPart(curvePanel(), 'chem-sec-curves', __alloT('stem.treelab.nav_curves', 'Change one thing')));
 
-        kids.push(card([
+        kids.push(chemPart(card([
           heading(__alloT('stem.treelab.what_limits', 'What is limiting the rate?'),
             atLeast(band, 'g912')
               ? __alloT('stem.treelab.limits_interaction_g912', 'Four interacting factors shape the rate. Light and CO₂ constrain supply; temperature and water scale it. Compare the response curves and the record in the rings.')
@@ -10544,10 +10649,10 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           h('div', { key: 'note', style: { marginTop: 6, fontSize: 12, color: T.dim, lineHeight: 1.55 } },
             __alloT('stem.treelab.liebig',
               'This is why enriching ' + CO2 + ' does little for a tree that is short of water. A stoma pulled most of the way shut admits very little ' + CO2 + ' however much is outside, so the extra arrives as a large share of almost nothing.'))
-        ], undefined, 'allo-tree-chem-limits'));
+        ], undefined, 'allo-tree-chem-limits'), 'chem-sec-limits', __alloT('stem.treelab.nav_limits', 'What limits the rate')));
 
         if (atLeast(band, 'g68')) {
-          kids.push(card([
+          kids.push(chemPart(card([
             heading(__alloT('stem.treelab.the_trade', 'The trade the tree cannot avoid'),
               __alloT('stem.treelab.the_trade_sub', 'The pore that admits ' + CO2 + ' is the pore that loses ' + H2O + '. There is no setting that does only the good half.')),
             h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } }, [
@@ -10559,11 +10664,11 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             ]),
             h('p', { key: 'p', style: { fontSize: 12, color: T.dim, marginTop: 8, lineHeight: 1.55 } },
               __alloT('stem.treelab.trade_body', 'A large tree can move well over 100 gallons of water in a day this way. Almost all of it is the unavoidable price of leaving the stomata open long enough to take carbon in.'))
-          ], undefined, 'allo-tree-chem-trade'));
+          ], undefined, 'allo-tree-chem-trade'), 'chem-sec-trade', __alloT('stem.treelab.nav_trade', 'The unavoidable trade')));
         }
 
         if (atLeast(band, 'g912')) {
-          kids.push(card([
+          kids.push(chemPart(card([
             heading(__alloT('stem.treelab.the_bill', 'The respiration bill'),
               __alloT('stem.treelab.the_bill_sub', 'The part students most often miss: a big tree does not only gain more, it SPENDS more, every hour, forever.')),
             h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8 } }, [
@@ -10582,8 +10687,9 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               btn('hcell', __alloT('stem.treelab.open_cell', 'See the chloroplast in Cell Explorer →'),
                 function () { handoff('cell', 'Cell Explorer'); }, { small: true })
             ])
-          ], undefined, 'allo-tree-chem-bill'));
+          ], undefined, 'allo-tree-chem-bill'), 'chem-sec-bill', __alloT('stem.treelab.the_bill', 'The respiration bill')));
         }
+        kids.unshift(sectionNav('chem', chemNav));
         return kids;
       }
 
@@ -10885,7 +10991,8 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             : (season === 'autumn'
               ? __alloT('stem.treelab.roots_trunk_lower', 'roots and trunk')
               : __alloT('stem.treelab.growing_parts_lower', 'growing parts and roots')));
-        kids.push(card([
+        kids.push(sectionNav('transport'));
+        kids.push(labSection(card([
           h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' }, __alloT('stem.treelab.transport_story_eyebrow', 'Trace the flow')),
           heading(__alloT('stem.treelab.two_pipes', 'Two separate plumbing systems'),
             __alloT('stem.treelab.two_pipes_sub', 'Water goes up one way. Sugar goes from a source to wherever it is needed by another. Change the season and watch that sugar direction switch.')),
@@ -10940,7 +11047,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             h('span', { key: 'now', className: 'allo-tree-pipe-now' },
               __alloT('stem.treelab.route_now', 'Right now: ') + sugarSource + ' ' + ARROW + ' ' + sugarDestination)
           ])
-        ], undefined, 'allo-tree-transport-story'));
+        ], undefined, 'allo-tree-transport-story'), 'xport-sec-pipes', __alloT('stem.treelab.two_pipes', 'Two separate plumbing systems')));
 
         kids.push(scienceTrail('transport', __alloT('stem.treelab.transport_reasoning', 'Use direction to explain the hidden mechanism'), [
           { title: winterRest ? __alloT('stem.treelab.winter_flow_observe', 'Winter flow slows almost to a stop') : fmtInt(Math.round(transpirationPerDay)) + ' ' + __alloT('stem.treelab.litres_move_daily', 'litres move daily'), copy: (winterRest ? __alloT('stem.treelab.transport_observe_winter', 'Trace the resting water route, then follow stored sugar to the tissues that still need maintenance.') : __alloT('stem.treelab.transport_observe_copy', 'Trace water from soil to leaf, then trace sugar from ') + sugarSource + ' ' + __alloT('stem.treelab.to_word', 'to') + ' ' + sugarDestination + '.') },
@@ -10949,21 +11056,21 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         ]));
 
         if (atLeast(band, 'g68')) {
-          kids.push(card([
+          kids.push(labSection(card([
             heading(__alloT('stem.treelab.where_sugar', 'Where the whole-year carbon plan goes'),
               __alloT('stem.treelab.where_sugar_sub', 'These bars come from the annual allocation you set on Grow. The seasonal route above shows direction; this plan shows how the year\'s surplus is divided.')),
             sinkRows()
-          ], undefined, 'allo-tree-sugar-map'));
+          ], undefined, 'allo-tree-sugar-map'), 'xport-sec-sugar', __alloT('stem.treelab.nav_sugar', 'Where the carbon goes')));
 
-          kids.push(card([
+          kids.push(labSection(card([
             heading(__alloT('stem.treelab.xs_title', 'Inside the trunk'),
               atLeast(band, 'g68')
                 ? __alloT('stem.treelab.xs_sub_g68', 'Cut across the trunk and the two systems are in different places: phloem in a thin band just under the bark, xylem filling the wood beneath it. The rings are this tree\'s own.')
                 : __alloT('stem.treelab.xs_sub_k2', 'A slice through the trunk. Each ring is one year of growing.')),
             trunkSection()
-          ], undefined, 'allo-tree-trunk-card'));
+          ], undefined, 'allo-tree-trunk-card'), 'xport-sec-trunk', __alloT('stem.treelab.xs_title', 'Inside the trunk')));
 
-          kids.push(card([
+          kids.push(labSection(card([
             heading(__alloT('stem.treelab.girdling', 'Why cutting a ring of bark kills a tree'),
               __alloT('stem.treelab.girdling_sub', 'A useful test of whether the two systems have really landed.')),
             h('p', { key: 'p', style: { fontSize: 13, color: T.text, lineHeight: 1.6 } },
@@ -10973,7 +11080,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             atLeast(band, 'g912') ? h('p', { key: 'p2', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 8 } },
               __alloT('stem.treelab.girdling_adv',
                 'This is also why the cambium matters so much: it is the single living layer between the two, and it is what a ground fire has to get through. A species with thick bark is buying insulation for that one layer.')) : null
-          ], undefined, 'allo-tree-girdling-card'));
+          ], undefined, 'allo-tree-girdling-card'), 'xport-sec-girdling', __alloT('stem.treelab.nav_girdling', 'Cutting a ring of bark')));
         }
         return kids;
       }
@@ -11036,9 +11143,9 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
 
       function strategyProfile(s) {
         var metrics = [
-          { key: 'take', label: band === 'k2' ? __alloT('stem.treelab.establishment_k2', 'Starts growing') : __alloT('stem.treelab.establishment', 'Establishment'), value: Math.round(s.establish * 100) + '%', strength: s.establish, hue: tone('#22c55e') },
-          { key: 'reach', label: band === 'k2' ? __alloT('stem.treelab.relative_reach_k2', 'How far it goes') : __alloT('stem.treelab.relative_reach', 'Relative reach'), value: Math.round(s.distance * 100) + '%', strength: s.distance, hue: tone('#38bdf8') },
-          { key: 'genes', label: band === 'k2' ? __alloT('stem.treelab.genetic_variety_k2', 'Like the parent') : __alloT('stem.treelab.genetic_variety', 'Genetic variety'), value: s.diversity ? (band === 'k2' ? __alloT('stem.treelab.new_mix_k2', 'Different') : __alloT('stem.treelab.new_mix', 'New genetic mix')) : (band === 'k2' ? __alloT('stem.treelab.exact_copy_k2', 'Same copy') : __alloT('stem.treelab.exact_copy', 'Exact copy')), strength: s.diversity ? 1 : 0.16, hue: tone(s.diversity ? '#ec4899' : '#f59e0b') }
+          { key: 'take', label: band === 'k2' ? __alloT('stem.treelab.establishment_k2', 'Starts growing') : __alloT('stem.treelab.establishment', 'Establishment'), value: Math.round(s.establish * 100) + '%', strength: s.establish, hue: inkTone('#22c55e') },
+          { key: 'reach', label: band === 'k2' ? __alloT('stem.treelab.relative_reach_k2', 'How far it goes') : __alloT('stem.treelab.relative_reach', 'Relative reach'), value: Math.round(s.distance * 100) + '%', strength: s.distance, hue: inkTone('#38bdf8') },
+          { key: 'genes', label: band === 'k2' ? __alloT('stem.treelab.genetic_variety_k2', 'Like the parent') : __alloT('stem.treelab.genetic_variety', 'Genetic variety'), value: s.diversity ? (band === 'k2' ? __alloT('stem.treelab.new_mix_k2', 'Different') : __alloT('stem.treelab.new_mix', 'New genetic mix')) : (band === 'k2' ? __alloT('stem.treelab.exact_copy_k2', 'Same copy') : __alloT('stem.treelab.exact_copy', 'Exact copy')), strength: s.diversity ? 1 : 0.16, hue: inkTone(s.diversity ? '#ec4899' : '#f59e0b') }
         ];
         return h('div', {
           key: 'profile', className: 'allo-tree-strategy-profile', role: 'group',
@@ -11248,6 +11355,41 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             srSay(ok ? (kind === 'code' ? 'Grove code copied.' : 'Run summary copied.') : 'Copy did not work here. The text is shown below; select it and press Ctrl+C.');
           }, function () { upd('groveShare', { kind: kind, status: 'failed', text: text }); });
         }
+        // Read-aloud for the year's evidence. Seventeen sibling tools offer this; the wording
+        // spoken is whatever the band already renders, so K-2 hears the short sentences.
+        function receiptSpeechText(r) {
+          var out = [say('Year ', 'Year ') + r.year + ': ' + r.event.title + '.'];
+          out.push(say('Card used: ', 'Priority used: ') + priorityName(GROVE_PRIORITIES.filter(function (p) { return p.id === r.choice.priority; })[0]) + '.');
+          out.push(r.arrivals + say(r.arrivals === 1 ? ' new tree came.' : ' new trees came.', r.arrivals === 1 ? ' new arrival.' : ' new arrivals.'));
+          out.push(r.established + say(' new trees have made it so far.', ' established descendants so far.'));
+          out.push(r.deaths + (r.deaths === 1 ? say(' tree died.', ' tree lost.') : say(' trees died.', ' trees lost.')));
+          whereLines(r).forEach(function (line) { out.push(line.text); });
+          return out.join(' ');
+        }
+        function stopSpeaking() {
+          try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+          upd('groveSpeaking', false);
+        }
+        function speakReceipt(r) {
+          if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return;
+          try {
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(receiptSpeechText(r));
+            u.rate = simple ? 0.85 : 0.95;
+            u.onend = function () { upd('groveSpeaking', false); };
+            u.onerror = function () { upd('groveSpeaking', false); };
+            upd('groveSpeaking', true);
+            window.speechSynthesis.speak(u);
+          } catch (e) { upd('groveSpeaking', false); }
+        }
+        // The control only appears where the browser can actually speak.
+        function readAloudButton(r) {
+          if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return null;
+          var on = !!d.groveSpeaking;
+          return h('button', { key: 'speak', type: 'button', className: 'grove-speak', 'aria-pressed': on,
+            onClick: function () { if (on) stopSpeaking(); else speakReceipt(r); } },
+            on ? say('⏹ Stop reading', '⏹ Stop reading') : say('▶ Read this to me', '▶ Read this aloud'));
+        }
         function runSummaryText() {
           var out = ['Grove Journey \u00b7 code ' + config.seed + ' \u00b7 ' + (config.mode === 'deck' ? 'event deck' : 'generated weather')];
           grove.receipts.forEach(function (r) {
@@ -11444,7 +11586,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             h('div', { key: 'legend', className: 'grove-chart-legend', 'aria-hidden': true }, defs.map(function (s) { return h('span', { key: s.id }, [h('i', { key: 'k', style: { background: s.colour } }), s.name]); }))
           ]);
         }
-        function whereList(r) {
+        function whereLines(r) {
           var lines = [];
           if (r.damaged && r.event.damage) lines.push({ key: 'storm', text: GROVE_PATCHES[r.event.patch].name + ': the storm removed leaf tissue from ' + r.damaged + (r.damaged === 1 ? ' tree.' : ' trees.') });
           var limits = simple ? { moisture: 'too dry', light: 'too shady', chance: 'just bad luck', space: 'no room' } : { moisture: 'dry soil lowered the odds', light: 'shade lowered the odds', chance: 'chance alone', space: 'no space left' };
@@ -11468,9 +11610,13 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           (r.losses || []).forEach(function (loss) {
             lines.push({ key: 'loss-' + loss.id, text: GROVE_PATCHES[loss.patch].name + ': ' + speciesById(loss.speciesId).name + ', age ' + loss.age + (loss.cause === 'dry_seedling' ? say(', died. The soil was too dry for a small tree.', ', died in dry soil while still small.') : loss.cause === 'senescence' ? ', died of old age.' : say(', ran out of food and died.', ', ran out of stored food and died.')) + say(' Its trunk stays on the map.', ' Its trunk stays on the map as a snag.') });
           });
-          if (!lines.length) return null;
-          return h('div', { key: 'where' }, [h('h4', { key: 'h' }, 'Where it happened'),
-            h('ul', { key: 'l', className: 'grove-where', 'aria-label': 'Where it happened' }, lines.map(function (line) { return h('li', { key: line.key }, line.text); }))]);
+          return lines;
+          }
+          function whereList(r) {
+            var lines = whereLines(r);
+            if (!lines.length) return null;
+            return h('div', { key: 'where' }, [h('h4', { key: 'h' }, say('Where it happened', 'Where it happened')),
+              h('ul', { key: 'l', className: 'grove-where', 'aria-label': 'Where it happened' }, lines.map(function (line) { return h('li', { key: line.key }, line.text); }))]);
         }
         function predictionOutcome(guess, r) {
           var bucket = r.arrivals === 0 ? 'none' : r.arrivals <= 2 ? 'some' : 'many', actual = r.net < 0 ? 'shortfall' : 'surplus';
@@ -11522,6 +11668,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         }
         return h('section', { className: 'allo-tree-grove', 'aria-label': 'Grove campaign', style: {
           '--grove-card': T.card, '--grove-ink': T.text, '--grove-muted': T.dim, '--grove-line': T.border,
+                   '--grove-track': isContrast ? '#000000' : (isDark ? '#0f172a' : '#eef2f7'),
           '--grove-wash': isContrast ? '#000' : isDark ? '#122e2a' : '#eff6ed', '--grove-accent': T.accent,
           '--grove-on-accent': T.onAccent, '--grove-patch': isContrast ? '#0a0a0a' : isDark ? '#263d33' : '#dce8ce',
           '--grove-damp': isContrast ? '#0a0a0a' : isDark ? '#203a42' : '#d6e9e6',
@@ -11531,7 +11678,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           h('a', { key: 'skip', className: 'grove-skip', href: '#grove-decisions', onClick: function (e) { e.preventDefault(); focusLater('#grove-decisions'); } }, say('Skip to this year' + '\u2019' + 's choice', 'Skip to this year' + '\u2019' + 's decision')),
           h('header', { key: 'head', className: 'grove-header' }, [
             h('div', { key: 'intro' }, [h('span', { key: 'eyebrow', className: 'grove-eyebrow' }, 'A SMALL FOREST · A LASTING STORY'),
-              h('h2', { key: 'title' }, 'Leave a living legacy.'),
+              h('h3', { key: 'title' }, 'Leave a living legacy.'),
               h('p', { key: 'copy' }, band === 'k2' ? 'Help your grove through eight years. Give new trees a chance to take root.' : 'Guide a grove through eight years. Keep a lineage alive and establish descendants in two patches.')]),
             h('div', { key: 'year', className: 'grove-year' }, [h('strong', { key: 'n' }, grove.year + ' / 8'), h('span', { key: 'l' }, 'years completed')])
           ]),
@@ -11669,6 +11816,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             last.attempts ? h('p', { key: 'chance' }, last.attempts + say(' tries to make new trees used ', ' reproductive attempts used ') + formatCarbon(last.spent) + say('. Where they landed, water, light, luck and room decided which grew. New trees must live one more year to count.', '. Landings, moisture, light, chance and available space determined which arrived. Arrivals must survive another year to count toward the goal.')) : h('p', { key: 'no-attempt' }, say('No new trees this year. Pick the Make new trees card to try.', 'No reproductive attempts this year. Mature trees spend their reproductive savings when you choose Invest in offspring.')),
             whereList(last),
             predictionCheck(last),
+            readAloudButton(last),
             h('p', { key: 'history-note', className: 'grove-caption' }, summary.ended ? 'This is the final year’s evidence. Your journal retains the whole run.' : 'This is evidence from the completed year. The forecast above describes the next year.')
           ] : h('p', { key: 'empty' }, 'Your first year’s evidence will appear here. Establishment is a milestone; a seed landing alone is not a surviving next generation.')),
           h('details', { key: 'journal', className: 'grove-notebook' }, [h('summary', { key: 's' }, 'Field journal · ' + journal.length + (journal.length === 1 ? ' discovery' : ' discoveries')),
@@ -12246,7 +12394,13 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               className: 'allo-tree-quiz-progress-fill',
               style: { width: progress.percent + '%' }
             })),
-            h('div', { key: 'trail', className: 'allo-tree-quiz-leaf-trail', 'aria-hidden': 'true' },
+            h('div', {
+              key: 'trail', className: 'allo-tree-quiz-leaf-trail', 'aria-hidden': 'true',
+              // Phone widths turn this row into a grid (see the 760px rules); the column
+              // count is chosen so the last row never holds a single stranded chip, which
+              // is what twelve chips wrapping into eleven plus one looked like.
+              style: { gridTemplateColumns: 'repeat(' + trailColumns(pool.length) + ',22px)' }
+            },
               pool.map(function (q, i) {
                 var st = seen[QUIZ.indexOf(q)];
                 if (st !== 'right' && st !== 'wrong') st = 'open';
@@ -12290,11 +12444,21 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
       // Slots are assigned by the species' fixed position in SPECIES, never by how
       // tall they finished. A palette that follows rank repaints every survivor the
       // moment the years slider changes the ordering.
-      var SPECIES_HUE_LIGHT = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4'];
-      var SPECIES_HUE_DARK = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181'];
-      // High contrast collapses every decorative hue onto one accent, so five lines
-      // would be five identical yellow lines. There the identity channel becomes the
-      // dash pattern — the line equivalent of the texture fallback.
+      // Measured on the page: three of the old light hues drew the growth lines at 2.17-2.82:1
+      // against the white chart, under the 3:1 a data mark needs. These five pass every check
+      // in the palette validator with --pairs all, at 4.8:1 or better on the card.
+      var SPECIES_HUE_LIGHT = ['#1f68c0', '#b45309', '#15803d', '#5b21b6', '#9d174d'];
+      // The old dark hues put pink and green 1.6 apart under deuteranopia, so those two lines
+      // were one colour to a red-green colour-blind reader. These sit 8.8 apart (12.2 tritan)
+      // and 22.6 apart in normal vision. They spread wider in lightness than the validator's
+      // dark band likes, which is the deliberate price of separating them.
+      var SPECIES_HUE_DARK = ['#38bdf8', '#fdba74', '#16a34a', '#8b5cf6', '#ec4899'];
+      // Every line carries a dash pattern in every theme, not just high contrast. Five
+      // series cannot be told apart by hue alone: validated all-pairs, the dark magenta
+      // and aqua steps sit 1.6 apart under deuteranopia and the light magenta and orange
+      // 12.9 apart even with normal vision, both under the floors. The dash is the
+      // secondary identity channel that makes that palette legitimate, and high contrast
+      // (where every hue collapses onto one accent) then relies on it entirely.
       // Solid / medium dash / fine dot / long dash / dash-dot. A first set put two
       // dash-dot patterns next to each other and they read as the same line.
       var SPECIES_DASH = ['', '9 5', '2 4', '16 5', '7 4 2 4'];
@@ -12312,7 +12476,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         runs.forEach(function (r, i) {
           if (!r.track.length) return;
           var hue = isContrast ? T.accent : hueFor(i);
-          var dash = isContrast ? SPECIES_DASH[i % 5] : '';
+          var dash = SPECIES_DASH[i % 5];
           var mine = r.sp.id === sp.id;
           var pts = r.track.map(function (v, k) {
             // compareRuns samples every OTHER year, so the index is half the age.
@@ -12414,7 +12578,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               }, h('line', {
                 x1: 0, y1: 4, x2: 18, y2: 4,
                 stroke: isContrast ? T.accent : hueFor(i), strokeWidth: 2, strokeLinecap: 'round',
-                strokeDasharray: (isContrast ? SPECIES_DASH[i % 5] : '') || undefined
+                strokeDasharray: SPECIES_DASH[i % 5] || undefined
               })),
               h('span', { key: 'n', style: { color: r.sp.id === sp.id ? T.text : T.dim, fontWeight: r.sp.id === sp.id ? 700 : 400 } },
                 __alloT('stem.treelab.species_' + r.sp.id, r.sp.name)
@@ -12483,9 +12647,9 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
 
       function speciesTraitProfile(sp2, hasClonalRoute) {
         var traits = [
-          { key: 'shade', label: __alloT('stem.treelab.shade_tolerance', 'Shade tolerance'), value: sp2.shadeTol, hue: tone('#8b5cf6') },
-          { key: 'drought', label: __alloT('stem.treelab.drought_tolerance', 'Drought tolerance'), value: sp2.droughtTol, hue: tone('#38bdf8') },
-          { key: 'bark', label: __alloT('stem.treelab.bark_defense', 'Bark defense'), value: sp2.barkThick, hue: tone('#f59e0b') }
+          { key: 'shade', label: __alloT('stem.treelab.shade_tolerance', 'Shade tolerance'), value: sp2.shadeTol, hue: inkTone('#8b5cf6') },
+          { key: 'drought', label: __alloT('stem.treelab.drought_tolerance', 'Drought tolerance'), value: sp2.droughtTol, hue: inkTone('#38bdf8') },
+          { key: 'bark', label: __alloT('stem.treelab.bark_defense', 'Bark defense'), value: sp2.barkThick, hue: inkTone('#f59e0b') }
         ];
         return h('div', {
           key: 'traits', className: 'allo-tree-species-traits', role: 'group',
@@ -12536,12 +12700,21 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
       }
 
       function viewCompare() {
+        // Compare is the longest view without a jump strip (measured at 2663px beside
+        // Chemistry's 2240px, which has one), so it collects its own destinations the way
+        // Chemistry does: only the parts that actually rendered become jump targets.
+        var cmpNav = [];
+        function cmpPart(node, id, label) {
+          if (node == null) return null;
+          cmpNav.push({ id: id, label: label });
+          return labSection(node, id, label);
+        }
         var years = clamp(d.compareYears || 120, 20, 400);
         var runs = compareRuns(years);
         var maxH = 1;
         runs.forEach(function (r) { r.track.forEach(function (v) { if (v > maxH) maxH = v; }); });
 
-        var kids = [card([
+        var kids = [cmpPart(card([
           h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' }, __alloT('stem.treelab.compare_eyebrow', 'A controlled forest experiment')),
           heading(__alloT('stem.treelab.compare', 'Five strategies, one set of conditions'),
             atLeast(band, 'g68')
@@ -12568,8 +12741,8 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           ]),
           compareChart(runs, years, maxH),
           compareInsightPanel(runs, years)
-        ], undefined, 'allo-tree-compare-hero')];
-        kids.push(compareReasoningTrail(runs, years));
+        ], undefined, 'allo-tree-compare-hero'), 'cmp-sec-experiment', __alloT('stem.treelab.nav_cmp_experiment', 'The shared experiment'))];
+        kids.push(cmpPart(compareReasoningTrail(runs, years), 'cmp-sec-trail', __alloT('stem.treelab.nav_cmp_trail', 'How to read the chart')));
 
         var speciesCards = [];
         runs.forEach(function (r, ri) {
@@ -12642,8 +12815,13 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               + ', ' + __alloT('stem.treelab.cmp_max', 'tops out near ') + r.sp.maxHeight + ' m.') : null
           ], { borderTop: '4px solid ' + cardHue }, 'allo-tree-species-card' + (isCurrent ? ' is-current' : ''))));
         });
+        // Already a landmark with its own label, so it becomes a jump target in place
+        // rather than being wrapped in a second section that repeats the same name.
+        // The link wears the section's own label, the way labSection guarantees elsewhere,
+        // so a reader hearing the link and then the region hears the same name twice.
+        cmpNav.push({ id: 'cmp-sec-species', label: __alloT('stem.treelab.species_strategies', 'Five species strategies') });
         kids.push(h('section', {
-          key: 'species', className: 'allo-tree-species-stage',
+          key: 'species', id: 'cmp-sec-species', tabIndex: -1, className: 'allo-tree-species-stage',
           'aria-label': __alloT('stem.treelab.species_strategies', 'Five species strategies')
         }, [
           h('div', { key: 'guide' }, flowMarker('2',
@@ -12652,7 +12830,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           h('div', { key: 'grid', className: 'allo-tree-species-grid' }, speciesCards)
         ]));
 
-        kids.push(card([
+        kids.push(cmpPart(card([
           modelNote(__alloT('stem.treelab.compare_note',
             'One run each, under one set of conditions. A species that loses here is not a worse tree — it is a tree built for different conditions. Change the light or the water on the Grow tab and the order can change.'))
           ,h('div', { key: 'next', className: 'allo-tree-compare-next' }, [
@@ -12663,7 +12841,8 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             ]),
             btn('grow', __alloT('stem.treelab.change_in_grow', 'Change conditions in Grow') + ' ' + ARROW, function () { activateChapter('grow', 'heading'); }, { small: true })
           ])
-        ], undefined, 'allo-tree-compare-conclusion'));
+        ], undefined, 'allo-tree-compare-conclusion'), 'cmp-sec-next', __alloT('stem.treelab.nav_cmp_next', 'What to try next')));
+        kids.unshift(sectionNav('compare', cmpNav));
         return kids;
       }
 
@@ -12782,7 +12961,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               h('span', { key: 'b' }, '\u2713')
             ]),
             h('div', { key: 'copy', className: 'allo-tree-quiz-finale-copy' }, [
-              h('h2', { key: 'title' }, title),
+              h('h3', { key: 'title' }, title),
               h('p', { key: 'body' }, copy),
               h('strong', { key: 'score' },
                 progress.right + ' / ' + progress.total + ' ' + __alloT('stem.treelab.finale_score', 'ideas connected on your latest attempts'))
@@ -13236,7 +13415,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         '.is-discovery-layout .allo-tree-workbench{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:16px;}',
         '.allo-tree-discovery h3{font-size:22px;line-height:1.2;margin:8px 0 12px;font-weight:850;}',
         '.allo-tree-discovery p{font-size:14px;line-height:1.5;margin:10px 0;}',
-        '.allo-tree-discovery-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--tree-accent);}',
+        '.allo-tree-discovery-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--tree-accent-text);}',
         '.allo-tree-discovery-steps{display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:10px 0 16px;}',
         '.allo-tree-discovery-steps li{padding:5px 8px;border:1px solid var(--lab-edge);border-radius:8px;font-size:12px;}',
         '.allo-tree-discovery-steps [aria-current=step]{border:2px solid var(--tree-accent);font-weight:800;}',
@@ -13279,8 +13458,14 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           '--hero-ring': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.08)' : 'rgba(255,255,255,.24)'),
           '--tree-shadow': isDark ? 'rgba(2,6,23,.32)' : 'rgba(15,23,42,.12)',
           '--accent-shadow': isDark ? 'rgba(52,211,153,.2)' : 'rgba(5,150,105,.2)',
-          '--tree-focus': isContrast ? '#ffffff' : (isDark ? '#a7f3d0' : '#34d399'),
+          // The light ring was #34d399: 1.92:1 on white and 1.75:1 on the slate card, under the
+          // 3:1 a focus indicator needs. Same hue, dark enough to see. Dark and high contrast
+          // already measure 11.4:1 and 21:1.
+          '--tree-focus': isContrast ? '#ffffff' : (isDark ? '#a7f3d0' : '#047857'),
           '--tree-accent': T.accent,
+          // Text only. The accent FILL keeps #059669, where the near-black onAccent ink
+          // sits at 4.95:1; darkening the fill would break that pairing instead.
+          '--tree-accent-text': (isDark || isContrast) ? T.accent : '#047857',
           '--lab-edge': isContrast ? T.border : (isDark ? 'rgba(52,211,153,.16)' : 'rgba(5,150,105,.14)'),
           '--canopy-wash': isContrast ? 'transparent' : (isDark ? 'rgba(6,78,59,.2)' : 'rgba(167,243,208,.22)'),
           '--hero-speck': isContrast ? 'transparent' : (isDark ? 'rgba(167,243,208,.08)' : 'rgba(5,150,105,.08)'),
@@ -13291,9 +13476,13 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           '--tree-ink': T.text,
           '--scene-edge': isContrast ? T.border : (isDark ? 'rgba(52,211,153,.35)' : 'rgba(5,150,105,.26)'),
           '--scene-shadow': isContrast ? 'transparent' : (isDark ? 'rgba(2,6,23,.45)' : 'rgba(6,78,59,.15)'),
-          '--tab-icon': isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.55)'),
+          '--tab-icon': isContrast ? 'transparent' : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.55)'),
           '--chapter-bg': isContrast ? T.card : (isDark ? 'linear-gradient(120deg,rgba(30,41,59,.96),rgba(16,53,48,.9))' : 'linear-gradient(120deg,rgba(255,255,255,.96),rgba(236,253,245,.94))'),
           '--chapter-border': T.border,
+          // Meter tracks: a fill has to be told apart from its own track, and the border
+          // colour is too close to the fills in every theme (1.07:1 in high contrast, where
+          // a yellow fill sat on a white track).
+          '--meter-track': isContrast ? '#000000' : (isDark ? '#0f172a' : '#e2e8f0'),
           '--accent-ink': T.onAccent,
           '--flow-badge': isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.08)' : 'rgba(5,150,105,.07)'),
           '--mission-border': isContrast ? T.border : (isDark ? '#2f6a5b' : '#86c9ae'),
@@ -13320,7 +13509,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           h('div', { key: 'a', className: 'allo-tree-hero-copy', style: { flex: '1 1 330px', position: 'relative', zIndex: 1 } }, [
             h('div', { key: 'eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', marginBottom: 8, borderRadius: 999, border: '1px solid ' + T.border, background: isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.1)' : 'rgba(255,255,255,.7)'), color: (isDark || isContrast) ? T.accent : '#047857', fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase' } },
               '● ' + __alloT('stem.treelab.studio_label', 'Living systems studio')),
-            h('h3', { key: 't', className: 'allo-tree-hero-title', style: { fontSize: 25, lineHeight: 1.04, fontWeight: 900, letterSpacing: '-0.045em', margin: 0, color: T.text } },
+            h('h2', { key: 't', className: 'allo-tree-hero-title', style: { fontSize: 25, lineHeight: 1.04, fontWeight: 900, letterSpacing: '-0.045em', margin: 0, color: T.text } },
               '🌳 ' + __alloT('stem.treelab.title', 'Tree Life Lab')),
             h('div', { key: 's', style: { fontSize: 13, color: T.dim, marginTop: 7, maxWidth: 570, lineHeight: 1.55 } },
               __alloT('stem.treelab.discovery_subtitle', 'Make a prediction. Grow a tree. Discover what changed.')),
@@ -13335,7 +13524,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               ]),
               h('span', { key: 'carbon', className: 'allo-tree-hero-stat' }, [
                 h('span', { key: 'l', className: 'allo-tree-hero-stat-label' }, band === 'k2' ? __alloT('stem.treelab.reproduction_bank_k2', 'Food saved for new trees') : __alloT('stem.treelab.reproduction_bank', 'Reproduction bank')),
-                h('strong', { key: 'v', className: 'allo-tree-hero-stat-value', style: { color: tree.seedsBanked > 0 ? T.accent : T.text } }, spreadAmount(tree.seedsBanked))
+                h('strong', { key: 'v', className: 'allo-tree-hero-stat-value', style: { color: tree.seedsBanked > 0 ? ((isDark || isContrast) ? T.accent : '#047857') : T.text } }, spreadAmount(tree.seedsBanked))
               ])
             ])
           ]),
@@ -13464,6 +13653,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
     // only ever move OUT from the baseline, which is what keeps a seedling small.
     fitDistance: fitDistance, BASE_DIST: BASE_DIST,
     strategyById: strategyById, resolveBand: resolveBand, atLeast: atLeast,
+    trailColumns: trailColumns,
     SPECIES: SPECIES, STRATEGIES: STRATEGIES, QUIZ: QUIZ, BANDS: BANDS
   };
 

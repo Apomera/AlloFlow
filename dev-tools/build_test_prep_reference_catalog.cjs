@@ -109,7 +109,13 @@ for (const file of fs.readdirSync(sourceDir).filter((name) => name.endsWith('_le
   collectReferences(JSON.parse(fs.readFileSync(path.join(sourceDir, file), 'utf8')), references, catalog, itemBankAuthoredMetadataUrls);
 }
 
+// AP packs do not use the legacy `*_pack.json` pipeline, so the loop above never
+// reaches them and their cited sources have to be named explicitly. Shared with
+// any tool that needs the same entries so there is one definition.
+const { AP_REFERENCE_SOURCES } = require('./ap_reference_sources.cjs');
+
 const explicitMetadataOverrides = {
+  ...AP_REFERENCE_SOURCES,
   'https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf': {
     title: 'AP Psychology Course and Exam Description',
     organization: 'College Board',

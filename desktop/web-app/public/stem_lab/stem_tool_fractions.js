@@ -8136,7 +8136,7 @@ window.StemLab = window.StemLab || {
               __alloT('stem.fractions.visualization_heavy_build_intuition_wi', 'Visualization-heavy. Build intuition with pie, bar, number-line, area, set, length, and volume models. No quiz pressure.')
             ),
             h('div', null,
-              h('b', { className: 'text-violet-700' }, __alloT('stem.fractions.practice_2', '🎯 Practice ')),
+              h('b', { className: 'text-violet-700' + onHostInk }, __alloT('stem.fractions.practice_2', '🎯 Practice ')),
               __alloT('stem.fractions.skill_focused_with_scoring_compare_add', 'Skill-focused with scoring. Compare, add/subtract, multiply/divide, equivalent fractions, simplify, convert, and timed quizzes.')
             ),
             h('div', null,
@@ -8144,7 +8144,7 @@ window.StemLab = window.StemLab || {
               __alloT('stem.fractions.real_world_contexts_word_problems_reci', 'Real-world contexts. Word problems, recipe scaling, games (Pizza Shop, Race, Match, Fish, and more), story mode, brain teasers.')
             ),
             h('div', null,
-              h('b', { className: 'text-slate-700' }, __alloT('stem.fractions.teacher', '🏫 Teacher ')),
+              h('b', { className: 'text-slate-700' + onHostInk }, __alloT('stem.fractions.teacher', '🏫 Teacher ')),
               __alloT('stem.fractions.instructor_tools_worksheet_generator_p', 'Instructor tools: worksheet generator, progress reports, IEP goal bank, lesson plans, CCSS standards alignment, misconceptions library, scope & sequence, hands-on activities, RTI probes.')
             )
           )

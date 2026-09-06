@@ -1,0 +1,170 @@
+#!/usr/bin/env node
+'use strict';
+
+// One blueprint-coverage block for every AP pack.
+//
+// Before this module the eight AP QA reports published three different shapes:
+// `editorialAdvisories` + `signals` (Biology, Chemistry, Physics 1),
+// `editorialReviewQueue` (Psychology, U.S. History), and `advisories` +
+// `coverage` (Calculus, Statistics, Government) - and the three `coverage`
+// blocks disagreed with each other too (Statistics emitted booleans, Government
+// emitted raw count maps). So "zero findings" meant a different thing in each
+// report and nothing could be compared across packs.
+//
+// The honest part of this is the topic universe. Only four packs declare the
+// public framework topic ids they are targeting (`blueprint.officialFrameworkTopicIds`
+// or `blueprint.selectedFrameworkTopicIds`). For the other four the pack states
+// no topic universe at all, so "topics represented / topics observed" would be
+// 100% by construction - a gate that can never fail. Those packs report
+// `topicUniverseDeclared: false` and a null coverage ratio instead, which is a
+// visible gap rather than a passing score.
+//
+// Nothing here is a psychometric statistic, a difficulty estimate, or a
+// readiness signal. It is structural coverage of a declared blueprint plus two
+// balance counts that have caught real authoring defects in this repository.
+
+const AP_BLUEPRINT_COVERAGE_SCHEMA_VERSION = 1;
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function asRecord(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function countBy(values) {
+  const counts = {};
+  values.forEach((value) => { if (value) counts[value] = (counts[value] || 0) + 1; });
+  return counts;
+}
+
+function median(numbers) {
+  if (!numbers.length) return 0;
+  const sorted = numbers.slice().sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2 * 10) / 10;
+}
+
+// The declared universe of framework topics, or null when the pack states none.
+function declaredTopicIds(pack) {
+  const blueprint = asRecord(pack.blueprint);
+  const declared = asArray(blueprint.officialFrameworkTopicIds).length
+    ? asArray(blueprint.officialFrameworkTopicIds)
+    : asArray(blueprint.selectedFrameworkTopicIds);
+  const ids = Array.from(new Set(declared.map((id) => String(id || '').trim()).filter(Boolean)));
+  return ids.length ? ids : null;
+}
+
+function buildApBlueprintCoverage(input) {
+  const pack = asRecord(asRecord(input).pack);
+  const library = asRecord(asRecord(input).library);
+  const items = asArray(pack.items);
+  const domains = asArray(pack.domains);
+  const summary = asRecord(library.summary);
+
+  // Units
+  const unitIds = domains.map((domain) => String(asRecord(domain).id || '').trim()).filter(Boolean);
+  const itemsPerUnit = countBy(items.map((item) => String(asRecord(item).domainId || '').trim()));
+  const unitsMissing = unitIds.filter((unitId) => !itemsPerUnit[unitId]);
+
+  // Topics. `observed` is what the items actually carry; `declared` is the
+  // public framework universe the pack claims to target, when it claims one.
+  const observedTopicIds = [];
+  items.forEach((item) => asArray(asRecord(item).topicIds).forEach((topicId) => {
+    const id = String(topicId || '').trim();
+    if (id) observedTopicIds.push(id);
+  }));
+  const itemsPerTopic = countBy(observedTopicIds);
+  const observedUnique = Object.keys(itemsPerTopic);
+  const declared = declaredTopicIds(pack);
+  const topicsMissing = declared ? declared.filter((topicId) => !itemsPerTopic[topicId]) : [];
+  const topicsOffBlueprint = declared ? observedUnique.filter((topicId) => !declared.includes(topicId)) : [];
+  const declaredCounts = declared ? declared.map((topicId) => itemsPerTopic[topicId] || 0) : [];
+
+  // Answer-position balance. A bank whose keys cluster on one position is
+  // guessable; this repository has shipped that defect before, so the share is
+  // reported for every pack rather than left to a per-pack check.
+  const answerCounts = {};
+  let keyedItemCount = 0;
+  items.forEach((item) => {
+    const record = asRecord(item);
+    const index = record.answerIndex;
+    if (!Number.isInteger(index) || index < 0) return;
+    const choiceCount = asArray(record.choices).length;
+    if (choiceCount && index >= choiceCount) return;
+    answerCounts[index] = (answerCounts[index] || 0) + 1;
+    keyedItemCount += 1;
+  });
+  const dominantAnswerCount = Object.keys(answerCounts).reduce((max, key) => Math.max(max, answerCounts[key]), 0);
+  const dominantAnswerShare = keyedItemCount ? Math.round(dominantAnswerCount / keyedItemCount * 1000) / 10 : null;
+
+  // Which library layers this pack actually ships, using the same names the Hub
+  // renders them under, so an empty layer is visible instead of implied.
+  const layerCounts = {
+    chapters: asArray(library.chapters).length,
+    sections: Number(summary.sections || 0),
+    knowledgeChecks: Number(summary.knowledgeChecks || 0),
+    flashcards: asArray(library.flashcards).length,
+    memoryAids: asArray(library.memoryAids).length,
+    diagrams: asArray(library.diagrams).length,
+    diagramPlacements: asArray(library.diagramPlacements).length,
+    glossaryTerms: asArray(library.glossary).length,
+    constructedResponseWorkshops: asArray(library.constructedResponseWorkshops).length,
+    topicDiagnosticRoutes: asArray(library.topicDiagnosticRoutes).length,
+    remediationPlaybooks: asArray(library.misconceptionRemediationPlaybooks).length + asArray(library.topicRemediationPlaybooks).length,
+    studySessionPlans: asArray(library.studySessionPlans).length,
+    spacedReviewPlans: asArray(library.spacedReviewPlans).length,
+    sourceCatalog: asArray(library.sourceCatalog).length,
+  };
+  const emptyLayers = Object.keys(layerCounts).filter((key) => layerCounts[key] === 0);
+
+  const gaps = [];
+  if (!declared) gaps.push('topic-universe-not-declared');
+  if (topicsMissing.length) gaps.push('declared-topics-without-items');
+  if (topicsOffBlueprint.length) gaps.push('items-on-undeclared-topics');
+  if (unitsMissing.length) gaps.push('units-without-items');
+  if (!items.length) gaps.push('no-items');
+
+  return {
+    schemaVersion: AP_BLUEPRINT_COVERAGE_SCHEMA_VERSION,
+    packId: String(pack.id || ''),
+    packVersion: String(pack.version || ''),
+    blueprintLabel: String(pack.blueprintLabel || ''),
+    itemCount: items.length,
+    units: {
+      declaredCount: unitIds.length,
+      representedCount: unitIds.filter((unitId) => itemsPerUnit[unitId]).length,
+      missing: unitsMissing,
+      itemsPerUnit,
+    },
+    topics: {
+      // null, not 0 or 100: this pack never said what its topic universe is.
+      universeDeclared: Boolean(declared),
+      declaredCount: declared ? declared.length : null,
+      representedCount: declared ? declared.filter((topicId) => itemsPerTopic[topicId]).length : null,
+      coveragePercent: declared && declared.length
+        ? Math.round(declared.filter((topicId) => itemsPerTopic[topicId]).length / declared.length * 1000) / 10
+        : null,
+      missing: topicsMissing,
+      offBlueprint: topicsOffBlueprint,
+      observedCount: observedUnique.length,
+      minItemsPerDeclaredTopic: declared && declared.length ? Math.min.apply(null, declaredCounts) : null,
+      medianItemsPerDeclaredTopic: declared && declared.length ? median(declaredCounts) : null,
+      itemsPerTopic,
+    },
+    answerBalance: {
+      keyedItemCount,
+      counts: answerCounts,
+      dominantSharePercent: dominantAnswerShare,
+    },
+    library: layerCounts,
+    emptyLibraryLayers: emptyLayers,
+    gaps,
+    // A structural summary, never a release, validity, or readiness judgement.
+    assessment: gaps.length ? 'gaps-present' : 'structurally-complete',
+    boundary: 'Structural blueprint coverage only. Not content validity, fairness, accessibility conformance, rights clearance, psychometric quality, score meaning, or release eligibility.',
+  };
+}
+
+module.exports = { buildApBlueprintCoverage, AP_BLUEPRINT_COVERAGE_SCHEMA_VERSION };

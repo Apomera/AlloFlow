@@ -1265,6 +1265,27 @@ describe('Observatory tab rendering', () => {
     expect(sirius).not.toMatch(/mag -1.46 \(/);
   });
 
+  it('offers the same catalogue sky on the flat map, and says so', () => {
+    const doc = new DOMParser().parseFromString(renderTool('astronomy', { astronomy: { tab: 'skymap', observingList: [] } }), 'text/html');
+    const toggle = Array.from(doc.querySelectorAll('button')).find(b => b.textContent.trim() === 'Catalogue star field');
+    expect(toggle).toBeTruthy();
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    const help = doc.getElementById('astronomy-sky-map-help').textContent;
+    expect(help).toContain('same 8,920-star catalogue the 3D Observatory draws');
+    expect(help).not.toContain('the full number of stars visible');
+    const figure = doc.querySelector('#astronomy-sky-map-diagram');
+    expect(figure.getAttribute('aria-label')).toContain('faint background field drawn from the full star catalogue');
+    // Server-side there is no fetch, so the field is absent and the curated
+    // markers still carry the map on their own.
+    expect(doc.querySelector('[data-sky-layer="catalog-stars"]')).toBeNull();
+    expect(doc.querySelector('[data-sky-layer="stars"]')).toBeTruthy();
+
+    const off = new DOMParser().parseFromString(renderTool('astronomy', { astronomy: { tab: 'skymap', observingList: [], skyLayers: { catalogStars: false } } }), 'text/html');
+    const offToggle = Array.from(off.querySelectorAll('button')).find(b => b.textContent.trim() === 'Catalogue star field');
+    expect(offToggle.getAttribute('aria-pressed')).toBe('false');
+    expect(off.querySelector('#astronomy-sky-map-diagram').getAttribute('aria-label')).not.toContain('faint background field');
+  });
+
   it('lists the observatory tab once and keeps the meteor tab intact', () => {
     const doc = new DOMParser().parseFromString(render(), 'text/html');
     const tabs = Array.from(doc.querySelectorAll('[role="tab"]')).map(el => el.textContent.trim());

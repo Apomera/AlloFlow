@@ -91,9 +91,14 @@ test.describe('axe', () => {
     await mount(page, 'grow', 'g68', 'light');
     const painted = await page.evaluate(() => {
       const root = document.querySelector('#wrap > div') as HTMLElement | null;
-      return root ? getComputedStyle(root).backgroundColor : null;
+      if (!root) return null;
+      const style = getComputedStyle(root);
+      // The root paints a gradient rather than a flat fill, so backgroundColor alone reads
+      // transparent on a fully styled page: a gradient is a background IMAGE.
+      return style.backgroundColor + ' | ' + style.backgroundImage;
     });
-    expect(painted, 'tool root is not painting a background').not.toBe('rgba(0, 0, 0, 0)');
+    expect(painted, 'tool root is missing entirely').not.toBeNull();
+    expect(painted, 'tool root is not painting a background').not.toBe('rgba(0, 0, 0, 0) | none');
   });
 
   for (const [label, view, band, theme] of SURFACES) {

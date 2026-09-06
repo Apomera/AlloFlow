@@ -24,6 +24,41 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).not.toContain("h('div', { tabIndex: 0, role: 'application'");
   });
 
+  it('exposes one range per chamber setting, not two', () => {
+    // The chamber-size slider shipped as 8-15 in the sidebar and 7-18 in the fullscreen conditions panel, both
+    // bound to boxSize, so a value chosen in fullscreen was misreported by the sidebar afterwards.
+    const ranges = new Map();
+    for (const match of source.matchAll(/min: ([\d.]+), max: ([\d.]+), step: ([\d.]+), value: (\w+)/g)) {
+      const [, min, max, step, name] = match;
+      if (!ranges.has(name)) ranges.set(name, new Set());
+      ranges.get(name).add(`${min}-${max} step ${step}`); // step counts too: the same setting must move alike everywhere
+    }
+    expect(ranges.size).toBeGreaterThan(4); // the scan found sliders at all
+    const conflicting = [...ranges.entries()].filter(([, seen]) => seen.size > 1).map(([name, seen]) => `${name}: ${[...seen].join(' vs ')}`);
+    expect(conflicting, conflicting.join('; ')).toEqual([]);
+  });
+
+  it('cannot leave the lab coach button disabled forever', () => {
+    // The button is disabled while the request runs. A request that never settles has no behavioural test
+    // (it would need fake timers around React), so the guard itself is pinned here; the reject and
+    // empty-response fallbacks are covered behaviourally in the render suite.
+    expect(source).toContain('var COACH_TIMEOUT_MS = 20000;');
+    expect(source).toContain('await Promise.race([ctx.callGemini(');
+    expect(source).toContain('finally { setIsCoaching(false); }');
+  });
+
+  it('releases the WebGL context on unmount, and only on unmount', () => {
+    // dispose() frees GPU objects but leaves the context alive; the browser caps concurrent contexts (~16) and
+    // starts evicting the oldest, blanking whichever 3D tool opened first. Measured with
+    // scratch/particle_probe_contexts.mjs: 20 mount/unmount cycles warned before this, and do not after.
+    expect(source).toContain('rendererRef.current = renderer;');
+    expect(source).toContain('if (renderer.forceContextLoss) renderer.forceContextLoss();');
+    // It must sit in its own mount-scoped effect: the scene cleanup also runs on preset/quality/reset changes.
+    const release = source.slice(source.indexOf('var renderer = rendererRef.current; rendererRef.current = null;'));
+    expect(release.slice(0, 400)).toContain('}, []);');
+    expect(source).not.toContain('forceContextLoss(); } catch (error) {}\n          canvas.removeEventListener');
+  });
+
   it('scopes single-character shortcuts to the focused canvas', () => {
     expect(source).toContain('function onLabKey(event)');
     expect(source).toContain('onKeyDown: onLabKey');
@@ -53,7 +88,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("id: 'particle-scene-key'");
     expect(source).toContain("var activeCameraView = followTracer ? 'follow'");
     expect(source).toContain("'aria-pressed': activeCameraView === 'hero'");
-    expect(source).toContain("'aria-label': 'Overview camera view'");
+    expect(source).toContain("'aria-label': 'Hero overview camera view'"); // WCAG 2.5.3: the name must contain the visible text
     expect(source).toContain("var evidenceCue = currentProtocol ? currentProtocol.watch");
     expect(source).toContain("'measured'");
     expect(source).toContain("'setpoint ' + temperature");
@@ -208,7 +243,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
 
   it('the HUD remains recoverable by key and the essential control bar', () => {
     expect(source).toContain("event.key === 'h' || event.key === 'H'");
-    expect(source).toContain("'Hide the simulation controls. Press H to show them again.'");
+    expect(source).toContain("'Hide UI. Hides the simulation controls; press H to show them again.'");
     expect(source).toContain("'Show controls (H)'");
     expect((source.match(/showHud && h\('div'/g) || []).length).toBeGreaterThanOrEqual(3);
     expect(source).toContain('Simulation controls and readouts hidden.');

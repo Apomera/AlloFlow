@@ -7560,6 +7560,12 @@
           var _safeSetToolSnapshots = typeof setToolSnapshots === 'function' ? _deferSafe(setToolSnapshots) : function() {};
           var _ctx = {
             React: React,
+            // The loader has computed this since the reduced-motion work but never
+            // handed it to tools, so `ctx.reduceMotion` read undefined everywhere.
+            // Tree Lab asks for it and, getting false, animated growth at full rate
+            // for a learner who had asked the OS (or the app's own header toggle)
+            // for less motion. Found via check_stem_ctx on 2026-09-06.
+            reduceMotion: _reduceMotion,
             toolData: labToolData,
             setToolData: _safeSetLabToolData,
             update: function(toolId, key, val) {

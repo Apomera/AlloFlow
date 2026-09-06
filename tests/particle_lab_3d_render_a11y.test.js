@@ -282,6 +282,151 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(host.querySelector('[data-testid="particle-mini-status"]')).toBeNull();
   });
 
+  it('clamps a stale saved trial when it is restored', async () => {
+    // Saved trials live in the same persisted bucket, so restoring one is a second door into the simulation
+    // for values an older build or a corrupt save could hold.
+    resetStemLab();
+    const config = loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
+    const hostileTrial = {
+      id: 'trial-stale', preset: 'plasma', temperature: -500, temperatureSetpoint: -500, count: 99999,
+      boxSize: 900, attraction: 42, gravity: -7, permeability: 5, massRatioB: 99, particleDiameter: 9, membrane: true,
+    };
+    const Component = () => {
+      const [toolData, setToolData] = React.useState({ particleLab3d: { trials: [hostileTrial] } });
+      const ctx = makeCtx({ toolData, setToolData, update: (toolId, key, value) => setToolData((previous) => ({ ...previous, [toolId]: { ...(previous[toolId] || {}), [key]: value } })) });
+      return config.render(ctx);
+    };
+    const localHost = document.createElement('div');
+    document.body.appendChild(localHost);
+    const localRoot = ReactDOMClient.createRoot(localHost);
+    try {
+      await act(async () => { localRoot.render(React.createElement(Component)); await settle(); });
+      const trialButton = Array.from(localHost.querySelectorAll('button')).find((button) => button.textContent.includes('Trial 1'));
+      expect(trialButton).toBeDefined();
+      await act(async () => { trialButton.click(); await settle(); });
+      const value = (label) => localHost.querySelector(`[aria-label="${label}"]`)?.value;
+      expect(value('Temperature in kelvin')).toBe('40'); // clamped up from -500
+      expect(value('Particle count')).toBe('120'); // clamped down from 99999
+      expect(value('Container edge length and volume')).toBe('18');
+      expect(value('Downward gravity field strength')).toBe('0');
+      expect(value('Particle collision diameter')).toBe('0.9');
+      const pressedPresets = Array.from(localHost.querySelectorAll('#particle-preset-row button[aria-pressed="true"]'));
+      expect(pressedPresets).toHaveLength(1);
+      expect(pressedPresets[0].textContent).toContain('Gas');
+    } finally {
+      act(() => localRoot.unmount());
+      localHost.remove();
+      resetStemLab();
+    }
+  });
+
+  it('survives a stale or corrupt saved bucket instead of rendering it', () => {
+    // Saved tool data was restored verbatim: an unknown preset id crashed the render outright at
+    // presets.filter(...)[0].note, and an out-of-range count went straight into the particle loop.
+    const hostile = {
+      preset: 'plasma', quality: 'turbo', cameraView: 'orbit', membraneSelectivity: 'z', timeScale: 99,
+      count: 99999, temperature: -500, boxSize: 900, attraction: 42, gravity: -7, permeability: 5,
+    };
+    const previousThree = window.THREE;
+    try {
+      window.THREE = { OrbitControls: function OrbitControls() {} };
+      resetStemLab();
+      loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
+      const markup = renderTool('particleLab3d', { particleLab3d: hostile });
+      expect(markup.length).toBeGreaterThan(500);
+      expect(markup).toContain('>40 K<'); // temperature clamped up to the slider minimum
+      expect(markup).toContain('>120<'); // count clamped down to the slider maximum
+      const dom = document.createElement('div');
+      dom.innerHTML = markup;
+      const pressedPresets = Array.from(dom.querySelectorAll('#particle-preset-row button[aria-pressed="true"]'));
+      expect(pressedPresets).toHaveLength(1); // unknown preset falls back to exactly one real preset
+      expect(pressedPresets[0].textContent).toContain('Gas');
+    } finally {
+      window.THREE = previousThree;
+      resetStemLab();
+    }
+  });
+
+  it.each([
+    ['the AI call fails', () => Promise.reject(new Error('model unavailable'))],
+    ['the AI returns nothing usable', () => Promise.resolve('   ')],
+  ])('still coaches the student when %s', async (_label, callGemini) => {
+    // The Ask lab coach button is disabled while the request runs, so any path that does not settle would
+    // strand the student. Every failure mode must land on the built-in coach and re-enable the button.
+    let attempts = 0;
+    resetStemLab();
+    const config = loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
+    const Component = () => {
+      const [toolData, setToolData] = React.useState({ particleLab3d: {} });
+      const ctx = makeCtx({
+        toolData,
+        setToolData,
+        aiHintsEnabled: true,
+        callGemini: () => { attempts += 1; return callGemini(); },
+        update: (toolId, key, value) => setToolData((previous) => ({ ...previous, [toolId]: { ...(previous[toolId] || {}), [key]: value } })),
+      });
+      return config.render(ctx);
+    };
+    const localHost = document.createElement('div');
+    document.body.appendChild(localHost);
+    const localRoot = ReactDOMClient.createRoot(localHost);
+    try {
+      await act(async () => { localRoot.render(React.createElement(Component)); await settle(); });
+      const ask = Array.from(localHost.querySelectorAll('button')).find((button) => button.textContent.includes('Ask lab coach'));
+      expect(ask).toBeDefined();
+      await act(async () => { ask.click(); await settle(); });
+      expect(attempts).toBe(1);
+      const coach = Array.from(localHost.querySelectorAll('button')).find((button) => button.textContent.includes('Ask lab coach') || button.textContent.includes('Coach is thinking'));
+      expect(coach.disabled).toBe(false); // never stuck on "Coach is thinking…"
+      expect(localHost.textContent).toContain('Start by making a prediction');
+    } finally {
+      act(() => localRoot.unmount());
+      localHost.remove();
+      resetStemLab();
+    }
+  });
+
+  it('copies the lab report through the shell helper, not the raw clipboard API', async () => {
+    // Gemini Canvas refuses navigator.clipboard by permissions policy, so a direct call rejects on every click
+    // there while passing every test on a normal origin. The shell publishes window.alloCopyText for this.
+    const copyButton = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Copy complete lab report'));
+    expect(copyButton).toBeDefined();
+    const copied = [];
+    const previousHelper = window.alloCopyText;
+    const previousExec = document.execCommand;
+    try {
+      window.alloCopyText = (text) => { copied.push(text); return Promise.resolve(true); };
+      await act(async () => { copyButton.click(); await settle(); });
+      expect(copied).toHaveLength(1);
+      expect(copied[0]).toContain('Particle Lab 3D');
+      expect(copied[0]).toContain('Prediction:');
+
+      // With no shell helper it must still copy synchronously via execCommand, never reject silently.
+      delete window.alloCopyText;
+      const execCalls = [];
+      document.execCommand = (command) => { execCalls.push(command); return true; };
+      await act(async () => { copyButton.click(); await settle(); });
+      expect(execCalls).toEqual(['copy']);
+      expect(document.querySelectorAll('textarea[readonly]')).toHaveLength(0); // the scratch textarea is cleaned up
+    } finally {
+      if (previousHelper === undefined) delete window.alloCopyText; else window.alloCopyText = previousHelper;
+      document.execCommand = previousExec;
+    }
+  });
+
+  it('remembers the chosen camera view', async () => {
+    // bucket.cameraView was read on mount but nothing ever wrote it, so the framing reset on every return
+    // while every other view preference persisted.
+    const cameraGroup = host.querySelector('[role="group"][aria-label="Camera views"]');
+    const top = buttonByText(cameraGroup, 'Top');
+    await act(async () => { top.click(); await settle(); });
+    expect(top.getAttribute('aria-pressed')).toBe('true');
+    expect(persisted().cameraView).toBe('top');
+    const close = buttonByText(cameraGroup, 'Close');
+    await act(async () => { close.click(); await settle(); });
+    expect(persisted().cameraView).toBe('close');
+  });
+
   it('puts a left dock before the chamber in DOM order without replacing the canvas', async () => {
     const canvas = host.querySelector('canvas');
     const workspace = host.querySelector('#particle-workspace');

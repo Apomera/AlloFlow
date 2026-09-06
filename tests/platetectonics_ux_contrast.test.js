@@ -133,8 +133,11 @@ describe('Three boundary types panel — the first summary a student meets', () 
 
   it('describes all three cells for a student who cannot see them', () => {
     const text = src();
-    const label = /'aria-label': 'Three diagrams comparing[^']+'/.exec(text);
-    expect(label, 'panel aria-label not found').toBeTruthy();
+    // Found by its own opening words, not by sitting directly on the attribute:
+    // the description is wrapped in __alloT now, and what matters is that all
+    // three cells are still described, not where the literal lives.
+    const label = /'Three diagrams comparing[^']+'/.exec(text);
+    expect(label, 'panel description not found').toBeTruthy();
     expect(label[0]).toMatch(/trench/);
     expect(label[0]).toMatch(/new crust/);
     expect(label[0]).toMatch(/from above rather than in section/);
@@ -554,8 +557,8 @@ describe('Magnitude vs intensity — the panel draws both scales', () => {
     const text = src();
     expect(text).toMatch(/cvEl\._eqDark = isDark;/);
     expect(text).toMatch(/var dk = !!cvEl\._eqDark;/);
-    const label = /'aria-label': 'Two columns comparing the two earthquake scales[^']+'/.exec(text);
-    expect(label, 'panel aria-label not found').toBeTruthy();
+    const label = /'Two columns comparing the two earthquake scales[^']+'/.exec(text);
+    expect(label, 'panel description not found').toBeTruthy();
     expect(label[0]).toMatch(/Mercalli nine at ten kilometres/);
     expect(label[0]).toMatch(/what it did to you, where you were standing/);
   });
@@ -682,7 +685,11 @@ describe('Contrast — colour coding and legibility split apart', () => {
         .not.toMatch(new RegExp("text-\[10px\] text-" + hue + "-600"));
     });
     // The plate cards: name and metadata both branch on the theme.
-    const at = text.indexOf('upd({ _plateFocus: p.id })');
+    // Anchored on the card's own data hook, not on what its click handler
+    // happens to write — this pinned `upd({ _plateFocus: p.id })` and went red
+    // when that dead state was replaced by the wired one, though the invariant
+    // it exists to protect never moved.
+    const at = text.indexOf("'data-pt-plate-card': p.name");
     expect(at, 'plate encyclopedia cards not found').toBeGreaterThan(-1);
     const card = text.slice(at, at + 1400);
     expect(card).toMatch(/isDark \? 'text-red-\d00' : 'text-red-800'/);
@@ -713,7 +720,7 @@ describe('Contrast — colour coding and legibility split apart', () => {
     it('offers a grade band filter and a search, like its sibling tabs', () => {
       const text = src();
       expect(text).toMatch(/'data-pt-lesson-band': b\.id/);
-      expect(text).toMatch(/aria-label': 'Search classroom activities'/);
+      expect(text).toMatch(/aria_search_activities', 'Search classroom activities'/);
       // The band set itself, so a rename cannot quietly drop one.
       const at = text.indexOf('var BANDS = [');
       expect(at, 'band table not found').toBeGreaterThan(-1);
@@ -1009,7 +1016,10 @@ describe('Sim canvas on a phone: the contact state', () => {
   });
   it('keeps the crustal root label on the canvas', () => {
     const text = src();
-    expect(text).toMatch(/ctx\.fillText\('crustal root', Math\.max\(rootLblW \/ 2 \+ 6, Math\.min\(cW - rootLblW \/ 2 - 6, B\.mid\)\)/);
+    // The invariant is that the label is drawn and CLAMPED inside the canvas,
+    // not how the words read - the text is translated now.
+    expect(text).toContain("fig_crustal_root', 'crustal root'");
+    expect(text).toMatch(/fig_crustal_root'[^)]*\), Math\.max\(rootLblW \/ 2 \+ 6, Math\.min\(cW - rootLblW \/ 2 - 6, B\.mid\)\)/);
   });
 });
 
@@ -1036,10 +1046,37 @@ describe('Quick-Review cards are flash cards, not an answer sheet', () => {
     expect((blk.match(/ptReviewAnswer\(\d+, __alloT\(/g) || []).length).toBe(60);
     // no answer is rendered as a bare labelled div any more
     expect(blk).not.toMatch(/React\.createElement\('span', \{ className: 'font-bold text-indigo-700' \}, "Answer: "\)/);
-    expect(blk).toMatch(/'data-pt-review-reveal-all': String\(!!d\._ptRevealAll\)/);
-    const helper = text.slice(text.indexOf('var ptReviewAnswer = function (n, text)'), text.indexOf('var ptReviewAnswer = function (n, text)') + 1200);
-    expect(helper).toMatch(/var open = !!\(d\._ptRevealAll \|\| \(d\._ptRevealed \|\| \{\}\)\[n\]\)/);
+    const helper = text.slice(text.indexOf('var ptReviewAnswer = function (n, text)'), text.indexOf('var ptReviewAnswer = function (n, text)') + 2600);
+    expect(helper).toMatch(/var open = !!\(d\._ptRevealed \|\| \{\}\)\[n\]/);
     expect(helper).toMatch(/'data-pt-review-reveal': String\(n\)/);
+  });
+
+  it('keeps the button in place as a toggle, so activating it does not destroy the focused element', () => {
+    const text = src();
+    const helper = text.slice(text.indexOf('var ptReviewAnswer = function (n, text)'), text.indexOf('var ptReviewAnswer = function (n, text)') + 2600);
+    // The button is rendered unconditionally and the answer hangs off it.
+    expect(helper).toMatch(/React\.createElement\('button', \{\s*type: 'button', 'data-pt-review-reveal': String\(n\)/);
+    expect(helper).toMatch(/'aria-expanded': open \? 'true' : 'false', 'aria-controls': aid/);
+    expect(helper).toMatch(/open \? __alloT\('stem\.platetectonics\.hide_answer'[^)]*\) : __alloT\('stem\.platetectonics\.show_answer'/);
+    // and the element aria-controls names actually exists when open
+    expect(helper).toMatch(/open && React\.createElement\('div', \{ id: aid/);
+    // the toggle closes as well as opens
+    expect(helper).toMatch(/if \(open\) \{ delete m\[n\]; \} else \{ m\[n\] = true; \}/);
+  });
+
+  it('drives show-all from the same per-card state, so the two cannot disagree', () => {
+    const text = src();
+    const i = text.indexOf("'data-pt-review-reveal-all'");
+    const body = text.slice(i - 500, i + 900);
+    expect(body).toMatch(/var allOpen = opened >= PT_REVIEW_CARDS/);
+    expect(body).toMatch(/'data-pt-review-reveal-all': String\(allOpen\)/);
+    expect(body).toMatch(/if \(allOpen\) \{ upd\(\{ _ptRevealed: \{\} \}\); return; \}/);
+    // no separate reveal-all flag survives anywhere
+    expect(text).not.toMatch(/_ptRevealAll/);
+    // and the count the control iterates matches the cards the markup renders
+    const blk = text.slice(text.indexOf('simTab === "review"'), text.indexOf('simTab === "faq"'));
+    const n = parseInt((text.match(/var PT_REVIEW_CARDS = (\d+)/) || [])[1], 10);
+    expect((blk.match(/ptReviewAnswer\(\d+, __alloT\(/g) || []).length).toBe(n);
   });
 
   it('renders each field label once, by stripping the value that repeats it', () => {
@@ -1063,4 +1100,918 @@ describe('Quick-Review cards are flash cards, not an answer sheet', () => {
     expect(field).toMatch(/className: 'text-\[11px\] text-slate-700 mb-1'/);
     expect(field).not.toMatch(/isDark/);
   });
+});
+
+describe('An element with no background of its own keeps the light ink', () => {
+  // Measured, not assumed: the theme-branched first draft of this message put
+  // slate-300 on the rose-50 card at 1.35:1 in the dark theme, because these
+  // catalogue cards are light in BOTH themes. dev-tools/pt_contrast_probe.cjs
+  // graded it 1.35 before and 6.9 after.
+  it('does not branch the no-matches message on theme', () => {
+    const text = src();
+    const i = text.indexOf('var ptEmptyOr = function (term, list)');
+    const body = text.slice(i, i + 900);
+    expect(body).toMatch(/className: 'p-3 rounded-lg text-xs italic border text-slate-600 border-slate-300'/);
+    expect(body).not.toMatch(/isDark/);
+  });
+});
+
+describe('Every key the sim writes is read by something', () => {
+  // `lastQuakeMag` was written by the boundary-settle patch and read nowhere:
+  // the on-canvas M readout fades after ~200 frames, so once it went the
+  // student had no record of the quake they had just made, only of the biggest.
+  // It hid from the dead-state sweep because that sweep did not recognise the
+  // `liveUpd({...})` channel the canvas writes through.
+  it('reads lastQuakeMag back out in the mission card', () => {
+    const text = src();
+    expect(text).toMatch(/lastQuakeMag: qMag/);
+    const i = text.indexOf("['Strongest quake'");
+    expect(i).toBeGreaterThan(-1);
+    const tile = text.slice(i, i + 700);
+    expect(tile).toMatch(/d\.lastQuakeMag\s*\?\s*'latest M ' \+ d\.lastQuakeMag\.toFixed\(1\)/);
+    // and the record is still what the tile's headline number reports
+    expect(tile).toMatch(/d\.maxQuakeMag \? 'M ' \+ d\.maxQuakeMag\.toFixed\(1\) : '--'/);
+  });
+
+  it('leaves no badge key that nothing writes', () => {
+    const text = src();
+    const code = text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const keys = ['quakeCount', 'maxQuakeMag', 'eruptionCount', 'quizScore',
+      'vocabLookedUp', 'timelapsePlayed', 'ptMythBest', 'selectedPlate'];
+    keys.forEach((k) => {
+      const written = new RegExp('[{,]\\s*' + k + '\\s*:').test(code) || new RegExp('\\.' + k + '\\s*=[^=]').test(code);
+      expect(written, k + ' is checked by a challenge but nothing writes it').toBe(true);
+    });
+  });
+});
+
+describe('A catalogue does not claim a count its own content contradicts', () => {
+  // The plate encyclopedia said "7 majors, ~10 minors, and ~50 microplates"
+  // while holding 87 microplates; the volcano, tsunami and rock intros each
+  // named a number their arrays had outgrown. Nothing tied the sentence to the
+  // rows, so nothing noticed. Same shape as the M8 badge that was earned by
+  // dragging a slider two panels away: one claim, one derivation.
+  const rowsIn = (text, varName) => {
+    const m = new RegExp('var ' + varName + '\\s*=\\s*\\[').exec(text);
+    if (!m) return null;
+    let i = text.indexOf('[', m.index), depth = 0, end = -1;
+    for (let j = i; j < text.length; j++) {
+      if (text[j] === '[') depth++;
+      else if (text[j] === ']') { depth--; if (!depth) { end = j; break; } }
+    }
+    const blk = text.slice(i, end);
+    let d = 0, n = 0;
+    for (const ch of blk) {
+      if (ch === '{') { if (!d) n++; d++; }
+      else if (ch === '}') d--;
+    }
+    return n;
+  };
+
+  it('derives the array-backed counts instead of naming them', () => {
+    const text = src();
+    [['volcano_intro_counted', 'VOLCANO_DB'], ['tsunami_intro_counted', 'TSUNAMI_DB'], ['rocks_intro_counted', 'ROCK_DB']].forEach(([key, arr]) => {
+      const i = text.indexOf('stem.platetectonics.' + key);
+      expect(i, key + ' missing').toBeGreaterThan(-1);
+      expect(text.slice(i, i + 700), key + ' not tied to ' + arr).toContain(".replace('{n}', " + arr + ".length)");
+    });
+  });
+
+  it('counts the plate tiers from the table rather than asserting them', () => {
+    const text = src();
+    const i = text.indexOf('var tierCount = { major: 0, minor: 0, micro: 0 }');
+    expect(i).toBeGreaterThan(-1);
+    const body = text.slice(i, i + 1200);
+    expect(body).toMatch(/PLATE_DB\.forEach\(function \(pl\) \{ if \(tierCount\[pl\.tier\] != null\) tierCount\[pl\.tier\]\+\+; \}\)/);
+    ['{major}', '{minor}', '{micro}'].forEach((t) => expect(body).toContain(".replace('" + t + "'"));
+    // and each filter chip carries the count it will render
+    expect(text).toMatch(/'data-pt-tier-count': String\(n\)/);
+    // the old hard-coded sentence is gone
+    expect(text).not.toMatch(/7 majors, ~10 minors, and ~50 microplates/);
+  });
+
+  it('keeps the hand-written card counts honest', () => {
+    const text = src();
+    // A tab's block runs to the NEXT tab guard, whichever tab that is — naming
+    // the follower hard-codes an ordering the file does not promise, and the
+    // first draft of this test silently measured an empty slice.
+    const cardsIn = (name) => {
+      const start = text.indexOf('simTab === "' + name + '"');
+      expect(start, 'tab ' + name + ' not found').toBeGreaterThan(-1);
+      const next = text.slice(start + 20).search(/simTab === ["'][a-zA-Z_]+["']/);
+      const blk = next === -1 ? text.slice(start) : text.slice(start, start + 20 + next);
+      return (blk.match(/rounded-lg bg-white/g) || []).length;
+    };
+    const constOf = (n) => parseInt((text.match(new RegExp('var ' + n + ' = (\\d+)')) || [])[1], 10);
+    expect(cardsIn('minerals'), 'mineral cards').toBe(constOf('PT_MINERAL_CARDS'));
+    expect(cardsIn('insights'), 'insight cards').toBe(constOf('PT_INSIGHT_CARDS'));
+  });
+});
+
+describe('A field label is printed once', () => {
+  // Pin the PATTERN, not the tabs that happened to be swept: 45 cards across
+  // impacts, projects and extinctions printed "Visit: Visit: ...", because the
+  // value carries the same label the bold span already shows. The review cards
+  // had the identical defect on 180 fields.
+  const doubled = (text) => {
+    const re = /React\.createElement\('span',\s*\{[^}]*\},\s*"([A-Z][A-Za-z ]{2,20}):\s*"\),\s*\n\s*(?:__alloT\('[^']+',\s*)?"((?:[^"\\]|\\.){0,60})/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(text))) {
+      if (m[2].toLowerCase().startsWith(m[1].toLowerCase() + ':')) out.push(m[1] + ' -> ' + m[2].slice(0, 40));
+    }
+    return out;
+  };
+  it('has no render site whose value repeats the label beside it', () => {
+    const hits = doubled(src());
+    expect(hits, 'labels printed twice: ' + hits.slice(0, 5).join(' | ')).toHaveLength(0);
+  });
+  it('routes the ones that did through the shared stripper', () => {
+    const text = src();
+    expect((text.match(/ptStripLabel\("(Causes|Visit|Discussion)", __alloT\(/g) || []).length).toBe(45);
+  });
+});
+
+describe('Controls are big enough to hit', () => {
+  it('lifts sliders and check boxes to a 24px target, scoped to this tool', () => {
+    const text = src();
+    const css = text.slice(text.indexOf(".pt-metric-grid{display:grid"), text.indexOf(".pt-tb-shell{aspect-ratio"));
+    expect(css).toMatch(/\.pt-sim-shell input\[type=range\],\.plate-tectonics-container input\[type=range\]\{min-height:24px\}/);
+    expect(css).toMatch(/\.pt-sim-shell input\[type=checkbox\],\.plate-tectonics-container input\[type=checkbox\]\{min-width:24px;min-height:24px\}/);
+    // This stylesheet is injected into the document head, so an unscoped
+    // element selector would resize every slider in the host app.
+    expect(text).not.toMatch(/'input\[type=range\]\{/);
+    expect(text).not.toMatch(/'input\[type=checkbox\]\{/);
+  });
+});
+
+describe('The plate encyclopedia cards do something', () => {
+  // 102 cards wrote `_plateFocus`, which nothing read: every one looked
+  // clickable, carried a hover style and a focus ring, and had no effect.
+  // Orphan-setter class, same as plate.vx in the original sim.
+  it('writes the state that is actually wired, not a dead one', () => {
+    const text = src();
+    const i = text.indexOf('PLATE_DB.filter(function(p)');
+    const body = text.slice(i, i + 2600);
+    expect(body).toMatch(/onClick: function\(\) \{ upd\(\{ selectedPlate: plateOn \? null : p\.name \}\); \}/);
+    expect(body).toMatch(/'aria-pressed': plateOn \? 'true' : 'false', 'data-pt-plate-card': p\.name/);
+    expect(body).toMatch(/var plateOn = d\.selectedPlate === p\.name/);
+    // the dead key survives only in the comment that explains it
+    const live = text.replace(/\/\/[^\n]*/g, '');
+    expect(live).not.toMatch(/_plateFocus/);
+  });
+
+  it('reaches the challenge that checks exactly this', () => {
+    const text = src();
+    // 'Study a tectonic plate' checks selectedPlate; the encyclopedia is now a
+    // path that writes it, so studying a plate there counts.
+    expect(text).toMatch(/id: 'select_plate'[\s\S]{0,200}return !!d\.selectedPlate/);
+    const writers = (text.match(/upd\(\{ selectedPlate:/g) || []).length +
+      (text.match(/\(live\.upd \|\| upd\)\(\{ selectedPlate:/g) || []).length;
+    expect(writers).toBeGreaterThanOrEqual(2);
+  });
+
+  it('names each review reveal by its question, so sixty stops are not sixty identical ones', () => {
+    const text = src();
+    const helper = text.slice(text.indexOf('var ptReviewAnswer = function (n, text)'), text.indexOf('var ptReviewAnswer = function (n, text)') + 1900);
+    // The visible words stay at the FRONT of the accessible name, so speaking
+    // the label still matches what is written on the control (WCAG 2.5.3).
+    expect(helper).toMatch(/'aria-label': \(open \? __alloT\('stem\.platetectonics\.hide_answer'[^)]*\) : __alloT\('stem\.platetectonics\.show_answer'[^)]*\)\) \+/);
+    expect(helper).toMatch(/__alloT\('stem\.platetectonics\.review_question_n', 'review question'\) \+ ' ' \+ n/);
+  });
+
+  it('gives every search input a name that says what it searches', () => {
+    const text = src();
+    // Seven inputs shared one aria-label, so two identical names were on screen
+    // on every catalogue tab and neither said which list it filtered.
+    expect(text).not.toMatch(/'stem\.platetectonics\.search_input'/);
+    ['tools', 'plates', 'volcanoes', 'glossary', 'quakestories', 'eruptions', 'plateprofiles'].forEach((k) => {
+      expect(text, 'missing search label for ' + k).toMatch(new RegExp("stem\\.platetectonics\\.search_input_" + k + "'"));
+    });
+  });
+
+  it('shows the trials the Log button records', () => {
+    const text = src();
+    // The button appended to iq.log and nothing rendered it: the one control
+    // promising a record of your experiments gave no feedback, and the evidence
+    // the hypothesis box asks for stayed invisible.
+    // Pin the GUARD, not just the markup: disabling the table with `false ?`
+    // left every string below intact and this test passed the sabotage. A
+    // substring that survives its own sabotage is not an assertion.
+    expect(text).toMatch(/\(iq\.log \|\| \[\]\)\.length \? h\('div', \{\s*'data-pt-stress-log': String\(iq\.log\.length\)/);
+    const i = text.indexOf("'data-pt-stress-log'");
+    // Wide enough for the whole table: a fixed window means "this component",
+    // not a byte budget, and adding four static keys pushed the tbody past a
+    // 2200-char slice. Third time this trap has fired in this suite.
+    const table = text.slice(i, i + 3600);
+    // a real table, with column headers a screen reader can use
+    expect(table).toMatch(/h\('table'/);
+    expect(table).toMatch(/h\('th', \{ key: c\[0\], scope: 'col'/);
+    // Four columns, each named by its OWN static translation key. Building the
+    // key by concatenation hides it from the harvester that registers strings,
+    // and an unregistered key is never translated in any language — so the
+    // static spelling is the invariant here, not an incidental one.
+    ['boundary', 'stress', 'friction', 'result'].forEach((c) =>
+      expect(table, 'missing static key for column ' + c).toContain("stem.platetectonics.trial_col_" + c + "'"));
+    // Comments describe the past — the comment here quotes the old dynamic
+    // spelling to explain why it went, so grade the CODE, not the prose.
+    expect(table.replace(/\/\/[^\n]*/g, '')).not.toMatch(/trial_col_' \+/);
+    // every logged field is rendered, so none of them is dead state
+    ['row.bt', 'row.f', 'row.fr', 'row.st'].forEach((r) => expect(table).toContain(r));
+  });
+
+  it('registers every string it invents, so a new key can be translated', () => {
+    // ui_strings.js is the work list the runtime pack builder diffs against a
+    // user's cached pack. A key that never lands there renders English in every
+    // language, permanently — however correctly its call site is wrapped.
+    const used = new Set((src().match(/__alloT\('stem\.platetectonics\.[a-z0-9_]+'/g) || [])
+      .map((m) => m.slice("__alloT('stem.platetectonics.".length, -1)));
+    const ui = JSON.parse(readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8'));
+    const have = new Set(Object.keys(((ui.stem || {}).platetectonics) || {}));
+    const missing = [...used].filter((k) => !have.has(k));
+    expect(missing, 'unregistered keys: ' + missing.slice(0, 8).join(', ')).toHaveLength(0);
+  });
+
+  it('prints the plate area once, with the unit the data already carries', () => {
+    const text = src();
+    // Every row stores area as a string like "103M km²", so appending a unit
+    // printed it twice in two spellings: "Area: 103M km² km2".
+    expect(text).not.toMatch(/p\.area\.toLocaleString\(\) \+ ' km2'/);
+    expect(text).toMatch(/typeof p\.area === 'number' \? p\.area\.toLocaleString\(\) \+ ' km²' : String\(p\.area\)/);
+  });
+
+  it('ends the quiz pass instead of wrapping the index forever', () => {
+    const text = src();
+    // Driven, before the fix: answering ten questions left the header reading
+    // "Score: 3 | Question 3 / 8" — a score counted against a denominator it
+    // had already passed, on a lap where every answer was already known. The
+    // modulo was what made the bank infinite.
+    expect(text).not.toMatch(/QUIZZES\[quizIdx % QUIZZES\.length\]/);
+    expect(text).not.toMatch(/quizIdx % QUIZZES\.length \+ 1/);
+    expect(text).toContain('var qDone = quizIdx >= QUIZZES.length;');
+    // The question body, the option grid and the answered view are all gated on
+    // the pass not being over — otherwise question 8 would sit under the
+    // results card.
+    expect(text).toContain('!qDone && !isAnswered &&');
+    expect(text).toContain('!qDone && isAnswered &&');
+    expect(text).toContain("qDone && React.createElement(\"div\", { 'data-pt-quiz-results'");
+  });
+
+  it('resets the whole pass when the student runs it again', () => {
+    const text = src();
+    const i = text.indexOf("'data-pt-quiz-restart'");
+    expect(i, 'restart button missing').toBeGreaterThan(-1);
+    // Slice to the end of this button's props, whatever follows it.
+    const btn = text.slice(i, text.indexOf('}, __alloT', i));
+    // A restart that kept the old score or the old miss list would make the
+    // next results card report a lap that never happened. All four move.
+    ['quizIdx: 0', 'quizScore: 0', 'quizAnswer: null', 'quizMissed: []'].forEach((k) =>
+      expect(btn, 'restart does not clear ' + k).toContain(k));
+  });
+
+  it('speaks the verdict, because answering destroys the buttons that showed it', () => {
+    const text = src();
+    const i = text.indexOf("var correct = oi === qz.ans;");
+    expect(i).toBeGreaterThan(-1);
+    const handler = text.slice(i, text.indexOf('className: "p-3 rounded-xl text-sm font-bold border-2', i));
+    // The option buttons are replaced by plain divs, so nothing carries the
+    // result to a screen reader unless it is announced here.
+    expect(handler).toContain('announceToSR(correct');
+    expect(handler).toContain('quiz_sr_correct');
+    expect(handler).toContain('quiz_sr_incorrect');
+    // The miss is remembered by concept so the results card can name it.
+    expect(handler).toContain('quizMissed: missed');
+    // The feedback card is itself a status region.
+    expect(text).toContain("role: 'status', 'data-pt-quiz-verdict'");
+  });
+
+  it('picks focus back up only when answering actually dropped it', () => {
+    const text = src();
+    const i = text.indexOf("'data-pt-quiz-next': 'true'");
+    expect(i).toBeGreaterThan(-1);
+    const btn = text.slice(i, text.indexOf('onClick', i));
+    // Measured: focus landed on <body> after every one of the eight answers.
+    // The guard matters as much as the focus() — an unconditional focus would
+    // yank back a student who had already tabbed onward.
+    expect(btn).toContain('document.activeElement === document.body');
+    expect(btn).toContain('el.focus()');
+  });
+
+  it('reads the miss list it writes, so quizMissed is not orphan state', () => {
+    const text = src();
+    expect(text).toContain('var qMissed = d.quizMissed || [];');
+    expect(text).toContain('qMissed.length ? React.createElement');
+    expect(text).toContain('qMissed.map(function(c)');
+  });
+
+
+  it('saves the triangulation map, not whichever canvas is biggest', () => {
+    const text = src();
+    // Measured on the sim tab: six canvases, and this button - which lives in
+    // the triangulation panel - exported the 2152x940 plate simulation rather
+    // than the 540x360 map above it. The widget's own ref was in scope.
+    expect(text).not.toMatch(/_cs\.sort\(function\(a,b\)\{ return \(b\.width\*b\.height\)/);
+    expect(text).not.toMatch(/querySelectorAll\('canvas'\)\); if \(!_cs\.length\) return;/);
+    const i = text.indexOf("save_epicenter_png_aria");
+    expect(i, 'PNG button missing').toBeGreaterThan(-1);
+    const btn = text.slice(i, text.indexOf('marginLeft', i));
+    expect(btn).toContain('var _c = canvasRef.current;');
+    // The file name should say what the picture is of.
+    expect(btn).toContain("'epicenter_triangulation_'");
+    // Firefox will not act on a click against a detached anchor.
+    expect(btn).toContain('document.body.appendChild(_a)');
+    expect(btn).toContain('document.body.removeChild(_a)');
+  });
+
+  it('tells the student when the image could not be saved', () => {
+    const text = src();
+    const i = text.indexOf("save_epicenter_png_aria");
+    const btn = text.slice(i, text.indexOf('marginLeft', i));
+    // The old handler was `catch (e) {}` around a bare `return`, so a failed
+    // save and a successful one looked identical from the outside: nothing.
+    expect(btn).not.toMatch(/catch \(e\) \{\}/);
+    expect(btn).toContain("addToast('\\u26a0\\ufe0f ' + msg, 'error')");
+    expect(btn).toContain('png_map_not_ready');
+    expect(btn).toContain('png_save_failed');
+    // Success is announced too - a toast alone is not reliably read out.
+    expect(btn).toContain('announceToSR(okMsg)');
+  });
+
+  it('gives the epicenter widget a translator instead of hardcoded English', () => {
+    const text = src();
+    // AlloTectonicsEpicenter is a top-level component, so the tool's own
+    // __alloT is out of its scope. Every string in the panel was therefore
+    // unreachable by any language pack.
+    const i = text.indexOf('window.AlloTectonicsEpicenter = function(props)');
+    expect(i).toBeGreaterThan(-1);
+    const head = text.slice(i, text.indexOf('var useState = React.useState;', i));
+    expect(head).toContain('var f = props && props.t;');
+    // The host has to actually pass it, or the fallback silently wins forever.
+    expect(text).toMatch(/window\.AlloTectonicsEpicenter, \{[^}]*t: __alloT \}/);
+    // A sample of the panel's own strings now goes through the helper.
+    ['epi_show_circles', 'epi_show_fit', 'epi_heading', 'epi_tip_draggable'].forEach((k) =>
+      expect(text, 'unwrapped: ' + k).toContain("stem.platetectonics." + k));
+  });
+
+
+  it('gives the boundary simulator a translator, like the epicenter widget', () => {
+    const text = src();
+    // The same hole, found by generalising the last one: AlloTectonicsInteractive
+    // is also a top-level component, so the tool's __alloT was out of scope and
+    // all 1,155 lines of the panel were English for every language.
+    const i = text.indexOf('window.AlloTectonicsInteractive = function(props)');
+    expect(i).toBeGreaterThan(-1);
+    const head = text.slice(i, text.indexOf('var st = useState(', i));
+    expect(head).toContain('var f = props && props.t;');
+    expect(text).toMatch(/window\.AlloTectonicsInteractive, \{[^}]*t: __alloT \}/);
+  });
+
+  it('leaves the simulator with no untranslated student-facing prose', () => {
+    const text = src();
+    const a = text.indexOf('window.AlloTectonicsInteractive = function(props)');
+    const b = text.indexOf("label: 'Plate Tectonics',", a);
+    expect(b).toBeGreaterThan(a);
+    const body = text.slice(a, b);
+    const wrapped = new Set(
+      [...body.matchAll(/__alloT\('stem\.platetectonics\.[a-z0-9_]+', '([^']+)'\)/g)].map((m) => m[1])
+    );
+    // Anything starting with a capital and long enough to be a sentence or a
+    // label. The three arrow-key names are DOM VALUES compared against
+    // KeyboardEvent.key - translating those would break the keyboard handler.
+    const KEEP = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home']);
+    const bare = [...body.matchAll(/'([A-Z][^']{8,})'/g)]
+      .map((m) => m[1])
+      .filter((t) => !wrapped.has(t) && !KEEP.has(t));
+    expect(bare, 'untranslated: ' + bare.slice(0, 4).join(' | ')).toHaveLength(0);
+  });
+
+  it('substitutes every placeholder it puts in any template', () => {
+    // Scoped to the simulator at first, which made it blind: a sabotage that
+    // stripped .replace() from an announcement in the MAIN render closure left
+    // this green. The whole file is the right scope - templates live wherever
+    // a string meets a value.
+    const body = src();
+    const bad = [];
+    for (const m of body.matchAll(/__alloT\('stem\.platetectonics\.([a-z0-9_]+)', '([^']*\{[a-z]+\}[^']*)'\)/g)) {
+      const tokens = [...new Set([...m[2].matchAll(/\{([a-z]+)\}/g)].map((x) => x[1]))];
+      // Read the .replace() chain attached to THIS call, by walking balanced
+      // parens from the end of it. A fixed character window was the first
+      // version and it was blind: {n} is used by half a dozen templates, so a
+      // neighbour's substitution satisfied the check for a call that had lost
+      // its own. Calibration caught it - the sabotage stayed green.
+      let k = m.index + m[0].length;
+      const done = new Set();
+      const skipWs = () => { while (k < body.length && /\s/.test(body[k])) k++; };
+      skipWs();
+      while (body.startsWith(".replace('{", k)) {
+        const tok = body.slice(k + 11, body.indexOf('}', k + 11));
+        done.add(tok);
+        let depth = 0;
+        k = body.indexOf('(', k);
+        for (; k < body.length; k++) {
+          if (body[k] === '(') depth++;
+          else if (body[k] === ')') { depth--; if (depth === 0) { k++; break; } }
+        }
+        skipWs();
+      }
+      // A template whose placeholder is never replaced prints "{n}" to a student.
+      tokens.filter((t) => !done.has(t)).forEach((t) => bad.push(m[1] + '.' + t));
+    }
+    expect(bad, 'unsubstituted: ' + bad.join(', ')).toHaveLength(0);
+  });
+
+  it('keeps the boundary keys the code compares out of the translated fields', () => {
+    const text = src();
+    // name/desc are display; the object keys convergent/divergent/transform are
+    // what every mode check compares against and must stay literal.
+    expect(text).toMatch(/convergent: \{ name: __alloT\('stem\.platetectonics\.sim_convergent'/);
+    expect(text).toMatch(/divergent:\s+\{ name: __alloT\('stem\.platetectonics\.sim_divergent'/);
+    expect(text).toMatch(/transform:\s+\{ name: __alloT\('stem\.platetectonics\.sim_transform'/);
+    expect(text).toContain("mode: 'convergent'");
+  });
+
+
+  it('keeps the running simulator numbers out of the live region', () => {
+    const text = src();
+    // Measured with dev-tools/pt_live_chatter.cjs before the fix: 19 changes in
+    // 20 seconds, 57 announcements a minute, with nobody touching anything.
+    const i = text.indexOf("'data-pt-sim-readout': 'true'");
+    expect(i, 'sim readout missing').toBeGreaterThan(-1);
+    // Bounded by the element's OWN content, not a byte count: a fixed window
+    // ran past the closing paren into the sr-only span that follows, which does
+    // carry aria-live, so the assertion graded the wrong element.
+    const span = text.slice(text.lastIndexOf("h('span'", i), text.indexOf('depthSummary', i) + 12);
+    // The element carrying the tick-by-tick count and the currently-active
+    // depth must NOT be a live region.
+    expect(span).not.toContain("aria-live");
+    expect(span).not.toContain("role: 'status'");
+    expect(span).toContain("(s.quakeTotal || 0) + ' events | ' + depthSummary");
+  });
+
+  it('announces the deepest band reached, which is monotonic per boundary', () => {
+    const text = src();
+    const i = text.indexOf("'data-pt-sim-depth-band'");
+    expect(i, 'depth band live region missing').toBeGreaterThan(-1);
+    const live = text.slice(text.lastIndexOf("h('span'", i), text.indexOf('depthBandLine', i) + 20);
+    expect(live).toContain("aria-live': 'polite'");
+    expect(live).toContain("className: 'sr-only'");
+    // The band comes from the deepest focus SEEN. Deriving it from the active
+    // list is what made it flip as events decayed.
+    expect(text).toContain('var deepestSeen = Math.round(s.deepestKm || 0);');
+    expect(text).toMatch(/var depthBand = deepestSeen >= 300 \? 'deep'/);
+    expect(text).not.toMatch(/var depthBand = deepestActive/);
+  });
+
+  it('resets the deepest-seen depth with the boundary type', () => {
+    const text = src();
+    // Switching boundary calls reset(); if deepestKm survived it, a convergent
+    // run would leave "deep" announced under a transform boundary, which is
+    // exactly the misconception the panel exists to correct.
+    expect(text).toMatch(/update\(\{ years: 0, quakes: \[\], quakeTotal: 0, deepestKm: 0,/);
+    expect(text).toContain('patch.deepestKm = Math.max(cur.deepestKm || 0, depthKm);');
+    // and it is initialised, so the first render is not undefined
+    expect(text).toMatch(/quakeTotal: 0,[\s\S]{0,400}deepestKm: 0,/);
+  });
+
+
+  it('has one definition of the 3D block view a reset returns to', () => {
+    const text = src();
+    // Driven with dev-tools/pt_block_keys.cjs: there were three. The block
+    // opened at (-22,-38); the Home key reset to (-18,-28); the "Reset view"
+    // button went to (-22,-38) and also cleared the cutaway. Two controls that
+    // both say "reset", landing in different places.
+    expect(text).toContain('var TECT_VIEW_HOME = { rotX: -22, rotY: -38, scale: 1, cut: null };');
+    expect(text).toContain('var v3 = useState(Object.assign({ on: false }, TECT_VIEW_HOME));');
+    expect(text).toContain("else if (k === 'Home') patch = Object.assign({}, TECT_VIEW_HOME);");
+    expect(text).toContain('onClick: function() { updView(Object.assign({}, TECT_VIEW_HOME)); },');
+    // No stray literal orientation may re-enter and become a fourth source.
+    expect(text).not.toMatch(/rotX: -18, rotY: -28/);
+    expect(text).not.toMatch(/\{ rotX: -22, rotY: -38, scale: 1, cut: null \}\)/);
+  });
+
+  it('publishes the block orientation so the keyboard promise is testable', () => {
+    const text = src();
+    // The orientation lives in WebGL and is invisible to the DOM, so the help
+    // text's claims about arrow keys could not be driven at all without this.
+    expect(text).toContain("'data-tect-view': view3d.rotX + ',' + view3d.rotY + ',' + view3d.scale.toFixed(2),");
+    // and the block must still be reachable by keyboard at all
+    const i = text.indexOf("'data-tect-gl': 'true'");
+    const el = text.slice(text.lastIndexOf("h('canvas'", i), text.indexOf('onKeyDown', i));
+    expect(el).toContain('tabIndex: 0');
+  });
+
+
+  it('translates what it says to a screen reader, not only what it shows', () => {
+    const text = src();
+    // The accessibility layer had been skipped by every translation pass: 4700+
+    // visible strings went through __alloT while announceToSR and the aria
+    // descriptions stayed English. Nobody testing visually would ever see it.
+    const calls = [...text.matchAll(/announceToSR\(([\s\S]{0,400}?)\)\s*;/g)].map((m) => m[1]);
+    expect(calls.length, 'no announceToSR calls found - the scan is broken').toBeGreaterThan(20);
+    // A call may pass a variable that was translated where it was built.
+    const bare = calls.filter((c) => !c.includes('__alloT') && !/^\s*[a-zA-Z_$][\w$]*\s*$/.test(c));
+    expect(bare, 'untranslated announcement: ' + bare.slice(0, 2).map((c) => c.slice(0, 60)).join(' | '))
+      .toHaveLength(0);
+  });
+
+  it('translates the long canvas descriptions, which are the figure for some students', () => {
+    const text = src();
+    // These carry the actual teaching content of three figures. A student on a
+    // non-English pack had no other route into them.
+    ['aria_cascadia_section', 'aria_three_boundaries', 'aria_magnitude_vs_intensity'].forEach((k) =>
+      expect(text, k + ' not registered').toContain("stem.platetectonics." + k));
+    const literal = [...text.matchAll(/['"]aria-(?:label|description)['"]\s*:\s*(['"][A-Z][\s\S]{0,90}?)(?:,\n|\n)/g)]
+      .map((m) => m[1].replace(/\s+/g, ' '))
+      .filter((v) => !v.includes('__alloT'));
+    expect(literal, 'literal English aria value: ' + literal.slice(0, 2).join(' | ')).toHaveLength(0);
+  });
+
+  it('keeps the tab ids the shortcut handler compares out of the translated labels', () => {
+    const text = src();
+    // _PT_TABS holds the ids the code switches on; _PT_TAB_LABELS holds what a
+    // student hears. Translating the first would break the 1-4 shortcuts.
+    expect(text).toContain("var _PT_TABS = ['sim', 'earthquake', 'timeline', 'quiz'];");
+    expect(text).toMatch(/sim: __alloT\('stem\.platetectonics\.tab_name_sim', 'Simulation'\)/);
+    expect(text).toContain("sr_switched_to_tab', 'Switched to {tab}.'");
+  });
+
+
+  it('translates the words painted onto the figures, not just the DOM', () => {
+    const text = src();
+    // Text drawn with fillText is invisible to every DOM audit, to axe, and to
+    // the key harvester - and it is exactly what a student reads off the
+    // diagram: "trench", "volcanic arc", "Outer core (liquid)", the scale bars.
+    const bad = [];
+    const re = /fillText\(/g;
+    let m;
+    while ((m = re.exec(text))) {
+      const p = m.index + m[0].length;
+      const q = text[p];
+      if (q !== "'" && q !== '"') continue;
+      let j = p + 1;
+      for (;;) {
+        j = text.indexOf(q, j);
+        if (text[j - 1] !== '\\') break;
+        j += 1;
+      }
+      const lit = text.slice(p, j + 1);
+      // Three letters in a row is a word, not a unit or a single symbol.
+      if (/[A-Za-z]{3}/.test(lit)) bad.push(lit.slice(0, 40));
+    }
+    expect(bad, 'untranslated figure label: ' + bad.slice(0, 3).join(' | ')).toHaveLength(0);
+  });
+
+  it('translates the search placeholders and the challenge toast', () => {
+    const text = src();
+    // A placeholder is visible text; the toast is the moment a student is told
+    // they won something.
+    expect(text).toContain("search_placeholder', 'Search...'");
+    expect(text).toContain("search_activities_placeholder', 'Search activities...'");
+    expect(text).toContain("toast_challenge_won', 'Challenge: {name} (+{rp} RP)'");
+    const lit = [...text.matchAll(/\b(?:placeholder|title)\s*:\s*(['"][A-Za-z][^'"]{3,})/g)]
+      .map((x) => x[1])
+      .filter((v) => !v.includes('__alloT'));
+    expect(lit, 'literal English attribute: ' + lit.slice(0, 2).join(' | ')).toHaveLength(0);
+  });
+
+
+  it('does not theme-branch ink on cards that are light in both themes', () => {
+    const text = src();
+    // The results card, its miss list and the shelf note all sit on emerald-50
+    // and amber-50, which stay light whatever the theme. Branching their ink on
+    // isDark is how this tool has produced 1.35:1 text before: a dark-theme
+    // colour painted on a permanently light card.
+    const a = text.indexOf("'data-pt-quiz-results'");
+    expect(a, 'results card missing').toBeGreaterThan(-1);
+    const b = text.indexOf("'data-pt-quiz-restart'", a);
+    expect(b).toBeGreaterThan(a);
+    const card = text.slice(a, b);
+    expect(card).toContain('bg-emerald-50');
+    expect(card).toContain('bg-amber-50');
+    // Measured with dev-tools/pt_contrast_probe.cjs: 7.29 / 5.21 / 9.99 in both
+    // themes, identical, because nothing here branches.
+    expect(card, 'results card branches its ink on the theme').not.toMatch(/isDark/);
+  });
+
+  it('measures the verdict card by its leaves, not by the box around them', () => {
+    // Not about the tool: the probe graded the CARD, whose computed colour is
+    // the inherited black, and reported 19.94:1 for text no student sees. The
+    // targets now name the elements that actually carry ink.
+    const probe = readFileSync(resolve(process.cwd(), 'dev-tools/pt_contrast_probe.cjs'), 'utf8');
+    expect(probe).toContain("'[data-pt-quiz-verdict] > div:nth-child(1)'");
+    expect(probe).not.toMatch(/\['quiz', '\[data-pt-quiz-verdict\]',/);
+    // Every results-card target must carry the reach that CREATES that state.
+    // Asserting only that the word "finish-quiz" appears somewhere in the file
+    // was too weak: a sabotage that dropped it from one target left this green,
+    // and that target would then have silently measured nothing.
+    [".text-2xl", ".text-xs", " li", "-restart"].forEach((sel) => {
+      const line = probe.split('\n').find((l) => l.includes('data-pt-quiz-results') && l.includes(sel))
+        || probe.split('\n').find((l) => l.includes('data-pt-quiz-restart'));
+      expect(line, 'no target line for ' + sel).toBeTruthy();
+      expect(line, sel + ' does not reach the finished state').toContain("'finish-quiz'");
+    });
+  });
+
+
+  it('spreads the correct answer evenly and keeps feedback in step', () => {
+    // Runs the real function rather than grepping for it. Extracted by brace
+    // matching from the source, so the test exercises the shipped code.
+    const text = src();
+    const at = text.indexOf('function ptBalanceAnswers(bank) {');
+    expect(at, 'ptBalanceAnswers not found').toBeGreaterThan(-1);
+    let depth = 0;
+    let end = text.indexOf('{', at);
+    for (let k = end; k < text.length; k++) {
+      if (text[k] === '{') depth++;
+      else if (text[k] === '}') { depth--; if (depth === 0) { end = k + 1; break; } }
+    }
+    // eslint-disable-next-line no-new-func
+    const balance = new Function(text.slice(at, end) + '; return ptBalanceAnswers;')();
+
+    // A deliberately lopsided bank: every answer in one of three slots.
+    const bank = [];
+    for (let i = 0; i < 8; i++) {
+      bank.push({ q: 'Q' + i, opts: ['t0', 't1', 't2', 't3'], wrongFeedback: ['t0', 't1', 't2', 't3'], ans: i % 3 });
+    }
+    const out = balance(bank);
+    const dist = [0, 0, 0, 0];
+    out.forEach((q) => dist[q.ans]++);
+    // As authored the real bank was 13/38/38/13 percent, so a student who never
+    // picked the first or last option scored 75% knowing no geology.
+    expect(dist, 'answers are not evenly spread: ' + dist.join('/')).toEqual([2, 2, 2, 2]);
+
+    out.forEach((q, i) => {
+      // wrongFeedback is read as wrongFeedback[chosenOpt]. If it does not rotate
+      // with opts, a student is handed the explanation for a choice they did
+      // not make - and a correct answer can be told it was wrong.
+      for (let k = 0; k < 4; k++) {
+        expect(q.wrongFeedback[k], 'feedback slipped out of step at question ' + i + ' slot ' + k)
+          .toBe(q.opts[k]);
+      }
+      // and the option now marked correct is still the one that was correct
+      expect(q.opts[q.ans]).toBe(bank[i].opts[bank[i].ans]);
+    });
+  });
+
+  it('leaves a question alone when it has no options or no answer', () => {
+    const text = src();
+    const at = text.indexOf('function ptBalanceAnswers(bank) {');
+    let depth = 0;
+    let end = text.indexOf('{', at);
+    for (let k = end; k < text.length; k++) {
+      if (text[k] === '{') depth++;
+      else if (text[k] === '}') { depth--; if (depth === 0) { end = k + 1; break; } }
+    }
+    // eslint-disable-next-line no-new-func
+    const balance = new Function(text.slice(at, end) + '; return ptBalanceAnswers;')();
+    // A string-typed answer is the case the type guard actually earns its keep
+    // on: the later `if (!shift)` check catches a missing answer by accident,
+    // but '2' coerces cleanly through the arithmetic and would be rotated as if
+    // it were valid. Removing the guard is only observable here.
+    const odd = [{ q: 'no opts' }, { q: 'no ans', opts: ['a', 'b'] }];
+    const out = balance(odd);
+    expect(out[0]).toEqual(odd[0]);
+    expect(out[1]).toEqual(odd[1]);
+
+    // Isolated in a one-question bank so the target slot is 0 and the shift is
+    // therefore non-zero. Placed at any index where i % 4 === 2 the shift works
+    // out to zero and the early return masks the missing guard - which is how
+    // this assertion first passed against the sabotage.
+    const strung = balance([{ q: 'string ans', opts: ['a', 'b', 'c', 'd'], wrongFeedback: ['a', 'b', 'c', 'd'], ans: '2' }]);
+    expect(strung[0].ans, 'a malformed answer was rotated as if it were valid').toBe('2');
+    expect(strung[0].opts).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+
+  it('translates announcements made through a local alias, not just direct calls', () => {
+    const text = src();
+    // The pass-33 audit keyed on the call name `announceToSR(` and was blind to
+    // a handler that wrapped it: `var say = function (msg) { announceToSR(msg) }`.
+    // Four announcements for the tool's PRIMARY keyboard interaction - picking
+    // and pushing a plate, and the boundary that forms - stayed English because
+    // of it. Find the wrappers by shape, then grade their calls too.
+    const aliases = [];
+    for (const m of text.matchAll(/var\s+([A-Za-z_$][\w$]*)\s*=\s*function\s*\((\w+)\)\s*\{/g)) {
+      let depth = 0;
+      let k = text.indexOf('{', m.index + m[0].length - 1);
+      let end = k;
+      for (; end < text.length; end++) {
+        if (text[end] === '{') depth++;
+        else if (text[end] === '}') { depth--; if (depth === 0) { end++; break; } }
+      }
+      const body = text.slice(k, end);
+      if (!new RegExp('announceToSR\\(\\s*' + m[2] + '\\s*\\)').test(body)) continue;
+      // An alias is only in scope until its enclosing block closes. Two
+      // different `fail` functions live in this file - one forwards a message
+      // to the screen reader, the other takes an internal WebGL reason code
+      // like 'frame' - and a file-global search by NAME flagged the second as
+      // untranslated announcements. Record the region instead of the bare name.
+      let d = 0;
+      let stop = end;
+      for (; stop < text.length; stop++) {
+        if (text[stop] === '{') d++;
+        else if (text[stop] === '}') { if (d === 0) break; d--; }
+      }
+      aliases.push({ name: m[1], from: end, to: stop });
+    }
+    expect(aliases.length, 'no announce alias found - this scan has gone blind').toBeGreaterThan(0);
+
+    const bare = [];
+    for (const a of aliases) {
+      const name = a.name;
+      const scope = text.slice(a.from, a.to);
+      const call = new RegExp('\\b' + name + '\\(', 'g');
+      for (const c0 of scope.matchAll(call)) {
+        const c = { index: c0.index + a.from, 0: c0[0] };
+        // Walk balanced parens: a fixed window truncated the longest of these
+        // calls and hid it from the first version of this scan.
+        let depth = 0;
+        let k = c.index + c[0].length - 1;
+        let end = k;
+        for (; end < text.length; end++) {
+          if (text[end] === '(') depth++;
+          else if (text[end] === ')') { depth--; if (depth === 0) break; }
+        }
+        const arg = text.slice(k + 1, end);
+        // A bare identifier is a message translated where it was built.
+        if (/^\s*[A-Za-z_$][\w$]*\s*$/.test(arg)) continue;
+        // "Contains __alloT somewhere" is too weak: a call that reverts HALF of
+        // a concatenation still contains one, and that sabotage stayed green.
+        // Deleting the translated parts by regex was worse - it left unbalanced
+        // quotes and flagged correct code. Collect the literals properly, then
+        // subtract the ones that are __alloT fallbacks.
+        const translated = new Set(
+          [...arg.matchAll(/__alloT\('[^']*',\s*('(?:[^'\\]|\\.)*')\)/g)].map((x) => x[1])
+        );
+        const literals = [];
+        for (let i = 0; i < arg.length; i++) {
+          if (arg[i] !== "'") continue;
+          let j = i + 1;
+          while (j < arg.length && arg[j] !== "'") { if (arg[j] === '\\') j++; j++; }
+          literals.push(arg.slice(i, j + 1));
+          i = j;
+        }
+        // A phrase is a literal with a space and a real word in it; '{name}' and
+        // 'right' are placeholders and single words handled by their own keys.
+        const english = literals.filter((lit) => !translated.has(lit) && /[A-Za-z]{3}/.test(lit) && /\s/.test(lit));
+        if (english.length) bare.push(name + '(' + english[0].slice(0, 46) + ')');
+      }
+    }
+    expect(bare, 'untranslated aliased announcement: ' + bare.slice(0, 2).join(' | ')).toHaveLength(0);
+  });
+
+  it('keeps the coarse keyboard step, so a plate can actually reach a boundary', () => {
+    const text = src();
+    // Shift is a real coarse step, not a decoration: 48 canvas units against 14.
+    // At the fine step alone a keyboard user needed dozens of presses to close a
+    // gap, which is the difference between usable and technically-operable.
+    expect(text).toContain("p.x = clampPlateX(plates, kbIdx, p.x + dir * (big ? 48 : 14));");
+    // One settlement per gesture: settling per key press let a held arrow farm a
+    // quake per press.
+    expect(text).toMatch(/var rep2 = \{ collided: false, withName: '', erupted: false \};/);
+    expect(text).toContain('moved: p.x !== was');
+  });
+
+
+  it('has one glossary, not a live list beside an unreachable table', () => {
+    const text = src();
+    // GEO_GLOSSARY held 106 authored entries and was referenced exactly once -
+    // by its own definition. The tab rendered a DIFFERENT inline list of 106,
+    // overlapping by only 40 terms, so 66 terms a teacher had written could not
+    // be reached by any student, and a later edit could land in either one.
+    expect(text).toContain('var G = GEO_GLOSSARY.map(function (e) { return [e.term, e.definition]; })');
+    // No second inline pair-array may reappear beside it.
+    expect(text).not.toMatch(/var G = \[\[/);
+    // Referenced by the table AND the renderer: an orphan again would be one.
+    expect((text.match(/GEO_GLOSSARY/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('keeps both origins of the merged glossary', () => {
+    const text = src();
+    const at = text.indexOf('var GEO_GLOSSARY = [');
+    let depth = 0;
+    let end = text.indexOf('[', at);
+    for (let k = end; k < text.length; k++) {
+      if (text[k] === '[') depth++;
+      else if (text[k] === ']') { depth--; if (depth === 0) { end = k; break; } }
+    }
+    const table = text.slice(at, end);
+    const terms = [...table.matchAll(/term:\s*"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+    // 106 + 106 with 40 shared.
+    expect(terms.length, 'merged glossary lost entries').toBe(172);
+    expect(new Set(terms).size, 'duplicate terms in the glossary').toBe(terms.length);
+    // Terms that existed ONLY in the previously-unreachable table...
+    ['Bolide', 'Anthropocene', 'Continental drift'].forEach((t) =>
+      expect(terms, 'lost a term that was already unreachable: ' + t).toContain(t));
+    // ...and one that was already on screen, so the merge did not drop the live side.
+    expect(terms).toContain('Asthenosphere');
+    // Every entry carries a definition.
+    const defs = [...table.matchAll(/definition:\s*"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+    expect(defs.length).toBe(terms.length);
+    expect(defs.filter((d) => d.trim().length < 8), 'empty definitions').toHaveLength(0);
+  });
+
+  it('searches the glossary by definition as well as by term', () => {
+    const text = src();
+    // A student who remembers "the layer plates float on" but not
+    // "asthenosphere" is exactly who a glossary search is for.
+    expect(text).toMatch(/g\[0\]\.toLowerCase\(\)\.indexOf\(s\) !== -1 \|\| g\[1\]\.toLowerCase\(\)\.indexOf\(s\) !== -1/);
+  });
+
+
+  it('translates the myth bank, which is assessment content', () => {
+    const text = src();
+    const at = text.indexOf('var PT_MYTHS_35 = [');
+    const to = text.indexOf('var PT_MYTH_BANK =', at);
+    expect(at).toBeGreaterThan(-1);
+    expect(to).toBeGreaterThan(at);
+    const bank = text.slice(at, to);
+    // 19 myths across three grade bands, each a statement and an explanation.
+    const wrapped = (bank.match(/(?:^|\b)(?:s|why): __alloT\('stem\.platetectonics\./g) || []).length;
+    expect(wrapped, 'myth strings not translated').toBe(38);
+    // No statement or explanation may sit as a bare literal beside them.
+    const bare = [...bank.matchAll(/\b(s|why):\s*(['"])/g)]
+      .filter((m) => bank.slice(m.index, m.index + 40).indexOf('__alloT') === -1);
+    expect(bare, 'a myth string is still a bare literal').toHaveLength(0);
+    // The truth flag is data, not text - translating it would break grading.
+    expect(bank).toMatch(/t: (?:true|false),/);
+    expect(bank).not.toMatch(/t: __alloT/);
+  });
+
+  it('translates magma wording in the render closure, not in the module-scope table', () => {
+    const text = src();
+    // Wrapping MAGMA's fields in place crashed the tool: the table lives at
+    // module scope where __alloT does not exist. The compared `id` stays a
+    // literal and the words move to a lookup inside the render closure, under
+    // static keys a harvester can find.
+    const at = text.indexOf('var MAGMA = [');
+    const to = text.indexOf('];', at);
+    const table = text.slice(at, to);
+    expect(table, 'MAGMA must not reference __alloT at module scope').not.toContain('__alloT');
+    expect(table).toMatch(/id: 'basalt'/);
+
+    expect(text).toContain('var PT_MAGMA_TEXT = {');
+    ['basalt', 'andesite', 'rhyolite'].forEach((id) =>
+      ['label', 'silica', 'visc', 'gas', 'landform', 'example'].forEach((f) =>
+        expect(text, 'missing key for ' + id + '.' + f)
+          .toContain("stem.platetectonics.magma_" + id + '_' + f + "'")));
+    // and NO display site reads the raw row. Asserting that the wrapped form
+    // "appears somewhere" was too weak - it stayed green when one of the three
+    // sites reverted, because the other two still contained the string.
+    const stripped = text.replace(/ptMagmaText\((?:t2|cur|row)\)/g, 'WRAPPED');
+    const raw = [...stripped.matchAll(/\b(?:t2|cur)\.(silica|visc|gas|landform|example|label)\b/g)]
+      .map((m) => m[0]);
+    expect(raw, 'a magma field is read straight off the untranslated row: ' + raw.join(', '))
+      .toHaveLength(0);
+  });
+
+
+  it('does not strand new catalogues where no student can reach them', () => {
+    const text = src();
+    // Found the hard way: GEO_GLOSSARY held 106 authored entries and was
+    // referenced exactly once - by its own definition - while the tab rendered a
+    // different inline list. Merged. Then the same audit turned up four more
+    // tables that nothing reads at all, including 28 classroom activities and 62
+    // historic earthquakes a teacher wrote and no student can open.
+    //
+    // These four are the known backlog. The gate is that the list does not GROW:
+    // a new catalogue must be wired to something.
+    const KNOWN_ORPHANS = ['EARTHQUAKE_DB', 'GEOLOGISTS', 'GEO_LESSONS', 'BOUNDARIES'];
+    const names = [...text.matchAll(/\bvar ([A-Z][A-Z_0-9]{3,})\s*=\s*\[/g)].map((m) => m[1]);
+    expect(names.length, 'no catalogue tables found - this scan has gone blind').toBeGreaterThan(10);
+
+    const orphans = [];
+    for (const nm of new Set(names)) {
+      const defAt = text.indexOf('var ' + nm + ' =');
+      let reads = 0;
+      for (const m of text.matchAll(new RegExp('\\b' + nm + '\\b', 'g'))) {
+        if (Math.abs(m.index - (defAt + 4)) < 2) continue;          // the definition itself
+        const lineStart = text.lastIndexOf('\n', m.index) + 1;
+        if (text.slice(lineStart, m.index).trimStart().startsWith('//')) continue;  // a comment naming it
+        reads++;
+      }
+      if (!reads) orphans.push(nm);
+    }
+    const unexpected = orphans.filter((o) => !KNOWN_ORPHANS.includes(o));
+    expect(unexpected, 'a new catalogue is unreachable: ' + unexpected.join(', ')).toHaveLength(0);
+    // And the known ones must not quietly multiply either.
+    expect(orphans.length, 'orphan count grew: ' + orphans.join(', '))
+      .toBeLessThanOrEqual(KNOWN_ORPHANS.length);
+  });
+
+  it('translates the tsunami, hotspot and fault catalogues a student reads', () => {
+    const text = src();
+    // Field-level, not blanket: `type` is compared against literals and
+    // `volcanoes` holds proper nouns, so both stay as authored.
+    ['tsu_note_', 'tsu_place_', 'hs_note', 'hs_plat', 'fa_note', 'fa_regi'].forEach((k) =>
+      expect(text, 'no keys with prefix ' + k).toContain('stem.platetectonics.' + k));
+    const hs = text.slice(text.indexOf('var HOTSPOT_DB = ['), text.indexOf('var ROCK_DB = ['));
+    expect(hs, 'volcano names must not be translated').toMatch(/volcanoes: "[^"]+"/);
+    expect(hs).not.toMatch(/volcanoes: __alloT/);
+    // `source` duplicated `mag` under a name promising the tsunami's cause, and
+    // nothing rendered it - a trap for whoever showed it next.
+    const tsu = text.slice(text.indexOf('var TSUNAMI_DB = ['), text.indexOf('var FAULT_DB = ['));
+    expect(tsu, 'the dead source field is back').not.toMatch(/source:/);
+  });
+
 });

@@ -315,9 +315,14 @@ describe('galaxy visuals', () => {
   it.each(GALAXY_PATHS)('%s states a massive star lifespan in units it fits in', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
     // 10 / 20^2.5 Gyr fixed to one decimal printed "Lifespan: 0.0 billion years",
-    // which reads as no lifespan at all across the whole upper mass range.
-    expect(source).toContain("lifetimeText = 'Lifespan: ' + (lifetimeGyr * 1000).toFixed");
+    // which reads as no lifespan at all across the whole upper mass range. The
+    // formatter now steps Gyr -> Myr -> kyr, so no mass can print a zero.
+    expect(source).toContain("__alloT('stem.galaxy.dur_myr', '~{n} Myr')");
+    expect(source).toContain("__alloT('stem.galaxy.dur_kyr', '~{n} kyr')");
     expect(source).not.toContain("'Lifespan: ' + lifetime + ' billion years'");
+    expect(source).not.toContain("lifetimeGyr.toFixed(1) + ' billion years'");
+    // A star cannot be older than the universe the model dates at 13.8 Gyr.
+    expect(source).toContain("'Age (Gyr)'), mn: 0, mx: 13.8, st: 0.1");
   });
 
   it.each(GALAXY_PATHS)('%s resets the camera to the fitted overview, not a fixed number', (filePath) => {
@@ -371,12 +376,372 @@ describe('galaxy visuals', () => {
     // English literals in a tool where every other string goes through __alloT, so a
     // screen-reader user in any other language heard English for zoom, focus, tour
     // stages and fullscreen changes. The React-rendered announcer had the same literal.
+    // The first version of this gate only looked for a literal DIRECTLY after the
+    // call, so `setCanvasStatus(cond ? 'English A' : 'English B')` sailed through it -
+    // which is exactly how the three auto-rotation statuses stayed in English. Walk
+    // each call's arguments instead and reject any prose outside a translation call.
     expect(source.match(/setCanvasStatus\('/g)).toBeNull();
+    const bareInStatus = [];
+    for (const call of source.matchAll(/setCanvasStatus\(/g)) {
+      let i = call.index + call[0].length, depth = 1, quote = null, start = i;
+      while (i < source.length && depth > 0) {
+        const c = source[i];
+        if (quote) { if (c === '\\') i++; else if (c === quote) quote = null; }
+        else if (c === "'" || c === '"') quote = c;
+        else if (c === '(') depth++;
+        else if (c === ')') depth--;
+        i++;
+      }
+      const args = source.slice(start, i - 1);
+      const inCall = new Uint8Array(args.length);
+      for (const t of args.matchAll(/\b(?:__alloT|t)\(/g)) {
+        let j = t.index + t[0].length, d = 1, q = null;
+        while (j < args.length && d > 0) {
+          const c = args[j];
+          if (q) { if (c === '\\') j++; else if (c === q) q = null; }
+          else if (c === "'" || c === '"') q = c;
+          else if (c === '(') d++;
+          else if (c === ')') d--;
+          j++;
+        }
+        inCall.fill(1, t.index, j);
+      }
+      const LITS = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"/g;
+      let x;
+      while ((x = LITS.exec(args))) {
+        if (inCall[x.index]) continue;
+        const txt = x[1] !== undefined ? x[1] : x[2];
+        const words = txt.match(/\b[A-Za-z]{3,}\b/g) || [];
+        if (words.length >= 2) bareInStatus.push(txt);
+      }
+    }
+    expect(bareInStatus).toEqual([]);
     expect(source).not.toContain('("Focused on " + sel');
     expect(source).not.toContain("|| 'Star')");
     expect(source).toContain("__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}'");
     expect(source).toContain("__alloT('stem.galaxy.status_tour_stage', 'Grand Tour \u00b7 {stage}').replace('{stage}', label)");
     expect(source).toContain("__alloT('stem.galaxy.announcer_focused_on', 'Focused on {name}').replace('{name}', selStar.label)");
+  });
+
+  it.each(GALAXY_PATHS)('%s lets cosmic age visibly change the galaxy', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // Measured: the visible scene at 0.5 Gyr and at 14 Gyr had the same mean colour to
+    // within one unit and a blue fraction that moved by under two points, because the
+    // star-type shift was buried under additive arm layers that saturate to white. The
+    // one intended age effect - nebula opacity set in _updateAge - was overwritten on
+    // the next frame by the loop that owns that opacity, which never read the age.
+    expect(source).toContain("uAgeTint: { value: new THREE.Vector3(1, 1, 1) }");
+    expect(source).toContain("'uniform vec3 uAgeTint;'");
+    expect(source).toContain("'  if (uObserve < 0.5) col *= uAgeTint;'");
+    expect(source).toContain("'structure', 'normalized', 'youth', 'warmth']");
+    expect(source).toContain('var nebAgeLevel = 0.5 + 0.5 * Math.min(1, ageEvolutionVisual.birth / 2.4);');
+    expect(source).toContain('* extendedInstrumentDetail * nebAgeLevel;');
+    expect(source).not.toContain('nebulaSprites.forEach(function (s) { s.material.opacity = nebOp; });');
+    expect(source).toContain('armGlowMat.color.setRGB(ageTintR, ageTintG, ageTintB)');
+  });
+
+  it.each(GALAXY_PATHS)('%s ends the cosmic-age axis at now', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The slider ran to 14 Gyr with "Now" pinned at 13.8, so the last 0.2 Gyr of the
+    // axis was the future; the time-lapse played into it and a saved state could hold it.
+    expect(source).toContain('min: 0.1, max: 13.8, step: 0.1, value: cosmicAge');
+    expect(source).not.toContain('max: 14, step: 0.1');
+    expect(source).toContain('"13.8 Gyr"');
+    expect(source).toContain('var pct = (m.age / 13.8) * 100;');
+    expect(source).toContain('if (age > 13.85) { clearInterval(window._galaxyTimeLapse);');
+    expect(source).toContain('Math.min(13.8, Math.max(0.1, d.cosmicAge))');
+    expect(source).not.toContain('" billion years old. "');
+  });
+
+  it.each(GALAXY_PATHS)('%s points every cosmic-time milestone at the epoch it names', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // Clicking "First stars" set 0.4 Gyr and the paragraph it revealed read "First
+    // Galaxies (0.4 Gyr)"; "Galaxies form" set 1.0 and read "Galaxy Assembly". The
+    // tool's own EPOCH_NARRATION puts the first stars at 0.1 and the first galaxies
+    // at 0.4. Structural, not a string match: every milestone age must name an epoch.
+    const epochAges = [...source.matchAll(/\{ age: ([\d.]+), title: t\('stem\.galaxy\./g)].map((m) => Number(m[1]));
+    const milestoneAges = [...source.matchAll(/\{ age: ([\d.]+), row: \d, label:/g)].map((m) => Number(m[1]));
+    expect(epochAges.length).toBeGreaterThanOrEqual(8);
+    expect(milestoneAges).toEqual([0.1, 0.4, 4.6, 9.2, 13.8]);
+    for (const age of milestoneAges) expect(epochAges, `milestone ${age} Gyr has no epoch`).toContain(age);
+    // The tick marks under the slider are a second list of the same ages.
+    expect(source).toContain('[0.1, 0.4, 4.6, 9.2, 13.8].map(function (age) {');
+    // A +/-0.3 window matched both early milestones at once (they are 0.3 apart).
+    expect(source).toContain('var isHere = Math.abs(cosmicAge - m.age) < 0.15;');
+  });
+
+  it.each(GALAXY_PATHS)('%s states each astronomical fact once', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The time-lapse paragraph said the Milky Way holds 200-400 billion stars while
+    // the scale panel and the quiz both said 100-400 billion - same fact, two numbers.
+    expect(source).not.toContain('200-400 billion');
+    // Star Life labels the massive-star phase "Red Supergiant" (a red giant is the
+    // 0.3-8 solar-mass path, and it ends in a planetary nebula, not a supernova), so
+    // the quiz asking what follows "a Red Giant for a massive star" contradicted it.
+    expect(source).toContain('What stage comes after a Red Supergiant for a massive star?');
+    expect(source).not.toContain('after a Red Giant for a massive star');
+  });
+
+  it.each(GALAXY_PATHS)('%s derives every main-sequence lifetime from one function', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // Three copies of the same quantity shipped: the Star Life canvas computed
+    // 10/M^2.5, the stage list read a four-bucket table, and the metallicity mode
+    // had its own inline copy. Canvas and list are on screen together, so a
+    // 1.9-solar-mass star showed "Lifespan: 2.0 billion years" beside a "Main
+    // Sequence ~10 Gyr" row, and a 7-solar-mass star 77 Myr beside "~1 Gyr".
+    const definition = source.match(/10 \/ Math\.pow\(mass, 2\.5\)/g) || [];
+    expect(definition).toHaveLength(1);
+    expect(source).toContain('function mainSequenceLifetimeGyr(mass) { return Math.max(0.002, 10 / Math.pow(mass, 2.5)); }');
+    expect(source).toContain('var msLifetime = mainSequenceLifetimeGyr(Math.max(0.08, starMass));');
+    expect(source).toContain('return formatLifetimeShort(mainSequenceLifetimeGyr(mass));');
+    // The bucket tables are gone - main sequence and the giant phases.
+    expect(source).not.toContain("mass < 2 ? '~10 Gyr' : mass < 8 ? '~1 Gyr'");
+    expect(source).not.toContain("stageId === 'red_giant') return mass < 2 ? '~1 Gyr'");
+    expect(source).toContain('return formatLifetimeShort(mainSequenceLifetimeGyr(mass) * 0.1);');
+    // A star must not spend longer dying than living: fixed giant strings put a
+    // 100 Myr red giant phase beside a 77 Myr main sequence at 7 solar masses.
+    for (const m of [0.5, 1, 1.9, 7, 20, 50]) {
+      const ms = Math.max(0.002, 10 / Math.pow(m, 2.5));
+      expect(ms * 0.1, `giant phase at ${m} solar masses`).toBeLessThan(ms);
+    }
+    // Unfloored the relation returned 566 thousand years at the 50-solar-mass
+    // maximum, against this tool's own O-type card ("1-10 Myr").
+    const lifetime = (m) => Math.max(0.002, 10 / Math.pow(m, 2.5)) * 1000;
+    expect(lifetime(50)).toBeGreaterThanOrEqual(1);
+    expect(lifetime(16)).toBeLessThanOrEqual(10);
+  });
+
+  it.each(GALAXY_PATHS)('%s keeps temperature, luminosity and radius on one Stefan-Boltzmann curve', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The panel printed all three from unrelated approximations - buckets for T,
+    // M^3.5 for L, a piecewise power law for R - so it broke L = R^2 (T/Tsun)^4.
+    // At 7 solar masses it read T 20,000 K, L 907 Lsun, R 4.56 Rsun, where that
+    // radius and temperature imply 2,989: a 3.3x contradiction on one line.
+    expect(source).not.toContain('Math.pow(mass, 3.5)');
+    expect(source).not.toContain("mass < 16 ? 20000 : 40000");
+    expect(source).not.toContain('Math.pow(m, 0.57)');
+    expect(source).toContain('function mainSequenceTemp(mass) { return zamsInterp(mass, \'lt\'); }');
+    expect(source).toContain('function mainSequenceLuminosity(mass) { return zamsInterp(mass, \'ll\'); }');
+    expect(source).toContain('function mainSequenceRadius(mass) { return zamsInterp(mass, \'lr\'); }');
+
+    // Run the shipped table: interpolating in log space must satisfy the relation
+    // exactly, because log L = 2 log R + 4 log(T/Tsun) is linear in the logs.
+    const block = source.slice(source.indexOf('var ZAMS_TABLE = ['));
+    const table = JSON.parse(block.slice(block.indexOf('['), block.indexOf('];') + 1).replace(/\s+/g, ''));
+    expect(table.length).toBeGreaterThanOrEqual(10);
+    const TSUN = 5778;
+    const nodes = table.map(([m, t, l]) => ({ lm: Math.log(m), lt: Math.log(t), ll: Math.log(l), lr: 0.5 * Math.log(l) + 2 * Math.log(TSUN / t) }));
+    const interp = (mass, key) => {
+      const lm = Math.log(Math.max(0.02, mass));
+      let i = 0;
+      while (i < nodes.length - 2 && nodes[i + 1].lm < lm) i++;
+      const a = nodes[i], b = nodes[i + 1];
+      return Math.exp(a[key] + (b[key] - a[key]) * ((lm - a.lm) / (b.lm - a.lm)));
+    };
+    let worst = 0;
+    for (let i = 3; i <= 5000; i += 7) {
+      const m = i / 100;
+      const lhs = interp(m, 'll');
+      const rhs = Math.pow(interp(m, 'lr'), 2) * Math.pow(interp(m, 'lt') / TSUN, 4);
+      worst = Math.max(worst, Math.abs(Math.log(lhs / rhs)));
+    }
+    expect(worst).toBeLessThan(1e-9);
+    // The Sun must come out exactly right.
+    expect(interp(1, 'lt')).toBeCloseTo(5778, 0);
+    expect(interp(1, 'll')).toBeCloseTo(1, 6);
+    expect(interp(1, 'lr')).toBeCloseTo(1, 6);
+  });
+
+  it.each(GALAXY_PATHS)('%s labels a spectral class its own temperature agrees with', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // Class is defined by temperature, so its mass boundaries must be where the
+    // table crosses each class edge. At the old ones a 1.5-solar-mass star was
+    // labelled "A-type White" beside a displayed 7,000 K, which is an F star.
+    expect(source).toContain('var CLASS_MAX_K = 0.87, CLASS_MAX_G = 1.10, CLASS_MAX_F = 1.62, CLASS_MAX_A = 2.36, CLASS_MAX_B = 16.2;');
+    // No site may compare a mass against a raw class boundary any more.
+    expect(source.match(/\b(?:mass|lifecycleMass) < (?:0\.8|1\.04|1\.4|2\.1|16)[ ]?[?)]/g)).toBeNull();
+    // The cards state the same ranges the code classifies by.
+    expect(source).toContain("mass: '0.87-1.10 M");
+    expect(source).toContain("mass: '1.62-2.36 M");
+    expect(source).toContain("mass: '16.2-150 M");
+  });
+
+  it.each(GALAXY_PATHS)('%s localises everything the black hole announces', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The Black Hole mode writes into a role="status" aria-live region and two visible
+    // readouts, and every runtime update was a bare English literal - in a file where
+    // those same elements' initial React content goes through __alloT, and where one
+    // status (bh_status_camera_reset) already did. The dropped object's name was
+    // hardcoded English while the <select> choosing it was localised, so picking
+    // "Modelo de astronauta" produced a readout reading "Astronaut".
+    expect(source.match(/textContent\s*=\s*'[A-Z][^']{4,}'/g)).toBeNull();
+    expect(source).not.toContain("?'Astronaut':type==='star'?'Star':'Probe'");
+    expect(source).toContain("__alloT('stem.galaxy.bh_name_astronaut', 'Astronaut')");
+    expect(source).toContain("__alloT('stem.galaxy.bh_signal', 'Distant received signal: {percent}%')");
+    expect(source).toContain("__alloT('stem.galaxy.bh_readout_outside', '{object} | {radii} horizon radii | tidal stretch {stretch}x')");
+    // Lowercasing a TRANSLATED noun is wrong wherever nouns are capitalised, so the
+    // pack owns the casing of the object name.
+    expect(source).not.toContain("item.label.toLowerCase()");
+  });
+
+  it.each(GALAXY_PATHS)('%s puts every quiz answer through the translation layer', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The bank was MIXED: question 2 had a localised question, one localised option
+    // (t('stem.galaxy.nebula')) and three bare English strings, so a Spanish learner
+    // read a Spanish question above "Supermassive black hole / Giant star / Neutron
+    // star / Nebulosa" and could not answer it.
+    const block = source.slice(source.indexOf('var QUIZ_BANK = ['), source.indexOf('\n          ];', source.indexOf('var QUIZ_BANK = [')));
+    expect(block.length).toBeGreaterThan(2000);
+
+    // Mark every character inside a __alloT(...) or t(...) call, then assert no prose
+    // survives outside one.
+    const inCall = new Uint8Array(block.length);
+    for (const m of block.matchAll(/\b(?:__alloT|t)\(/g)) {
+      let i = m.index + m[0].length, depth = 1, quote = null;
+      while (i < block.length && depth > 0) {
+        const c = block[i];
+        if (quote) { if (c === '\\') i++; else if (c === quote) quote = null; }
+        else if (c === "'" || c === '"') quote = c;
+        else if (c === '(') depth++;
+        else if (c === ')') depth--;
+        i++;
+      }
+      inCall.fill(1, m.index, i);
+    }
+    const bare = [];
+    const LIT = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"/g;
+    let x;
+    while ((x = LIT.exec(block))) {
+      if (inCall[x.index]) continue;
+      const txt = x[1] !== undefined ? x[1] : x[2];
+      if (/[a-zA-Z]{3}/.test(txt)) bare.push(txt);
+    }
+    expect(bare).toEqual([]);
+
+    // Grading compares by TEXT (`opt === quizQ.a`), so each answer must resolve
+    // through the SAME key as its matching option or a translated bank marks every
+    // answer wrong. Every line declaring an answer must repeat that answer's key.
+    const offenders = [];
+    for (const line of block.split('\n')) {
+      const a = line.match(/a:\s*(?:__alloT|t)\('([^']+)'/);
+      if (!a) continue;
+      const keys = [...line.matchAll(/(?:__alloT|t)\('([^']+)'/g)].map((k) => k[1]);
+      if (keys.filter((k) => k === a[1]).length < 2) offenders.push(a[1]);
+    }
+    expect(offenders).toEqual([]);
+    // Nothing may wrap a fallback in a second call.
+    expect(source).not.toMatch(/__alloT\('[^']*',\s*__alloT/);
+    expect(source).toContain("__alloT('stem.galaxy.quiz_select_answer', 'Select answer: {option}')");
+  });
+
+  it.each(GALAXY_PATHS)('%s names the drawn stage from the same table as the stage list', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The canvas heading and the timeline row beneath it name the SAME stage, from two
+    // sources: thirteen hardcoded English labels in the drawing code, and the localised
+    // `name` in getStagesForMass for the list. A Spanish learner read "Red Giant" above
+    // a row saying "Gigante Roja". The headings were also wrong for the low-mass paths:
+    // a 0.05-solar-mass object was captioned "Main Sequence" directly above the tool's
+    // own "Brown dwarf (substellar)" line, and a brown dwarf never joins the main
+    // sequence at all.
+    expect(source).toContain('function stageDisplayLabel(stageId, mass) {');
+    expect(source).toContain('var stageLabel = stageDisplayLabel(stage, mass);');
+    expect(source.match(/stageLabel = '/g)).toBeNull();
+    expect(source).not.toContain('Neutron Star (Pulsar)');
+    expect(source).not.toContain('Nebular Cloud');
+    // Every stage in the table must carry both halves the heading needs.
+    const fn = source.slice(source.indexOf('function getStagesForMass(mass) {'));
+    const body = fn.slice(0, fn.indexOf('\n          }'));
+    const names = body.match(/\bname: /g) || [];
+    const translatedNames = body.match(/\bname: (?:t|__alloT)\(/g) || [];
+    const emojis = body.match(/\bemoji: /g) || [];
+    expect(names.length).toBeGreaterThanOrEqual(18);
+    expect(translatedNames.length).toBe(names.length);
+    expect(emojis.length).toBe(names.length);
+  });
+
+  it('every stem.galaxy key the tool asks for exists in both ui_strings copies', () => {
+    // A key that is missing does NOT look broken: __alloT falls back to the English
+    // in the source, so the tool renders fine and a translator never sees the string.
+    // Four had gone missing this way, because the scripts that add keys asked "is this
+    // name anywhere in ui_strings.js?" - and names are only unique WITHIN a tool's
+    // section, so stem.wave.narrate_init_first hid the galaxy key of the same name.
+    const source = readFileSync(GALAXY_PATHS[0], 'utf8');
+    const referenced = [...new Set([...source.matchAll(/(?:__alloT|t)\('stem\.galaxy\.([a-zA-Z0-9_]+)'/g)].map((m) => m[1]))];
+    expect(referenced.length).toBeGreaterThan(900);
+    for (const file of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js']) {
+      const galaxy = JSON.parse(readFileSync(file, 'utf8')).stem.galaxy;
+      const missing = referenced.filter((k) => !(k in galaxy));
+      expect(missing, `${file} is missing ${missing.length} galaxy keys`).toEqual([]);
+    }
+  }, 30000);
+
+  it.each(GALAXY_PATHS)('%s keeps the nebula type machine-readable and labels it separately', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // neb.type is COMPARED (against 'Dark' for blend mode, and 'Dark'/'Emission' for
+    // feedback eligibility) as well as displayed. Translating the field itself would
+    // silently stop those comparisons matching in every non-English pack, so the value
+    // stays a machine token and a lookup supplies the label where it is shown.
+    // Scope to the NEBULA entries only: Real Sky targets also carry a `type:` field,
+    // but theirs is a description that is displayed and never compared, so it is
+    // correctly translated. A nebula entry is the one shaped `type: ..., dist: ...`.
+    const entries = [...source.matchAll(/\btype: (?:'([^']*)'|__alloT\('stem\.galaxy\.([a-z_]+)'[^)]*\)), dist:/g)];
+    const nebulaTypes = entries.map((m) => m[1]).filter(Boolean);
+    expect(nebulaTypes.length).toBeGreaterThanOrEqual(8);
+    // Every compared value must appear literally on a nebula entry.
+    expect(nebulaTypes).toContain('Dark');
+    expect(nebulaTypes).toContain('Emission');
+    expect(nebulaTypes).toContain('Supernova Remnant');
+    // ...and none of them may be a translation call.
+    expect(entries.filter((m) => m[2]).map((m) => m[2])).toEqual([]);
+    // The label lookup is used at both display sites.
+    expect(source).toContain('function nebulaTypeLabel(type) {');
+    expect(source.match(/nebulaTypeLabel\(selNeb\.type\)/g)).toHaveLength(2);
+    expect(source).toContain("'Dark': function () { return __alloT('stem.galaxy.nebtype_dark', 'Dark'); }");
+  });
+
+  it.each(GALAXY_PATHS)('%s keeps every amber label above AA on white', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // amber-600 (#d97706) on white is 3.19:1, under the 4.5 that 12px bold text needs.
+    // The quiz streak counter used it; an earlier fill in this review needed the same
+    // swap, so the shade is banned outright for text rather than fixed case by case.
+    expect(source).not.toContain('text-amber-600');
+    expect(source).toContain('font-bold text-amber-700');
+    const lum = (rgb) => {
+      const f = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+    };
+    const ratio = (a, b) => {
+      const la = lum(a), lb = lum(b);
+      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    };
+    expect(ratio([180, 83, 9], [255, 255, 255])).toBeGreaterThanOrEqual(4.5);
+    expect(ratio([217, 119, 6], [255, 255, 255])).toBeLessThan(4.5);
+  });
+
+  it.each(GALAXY_PATHS)('%s pins the rotated HR band label so a translation cannot run off it', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // SVG text does not wrap. Start-anchored inside a 340-unit viewBox, this label was
+    // the ONLY thing in the whole tool that overflowed under a 40% pseudo-locale
+    // expansion - reaching x=603 in a 600px viewport and x=781 in a 768px one.
+    expect(source).toContain('textAnchor: "middle", textLength: 150, lengthAdjust: "spacingAndGlyphs"');
+    expect(source).toContain("__alloT('stem.galaxy.hr_main_sequence_label'");
+  });
+
+  it.each(GALAXY_PATHS)('%s pins every data chart to left-to-right for RTL locales', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The tool ships in Arabic, Farsi, Hebrew and Urdu. Its HTML layout mirrors
+    // correctly under dir="rtl", but SVG geometry is authored in absolute viewBox
+    // coordinates while <text> inside inherits the direction, so start-anchored
+    // captions ran the wrong way: the Doppler spectrum put two groups at x=-10 and its
+    // caption at x=-69, the only RTL overflows in the tool.
+    //
+    // `dir="ltr"` on an <svg> does NOTHING - dir maps to the CSS direction property for
+    // HTML only. Measured: the attribute was present and getComputedStyle still said
+    // rtl. The CSS property has to be set, so both are used here.
+    const charts = source.match(/React\.createElement\("svg", \{ viewBox: [^}]*?dir: "ltr"/g) || [];
+    expect(charts.length).toBe(6);
+    const styled = source.match(/dir: "ltr", className: "w-full", style: \{ direction: 'ltr'/g) || [];
+    expect(styled.length).toBe(6);
   });
 
   it.each(GALAXY_PATHS)('%s keeps the black-hole canvas sized to its own box', (filePath) => {

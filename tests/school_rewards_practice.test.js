@@ -161,3 +161,47 @@ describe('practice page', () => {
     for (const step of tour) { expect(step.tab).toBeTruthy(); expect(step.title).toBeTruthy(); expect(step.text.length).toBeGreaterThan(20); }
   });
 });
+
+describe('practice wrapper Spanish coverage', () => {
+  // The portal under <main> translates itself from its own catalogue. The
+  // wrapper around it (bar, introduction, demo guide, customize panel, tour)
+  // carries a WRAP_ES dictionary keyed by its English text, so editing an
+  // English string without editing the key silently reverts it to English.
+  // This walks the generated page and proves every wrapper string is covered.
+  const dict = JSON.parse(PAGE.match(/var WRAP_ES=(\{[\s\S]*?\});\n/)[1]);
+  const keys = new Set(Object.keys(dict));
+  const head = PAGE.slice(PAGE.indexOf('<body'), PAGE.indexOf('<main class="shell">'))
+    .replace(/<script[\s\S]*?<\/script>/g, '')
+    .replace(/<style[\s\S]*?<\/style>/g, '');
+  const unescape = (t) => t.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
+
+  it('covers every visible string in the practice bar, introduction, and guide', () => {
+    const texts = [...new Set(Array.from(head.matchAll(/>([^<>]{2,})</g), (m) => unescape(m[1]).trim()))]
+      .filter((t) => /[A-Za-z]{2}/.test(t));
+    expect(texts.length).toBeGreaterThan(40);
+    expect(texts.filter((t) => !keys.has(t))).toEqual([]);
+    const attrs = [...new Set(Array.from(head.matchAll(/(?:aria-label|placeholder)="([^"]{3,})"/g), (m) => unescape(m[1])))];
+    expect(attrs.filter((a) => !keys.has(a))).toEqual([]);
+  });
+
+  it('covers the scenario names, the built-in tour, and the tour controls', () => {
+    const scenarios = Array.from(PAGE.matchAll(/\bschool:'[^']*'/g)).length
+      ? Array.from(PAGE.matchAll(/label:'([^']*(?:school|Shopping day|Custom)[^']*)'/g), (m) => m[1])
+      : [];
+    expect(scenarios.length).toBeGreaterThanOrEqual(3);
+    expect(scenarios.filter((s) => !keys.has(s))).toEqual([]);
+    const tourBlock = PAGE.slice(PAGE.indexOf('var DEFAULT_TOUR='));
+    const tour = tourBlock.slice(0, tourBlock.indexOf('];') + 2);
+    const strings = [
+      ...Array.from(tour.matchAll(/title:'((?:[^'\\]|\\.)*)'/g), (m) => m[1]),
+      ...Array.from(tour.matchAll(/text:'((?:[^'\\]|\\.)*)'/g), (m) => m[1]),
+    ].map((t) => t.replace(/\\'/g, "'"));
+    expect(strings.length).toBeGreaterThanOrEqual(16);
+    expect(strings.filter((t) => !keys.has(t))).toEqual([]);
+    // Built at runtime, so no markup carries them.
+    for (const label of ['Back', 'Next', 'Finish', 'Exit tour', 'Practice tour', 'Go to the highlighted control']) {
+      expect(keys.has(label), label).toBe(true);
+    }
+  });
+});

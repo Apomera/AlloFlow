@@ -804,6 +804,13 @@ describe('boundary stress lab: friction resists slip', () => {
   // built to have students discover it.
   const outcome = (state) => {
     const { host } = renderTool(Object.assign({ simTab: 'boundaryHunt' }, state));
+    // Read the CURRENT outcome off the diagram that draws it, not by scanning
+    // the panel's prose in priority order. The prose scan was a trap waiting to
+    // spring: any new copy naming one of the four outcomes — a hint sentence
+    // once did it, and a table of logged trials does it again — is picked up as
+    // if it were the live result.
+    const svg = host.querySelector('[data-pt-stress-diagram]');
+    if (svg) return svg.getAttribute('data-pt-stress-diagram');
     const text = host.textContent || '';
     if (/Thrust faulting/i.test(text)) return 'thrust';
     if (/Normal faulting/i.test(text)) return 'normal';

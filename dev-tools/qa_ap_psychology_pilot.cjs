@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { buildApBlueprintCoverage } = require('./ap_blueprint_coverage_core.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_psychology_pilot.json');
@@ -1593,6 +1594,7 @@ const itemReportList = [...itemReports.values()].map((report) => ({
 const generatedAt = deterministicGeneratedAt(pack, library);
 const automatedStatus = structuralFindings.length ? 'fail' : 'pass';
 const report = {
+  blueprintCoverage: buildApBlueprintCoverage({ pack, library }),
   schemaVersion: 1,
   reportId: 'ap-psychology-pilot-qa',
   generatedAt,

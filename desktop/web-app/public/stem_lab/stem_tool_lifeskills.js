@@ -4587,7 +4587,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Literature review cards'),
                 h('h5', { className: 'text-sm font-black text-slate-800' }, resumeResearchCard.title)
               ),
-              h('a', { href: resumeResearchCard.url, target: '_blank', rel: 'noreferrer', className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200 hover:bg-teal-100' }, resumeResearchCard.source)
+              h('a', { href: resumeResearchCard.url, target: '_blank', rel: 'noreferrer', className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200 hover:bg-teal-100' + (ctx.isContrast ? ' text-white' : '') }, resumeResearchCard.source)
             ),
             h('div', { className: 'flex flex-wrap gap-2' },
               RESUME_RESEARCH_CARDS.map(function(card, i) {
@@ -7193,7 +7193,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                   h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Water temperature'),
-                    h('select', { 'aria-label': "Water temperature", value: laundryWater, onChange: function(e) { upd('laundryWater', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-500 text-sm font-bold bg-white' },
+                    h('select', { 'aria-label': 'Water temperature', value: laundryWater, onChange: function(e) { upd('laundryWater', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-500 text-sm font-bold bg-white' },
                       h('option', { value: 'cold' }, 'Cold'),
                       h('option', { value: 'warm' }, 'Warm'),
                       h('option', { value: 'hot' }, 'Hot')
@@ -7201,7 +7201,7 @@ window.StemLab = window.StemLab || {
                   ),
                   h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Cycle'),
-                    h('select', { 'aria-label': "Cycle", value: laundryCycle, onChange: function(e) { upd('laundryCycle', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-500 text-sm font-bold bg-white' },
+                    h('select', { 'aria-label': 'Cycle', value: laundryCycle, onChange: function(e) { upd('laundryCycle', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-500 text-sm font-bold bg-white' },
                       h('option', { value: 'delicate' }, 'Delicate'),
                       h('option', { value: 'normal' }, 'Normal'),
                       h('option', { value: 'heavy' }, 'Heavy duty')

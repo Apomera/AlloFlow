@@ -5,6 +5,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { buildApBlueprintCoverage } = require('./ap_blueprint_coverage_core.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot.json');
@@ -338,6 +339,7 @@ for (const result of deploymentParity) {
 }
 
 const report = {
+  blueprintCoverage: buildApBlueprintCoverage({ pack, library }),
   schemaVersion: 1,
   qaVersion: 'ap-usg-foundation-qa-v8',
   packId: PACK_ID,

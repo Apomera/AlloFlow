@@ -25,8 +25,16 @@
       '[data-coding-tool="true"] > .col-span-2 { grid-column: 1 !important; }' +
       '[data-coding-tool="true"] .coding-robot-layout { grid-template-columns: minmax(0, 1fr) !important; }' +
       '}' +
-      '@media (max-width: 960px) {' +
+      // ★ The header's wrap was scoped to `@media (max-width: 960px)`, but the
+      // toolbar needs ~1630px to fit: between 960px and 1630px it stayed nowrap
+      // and shoved SIX controls clean off the tool column (📌 Pick, 🔇 Music,
+      // 🎨 FG, ⊞, 📐 at 55-262px past the edge) with nothing to scroll them
+      // back. The intent was already right - only the breakpoint was wrong - so
+      // the rule moves out of the query rather than changing shape.
+      // `flex-wrap: wrap` is a no-op whenever the row already fits, so screens
+      // wide enough for one line are unaffected.
       '[data-coding-tool="true"] .coding-header { flex-wrap: wrap; }' +
+      '@media (max-width: 960px) {' +
       '[data-coding-tool="true"] .coding-playground-mode-toggle,' +
       '[data-coding-tool="true"] .coding-mode-toggle { flex: 1 1 100%; min-width: 0; width: 100%; }' +
       '[data-coding-tool="true"] .coding-playground-mode-toggle > button,' +

@@ -79,7 +79,14 @@ const CASES = [
 
   const lines = ['Saved-state resilience sweep', ''];
   let bad = 0;
+  // Set after any case that starts Aladin; the next iteration reloads first.
+  let reloadBeforeNext = false;
   for (const [name, state] of CASES) {
+    if (reloadBeforeNext) {
+      await pg.goto('file:///' + path.resolve(file).split(path.sep).join('/'));
+      await pg.waitForTimeout(2400);
+      reloadBeforeNext = false;
+    }
     errors = [];
     let mounted = true;
     try {
@@ -94,6 +101,7 @@ const CASES = [
       const text = (slot.innerText || '').trim();
       return { chars: text.length, controls: slot.querySelectorAll('button, input, select, textarea').length };
     });
+    if (state && state.simMode === 'realSky') reloadBeforeNext = true;
     const blank = seen.chars < 120 || seen.controls < 4;
     const ok = mounted && !errors.length && !blank;
     if (!ok) bad++;

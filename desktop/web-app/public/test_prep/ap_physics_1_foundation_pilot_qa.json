@@ -1,4 +1,113 @@
 {
+  "blueprintCoverage": {
+    "schemaVersion": 1,
+    "packId": "ap-physics-1-foundation-pilot",
+    "packVersion": "0.19.0-internal-preview",
+    "blueprintLabel": "AP Physics 1 Algebra-Based Course and Exam Description, effective Fall 2024 with May 2027 exam update",
+    "itemCount": 500,
+    "units": {
+      "declaredCount": 8,
+      "representedCount": 8,
+      "missing": [],
+      "itemsPerUnit": {
+        "kinematics": 61,
+        "force-and-translational-dynamics": 87,
+        "work-energy-and-power": 87,
+        "linear-momentum": 61,
+        "torque-and-rotational-dynamics": 61,
+        "energy-and-momentum-of-rotating-systems": 47,
+        "oscillations": 47,
+        "fluids": 49
+      }
+    },
+    "topics": {
+      "universeDeclared": false,
+      "declaredCount": null,
+      "representedCount": null,
+      "coveragePercent": null,
+      "missing": [],
+      "offBlueprint": [],
+      "observedCount": 39,
+      "minItemsPerDeclaredTopic": null,
+      "medianItemsPerDeclaredTopic": null,
+      "itemsPerTopic": {
+        "1.1": 9,
+        "1.2": 11,
+        "1.3": 11,
+        "1.4": 17,
+        "1.5": 13,
+        "2.1": 11,
+        "2.2": 15,
+        "2.3": 14,
+        "2.4": 10,
+        "2.5": 10,
+        "2.6": 15,
+        "2.7": 12,
+        "3.1": 19,
+        "3.2": 18,
+        "3.3": 16,
+        "3.4": 19,
+        "3.5": 15,
+        "4.1": 11,
+        "4.2": 12,
+        "4.3": 12,
+        "4.4": 13,
+        "4.5": 13,
+        "5.1": 9,
+        "5.2": 15,
+        "5.3": 11,
+        "5.4": 15,
+        "5.5": 11,
+        "6.1": 13,
+        "6.2": 11,
+        "6.3": 11,
+        "6.4": 12,
+        "7.1": 10,
+        "7.2": 13,
+        "7.3": 11,
+        "7.4": 13,
+        "8.1": 7,
+        "8.2": 14,
+        "8.3": 13,
+        "8.4": 15
+      }
+    },
+    "answerBalance": {
+      "keyedItemCount": 500,
+      "counts": {
+        "0": 125,
+        "1": 125,
+        "2": 125,
+        "3": 125
+      },
+      "dominantSharePercent": 25
+    },
+    "library": {
+      "chapters": 8,
+      "sections": 24,
+      "knowledgeChecks": 24,
+      "flashcards": 24,
+      "memoryAids": 24,
+      "diagrams": 0,
+      "diagramPlacements": 8,
+      "glossaryTerms": 0,
+      "constructedResponseWorkshops": 8,
+      "topicDiagnosticRoutes": 39,
+      "remediationPlaybooks": 9,
+      "studySessionPlans": 15,
+      "spacedReviewPlans": 39,
+      "sourceCatalog": 3
+    },
+    "emptyLibraryLayers": [
+      "diagrams",
+      "glossaryTerms"
+    ],
+    "gaps": [
+      "topic-universe-not-declared"
+    ],
+    "assessment": "gaps-present",
+    "boundary": "Structural blueprint coverage only. Not content validity, fairness, accessibility conformance, rights clearance, psychometric quality, score meaning, or release eligibility."
+  },
   "reportId": "ap-physics-1-foundation-qa",
   "schemaVersion": 1,
   "generatedAt": "2026-08-23T00:00:00.000Z",

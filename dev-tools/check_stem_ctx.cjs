@@ -19,6 +19,14 @@
 //      is a static identifier (not computed).
 //   3. Subtract guaranteed-provided keys + nested-object keys + computed
 //      accesses. Whatever remains is a candidate missing field.
+//   3b. A reference the source itself GUARDS is not a candidate. `ctx.foo ?
+//      ctx.foo() : fallback()`, `ctx.foo && ctx.foo()`, `typeof ctx.foo ===
+//      'function'` and `ctx?.foo` cannot throw on a missing field: the code is
+//      explicitly handling absence, usually with a fallback for another host.
+//      Flagging those taught readers to ignore the gate — its only finding on
+//      2026-09-06 was sel_tool_strengths.js's Back button, which correctly
+//      falls back to ctx.setSelHubTool, a field the SEL hub does provide. A
+//      name is reported only when at least one reference to it is UNGUARDED.
 //   4. Same logic for sel_hub/sel_hub_module.js + sel_tool_*.js.
 //
 // Usage:
@@ -146,11 +154,47 @@ function collectCtxAccess(filePath) {
     return shadowed;
   }
 
+    // Names X that a test expression checks for EXISTENCE. Deliberately narrow:
+  // only shapes where the read itself cannot throw and the author is plainly
+  // handling absence. `ctx.foo`, `!ctx.foo`, `typeof ctx.foo === 'function'`,
+  // and combinations of those with && / ||.
+  //
+  // Nesting is NOT followed, and that is the point: `ctx.lang.toUpperCase() ||
+  // 'en'` reads a property OF ctx.lang, so a missing ctx.lang still throws and
+  // must stay reportable. Only a direct member access counts.
+  function directCtxMember(node) {
+    if (!node || node.type !== 'MemberExpression' || node.computed) return null;
+    if (!node.object || node.object.type !== 'Identifier' || node.object.name !== 'ctx') return null;
+    if (!node.property || node.property.type !== 'Identifier') return null;
+    return node.property.name;
+  }
+  function guardedNamesIn(node, out) {
+    if (!node || typeof node !== 'object') return out;
+    const direct = directCtxMember(node);
+    if (direct) { out.add(direct); return out; }
+    if (node.type === 'UnaryExpression' && (node.operator === '!' || node.operator === 'typeof')) {
+      return guardedNamesIn(node.argument, out);
+    }
+    // typeof ctx.foo === 'function' / ctx.foo !== undefined
+    if (node.type === 'BinaryExpression') {
+      guardedNamesIn(node.left, out);
+      guardedNamesIn(node.right, out);
+      return out;
+    }
+    if (node.type === 'LogicalExpression') {
+      guardedNamesIn(node.left, out);
+      guardedNamesIn(node.right, out);
+      return out;
+    }
+    return out;
+  }
+
   // ctxBindings: stack of binding kinds. 'plugin' = render(ctx) param, 'shadow' = inner shadow.
   // Top of stack determines whether `ctx.X` should be counted.
-  function walk(node, ctxBindingStack, parent) {
+  function walk(node, ctxBindingStack, parent, guarded) {
+    guarded = guarded || new Set();
     if (!node || typeof node !== 'object') return;
-    if (Array.isArray(node)) { node.forEach(n => walk(n, ctxBindingStack, parent)); return; }
+    if (Array.isArray(node)) { node.forEach(n => walk(n, ctxBindingStack, parent, guarded)); return; }
 
     // Function entry: determine if this fn introduces a `ctx` binding.
     //
@@ -180,8 +224,31 @@ function collectCtxAccess(filePath) {
         // Any non-render function with (ctx) param OR a local var ctx is a shadow.
         newStack = ctxBindingStack.concat(['shadow']);
       }
-      walk(node.body, newStack, node);
-      walk(params, newStack, node);
+      walk(node.body, newStack, node, guarded);
+      walk(params, newStack, node, guarded);
+      return;
+    }
+
+    // Guard forms. The test itself is a safe read, and the branch it protects
+    // may call the field freely.
+    if (node.type === 'ConditionalExpression' || node.type === 'IfStatement') {
+      const names = guardedNamesIn(node.test, new Set());
+      walk(node.test, ctxBindingStack, node, new Set([...guarded, ...names]));
+      const protectedBranch = new Set([...guarded, ...names]);
+      if (node.consequent) walk(node.consequent, ctxBindingStack, node, protectedBranch);
+      if (node.alternate) walk(node.alternate, ctxBindingStack, node, guarded);
+      return;
+    }
+    if (node.type === 'LogicalExpression' && (node.operator === '&&' || node.operator === '||')) {
+      // `ctx.foo || fallback` and `ctx.foo && ctx.foo()`: the left is itself an
+      // existence check when it is a direct member, and it protects the right.
+      const names = guardedNamesIn(node.left, new Set());
+      walk(node.left, ctxBindingStack, node, new Set([...guarded, ...names]));
+      walk(node.right, ctxBindingStack, node, new Set([...guarded, ...names]));
+      return;
+    }
+    if (node.type === 'UnaryExpression' && node.operator === 'typeof') {
+      walk(node.argument, ctxBindingStack, node, new Set([...guarded, ...guardedNamesIn(node.argument, new Set())]));
       return;
     }
 
@@ -196,7 +263,9 @@ function collectCtxAccess(filePath) {
           const name = node.property.name;
           const line = (node.loc && node.loc.start && node.loc.start.line) || 0;
           if (!ctxFieldsAccessed.has(name)) ctxFieldsAccessed.set(name, []);
-          ctxFieldsAccessed.get(name).push({ line });
+          // `ctx?.foo` is as safe as an explicit guard.
+          const isOptional = node.optional === true || (parent && parent.type === 'OptionalMemberExpression');
+          ctxFieldsAccessed.get(name).push({ line, guarded: guarded.has(name) || isOptional });
         }
       }
       // Match: ctx.icons.X — track separately
@@ -208,17 +277,17 @@ function collectCtxAccess(filePath) {
         const name = node.property.name;
         const line = (node.loc && node.loc.start && node.loc.start.line) || 0;
         if (!iconFieldsAccessed.has(name)) iconFieldsAccessed.set(name, []);
-        iconFieldsAccessed.get(name).push({ line });
+        iconFieldsAccessed.get(name).push({ line, guarded: guarded.has(name) });
       }
     }
 
     for (const k of Object.keys(node)) {
       if (k === 'loc' || k === 'range' || k === 'start' || k === 'end') continue;
       const v = node[k];
-      if (v && typeof v === 'object') walk(v, ctxBindingStack, node);
+      if (v && typeof v === 'object') walk(v, ctxBindingStack, node, guarded);
     }
   }
-  walk(ast, [], null);
+  walk(ast, [], null, new Set());
   return { ctxFieldsAccessed, iconFieldsAccessed };
 }
 
@@ -250,10 +319,14 @@ function runAudit(label, loaderFile, toolDir, toolFilter) {
     for (const [key, refs] of ctxFieldsAccessed) {
       // Skip private fields (starting with _) — internal contract
       if (key.startsWith('_')) continue;
-      if (!topKeys.has(key)) missing.push({ key, refs });
+      if (topKeys.has(key)) continue;
+      const unguarded = refs.filter((r) => !r.guarded);
+      if (unguarded.length) missing.push({ key, refs: unguarded, guardedCount: refs.length - unguarded.length });
     }
     for (const [key, refs] of iconFieldsAccessed) {
-      if (!iconKeys.has(key)) missingIcons.push({ key, refs });
+      if (iconKeys.has(key)) continue;
+      const unguardedIcons = refs.filter((r) => !r.guarded);
+      if (unguardedIcons.length) missingIcons.push({ key, refs: unguardedIcons });
     }
     if (missing.length || missingIcons.length) {
       findings.push({ file: f, missing, missingIcons });
